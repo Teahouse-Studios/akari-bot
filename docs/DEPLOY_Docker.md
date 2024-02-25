@@ -89,18 +89,22 @@ docker pull silianz/akari-bot:dev-docker
 
     `qq_account = 2314163511` - 填写机器人的 QQ 号。
 
-    接下来，请配置 OpenShamrock 的以下选项：
+    接下来，请配置 OpenShamrock 的以下选项[^1]：
+
+    [^1]: 在 OpenShamrock 中，双击要更改的配置项进行配置。
 
     **接口信息：**
 
-    -   被动 WebSocket 地址：`ws://127.0.0.1:11451/ws/` - 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/。
+    - 被动 WebSocket 地址：`ws://127.0.0.1:11451/ws/` - 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/。
 
     **功能设置：**
 
-    -   消息格式为 CQ 码：开启
-    -   被动 WebSocket：开启
+    - 消息格式为 CQ 码：开启
+    - 被动 WebSocket：开启
 
-3. 强制杀死 QQ 进程并重新启动 QQ 来应用 OpenShamrock 配置文件。
+3. 强制杀死 QQ 进程[^2]并重新启动 QQ 来应用 OpenShamrock 配置文件。
+
+[^2]: 你可以通过设置 - 应用管理 - QQ 来结束 QQ 的进程。
 
 > [!NOTE]
 > 若在安装和配置中遇到问题，请参阅 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/)。
@@ -114,7 +118,10 @@ docker pull silianz/akari-bot:dev-docker
 > [!NOTE]
 > 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目。
 
-一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45 等问题，我们建议按照进阶配置来配置签名服务器。
+一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45[^3] 等问题，我们建议按照进阶配置来配置签名服务器。
+
+[^3]: Code45 是 Mirai（一个高效率 QQ 机器人框架，也是 go-cqhttp 正在使用的框架）在登陆遇到的一种常见登陆失败报错。
+具体表现为：`[WARNING]: 登录失败: 登录失败，建议升级最新版本后重试，或通过问题反馈与我们联系。 Code: 45`。
 
 ##### 基础配置
 
@@ -201,7 +208,7 @@ docker pull silianz/akari-bot:dev-docker
 
     > [!IMPORTANT]
     > 在选择版本时，应当遵从以下原则：
-    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
+    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45[^3] 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 10. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
 
@@ -225,7 +232,7 @@ docker pull silianz/akari-bot:dev-docker
 
     ```json
     {
-        "protocol": 1,
+        "protocol": 1
     }
     ```
 
@@ -257,9 +264,9 @@ docker pull silianz/akari-bot:dev-docker
 
 你需要自行完成账号注册与登录。
 
-`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
+`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加 `/`）。
 
-`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括 `@` 与 `:`）。
 
 `matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
 
@@ -321,11 +328,11 @@ pip3 install matrix-nio[e2e] ; PIP
 > QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
 > [!NOTE]
-> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
+> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45[^3] 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 #### Webrender
 
-此为小可的外置服务。主要用于处理 html 渲染图片及部分功能的访问代理。
+此为小可的外置服务。主要用于处理 HTML 渲染图片及部分功能的访问代理。
 
 ##### 部署
 
