@@ -109,8 +109,6 @@ docker pull silianz/akari-bot:dev-docker
 > [!NOTE]
 > 若在安装和配置中遇到问题，请参阅 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/)。
 
-:::
-
 #### QQ（go-cqhttp）
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
