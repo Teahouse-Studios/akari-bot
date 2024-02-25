@@ -39,12 +39,12 @@
     git clone https://github.com/Teahouse-studios/akari-bot.git
     ```
 
-    [!TIP]
-    > 直连 GitHub 的克隆速度较慢，在大多数情况下，你可以使用镜像站进行克隆：
-    >
-    > ```sh
-    > git clone https://ghproxy.bugungu.top/https://github.com/Teahouse-studios/akari-bot.git
-    > ```
+> [!TIP]
+> 直连 GitHub 的克隆速度较慢，在大多数情况下，你可以使用镜像站进行克隆：
+>
+> ```sh
+> git clone https://ghproxy.bugungu.top/https://github.com/Teahouse-studios/akari-bot.git
+> ```
 
 2. 在文件夹内打开终端。
 
@@ -56,11 +56,11 @@
 
 1. 你可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
 
-    [!NOTE]
-    > 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
+> [!NOTE]
+> 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
 
-    [!NOTE]
-    > 不建议直接下载代码部署，因为这样你将无法使用 git 或是使用机器人内置的命令更新代码。
+> [!NOTE]
+> 不建议直接下载代码部署，因为这样你将无法使用 git 或是使用机器人内置的命令更新代码。
 
 2. 解压源代码，并在文件夹中打开终端。
 
@@ -74,12 +74,12 @@
 
     **方式一**
 
-    [!TIP]
-    > pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
-    >
-    > ```sh
-    > pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-    > ```
+> [!TIP]
+> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
+>
+> ```sh
+> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+> ```
 
     1. 打开终端，执行以下命令来安装 pipx：
 
@@ -99,14 +99,14 @@
 
     2. 重启终端，并输入以下命令：
 
-        [!NOTE]
-        > 如果你使用的是 Linux，在此之前，你可能需要先安装 `python3-venv`：
-        >
-        > ```sh
-        > sudo apt-get install python3-venv
-        > ```
-        >
-        > 安装的命令会因为系统的不同而发生改变。
+> [!NOTE]
+> 如果你使用的是 Linux，在此之前，你可能需要先安装 `python3-venv`：
+>
+> ```sh
+> sudo apt-get install python3-venv
+> ```
+>
+> 安装的命令会因为系统的不同而发生改变。
 
         ```sh
         pipx install poetry
@@ -128,11 +128,11 @@
     curl -sSL "https://install.python-poetry.org" | python3 -
     ```
 
-    [!NOTE]
-    > 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+> [!NOTE]
+> 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
 
-    [!IMPORTANT]
-    > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
+> [!IMPORTANT]
+> 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
 
 2. 安装完成后，请将以下目录添加到 PATH 环境变量，请善用搜索引擎寻找修改 PATH 的方法：
 
@@ -148,19 +148,19 @@
     $HOME/.local/bin
     ```
 
-    [!NOTE]
-    > 在添加到 PATH 之后，你通常需要重启终端，甚至整个电脑才能使其生效。
-    >
-    > 你可以通过 `poetry --version` 确认安装是否有效。
+> [!NOTE]
+> 在添加到 PATH 之后，你通常需要重启终端，甚至整个电脑才能使其生效。
+>
+> 你可以通过 `poetry --version` 确认安装是否有效。
 
 3. 在安装完 Poetry 后，请执行以下指令：
 
-    [!TIP]
-    > Poetry 在国内的下载速度比较慢，你可以通过以下命令设置 Poetry 的镜像源来加快连接速度（建议）：
-    >
-    > ```sh
-    > poetry source add --priority=default mirrors https://pypi.tuna.tsinghua.edu.cn/simple/
-    > ```
+> [!TIP]
+> Poetry 在国内的下载速度比较慢，你可以通过以下命令设置 Poetry 的镜像源来加快连接速度（建议）：
+>
+> ```sh
+> poetry source add --priority=default mirrors https://pypi.tuna.tsinghua.edu.cn/simple/
+> ```
 
     ```sh
     poetry install
@@ -170,7 +170,7 @@
 
 如果你不想使用 Poetry，你可以使用 pip 来安装依赖：
 
-[!TIP]
+> [!TIP]
 > pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
 >
 > ```powershell
@@ -181,7 +181,7 @@
 pip install -r requirements.txt
 ```
 
-[!NOTE]
+> [!NOTE]
 > 在安装依赖时若出现报错，请转到[疑难解答](#疑难解答)
 
 ## 配置
@@ -251,14 +251,14 @@ pip install -r requirements.txt
 
 [^2]: 你可以通过设置 - 应用管理 - QQ 来结束 QQ 的进程。
 
-[!NOTE]
+> [!NOTE]
 > 若在安装和配置中遇到问题，请参阅 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/)。
 
 #### QQ（go-cqhttp）
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-[!NOTE]
+> [!NOTE]
 > 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目。
 
 一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45[^3] 等问题，我们建议按照进阶配置来配置签名服务器。
@@ -330,8 +330,8 @@ pip install -r requirements.txt
     ...
     ```
 
-    [!NOTE]
-    > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
+> [!NOTE]
+> 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
 
 ##### 进阶配置（配置签名服务器）
 
@@ -353,9 +353,9 @@ pip install -r requirements.txt
 
     例：`--basePath=txlib/8.9.73`
 
-    [!IMPORTANT]
-    > 在选择版本时，应当遵从以下原则：
-    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45[^3] 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
+> [!IMPORTANT]
+> 在选择版本时，应当遵从以下原则：
+> 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45[^3] 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 10. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
 
@@ -471,10 +471,10 @@ pip3 install matrix-nio[e2e] ; PIP
 
 根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理 QQ 频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-[!WARNING]
+> [!WARNING]
 > QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
-[!NOTE]
+> [!NOTE]
 > 关于 go-cqhttp 选用以上方式登录时出现的的 Code45[^3] 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 #### Webrender
