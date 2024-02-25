@@ -20,7 +20,6 @@
 若想使用 Docker 部署，请转到[使用 Docker 部署](./docs/DEPLOY_Docker.md)。
 
 ## 准备
-
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本需大于等于 3.12，低于该版本的运行时环境将不受支持。
@@ -188,7 +187,7 @@ pip install -r requirements.txt
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
-[!IMPORTANT]
+> [!IMPORTANT]
 > 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
 
 ### 配置数据库
@@ -207,7 +206,7 @@ pip install -r requirements.txt
 
 #### SQLite
 
-[!NOTE]
+> [!NOTE]
 > 如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
 如果你选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
