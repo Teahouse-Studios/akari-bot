@@ -20,6 +20,7 @@
 若想使用 Docker 部署，请转到[使用 Docker 部署](./docs/DEPLOY_Docker.md)。
 
 ## 准备
+
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本需大于等于 3.12，低于该版本的运行时环境将不受支持。
@@ -73,12 +74,12 @@
 
     **方式一**
 
-> [!TIP]
-> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
->
-> ```sh
-> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-> ```
+$\qquad$> [!TIP]
+$\qquad$> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
+$\qquad$>
+$\qquad$> ```sh
+$\qquad$> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+$\qquad$> ```
 
     1. 打开终端，执行以下命令来安装 pipx：
 
