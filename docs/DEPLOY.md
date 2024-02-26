@@ -68,20 +68,22 @@
 
 **方式一：使用 [Poetry](https://python-poetry.org/)**
 
+> [!TIP]
+> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
+>
+> ```sh
+> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+> ```
+
+
 如果你已经安装了 Poetry，你可以跳过以下安装步骤。
 
 1. 安装 Poetry：
 
     **方式一**
 
-$\qquad$> [!TIP]
-$\qquad$> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
-$\qquad$>
-$\qquad$> ```sh
-$\qquad$> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-$\qquad$> ```
-
     1. 打开终端，执行以下命令来安装 pipx：
+
 
         **Windows**
 
@@ -99,18 +101,10 @@ $\qquad$> ```
 
     2. 重启终端，并输入以下命令：
 
-> [!NOTE]
-> 如果你使用的是 Linux，在此之前，你可能需要先安装 `python3-venv`：
->
-> ```sh
-> sudo apt-get install python3-venv
-> ```
->
-> 安装的命令会因为系统的不同而发生改变。
-
         ```sh
         pipx install poetry
         ```
+    
 
     3. 安装完成后，你可以通过运行 `poetry --version` 来确认 Poetry 是否有效安装。
 
@@ -127,6 +121,16 @@ $\qquad$> ```
     ```sh
     curl -sSL "https://install.python-poetry.org" | python3 -
     ```
+
+> [!NOTE]
+> 如果你使用的是 Linux，在完成第二步之前，你可能需要先安装 `python3-venv`：
+>
+> ```sh
+> sudo apt-get install python3-venv
+> ```
+>
+> 安装的命令会因为系统的不同而发生改变。
+
 
 > [!NOTE]
 > 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
