@@ -88,7 +88,7 @@ class MessageSession:
         self.tmp = {}
 
     async def send_message(self,
-                           message_chain: Union[MessageChain, str, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                           message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
                            quote=True,
                            disable_secret_check=False,
                            allow_split_image=True,
@@ -105,7 +105,7 @@ class MessageSession:
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain: Union[MessageChain, str, Plain, Image, Voice, Embed, Url, ErrorMessage] = None,
+                     message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage] = None,
                      quote: bool = True,
                      disable_secret_check: bool = False,
                      allow_split_image: bool = True,
