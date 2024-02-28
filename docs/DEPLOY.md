@@ -20,6 +20,7 @@
 若想使用 Docker 部署，请转到[使用 Docker 部署](./docs/DEPLOY_Docker.md)。
 
 ## 准备
+
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本需大于等于 3.12，低于该版本的运行时环境将不受支持。
@@ -67,12 +68,6 @@
 
 **方式一：使用 [Poetry](https://python-poetry.org/)**
 
-如果你已经安装了 Poetry，你可以跳过以下安装步骤。
-
-1. 安装 Poetry：
-
-    **方式一**
-
 > [!TIP]
 > pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
 >
@@ -80,7 +75,15 @@
 > pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 > ```
 
+
+如果你已经安装了 Poetry，你可以跳过以下安装步骤。
+
+1. 安装 Poetry：
+
+    **方式一**
+
     1. 打开终端，执行以下命令来安装 pipx：
+
 
         **Windows**
 
@@ -98,18 +101,10 @@
 
     2. 重启终端，并输入以下命令：
 
-> [!NOTE]
-> 如果你使用的是 Linux，在此之前，你可能需要先安装 `python3-venv`：
->
-> ```sh
-> sudo apt-get install python3-venv
-> ```
->
-> 安装的命令会因为系统的不同而发生改变。
-
         ```sh
         pipx install poetry
         ```
+    
 
     3. 安装完成后，你可以通过运行 `poetry --version` 来确认 Poetry 是否有效安装。
 
@@ -126,6 +121,16 @@
     ```sh
     curl -sSL "https://install.python-poetry.org" | python3 -
     ```
+
+> [!NOTE]
+> 如果你使用的是 Linux，在完成第二步之前，你可能需要先安装 `python3-venv`：
+>
+> ```sh
+> sudo apt-get install python3-venv
+> ```
+>
+> 安装的命令会因为系统的不同而发生改变。
+
 
 > [!NOTE]
 > 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
@@ -493,7 +498,8 @@ pip3 install matrix-nio[e2e] ; PIP
     FC_SERVER_PORT = 15551 # 填写服务运行的端口
     ```
 
-    > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
+> [!IMPORTANT]
+> 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 
