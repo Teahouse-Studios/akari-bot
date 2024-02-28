@@ -19,7 +19,8 @@ async def _(msg: Bot.MessageSession, query: str):
     plain_texts = []
     if result:
         for x in result[0:5]:
-            plain_texts.append(f'{x["enumName"]}：{x["key"]} -> {x["value"]}')
+            v = x["value"].split('\n')[0]
+            plain_texts.append(f'{x["enumName"]}：{x["key"]} -> {v}')
         if resp['data']['count'] > 5:
             plain_texts.append(msg.locale.t('message.collapse', amount='5') + msg.locale.t('idlist.message.collapse'))
             plain_texts.append('https://ca.projectxero.top/idlist/' + resp['data']['hash'])
