@@ -4,6 +4,7 @@ from typing import List, Union, Dict, Coroutine, Awaitable
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
+from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 
 
 class MsgInfo:
@@ -30,8 +31,8 @@ class MsgInfo:
 
     def __repr__(self):
         return f'MsgInfo(target_id={self.target_id}, sender_id={self.sender_id}, sender_name={self.sender_name},' \
-               f' target_from={self.target_from}, sender_from={self.sender_from}, client_name={self.client_name}, ' \
-               f'message_id={self.message_id}, reply_id={self.reply_id})'
+            f' target_from={self.target_from}, sender_from={self.sender_from}, client_name={self.client_name}, ' \
+            f'message_id={self.message_id}, reply_id={self.reply_id})'
 
 
 class Session:
@@ -87,7 +88,7 @@ class MessageSession:
         self.tmp = {}
 
     async def send_message(self,
-                           message_chain: MessageChain,
+                           message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
                            quote=True,
                            disable_secret_check=False,
                            allow_split_image=True,
@@ -104,7 +105,7 @@ class MessageSession:
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain: MessageChain = None,
+                     message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage] = None,
                      quote: bool = True,
                      disable_secret_check: bool = False,
                      allow_split_image: bool = True,
