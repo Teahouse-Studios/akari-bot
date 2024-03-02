@@ -124,8 +124,8 @@ async def _(msg: Bot.MessageSession):
             if block['type'] == 'text':
                 chain.append(Plain(block['content']))
             elif block['type'] == 'latex':
-                content = await generate_latex(block['content'])
                 try:
+                    content = await generate_latex(block['content'])
                     img = PILImage.open(io.BytesIO(content))
                     chain.append(Image(img))
                 except Exception as e:
