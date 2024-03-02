@@ -314,9 +314,9 @@ async def bot_help(msg: Bot.MessageSession):
         if help_name in alias:
             help_name = alias[help_name]
         if help_name in current_unloaded_modules:
-            await msg.finish(msg.locale.t("parser.module.unloaded"))
+            await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
-            await msg.finish(msg.locale.t("error.module.unloaded"))
+            await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
         elif help_name in module_list:
             module_ = module_list[help_name]
             if module_.desc:
