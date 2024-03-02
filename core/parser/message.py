@@ -383,9 +383,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
                                     msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
-            if command_first_word in current_unloaded_modules and msg.check_super_user():
+            if command_first_word in current_unloaded_modules:
                 await msg.send_message(
-                    msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
+                        msg.locale.t('parser.module.unloaded', module=command_first_word))
             elif command_first_word in err_modules:
                 await msg.send_message(msg.locale.t('error.module.unloaded', module=command_first_word))
 
