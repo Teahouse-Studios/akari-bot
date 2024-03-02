@@ -8,12 +8,14 @@ from PIL import Image, ImageDraw, ImageFont
 import random
 import unicodedata
 
+from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cooldown import CoolDown
 
+text_mode = Config('wordle_disable_image')
 
 wordle = module('wordle',
                 desc='{wordle.help.desc}', developers=['Dianliang233', 'DoroWolf']
@@ -193,8 +195,10 @@ async def _(msg: Bot.MessageSession):
     play_state[msg.target.target_id] = {'answer': board.word, 'active': True}
 
     Logger.info(f'Answer: {board.word}')
-
-    await msg.send_message([BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))])
+    if text_mode:
+        await msg.send_message(msg.locale.t('wordle.message.start'))
+    else:
+        await msg.send_message([BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))])
 
     while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
@@ -210,11 +214,14 @@ async def _(msg: Bot.MessageSession):
             continue
         board.add_word(word)
         board_image.update_board()
-        await msg.sleep(1)  # 防冲突
+        await msg.sleep(2)  # 防冲突
 
         if not board.is_game_over() and board.get_trials() <= 6:
             Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
-            await wait.send_message([BImage(board_image.image)])
+            if text_mode:
+                await wait.send_message(board.format_board())
+            else:
+                await wait.send_message([BImage(board_image.image)])
 
     play_state[msg.target.target_id]['active'] = False
     attempt = board.get_trials() - 1
@@ -225,7 +232,10 @@ async def _(msg: Bot.MessageSession):
         if reward := await gained_petal(msg, petal):
             g_msg += '\n' + reward
     qc.reset()
-    await msg.finish([BImage(board_image.image), Plain(g_msg)], quote=False)
+    if text_mode:
+        await msg.finish(board.format_board() + '\n' + g_msg, quote=False)
+    else:
+        await msg.finish([BImage(board_image.image), Plain(g_msg)], quote=False)
 
 
 @wordle.command('stop {{game.help.stop}}')
@@ -244,14 +254,14 @@ async def terminate(msg: Bot.MessageSession):
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
 
+if not text_mode:
+    @wordle.command('theme {{wordle.help.theme}}')
+    async def _(msg: Bot.MessageSession):
+        dark_theme = msg.data.options.get('wordle_dark_theme')
 
-@wordle.command('theme {{wordle.help.theme}}')
-async def _(msg: Bot.MessageSession):
-    dark_theme = msg.data.options.get('wordle_dark_theme')
-
-    if dark_theme:
-        msg.data.edit_option('wordle_dark_theme', False)
-        await msg.finish(msg.locale.t("wordle.message.theme.disable"))
-    else:
-        msg.data.edit_option('wordle_dark_theme', True)
-        await msg.finish(msg.locale.t("wordle.message.theme.enable"))
+        if dark_theme:
+            msg.data.edit_option('wordle_dark_theme', False)
+            await msg.finish(msg.locale.t("wordle.message.theme.disable"))
+        else:
+            msg.data.edit_option('wordle_dark_theme', True)
+            await msg.finish(msg.locale.t("wordle.message.theme.enable"))
