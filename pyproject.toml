@@ -26,7 +26,7 @@ aioconsole = "^0.6.1"
 aiogram = "^3.4.1"
 ujson = "^5.7.0"
 PyMySQL = "^1.0.2"
-py-cord = {git = "https://github.com/Pycord-Development/pycord", rev = "122cf464f9edda9ca4dffebd5cea756faae1d0c0"}
+py-cord = {git = "https://github.com/Pycord-Development/pycord", rev = "87d2331b1e0896621acf2c77ec14e7fcf39b0671"}
 aiocqhttp = "^1.4.3"
 tabulate = "^0.9.0"
 feedparser = "^6.0.10"
