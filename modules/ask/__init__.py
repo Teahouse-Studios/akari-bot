@@ -104,13 +104,8 @@ async def _(msg: Bot.MessageSession):
         res = messages.data[0].content[0].text.value
         tokens = count_token(res)
 
-        if not is_superuser:
-            petal = await count_petal(msg, tokens)
-            # petal = await count_petal(msg, tokens, gpt4)
-
-        else:
-            Logger.info(f'{tokens} tokens have been consumed while calling AI.')
-            petal = 0
+        petal = await count_petal(msg, tokens)
+        # petal = await count_petal(msg, tokens, gpt4)
 
         res = await check(res)
         for m in res:
