@@ -191,7 +191,7 @@ def export_analytics(
     with zipfile.ZipFile(cache_path + '.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
         z.write(cache_path + '.json', 'analytics.json')
     auth = oss2.Auth(oss_ak, oss_sk)
-    bucket = oss2.Bucket(auth, oss_endpoint, oss_bucket, is_cname=True)
+    bucket = oss2.Bucket(auth, oss_endpoint, oss_bucket)
     bucket.put_object_from_file('analytics.zip', cache_path + '.zip')
     url = bucket.sign_url('GET', 'analytics.zip', expires=expires)
     return url
