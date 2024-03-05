@@ -92,11 +92,12 @@ async def _(msg: Bot.MessageSession):
             result = msg.locale.t("core.message.analytics.year", module=module_,
                                   first_record=first_record.timestamp)
         data_ = {}
+        current_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         for m in range(12):
-            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
-                relativedelta(years=1) - relativedelta(months=12 - m - 1)
-            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
-                relativedelta(years=1) - relativedelta(months=12 - m)
+            new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + \
+                relativedelta(months=12 - m - 1)
+            old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + \
+                relativedelta(months=12 - m)
             get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
             data_[old.month] = get_
         data_x = []
