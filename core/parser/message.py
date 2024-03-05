@@ -382,7 +382,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         for target in bug_report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
+                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                         msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -495,7 +495,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 for target in bug_report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
+                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 

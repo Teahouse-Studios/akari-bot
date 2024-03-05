@@ -75,6 +75,8 @@ async def _(msg: Bot.MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish([Plain(result), Image(path)])
+    else:
+        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
 @ana.command('year [<module>]')
@@ -90,11 +92,11 @@ async def _(msg: Bot.MessageSession):
             result = msg.locale.t("core.message.analytics.year", module=module_,
                                   first_record=first_record.timestamp)
         data_ = {}
-        for d in range(12):
+        for m in range(12):
             new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
-                relativedelta(years=1) - relativedelta(months=12 - d - 1)
+                relativedelta(years=1) - relativedelta(months=12 - m - 1)
             old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
-                relativedelta(years=1) - relativedelta(months=12 - d)
+                relativedelta(years=1) - relativedelta(months=12 - m)
             get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
             data_[old.month] = get_
         data_x = []
@@ -115,12 +117,14 @@ async def _(msg: Bot.MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish([Plain(result), Image(path)])
+    else:
+        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
 @ana.command('export')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
-        await msg.send_message(msg.locale.t("core.message.analytics.exporting"))
+        await msg.send_message(msg.locale.t("core.message.analytics.export.waiting"))
         expires = Config('analytics_expires', 600)
         url = export_analytics(expires=expires)
         url_b64 = base64.b64encode(url.encode()).decode()
