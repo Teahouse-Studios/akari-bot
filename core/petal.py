@@ -62,7 +62,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
     :returns: 消耗的花瓣数量，保留两位小数。
     '''
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
-    if Config('enable_petal'):
+    if Config('enable_petal') and not msg.check_super_user():
         petal_exchange_rate = await load_or_refresh_cache()
         if gpt4:
             price = tokens / ONE_K * PRICE_PER_1K_TOKEN_GPT_4
