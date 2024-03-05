@@ -4,10 +4,9 @@ import shutil
 import sys
 from datetime import datetime, timedelta
 
-import matplotlib.pyplot as plt
-import numpy as np
+
 import ujson as json
-from dateutil.relativedelta import relativedelta
+
 
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
@@ -48,103 +47,6 @@ async def del_su(msg: Bot.MessageSession, user: str):
             await msg.finish(msg.locale.t("success"))
 
 
-ana = module('analytics', required_superuser=True, base=True)
-
-
-@ana.command()
-async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
-        first_record = BotDBUtil.Analytics.get_first()
-        get_counts = BotDBUtil.Analytics.get_count()
-
-        new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
-        old = datetime.now().replace(hour=0, minute=0, second=0)
-        get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
-
-        await msg.finish(msg.locale.t("core.message.analytics.counts", first_record=first_record.timestamp,
-                                      counts=get_counts, counts_today=get_counts_today))
-    else:
-        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
-
-
-@ana.command('days [<module>]')
-async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
-        first_record = BotDBUtil.Analytics.get_first()
-        module_ = None
-        if '<module>' in msg.parsed_msg:
-            module_ = msg.parsed_msg['<module>']
-        if not module_:
-            result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
-        else:
-            result = msg.locale.t("core.message.analytics.days", module=module_,
-                                  first_record=first_record.timestamp)
-        data_ = {}
-        for d in range(30):
-            new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
-            old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
-            get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
-            data_[old.day] = get_
-        data_x = []
-        data_y = []
-        for x in data_:
-            data_x.append(str(x))
-            data_y.append(data_[x])
-        plt.plot(data_x, data_y, "-o")
-        plt.plot(data_x[-1], data_y[-1], "-ro")
-        plt.xlabel('Days')
-        plt.ylabel('Counts')
-        plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
-
-        plt.gca().yaxis.get_major_locator().set_params(integer=True)
-        for xitem, yitem in np.nditer([data_x, data_y]):
-            plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-        path = random_cache_path() + '.png'
-        plt.savefig(path)
-        plt.close()
-        await msg.finish([Plain(result), Image(path)])
-
-
-@ana.command('year [<module>]')
-async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
-        first_record = BotDBUtil.Analytics.get_first()
-        module_ = None
-        if '<module>' in msg.parsed_msg:
-            module_ = msg.parsed_msg['<module>']
-        if not module_:
-            result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
-        else:
-            result = msg.locale.t("core.message.analytics.year", module=module_,
-                                  first_record=first_record.timestamp)
-        data_ = {}
-        for d in range(12):
-            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
-                relativedelta(years=1) - relativedelta(months=12 - d - 1)
-            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
-                relativedelta(years=1) - relativedelta(months=12 - d)
-            get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
-            data_[old.month] = get_
-        data_x = []
-        data_y = []
-        for x in data_:
-            data_x.append(str(x))
-            data_y.append(data_[x])
-        plt.plot(data_x, data_y, "-o")
-        plt.plot(data_x[-1], data_y[-1], "-ro")
-        plt.xlabel('Months')
-        plt.ylabel('Counts')
-        plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
-
-        plt.gca().yaxis.get_major_locator().set_params(integer=True)
-        for xitem, yitem in np.nditer([data_x, data_y]):
-            plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-        path = random_cache_path() + '.png'
-        plt.savefig(path)
-        plt.close()
-        await msg.finish([Plain(result), Image(path)])
-
-
 purge = module('purge', required_superuser=True, base=True)
 
 
@@ -178,10 +80,10 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish()
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.target_from)]
-    if 'enable' in msg.parsed_msg: 
+    if 'enable' in msg.parsed_msg:
         target_data.enable(modules)
         await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
-    if 'disable' in msg.parsed_msg: 
+    if 'disable' in msg.parsed_msg:
         target_data.disable(modules)
         await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
 
@@ -245,7 +147,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if is_banned:
         stat += '\n' + msg.locale.t("core.message.abuse.check.banned")
     await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns) + stat)
-    
+
 
 @ae.command('warn <user> [<count>]')
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
@@ -371,7 +273,7 @@ if Info.subprocess:
             restart()
         else:
             await msg.finish()
-            
+
     upds = module('update&restart', required_superuser=True, alias='u&r', base=True)
 
     @upds.command()
@@ -577,7 +479,6 @@ if Config('enable_petal'):
         else:
             msg.data.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
-
 
     lagrange = module('lagrange', required_superuser=True, base=True)
 

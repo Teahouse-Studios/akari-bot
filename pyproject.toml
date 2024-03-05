@@ -26,7 +26,7 @@ aioconsole = "^0.6.1"
 aiogram = "^3.4.1"
 ujson = "^5.7.0"
 PyMySQL = "^1.0.2"
-py-cord = {git = "https://github.com/Pycord-Development/pycord", rev = "122cf464f9edda9ca4dffebd5cea756faae1d0c0"}
+py-cord = "^2.5.0"
 aiocqhttp = "^1.4.3"
 tabulate = "^0.9.0"
 feedparser = "^6.0.10"
@@ -61,6 +61,7 @@ python-whois = "^0.8.0"
 pandas = "^2.2.0"
 future = {git = "https://github.com/nsoranzo/python-future", rev = "python312-imp-module_past"}
 fastapi = "^0.109.2"
+oss2 = "^2.18.4"
 
 
 [tool.poetry.group.dev.dependencies]

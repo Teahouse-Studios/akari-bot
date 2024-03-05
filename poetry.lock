@@ -211,6 +211,34 @@ files = [
 frozenlist = ">=1.1.0"
 
 [[package]]
+name = "aliyun-python-sdk-core"
+version = "2.14.0"
+description = "The core module of Aliyun Python SDK."
+optional = false
+python-versions = "*"
+files = [
+    {file = "aliyun-python-sdk-core-2.14.0.tar.gz", hash = "sha256:c806815a48ffdb894cc5bce15b8259b9a3012cc0cda01be2f3dfbb844f3f4f21"},
+]
+
+[package.dependencies]
+cryptography = ">=2.6.0"
+jmespath = ">=0.9.3,<1.0.0"
+
+[[package]]
+name = "aliyun-python-sdk-kms"
+version = "2.16.2"
+description = "The kms module of Aliyun Python sdk."
+optional = false
+python-versions = "*"
+files = [
+    {file = "aliyun-python-sdk-kms-2.16.2.tar.gz", hash = "sha256:f87234a8b64d457ca2338f87650db18a3ce7f7dbc9bfef71efe8f2894aded3d6"},
+    {file = "aliyun_python_sdk_kms-2.16.2-py2.py3-none-any.whl", hash = "sha256:83166468817a4fbc4c958af43ec22856e1bd80f1363f56acf822206febe6b059"},
+]
+
+[package.dependencies]
+aliyun-python-sdk-core = ">=2.11.5"
+
+[[package]]
 name = "annotated-types"
 version = "0.6.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -787,6 +815,16 @@ docs = ["furo", "sphinx (>=7.2)", "sphinx-copybutton"]
 mypy = ["contourpy[bokeh,docs]", "docutils-stubs", "mypy (==1.6.1)", "types-Pillow"]
 test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-xdist", "wurlitzer"]
+
+[[package]]
+name = "crcmod"
+version = "1.7"
+description = "CRC Generator"
+optional = false
+python-versions = "*"
+files = [
+    {file = "crcmod-1.7.tar.gz", hash = "sha256:dc7051a0db5f2bd48665a990d3ec1cc305a466a77358ca4492826f41f283601e"},
+]
 
 [[package]]
 name = "cryptography"
@@ -1534,6 +1572,17 @@ MarkupSafe = ">=2.0"
 
 [package.extras]
 i18n = ["Babel (>=2.7)"]
+
+[[package]]
+name = "jmespath"
+version = "0.10.0"
+description = "JSON Matching Expressions"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
+    {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
+]
 
 [[package]]
 name = "jsonschema"
@@ -2312,6 +2361,24 @@ typing-extensions = ">=4.7,<5"
 datalib = ["numpy (>=1)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)"]
 
 [[package]]
+name = "oss2"
+version = "2.18.4"
+description = "Aliyun OSS (Object Storage Service) SDK"
+optional = false
+python-versions = "*"
+files = [
+    {file = "oss2-2.18.4.tar.gz", hash = "sha256:be1e7a871a8cc267726367333017d78333ee8fae88c727ad61396f59c1c0e4d0"},
+]
+
+[package.dependencies]
+aliyun-python-sdk-core = ">=2.13.12"
+aliyun-python-sdk-kms = ">=2.4.1"
+crcmod = ">=1.7"
+pycryptodome = ">=3.4.7"
+requests = "!=2.9.0"
+six = "*"
+
+[[package]]
 name = "packaging"
 version = "23.2"
 description = "Core utilities for Python packages"
@@ -2575,26 +2642,22 @@ test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
 name = "py-cord"
-version = "2.4.1.dev220+g122cf464"
+version = "2.5.0"
 description = "A Python wrapper for the Discord API"
 optional = false
 python-versions = ">=3.8"
-files = []
-develop = false
+files = [
+    {file = "py-cord-2.5.0.tar.gz", hash = "sha256:faf08af5da5eac2ed3d1c8a43d8307d5a1e3f01602def283330c9d2cde0b1162"},
+    {file = "py_cord-2.5.0-py3-none-any.whl", hash = "sha256:9e5fc79feec5a48f53aa4c066b57dd75fe67d29021b042d12f378a513d308bbc"},
+]
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<4.0"
 
 [package.extras]
-docs = ["furo @ git+https://github.com/pradyunsg/furo@193643f", "myst-parser (==1.0.0)", "sphinx (==5.3.0)", "sphinx-autodoc-typehints (==1.23.0)", "sphinx-copybutton (==0.5.2)", "sphinxcontrib-websupport (==1.2.4)", "sphinxcontrib_trio (==1.1.2)", "sphinxext-opengraph (==0.9.1)"]
-speed = ["aiohttp[speedups]", "msgspec (>=0.18.5,<0.19.0)"]
+docs = ["furo (==2023.3.23)", "myst-parser (==1.0.0)", "sphinx (==5.3.0)", "sphinx-autodoc-typehints (==1.23.0)", "sphinx-copybutton (==0.5.2)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport (==1.2.4)", "sphinxext-opengraph (==0.9.1)"]
+speed = ["aiohttp[speedups]", "msgspec (>=0.18.6,<0.19.0)"]
 voice = ["PyNaCl (>=1.3.0,<1.6)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/Pycord-Development/pycord"
-reference = "122cf464f9edda9ca4dffebd5cea756faae1d0c0"
-resolved_reference = "122cf464f9edda9ca4dffebd5cea756faae1d0c0"
 
 [[package]]
 name = "py-cpuinfo"
@@ -4232,4 +4295,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "e2013cb60d9b90bb7f48facb680f5ab865dc9c307d89d99edfed3f55697611d2"
+content-hash = "862e08b66f3e7f44359be585efcec100bd9fe9e09e3e6cee5c55d5b705399d8c"

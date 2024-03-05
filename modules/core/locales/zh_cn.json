@@ -64,6 +64,8 @@
     "core.message.alias.reset.success": "已重置自定义命令别名列表。",
     "core.message.analytics.disabled": "机器人未开启命令统计功能。",
     "core.message.analytics.counts": "机器人已执行命令次数（自 ${first_record} 开始统计）：${counts}\n今日已执行命令次数：${counts_today}",
+    "core.message.analytics.embed.counts": "机器人已执行命令次数（自 ${first_record} 开始统计）",
+    "core.message.analytics.counts.today": "今日已执行命令次数：",
     "core.message.analytics.days": "最近 30 天的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.message.analytics.days.total": "最近 30 天的所有命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.message.analytics.year": "最近一年的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
@@ -176,5 +178,7 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
+    "core.message.analytics.exporting": "正在导出数据……可能需要一些时间。",
+    "core.message.analytics.export": "导出地址：\n${url}\n将在 ${expires} 秒后过期。"
 }
