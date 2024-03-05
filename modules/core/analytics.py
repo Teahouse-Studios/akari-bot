@@ -1,4 +1,6 @@
 import base64
+import urllib.parse
+
 
 from config import Config
 from typing import Tuple
@@ -198,4 +200,7 @@ def export_analytics(
     bucket = oss2.Bucket(auth, oss_endpoint, oss_bucket)
     bucket.put_object_from_file('analytics.zip', cache_path + '.zip')
     url = bucket.sign_url('GET', 'analytics.zip', expires=expires)
+    if custom_domain := Config('oss_custom_domain'):
+        url = urllib.parse.urlparse(url)
+        url = f'{url.scheme}://{urllib.parse.urlparse(custom_domain).netloc}{url.path}?{url.query}'
     return url
