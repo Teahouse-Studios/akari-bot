@@ -1,6 +1,6 @@
 import os
 from os.path import abspath
-from typing import Union
+from typing import Union, Any
 
 import toml
 
@@ -67,7 +67,7 @@ class CFG:
         cls._ts = os.path.getmtime(config_path)
 
     @classmethod
-    def get(cls, q: str, default: Union[str, None] = None):
+    def get(cls, q: str, default: Union[Any, None] = None) -> Any:
         q = q.lower()
         if os.path.getmtime(config_path) != cls._ts:
             cls.load()
