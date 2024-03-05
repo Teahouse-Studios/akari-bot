@@ -1088,9 +1088,9 @@ matplotlib==3.8.3 ; python_full_version >= "3.12.0" and python_full_version < "4
     --hash=sha256:ef6c1025a570354297d6c15f7d0f296d95f88bd3850066b7f1e7b4f2f4c13a39 \
     --hash=sha256:f386cf162b059809ecfac3bcc491a9ea17da69fa35c8ded8ad154cd4b933d5ec \
     --hash=sha256:fa93695d5c08544f4a0dfd0965f378e7afc410d8672816aff1e81be1f45dbf2e
-matrix-nio==0.21.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:414301fc25662af3e3436de5b955980474c03b0f3001f1b041c49743ede73232 \
-    --hash=sha256:95bec84dd0d4eca4f0ce252d2f630d435edbc41bb405448d88916a3783479237
+matrix-nio==0.24.0; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:75f9c58958dbe353bec29be1854835df6d91e6f3be2952261a3a27c99ea896b9 \
+    --hash=sha256:87bcf8139e081e8e85ced2d02a2be08662bf1accb726e850325b4ab3c840e946
 more-itertools==10.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:686b06abe565edfab151cb8fd385a05651e1fdf8f0a14191e4439283421f8684 \
     --hash=sha256:8fccb480c43d3e99a00087634c06dd02b0d50fbf088b380de5a41a015ec239e1
