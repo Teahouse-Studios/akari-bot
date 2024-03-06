@@ -1,5 +1,6 @@
 import platform
 import time
+import urllib.parse
 from datetime import datetime, timedelta, tzinfo
 
 import jwt
@@ -35,8 +36,9 @@ async def check_web_render(msg: Bot.MessageSession):
     if not web_render:
         return False
     try:
-        test_url = f"{web_render}source?url=https%3A%2F%2Fwww.baidu.com"
-        await get_url(test_url, 200, logging_err_resp=False)
+        url = 'http://www.baidu.com'
+        url = web_render + 'source?url=' + url
+        await get_url(url, 200, fmt='read', logging_err_resp=False, request_private_ip=True)
     except BaseException:
         return False
     return True
