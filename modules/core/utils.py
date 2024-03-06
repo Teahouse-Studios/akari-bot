@@ -33,13 +33,13 @@ started_time = datetime.now()
 async def check_web_render(msg: Bot.MessageSession):
     web_render = CFG.get_url('web_render')
     if not web_render:
-        return msg.locale.t('failed')
+        return False
     try:
-        test_url = f"{web_render}?url=https%3A%2F%2Fwww.baidu.com"
+        test_url = f"{web_render}source?url=https%3A%2F%2Fwww.baidu.com"
         await get_url(test_url, 200, logging_err_resp=False)
     except BaseException:
-        return msg.locale.t('failed')
-    return msg.locale.t('success')
+        return False
+    return True
 
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
-        web_render_status = await check_web_render(msg)
+        web_render_status = str(await check_web_render(msg))
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,
