@@ -15,6 +15,8 @@ from core.utils.info import Info
 from database import BotDBUtil
 
 jwt_secret = Config('jwt_secret')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 ver = module('version', base=True)
 
@@ -31,14 +33,15 @@ ping = module('ping', base=True)
 
 started_time = datetime.now()
 
-async def check_web_render(msg: Bot.MessageSession):
-    web_render = CFG.get_url('web_render')
-    if not web_render:
-        return False
+async def check_web_render(use_local=True):
+    if not web_render_local:
+        if not web_render:
+            return False
+        use_local = False
     try:
         ping_url = 'http://www.baidu.com'
-        url = web_render + 'source?url=' + ping_url
-        await get_url(url, 200, fmt='read', logging_err_resp=False, request_private_ip=True)
+        url = (web_render_local if use_local else web_render) + 'source?url=' + ping_url
+        await get_url(url, 200, logging_err_resp=False, request_private_ip=True)
     except BaseException:
         return False
     return True
@@ -56,7 +59,7 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
-        web_render_status = str(await check_web_render(msg))
+        web_render_status = str(await check_web_render())
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,

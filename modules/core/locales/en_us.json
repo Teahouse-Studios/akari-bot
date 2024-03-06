@@ -138,7 +138,7 @@
     "core.message.petal.modify.self": "Successfully modified ${add_petal} petal(s) for this target. ${petal} petal(s) remain now.",
     "core.message.petal.no_petals": "There are not enough petals in the target.",
     "core.message.petal.self": "${petal} petal(s) remain in this target.",
-    "core.message.ping.detail": "System Startup Time: ${system_boot_time}\nBot Running Time: ${bot_running_time}\nPython Version: ${python_version}\nCPU Model: ${cpu_brand}\nCurrent CPU Usage: ${cpu_usage}%\nPhysical Memory: ${ram}M Utilized: ${ram_percent}%\nSwap Memory: ${swap}M Utilized: ${swap_percent}%\nDisk Capacity: ${disk_space}G/${disk_space_total}G",
+    "core.message.ping.detail": "System Startup Time: ${system_boot_time}\nBot Running Time: ${bot_running_time}\nPython Version: ${python_version}\nWebrender Status: ${web_render_status}\nCPU Model: ${cpu_brand}\nCurrent CPU Usage: ${cpu_usage}%\nPhysical Memory: ${ram}M Utilized: ${ram_percent}%\nSwap Memory: ${swap}M Utilized: ${swap_percent}%\nDisk Capacity: ${disk_space}G/${disk_space_total}G",
     "core.message.prefix.add.already": "This command prefix already exists in the custom prefix list.",
     "core.message.prefix.add.success": "Custom command prefix added: ${prefix}",
     "core.message.prefix.list": "Custom command prefix: ${prefixes}",
