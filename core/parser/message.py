@@ -100,6 +100,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     :return: 无返回
     """
     identify_str = f'[{msg.target.sender_id}{f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
+    limited_action = 'touch' if Config('use_shamrock') else 'poke'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
@@ -345,7 +346,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except SendMessageFailed:
                     if msg.target.target_from == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:poke,qq={Config("qq_account")}]')
+                                           message=f'[CQ:{limited_action},qq={Config("qq_account")}]')
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -502,7 +503,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                       message=f'[CQ:poke,qq={Config("qq_account")}]')
+                                       message=f'[CQ:{limited_action},qq={Config("qq_account")}]')
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg
