@@ -38,7 +38,7 @@ async def check_web_render(msg: Bot.MessageSession):
     try:
         url = 'http://www.baidu.com'
         url = web_render + 'source?url=' + url
-        await get_url(url, 200, fmt='read', logging_err_resp=False, request_private_ip=True)
+        await get_url(url, 200, fmt='read', request_private_ip=True)
     except BaseException:
         return False
     return True
