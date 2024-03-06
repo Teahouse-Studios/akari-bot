@@ -89,6 +89,8 @@ docker pull silianz/akari-bot:dev-docker
 
     `qq_account = 2314163511` - 填写机器人的 QQ 号。
 
+    `use_shamrock = true` - 告诉机器人正在使用 OpenShamrock，以确保正常运行。
+
     接下来，请配置 OpenShamrock 的以下选项[^1]：
 
     [^1]: 在 OpenShamrock 中，双击要更改的配置项进行配置。

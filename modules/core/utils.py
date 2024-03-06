@@ -1,12 +1,13 @@
 import platform
 import time
+import urllib.parse
 from datetime import datetime, timedelta, tzinfo
 
 import jwt
 import psutil
 from cpuinfo import get_cpu_info
 
-from config import Config
+from config import Config, CFG
 from core.builtins import Bot, Embed, EmbedField, command_prefix
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
@@ -30,6 +31,17 @@ ping = module('ping', base=True)
 
 started_time = datetime.now()
 
+async def check_web_render(msg: Bot.MessageSession):
+    web_render = CFG.get_url('web_render')
+    if not web_render:
+        return False
+    try:
+        url = 'http://www.baidu.com'
+        url = web_render + 'source?url=' + url
+        await get_url(url, 200, fmt='read', request_private_ip=True)
+    except BaseException:
+        return False
+    return True
 
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
@@ -44,6 +56,7 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
+        web_render_status = str(await check_web_render(msg))
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,
@@ -55,7 +68,8 @@ async def _(msg: Bot.MessageSession):
                                       swap=swap,
                                       swap_percent=swap_percent,
                                       disk_space=disk,
-                                      disk_space_total=disk_total)
+                                      disk_space_total=disk_total,
+                                      web_render_status=web_render_status)
     await msg.finish(result)
 
 

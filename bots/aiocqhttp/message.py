@@ -277,8 +277,9 @@ class MessageSession(MessageSessionT):
                     if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                         return
                 last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
+                action = 'touch' if Config('use_shamrock') else 'poke'
                 await bot.send_group_msg(group_id=self.msg.session.target,
-                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')
+                                         message=f'[CQ:{action},qq={self.msg.session.sender}]')
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
