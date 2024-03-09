@@ -92,7 +92,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
     :returns: 增加花瓣的提示消息。
     '''
     if Config('enable_petal') and Config('enable_get_petal'):
-        limit = Config('gained_petal_limit', 10)
+        limit = Config('gained_petal_limit')
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
             p = [{}]
@@ -111,7 +111,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
                 msg.data.modify_petal(amount)
                 update_stored_list(msg.target.client_name, 'gainedpetal', p)
             else:
-                if limit > 0:
+                if limit and limit > 0:
                     if p[msg.target.target_id]['amount'] >= limit:
                         return msg.locale.t('petal.message.gained.limit')
                     elif p[msg.target.target_id]['amount'] + amount > limit:
@@ -131,7 +131,7 @@ async def lost_petal(msg: Bot.MessageSession, amount):
     :returns: 减少花瓣的提示消息。
     '''
     if Config('enable_petal') and Config('enable_get_petal'):
-        limit = Config('lost_petal_limit', 5)
+        limit = Config('lost_petal_limit')
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:
             p = [{}]
@@ -150,7 +150,7 @@ async def lost_petal(msg: Bot.MessageSession, amount):
                 msg.data.modify_petal(-amount)
                 update_stored_list(msg.target.client_name, 'lostpetal', p)
             else:
-                if limit > 0:
+                if limit and limit > 0:
                     if p[msg.target.target_id]['amount'] > limit:
                         return msg.locale.t('petal.message.lost.limit')
                     elif p[msg.target.target_id]['amount'] + amount > limit:
