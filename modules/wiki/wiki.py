@@ -4,7 +4,6 @@ from typing import Union
 
 import filetype
 
-from config import CFG
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
 from core.types import MessageSession
 from core.utils.image_table import image_table_render, ImageTable
@@ -13,11 +12,11 @@ from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.http import download_to_cache
 from core.utils.image import svg_render
+from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
-web_render = CFG.get_url('web_render')
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 special_namespace = ['special', '特殊']
 random_title = ['random', '随机页面', '隨機頁面']
@@ -208,7 +207,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
                                                                 redirected_title=display_title))
                     if (r.link and r.selected_section and r.info.in_allowlist and
-                            not r.invalid_section and web_render):
+                            not r.invalid_section and WebRender.status):
                         render_section_list.append(
                             {r.link: {'url': r.info.realurl, 'section': r.selected_section,
                                       'in_allowlist': r.info.in_allowlist}})
@@ -234,7 +233,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             'Template:Version disambiguation' in r.templates))}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
-                    if web_render:
+                    if WebRender.status:
                         if r.invalid_section and r.info.in_allowlist:
                             if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
                                 i_msg_lst = []

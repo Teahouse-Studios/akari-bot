@@ -6,13 +6,10 @@ import aiohttp
 import ujson as json
 from tabulate import tabulate
 
-from config import CFG
 from core.logger import Logger
 from .cache import random_cache_path
 from .http import download_to_cache
-
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
+from .web_render import WebRender, webrender
 
 
 class ImageTable:
@@ -22,10 +19,7 @@ class ImageTable:
 
 
 async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
-    if not web_render_local:
-        if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
-            return False
+    if not WebRender.local
         use_local = False
     pic = False
 
@@ -67,7 +61,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
 
         try:
             pic = await download_to_cache(
-                web_render_local if use_local else web_render,
+                webrender(),
                 method='POST',
                 post_data=json.dumps(html),
                 request_private_ip=True,
@@ -78,7 +72,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
         except aiohttp.ClientConnectorError:
             if use_local:
                 pic = await download_to_cache(
-                    web_render,
+                    webrender(use_local=False),
                     method='POST',
                     post_data=json.dumps(html),
                     request_private_ip=True,
