@@ -1,5 +1,5 @@
 from config import Config
-from core.builtins import Bot, Embed, EmbedField
+from core.builtins import Bot
 from database import BotDBUtil
 
 WARNING_COUNTS = Config('tos_warning_counts', 5)
@@ -11,7 +11,7 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
     if WARNING_COUNTS >= 1:
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
-        warn_template = []
+        warn_template = [msg.locale.t("tos.warning")]
         if reason:
             warn_template.append(msg.locale.t("tos.reason") + reason)
         if current_warns < WARNING_COUNTS:
@@ -29,9 +29,7 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
             warn_template.append(msg.locale.t('tos.banned'))
             if Config('issue_url'):
                 warn_template.append(msg.locale.t('tos.appeal', issue_url=Config('issue_url')))
-        await msg.send_message(Embed(title=msg.locale.t("tos.warning"),
-                                     description='\n'.join(warn_template),
-                                     color=0xff0000))
+        await msg.send_message('\n'.join(warn_template))
 
 
 async def pardon_user(user: str):

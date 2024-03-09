@@ -6,6 +6,7 @@ from core.builtins import Bot, Image as BImage, Plain
 from core.component import module
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url
+from core.utils.web_render import webrender
 
 
 assets_path = os.path.abspath('./assets/arcaea')
@@ -17,8 +18,8 @@ arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
 
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
-    resp = await get_url('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
-                         fmt='json')
+    url = 'https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'
+    resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
         await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
                                              url=resp['value']['url']))])
@@ -28,8 +29,8 @@ async def _(msg: Bot.MessageSession):
 
 @arc.command('random {{arcaea.help.random}}')
 async def _(msg: Bot.MessageSession):
-    resp = await get_url('https://webapi.lowiro.com/webapi/song/showcase/',
-                         200, fmt='json')
+    url = 'https://webapi.lowiro.com/webapi/song/showcase/'
+    resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
         value = resp["value"][0]
         image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
@@ -45,11 +46,11 @@ async def _(msg: Bot.MessageSession):
              'rank paid {{arcaea.help.rank.paid}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('free', False):
-        resp = await get_url('https://webapi.lowiro.com/webapi/song/rank/free/',
-                             200, fmt='json')
+        url = 'https://webapi.lowiro.com/webapi/song/rank/free/'
+        resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     else:
-        resp = await get_url('https://webapi.lowiro.com/webapi/song/rank/paid/',
-                             200, fmt='json')
+        url = 'https://webapi.lowiro.com/webapi/song/rank/paid/'
+        resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
         r = []
         rank = 0

@@ -5,13 +5,11 @@ import aiohttp
 import ujson as json
 from PIL import ImageFont
 
-from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download_to_cache, get_url
+from core.utils.web_render import WebRender, webrender
 
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
 elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
 
@@ -20,14 +18,11 @@ spx_cache = {}
 
 async def make_screenshot(page_link, use_local=True):
     elements_ = elements.copy()
-    if not web_render_local:
-        if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
-            return False
+    if not WebRender.local:
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
-        img = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
+        img = await download_to_cache(webrender('element_screenshot', use_local=use_local),
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",

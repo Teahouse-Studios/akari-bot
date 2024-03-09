@@ -11,10 +11,11 @@ from core.logger import Logger
 from core.utils.http import download_to_cache
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
+from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
-from .wiki import query_pages, generate_screenshot_v2_blocklist, web_render
+from .wiki import query_pages, generate_screenshot_v2_blocklist
 
 wiki_inline = module('wiki_inline',
                      desc='{wiki.help.wiki_inline.desc}', recommend_modules=['wiki'],
@@ -147,7 +148,7 @@ async def _(msg: Bot.MessageSession):
                                     get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
                                     if get_infobox:
                                         await msg.send_message(Image(get_infobox), quote=False)
-                            if get_page.invalid_section and wiki_.wiki_info.in_allowlist and web_render:
+                            if get_page.invalid_section and wiki_.wiki_info.in_allowlist and WebRender.status:
                                 i_msg_lst = []
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in
