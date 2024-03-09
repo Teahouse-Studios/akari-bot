@@ -295,6 +295,16 @@ if Info.subprocess:
             await msg.finish()
 
 
+exit_ = module('exit', required_superuser=True, base=True, available_for=['TEST|Console'])
+
+@exit_.command()
+async def _(msg: Bot.MessageSession):
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False, delete=False)
+    if confirm:
+        print('Exited.')
+        sys.exit()
+
+
 if Bot.FetchTarget.name == 'QQ':
     resume = module('resume', required_superuser=True)
 
@@ -480,10 +490,10 @@ if Config('enable_petal'):
             msg.data.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
 
-    lagrange = module('lagrange', required_superuser=True, base=True)
+lagrange = module('lagrange', required_superuser=True, base=True)
 
-    @lagrange.command()
-    async def _(msg: Bot.MessageSession):
-        await msg.finish(f'Keepalive: {str(Temp.data.get("lagrange_keepalive", "None"))}\n'
-                         f'Status: {str(Temp.data.get("lagrange_status", "None"))}\n'
-                         f'Groups: {str(Temp.data.get("lagrange_available_groups", "None"))}')
+@lagrange.command()
+async def _(msg: Bot.MessageSession):
+    await msg.finish(f'Keepalive: {str(Temp.data.get("lagrange_keepalive", "None"))}\n'
+                     f'Status: {str(Temp.data.get("lagrange_status", "None"))}\n'
+                     f'Groups: {str(Temp.data.get("lagrange_available_groups", "None"))}')
