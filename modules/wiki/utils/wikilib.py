@@ -8,7 +8,7 @@ from typing import Union, Dict, List
 import ujson as json
 
 import core.utils.html2text as html2text
-from config import Config, CFG
+from config import Config
 from core.builtins import Url
 from core.dirty_check import check
 from core.logger import Logger
@@ -17,9 +17,8 @@ from core.utils.i18n import Locale, default_locale
 from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from modules.wiki.utils.bot import BotAccount
+from core.utils.web_render import webrender
 
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
                  'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then
@@ -170,9 +169,7 @@ class WikiLib:
         request_local = False
         for x in request_by_web_render_list:
             if x.match(api):
-                if web_render:
-                    use_local = True if web_render_local else False
-                    api = (web_render_local if use_local else web_render) + 'source?url=' + urllib.parse.quote(api)
+                api = webrender('source', urllib.parse.quote(api))
                 request_local = True
                 break
 

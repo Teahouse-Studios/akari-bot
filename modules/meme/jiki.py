@@ -1,13 +1,10 @@
 from bs4 import BeautifulSoup
 
-from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale
-
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
+from core.utils.web_render import webrender
 
 
 async def jiki(term: str, locale: Locale):
@@ -17,12 +14,7 @@ async def jiki(term: str, locale: Locale):
     :returns: 查询结果。'''
     try:
         api = 'https://jikipedia.com/search?phrase=' + term
-        if web_render:
-            use_local = True if web_render_local else False
-        else:
-            return
-        api = (web_render_local if use_local else web_render) + 'source?url=' + api
-        html = await get_url(api, 200)
+        html = await get_url(webrender('source', api), 200, request_private_ip=True)
         Logger.debug(html)
         bs = BeautifulSoup(html, 'html.parser')
         result = bs.select_one('[data-index="0"]')
