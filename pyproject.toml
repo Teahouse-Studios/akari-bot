@@ -67,6 +67,12 @@ oss2 = "^2.18.4"
 autopep8 = "^2.0.2"
 pycodestyle = "2.10.0"
 
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "default"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
