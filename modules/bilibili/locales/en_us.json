@@ -1,5 +1,5 @@
 {
-    "bilibili.help": "Send video ID for video info.",
+    "bilibili.help": "Send video ID for video information.",
     "bilibili.help.desc": "Bilibili video tools.",
     "bilibili.help.option.i": "Get detailed info.",
     "bilibili.help.regex.av": "Send AV ID for video info.",
