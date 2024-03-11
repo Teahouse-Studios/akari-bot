@@ -75,7 +75,7 @@
     "tos.tempbanned.warning": "提示：\n即使已被暫時封鎖，嘗試繼續濫用指令可能會導致你被再次警告。\n距解除時間還有 ${ban_time} 秒。",
     "tos.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.warning.count": "這是第 ${current_warns} 次警告。如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "tos.warning.last": "這是最後一次警告。",
+    "tos.warning.last": "這是最後警告。",
     "unknown": "未知",
     "yes": "是"
 }

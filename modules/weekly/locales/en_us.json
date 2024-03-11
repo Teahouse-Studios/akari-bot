@@ -2,7 +2,7 @@
     "weekly.help": "Get the weekly page of Chinese Minecraft Wiki.",
     "weekly.help.image": "Get the weekly page of Chinese Minecraft Wiki (Image version).",
     "weekly.help.teahouse": "Get Teahouse Weekly.",
-    "weekly.message": "Weekly page:${text}",
+    "weekly.message": "Weekly page: ${text}",
     "weekly.message.expired": "Tips: The weekly page has expired. Please contact Chinese Minecraft Wiki to update.",
     "weekly.message.image": "Image: ${img}",
     "weekly.message.link": "\nImage: ${img}\n\nArticle Link: ${article}\nWeekly Pages: ${link}"
