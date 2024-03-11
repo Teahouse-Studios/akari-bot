@@ -173,7 +173,7 @@
     "core.message.setup.typing.enable": "Input prompt enabled.",
     "core.message.superuser.invalid": "Invalid ID format. The format should be \"${target}|<User ID>\".",
     "core.message.update.failed": "Failed to fetch update from GitHub.",
-    "core.message.version": "Current bot version: ${commit}",
+    "core.message.version": "Current Bot Version: ${commit}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
     "core.message.whoami": "Your ID: ${senderid}\nConversation ID: ${targetid}",
     "core.message.whoami.admin": "(You have admin permission for this conversation)",

@@ -43,7 +43,7 @@ async def remove_temp_ban(target):
 
 
 async def tos_abuse_warning(msg: Bot.MessageSession, e):
-    if enable_tos and Config('tos_warning_counts', 5) >= 1:
+    if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
@@ -73,8 +73,10 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
 
 async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
-    is_superuser = msg.check_super_user()
-    if is_temp_banned and not is_superuser:
+    if is_temp_banned:
+        if msg.check_super_user():
+            await remove_temp_ban(msg.target.sender_id)
+            return None
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
@@ -84,7 +86,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 is_temp_banned['count'] += 1
                 await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
+                raise AbuseWarning(msg.locale.t("tos.reason.ignore"))
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
@@ -98,6 +100,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     :return: 无返回
     """
     identify_str = f'[{msg.target.sender_id}{f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
+    limited_action = 'touch' if Config('use_shamrock') else 'poke'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
@@ -343,7 +346,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except SendMessageFailed:
                     if msg.target.target_from == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:poke,qq={Config("qq_account")}]')
+                                           message=f'[CQ:{limited_action},qq={Config("qq_account")}]')
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -380,10 +383,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         for target in bug_report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
-            if command_first_word in current_unloaded_modules and msg.check_super_user():
+                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+            if command_first_word in current_unloaded_modules:
                 await msg.send_message(
-                    msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
+                        msg.locale.t('parser.module.unloaded', module=command_first_word))
             elif command_first_word in err_modules:
                 await msg.send_message(msg.locale.t('error.module.unloaded', module=command_first_word))
 
@@ -493,14 +496,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 for target in bug_report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
+                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                       message=f'[CQ:poke,qq={Config("qq_account")}]')
+                                       message=f'[CQ:{limited_action},qq={Config("qq_account")}]')
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg

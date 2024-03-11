@@ -23,9 +23,11 @@
 
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 
-2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.9 皆可部署。
+2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本需大于等于 3.12，低于该版本的运行时环境将不受支持。
 
-3. 对应你需要运行的平台所需要的必要内容（环境、token 等）。
+3. 在你的设备上设置好 pip 的 PATH 环境变量。
+
+4. 对应你需要运行的平台所需要的必要内容（环境、token 等）。
 
 ## 下载源代码
 
@@ -37,17 +39,12 @@
     git clone https://github.com/Teahouse-studios/akari-bot.git
     ```
 
-    直连 GitHub 的克隆速度较慢，在特殊情况下，你可以使用镜像站进行克隆：
-
-    ```sh
-    git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
-    ```
-
-    ```sh
-    git clone https://gh-proxy.com/github.com/Teahouse-studios/akari-bot.git
-    ```
-
-    镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
+> [!TIP]
+> 直连 GitHub 的克隆速度较慢，在大多数情况下，你可以使用镜像站进行克隆：
+>
+> ```sh
+> git clone https://ghproxy.bugungu.top/https://github.com/Teahouse-studios/akari-bot.git
+> ```
 
 2. 在文件夹内打开终端。
 
@@ -59,9 +56,11 @@
 
 1. 你可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
 
-    > 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
+> [!NOTE]
+> 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
 
-    > 不建议直接下载代码部署，因为这样你将无法使用 git 或是使用机器人内置的命令更新代码。
+> [!NOTE]
+> 不建议直接下载代码部署，因为这样你将无法使用 git 或是使用机器人内置的命令更新代码。
 
 2. 解压源代码，并在文件夹中打开终端。
 
@@ -69,9 +68,47 @@
 
 **方式一：使用 [Poetry](https://python-poetry.org/)**
 
+> [!TIP]
+> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
+>
+> ```sh
+> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+> ```
+
+
 如果你已经安装了 Poetry，你可以跳过以下安装步骤。
 
-1. 打开 Powershell，并执行以下指令来安装 Poetry：
+1. 安装 Poetry：
+
+    **方式一**
+
+    1. 打开终端，执行以下命令来安装 pipx：
+
+
+        **Windows**
+
+        ```powershell
+        pip install --user pipx
+        python -m pipx ensurepath
+        ```
+
+        **Linux**
+
+        ```sh
+        pip install --user pipx
+        python3 -m pipx ensurepath
+        ```
+
+    2. 重启终端，并输入以下命令：
+
+        ```sh
+        pipx install poetry
+        ```
+    
+
+    3. 安装完成后，你可以通过运行 `poetry --version` 来确认 Poetry 是否有效安装。
+
+    **方式二**
 
     **Windows**
 
@@ -85,11 +122,23 @@
     curl -sSL "https://install.python-poetry.org" | python3 -
     ```
 
-    > 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+> [!NOTE]
+> 如果你使用的是 Linux，在完成第二步之前，你可能需要先安装 `python3-venv`：
+>
+> ```sh
+> sudo apt-get install python3-venv
+> ```
+>
+> 安装的命令会因为系统的不同而发生改变。
 
-    > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
 
-2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
+> [!NOTE]
+> 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+
+> [!IMPORTANT]
+> 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
+
+2. 安装完成后，请将以下目录添加到 PATH 环境变量，请善用搜索引擎寻找修改 PATH 的方法：
 
     **Windows**
 
@@ -103,13 +152,19 @@
     $HOME/.local/bin
     ```
 
-    请善用搜索引擎寻找更改 PATH 的方法。
-
-    在添加到 PATH 之后，你通常需要重启终端，甚至整个电脑才能使其生效。
-
-    你可以通过 `poetry --version` 确认安装是否有效。
+> [!NOTE]
+> 在添加到 PATH 之后，你通常需要重启终端，甚至整个电脑才能使其生效。
+>
+> 你可以通过 `poetry --version` 确认安装是否有效。
 
 3. 在安装完 Poetry 后，请执行以下指令：
+
+> [!TIP]
+> Poetry 在国内的下载速度比较慢，你可以通过以下命令设置 Poetry 的镜像源来加快连接速度（建议）：
+>
+> ```sh
+> poetry source add --priority=default mirrors https://pypi.tuna.tsinghua.edu.cn/simple/
+> ```
 
     ```sh
     poetry install
@@ -119,16 +174,25 @@
 
 如果你不想使用 Poetry，你可以使用 pip 来安装依赖：
 
+> [!TIP]
+> pip 在国内的下载速度比较慢，你可以通过以下命令设置 pip 的镜像源来加快连接速度（建议）：
+>
+> ```powershell
+> pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+> ```
+
 ```sh
 pip install -r requirements.txt
 ```
 
+> [!NOTE]
 > 在安装依赖时若出现报错，请转到[疑难解答](#疑难解答)
 
 ## 配置
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
+> [!IMPORTANT]
 > 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
 
 ### 配置数据库
@@ -147,7 +211,8 @@ pip install -r requirements.txt
 
 #### SQLite
 
-如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
+> [!NOTE]
+> 如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
 如果你选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
@@ -159,13 +224,53 @@ pip install -r requirements.txt
 
 ### 配置平台机器人
 
-#### QQ
+#### QQ（OpenShamrock）
+
+我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [OpenShamrock](https://github.com/whitechi73/OpenShamrock) 客户端。
+
+使用该方案需要一定的安卓（Android）的使用基础，如果看不懂下面的文档的，请转到 [QQ（go-cqhttp）](#qqgo-cqhttp) 并使用 go-cqhttp 来配置 QQ 平台。
+
+1. 尝试根据 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/guide/getting-started.html) 完成 OpenShamrock 的初步安装。
+
+2. 安装完后，请在小可机器人的配置文件 `config.toml` 填写以下字段：
+
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+
+    `qq_account = 2314163511` - 填写机器人的 QQ 号。
+
+    `use_shamrock = true` - 告诉机器人正在使用 OpenShamrock，以确保正常运行。
+
+    接下来，请配置 OpenShamrock 的以下选项[^1]：
+
+    [^1]: 在 OpenShamrock 中，双击要更改的配置项进行配置。
+
+    **接口信息：**
+
+    - 被动 WebSocket 地址：`ws://127.0.0.1:11451/ws/` - 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/。
+
+    **功能设置：**
+
+    - 消息格式为 CQ 码：开启
+    - 被动 WebSocket：开启
+
+3. 强制杀死 QQ 进程[^2]并重新启动 QQ 来应用 OpenShamrock 配置文件。
+
+[^2]: 你可以通过设置 - 应用管理 - QQ 来结束 QQ 的进程。
+
+> [!NOTE]
+> 若在安装和配置中遇到问题，请参阅 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/)。
+
+#### QQ（go-cqhttp）
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
+> [!NOTE]
 > 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目。
 
-一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45 等问题，我们建议按照进阶配置来配置签名服务器。
+一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45[^3] 等问题，我们建议按照进阶配置来配置签名服务器。
+
+[^3]: Code45 是 Mirai（一个高效率 QQ 机器人框架，也是 go-cqhttp 正在使用的框架）在登陆遇到的一种常见登陆失败报错。
+具体表现为：`[WARNING]: 登录失败: 登录失败，建议升级最新版本后重试，或通过问题反馈与我们联系。 Code: 45`。
 
 ##### 基础配置
 
@@ -197,11 +302,19 @@ pip install -r requirements.txt
 4. 此时将提示：
 
     ```
-    [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在
-    [INFO]: 默认配置文件已生成,请编辑 config.yml 后重启程序.
+    [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在。
+    [INFO]: 默认配置文件已生成，请编辑 config.yml 后重启程序。
     ```
 
     程序将会自动在存放 go-cqhttp 文件夹的目录下生成一个默认配置文件 `config.yml`。
+
+    请填写好配置文件中的 QQ 账号和密码。
+
+5. 请在小可机器人的配置文件 `config.toml` 填写以下字段：
+
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+
+    `qq_account = 2314163511` - 填写机器人的 QQ 号。
 
     接下来，请配置 go-cqhttp 的 `config.yml` 文件中的对应的连接方式。
 
@@ -223,38 +336,32 @@ pip install -r requirements.txt
     ...
     ```
 
-    请在小可机器人的配置文件 `config.toml` 填写以下字段：
-
-    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
-
-    `qq_account = 2314163511` - 填写机器人的 QQ 号。
-
-    > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
+> [!NOTE]
+> 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
 
 ##### 进阶配置（配置签名服务器）
 
 由于 QQ 风控机制的加强，go-cqhttp 若出现 Code45 报错情况时，请参照以下步骤配置签名服务器：
 
-5. 安装 JRE 17（Java Runtime Environment 17），请善用搜索引擎查找安装方法。
+6. 安装 JRE 17（Java Runtime Environment 17），请善用搜索引擎查找安装方法。
 
-6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（原作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+7. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（原作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
 
-7. 删除与 go-cqhttp 同一目录下的 `data` 文件夹和 `device.json` 文件。
+8. 删除与 go-cqhttp 同级目录下的 `data` 文件夹和 `device.json` 文件。
 
-8. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
+9. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
 
     ```sh
-    bin\unidbg-fetch-qsign --basePath=txlib\<你要使用的版本>
+    bin/unidbg-fetch-qsign --basePath=txlib/<你要使用的版本>
     ```
 
     请替换 `<你要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
 
-    例：`--basePath=txlib\8.9.73`
+    例：`--basePath=txlib/8.9.73`
 
-    > 在选择版本时，应当遵从以下原则：
-    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
-
-9. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
+> [!IMPORTANT]
+> 在选择版本时，应当遵从以下原则：
+> 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45[^3] 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 10. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
 
@@ -263,7 +370,7 @@ pip install -r requirements.txt
       # 数据包的签名服务器列表，第一个作为主签名服务器，后续作为备用
       sign-servers:
         - url: 'http://127.0.0.1:8080'  # 主签名服务器地址， 必填
-          key: '114514'  # 签名服务器所需要的apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
+          key: '114514'  # 签名服务器所需要的 apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
           authorization: '-'   # authorization 内容, 依服务端设置，如 'Bearer xxxx'
         ...
       ...
@@ -277,10 +384,12 @@ pip install -r requirements.txt
 13. 在与 go-cqhttp 同一目录下的 `device.json` 文件夹中，并修改以下字段：
 
     ```json
-    "protocol": 1,
+    {
+        "protocol": 1
+    }
     ```
 
-14. 重启 go-cqhttp 完成最终配置。
+14. 重启 go-cqhttp 来应用最终配置。
 
 #### Discord
 
@@ -308,9 +417,9 @@ pip install -r requirements.txt
 
 你需要自行完成账号注册与登录。
 
-`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
+`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加 `/`）。
 
-`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括 `@` 与 `:`）。
 
 `matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
 
@@ -318,7 +427,9 @@ pip install -r requirements.txt
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
+> [!IMPORTANT]
 > 不推荐使用其他客户端获取 Access Token，这样容易导致 olm 会话非常混乱。
+>
 > 如果（不怕死）使用客户端获取 Access Token，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
 
 使用以下命令进行密码登录：
@@ -366,13 +477,15 @@ pip3 install matrix-nio[e2e] ; PIP
 
 根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理 QQ 频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-> 注意：QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
+> [!WARNING]
+> QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
-> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
+> [!NOTE]
+> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45[^3] 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 #### Webrender
 
-此为小可的外置服务。主要用于处理 html 渲染图片及部分功能的访问代理。
+此为小可的外置服务。主要用于处理 HTML 渲染图片及部分功能的访问代理。
 
 ##### 部署
 
@@ -387,7 +500,8 @@ pip3 install matrix-nio[e2e] ; PIP
     FC_SERVER_PORT = 15551 # 填写服务运行的端口
     ```
 
-    > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
+> [!IMPORTANT]
+> 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 

@@ -74,7 +74,7 @@ async def send_command(msg):
 
 if __name__ == '__main__':
     init_bot()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.create_task(console_scheduler())
     loop.create_task(console_command())
     loop.run_forever()

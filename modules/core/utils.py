@@ -1,16 +1,16 @@
 import platform
-import time
-from datetime import datetime, timedelta, tzinfo
+from datetime import datetime, timedelta
 
 import jwt
 import psutil
 from cpuinfo import get_cpu_info
 
 from config import Config
-from core.builtins import Bot, command_prefix
+from core.builtins import Bot
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
+from core.utils.web_render import WebRender
 from database import BotDBUtil
 
 jwt_secret = Config('jwt_secret')
@@ -33,9 +33,8 @@ started_time = datetime.now()
 
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
-    checkpermisson = msg.check_super_user()
     result = "Pong!"
-    if checkpermisson:
+    if msg.check_super_user():
         timediff = str(datetime.now() - started_time)
         boot_start = msg.ts2strftime(psutil.boot_time())
         cpu_usage = psutil.cpu_percent()
@@ -45,6 +44,7 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
+        web_render_status = str(WebRender.status)
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,
@@ -56,7 +56,8 @@ async def _(msg: Bot.MessageSession):
                                       swap=swap,
                                       swap_percent=swap_percent,
                                       disk_space=disk,
-                                      disk_space_total=disk_total)
+                                      disk_space_total=disk_total,
+                                      web_render_status=web_render_status)
     await msg.finish(result)
 
 

@@ -71,8 +71,8 @@ async def update_assets():
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
 
-        with open(os.path.join(ca, 'PhigrosLibrary-master', 'difficulty.csv'), 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
+        with open(os.path.join(ca, 'PhigrosLibrary-main', 'difficulty.tsv'), 'r', encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 data[row[0].lower()] = {'EZ': row[1], 'HD': row[2], 'IN': row[3]}
                 if len(row) > 4:

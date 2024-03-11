@@ -73,13 +73,9 @@ async def _(msg: Bot.MessageSession):
             ]
         )
         output = completion.choices[0].message.content
-        tokens = completion.usage.total_tokens
-        if not is_superuser:
-            petal = await count_petal(msg, tokens)
-        else:
-            Logger.info(f'{tokens} tokens have been consumed while calling AI.')
-            petal = 0
+        tokens = completion.usage.total_token
 
+        petal = await count_petal(msg, tokens)
         if petal != 0:
             output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()

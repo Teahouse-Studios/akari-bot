@@ -6,6 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt
 
+import hashlib
+
 Base = declarative_base()
 
 DB_LINK = 'sqlite:///database/local.db'
@@ -16,6 +18,11 @@ class DirtyFilterTable(Base):
     desc = Column(Text, primary_key=True)
     result = Column(Text)
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+
+
+class CrowdinActivityRecordsTable(Base):
+    __tablename__ = "crowdin_activity_records"
+    hash_id = Column(Text, primary_key=True)
 
 
 class LocalDBSession:
@@ -69,3 +76,19 @@ class DirtyWordCache:
             return json.loads(self.query.result)
         else:
             return False
+
+
+class CrowdinActivityRecords:
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def check(txt: str):
+        query_hash = hashlib.md5(txt.encode(encoding='UTF-8')).hexdigest()
+        query = session.query(CrowdinActivityRecordsTable).filter_by(hash_id=query_hash).first()
+        if not query:
+            session.add_all([CrowdinActivityRecordsTable(hash_id=query_hash)])
+            session.commit()
+            return False
+        else:
+            return True

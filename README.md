@@ -70,3 +70,7 @@
 ## 许可
 
 小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
+
+## 友情链接
+
+* [音卡](https://github.com/codethink-cn/Inkar-Suki) - 各种功能于一体的群聊机器人。

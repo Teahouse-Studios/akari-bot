@@ -364,7 +364,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         await msg.finish(msg.locale.t('maimai.message.scoreline.failed', prefix=msg.prefixes[0]))
 
 
-@mai.command('rating <base> <score> {{maimai.help.rating}}')
+@mai.command('calc <base> <score> {{maimai.help.calc}}')
 async def _(msg: Bot.MessageSession, base: float, score: float):
     if score:
         await msg.finish([Plain(max(0, computeRa(base, score)))])

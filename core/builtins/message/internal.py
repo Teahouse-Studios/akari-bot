@@ -70,7 +70,7 @@ class FormattedTime:
         self.seconds = seconds
         self.timezone = timezone
 
-    def to_str(self, msg: MessageSession = None):
+    def to_str(self, msg: MessageSession=None):
         ftime_template = []
         if msg:
             if self.date:
@@ -234,8 +234,8 @@ class Embed(EmbedT):
                  title: str = None,
                  description: str = None,
                  url: str = None,
-                 timestamp: float = None,
-                 color: int = None,
+                 timestamp: float = datetime.now().timestamp(),
+                 color: int = 0x0091ff,
                  image: Image = None,
                  thumbnail: Image = None,
                  author: str = None,
@@ -250,9 +250,17 @@ class Embed(EmbedT):
         self.thumbnail = thumbnail
         self.author = author
         self.footer = footer
-        self.fields = fields
+        self.fields = []
+        if fields:
+            for f in fields:
+                if isinstance(f, EmbedField):
+                    self.fields.append(f)
+                elif isinstance(f, dict):
+                    self.fields.append(EmbedField(f['data']['name'], f['data']['value'], f['data']['inline']))
+                else:
+                    raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
-    def to_message_chain(self):
+    def to_message_chain(self, msg: MessageSession=None):
         text_lst = []
         if self.title:
             text_lst.append(self.title)
@@ -262,12 +270,9 @@ class Embed(EmbedT):
             text_lst.append(self.url)
         if self.fields:
             for f in self.fields:
-                if f.inline:
-                    text_lst.append(f"{f.name}: {f.value}")
-                else:
-                    text_lst.append(f"{f.name}:\n{f.value}")
+                text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
         if self.author:
-            text_lst.append("作者：" + self.author)
+            text_lst.append(msg.locale.t('message.embed.author') + self.author)
         if self.footer:
             text_lst.append(self.footer)
         message_chain = []
@@ -282,9 +287,9 @@ class Embed(EmbedT):
 
     def __repr__(self):
         return f'Embed(title="{self.title}", description="{self.description}", url="{self.url}", ' \
-               f'timestamp={self.timestamp}, color={self.color}, image={self.image.__repr__()}, ' \
-               f'thumbnail={self.thumbnail.__repr__()}, author="{self.author}", footer="{self.footer}", ' \
-               f'fields={self.fields})'
+            f'timestamp={self.timestamp}, color={self.color}, image={self.image.__repr__()}, ' \
+            f'thumbnail={self.thumbnail.__repr__()}, author="{self.author}", footer="{self.footer}", ' \
+            f'fields={self.fields})'
 
     def to_dict(self):
         return {
@@ -299,7 +304,7 @@ class Embed(EmbedT):
                 'thumbnail': self.thumbnail,
                 'author': self.author,
                 'footer': self.footer,
-                'fields': self.fields}}
+                'fields': [f.to_dict() for f in self.fields]}}
 
 
 __all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime", "I18NContext"]

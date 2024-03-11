@@ -9,7 +9,9 @@ from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import download_to_cache
+from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
+from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
@@ -60,6 +62,14 @@ async def _(msg: Bot.MessageSession):
     desc='{wiki.help.wiki_inline.url}')
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
+
+    def check_svg(file_path):
+        try:
+            with open(file_path, 'r') as file:
+                check = file.read(1024)
+                return '<svg' in check
+        except Exception:
+            return False
 
     async def bgtask():
         query_list = []
@@ -113,45 +123,55 @@ async def _(msg: Bot.MessageSession):
                                             [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
                                              Voice(dl)],
                                             quote=False)
+                            elif check_svg:
+                                rd = await svg_render(dl)
+                                if msg.Feature.image and rd:
+                                    await msg.send_message(
+                                        [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
+                                         Image(rd)],
+                                        quote=False)
+
                         if msg.Feature.image:
                             if get_page.status and wiki_.wiki_info.in_allowlist:
                                 if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
+                                    is_disambiguation = False
+                                    if get_page.templates:
+                                        is_disambiguation = 'Template:Disambiguation' in get_page.templates or 'Template:Version disambiguation' in get_page.templates
+                                    content_mode = get_page.has_template_doc or get_page.title.split(':')[0] in [
+                                        'User'] or is_disambiguation
                                     get_infobox = await generate_screenshot_v2(qq,
                                                                                allow_special_page=q[qq].in_allowlist,
-                                                                               content_mode=get_page.has_template_doc or
-                                                                               get_page.title.split(':')[
-                                                                                   0] in [
-                                                                                   'User'] or
-                                                                               (
-                                                                                   'Template:Disambiguation' in get_page.templates
-                                                                                   or 'Template:Version disambiguation' in get_page.templates))
+                                                                               content_mode=content_mode)
                                     if get_infobox:
                                         await msg.send_message(Image(get_infobox), quote=False)
                                 else:
                                     get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
                                     if get_infobox:
                                         await msg.send_message(Image(get_infobox), quote=False)
-                            if get_page.invalid_section and wiki_.wiki_info.in_allowlist:
+                            if get_page.invalid_section and wiki_.wiki_info.in_allowlist and WebRender.status:
                                 i_msg_lst = []
-                                session_data = [[str(i + 1), get_page.sections[i]] for i in
-                                                range(len(get_page.sections))]
-                                i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section')))
-                                i_msg_lst.append(Image(await
-                                                       image_table_render(
-                                                           ImageTable(session_data,
-                                                                      ['ID',
-                                                                       msg.locale.t('wiki.message.section')]))))
+                                if get_page.sections:
+                                    session_data = [[str(i + 1), get_page.sections[i]] for i in
+                                                    range(len(get_page.sections))]
+                                    i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section')))
+                                    i_msg_lst.append(Image(await
+                                                           image_table_render(
+                                                               ImageTable(session_data,
+                                                                          ['ID',
+                                                                           msg.locale.t('wiki.message.section')]))))
 
-                                async def _callback(msg: Bot.MessageSession):
-                                    display = msg.as_display(text_only=True)
-                                    if display.isdigit():
-                                        display = int(display)
-                                        if display <= len(get_page.sections):
-                                            get_page.selected_section = display - 1
-                                            await query_pages(msg, title=get_page.title + '#' +
-                                                              get_page.sections[display - 1])
+                                    async def _callback(msg: Bot.MessageSession):
+                                        display = msg.as_display(text_only=True)
+                                        if display.isdigit():
+                                            display = int(display)
+                                            if display <= len(get_page.sections):
+                                                get_page.selected_section = display - 1
+                                                await query_pages(msg, title=get_page.title + '#' +
+                                                                  get_page.sections[display - 1])
 
-                                await msg.send_message(i_msg_lst, callback=_callback)
+                                    await msg.send_message(i_msg_lst, callback=_callback)
+                                else:
+                                    await msg.send_message(Plain(msg.locale.t('wiki.message.invalid_section.prompt')))
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:

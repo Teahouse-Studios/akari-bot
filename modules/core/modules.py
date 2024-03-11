@@ -81,7 +81,7 @@ async def config_modules(msg: Bot.MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if modules_[function].base or modules_[function].required_superuser:
+                if modules_[function].base or modules_[function].hide or modules_[function].required_superuser:
                     continue
                 enable_list.append(function)
         else:
@@ -140,7 +140,7 @@ async def config_modules(msg: Bot.MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if modules_[function].base or modules_[function].required_superuser:
+                if modules_[function].base or modules_[function].hide or modules_[function].required_superuser:
                     continue
                 disable_list.append(function)
         else:
@@ -196,7 +196,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        if Config('enable_reload_base'):
+                        if Config('allow_reload_base'):
                             confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
                                                              append_instruction=False)
                             if confirm:
@@ -313,7 +313,11 @@ async def bot_help(msg: Bot.MessageSession):
         help_name = msg.parsed_msg['<module>']
         if help_name in alias:
             help_name = alias[help_name]
-        if help_name in module_list:
+        if help_name in current_unloaded_modules:
+            await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
+        elif help_name in err_modules:
+            await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
+        elif help_name in module_list:
             module_ = module_list[help_name]
             if module_.desc:
                 desc = module_.desc
@@ -428,9 +432,11 @@ async def _(msg: Bot.MessageSession):
                 appends.append('\n'.join(malias) if malias else '')
                 if module_.developers:
                     appends.append(msg.locale.t('message.delimiter').join(module_.developers))
-                if module_.base and not (module_.required_superuser or module_.required_base_superuser):
+                if module_.base and not (
+                    module_.hide or module_.required_superuser or module_.required_base_superuser):
                     essential.append(appends)
-                if x in target_enabled_list and not (module_.required_superuser or module_.required_base_superuser):
+                if x in target_enabled_list and not (
+                    module_.hide or module_.required_superuser or module_.required_base_superuser):
                     m.append(appends)
             if essential:
                 tables.append(ImageTable(
@@ -462,14 +468,14 @@ async def _(msg: Bot.MessageSession):
         help_msg = [msg.locale.t("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
-            if module_list[x].base and not (
+            if module_list[x].base and not (module_list[x].hide or
                     module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
         help_msg.append(msg.locale.t("core.message.help.legacy.external"))
         module_ = []
         for x in module_list:
-            if x in target_enabled_list and not (
+            if x in target_enabled_list and not (module_list[x].hide or
                     module_list[x].required_superuser or module_list[x].required_base_superuser):
                 module_.append(x)
         help_msg.append(' | '.join(module_))
@@ -507,7 +513,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                 module_ = module_list[x]
                 if x[0] == '_':
                     continue
-                if module_.base or module_.required_superuser or module_.required_base_superuser:
+                if module_.base or module_.hide or module_.required_superuser or module_.required_base_superuser:
                     continue
                 appends = [module_.bind_prefix]
                 doc_ = []
@@ -561,7 +567,8 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         for x in module_list:
             if x[0] == '_':
                 continue
-            if module_list[x].base or module_list[x].required_superuser or module_list[x].required_base_superuser:
+            if module_list[x].base or module_list[x].hide or \
+            module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))

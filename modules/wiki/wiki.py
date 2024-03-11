@@ -12,6 +12,7 @@ from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.http import download_to_cache
 from core.utils.image import svg_render
+from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
@@ -206,7 +207,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
                                                                 redirected_title=display_title))
                     if (r.link and r.selected_section and r.info.in_allowlist and
-                            not r.invalid_section):
+                            not r.invalid_section and WebRender.status):
                         render_section_list.append(
                             {r.link: {'url': r.info.realurl, 'section': r.selected_section,
                                       'in_allowlist': r.info.in_allowlist}})
@@ -232,28 +233,29 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             'Template:Version disambiguation' in r.templates))}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
-                    if r.invalid_section and r.info.in_allowlist:
-                        if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
-                            i_msg_lst = []
-                            session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
-                            i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section')))
-                            i_msg_lst.append(Image(await
-                                                   image_table_render(
-                                                       ImageTable(session_data,
-                                                                  ['ID',
-                                                                   session.locale.t('wiki.message.section')]))))
+                    if WebRender.status:
+                        if r.invalid_section and r.info.in_allowlist:
+                            if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
+                                i_msg_lst = []
+                                session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section')))
+                                i_msg_lst.append(Image(await
+                                                       image_table_render(
+                                                           ImageTable(session_data,
+                                                                      ['ID',
+                                                                       session.locale.t('wiki.message.section')]))))
 
-                            async def _callback(msg: Bot.MessageSession):
-                                display = msg.as_display(text_only=True)
-                                if display.isdigit():
-                                    display = int(display)
-                                    if display <= len(r.sections):
-                                        r.selected_section = display - 1
-                                        await query_pages(session, title=r.title + '#' + r.sections[display - 1])
+                                async def _callback(msg: Bot.MessageSession):
+                                    display = msg.as_display(text_only=True)
+                                    if display.isdigit():
+                                        display = int(display)
+                                        if display <= len(r.sections):
+                                            r.selected_section = display - 1
+                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1])
 
-                            await session.send_message(i_msg_lst, callback=_callback)
-                        else:
-                            msg_list.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
+                                await session.send_message(i_msg_lst, callback=_callback)
+                            else:
+                                msg_list.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
                 else:
                     plain_slice = []
                     wait_plain_slice = []
@@ -355,7 +357,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     section_msg_list.append(Image(get_section))
                                 else:
                                     section_msg_list.append(Plain(
-                                        session.locale.t("wiki.message.error.unable_to_render_section")))
+                                        session.locale.t("wiki.message.error.render_section")))
                             else:
                                 get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers,
                                                                            section=i[ii]['section'])
@@ -363,7 +365,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     section_msg_list.append(Image(get_section))
                                 else:
                                     section_msg_list.append(Plain(
-                                        session.locale.t("wiki.message.error.unable_to_render_section")))
+                                        session.locale.t("wiki.message.error.render_section")))
                 if section_msg_list:
                     await session.send_message(section_msg_list, quote=False)
 
@@ -373,7 +375,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     with open(file_path, 'r') as file:
                         check = file.read(1024)
                         return '<svg' in check
-                except BaseException:
+                except Exception:
                     return False
 
             if dl_list:
@@ -388,9 +390,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             if session.Feature.voice:
                                 await session.send_message(Voice(dl), quote=False)
                     elif check_svg:
-                        dl = await svg_render(dl)
-                        if session.Feature.image:
-                            await session.send_message(Image(dl), quote=False)
+                        rd = await svg_render(dl)
+                        if session.Feature.image and rd:
+                            await session.send_message(Image(rd), quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:

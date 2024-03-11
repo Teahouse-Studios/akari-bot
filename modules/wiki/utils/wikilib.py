@@ -8,7 +8,7 @@ from typing import Union, Dict, List
 import ujson as json
 
 import core.utils.html2text as html2text
-from config import Config, CFG
+from config import Config
 from core.builtins import Url
 from core.dirty_check import check
 from core.logger import Logger
@@ -17,9 +17,8 @@ from core.utils.i18n import Locale, default_locale
 from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from modules.wiki.utils.bot import BotAccount
+from core.utils.web_render import webrender
 
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
                  'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then
@@ -170,9 +169,7 @@ class WikiLib:
         request_local = False
         for x in request_by_web_render_list:
             if x.match(api):
-                if web_render:
-                    use_local = True if web_render_local else False
-                    api = (web_render_local if use_local else web_render) + 'source?url=' + urllib.parse.quote(api)
+                api = webrender('source', urllib.parse.quote(api))
                 request_local = True
                 break
 
@@ -562,7 +559,7 @@ class WikiLib:
                             elif len(split_title) > 1 and split_title[
                                     0].lower() in self.wiki_info.namespacealiases and not _search:
                                 rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
-                                          + ':'.join(split_title[1:]) + page_info.args
+                                    + ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle, _search=True)
                             if reparse:
                                 page_info.before_title = page_info.title
@@ -747,13 +744,13 @@ class WikiLib:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t:
-                            if not before_page_info.args:
+                            if before_page_info.args:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link:
                                     page_info.link += before_page_info.args
                             else:
-                                page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
+                                page_info.link = page_info.info.script + f'?curid={page_info.id}'
                             if _tried == 0:
                                 if lang and page_info.status:
                                     page_info.before_title = page_info.title

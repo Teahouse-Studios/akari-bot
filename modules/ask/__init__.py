@@ -90,7 +90,8 @@ async def _(msg: Bot.MessageSession):
             if run.status == 'completed':
                 break
             elif run.status == 'failed':
-                if run.last_error.code == 'rate_limit_exceeded':
+                if run.last_error.code == 'rate_limit_exceeded' and \
+                   'quota' not in run.last_error.message:
                     Logger.warn(run.last_error.json())
                     raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
                 raise RuntimeError(run.last_error.json())
@@ -103,13 +104,8 @@ async def _(msg: Bot.MessageSession):
         res = messages.data[0].content[0].text.value
         tokens = count_token(res)
 
-        if not is_superuser:
-            petal = await count_petal(msg, tokens)
-            # petal = await count_petal(msg, tokens, gpt4)
-
-        else:
-            Logger.info(f'{tokens} tokens have been consumed while calling AI.')
-            petal = 0
+        petal = await count_petal(msg, tokens)
+        # petal = await count_petal(msg, tokens, gpt4)
 
         res = await check(res)
         for m in res:
@@ -123,8 +119,8 @@ async def _(msg: Bot.MessageSession):
             if block['type'] == 'text':
                 chain.append(Plain(block['content']))
             elif block['type'] == 'latex':
-                content = await generate_latex(block['content'])
                 try:
+                    content = await generate_latex(block['content'])
                     img = PILImage.open(io.BytesIO(content))
                     chain.append(Image(img))
                 except Exception as e:

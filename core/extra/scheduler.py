@@ -31,7 +31,7 @@ def load_extra_schedulers():
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
             if fun_file:
-                Logger.debug(f'Loading schedulers. {fun_file}...')
+                Logger.debug(f'Loading schedulers.{fun_file}...')
                 modules = 'schedulers.' + fun_file
                 importlib.import_module(modules)
                 Logger.debug(f'Succeeded loaded schedulers.{fun_file}!')
