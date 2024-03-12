@@ -1,6 +1,6 @@
 {
-    "tos.reason.too_many_redirects": "使機器人重新導向頁面的次數過多。",
-    "tos.reason.wiki_abuse": "一次性查詢的頁面超過 15 個。",
+    "tos.message.reason.too_many_redirects": "使機器人重新導向頁面的次數過多。",
+    "tos.message.reason.wiki_abuse": "一次性查詢的頁面超過 15 個。",
     "wiki.help": "查詢一個 Wiki 頁面。",
     "wiki.help.ab": "取得預設 Wiki 的近期過濾器日誌。",
     "wiki.help.fandom": "切換是否使用 Fandom 全域 Interwiki 查詢。",

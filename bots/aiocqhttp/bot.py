@@ -15,9 +15,11 @@ from config import Config
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url, Temp
 from core.scheduler import Scheduler, IntervalTrigger
 from core.parser.message import parser
+from core.tos import tos_report
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
+from core.utils.i18n import Locale
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
@@ -157,6 +159,8 @@ async def _(event: Event):
         if event.duration >= 259200:
             result = True
         if result:
+            reason = Locale(lang).t('tos.message.reason.mute')
+            await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             await bot.call_action('set_group_leave', group_id=event.group_id)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
@@ -167,6 +171,8 @@ async def _(event: Event):
     if event.user_id == int(qq_account):
         result = True
         if result:
+            reason = Locale(lang).t('tos.message.reason.kick')
+            await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
