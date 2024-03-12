@@ -633,7 +633,8 @@ frozenlist==1.4.1 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:fbeb989b5cc29e8daf7f976b421c220f1b8c731cbf22b9130d8815418ea45887 \
     --hash=sha256:fde5bd59ab5357e3853313127f4d3565fc7dad314a74d7b5d43c22c6a5ed2ced \
     --hash=sha256:fe1a06da377e3a1062ae5fe0926e12b84eceb8a50b350ddca72dc85015873f74
-future @ git+https://github.com/nsoranzo/python-future@9ef05b386ce45dd40d2dab5915aec3ed78d81ed9 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
+future==0.18.3 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307
 google-play-scraper==1.2.6 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:1f098bc48c4d7c1420b2be0390ea8d480f40caacdbbe6905c4b01059ceeee38d \
     --hash=sha256:b05b0572e7a7a5ddc5d1a9c06f4410bda5a69d86808446b9dd74e5cdcdf5865f
