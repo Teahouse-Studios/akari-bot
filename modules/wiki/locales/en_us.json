@@ -1,6 +1,6 @@
 {
-    "tos.reason.too_many_redirects": "Causes the bot to redirect the page too many times.",
-    "tos.reason.wiki_abuse": "Queried more than 15 pages at one time.",
+    "tos.message.reason.too_many_redirects": "Causes the bot to redirect the page too many times.",
+    "tos.message.reason.wiki_abuse": "Queried more than 15 pages at one time.",
     "wiki.help": "Query a wiki page.",
     "wiki.help.ab": "Get recent abuse logs for the default wiki.",
     "wiki.help.fandom": "Toggles whether to use Fandom global Interwiki queries.",

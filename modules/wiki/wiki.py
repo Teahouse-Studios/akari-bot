@@ -85,7 +85,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
-            raise AbuseWarning(session.locale.t('tos.reason.wiki_abuse'))
+            raise AbuseWarning(session.locale.t('tos.message.reason.wiki_abuse'))
         query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
         for t in title:
             if prefix and use_prefix:
@@ -311,7 +311,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         wait_msg_list.append(
                             Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
-            raise AbuseWarning(session.locale.t('tos.reason.too_many_redirects'))
+            raise AbuseWarning(session.locale.t('tos.message.reason.too_many_redirects'))
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
                 await session.send_message(session.locale.t('error') + str(e))

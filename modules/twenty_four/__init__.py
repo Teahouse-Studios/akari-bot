@@ -7,7 +7,7 @@ from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal, lost_petal
 
-no_solution = ['无解', '無解', 'none', 'n/a']
+no_solution = ['无解', '無解', 'none', 'n/a', 'na', 'n.a.', ]
 
 
 def calc(expr):
@@ -21,9 +21,7 @@ def calc(expr):
 def check_valid(expr):
     operators = ['+', '-', '*', '/']
     other_symbols = ['(', ')', '\\']
-    numbers = [str(i) for i in range(1, 14)]
-    valid_chars = numbers + operators + other_symbols
-    valid_chars_set = set(valid_chars)
+    valid_chars_set = set(operators + other_symbols)
 
     i = 0
     num_numbers = 0

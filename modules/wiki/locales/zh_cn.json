@@ -1,6 +1,6 @@
 {
-    "tos.reason.too_many_redirects": "使机器人重定向页面的次数过多。",
-    "tos.reason.wiki_abuse": "一次性查询的页面超过 15 个。",
+    "tos.message.reason.too_many_redirects": "使机器人重定向页面的次数过多。",
+    "tos.message.reason.wiki_abuse": "一次性查询的页面超过 15 个。",
     "wiki.help": "查询一个 Wiki 页面。",
     "wiki.help.ab": "获取默认 Wiki 的最近滥用日志。",
     "wiki.help.fandom": "切换是否使用 Fandom 全局 Interwiki 查询。",
