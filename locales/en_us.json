@@ -76,6 +76,7 @@
     "tos.message.reason.ignore": "Ignoring temporary ban warning.",
     "tos.message.reason.kick": "Kick the bot from the group.",
     "tos.message.reason.mute": "Enforce unfriendly muting of the bot.",
+    "tos.message.report": "User ${sender} triggered an abuse warning in conversation ${target}.",
     "tos.message.tempbanned": "Note:\nWe have temporarily banned you because your action triggered a warning.\n${ban_time} second(s) remaining until unban.",
     "tos.message.tempbanned.warning": "Note:\nAlthough the temporary ban was triggered, using commands still may cause you to be warned again.\n${ban_time} second(s) remaining until unban.",
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",

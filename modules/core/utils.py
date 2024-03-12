@@ -162,7 +162,7 @@ async def _(msg: Bot.MessageSession):
     if msg.check_super_user():
         perm += '\n' + msg.locale.t("core.message.whoami.superuser")
     await msg.finish(
-        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + perm)
+        msg.locale.t('core.message.whoami', sender=msg.target.sender_id, target=msg.target.target_id) + perm)
 
 
 setup = module('setup', base=True, desc='{core.help.setup.desc}', alias='toggle')
