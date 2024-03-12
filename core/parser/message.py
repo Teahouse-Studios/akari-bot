@@ -14,13 +14,14 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module
+from core.utils.i18n import Locale
 from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
 enable_analytics = Config('enable_analytics')
-bug_report_targets = Config('bug_report_targets')
-
+report_targets = Config('report_targets')
+lang = Config('locale')
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
@@ -379,11 +380,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     if Config('bug_report_url'):
                         errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
                     await msg.send_message(errmsg)
-                    if bug_report_targets:
-                        for target in bug_report_targets:
+                    if report_targets:
+                        for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                    Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                         msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -492,11 +493,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
                                                               url=str(Url(Config('bug_report_url'))))
                             await msg.send_message(errmsg)
-                            if bug_report_targets:
-                                for target in bug_report_targets:
+                            if report_targets:
+                                for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                            Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 
