@@ -28,6 +28,7 @@ Url.disable_mm = False if Config('enable_urlmanager') else True
 qq_account = str(Config("qq_account"))
 enable_listening_self_message = Config("qq_enable_listening_self_message")
 lagrange_account = Config("lagrange_account")
+lang = Config('locale')
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=20))
@@ -166,9 +167,9 @@ async def _(event: Event):
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 
-@bot.on_notice('group_decrease.kick_me')
+@bot.on_notice('group_decrease')
 async def _(event: Event):
-    if event.user_id == int(qq_account):
+    if event.sub_type == 'kick_me':
         result = True
         if result:
             reason = Locale(lang).t('tos.message.reason.kick')

@@ -68,6 +68,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
                                              'ts': datetime.now().timestamp()}
     else:
         all_['count'] += 1
+
         if all_['count'] > 10:
             raise AbuseWarning(msg.locale.t("tos.message.reason.abuse"))
 
