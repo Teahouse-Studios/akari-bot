@@ -26,6 +26,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check') else False
 Url.disable_mm = False if Config('enable_urlmanager') else True
 qq_account = str(Config("qq_account"))
+lang = Config('locale')
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1))

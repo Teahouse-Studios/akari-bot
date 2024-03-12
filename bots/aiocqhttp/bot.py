@@ -28,6 +28,7 @@ Url.disable_mm = False if Config('enable_urlmanager') else True
 qq_account = str(Config("qq_account"))
 enable_listening_self_message = Config("qq_enable_listening_self_message")
 lagrange_account = Config("lagrange_account")
+lang = Config('locale')
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=20))
