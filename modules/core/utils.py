@@ -115,7 +115,7 @@ async def config_ban(msg: Bot.MessageSession, user: str):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale', base=True, desc='{core.help.locale.desc}')
+locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang')
 
 
 @locale.command()
