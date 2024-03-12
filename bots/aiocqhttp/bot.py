@@ -162,6 +162,15 @@ async def _(event: Event):
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 
+@bot.on_notice('group_decrease.kick_me')
+async def _(event: Event):
+    if event.user_id == int(qq_account):
+        result = True
+        if result:
+            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
+            await bot.call_action('delete_friend', friend_id=event.operator_id)
+
+
 """
 @bot.on_message('group')
 async def _(event: Event):
