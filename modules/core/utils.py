@@ -94,20 +94,28 @@ async def config_gu(msg: Bot.MessageSession):
 
 
 @admin.command('ban <user> {{core.help.admin.ban}}',
-               'unban <user> {{core.help.admin.unban}}')
-async def config_ban(msg: Bot.MessageSession, user: str):
+               'unban <user> {{core.help.admin.unban}}',
+               'ban list {{core.help.admin.ban.list}}')
+async def config_ban(msg: Bot.MessageSession):
+    admin_ban_list = msg.options.get('ban', [])
+    if 'list' in msg.parsed_msg:
+        if admin_ban_list:
+            await msg.finish(msg.locale.t("core.message.admin.ban.list") + '\n'.join(admin_ban_list))
+        else:
+            await msg.finish(msg.locale.t("core.message.admin.ban.list.none"))
+    user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t('core.message.admin.invalid', prefix=msg.prefixes[0]))
     if user == msg.target.sender_id:
         await msg.finish(msg.locale.t("core.message.admin.ban.self"))
     if 'ban' in msg.parsed_msg:
-        if user not in msg.options.get('ban', []):
-            msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
+        if user not in admin_ban_list:
+            msg.data.edit_option('ban', admin_ban_list + [user])
             await msg.finish(msg.locale.t('success'))
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if 'unban' in msg.parsed_msg:
-        if user in (banlist := msg.options.get('ban', [])):
+        if user in (banlist := admin_ban_list):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
             await msg.finish(msg.locale.t('success'))
