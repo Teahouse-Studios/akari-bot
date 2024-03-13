@@ -61,8 +61,13 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-admin = module('admin', base=True, required_admin=True, desc='{core.help.admin.desc}')
-
+admin = module('admin',
+               base=True,
+               required_admin=True,
+               alias={'ban': 'admin ban',
+                      'unban': 'admin unban',
+                      'ban list': 'admin ban list'},
+               desc='{core.help.admin.desc}')
 
 @admin.command([
     'add <user> {{core.help.admin.add}}',
