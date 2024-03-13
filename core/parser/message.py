@@ -14,13 +14,14 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module
+from core.utils.i18n import Locale
 from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
 enable_analytics = Config('enable_analytics')
-bug_report_targets = Config('bug_report_targets')
-
+lang = Config('locale')
+report_targets = Config('report_targets')
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
@@ -60,7 +61,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         same['count'] += 1
         if same['count'] > 10:
-            raise AbuseWarning(msg.locale.t("tos.reason.cooldown"))
+            raise AbuseWarning(msg.locale.t("tos.message.reason.cooldown"))
     all_ = counter_all.get(msg.target.sender_id)
     if not all_ or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {'count': 1,
@@ -68,7 +69,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         all_['count'] += 1
         if all_['count'] > 20:
-            raise AbuseWarning(msg.locale.t("tos.reason.abuse"))
+            raise AbuseWarning(msg.locale.t("tos.message.reason.abuse"))
 
 
 async def temp_ban_check(msg: Bot.MessageSession):
@@ -81,12 +82,12 @@ async def temp_ban_check(msg: Bot.MessageSession):
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
-                await msg.finish(msg.locale.t("tos.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
+                await msg.finish(msg.locale.t("tos.message.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
-                await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
+                await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning(msg.locale.t("tos.reason.ignore"))
+                raise AbuseWarning(msg.locale.t("tos.message.reason.ignore"))
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
@@ -379,11 +380,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     if Config('bug_report_url'):
                         errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
                     await msg.send_message(errmsg)
-                    if bug_report_targets:
-                        for target in bug_report_targets:
+                    if report_targets:
+                        for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                    Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                         msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -492,11 +493,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
                                                               url=str(Url(Config('bug_report_url'))))
                             await msg.send_message(errmsg)
-                            if bug_report_targets:
-                                for target in bug_report_targets:
+                            if report_targets:
+                                for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                            Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 

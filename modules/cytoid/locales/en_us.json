@@ -5,7 +5,7 @@
     "cytoid.help.profile": "Query user profile.",
     "cytoid.help.r30": "Query the Recent 30 list of Cytoid user. ",
     "cytoid.help.unbind": "Unbind user.",
-    "cytoid.message.b30.cooldown": "（据官方人员所述，此 API 的调用十分昂贵，故手动做出此限制，请谅解。）",
+    "cytoid.message.b30.cooldown": "(According to official sources, this API call is very expensive, and thus make this restriction manually. Hope you can understand.)",
     "cytoid.message.b30.level": "Level",
     "cytoid.message.bind.failed": "Binding failed. Please check your input.",
     "cytoid.message.bind.success": "Binding successful: ",

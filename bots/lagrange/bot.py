@@ -13,17 +13,20 @@ from config import Config
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
+from core.tos import tos_report
 from core.queue import check_job_queue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
+from core.utils.i18n import Locale
 from core.queue import JobQueue
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check') else False
 Url.disable_mm = False if Config('enable_urlmanager') else True
 qq_account = str(Config("qq_account"))
+lang = Config('locale')
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1))
@@ -167,7 +170,20 @@ async def _(event: Event):
         if event.duration >= 259200:
             result = True
         if result:
+            reason = Locale(lang).t('tos.message.reason.mute')
+            await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             await bot.call_action('set_group_leave', group_id=event.group_id)
+            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
+            await bot.call_action('delete_friend', friend_id=event.operator_id)
+
+
+@bot.on_notice('group_decrease.kick_me')
+async def _(event: Event):
+    if event.user_id == int(qq_account):
+        result = True
+        if result:
+            reason = Locale(lang).t('tos.message.reason.kick')
+            await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
