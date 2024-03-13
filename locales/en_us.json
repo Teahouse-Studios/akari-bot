@@ -52,6 +52,8 @@
     "parser.command.running.prompt": "There are currently commands executing. Please try again later.",
     "parser.command.running.prompt2": "The previous command is being executed.",
     "parser.module.desc": "Description:\n${desc}",
+    "message.id.invalid.sender": "Invalid ID format. The format should be \"${sender}|<User ID>\".",
+    "message.id.invalid.target": "Invalid ID format. The format should be \"${target}|<conversation ID>\".",
     "parser.module.disabled.prompt": "\"${module}\" module is not enabled. Please use \"${prefix}enable ${module}\" to enable the module.",
     "parser.module.unloaded": "\"${module}\"hasn't been loaded yet. Please contact the developers to solve this issue.",
     "parser.superuser.permission.denied": "You do not have permission to use this command.",
