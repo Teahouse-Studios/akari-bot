@@ -178,7 +178,7 @@ async def config_modules(msg: Bot.MessageSession):
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
                         ('\n' if len(extra_modules) != 0 else '') + \
                         '\n'.join(extra_modules) + \
-                        '\n' + msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)
+                        '\n' + msg.locale.t('core.message.module.reload.with', reload_count=reload_count - 1)
                 elif reload_count == 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
                         ('\n' if len(extra_modules) != 0 else '') + \

@@ -28,7 +28,7 @@ su = module('superuser', alias='su', required_superuser=True, base=True)
 @su.command('add <user>')
 async def add_su(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.superuser.invalid", target=msg.target.sender_from))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
             await msg.finish(msg.locale.t("success"))
@@ -37,7 +37,7 @@ async def add_su(msg: Bot.MessageSession, user: str):
 @su.command('remove <user>')
 async def del_su(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.superuser.invalid", target=msg.target.sender_from))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user == msg.target.sender_id:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"), append_instruction=False)
         if not confirm:
@@ -72,7 +72,7 @@ set_ = module('set', required_superuser=True, base=True)
               'module disable <target> <modules> ...')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
     target_data = BotDBUtil.TargetInfo(target)
     if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession, target: str):
               'option remove <target> <k>')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
     target_data = BotDBUtil.TargetInfo(target)
     if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
@@ -138,7 +138,7 @@ ae = module('abuse', alias='ae', required_superuser=True, base=True)
 async def _(msg: Bot.MessageSession, user: str):
     stat = ''
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     warns = BotDBUtil.SenderInfo(user).query.warns
     temp_banned_time = await check_temp_ban(user)
     is_banned = BotDBUtil.SenderInfo(user).query.isInBlockList
@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession, user: str):
 @ae.command('warn <user> [<count>]')
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     warn_count = await warn_user(user, count)
     await msg.finish(msg.locale.t("core.message.abuse.warn.success", user=user, count=count, warn_count=warn_count))
 
@@ -160,7 +160,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
 @ae.command('revoke <user> [<count>]')
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     warn_count = await warn_user(user, -count)
     await msg.finish(msg.locale.t("core.message.abuse.revoke.success", user=user, count=count, warn_count=warn_count))
 
@@ -168,7 +168,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
 @ae.command('clear <user>')
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     await pardon_user(user)
     await msg.finish(msg.locale.t("core.message.abuse.clear.success", user=user))
 
@@ -176,7 +176,7 @@ async def _(msg: Bot.MessageSession, user: str):
 @ae.command('untempban <user>')
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     await remove_temp_ban(user)
     await msg.finish(msg.locale.t("core.message.abuse.untempban.success", user=user))
 
@@ -184,7 +184,7 @@ async def _(msg: Bot.MessageSession, user: str):
 @ae.command('ban <user>')
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
         await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
 
@@ -192,7 +192,7 @@ async def _(msg: Bot.MessageSession, user: str):
 @ae.command('unban <user>')
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.set.invalid"))
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 

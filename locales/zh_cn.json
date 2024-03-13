@@ -44,6 +44,8 @@
     "message.reply.prompt": "（请使用指定的词语回复本条消息）",
     "message.wait.prompt.confirm": "（发送“是”或符合确认条件的词语来确认）",
     "message.wait.prompt.next_message": "（发送符合条件的词语来确认）",
+    "message.id.invalid.sender": "ID 格式错误，格式应为“${sender}|<用户 ID>”。",
+    "message.id.invalid.target": "ID 格式错误，格式应为“${target}|<对话 ID>”。",
     "no": "否",
     "none": "无",
     "parser.admin.module.permission.denied": "“${module}”模块下的命令仅能被该群组的管理员所使用，请联系管理员执行此命令。",
