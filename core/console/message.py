@@ -54,7 +54,7 @@ class MessageSession(MessageSessionT):
             return True
         if message_chain:
             if append_instruction:
-                print(self.locale.t("message.wait.confirm.prompt.type1"))
+                print(self.locale.t("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
 
         c = await aioconsole.ainput('Confirm: ')
@@ -69,7 +69,7 @@ class MessageSession(MessageSessionT):
         send = None
         if message_chain:
             if append_instruction:
-                print(self.locale.t("message.wait.confirm.prompt.type2"))
+                print(self.locale.t("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
             
         c = await aioconsole.ainput('Confirm: ')

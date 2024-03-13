@@ -52,7 +52,7 @@ async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session'):
-                return await bot.send(event, '请先添加好友后再进行命令交互。')
+                return await bot.send(event, Locale(lang).t('qq.message.disable_temp_session'))
     if event.user_id == lagrange_account:
         return
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
@@ -133,21 +133,26 @@ async def _(event):
     await parser(msg, running_mention=True)
 
 
-"""@bot.on('request.friend')
+@bot.on('request.friend')
 async def _(event: Event):
-    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlockList:
-        return {'approve': False}
-    return {'approve': True}"""
+    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
+        return {'approve': True}
+    if not Config('qq_allow_approve_friend'):
+        await bot.send_private_msg(user_id=event.user_id,
+                                   message=Locale(lang).t('qq.message.disable_friend_request'))
+    else:
+        if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlockList:
+            return {'approve': False}
+        return {'approve': True}
 
 
 @bot.on('request.group.invite')
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
         return {'approve': True}
-    if not Config('allow_bot_auto_approve_group_invite'):
+    if not Config('qq_allow_approve_group_invite'):
         await bot.send_private_msg(user_id=event.user_id,
-                                   message='你好！本机器人暂时不主动同意入群请求。\n'
-                                           f'请至https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+申请入群。')
+                                   message=Locale(lang).t('qq.message.disable_group_invite'))
     else:
         return {'approve': True}
 
@@ -177,15 +182,15 @@ async def _(event: Event):
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
-
 """
 @bot.on_message('group')
 async def _(event: Event):
-    result = BotDBUtil.isGroupInAllowList(f'QQ|Group|{str(event.group_id)}')
-    if not result:
-        await bot.send(event=event, message='此群不在白名单中，已自动退群。'
-                                            '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
-        await bot.call_action('set_group_leave', group_id=event.group_id)
+    if Config('qq_group_allow_list'):
+        result = BotDBUtil.isGroupInAllowList(f'QQ|Group|{str(event.group_id)}')
+        if not result:
+            await bot.send(event=event, message='此群不在白名单中，已自动退群。'
+                                                '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
+            await bot.call_action('set_group_leave', group_id=event.group_id)
 """
 
 qq_host = Config("qq_host")

@@ -275,12 +275,12 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             r.possible_research_title.index(display_title) + 1)))
                                     wait_possible_list.append({display_before_title: {display_title:
                                                                                       r.possible_research_title}})
-                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type2"))
+                                    wait_plain_slice.append(session.locale.t("message.wait.prompt.next_message"))
                                 else:
                                     wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.confirm',
                                                                              title=display_before_title,
                                                                              redirected_title=display_title))
-                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type1"))
+                                    wait_plain_slice.append(session.locale.t("message.wait.prompt.confirm"))
                             else:
                                 if r.edit_link:
                                     plain_slice.append(r.edit_link + session.locale.t('wiki.message.redlink.not_found'))
