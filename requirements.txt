@@ -483,9 +483,9 @@ cryptography==41.0.7 ; python_full_version >= "3.12.0" and python_full_version <
 cycler==0.12.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30 \
     --hash=sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c
-dataclasses-json==0.5.9 ; python_full_version >= "3.12.0" and python_version < "4.0" \
-    --hash=sha256:1280542631df1c375b7bc92e5b86d39e06c44760d7e3571a537b3b8acabf2f0c \
-    --hash=sha256:e9ac87b73edc0141aafbce02b44e93553c3123ad574958f0fe52a534b6707e8e
+dataclasses-json==0.6.4; python_full_version >= "3.12.0" and python_version < "4.0" \
+    --hash=sha256:73696ebf24936560cca79a2430cbc4f3dd23ac7bf46ed17f38e5e5e7657a6377 \
+    --hash=sha256:f90578b8a3177f7552f4e1a6e535e84293cd5da421fcce0642d49c0d7bdf8df2
 distlib==0.3.8 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:034db59a0b96f8ca18035f36290806a9a6e6bd9d1ff91e45a7f172eb17e51784 \
     --hash=sha256:1530ea13e350031b6312d8580ddb6b27a104275a31106523b8f123787f494f64
