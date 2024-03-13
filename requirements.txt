@@ -12,9 +12,9 @@ aiofiles==23.2.1 ; python_full_version >= "3.12.0" and python_full_version < "4.
 aiogram==3.4.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:32ba2f6b0ca5488eae03e794a24c779234e909e882445394ef691b357d809aa8 \
     --hash=sha256:5e403945d41001a1810aa8f470ed31fb24a8cb2cde7b16363d1fcd20a757ff68
-aiohttp-socks==0.7.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:2215cac4891ef3fa14b7d600ed343ed0f0a670c23b10e4142aa862b3db20341a \
-    --hash=sha256:94bcff5ef73611c6c6231c2ffc1be4af1599abec90dbd2fdbbd63233ec2fb0ff
+aiohttp-socks==0.8.4 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:6b611d4ce838e9cf2c2fed5e0dba447cc84824a6cba95dc5747606201da46cb4 \
+    --hash=sha256:74b21105634ed31d56ed6fee43701ca16218b53475e606d56950a4d17e8290ea
 aiohttp==3.9.3 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:017a21b0df49039c8f46ca0971b3a7fdc1f56741ab1240cb90ca408049766168 \
     --hash=sha256:039df344b45ae0b34ac885ab5b53940b174530d4dd8a14ed8b0e2155b9dddccb \
@@ -633,7 +633,9 @@ frozenlist==1.4.1 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:fbeb989b5cc29e8daf7f976b421c220f1b8c731cbf22b9130d8815418ea45887 \
     --hash=sha256:fde5bd59ab5357e3853313127f4d3565fc7dad314a74d7b5d43c22c6a5ed2ced \
     --hash=sha256:fe1a06da377e3a1062ae5fe0926e12b84eceb8a50b350ddca72dc85015873f74
-future @ git+https://github.com/nsoranzo/python-future@9ef05b386ce45dd40d2dab5915aec3ed78d81ed9 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
+future==1.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216 \
+    --hash=sha256:bd2968309307861edae1458a4f8a4f3598c03be43b97521076aebf5d94c07b05
 google-play-scraper==1.2.6 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:1f098bc48c4d7c1420b2be0390ea8d480f40caacdbbe6905c4b01059ceeee38d \
     --hash=sha256:b05b0572e7a7a5ddc5d1a9c06f4410bda5a69d86808446b9dd74e5cdcdf5865f
@@ -1088,9 +1090,9 @@ matplotlib==3.8.3 ; python_full_version >= "3.12.0" and python_full_version < "4
     --hash=sha256:ef6c1025a570354297d6c15f7d0f296d95f88bd3850066b7f1e7b4f2f4c13a39 \
     --hash=sha256:f386cf162b059809ecfac3bcc491a9ea17da69fa35c8ded8ad154cd4b933d5ec \
     --hash=sha256:fa93695d5c08544f4a0dfd0965f378e7afc410d8672816aff1e81be1f45dbf2e
-matrix-nio==0.21.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:414301fc25662af3e3436de5b955980474c03b0f3001f1b041c49743ede73232 \
-    --hash=sha256:95bec84dd0d4eca4f0ce252d2f630d435edbc41bb405448d88916a3783479237
+matrix-nio==0.24.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:75f9c58958dbe353bec29be1854835df6d91e6f3be2952261a3a27c99ea896b9 \
+    --hash=sha256:87bcf8139e081e8e85ced2d02a2be08662bf1accb726e850325b4ab3c840e946
 more-itertools==10.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:686b06abe565edfab151cb8fd385a05651e1fdf8f0a14191e4439283421f8684 \
     --hash=sha256:8fccb480c43d3e99a00087634c06dd02b0d50fbf088b380de5a41a015ec239e1
