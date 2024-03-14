@@ -392,7 +392,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                             if session.Feature.voice:
                                 await session.send_message(Voice(dl), quote=False)
-                    elif check_svg:
+                    elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.Feature.image and rd:
                             await session.send_message(Image(rd), quote=False)

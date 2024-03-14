@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
                                             [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
                                              Voice(dl)],
                                             quote=False)
-                            elif check_svg:
+                            elif check_svg(dl):
                                 rd = await svg_render(dl)
                                 if msg.Feature.image and rd:
                                     await msg.send_message(
