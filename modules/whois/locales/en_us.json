@@ -3,6 +3,7 @@
     "whois.message.creation_date": "Registration Date: ",
     "whois.message.dnssec": "DNSSEC: ",
     "whois.message.domain_name": "Domain Name: ",
+    "whois.message.email": "Email: ",
     "whois.message.expiration_date": "Expiration Date: ",
     "whois.message.get_failed": "Failed to fetch WHOIS.",
     "whois.message.location": "Location: ",
