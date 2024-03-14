@@ -1,7 +1,7 @@
 unsafe_word_list = [
     "ip",
     "geoip",
-    "location"
+    "location",
 ]
 
 unsafe_prompt_list = [
@@ -15,7 +15,7 @@ unsafe_prompt_list = [
 async def secret_check(query):
     query = query.lower()
     for prompt in unsafe_prompt_list:
-        if prompt in query.lower():
+        if prompt in query:
             return True
 
     for word in unsafe_word_list:
