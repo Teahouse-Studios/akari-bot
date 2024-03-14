@@ -5,9 +5,7 @@
     "github.help.search": "搜尋 Github 上的儲存庫。",
     "github.help.user": "取得 Github 使用者或組織資訊。",
     "github.message.repo.not_found": "此儲存庫不存在，請校對輸入。",
-    "github.message.search": "搜尋成功，共 ${result} 條結果：",
-    "github.message.search.more_information": "另有 ${more_result} 條結果未顯示。",
-    "github.message.search.none": "搜尋成功，未找到結果。",
-    "github.message.search.not_found": "未找到儲存庫，請校對輸入。",
+    "github.message.search": "搜尋結果：",
+    "github.message.search.not_found": "未找到結果。",
     "github.message.user.not_found": "未找到使用者，請校對輸入。"
 }
