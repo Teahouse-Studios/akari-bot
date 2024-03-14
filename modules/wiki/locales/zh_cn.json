@@ -65,7 +65,7 @@
     "wiki.message.prefix.set.success": "已更新请求时所使用的前缀：${wiki_prefix}",
     "wiki.message.redirect": "（重定向[${title}] -> [${redirected_title}]）",
     "wiki.message.redirect.autofix": "（已指定 [${title}] 更正为 [${redirected_title}]。）",
-    "wiki.message.redirect.template_to_page": "（[${title}] 不存在，已自动重定向至 [${redirected_title}]）",
+    "wiki.message.redirect.template_to_page": "（[${title}] 条目尚未创建，已自动重定向至 [${redirected_title}]）",
     "wiki.message.redlink.disable": "已关闭页面不存在时返回编辑链接。",
     "wiki.message.redlink.enable": "已开启页面不存在时返回编辑链接。",
     "wiki.message.redlink.not_found": "（页面不存在）",
