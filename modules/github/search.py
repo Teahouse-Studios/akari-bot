@@ -22,7 +22,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
                     continue
             message = msg.locale.t("github.message.search") + '\n' + '\n'.join(items_out[0:5])
             if result['total_count'] > 5:
-                message += msg.locale.t("message.collapse", amount="5")
+                message += '\n' + msg.locale.t("message.collapse", amount="5")
 
         is_dirty = await dirty_check(message) or darkCheck(message)
         if is_dirty:
