@@ -1,9 +1,10 @@
 from whois import whois
 
 from config import Config
-from core.builtins import Bot
+from core.builtins import Bot, Image, Plain
 from core.component import module
 from core.logger import Logger
+from core.utils.image import msgchain2image
 from core.utils.text import parse_time_string
 
 
@@ -21,13 +22,17 @@ w = module('whois', developers=['DoroWolf'])
 @w.handle('<domain> {{whois.help}}')
 async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
-    await msg.finish(res)
+    img = await msgchain2image([Plain(res)])
+    if img:
+        await msg.finish([Image(img)])
+    else:
+        await msg.finish(res)
 
 
 async def get_whois(msg, domain):
     try:
         info = whois(domain)
-        Logger.info(str(info))
+        Logger.debug(str(info))
     except BaseException:
         await msg.finish(msg.locale.t("whois.message.get_failed"))
 
