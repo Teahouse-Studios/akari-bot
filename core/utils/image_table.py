@@ -19,7 +19,9 @@ class ImageTable:
 
 
 async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
-    if not WebRender.local:
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
     pic = False
 
@@ -61,7 +63,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
 
         try:
             pic = await download_to_cache(
-                webrender(),
+                webrender(use_local=use_local),
                 method='POST',
                 post_data=json.dumps(html),
                 request_private_ip=True,
