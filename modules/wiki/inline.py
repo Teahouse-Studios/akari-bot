@@ -159,8 +159,8 @@ async def _(msg: Bot.MessageSession):
                                                                ImageTable(session_data,
                                                                           ['ID',
                                                                            msg.locale.t('wiki.message.table.section')]))))
-                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
-                                i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
+                                    i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
+                                    i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
                                     async def _callback(msg: Bot.MessageSession):
                                         display = msg.as_display(text_only=True)
