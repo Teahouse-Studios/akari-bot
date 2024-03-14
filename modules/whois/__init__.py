@@ -5,6 +5,7 @@ from whois import whois
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
+from core.logger import Logger
 from core.utils.text import parse_time_string
 
 
@@ -34,6 +35,7 @@ async def _(msg: Bot.MessageSession, domain: str):
 async def get_whois(msg, domain):
     try:
         info = whois(domain)
+        Logger.debug(str(info))
     except BaseException:
         await msg.finish(msg.locale.t("whois.message.get_failed"))
 
