@@ -153,12 +153,14 @@ async def _(msg: Bot.MessageSession):
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in
                                                     range(len(get_page.sections))]
-                                    i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section')))
+                                    i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section.prompt')))
                                     i_msg_lst.append(Image(await
                                                            image_table_render(
                                                                ImageTable(session_data,
                                                                           ['ID',
-                                                                           msg.locale.t('wiki.message.section')]))))
+                                                                           msg.locale.t('wiki.message.table.section')]))))
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
+                                i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
                                     async def _callback(msg: Bot.MessageSession):
                                         display = msg.as_display(text_only=True)
@@ -171,7 +173,7 @@ async def _(msg: Bot.MessageSession):
 
                                     await msg.send_message(i_msg_lst, callback=_callback)
                                 else:
-                                    await msg.send_message(Plain(msg.locale.t('wiki.message.invalid_section.prompt')))
+                                    await msg.send_message(Plain(msg.locale.t('wiki.message.invalid_section')))
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:
