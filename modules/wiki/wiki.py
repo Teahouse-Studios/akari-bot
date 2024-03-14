@@ -238,12 +238,15 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
                                 i_msg_lst = []
                                 session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
-                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section')))
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
                                 i_msg_lst.append(Image(await
                                                        image_table_render(
                                                            ImageTable(session_data,
                                                                       ['ID',
-                                                                       session.locale.t('wiki.message.section')]))))
+                                                                       session.locale.t('wiki.message.table.section')]))))
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
+                                i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
+
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
@@ -255,7 +258,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
                                 await session.send_message(i_msg_lst, callback=_callback)
                             else:
-                                msg_list.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
+                                msg_list.append(Plain(session.locale.t('wiki.message.invalid_section')))
                 else:
                     plain_slice = []
                     wait_plain_slice = []
@@ -389,7 +392,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                             if session.Feature.voice:
                                 await session.send_message(Voice(dl), quote=False)
-                    elif check_svg:
+                    elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.Feature.image and rd:
                             await session.send_message(Image(rd), quote=False)

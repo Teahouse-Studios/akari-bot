@@ -23,7 +23,9 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
     elements_ = elements.copy()
     if element and isinstance(element, List):
         elements_ += element
-    if not WebRender.local:
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
     if not section:
         if allow_special_page and content_mode:
@@ -80,7 +82,9 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
 
 
 async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[str, bool]:
-    if not WebRender.local:
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
     try:
         Logger.info('Starting find infobox/section..')
