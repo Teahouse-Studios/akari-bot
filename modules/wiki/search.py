@@ -92,6 +92,8 @@ async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], 
             w = f'{i}. {w}'
             msg_list.append(w)
         msg_list.append(msg.locale.t('wiki.message.search.prompt'))
+    else:
+        await msg.finish(msg.locale.t('wiki.message.search.not_found'))
     reply = await msg.wait_reply(Plain('\n'.join(msg_list)))
     if reply.as_display(text_only=True).isdigit():
         reply_number = int(reply.as_display(text_only=True)) - 1

@@ -18,7 +18,9 @@ spx_cache = {}
 
 async def make_screenshot(page_link, use_local=True):
     elements_ = elements.copy()
-    if not WebRender.local:
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
