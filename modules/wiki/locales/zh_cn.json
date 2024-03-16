@@ -26,7 +26,7 @@
     "wiki.help.wiki_inline.page": "在 [[ ]] 内输入标题以自动查询页面。",
     "wiki.help.wiki_inline.template": "在 {{ }} 内输入标题以自动查询模板。",
     "wiki.help.wiki_inline.url": "发送 Wiki 页面的 URL 以生成 Infobox 图片。",
-    "wiki.message.ab.slice": "•${title} - ${user} 于 ${time}\n 过滤器描述：${filter_name}\n 采取的行动：${result}",
+    "wiki.message.ab.slice": "•${time} - ${user} 在 ${title} 执行操作“${action}”时触发了过滤器。\n过滤器描述：${filter_name}\n采取的行动：${result}",
     "wiki.message.error.add": "发生错误：无法添加此 Wiki。",
     "wiki.message.error.blocked": "发生错误：${name} 处于黑名单中。",
     "wiki.message.error.fetch_log": "发生错误：无法获取日志，可能是此 Wiki 设置了日志的查看权限。",
