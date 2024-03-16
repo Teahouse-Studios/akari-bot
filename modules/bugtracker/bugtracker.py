@@ -50,7 +50,7 @@ async def make_screenshot(page_link, use_local=True):
         return False
 
 
-async def bugtracker_get(session, mojira_id: str):
+async def bugtracker_get(msg, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
     try:
@@ -58,14 +58,14 @@ async def bugtracker_get(session, mojira_id: str):
         get_json = await get_url(json_url, 200)
     except ValueError as e:
         if str(e).startswith('401'):
-            return session.locale.t("bugtracker.message.get_failed"), None
+            return msg.locale.t("bugtracker.message.get_failed"), None
         else:
             traceback.print_exc()
     if mojira_id not in spx_cache:
-        get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
+        get_spx = await get_url('https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json', 200)
         if get_spx:
             spx_cache.update(json.loads(get_spx))
-    if id_ in spx_cache:
+    if id_ in spx_cache and msg.locale.locale == 'zh_cn':
         data["translation"] = spx_cache[id_]
     if get_json:
         load_json = json.loads(get_json)
@@ -145,5 +145,4 @@ async def bugtracker_get(session, mojira_id: str):
         if (link := data.get("link", False)):
             msglist.append(str(Url(link)))
             issue_link = link
-    msg = '\n'.join(msglist)
-    return msg, issue_link
+    return '\n'.join(msglist), issue_link
