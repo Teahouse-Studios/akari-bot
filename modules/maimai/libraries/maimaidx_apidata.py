@@ -3,7 +3,8 @@ import shutil
 import traceback
 import ujson as json
 
-from langconv import Converter
+from langconv.converter import LanguageConverter
+from langconv.language.zh import zh_cn
 
 from config import Config
 from core.builtins import Bot, Plain, Image
@@ -87,7 +88,7 @@ async def get_alias(msg: Bot.MessageSession, sid):
 async def search_by_alias(input_):
     result = []
     input_ = input_.replace("_", " ").strip().lower()
-    convinput = Converter('zh_hans').convert(input_)
+    convinput = LanguageConverter.from_language(zh_cn).convert(input_)
     res = (await total_list.get()).filter(title=input_)
     for s in res:
         result.append(s['id'])
