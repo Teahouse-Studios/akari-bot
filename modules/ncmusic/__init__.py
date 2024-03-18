@@ -7,11 +7,11 @@ from core.logger import logger
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
                  desc='{ncmusic.help.desc}',
-                 options_desc={'-l': '{help.option.l}'},
                  support_languages=['zh_cn'])
 
 
-@ncmusic.handle('search [-l] <keyword> {{ncmusic.help.search}}')
+@ncmusic.handle('search [-l] <keyword> {{ncmusic.help.search}}',
+                options_desc={'-l': '{help.option.l}'})
 async def search(msg: Bot.MessageSession, keyword: str):
     url = f"https://ncmusic.akari-bot.top/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
