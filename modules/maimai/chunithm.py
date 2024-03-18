@@ -166,7 +166,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
             ds=ds,
             combo=chart['combo'],
             charter=chart['charter'])
-        await msg.finish(await get_info(msg, music, Plain(res)))
+        await msg.finish(await get_info(music, Plain(res)))
     else:
         res = msg.locale.t(
             "chunithm.message.song",
@@ -175,7 +175,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(msg, music, Plain(res)))
+        await msg.finish(await get_info(music, Plain(res)))
 
 
 @chu.command('random [<diff+level>] {{maimai.help.random}}')
@@ -193,7 +193,7 @@ async def _(msg: Bot.MessageSession):
         if level == "":
             if diff == "":
                 music = (await total_list.get()).random()
-                await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
+                await msg.finish(await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
             else:
                 raise ValueError
         else:
@@ -206,6 +206,20 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         else:
             music = music_data.random()
-            await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
+            await msg.finish(await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.failed"))
+
+
+@chu.handle('bind <username> {{maimai.help.bind}}', exclude_from=['QQ', 'QQ|Group'])
+async def _(msg: Bot.MessageSession, username: str):
+    bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
+    if bind:
+        await msg.finish(msg.locale.t('maimai.message.bind.success') + username)
+
+
+@chu.handle('unbind {{maimai.help.unbind}}', exclude_from=['QQ', 'QQ|Group'])
+async def _(msg: Bot.MessageSession):
+    unbind = DivingProberBindInfoManager(msg).remove_bind_info()
+    if unbind:
+        await msg.finish(msg.locale.t('maimai.message.unbind.success'))
