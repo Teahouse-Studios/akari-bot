@@ -7,7 +7,7 @@ from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from .libraries.maimaidx_best50 import generate, computeRa
 from .libraries.maimaidx_music import TotalList
-from .libraries.maimaidx_utils import generate_best50_text, get_diff, get_grade_info, SONGS_PER_PAGE
+from .libraries.maimaidx_utils import *
 
 total_list = TotalList()
 
