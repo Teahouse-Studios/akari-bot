@@ -102,7 +102,7 @@ async def remove(ctx: discord.ApplicationContext, alias: str):
 @ali.command(name="list", description="View custom command alias.")
 @discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def lst(ctx: discord.ApplicationContext, legacy: str):
-    legacy = "legacy" if legacy == "true" else ""
+    legacy = "-l" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
 
 
@@ -117,7 +117,7 @@ m = client.create_group("module", "Set about modules.")
 @m.command(name="list", description="View all available modules.")
 @discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def lst(ctx: discord.ApplicationContext, legacy: str):
-    legacy = "legacy" if legacy == "true" else ""
+    legacy = "-l" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
 
 

@@ -66,7 +66,8 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         await msg.finish(msg.locale.t("wiki.message.iw.remove.success", iw=interwiki))
 
 
-@wiki.command('iw list [legacy] {{wiki.help.iw.list}}')
+@wiki.command('iw list [-l] {{wiki.help.iw.list}}',
+              options_desc={'-l': '{help.option.l}'})
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
@@ -78,7 +79,7 @@ async def _(msg: Bot.MessageSession):
             base_interwiki_link = base_interwiki_link_.link
     result = ''
     if query != {}:
-        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
+        if not msg.parsed_msg.get('-l', False) and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
             img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:
