@@ -9,7 +9,7 @@ WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
 async def warn_target(msg: Bot.MessageSession, reason = None):
-    if WARNING_COUNTS >= 1 and msg.check_super_user():
+    if WARNING_COUNTS >= 1 and not msg.check_super_user():
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
         warn_template = [msg.locale.t("tos.message.warning")]
