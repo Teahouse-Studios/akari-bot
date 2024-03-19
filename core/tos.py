@@ -60,6 +60,6 @@ async def tos_report(sender, target, reason = None, banned = False):
             action = locale.t("tos.message.action.warning")
         warn_template.append(locale.t("tos.message.action") + action)
 
-        for target in report_targets:
-            if f := await Bot.FetchTarget.fetch_target(target):
+        for target_ in report_targets:
+            if f := await Bot.FetchTarget.fetch_target(target_):
                 await f.send_direct_message('\n'.join(warn_template), disable_secret_check=True)
