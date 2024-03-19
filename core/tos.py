@@ -9,7 +9,7 @@ WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
 async def warn_target(msg: Bot.MessageSession, reason = None):
-    if WARNING_COUNTS >= 1 and msg.check_super_user():
+    if WARNING_COUNTS >= 1 and not msg.check_super_user():
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
         warn_template = [msg.locale.t("tos.message.warning")]
@@ -60,6 +60,6 @@ async def tos_report(sender, target, reason = None, banned = False):
             action = locale.t("tos.message.action.warning")
         warn_template.append(locale.t("tos.message.action") + action)
 
-        for target in report_targets:
-            if f := await Bot.FetchTarget.fetch_target(target):
+        for target_ in report_targets:
+            if f := await Bot.FetchTarget.fetch_target(target_):
                 await f.send_direct_message('\n'.join(warn_template), disable_secret_check=True)
