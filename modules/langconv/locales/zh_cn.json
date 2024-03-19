@@ -1,5 +1,4 @@
 {
     "langconv.help": "简繁转换。",
-    "langconv.message.unsupported_language": "不支持此语言。支持的语言：zh_cn、zh_tw、zh_hk",
-    "langconv.message.running_time": "花费时间：${time}ms。"
+    "langconv.message.unsupported_language": "不支持此语言。支持的语言：zh_cn、zh_tw、zh_hk"
 }
