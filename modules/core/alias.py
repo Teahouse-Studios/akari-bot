@@ -45,7 +45,7 @@ async def set_alias(msg: Bot.MessageSession):
         legacy = True
         if len(aliases) == 0:
             await msg.finish(msg.locale.t("core.message.alias.list.none"))
-        elif msg.parsed_msg.get('-l', False):
+        elif not msg.parsed_msg.get('-l', False):
             table = ImageTable([[k, aliases[k]] for k in aliases],
                                [msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
