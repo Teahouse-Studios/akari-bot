@@ -4,6 +4,8 @@ import re
 import traceback
 from datetime import datetime
 
+import ujson as json
+
 from config import Config
 from core.builtins import Bot, ErrorMessage, ExecutionLockList, I18NContext, MessageTaskManager, Url, \
     base_superuser_list, command_prefix
@@ -43,12 +45,15 @@ async def remove_temp_ban(target):
         del temp_ban_counter[target]
 
 
-async def tos_abuse_warning(msg: Bot.MessageSession, e, i18n=False):
-    if isinstance(e, I18NContext):
-        reason = e.to_dict()['data']['key']
-        i18n = True
-    else:
-        reason = str(e)
+async def tos_abuse_warning(msg: Bot.MessageSession, reason, i18n=False):
+    try:
+        data = json.loads(reason)
+        if isinstance(data, dict) and 'data' in data:
+            reason = data['data'].get('key', string)
+            i18n = True
+    except ValueError:
+        pass
+    
     if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, reason, i18n)
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
