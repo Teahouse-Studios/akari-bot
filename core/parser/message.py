@@ -4,11 +4,9 @@ import re
 import traceback
 from datetime import datetime
 
-import ujson as json
-
 from config import Config
-from core.builtins import Bot, ErrorMessage, ExecutionLockList, I18NContext, MessageTaskManager, Url, \
-    base_superuser_list, command_prefix
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
+    base_superuser_list
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -45,23 +43,13 @@ async def remove_temp_ban(target):
         del temp_ban_counter[target]
 
 
-async def tos_abuse_warning(msg: Bot.MessageSession, reason, i18n=False):
-    try:
-        data = json.loads(reason)
-        if isinstance(data, dict) and 'data' in data:
-            reason = data['data'].get('key', string)
-            i18n = True
-    except ValueError:
-        pass
-    
+async def tos_abuse_warning(msg: Bot.MessageSession, e):
     if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
-        await warn_target(msg, reason, i18n)
+        await warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
     else:
-        if i18n:
-            reason = msg.locale.t(reason)
-        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=reason))
+        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=e))
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
@@ -73,7 +61,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         same['count'] += 1
         if same['count'] > 10:
-            raise AbuseWarning(I18NContext("tos.message.reason.cooldown"))
+            raise AbuseWarning(msg.locale.t("tos.message.reason.cooldown"))
     all_ = counter_all.get(msg.target.sender_id)
     if not all_ or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {'count': 1,
@@ -81,7 +69,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         all_['count'] += 1
         if all_['count'] > 20:
-            raise AbuseWarning(I18NContext("tos.message.reason.abuse"))
+            raise AbuseWarning(msg.locale.t("tos.message.reason.abuse"))
 
 
 async def temp_ban_check(msg: Bot.MessageSession):
@@ -99,7 +87,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 is_temp_banned['count'] += 1
                 await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning(I18NContext("tos.message.reason.ignore"))
+                raise AbuseWarning(msg.locale.t("tos.message.reason.ignore"))
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
