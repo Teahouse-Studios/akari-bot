@@ -197,6 +197,24 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
+@ae.command('block <target>', available_for='QQ|Group')
+async def _(msg: Bot.MessageSession, target: str):
+    if not target.startswith(f'{msg.target.target_from}|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
+    if target == msg.target.target_id:
+        await msg.finish(msg.locale.t("core.message.abuse.block.self"))
+    if BotDBUtil.GroupBlockList.add(target):
+        await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
+
+
+@ae.command('unblock <target>', available_for='QQ|Group')
+async def _(msg: Bot.MessageSession, target: str):
+    if not target.startswith(f'{msg.target.target_from}|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
+    if BotDBUtil.GroupBlockList.remove(target):
+        await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
+
+
 res = module('reset', required_superuser=True, base=True)
 
 @res.command()
