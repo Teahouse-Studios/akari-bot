@@ -1,3 +1,4 @@
+import math
 import re
 import secrets
 
@@ -7,6 +8,7 @@ from config import Config
 from core.exceptions import ConfigValueError
 from core.utils.text import remove_prefix
 
+# 配置常量
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = Config('dice_roll_limit', 10)  # 一次命令最多的摇动次数
 MAX_MOD_NUMBER = Config('dice_mod_max', 10000)  # 骰子最大加权值
@@ -17,6 +19,7 @@ MAX_DETAIL_CNT = Config('dice_detail_count', 5)  # n次投掷的骰子的总量�
 MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子表达式最多的项数
 
 
+# 异常类定义
 class DiceSyntaxError(Exception):
     """骰子语法错误"""
 
@@ -34,6 +37,7 @@ class DiceValueError(Exception):
             self.message = msg.locale.t("dice.message.error.value") + message
 
 
+# 类定义
 class DiceItemBase(object):
     """骰子项的基类"""
 
@@ -130,7 +134,7 @@ class Dice(DiceItemBase):
         if not dice_type.isdigit():
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.n.invalid"),
-                                 dice_type)
+                                dice_type)
         if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.k.invalid"),
@@ -174,7 +178,7 @@ class Dice(DiceItemBase):
             dice_results = new_results
         # 公用加法
         length = len(dice_results)
-        if (length > 1):
+        if length > 1:
             output += '['
             if length > MAX_OUTPUT_CNT:  # 显示数据含100
                 output += msg.locale.t("dice.message.output.too_long", length=length)
@@ -187,21 +191,62 @@ class Dice(DiceItemBase):
             output += '] = '
         else:
             result = dice_results[0]
+        result = math.floor(result)
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output + f"{result}"
         self.result = result
 
 
+class FateDice(DiceItemBase):
+    """命运骰子项"""
+
+    def __init__(self, msg, fate_code: str, positive: bool):
+        super().__init__(fate_code, positive)
+        self.count = 4  # 默认投掷次数为4
+        if len(fate_code) > 1:
+            try:
+                self.count = int(fate_code[:-1])
+            except ValueError:
+                raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.syntax.invalid"))
+        if self.count <= 0 or self.count > MAX_DICE_COUNT:
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.n.out_of_range", max=MAX_DICE_COUNT),
+                                 self.count)
+
+    def Roll(self, msg, use_markdown=False):
+        output = ''
+        result = 0
+        output += self.code + ' = '
+        # 生成命运骰子序列
+        fate_results = []
+        fate_results.extend(['-' for _ in range(2)])
+        fate_results.extend(['0' for _ in range(2)])
+        fate_results.extend(['+' for _ in range(2)])
+
+        # 从序列中随机选择count个结果
+        selected_results = [secrets.choice(fate_results) for _ in range(self.count)]
+
+        output += '[' + ', '.join(selected_results) + ']'
+        # 计算结果
+        for res in selected_results:
+            if res == '-':
+                result -= 1
+            elif res == '+':
+                result += 1
+
+        self.detail = output + f" = {result}"
+        self.result = result
+
+    def GetArgs(self, msg):
+        return self.count, 6, 0
+
 async def GenerateMessage(msg, dices: str, times: int, dc: int):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    if re.search(r'[^0-9+\-DKL]', dices.upper()):
+    if re.search(r'[^0-9+\-DKLF]', dices.upper()):
         return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
-    if times > MAX_ROLL_TIMES or times < 1:
-        return DiceValueError(msg, msg.locale.t('dice.message.error.value.N.out_of_range', max=MAX_ROLL_TIMES),
-                              times).message
     dice_code_cist = re.compile(r'[+-]?[^+-]+').findall(dices)
     dice_list = []
     have_err = False
@@ -224,6 +269,10 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
                 d = Dice(msg, item, is_add)
                 dice_list.append(d)
                 dice_count += d.count
+            elif 'F' in item or 'f' in item:
+                d = FateDice(msg, item, is_add)
+                dice_list.append(d)
+                dice_count += d.count
             elif item.isdigit():
                 dice_list.append(DiceMod(msg, item, is_add))
         except (DiceSyntaxError, DiceValueError) as ex:
@@ -241,7 +290,7 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
         for dice in dice_list:
             dice.Roll(msg)
             output_line += '+' if dice.positive else '-'
-            if isinstance(dice, Dice) and times * dice_count < MAX_DETAIL_CNT:
+            if isinstance(dice, (Dice, FateDice)) and times * dice_count < MAX_DETAIL_CNT:
                 output_line += f'({dice.GetDetail()})'
             else:
                 output_line += str(dice.GetResult())

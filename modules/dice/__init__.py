@@ -5,22 +5,12 @@ from .dice import GenerateMessage
 dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon'], desc='{dice.help.desc}')
 
 
-@dice.command('<dices> [<dc>] {{dice.help}}',
-              options_desc={
-                  '{dice.help.option.expression.title}': '{dice.help.option.expression}',
-                  'n': '{dice.help.option.n}',
-                  'm': '{dice.help.option.m}',
-                  'kx': '{dice.help.option.kx}',
-                  'klx': '{dice.help.option.klx}',
-                  'y': '{dice.help.option.y}',
-                  'N': '{dice.help.option.N}',
-                  'dc': '{dice.help.option.dc}'
-              })
+@dice.command('<dices> [<dc>] {{dice.help}}')
 async def _(msg: Bot.MessageSession, dices: str, dc: int = 0):
 
-    if 'x' in dices:
-        times = dices.partition('x')[0]
-        dices = dices.partition('x')[2]
+    if '#' in dices:
+        times = dices.partition('#')[0]
+        dices = dices.partition('#')[2]
     else:
         times = '1'
     if not times.isdigit():
