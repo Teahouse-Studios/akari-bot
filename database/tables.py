@@ -45,8 +45,8 @@ class CommandTriggerTime(Base):
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
-class GroupAllowList(Base):
-    __tablename__ = "GroupAllowList"
+class GroupBlockList(Base):
+    __tablename__ = "GroupBlockList"
     targetId = Column(String(512), primary_key=True)
 
 
@@ -93,5 +93,5 @@ class JobQueueTable(Base):
 
 
 Session.create()
-__all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupAllowList",
+__all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupBlockList",
            "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable"]

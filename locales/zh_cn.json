@@ -66,6 +66,7 @@
     "qq.message.disable_friend_request": "你好！本机器人不主动同意好友请求，请联系开发者添加好友。",
     "qq.message.disable_group_invite": "你好！本机器人不主动同意入群请求，请联系开发者邀请加入群组。",
     "qq.message.disable_temp_session": "请先添加好友后再进行命令交互。",
+    "qq.message.in_group_blocklist": "此群组在黑名单中，已自动退出。",
     "success": "成功。",
     "time.date.format": "%Y 年 %m 月 %d 日",
     "time.date.iso.format": "%Y-%m-%d",

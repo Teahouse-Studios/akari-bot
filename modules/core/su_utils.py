@@ -197,6 +197,39 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
+@ae.command('block <target>')
+async def _(msg: Bot.MessageSession, target: str):
+    if not target.startswith(f'{msg.target.target_from}|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
+    if target == msg.target.target_id:
+        await msg.finish(msg.locale.t("core.message.abuse.block.self"))
+    if BotDBUtil.GroupBlockList.add(target):
+        await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
+
+
+@ae.command('unblock <target>')
+async def _(msg: Bot.MessageSession, target: str):
+    if not target.startswith(f'{msg.target.target_from}|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
+    if BotDBUtil.GroupBlockList.remove(target):
+        await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
+
+
+res = module('reset', required_superuser=True, base=True)
+
+@res.command()
+async def reset(msg: Bot.MessageSession):
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+    if confirm:
+        pull_repo_result = os.popen('git reset --hard origin/master', 'r').read()[:-1]
+        if pull_repo_result != '':
+            await msg.finish(pull_repo_result)
+        else:
+            await msg.finish(msg.locale.t("core.message.update.failed"))
+    else:
+        await msg.finish()
+
+
 upd = module('update', required_superuser=True, base=True)
 
 

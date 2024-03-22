@@ -178,6 +178,7 @@ async def _(event: Event):
             await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             await bot.call_action('set_group_leave', group_id=event.group_id)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
+            BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 
@@ -189,6 +190,7 @@ async def _(event: Event):
             reason = Locale(lang).t('tos.message.reason.kick')
             await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
+            BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 
