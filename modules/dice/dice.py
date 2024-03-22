@@ -1,6 +1,7 @@
-import random
-import re
 import math
+import re
+import secrets
+
 import numpy as np
 
 from config import Config
@@ -150,7 +151,7 @@ class Dice(DiceItemBase):
         output += self.code + ' = '
         # 生成随机序列
         for i in range(self.count):
-            dice_results.append(random.randint(1, int(self.type)))
+            dice_results.append(secrets.randbelow(int(self.type)) + 1)
         if adv != 0:
             new_results = []
             indexes = np.array(dice_results).argsort()
@@ -224,7 +225,7 @@ class FateDice(DiceItemBase):
         fate_results.extend(['+' for _ in range(2)])
 
         # 从序列中随机选择count个结果
-        selected_results = random.sample(fate_results, self.count)
+        selected_results = [secrets.choice(fate_results) for _ in range(self.count)]
 
         output += '[' + ', '.join(selected_results) + ']'
         # 计算结果
