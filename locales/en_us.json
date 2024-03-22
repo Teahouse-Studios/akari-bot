@@ -26,6 +26,7 @@
     "error.prompt.address": "Report this issue: ${url}",
     "error.prompt.noreport": "An error occurred while executing the command:\n${detail}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "example": "Hello world!",
+    "qq.message.in_group_blocklist": "This group is in group blocklist, automatically left.",
     "failed": "Failed.",
     "game.help.stop": "Stop the current game.",
     "game.message.running": "This game is currently in progress.",

@@ -197,11 +197,12 @@ async def _(event: Event):
 
 @bot.on_message('group')
 async def _(event: Event):
-    if Config('qq_group_allow_list'):
-        result = BotDBUtil.isGroupInAllowList(f'QQ|Group|{str(event.group_id)}')
-        if not result:
-            await bot.send(event=event, message='此群不在白名单中，已自动退群。'
-                                                '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
+        result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
+        if result:
+            res = Locale(lang).t('qq.message.in_group_blocklist')
+            if Config('issue_url'):
+                res += '\n' + Locale(lang).t('tos.message.appeal', issue_url=Config('issue_url'))
+            await bot.send(event=event, message=str(res))
             await bot.call_action('set_group_leave', group_id=event.group_id)
 """
 
