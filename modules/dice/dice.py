@@ -24,7 +24,7 @@ class DiceSyntaxError(Exception):
     """骰子语法错误"""
 
     def __init__(self, msg, message):
-        self.message = msg.locale.t("dice.message.error.syntax") + message
+        self.message = message
 
 
 class DiceValueError(Exception):
@@ -32,9 +32,9 @@ class DiceValueError(Exception):
 
     def __init__(self, msg, message, value=None):
         if value:
-            self.message = msg.locale.t("dice.message.error.value.invalid", value=value) + message
+            self.message = msg.locale.t("dice.message.error.value", value=value) + message
         else:
-            self.message = msg.locale.t("dice.message.error.value") + message
+            self.message = message
 
 
 # 类定义
@@ -112,7 +112,7 @@ class Dice(DiceItemBase):
         dice_count = '1'  # 骰子数量
         advantage = '0'  # 保留的骰子量
         if re.search(r'[^0-9DKL]', dice_code):
-            raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.syntax.invalid"))
+            raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         if 'D' not in dice_code:
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.syntax.missing_d"))
         temp = dice_code.split('D')
@@ -208,7 +208,7 @@ class FateDice(DiceItemBase):
             try:
                 self.count = int(fate_code[:-1])
             except ValueError:
-                raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.syntax.invalid"))
+                raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.n.out_of_range", max=MAX_DICE_COUNT),
@@ -246,7 +246,7 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
     if re.search(r'[^0-9+\-DKLF]', dices.upper()):
-        return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
+        return DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
     dice_code_cist = re.compile(r'[+-]?[^+-]+').findall(dices)
     dice_list = []
     have_err = False
