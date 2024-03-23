@@ -264,41 +264,45 @@ async def process_expression(msg, expr: str, times: int, dc):
 def parse_dice_expression(msg, dices):
     dice_item_list = []
     dice_list = []
-    pattern = r'((?:\d+)?D\d+(?:KL?(?:\d+)?)?)|((?:\d+)?D?F)|(\d+)'
-    # 对骰子表达式进行解析
+    patterns = [
+    r'(\d+)?D\d+(?:KL?(?:\d+)?)?',  # 普通骰子
+    r'(\d+)?DF',  # 命运骰子
+    r'\d+',  # 数字
+    ]
+
     if re.search(r'[^0-9+\-DKLF]', dices.upper()):
         raise DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
         
-    dices_list = re.split(pattern, dices)
+    # 切分骰子表达式
+    dices_list = re.split('|'.join(patterns), dices)
     dices_list = [item for item in dices_list if item]  # 清除空白字符串
 
-    for segment in dices_list:
-        match = re.match(pattern, segment)
-    if match:
-        dice_item_list.append(segment)
+    for item in dices_list:
+        for pattern in patterns:
+            match = re.match(pattern, item)
+            if match:
+                dice_item_list.append(item)
+                break
     if len(dice_item_list) > MAX_ITEM_COUNT:
-        raise DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_code_cist)).message
+        raise DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_item_list)).message
         
     i = 0
     # 初始化骰子序列
-    for item in dice_code_cist:
+    for item in dice_item_list:
         i += 1
         try:
-            if 'D' in item or 'd' in item:
-                if 'F' in item or 'f' in item:
-                    d = FateDice(msg, item, is_add)
-                else:
-                    d = Dice(msg, item, is_add)
+            if 'F' in item or 'f' in item:
+                d = FateDice(msg, item)
                 dice_list.append(d)
-            elif 'F' in item or 'f' in item:
-                d = FateDice(msg, item, is_add)
+            elif 'D' in item or 'd' in item:
+                d = Dice(msg, item)
                 dice_list.append(d)
-            elif item.isdigit():
-                dice_list.append(DiceMod(msg, item, is_add))
+            else:
+                continue
         except (DiceSyntaxError, DiceValueError) as ex:
-            errmsg = '\n' + msg.locale.t('dice.message.error.prompt', i=i) + ex.message
+            errmsg = msg.locale.t('dice.message.error.prompt', i=i) + ex.message
     if errmsg:
-        raise DiceValueError(msg, msg.locale.t('dice.message.error') + output).message
+        raise DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + output).message
     return dice_list
 
 
@@ -312,7 +316,6 @@ def generate_dice_message(dice_list, times, dc):
         result = 0
         for dice in dice_list:
             dice.Roll(msg)
-            output_line += '+' if dice.positive else '-'
             if isinstance(dice, (Dice, FateDice)) and times * dice_count < MAX_DETAIL_CNT:
                 output_line += f'({dice.GetDetail()})'
             else:
