@@ -10,6 +10,7 @@
     "dice.message.error": "无法解析骰子表达式：",
     "dice.message.error.prompt": "第 ${i} 项发生：",
     "dice.message.error.invalid": "骰子表达式中存在无法识别的字符。",
+    "dice.message.error.parentheses": "骰子表达式中的括号未闭合。",
     "dice.message.error.value": "输入为“${value}”，",
     "dice.message.error.value.k.invalid": "无效的优劣势。",
     "dice.message.error.value.k.out_of_range": "优劣势骰数大于总骰子数。",
