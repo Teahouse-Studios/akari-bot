@@ -3,10 +3,11 @@ import re
 import secrets
 
 import numpy as np
+from simpleeval import simple_eval
 
 from config import Config
 from core.exceptions import ConfigValueError
-from core.utils.text import remove_prefix
+from core.logger import Logger
 
 # 配置常量
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -41,17 +42,13 @@ class DiceValueError(Exception):
 class DiceItemBase(object):
     """骰子项的基类"""
 
-    def __init__(self, dice_code: str, positive: bool):
-        self.positive = positive
+    def __init__(self, dice_code: str):
         self.code = dice_code
         self.result = None
         self.detail = ''
 
-    def GetResult(self, abs=True):
-        if abs:
-            return self.result
-        else:
-            return self.result if self.positive else -self.result
+    def GetResult(self):
+        return self.result
 
     def GetDetail(self):
         return self.detail
@@ -60,34 +57,13 @@ class DiceItemBase(object):
         pass
 
 
-class DiceMod(DiceItemBase):
-    """调节值项"""
-
-    def __init__(self, msg, dice_code: str, positive: bool):
-        super().__init__(dice_code, positive)
-        if not dice_code.isdigit():
-            raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.y.invalid"),
-                                 '+' if self.positive else '-' + dice_code)
-        else:
-            self.result = int(dice_code)
-            if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
-                raise DiceValueError(msg,
-                                     msg.locale.t("dice.message.error.value.y.out_of_range", min=MIN_MOD_NUMBER,
-                                                  max=MAX_MOD_NUMBER),
-                                     self.result)
-
-    def GetDetail(self):
-        return self.result
-
-
 class Dice(DiceItemBase):
     """骰子项"""
 
-    def __init__(self, msg, dice_code: str, positive: bool):
+    def __init__(self, msg, dice_code: str):
 
         dice_code = dice_code.replace(' ', '')
-        super().__init__(dice_code, positive)
+        super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
         self.type = args[1]
@@ -111,21 +87,24 @@ class Dice(DiceItemBase):
         dice_code = self.code.upper()  # 便于识别
         dice_count = '1'  # 骰子数量
         advantage = '0'  # 保留的骰子量
-        if re.search(r'[^0-9DKL]', dice_code):
+        if re.search(r'[^0-9DKQ]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
-        if 'D' not in dice_code:
-            raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.syntax.missing_d"))
         temp = dice_code.split('D')
         if len(temp[0]):
             dice_count = temp[0]
         else:
             dice_count = '1'
-        midstrs = temp[1].partition('K')
-        dice_type = midstrs[0]
-        if 'K' in midstrs[1]:
-            advantage = midstrs[2].replace('L', '-')
-            if not len(advantage.removeprefix('-')):
-                advantage += '1'  # K/KL后没有值默认为1
+        dice_type = temp[1]
+        if 'K' in temp[1]:
+            midstrs = temp[1].partition('K')
+            dice_type = midstrs[0]
+            advantage = midstrs[2]
+        elif 'Q' in temp[1]:
+            midstrs = temp[1].partition('Q')
+            dice_type = midstrs[0]
+            advantage = f'-{midstrs[2]}'
+        if not len(advantage.removeprefix('-')):
+            advantage += '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
@@ -148,7 +127,7 @@ class Dice(DiceItemBase):
         result = 0
         dice_results = []
         adv = self.adv
-        output += self.code + ' = '
+        output += self.code + '='
         # 生成随机序列
         for i in range(self.count):
             dice_results.append(secrets.randbelow(int(self.type)) + 1)
@@ -156,7 +135,7 @@ class Dice(DiceItemBase):
             new_results = []
             indexes = np.array(dice_results).argsort()
             indexes = indexes[-adv:] if adv > 0 else indexes[:-adv]
-            output += '('
+            output += '['
             output_buffer = ''
             for i in range(self.count):
                 if use_markdown:
@@ -174,7 +153,7 @@ class Dice(DiceItemBase):
                     output_buffer += ', '
             if self.count >= MAX_OUTPUT_CNT:
                 output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer + ') = '
+            output += output_buffer + ']='
             dice_results = new_results
         # 公用加法
         length = len(dice_results)
@@ -188,10 +167,9 @@ class Dice(DiceItemBase):
                     output += str(dice_results[i])
                     if i < length - 1:
                         output += '+'
-            output += '] = '
+            output += ']='
         else:
             result = dice_results[0]
-        result = math.floor(result)
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output + f"{result}"
@@ -201,12 +179,17 @@ class Dice(DiceItemBase):
 class FateDice(DiceItemBase):
     """命运骰子项"""
 
-    def __init__(self, msg, fate_code: str, positive: bool):
-        super().__init__(fate_code, positive)
+    def __init__(self, msg, dice_code: str):
+        super().__init__(dice_code)
         self.count = 4  # 默认投掷次数为4
-        if len(fate_code) > 1:
+
+        # 兼容旧格式
+        if dice_code.upper().endswith('DF'):
+            dice_code = dice_code[:-2] + 'F'
+            
+        if len(dice_code) > 1:
             try:
-                self.count = int(fate_code[:-1])
+                self.count = int(dice_code[:-1])
             except ValueError:
                 raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
@@ -218,17 +201,11 @@ class FateDice(DiceItemBase):
         output = ''
         result = 0
         output += self.code + ' = '
-        # 生成命运骰子序列
-        fate_results = []
-        fate_results.extend(['-' for _ in range(2)])
-        fate_results.extend(['0' for _ in range(2)])
-        fate_results.extend(['+' for _ in range(2)])
 
-        # 从序列中随机选择count个结果
-        selected_results = [secrets.choice(fate_results) for _ in range(self.count)]
-
-        output += '[' + ', '.join(selected_results) + ']'
-        # 计算结果
+        dice_results = ['-', '-', '0', '0', '+', '+']
+        selected_results = [secrets.choice(dice_results) for _ in range(self.count)]
+        output += str(selected_results)
+        
         for res in selected_results:
             if res == '-':
                 result -= 1
@@ -241,62 +218,122 @@ class FateDice(DiceItemBase):
     def GetArgs(self, msg):
         return self.count, 6, 0
 
-async def GenerateMessage(msg, dices: str, times: int, dc):
+
+async def process_expression(msg, expr: str, times: int, dc):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    if re.search(r'[^0-9+\-DKLF]', dices.upper()):
-        return DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
-    dice_code_cist = re.compile(r'[+-]?[^+-]+').findall(dices)
-    dice_list = []
-    have_err = False
-    output = ""
+    
+    dice_list, count, err = parse_dice_expression(msg, expr)
+    if err:
+        return err
+    output = generate_dice_message(msg, expr, dice_list, count, times, dc)
+    return output
+
+def parse_dice_expression(msg, dices):
+    dice_item_list = []
+    patterns = [
+        r'((?:\d+)?D\d+(?:(?:K|Q)?(?:\d+)?)?)',  # 普通骰子
+        r'((?:\d+)?D?F)',  # 命运骰子
+        r'(\d+)',  # 数字
+        r'(\(|\))',  # 括号
+    ]
+    errmsg = None
+    if re.search(r'[^0-9+\-\*/()DFKQ]', dices.upper()):
+        return None, None, DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
+    if dices.count('(') != dices.count(')'):
+        return None, None, DiceSyntaxError(msg, msg.locale.t('dice.message.error.parentheses')).message
+        
+    # 切分骰子表达式
+    dice_expr_list = re.split('|'.join(patterns), dices, flags=re.I)
+    dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白字符串
+    Logger.debug(dice_expr_list)
+
+    for item in dice_expr_list:
+        for pattern in patterns:
+            match = re.match(pattern, item, flags=re.I)
+            if match:
+                dice_item_list.append(item)
+                break
+    if len(dice_item_list) > MAX_ITEM_COUNT:
+        return None, None, DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_item_list)).message
+        
     dice_count = 0
     i = 0
-    if len(dice_code_cist) > MAX_ITEM_COUNT:
-        return DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_code_cist)).message
     # 初始化骰子序列
-    for item in dice_code_cist:
-        i += 1
-        is_add = True
-        if item[0] == '-':
-            is_add = False
-            item = item[1:]
-        if item[0] == '+':
-            item = item[1:]
+    for item in dice_expr_list:
         try:
-            if 'D' in item or 'd' in item:
-                d = Dice(msg, item, is_add)
-                dice_list.append(d)
-                dice_count += d.count
-            elif 'F' in item or 'f' in item:
-                d = FateDice(msg, item, is_add)
-                dice_list.append(d)
-                dice_count += d.count
+            i += 1
+            if 'F' in item or 'f' in item:
+                dice_count += 1
+                dice_expr_list[i-1] = FateDice(msg, item)
+            elif 'D' in item or 'd' in item:
+                dice_count += 1
+                dice_expr_list[i-1] = Dice(msg, item)
             elif item.isdigit():
-                dice_list.append(DiceMod(msg, item, is_add))
+                dice_count += 1
+            else:
+                continue
         except (DiceSyntaxError, DiceValueError) as ex:
-            output += '\n' + msg.locale.t('dice.message.error.prompt', i=i) + ex.message
-            have_err = True
-    if have_err:
-        return msg.locale.t('dice.message.error') + output
+            errmsg = msg.locale.t('dice.message.error.prompt', i=dice_count) + ex.message
+    if errmsg:
+        return None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
+    return dice_expr_list, dice_count, None
+
+
+# 在数字与数字之间加上乘号
+def insert_multiply(lst):
+    result = []
+    for i in range(len(lst)):
+        if i == 0:
+            result.append(lst[i])
+        else:
+            if lst[i-1][-1].isdigit() and lst[i][0].isdigit():
+                result.append('*')
+            elif lst[i-1][-1] == ')' and lst[i][0] == '(':
+                result.append('*')
+            elif lst[i-1][-1].isdigit() and lst[i][0] == '(':
+                result.append('*')
+            elif lst[i-1][-1] == ')' and lst[i][0].isdigit():
+                result.append('*')
+            result.append(lst[i])
+    return result
+
+
+def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')
-    # 开始投掷并输出
+    dice_detail_list = dice_expr_list.copy()
+    
+    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
+        use_markdown = True
+    # 开始投掷并生成消息
+    j = 0
     for i in range(times):
         output_line = ''
-        result = 0
-        for dice in dice_list:
-            dice.Roll(msg)
-            output_line += '+' if dice.positive else '-'
-            if isinstance(dice, (Dice, FateDice)) and times * dice_count < MAX_DETAIL_CNT:
-                output_line += f'({dice.GetDetail()})'
+        for item in dice_detail_list:
+            j += 1
+            if isinstance(item, (Dice, FateDice)):
+                item.Roll(msg)
+                res = item.GetResult()
+                if times * dice_count < MAX_DETAIL_CNT:
+                    dice_detail_list[j-1] = f'({item.GetDetail()})'
+                else:
+                    dice_detail_list[j-1] = f'({str(res)})' if res < 0 else str(res)  # 负数加括号
+                dice_expr_list[j-1] = f'({str(res)})' if res < 0 else str(res)
             else:
-                output_line += str(dice.GetResult())
-            result += dice.GetResult(False)
-        output_line = remove_prefix(output_line, '+')  # 移除表达式首个+
-        output_line += ' = ' + str(result)
+                continue
+        dice_detail_list = insert_multiply(dice_detail_list)
+        dice_expr_list = insert_multiply(dice_expr_list)
+        output_line += ''.join(dice_detail_list)
+        Logger.debug(dice_detail_list)
+        Logger.debug(dice_expr_list)
+        try:
+            result = int(simple_eval(''.join(dice_expr_list)))
+        except Exception as e:
+            return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
+        output_line += '=' + str(result)
 
         if dc:
             if msg.data.options.get('dice_dc_reversed'):
@@ -313,7 +350,11 @@ async def GenerateMessage(msg, dices: str, times: int, dc):
                 else:
                     output_line += msg.locale.t('dice.message.dc.failed')
                     fail_num += 1
-        output += f'\n{dices} = {output_line}'
+        output += f'\n{expr}={output_line}'
     if dc and times > 1:
-        output += '\n' + msg.locale.t('dice.message.dc.check', success=str(success_num), failed=str(fail_num))
+        output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
+
+    if use_markdown:
+        output = output.replace("*", "\*")
+        output = output.replace("\\*", "\*")
     return output
