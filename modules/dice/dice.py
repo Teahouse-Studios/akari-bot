@@ -12,8 +12,6 @@ from core.logger import Logger
 # 配置常量
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = Config('dice_roll_limit', 10)  # 一次命令最多的摇动次数
-MAX_MOD_NUMBER = Config('dice_mod_max', 10000)  # 骰子最大加权值
-MIN_MOD_NUMBER = Config('dice_mod_min', -10000)  # 骰子最小加权值
 MAX_OUTPUT_CNT = Config('dice_output_count', 50)  # 输出的最多数据量
 MAX_OUTPUT_LEN = Config('dice_output_len', 200)  # 输出的最大长度
 MAX_DETAIL_CNT = Config('dice_detail_count', 5)  # n次投掷的骰子的总量超过该值时将不再显示详细信息
@@ -221,7 +219,7 @@ class FateDice(DiceItemBase):
 
 
 async def process_expression(msg, expr: str, times: int, dc):
-    if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
+    if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
     
@@ -306,6 +304,10 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')
+    if times > MAX_ROLL_TIMES:
+        raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.N.out_of_range", max=MAX_ROLL_TIMES),
+                                 times).message
     
     if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
         use_markdown = True
