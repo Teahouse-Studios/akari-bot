@@ -304,13 +304,14 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')
-    dice_detail_list = dice_expr_list.copy()
     
     if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
         use_markdown = True
     # 开始投掷并生成消息
-    j = 0
     for i in range(times):
+        j = 0
+        dice_detail_list = dice_expr_list.copy()
+        dice_res_list = dice_expr_list.copy()
         output_line = ''
         for item in dice_detail_list:
             j += 1
@@ -321,16 +322,16 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
                     dice_detail_list[j-1] = f'({item.GetDetail()})'
                 else:
                     dice_detail_list[j-1] = f'({str(res)})' if res < 0 else str(res)  # 负数加括号
-                dice_expr_list[j-1] = f'({str(res)})' if res < 0 else str(res)
+                dice_res_list[j-1] = f'({str(res)})' if res < 0 else str(res)
             else:
                 continue
         dice_detail_list = insert_multiply(dice_detail_list)
-        dice_expr_list = insert_multiply(dice_expr_list)
+        dice_res_list = insert_multiply(dice_res_list)
         output_line += ''.join(dice_detail_list)
         Logger.debug(dice_detail_list)
-        Logger.debug(dice_expr_list)
+        Logger.debug(dice_res_list)
         try:
-            result = int(simple_eval(''.join(dice_expr_list)))
+            result = int(simple_eval(''.join(dice_res_list)))
         except Exception as e:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
         output_line += '=' + str(result)
