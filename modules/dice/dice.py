@@ -175,7 +175,7 @@ class Dice(DiceItemBase):
         self.result = result
 
 
-class FateDice(DiceItemBase):
+class FudgeDice(DiceItemBase):
     """命运骰子项"""
 
     def __init__(self, msg, dice_code: str):
@@ -266,7 +266,7 @@ def parse_dice_expression(msg, dices):
             i += 1
             if 'F' in item or 'f' in item:
                 dice_count += 1
-                dice_expr_list[i-1] = FateDice(msg, item)
+                dice_expr_list[i-1] = FudgeDice(msg, item)
             elif 'D' in item or 'd' in item:
                 dice_count += 1
                 dice_expr_list[i-1] = Dice(msg, item)
@@ -319,7 +319,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         output_line = ''
         for item in dice_detail_list:
             j += 1
-            if isinstance(item, (Dice, FateDice)):
+            if isinstance(item, (Dice, FudgeDice)):
                 item.Roll(msg)
                 res = item.GetResult()
                 if times * dice_count < MAX_DETAIL_CNT:
@@ -336,7 +336,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         Logger.debug(dice_res_list)
         try:
             result = int(simple_eval(''.join(dice_res_list)))
-        except SyntaxError:
+        except (NameError, SyntaxError):
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
