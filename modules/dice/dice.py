@@ -305,7 +305,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
     fail_num = 0
     output = msg.locale.t('dice.message.output')
     if times > MAX_ROLL_TIMES:
-        raise DiceValueError(msg,
+        return DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.N.out_of_range", max=MAX_ROLL_TIMES),
                                  times).message
     
