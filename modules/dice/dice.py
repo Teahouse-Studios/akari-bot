@@ -247,7 +247,7 @@ def parse_dice_expression(msg, dices):
     for item in range(len(dice_expr_list)):
         if dice_expr_list[item][-1].upper() == 'D' and msg.data.options.get('dice_default_face'):
             dice_expr_list[item] += str(msg.data.options.get('dice_default_face'))
-    Logger.info(dice_expr_list)
+    Logger.debug(dice_expr_list)
 
     for item in dice_expr_list:
         for pattern in patterns:
@@ -336,7 +336,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         Logger.debug(dice_res_list)
         try:
             result = int(simple_eval(''.join(dice_res_list)))
-        except (NameError, SyntaxError):
+        except (NameNotDefined, SyntaxError):
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
