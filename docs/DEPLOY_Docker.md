@@ -384,13 +384,9 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `dice_roll_limit = 100` - 投掷骰子的最大次数。
 
-`dice_mod_max = 10000` - 投掷骰子的最大调节值。
+`dice_output_count = 50` - 输出时的最大数据量，超过则无法正常显示。
 
-`dice_mod_min = -10000` - 投掷骰子的最小调节值。
-
-`dice_output_cnt = 50` - 输出时的最大数据量，超过则无法正常显示。
-
-`dice_detail_cnt= 5` - 多次投掷骰子的总数，超过则不再显示详细信息。
+`dice_detail_count= 5` - 多次投掷骰子的总数，超过则不再显示详细信息。
 
 `dice_count_limit = 10` - 骰子表达式最多的项数。
 

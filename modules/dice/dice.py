@@ -232,8 +232,8 @@ async def process_expression(msg, expr: str, times: int, dc):
 def parse_dice_expression(msg, dices):
     dice_item_list = []
     patterns = [
-        r'((?:\d+)?D(?:\d+|\%)?(?:(?:K|Q)?(?:\d+)?)?)',  # 普通骰子
         r'((?:\d+)?D?F)',  # 命运骰子
+        r'((?:\d+)?D(?:\d+|\%)?(?:(?:K|Q)?(?:\d+)?)?)',  # 普通骰子
         r'(\d+)',  # 数字
         r'(\(|\))',  # 括号
     ]
