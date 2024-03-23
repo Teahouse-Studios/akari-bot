@@ -3,7 +3,7 @@ import re
 import secrets
 
 import numpy as np
-from simpleeval import simple_eval
+from simpleeval import simple_eval, NameNotDefined
 
 from config import Config
 from core.exceptions import ConfigValueError
