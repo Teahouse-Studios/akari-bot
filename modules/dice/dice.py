@@ -262,23 +262,27 @@ async def process_expression(msg, expr: str, times: int, dc):
     return output
 
 def parse_dice_expression(msg, dices):
+    dice_item_list = []
     dice_list = []
+    pattern = r'((?:\d+)?D\d+(?:KL?(?:\d+)?)?)|((?:\d+)?D?F)|(\d+)'
     # 对骰子表达式进行解析
     if re.search(r'[^0-9+\-DKLF]', dices.upper()):
         raise DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
-    dice_code_cist = re.compile(r'[+-]?[^+-]+').findall(dices)
-    if len(dice_code_cist) > MAX_ITEM_COUNT:
+        
+    dices_list = re.split(pattern, dices)
+    dices_list = [item for item in dices_list if item]  # 清除空白字符串
+
+    for segment in dices_list:
+        match = re.match(pattern, segment)
+    if match:
+        dice_item_list.append(segment)
+    if len(dice_item_list) > MAX_ITEM_COUNT:
         raise DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_code_cist)).message
+        
     i = 0
     # 初始化骰子序列
     for item in dice_code_cist:
         i += 1
-        is_add = True
-        if item[0] == '-':
-            is_add = False
-            item = item[1:]
-        if item[0] == '+':
-            item = item[1:]
         try:
             if 'D' in item or 'd' in item:
                 if 'F' in item or 'f' in item:
