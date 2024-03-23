@@ -5,6 +5,7 @@ from core.component import module
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info
+from .maimai import query_plate, query_song_info
 
 total_list = TotalList()
 
@@ -23,7 +24,7 @@ async def _(msg: Bot.MessageSession):
     if name[:2].lower() == "id":
         sid = name[2:]
     else:
-        sid_list = await search_by_alias(msg, name)
+        sid_list = await search_by_alias(name)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -38,7 +39,7 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    await msg.finish(await get_info(msg, music, Plain(msg.locale.t("maimai.message.song",
+    await msg.finish(await get_info(music, Plain(msg.locale.t("maimai.message.song",
                                                                    artist=music['basic_info']['artist'],
                                                                    genre=music['basic_info']['genre'],
                                                                    bpm=music['basic_info']['bpm'],
@@ -60,6 +61,20 @@ async def _(msg: Bot.MessageSession):
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
         await msg.finish([Plain(result.strip())])
+
+
+@mai_regex.regex(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
+async def _(msg: Bot.MessageSession):
+    songname = msg.matched_msg.groups()[0]
+    username = msg.matched_msg.groups()[1]
+    await query_song_info(msg, songname, username)
+
+
+@mai_regex.regex(re.compile(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
+async def _(msg: Bot.MessageSession):
+    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
+    username = msg.matched_msg.groups()[2]
+    await query_plate(msg, plate, username)
 
 
 @mai_regex.regex(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
@@ -84,7 +99,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
-                await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+                await msg.finish(await get_info(music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
         except ValueError:
             await msg.finish(msg.locale.t("maimai.message.random.failed"))
 

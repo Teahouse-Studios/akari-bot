@@ -3,6 +3,9 @@ import shutil
 import traceback
 import ujson as json
 
+from langconv.converter import LanguageConverter
+from langconv.language.zh import zh_cn
+
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.logger import Logger
@@ -54,7 +57,7 @@ async def update_covers():
     return True
 
 
-async def get_info(msg: Bot.MessageSession, music: Music, *details):
+async def get_info(music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
@@ -67,7 +70,7 @@ async def get_info(msg: Bot.MessageSession, music: Music, *details):
     return info
 
 
-async def get_alias(msg, sid):
+async def get_alias(msg: Bot.MessageSession, sid):
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
@@ -82,9 +85,10 @@ async def get_alias(msg, sid):
     return result
 
 
-async def search_by_alias(msg, input_):
+async def search_by_alias(input_):
     result = []
     input_ = input_.replace("_", " ").strip().lower()
+    convinput = LanguageConverter.from_language(zh_cn).convert(input_)
     res = (await total_list.get()).filter(title=input_)
     for s in res:
         result.append(s['id'])
@@ -99,7 +103,7 @@ async def search_by_alias(msg, input_):
 
     for sid, aliases in data.items():
         aliases = [alias.lower() for alias in aliases]
-        if input_ in aliases:
+        if input_ in aliases or convinput in aliases:
             if sid in result:
                 result.remove(sid)
             result.append(sid)  # 此处的列表是歌曲 ID 列表
@@ -107,7 +111,7 @@ async def search_by_alias(msg, input_):
     return result
 
 
-async def get_record(msg, payload):
+async def get_record(msg: Bot.MessageSession, payload):
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
         data = await post_url(url,
@@ -131,7 +135,7 @@ async def get_record(msg, payload):
         return data
 
 
-async def get_plate(msg, payload):
+async def get_plate(msg: Bot.MessageSession, payload):
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
         data = await post_url(url,

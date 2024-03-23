@@ -13,8 +13,9 @@ from .rc_qq import rc_qq
 
 rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
 
-@rc_.command(available_for=['QQ', 'QQ|Group'])
-@rc_.command('[legacy] {{wiki.help.rc}}', 
+@rc_.command()
+@rc_.command('[-l] {{wiki.help.rc}}',
+             options_desc={'-l': '{help.option.l}'},
              available_for=['QQ', 'QQ|Group'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -47,8 +48,9 @@ async def rc_loader(msg: Bot.MessageSession):
 ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
 
 
-@ab_.command(available_for=['QQ', 'QQ|Group'])
-@ab_.command('[legacy] {{wiki.help.ab}}',
+@ab_.command()
+@ab_.command('[-l] {{wiki.help.ab}}',
+           options_desc={'-l': '{help.option.l}'},
            available_for=['QQ', 'QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()

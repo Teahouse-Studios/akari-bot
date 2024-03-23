@@ -71,12 +71,12 @@ if Config('enable_urlmanager'):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-    @aud.command('list [legacy]')
+    @aud.command('list [-l]')
     async def _(msg: Bot.MessageSession):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()
         legacy = True
-        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
+        if not msg.parsed_msg.get('-l', False) and msg.Feature.image:
             send_msgs = []
             allow_columns = [[x[0], x[1]] for x in allow_list]
             if allow_columns:
