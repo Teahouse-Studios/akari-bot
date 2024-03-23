@@ -8,7 +8,7 @@
     "dice.message.dc.invalid": "Invalid DC: ",
     "dice.message.dc.success": "  Success!",
     "dice.message.error": "Unable to parse the dice expression: ",
-    "dice.message.error.prompt": "Item ${i} occurs ",
+    "dice.message.error.prompt": "Item ${i} occurs: ",
     "dice.message.error.invalid": "Unrecognized characters in dice expression.",
     "dice.message.error.value": "Input \"${value}\". ",
     "dice.message.error.value.k.invalid": "Invalid advantages and disadvantages.",

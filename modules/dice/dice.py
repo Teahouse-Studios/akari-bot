@@ -241,7 +241,7 @@ class FateDice(DiceItemBase):
     def GetArgs(self, msg):
         return self.count, 6, 0
 
-async def GenerateMessage(msg, dices: str, times: int, dc: int):
+async def GenerateMessage(msg, dices: str, times: int, dc):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
@@ -297,22 +297,23 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
             result += dice.GetResult(False)
         output_line = remove_prefix(output_line, '+')  # 移除表达式首个+
         output_line += ' = ' + str(result)
-        if dc != 0:
+
+        if dc:
             if msg.data.options.get('dice_dc_reversed'):
-                if result <= dc:
+                if result <= int(dc):
                     output_line += msg.locale.t('dice.message.dc.success')
                     success_num += 1
                 else:
                     output_line += msg.locale.t('dice.message.dc.failed')
                     fail_num += 1
             else:
-                if result >= dc:
+                if result >= int(dc):
                     output_line += msg.locale.t('dice.message.dc.success')
                     success_num += 1
                 else:
                     output_line += msg.locale.t('dice.message.dc.failed')
                     fail_num += 1
         output += f'\n{dices} = {output_line}'
-    if dc != 0 and times > 1:
+    if dc and times > 1:
         output += '\n' + msg.locale.t('dice.message.dc.check', success=str(success_num), failed=str(fail_num))
     return output
