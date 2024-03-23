@@ -10,7 +10,7 @@
     "dice.message.error": "Unable to parse the dice expression: ",
     "dice.message.error.prompt": "Item ${i} occurs ",
     "dice.message.error.invalid": "Unrecognized characters in dice expression.",
-    "dice.message.error.value": "ValueError: Input \"${value}\". ",
+    "dice.message.error.value": "Input \"${value}\". ",
     "dice.message.error.value.k.invalid": "Invalid advantages and disadvantages.",
     "dice.message.error.value.k.out_of_range": "The number of advantage and disadvantage dice is greater than the total number of dice.",
     "dice.message.error.value.m.invalid": "Invalid number of dice.",
