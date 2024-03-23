@@ -6,7 +6,7 @@ dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon'], desc='{
 
 
 @dice.command('<dices> [<dc>] {{dice.help}}')
-async def _(msg: Bot.MessageSession, dices: str, dc: int = 0):
+async def _(msg: Bot.MessageSession, dices: str, dc = None):
 
     if '#' in dices:
         times = dices.partition('#')[0]
@@ -23,7 +23,7 @@ async def _(msg: Bot.MessageSession):
     groups = msg.matched_msg.groups()
     dice_type = groups[1][:-1] if groups[1] else '6'
     roll_time = groups[2][:-1] if groups[2] else '1'
-    await msg.finish(await GenerateMessage(msg, f'{groups[0]}D{dice_type}', int(roll_time), 0))
+    await msg.finish(await GenerateMessage(msg, f'{groups[0]}D{dice_type}', int(roll_time), None))
 
 
 @dice.command('rule {{dice.help.rule}}', required_admin=True)
