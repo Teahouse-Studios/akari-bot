@@ -204,6 +204,11 @@ class FateDice(DiceItemBase):
     def __init__(self, msg, fate_code: str, positive: bool):
         super().__init__(fate_code, positive)
         self.count = 4  # 默认投掷次数为4
+
+        # 兼容旧格式
+        if fate_code.endswith('DF'):
+            fate_code = fate_code[:-1] + 'F'
+            
         if len(fate_code) > 1:
             try:
                 self.count = int(fate_code[:-1])
@@ -241,20 +246,30 @@ class FateDice(DiceItemBase):
     def GetArgs(self, msg):
         return self.count, 6, 0
 
-async def GenerateMessage(msg, dices: str, times: int, dc):
+
+async def process_expression(msg, expr: str, times: int, dc):
+    output = ""
+    success_num = 0
+    fail_num = 0
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    if re.search(r'[^0-9+\-DKLF]', dices.upper()):
-        return DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
-    dice_code_cist = re.compile(r'[+-]?[^+-]+').findall(dices)
+    
+    dice_list = parse_dice_expression(msg, expr)
+    
+    output += generate_dice_message(dice_list, times, dc)
+    
+    return output
+
+def parse_dice_expression(msg, dices):
     dice_list = []
-    have_err = False
-    output = ""
-    dice_count = 0
-    i = 0
+    # 对骰子表达式进行解析
+    if re.search(r'[^0-9+\-DKLF]', dices.upper()):
+        raise DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
+    dice_code_cist = re.compile(r'[+-]?[^+-]+').findall(dices)
     if len(dice_code_cist) > MAX_ITEM_COUNT:
-        return DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_code_cist)).message
+        raise DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_code_cist)).message
+    i = 0
     # 初始化骰子序列
     for item in dice_code_cist:
         i += 1
@@ -266,24 +281,28 @@ async def GenerateMessage(msg, dices: str, times: int, dc):
             item = item[1:]
         try:
             if 'D' in item or 'd' in item:
-                d = Dice(msg, item, is_add)
+                if 'F' in item or 'f' in item:
+                    d = FateDice(msg, item, is_add)
+                else:
+                    d = Dice(msg, item, is_add)
                 dice_list.append(d)
-                dice_count += d.count
             elif 'F' in item or 'f' in item:
                 d = FateDice(msg, item, is_add)
                 dice_list.append(d)
-                dice_count += d.count
             elif item.isdigit():
                 dice_list.append(DiceMod(msg, item, is_add))
         except (DiceSyntaxError, DiceValueError) as ex:
-            output += '\n' + msg.locale.t('dice.message.error.prompt', i=i) + ex.message
-            have_err = True
-    if have_err:
-        return msg.locale.t('dice.message.error') + output
+            errmsg = '\n' + msg.locale.t('dice.message.error.prompt', i=i) + ex.message
+    if errmsg:
+        raise DiceValueError(msg, msg.locale.t('dice.message.error') + output).message
+    return dice_list
+
+
+def generate_dice_message(dice_list, times, dc):
+    output = ""
     success_num = 0
     fail_num = 0
-    output = msg.locale.t('dice.message.output')
-    # 开始投掷并输出
+    # 开始投掷并生成消息
     for i in range(times):
         output_line = ''
         result = 0
