@@ -12,6 +12,7 @@
     "dice.message.error.invalid": "骰子語句中存在無法辨識的字元。",
     "dice.message.error.value": "輸入為「${value}」，",
     "dice.message.error.value.k.invalid": "無效的優劣勢。",
+    "dice.message.error.parentheses": "骰子運算式中的括號未關閉。",
     "dice.message.error.value.k.out_of_range": "優劣势骰數大於總骰子數。",
     "dice.message.error.value.m.invalid": "無效的骰子數量。",
     "dice.message.error.value.n.d1": "1 面的骰子？",
