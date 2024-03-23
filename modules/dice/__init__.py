@@ -28,12 +28,12 @@ async def _(msg: Bot.MessageSession):
 
 @dice.command('set <face> {{dice.help.set}}', required_admin=True)
 async def _(msg: Bot.MessageSession, face: int):
-    if face > 0:
+    if face > 1:
         msg.data.edit_option('dice_default_face', face)
-        await msg.finish(msg.locale.t("success"))
+        await msg.finish(msg.locale.t("dice.message.set.success", face=face))
     elif face == 0:
         msg.data.edit_option('dice_default_face', None)
-        await msg.finish(msg.locale.t("none"))
+        await msg.finish(msg.locale.t("dice.message.set.clear"))
     else:
         await msg.finish(msg.locale.t("dice.message.error.value.n.invalid"))
 
