@@ -6,7 +6,7 @@ from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 from config import Config
 from core.exceptions import ConfigValueError
 from core.logger import Logger
-from .type import Dice, FudgeDice, DiceSyntaxError, DiceValueError
+from .type import BounsPunishDice, Dice, FudgeDice, DiceSyntaxError, DiceValueError
 
 # 配置常量
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -39,6 +39,9 @@ se = SimpleEval()
 se.functions.update(math_funcs)
 
 
+
+
+
 async def process_expression(msg, expr: str, dc, use_markdown = False):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
@@ -58,6 +61,7 @@ async def process_expression(msg, expr: str, dc, use_markdown = False):
 def parse_dice_expression(msg, dices):
     dice_item_list = []
     patterns = [
+        r'((?:B|P)(?:\d+)?)',  # 奖惩骰子
         r'((?:\d+)?D?F)',  # 命运骰子
         r'((?:\d+)?D(?:\d+|\%)?(?:(?:K|Q)?(?:\d+)?)?)',  # 普通骰子
         r'(\d+)',  # 数字
@@ -95,10 +99,13 @@ def parse_dice_expression(msg, dices):
     # 初始化骰子序列
     for j, item in enumerate(dice_expr_list):
         try:
-            if 'F' in item or 'f' in item:
+            if 'B' in item or 'P' in item:
+                dice_count += 1
+                dice_expr_list[j] = BounsPunishDice(msg, item)
+            elif 'F' in item:
                 dice_count += 1
                 dice_expr_list[j] = FudgeDice(msg, item)
-            elif 'D' in item or 'd' in item:
+            elif 'D' in item:
                 dice_count += 1
                 dice_expr_list[j] = Dice(msg, item)
             elif item.isdigit():
@@ -146,7 +153,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         dice_res_list = dice_expr_list.copy()
         output_line = ''
         for i, item in enumerate(dice_detail_list):
-            if isinstance(item, (Dice, FudgeDice)):
+            if isinstance(item, (BounsPunishDice, Dice, FudgeDice)):
                 item.Roll(msg, use_markdown)
                 res = item.GetResult()
                 if times * dice_count < MAX_DETAIL_CNT:
