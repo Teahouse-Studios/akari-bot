@@ -3,7 +3,7 @@ import re
 import secrets
 
 import numpy as np
-from simpleeval import simple_eval, NameNotDefined
+from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
 from config import Config
 from core.exceptions import ConfigValueError
@@ -16,6 +16,28 @@ MAX_OUTPUT_CNT = Config('dice_output_count', 50)  # 输出的最多数据量
 MAX_OUTPUT_LEN = Config('dice_output_len', 200)  # 输出的最大长度
 MAX_DETAIL_CNT = Config('dice_detail_count', 5)  # n次投掷的骰子的总量超过该值时将不再显示详细信息
 MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子表达式最多的项数
+
+math_funcs = {
+    'abs': abs,
+    'ceil': math.ceil,
+    'comb': math.comb,
+    'exp': math.exp,
+    'fabs': math.fabs,
+    'factorial': math.factorial,
+    'fmod': math.fmod,
+    'floor': math.floor,
+    'gcd': math.gcd,
+    'lcm': math.lcm,
+    'log': math.log,
+    'log2': math.log2,
+    'log10': math.log10,
+    'perm': math.perm,
+    'pow': math.pow,
+    'sqrt': math.sqrt,
+}
+
+se = SimpleEval()
+se.functions.update(math_funcs)
 
 
 # 异常类定义
@@ -336,8 +358,8 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         try:
             dice_res = ''.join(dice_res_list)
             dice_res = dice_res.replace('\*', '*')
-            result = int(simple_eval(dice_res))
-        except (NameNotDefined, SyntaxError):
+            result = int(se.eval('a'))
+        except (FunctionNotDefined, NameNotDefined, SyntaxError):
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
