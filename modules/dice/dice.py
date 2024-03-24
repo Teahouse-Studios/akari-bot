@@ -256,7 +256,7 @@ def parse_dice_expression(msg, dices):
                 dice_item_list.append(item)
                 break
     if len(dice_item_list) > MAX_ITEM_COUNT:
-        return None, None, DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long'), len(dice_item_list)).message
+        return None, None, DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long')).message
         
     dice_count = 0
     i = 0
@@ -282,20 +282,21 @@ def parse_dice_expression(msg, dices):
 
 
 # 在数字与数字之间加上乘号
-def insert_multiply(lst):
+def insert_multiply(lst, use_markdown=False):
     result = []
+    asterisk = '/*' if usemarkdown else '*'
     for i in range(len(lst)):
         if i == 0:
             result.append(lst[i])
         else:
             if lst[i-1][-1].isdigit() and lst[i][0].isdigit():
-                result.append('*')
+                result.append(asterisk)
             elif lst[i-1][-1] == ')' and lst[i][0] == '(':
-                result.append('*')
+                result.append(asterisk)
             elif lst[i-1][-1].isdigit() and lst[i][0] == '(':
-                result.append('*')
+                result.append(asterisk)
             elif lst[i-1][-1] == ')' and lst[i][0].isdigit():
-                result.append('*')
+                result.append(asterisk)
             result.append(lst[i])
     return result
 
@@ -311,6 +312,9 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
     
     if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
         use_markdown = True
+    if use_markdown:
+        expr = expr.replace('*', '\*')
+        dice_expr_list = [item.replace('*', '\*') if '*' in item else item for item in dice_expr_list]
     # 开始投掷并生成消息
     for i in range(times):
         j = 0
@@ -329,7 +333,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
                 dice_res_list[j-1] = f'({str(res)})' if res < 0 else str(res)
             else:
                 continue
-        dice_detail_list = insert_multiply(dice_detail_list)
+        dice_detail_list = insert_multiply(dice_detail_list, use_markdown)
         dice_res_list = insert_multiply(dice_res_list)
         output_line += ''.join(dice_detail_list)
         Logger.debug(dice_detail_list)
@@ -361,7 +365,4 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
     if dc and times > 1:
         output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
 
-    if use_markdown:
-        output = output.replace("*", "\*")
-        output = output.replace("\\*", "\*")
     return output
