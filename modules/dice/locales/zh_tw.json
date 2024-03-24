@@ -21,7 +21,7 @@
     "dice.message.error.value.n.d1": "1 面的骰子？",
     "dice.message.error.value.n.invalid": "無效的骰子面數。",
     "dice.message.error.value.n.less_2": "骰子面數不得小於 2。",
-    "dice.message.error.value.n.out_of_range": "骰子數量不得小於 1 或大於 ${max}。",
+    "dice.message.error.value.m.out_of_range": "骰子數量不得小於 1 或大於 ${max}。",
     "dice.message.error.value.N.out_of_range": "投骰次數不得小於 1 或大於 ${max}。",
     "dice.message.error.value.too_long": "骰子運算式項數超過限制。",
     "dice.message.error.value.y.invalid": "無效的調整值項。",
