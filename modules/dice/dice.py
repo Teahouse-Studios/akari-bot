@@ -203,7 +203,7 @@ class FudgeDice(DiceItemBase):
 
         dice_results = ['-', '-', '0', '0', '+', '+']
         selected_results = [secrets.choice(dice_results) for _ in range(self.count)]
-        output += str(selected_results)
+        output += '[' + ', '.join(selected_results) + ']'
         
         for res in selected_results:
             if res == '-':
