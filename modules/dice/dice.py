@@ -241,8 +241,6 @@ def parse_dice_expression(msg, dices):
         r'(\(|\))',  # 括号
     ]
     errmsg = None
-    if re.search(r'[^0-9+\-\*/\%()DFKQ\\]', dices.upper()):
-        return None, None, DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
         
     # 切分骰子表达式
     dice_expr_list = re.split('|'.join(patterns), dices, flags=re.I)
