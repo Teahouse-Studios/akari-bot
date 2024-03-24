@@ -120,8 +120,6 @@ class Dice(DiceItemBase):
         return (int(dice_count), int(dice_type), int(advantage))
 
     def Roll(self, msg, use_markdown=False):
-        if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
-            use_markdown = True
         output = ''
         result = 0
         dice_results = []
@@ -222,11 +220,16 @@ async def process_expression(msg, expr: str, times: int, dc):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    
+    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
+        use_markdown = True
+    if use_markdown:
+        expr = expr.replace('*', '\*')
+        expr = expr.replace('\\*', '\*')
+
     dice_list, count, err = parse_dice_expression(msg, expr)
     if err:
         return err
-    output = generate_dice_message(msg, expr, dice_list, count, times, dc)
+    output = generate_dice_message(msg, expr, dice_list, count, times, dc, use_markdown)
     return output
 
 def parse_dice_expression(msg, dices):
@@ -238,7 +241,7 @@ def parse_dice_expression(msg, dices):
         r'(\(|\))',  # 括号
     ]
     errmsg = None
-    if re.search(r'[^0-9+\-\*/\%()DFKQ]', dices.upper()):
+    if re.search(r'[^0-9+\-\*/\%()DFKQ\\]', dices.upper()):
         return None, None, DiceSyntaxError(msg, msg.locale.t('dice.message.error.invalid')).message
         
     # 切分骰子表达式
@@ -309,12 +312,6 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         return DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.N.out_of_range", max=MAX_ROLL_TIMES),
                                  times).message
-    
-    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
-        use_markdown = True
-    if use_markdown:
-        expr = expr.replace('*', '\*')
-        dice_expr_list = [item.replace('*', '\*') if '*' in item else item for item in dice_expr_list]
     # 开始投掷并生成消息
     for i in range(times):
         j = 0
@@ -324,7 +321,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         for item in dice_detail_list:
             j += 1
             if isinstance(item, (Dice, FudgeDice)):
-                item.Roll(msg)
+                item.Roll(msg, use_markdown)
                 res = item.GetResult()
                 if times * dice_count < MAX_DETAIL_CNT:
                     dice_detail_list[j-1] = f'({item.GetDetail()})'
