@@ -287,7 +287,7 @@ def parse_dice_expression(msg, dices):
 # 在数字与数字之间加上乘号
 def insert_multiply(lst, use_markdown=False):
     result = []
-    asterisk = '/*' if usemarkdown else '*'
+    asterisk = '/*' if use_markdown else '*'
     for i in range(len(lst)):
         if i == 0:
             result.append(lst[i])
