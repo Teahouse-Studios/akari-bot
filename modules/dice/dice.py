@@ -358,7 +358,8 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         try:
             dice_res = ''.join(dice_res_list)
             dice_res = dice_res.replace('\*', '*')
-            result = int(se.eval('a'))
+            Logger.debug(dice_res)
+            result = int(se.eval(dice_res))
         except (FunctionNotDefined, NameNotDefined, SyntaxError):
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
