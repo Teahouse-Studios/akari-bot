@@ -216,7 +216,7 @@ class FudgeDice(DiceItemBase):
         return self.count, 6, 0
 
 
-async def process_expression(msg, expr: str, times: int, dc):
+async def process_expression(msg, expr: str, times: int, dc, use_markdown = False):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
@@ -336,7 +336,9 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         Logger.debug(dice_detail_list)
         Logger.debug(dice_res_list)
         try:
-            result = int(simple_eval(''.join(dice_res_list)))
+            dice_res = ''.join(dice_res_list)
+            dice_res = dice_res.replace('\*', '*')
+            result = int(simple_eval(dice_res))
         except (NameNotDefined, SyntaxError):
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
