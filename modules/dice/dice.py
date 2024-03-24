@@ -73,7 +73,7 @@ class Dice(DiceItemBase):
         if self.type <= 0:
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.n.less_2"),
-                                 self.count)
+                                 self.type)
         if self.type == 1:
             raise DiceValueError(msg, msg.locale.t("dice.message.error.value.n.d1"))
         if abs(self.adv) > self.count:
