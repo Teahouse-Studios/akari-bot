@@ -270,33 +270,35 @@ class BounsPunishDice(DiceItemBase):
         output += f'D100={d100_result}, D10{self.code}'
 
         for i in range(self.count):
-            dice_results.append(secrets.randbelow(10) + 1)
-        dice_results = [0 if x == 10 else x for x in dice_results]
+            dice_results.append(secrets.randbelow(10))
         new_results = []
         indexes = np.array(dice_results).argsort()
         if dice_type == 'P':
             indexes = indexes[-1:]
         elif dice_type == 'B':
             indexes = indexes[:1]
-        output += '=['
-        output_buffer = ''
-        for i in range(self.count):
-            if use_markdown:
-                if i in indexes:
-                    new_results.append(dice_results[i])
-                    output_buffer += f"*{str(dice_results[i])}*"
+        if self.count > 1:
+            output += '=['
+            output_buffer = ''
+            for i in range(self.count):
+                if use_markdown:
+                    if i in indexes:
+                        new_results.append(dice_results[i])
+                        output_buffer += f"*{str(dice_results[i])}*"
+                    else:
+                        output_buffer += f"{str(dice_results[i])}"
                 else:
-                    output_buffer += f"{str(dice_results[i])}"
-            else:
-                output_buffer += str(dice_results[i])
-                if i in indexes:
-                    new_results.append(dice_results[i])
-                    output_buffer += '*'
-            if i < self.count - 1:
-                output_buffer += ', '
-        if self.count >= MAX_OUTPUT_CNT:
-            output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
-        output += output_buffer + ']'
+                    output_buffer += str(dice_results[i])
+                    if i in indexes:
+                        new_results.append(dice_results[i])
+                        output_buffer += '*'
+                if i < self.count - 1:
+                    output_buffer += ', '
+            if self.count >= MAX_OUTPUT_CNT:
+                output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
+            output += output_buffer + ']'
+        else:
+            new_results.append(dice_results[0])
         dice_digit = new_results[0]
         result = int(str(dice_digit) + str(d100_digit))
         if len(output) > MAX_OUTPUT_LEN:
