@@ -75,7 +75,7 @@ def parse_dice_expression(msg, dices):
         times = '1'
     if not times.isdigit():
         errmsg = msg.locale.t('dice.message.N.invalid')
-        return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
+        return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + errmsg).message
 
     dice_expr_list = re.split(f'{math_func_pattern}|' + '|'.join(patterns), dices, flags=re.I)
     dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白元素
@@ -98,7 +98,7 @@ def parse_dice_expression(msg, dices):
     Logger.debug(dice_expr_list)
     if len(dice_item_list) > MAX_ITEM_COUNT:
         errmsg = msg.locale.t('dice.message.error.value.too_long')
-        return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
+        return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + errmsg).message
         
     dice_count = 0
     # 初始化骰子序列
