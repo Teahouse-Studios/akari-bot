@@ -1,6 +1,6 @@
 from core.builtins import Bot
 from core.component import module
-from .dice import process_expression
+from .process import process_expression
 
 dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon', 'DoroWolf'], desc='{dice.help.desc}')
 
