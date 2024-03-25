@@ -101,7 +101,7 @@ def parse_dice_expression(msg, dices):
         try:
             if 'B' in item or 'P' in item:
                 dice_count += 1
-                dice_expr_list[j] = BounsPunishDice(msg, item)
+                dice_expr_list[j] = BonusPunishDice(msg, item)
             elif 'F' in item:
                 dice_count += 1
                 dice_expr_list[j] = FudgeDice(msg, item)
@@ -153,7 +153,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         dice_res_list = dice_expr_list.copy()
         output_line = ''
         for i, item in enumerate(dice_detail_list):
-            if isinstance(item, (BounsPunishDice, Dice, FudgeDice)):
+            if isinstance(item, (BonusPunishDice, Dice, FudgeDice)):
                 item.Roll(msg, use_markdown)
                 res = item.GetResult()
                 if times * dice_count < MAX_DETAIL_CNT:
