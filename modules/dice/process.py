@@ -47,7 +47,7 @@ async def process_expression(msg, expr: str, dc, use_markdown = False):
         use_markdown = True
     if use_markdown:
         expr = expr.replace('*', '\*')
-        expr = expr.replace('\\*', '\*')
+        expr = expr.replace(r'\\*', '\*')
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)
     if err:
@@ -57,6 +57,7 @@ async def process_expression(msg, expr: str, dc, use_markdown = False):
 
 def parse_dice_expression(msg, dices):
     dice_item_list = []
+    math_func_pattern = '(' + '|'.join(re.escape(func) for func in math_funcs.keys()) + ')'  # 数学函数
     patterns = [
         r'((?:B|P)(?:\d+)?)',  # 奖惩骰子
         r'((?:\d+)?D?F)',  # 命运骰子
@@ -75,12 +76,12 @@ def parse_dice_expression(msg, dices):
     if not times.isdigit():
         return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.N.invalid'), times).message
 
-    dice_expr_list = re.split('|'.join(patterns), dices, flags=re.I)
+    dice_expr_list = re.split(f'{math_func_pattern}|' + '|'.join(patterns), dices, flags=re.I)
     dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白元素
     for item in range(len(dice_expr_list)):
-        if dice_expr_list[item][-1].upper() == 'D' and msg.data.options.get('dice_default_face'):
+        if dice_expr_list[item][-1].upper() == 'D' and dice_expr_list[item] not in math_funcs.keys()\
+        and msg.data.options.get('dice_default_face'):
             dice_expr_list[item] += str(msg.data.options.get('dice_default_face'))
-    Logger.debug(dice_expr_list)
 
     for i, item in enumerate(dice_expr_list):
         for pattern in patterns:
@@ -89,6 +90,11 @@ def parse_dice_expression(msg, dices):
                 dice_expr_list[i] = item.upper()
                 dice_item_list.append(item)
                 break
+        func_match = re.match(math_func_pattern, item, flags=re.I)
+        if func_match:
+            dice_expr_list[i] = item.lower()
+
+    Logger.debug(dice_expr_list)
     if len(dice_item_list) > MAX_ITEM_COUNT:
         return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error.value.too_long')).message
         
@@ -96,7 +102,9 @@ def parse_dice_expression(msg, dices):
     # 初始化骰子序列
     for j, item in enumerate(dice_expr_list):
         try:
-            if 'B' in item or 'P' in item:
+            if any(item.lower() == func for func in math_funcs.keys()):
+                continue
+            elif 'B' in item or 'P' in item:
                 dice_count += 1
                 dice_expr_list[j] = BonusPunishDice(msg, item)
             elif 'F' in item:
@@ -107,8 +115,6 @@ def parse_dice_expression(msg, dices):
                 dice_expr_list[j] = Dice(msg, item)
             elif item.isdigit():
                 dice_count += 1
-            else:
-                continue
         except (DiceSyntaxError, DiceValueError) as ex:
             errmsg = msg.locale.t('dice.message.error.prompt', i=dice_count) + ex.message
     if errmsg:
@@ -175,7 +181,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
                 result = int(se.eval(dice_res))
             else:
                 raise SyntaxError
-        except (FunctionNotDefined, NameNotDefined, SyntaxError):
+        except (FunctionNotDefined, NameNotDefined, SyntaxError, TypeError):
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
