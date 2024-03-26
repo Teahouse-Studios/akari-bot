@@ -15,7 +15,7 @@
     "dice.message.error.syntax": "無效的骰子運算式。",
     "dice.message.error.value": "輸入為「${value}」，",
     "dice.message.error.value.advantage.invalid": "無效的優劣勢。",
-    "dice.message.error.value.advantage.out_of_range": "優劣势骰數大於總骰子數。",
+    "dice.message.error.value.advantage.out_of_range": "優劣势骰數不得大於總骰子數。",
     "dice.message.error.value.count.invalid": "無效的骰子數量。",
     "dice.message.error.value.count.out_of_range": "骰子數量不得小於 1 或大於 ${max}。",
     "dice.message.error.value.sides.d1": "1 面的骰子？",
