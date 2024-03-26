@@ -6,7 +6,7 @@ from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 from config import Config
 from core.exceptions import ConfigValueError
 from core.logger import Logger
-from .dice import BonusPunishDice, Dice, FudgeDice, DiceSyntaxError, DiceValueError
+from .dice import DXDice, BonusPunishDice, Dice, FudgeDice, DiceSyntaxError, DiceValueError
 
 # 配置常量
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -15,6 +15,16 @@ MAX_OUTPUT_CNT = Config('dice_output_count', 50)  # 输出的最多数据量
 MAX_OUTPUT_LEN = Config('dice_output_len', 200)  # 输出的最大长度
 MAX_DETAIL_CNT = Config('dice_detail_count', 5)  # n次投掷的骰子的总量超过该值时将不再显示详细信息
 MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子表达式最多的项数
+
+dice_patterns = [
+#    r'(\d+A\d+K?\d*Q?\d*M?\d*)',  # WOD骰子
+    r'(\d+C\d+M?\d*)',  # 双重十字骰子
+    r'([BP]\d*)',  # 奖惩骰子
+    r'(\d*D?F)',  # 命运骰子
+    r'(\d*D\d*%?(?:K\d*|Q\d*)?)',  # 普通骰子
+    r'(\d+)',  # 数字
+    r'([\(\)])',  # 括号
+]
 
 math_funcs = {
     'abs': abs,
@@ -55,16 +65,10 @@ async def process_expression(msg, expr: str, dc, use_markdown = False):
     output = generate_dice_message(msg, expr, dice_list, count, times, dc, use_markdown)
     return output
 
+
 def parse_dice_expression(msg, dices):
     dice_item_list = []
     math_func_pattern = '(' + '|'.join(re.escape(func) for func in math_funcs.keys()) + ')'  # 数学函数
-    patterns = [
-        r'((?:B|P)(?:\d+)?)',  # 奖惩骰子
-        r'((?:\d+)?D?F)',  # 命运骰子
-        r'((?:\d+)?D(?:\d+|\%)?(?:(?:K|Q)?(?:\d+)?)?)',  # 普通骰子
-        r'(\d+)',  # 数字
-        r'(\(|\))',  # 括号
-    ]
     errmsg = None
         
     # 切分骰子表达式
@@ -74,23 +78,24 @@ def parse_dice_expression(msg, dices):
     else:
         times = '1'
     if not times.isdigit():
-        errmsg = msg.locale.t('dice.message.N.invalid')
+        errmsg = msg.locale.t('dice.message.error.value.times.invalid')
         return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + errmsg).message
 
-    dice_expr_list = re.split(f'{math_func_pattern}|' + '|'.join(patterns), dices, flags=re.I)
+    dice_expr_list = re.split(f'{math_func_pattern}|' + '|'.join(dice_patterns), dices, flags=re.I)
     dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白元素
     for item in range(len(dice_expr_list)):
         if dice_expr_list[item][-1].upper() == 'D' and dice_expr_list[item] not in math_funcs.keys()\
-        and msg.data.options.get('dice_default_face'):
-            dice_expr_list[item] += str(msg.data.options.get('dice_default_face'))
+        and msg.data.options.get('dice_default_sides'):
+            dice_expr_list[item] += str(msg.data.options.get('dice_default_sides'))
 
-    for i, item in enumerate(dice_expr_list):
-        for pattern in patterns:
+    for i, item in enumerate(dice_expr_list):  # 将所有骰子项切片转为大写
+        for pattern in dice_patterns:
             match = re.match(pattern, item, flags=re.I)
             if match:
                 dice_expr_list[i] = item.upper()
                 dice_item_list.append(item)
                 break
+        # 将所有数学函数切片转为小写
         func_match = re.match(math_func_pattern, item, flags=re.I)
         if func_match:
             dice_expr_list[i] = item.lower()
@@ -106,6 +111,9 @@ def parse_dice_expression(msg, dices):
         try:
             if any(item.lower() == func for func in math_funcs.keys()):
                 continue
+            elif 'C' in item:
+                dice_count += 1
+                dice_expr_list[j] = DXDice(msg, item)
             elif 'B' in item or 'P' in item:
                 dice_count += 1
                 dice_expr_list[j] = BonusPunishDice(msg, item)
@@ -122,7 +130,6 @@ def parse_dice_expression(msg, dices):
     if errmsg:
         return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
     return dice_expr_list, dice_count, int(times), None
-
 
 # 在数字与数字之间加上乘号
 def insert_multiply(lst, use_markdown=False):
@@ -143,25 +150,24 @@ def insert_multiply(lst, use_markdown=False):
             result.append(lst[i])
     return result
 
-
+# 开始投掷并生成消息
 def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')
     if '#' in expr:
         expr = expr.partition('#')[2]
-    if times <= 0 or times > MAX_ROLL_TIMES:
+    if times < 1 or times > MAX_ROLL_TIMES:
         return DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.N.out_of_range", max=MAX_ROLL_TIMES),
+                                 msg.locale.t("dice.message.error.value.times.out_of_range", max=MAX_ROLL_TIMES),
                                  times).message
-    # 开始投掷并生成消息
     for _ in range(times):
         dice_detail_list = dice_expr_list.copy()
         dice_res_list = dice_expr_list.copy()
         output_line = ''
         for i, item in enumerate(dice_detail_list):
-            if isinstance(item, (BonusPunishDice, Dice, FudgeDice)):
-                item.Roll(msg, use_markdown)
+            if isinstance(item, (DXDice, BonusPunishDice, Dice, FudgeDice)):  # 检查骰子类型并投掷
+                item.Roll(msg)
                 res = item.GetResult()
                 if times * dice_count < MAX_DETAIL_CNT:
                     dice_detail_list[i] = f'({item.GetDetail()})'
