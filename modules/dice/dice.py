@@ -152,7 +152,7 @@ class Dice(DiceItemBase):
             output += ']'
         else:
             result = dice_results[0]
-        output += '=' + result
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output 
@@ -211,7 +211,7 @@ class FudgeDice(DiceItemBase):
             elif res == '+':
                 result += 1
 
-        output += '=' + result
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output 
@@ -292,7 +292,7 @@ class BonusPunishDice(DiceItemBase):
         else:
             result = min(new_results)
 
-        output += '=' + result
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output 
@@ -392,7 +392,7 @@ class DXDice(DiceItemBase):
         output += output_buffer
         
         result = (dice_rounds - 1) * self.sides + max(dice_results)
-        output += '=' + result
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output 
