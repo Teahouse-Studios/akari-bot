@@ -52,7 +52,7 @@ async def process_expression(msg, expr: str, dc, use_markdown = False):
     dice_list, count, times, err = parse_dice_expression(msg, expr)
     if err:
         return err
-    output = generate_dice_message(msg, expr, dice_list, count, times, dc, use_markdown)
+    output = generate_dice_message(msg, dice_list, count, times, dc, use_markdown)
     return output
 
 def parse_dice_expression(msg, dices):
@@ -144,7 +144,8 @@ def insert_multiply(lst, use_markdown=False):
     return result
 
 
-def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
+def generate_dice_message(msg, dice_expr_list, dice_count, times, dc, use_markdown=False):
+    dice_expr = ''.join(dice_expr_list)
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')
@@ -205,7 +206,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
                 else:
                     output_line += msg.locale.t('dice.message.dc.failed')
                     fail_num += 1
-        output += f'\n{expr}={output_line}'
+        output += f'\n{dice_expr}={output_line}'
     if dc and times > 1:
         output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
 
