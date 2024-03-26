@@ -58,6 +58,7 @@ class Dice(DiceItemBase):
         self.count = args[0]
         self.type = args[1]
         self.adv = args[2]
+        self.positive = args[3]
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
@@ -78,6 +79,7 @@ class Dice(DiceItemBase):
         dice_code = dice_code.replace("D%", "D100")  # 百分骰别名
         dice_count = '1'  # 骰子数量
         advantage = '0'  # 保留的骰子量
+        positive = 0  # 是否保留骰子
         if re.search(r'[^0-9DKQ\%]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         temp = dice_code.split('D')
@@ -88,12 +90,14 @@ class Dice(DiceItemBase):
             midstrs = temp[1].partition('K')
             dice_type = midstrs[0]
             advantage = midstrs[2]
+            positive = 1
         elif 'Q' in temp[1]:
             midstrs = temp[1].partition('Q')
             dice_type = midstrs[0]
-            advantage = f'-{midstrs[2]}'
-        if not len(advantage.removeprefix('-')):
-            advantage += '1'  # K/Q后没有值默认为1
+            advantage = {midstrs[2]}
+            positive = -1
+        if positive and advantage == '0':
+            advantage = '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
@@ -107,20 +111,21 @@ class Dice(DiceItemBase):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.k.invalid"),
                                  advantage)
-        return (int(dice_count), int(dice_type), int(advantage))
+        return (int(dice_count), int(dice_type), int(advantage), positive)
 
     def Roll(self, msg, use_markdown=False):
         output = self.code
         result = 0
         dice_results = []
         adv = self.adv
+        positive = self.positive
         # 生成随机序列
         for i in range(self.count):
             dice_results.append(secrets.randbelow(int(self.type)) + 1)
         if adv != 0:
             new_results = []
             indexes = np.array(dice_results).argsort()
-            indexes = indexes[-adv:] if adv > 0 else indexes[:-adv]
+            indexes = indexes[-adv:] if positive == 1 else indexes[:adv]
             output += '=['
             output_buffer = ''
             for i in range(self.count):
@@ -239,16 +244,17 @@ class BonusPunishDice(DiceItemBase):
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
+        dice_count = '1'  # 骰子数量
         if re.search(r'[^0-9BP]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         if 'B' in dice_code:
             positive = False
             temp = dice_code.split('B')
-            dice_count = temp[1] if len(temp[1]) else '1'  # 骰子数量
         elif 'P' in dice_code:
             positive = True
             temp = dice_code.split('P')
-            dice_count = temp[1] if len(temp[1]) else '1'  # 骰子数量
+        if temp[1]:
+            dice_count = temp[1]
 
         # 语法合法检定
         if not dice_count.isdigit():
