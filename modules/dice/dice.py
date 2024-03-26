@@ -94,9 +94,9 @@ class Dice(DiceItemBase):
         elif 'Q' in temp[1]:
             midstrs = temp[1].partition('Q')
             dice_type = midstrs[0]
-            advantage = {midstrs[2]}
+            advantage = midstrs[2]
             positive = -1
-        if positive and advantage == '0':
+        if positive and not len(advantage):
             advantage = '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not dice_count.isdigit():
@@ -250,11 +250,13 @@ class BonusPunishDice(DiceItemBase):
         if 'B' in dice_code:
             positive = False
             temp = dice_code.split('B')
+            if temp[1]:
+                dice_count = temp[1]
         elif 'P' in dice_code:
             positive = True
-            temp = dice_code.split('P')
-        if temp[1]:
-            dice_count = temp[1]
+            temp = dice_code.split('P')    
+            if temp[1]:
+                dice_count = temp[1]
 
         # 语法合法检定
         if not dice_count.isdigit():
