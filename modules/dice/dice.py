@@ -61,17 +61,17 @@ class Dice(DiceItemBase):
         self.positive = args[3]
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
         if self.type <= 0:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.n.less_2"),
+                                 msg.locale.t("dice.message.error.value.sides.out_of_range"),
                                  self.type)
         if self.type == 1:
-            raise DiceValueError(msg, msg.locale.t("dice.message.error.value.n.d1"))
+            raise DiceValueError(msg, msg.locale.t("dice.message.error.value.sides.d1"))
         if abs(self.adv) > self.count:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.k.out_of_range"),
+                                 msg.locale.t("dice.message.error.value.advantage.out_of_range"),
                                  self.adv)
 
     def GetArgs(self, msg):
@@ -101,15 +101,15 @@ class Dice(DiceItemBase):
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.invalid"),
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
         if not dice_type.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.n.invalid"),
+                                 msg.locale.t("dice.message.error.value.sides.invalid"),
                                 dice_type)
-        if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
+        if not advantage.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.k.invalid"),
+                                 msg.locale.t("dice.message.error.value.advantage.invalid"),
                                  advantage)
         return (int(dice_count), int(dice_type), int(advantage), positive)
 
@@ -126,8 +126,8 @@ class Dice(DiceItemBase):
             new_results = []
             indexes = np.array(dice_results).argsort()
             indexes = indexes[-adv:] if positive == 1 else indexes[:adv]
-            output += '=['
-            output_buffer = ''
+            output += ''
+            output_buffer = '=['
             for i in range(self.count):
                 if use_markdown:
                     if i in indexes:
@@ -142,23 +142,25 @@ class Dice(DiceItemBase):
                         output_buffer += '*'
                 if i < self.count - 1:
                     output_buffer += ', '
+            output_buffer += ']'
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer + ']'
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output += output_buffer
             dice_results = new_results
         # 公用加法
         length = len(dice_results)
         if length > 1:
-            output += '=['
             if length > MAX_OUTPUT_CNT:  # 显示数据含100
-                output += msg.locale.t("dice.message.output.too_long", length=length)
-            for i in range(length):
-                result += dice_results[i]
-                if length <= MAX_OUTPUT_CNT:  # 显示数据含100
-                    output += str(dice_results[i])
-                    if i < length - 1:
-                        output += '+'
-            output += ']'
+                output += '=' + msg.locale.t("dice.message.output.too_long", length=length)
+            else:
+                output += '=['
+                for i in range(length):
+                    result += dice_results[i]
+                    if length <= MAX_OUTPUT_CNT:  # 显示数据含100
+                        output += str(dice_results[i])
+                        if i < length - 1:
+                            output += '+'
+                output += ']'
         else:
             result = dice_results[0]
         if len(output) > MAX_OUTPUT_LEN:
@@ -178,7 +180,7 @@ class FudgeDice(DiceItemBase):
         self.count = args[0]
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
 
 
@@ -196,7 +198,7 @@ class FudgeDice(DiceItemBase):
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.invalid"),
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
         return (int(dice_count), 0)
 
@@ -208,12 +210,10 @@ class FudgeDice(DiceItemBase):
         selected_results = [secrets.choice(dice_results) for _ in range(self.count)]
 
         length = len(selected_results)
-        output += '=['
         if length > MAX_OUTPUT_CNT:  # 显示数据含100
-            output += msg.locale.t("dice.message.output.too_long", length=length)
+            output += '=' + msg.locale.t("dice.message.output.too_long", length=length)
         else:
-            output += ', '.join(selected_results)
-        output += ']'
+            output += '=[' + ', '.join(selected_results) + ']'
 
         for res in selected_results:
             if res == '-':
@@ -239,7 +239,7 @@ class BonusPunishDice(DiceItemBase):
         self.positive = args[1]
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
 
     def GetArgs(self, msg):
@@ -261,7 +261,7 @@ class BonusPunishDice(DiceItemBase):
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.invalid"),
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
 
         return (int(dice_count), positive)
@@ -284,15 +284,16 @@ class BonusPunishDice(DiceItemBase):
         new_results = [100 if item == 0 else item for item in new_results]  # 将所有00转为100
 
         if self.count > 1:
-            output += '=['
-            output_buffer = ''
-            for i in range(self.count):
-                output_buffer += str(dice_results[i])
-                if i < self.count - 1:
-                    output_buffer += ', '
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer + ']'
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            else:
+                output_buffer = '=['
+                for i in range(self.count):
+                    output_buffer += str(dice_results[i])
+                    if i < self.count - 1:
+                        output_buffer += ', '
+                output_buffer += ']'
+            output += output_buffer
         else:
             output += '=' + str(dice_results[0])
         if len(output) > MAX_OUTPUT_LEN:

@@ -19,16 +19,16 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(await process_expression(msg, f'{roll_time}#{groups[0]}D{dice_type}', None))
 
 
-@dice.command('set <face> {{dice.help.set}}', required_admin=True)
-async def _(msg: Bot.MessageSession, face: int):
-    if face > 1:
-        msg.data.edit_option('dice_default_face', face)
-        await msg.finish(msg.locale.t("dice.message.set.success", face=face))
-    elif face == 0:
+@dice.command('set <side> {{dice.help.set}}', required_admin=True)
+async def _(msg: Bot.MessageSession, side: int):
+    if side > 1:
+        msg.data.edit_option('dice_default_face', side)
+        await msg.finish(msg.locale.t("dice.message.set.success", side=side))
+    elif side == 0:
         msg.data.edit_option('dice_default_face', None)
         await msg.finish(msg.locale.t("dice.message.set.clear"))
     else:
-        await msg.finish(msg.locale.t("dice.message.error.value.n.invalid"))
+        await msg.finish(msg.locale.t("dice.message.error.value.sides.invalid"))
 
 
 @dice.command('rule {{dice.help.rule}}', required_admin=True)
