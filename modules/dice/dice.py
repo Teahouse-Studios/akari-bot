@@ -107,11 +107,11 @@ class Dice(DiceItemBase):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.sides.invalid"),
                                 dice_sides)
-        if not advantage.isdigit():
+        if not dice_adv.isdigit():
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.advantage.invalid"),
-                                 advantage)
-        return (int(dice_count), int(dice_sides), int(advantage), positive)
+                                 dice_adv)
+        return (int(dice_count), int(dice_sides), int(dice_adv), positive)
 
     def Roll(self, msg):
         output = self.code
@@ -368,9 +368,9 @@ class DXDice(DiceItemBase):
             for i in range(dice_count):
                 dice_results.append(secrets.randbelow(int(self.sides)) + 1)
                 if dice_results[i] >= add_line:
-                    dice_exceed_result.append(True)
+                    dice_exceed_results.append(True)
                 else:
-                    dice_exceed_result.append(False)
+                    dice_exceed_results.append(False)
 
             exceed_result = 0
             output_buffer += '{'
