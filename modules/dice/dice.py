@@ -43,7 +43,7 @@ class DiceItemBase(object):
     def GetDetail(self):
         return self.detail
 
-    def Roll(self, msg, use_markdown: bool = False):
+    def Roll(self, msg):
         pass
 
 
@@ -113,7 +113,7 @@ class Dice(DiceItemBase):
                                  advantage)
         return (int(dice_count), int(dice_sides), int(advantage), positive)
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = self.code
         result = 0
         dice_results = []
@@ -126,20 +126,12 @@ class Dice(DiceItemBase):
             new_results = []
             indexes = np.array(dice_results).argsort()
             indexes = indexes[-adv:] if positive == 1 else indexes[:adv]
-            output += ''
             output_buffer = '=['
             for i in range(self.count):
-                if use_markdown:
-                    if i in indexes:
-                        new_results.append(dice_results[i])
-                        output_buffer += f"*{str(dice_results[i])}*"
-                    else:
-                        output_buffer += f"{str(dice_results[i])}"
-                else:
-                    output_buffer += str(dice_results[i])
-                    if i in indexes:
-                        new_results.append(dice_results[i])
-                        output_buffer += '*'
+                output_buffer += str(dice_results[i])
+                if i in indexes:
+                    new_results.append(dice_results[i])
+                    output_buffer += '*'
                 if i < self.count - 1:
                     output_buffer += ', '
             output_buffer += ']'
@@ -202,7 +194,7 @@ class FudgeDice(DiceItemBase):
                                  dice_count)
         return (int(dice_count), 0)
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = self.code
         result = 0
 
@@ -266,7 +258,7 @@ class BonusPunishDice(DiceItemBase):
 
         return (int(dice_count), positive)
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = ''
         dice_results = []
         positive = self.positive
@@ -360,52 +352,48 @@ class DXDice(DiceItemBase):
                                 dice_sides)
         return (int(dice_count), int(dice_add_line), int(dice_sides))
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = self.code
         result = 0
-        dice_results = []
+        dice_rounds = 0
         add_line = self.add_line
+        dice_count = self.count
         
-        # 生成随机序列
-        for i in range(self.count):
-            dice_results.append(secrets.randbelow(int(self.sides)) + 1)
+        output_buffer = '=['
+        while dice_count:
+            dice_results = []
+            dice_exceed_results = []
+            dice_rounds += 1
+            # 生成随机序列
+            for i in range(dice_count):
+                dice_results.append(secrets.randbelow(int(self.sides)) + 1)
+                if dice_results[i] >= add_line:
+                    dice_exceed_result.append(True)
+                else:
+                    dice_exceed_result.append(False)
 
-        if adv != 0:
-            new_results = []
-            indexes = np.array(dice_results).argsort()
-            indexes = indexes[-adv:] if positive == 1 else indexes[:adv]
-            output += ''
-            output_buffer = '=['
-            for i in range(self.count):
-                output_buffer += str(dice_results[i])
-                if i in indexes:
+            exceed_result = 0
+            output_buffer += '{'
+            for i in range(dice_count):
+                if dice_exceed_results[i]:
+                    exceed_result += 1
                     output_buffer += '<'
-                    new_results.append(dice_results[i])
+                    output_buffer += str(dice_results[i])
                     output_buffer += '>'
-                if i < self.count - 1:
+                else:
+                    output_buffer += str(dice_results[i])
+                if i < dice_count - 1:
                     output_buffer += ', '
-            output_buffer += ']'
-            if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer
-            dice_results = new_results
-        # 公用加法
-        length = len(dice_results)
-        if length > 1:
-            if length > MAX_OUTPUT_CNT:  # 显示数据含100
-                output += '=' + msg.locale.t("dice.message.output.too_long", length=length)
-            else:
-                output += '=['
-                for i in range(length):
-                    result += dice_results[i]
-                    if length <= MAX_OUTPUT_CNT:  # 显示数据含100
-                        output += str(dice_results[i])
-                        if i < length - 1:
-                            output += '+'
-                output += ']'
-        else:
-            result = dice_results[0]
+            output_buffer += '}, '
+            dice_count = exceed_result
+        output_buffer = output_buffer[:-2]  # 去除最后的', '
+        output_buffer += ']'
+        if self.count >= MAX_OUTPUT_CNT:
+            output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+        output += output_buffer
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
+
+        result = (dice_rounds - 1) * self.sides + max(dice_results)
         self.detail = output + f"={result}"
         self.result = result

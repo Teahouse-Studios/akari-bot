@@ -6,7 +6,7 @@ from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 from config import Config
 from core.exceptions import ConfigValueError
 from core.logger import Logger
-from .dice import BonusPunishDice, Dice, FudgeDice, DiceSyntaxError, DiceValueError
+from .dice import DXDice, BonusPunishDice, Dice, FudgeDice, DiceSyntaxError, DiceValueError
 
 # 配置常量
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -109,6 +109,9 @@ def parse_dice_expression(msg, dices):
         try:
             if any(item.lower() == func for func in math_funcs.keys()):
                 continue
+            elif 'C' in item:
+                dice_count += 1
+                dice_expr_list[j] = DXDice(msg, item)
             elif 'B' in item or 'P' in item:
                 dice_count += 1
                 dice_expr_list[j] = BonusPunishDice(msg, item)
@@ -161,8 +164,8 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         dice_res_list = dice_expr_list.copy()
         output_line = ''
         for i, item in enumerate(dice_detail_list):
-            if isinstance(item, (BonusPunishDice, Dice, FudgeDice)):  # 检查骰子类型并投掷
-                item.Roll(msg, use_markdown)
+            if isinstance(item, (DXDice, BonusPunishDice, Dice, FudgeDice)):  # 检查骰子类型并投掷
+                item.Roll(msg)
                 res = item.GetResult()
                 if times * dice_count < MAX_DETAIL_CNT:
                     dice_detail_list[i] = f'({item.GetDetail()})'
