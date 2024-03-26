@@ -17,12 +17,13 @@ MAX_DETAIL_CNT = Config('dice_detail_count', 5)  # n次投掷的骰子的总量�
 MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子表达式最多的项数
 
 dice_patterns = [
-    r'(\d+C\d+(?:M\d+)?)', # 双重十字骰子
-    r'((?:B|P)(?:\d+)?)',  # 奖惩骰子
-    r'((?:\d+)?D?F)',  # 命运骰子
-    r'((?:\d+)?D(?:\d+|\%)?(?:(?:K|Q)?(?:\d+)?)?)',  # 普通骰子
+#    r'(\d+A\d+K?\d*Q?\d*M?\d*)',  # WOD骰子
+    r'(\d+C\d+M?\d*)',  # 双重十字骰子
+    r'([BP]\d*)',  # 奖惩骰子
+    r'(\d*D?F)',  # 命运骰子
+    r'(\d*D\d*%?(?:K\d*|Q\d*)?)',  # 普通骰子
     r'(\d+)',  # 数字
-    r'(\(|\))',  # 括号
+    r'([\(\)])',  # 括号
 ]
 
 math_funcs = {
