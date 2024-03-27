@@ -142,14 +142,16 @@ class Dice(DiceItemBase):
         # 公用加法
         length = len(dice_results)
         if length > 1:
-            output += '=['
+            output_buffer += '=['
             for i in range(length):
                 result += dice_results[i]
-                if length <= MAX_OUTPUT_CNT:  # 显示数据含100
-                    output += str(dice_results[i])
-                    if i < length - 1:
-                        output += '+'
-            output += ']'
+                output_buffer += str(dice_results[i])
+                if i < length - 1:
+                    output_buffer += '+'
+            output_buffer += ']'
+            if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output += output_buffer
         else:
             result = dice_results[0]
         output += f'={result}'
