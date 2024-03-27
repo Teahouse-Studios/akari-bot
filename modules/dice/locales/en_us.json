@@ -5,7 +5,7 @@
     "dice.help.rule": "Modify the check rule of DC.",
     "dice.help.set": "Set the default sides number of dice.",
     "dice.message.dc.check": "▷ Success: ${success}  Failure: ${failed}",
-    "dice.message.dc.failed": "Failed!",
+    "dice.message.dc.failed": "失败！",
     "dice.message.dc.invalid": "Invalid DC: ",
     "dice.message.dc.success": "Success!",
     "dice.message.error": "Unable to parse the dice expression: ",
@@ -14,7 +14,7 @@
     "dice.message.error.syntax": "Invalid dice expression.",
     "dice.message.error.value": "Input \"${value}\". ",
     "dice.message.error.value.add_line.invalid": "无效的加骰线。",
-    "dice.message.error.value.add_line.out_of_range": "加骰线不得小于 1 或大于 ${max}。",
+    "dice.message.error.value.add_line.out_of_range": "加骰线不得小于 2 或大于 ${max}。",
     "dice.message.error.value.advantage.invalid": "Invalid advantages and disadvantages.",
     "dice.message.error.value.advantage.out_of_range": "The number of advantage and disadvantage dice is greater than the total number of dice.",
     "dice.message.error.value.count.invalid": "Invalid number of dice.",
@@ -31,5 +31,5 @@
     "dice.message.rule.enable": "The check rule has been changed to reverse.",
     "dice.message.set.clear": "Successfully cleared the default sides.",
     "dice.message.set.success": "Successfully set the default sides to ${sides}.",
-    "dice.message.too_long": "(Output is too long...)"
+    "dice.message.too_long": "Output is too long..."
 }
