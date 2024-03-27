@@ -323,14 +323,10 @@ class WODDice(DiceItemBase):
                                  self.sides)
         if self.sides == 1:
             raise DiceValueError(msg, msg.locale.t("dice.message.error.value.sides.d1"))
-        if self.add_line < 2 or self.add_line > self.sides:
+        if self.add_line != 0 and (self.add_line < 2 or self.add_line > self.sides):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.add_line.out_of_range", max=self.sides),
                                  self.add_line)
-        if self.success_line > self.count or self.success_line_max > self.count:
-            raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.success_line.out_of_range"),
-                                 self.adv)
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
@@ -378,7 +374,6 @@ class WODDice(DiceItemBase):
         output_buffer = '=['
         while dice_count:
             dice_results = []
-            new_results = []
             dice_exceed_results = []
             indexes = []
             # 生成随机序列
@@ -389,10 +384,13 @@ class WODDice(DiceItemBase):
                     indexes.append(i)
                 if success_line_max and success_line_max >= dice_results[i]:
                     indexes.append(i)
-                indexes = list(set(indexes)
-                               
-                if dice_results[i] >= add_line:
-                    dice_exceed_results.append(True)
+                indexes = list(set(indexes))
+                
+                if add_line:
+                    if dice_results[i] >= add_line:
+                        dice_exceed_results.append(True)
+                    else:
+                        dice_exceed_results.append(False)
                 else:
                     dice_exceed_results.append(False)
 
