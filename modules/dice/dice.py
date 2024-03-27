@@ -389,7 +389,7 @@ class WODDice(DiceItemBase):
                     indexes.append(i)
                 if success_line_max and success_line_max >= dice_results[i]:
                     indexes.append(i)
-                indexes = list(set(indexes)
+                indexes = list(set(indexes))
                                
                 if dice_results[i] >= add_line:
                     dice_exceed_results.append(True)
