@@ -136,7 +136,7 @@ class Dice(DiceItemBase):
                     output_buffer += ', '
             output_buffer += ']'
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+                output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
             output += output_buffer
             dice_results = new_results
         # 公用加法
@@ -150,7 +150,7 @@ class Dice(DiceItemBase):
                     output_buffer += '+'
             output_buffer += ']'
             if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
-                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+                output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
             output += output_buffer
         else:
             result = dice_results[0]
@@ -201,9 +201,8 @@ class FudgeDice(DiceItemBase):
         dice_results = ['-', '-', '0', '0', '+', '+']
         selected_results = [secrets.choice(dice_results) for _ in range(self.count)]
 
-        length = len(selected_results)
-        if length > MAX_OUTPUT_CNT:  # 显示数据含100
-            output += '=' + msg.locale.t("dice.message.output.too_long", length=length)
+        if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
+            output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
         else:
             output += '=[' + ', '.join(selected_results) + ']'
 
@@ -277,7 +276,7 @@ class BonusPunishDice(DiceItemBase):
 
         if self.count > 1:
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+                output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
             else:
                 output_buffer = '=['
                 for i in range(self.count):
@@ -417,7 +416,7 @@ class WODDice(DiceItemBase):
         output_buffer = output_buffer[:-2]  # 去除最后的', '
         output_buffer += ']'
         if self.count >= MAX_OUTPUT_CNT:
-            output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
         output += output_buffer
         
         result = success_count
@@ -513,7 +512,7 @@ class DXDice(DiceItemBase):
         output_buffer = output_buffer[:-2]  # 去除最后的', '
         output_buffer += ']'
         if self.count >= MAX_OUTPUT_CNT:
-            output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
         output += output_buffer
         
         result = (dice_rounds - 1) * self.sides + max(dice_results)
