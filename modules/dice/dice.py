@@ -349,6 +349,7 @@ class WODDice(DiceItemBase):
             midstrs = temp[1].split('M')
             dice_add_line = midstrs[0]
             dice_sides = midstrs[1]
+'''
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
@@ -358,11 +359,19 @@ class WODDice(DiceItemBase):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.add_line.invalid"),
                                  dice_add_line)
+        if not dice_success_line.isdigit():
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.dice_success_line.invalid"),
+                                dice_success_line)
+        if not dice_success_line_max.isdigit():
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.dice_success_line.invalid"),
+                                dice_success_line_max)
         if not dice_sides.isdigit():
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.sides.invalid"),
                                 dice_sides)
-'''
+            
         return (int(dice_count), int(dice_add_line), int(dice_success_line), int(dice_success_line_max), int(dice_sides))
 
     def Roll(self, msg):
@@ -379,16 +388,17 @@ class WODDice(DiceItemBase):
             dice_results = []
             new_results = []
             dice_exceed_results = []
+            indexes = []
             # 生成随机序列
             for i in range(dice_count):
                 dice_results.append(secrets.randbelow(int(self.sides)) + 1)
                         
-            indexes = np.array(dice_results).argsort() 
-        
-            if dice_results[i] >= add_line:
-                dice_exceed_results.append(True)
-            else:
-                dice_exceed_results.append(False)
+                if success_line <= dice_results[i] <= success_line_max
+                    indexes.append(i)
+                if dice_results[i] >= add_line:
+                    dice_exceed_results.append(True)
+                else:
+                    dice_exceed_results.append(False)
 
             exceed_result = 0
             output_buffer += '{'
@@ -422,7 +432,6 @@ class WODDice(DiceItemBase):
             output = msg.locale.t("dice.message.too_long")
         self.detail = output 
         self.result = result
-
 
 
 class DXDice(DiceItemBase):
