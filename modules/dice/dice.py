@@ -331,25 +331,17 @@ class WODDice(DiceItemBase):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.success_line.out_of_range"),
                                  self.adv)
-        if self.success_line >= self.success_line_max:
-            raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.success_line.reverse"),
-                                 self.adv)
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
-        dice_sides = '10'  # 骰子面数
-        if re.search(r'[^0-9AMNKQ]', dice_code):
+        match = re.match(r'(\d+)A(\d+)(?:K(\d+))?(?:Q(\d+))?(?:M(\d+))?', dice_code)
+        if not match:
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
-'''
-        temp = dice_code.split('A')
-        dice_count = temp[0]
-        dice_add_line = temp[1]
-        if 'M' in temp[1]:
-            midstrs = temp[1].split('M')
-            dice_add_line = midstrs[0]
-            dice_sides = midstrs[1]
-'''
+        dice_count = match.group(1)  # 骰子个数
+        dice_add_line = match.group(2)  # 加骰线
+        dice_success_line = match.group(3) if match.group(3) else '8'  # 成功线
+        dice_success_line_max = match.group(4) if match.group(4) else '0'  # 最大成功线
+        dice_sides = match.group(5) if match.group(5) else '10'  # 骰子面数
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
@@ -393,8 +385,12 @@ class WODDice(DiceItemBase):
             for i in range(dice_count):
                 dice_results.append(secrets.randbelow(int(self.sides)) + 1)
                         
-                if success_line <= dice_results[i] <= success_line_max
+                if success_line and success_line <= dice_results[i]:
                     indexes.append(i)
+                if success_line_max and success_line_max >= dice_results[i]:
+                    indexes.append(i)
+                indexes = list(set(indexes)
+                               
                 if dice_results[i] >= add_line:
                     dice_exceed_results.append(True)
                 else:
@@ -461,16 +457,12 @@ class DXDice(DiceItemBase):
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
-        dice_sides = '10'  # 骰子面数
-        if re.search(r'[^0-9CM]', dice_code):
+        match = re.match(r'(\d+)C(\d+)(?:M(\d+))?', dice_code)
+        if not match:
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
-        temp = dice_code.split('C')
-        dice_count = temp[0]
-        dice_add_line = temp[1]
-        if 'M' in temp[1]:
-            midstrs = temp[1].split('M')
-            dice_add_line = midstrs[0]
-            dice_sides = midstrs[1]
+        dice_count = match.group(1)  # 骰子个数
+        dice_add_line = match.group(2)  # 加骰线
+        dice_sides = match.group(3) if match.group(3) else '10'  # 骰子面数
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
