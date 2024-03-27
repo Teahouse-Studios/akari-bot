@@ -142,7 +142,7 @@ class Dice(DiceItemBase):
         # 公用加法
         length = len(dice_results)
         if length > 1:
-            output_buffer += '=['
+            output_buffer = '=['
             for i in range(length):
                 result += dice_results[i]
                 output_buffer += str(dice_results[i])
