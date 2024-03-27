@@ -321,7 +321,7 @@ class DXDice(DiceItemBase):
                                  self.sides)
         if self.sides == 1:
             raise DiceValueError(msg, msg.locale.t("dice.message.error.value.sides.d1"))
-        if self.add_line < 1 or self.add_line > self.sides:
+        if self.add_line < 2 or self.add_line > self.sides:
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.add_line.out_of_range", max=self.sides),
                                  self.add_line)

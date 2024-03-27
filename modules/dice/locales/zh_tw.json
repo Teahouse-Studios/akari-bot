@@ -10,7 +10,6 @@
     "dice.message.dc.success": "成功！",
     "dice.message.error": "無法解析骰子運算式：",
     "dice.message.error.invalid": "骰子語句中存在無法辨識的字元。",
-    "dice.message.error.parentheses": "骰子運算式中的括號未關閉。",
     "dice.message.error.prompt": "第 ${i} 項發生：",
     "dice.message.error.syntax": "無效的骰子運算式。",
     "dice.message.error.value": "輸入為「${value}」，",
