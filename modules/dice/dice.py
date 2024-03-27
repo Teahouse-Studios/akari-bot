@@ -142,22 +142,22 @@ class Dice(DiceItemBase):
         # 公用加法
         length = len(dice_results)
         if length > 1:
-            if length > MAX_OUTPUT_CNT:  # 显示数据含100
-                output += '=' + msg.locale.t("dice.message.output.too_long", length=length)
-            else:
-                output += '=['
-                for i in range(length):
-                    result += dice_results[i]
-                    if length <= MAX_OUTPUT_CNT:  # 显示数据含100
-                        output += str(dice_results[i])
-                        if i < length - 1:
-                            output += '+'
-                output += ']'
+            output_buffer = '=['
+            for i in range(length):
+                result += dice_results[i]
+                output_buffer += str(dice_results[i])
+                if i < length - 1:
+                    output_buffer += '+'
+            output_buffer += ']'
+            if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output += output_buffer
         else:
             result = dice_results[0]
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
-        self.detail = output + f"={result}"
+        self.detail = output 
         self.result = result
 
 
@@ -213,11 +213,11 @@ class FudgeDice(DiceItemBase):
             elif res == '+':
                 result += 1
 
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
-        self.detail = output + f"={result}"
+        self.detail = output 
         self.result = result
-
 
 class BonusPunishDice(DiceItemBase):
     """奖惩骰子项"""
@@ -288,15 +288,16 @@ class BonusPunishDice(DiceItemBase):
             output += output_buffer
         else:
             output += '=' + str(dice_results[0])
-        if len(output) > MAX_OUTPUT_LEN:
-            output = msg.locale.t("dice.message.too_long")
 
         if positive:
             result = max(new_results)
         else:
             result = min(new_results)
 
-        self.detail = output
+        output += f'={result}'
+        if len(output) > MAX_OUTPUT_LEN:
+            output = msg.locale.t("dice.message.too_long")
+        self.detail = output 
         self.result = result
 
 
@@ -320,7 +321,7 @@ class DXDice(DiceItemBase):
                                  self.sides)
         if self.sides == 1:
             raise DiceValueError(msg, msg.locale.t("dice.message.error.value.sides.d1"))
-        if self.add_line < 1 or self.add_line > self.sides:
+        if self.add_line < 2 or self.add_line > self.sides:
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.add_line.out_of_range", max=self.sides),
                                  self.add_line)
@@ -391,9 +392,10 @@ class DXDice(DiceItemBase):
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
         output += output_buffer
+        
+        result = (dice_rounds - 1) * self.sides + max(dice_results)
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
-
-        result = (dice_rounds - 1) * self.sides + max(dice_results)
-        self.detail = output + f"={result}"
+        self.detail = output 
         self.result = result

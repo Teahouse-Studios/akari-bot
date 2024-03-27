@@ -38,8 +38,6 @@ math_funcs = {
     'gcd': math.gcd,
     'lcm': math.lcm,
     'log': math.log,
-    'log2': math.log2,
-    'log10': math.log10,
     'perm': math.perm,
     'pow': math.pow,
     'sqrt': math.sqrt,
@@ -79,7 +77,7 @@ def parse_dice_expression(msg, dices):
         times = '1'
     if not times.isdigit():
         errmsg = msg.locale.t('dice.message.error.value.times.invalid')
-        return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + errmsg).message
+        return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
 
     dice_expr_list = re.split(f'{math_func_pattern}|' + '|'.join(dice_patterns), dices, flags=re.I)
     dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白元素
@@ -158,9 +156,9 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
     if '#' in expr:
         expr = expr.partition('#')[2]
     if times < 1 or times > MAX_ROLL_TIMES:
-        return DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.times.out_of_range", max=MAX_ROLL_TIMES),
-                                 times).message
+        errmsg = msg.locale.t('dice.message.error.value.times.out_of_range', max=MAX_ROLL_TIMES)
+        return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
+
     for _ in range(times):
         dice_detail_list = dice_expr_list.copy()
         dice_res_list = dice_expr_list.copy()
