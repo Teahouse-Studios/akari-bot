@@ -368,22 +368,27 @@ class WODDice(DiceItemBase):
     def Roll(self, msg):
         output = self.code
         result = 0
-        dice_rounds = 0
+        success_count = 0
         add_line = self.add_line
         dice_count = self.count
+        success_line = self.success_line
+        success_line_max = self.success_line_max
         
         output_buffer = '=['
         while dice_count:
             dice_results = []
+            new_results = []
             dice_exceed_results = []
-            dice_rounds += 1
             # 生成随机序列
             for i in range(dice_count):
                 dice_results.append(secrets.randbelow(int(self.sides)) + 1)
-                if dice_results[i] >= add_line:
-                    dice_exceed_results.append(True)
-                else:
-                    dice_exceed_results.append(False)
+                        
+            indexes = np.array(dice_results).argsort() 
+        
+            if dice_results[i] >= add_line:
+                dice_exceed_results.append(True)
+            else:
+                dice_exceed_results.append(False)
 
             exceed_result = 0
             output_buffer += '{'
@@ -392,9 +397,15 @@ class WODDice(DiceItemBase):
                     exceed_result += 1
                     output_buffer += '<'
                     output_buffer += str(dice_results[i])
+                    if i in indexes:
+                        success_count += 1
+                        output_buffer += '*'
                     output_buffer += '>'
                 else:
                     output_buffer += str(dice_results[i])
+                    if i in indexes:
+                        success_count += 1
+                        output_buffer += '*'
                 if i < dice_count - 1:
                     output_buffer += ', '
             output_buffer += '}, '
@@ -405,7 +416,7 @@ class WODDice(DiceItemBase):
             output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
         output += output_buffer
         
-        result = (dice_rounds - 1) * self.sides + max(dice_results)
+        result = success_count
         output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
