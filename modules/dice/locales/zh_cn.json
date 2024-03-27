@@ -22,6 +22,7 @@
     "dice.message.error.value.sides.d1": "1 面的骰子？",
     "dice.message.error.value.sides.invalid": "无效的骰子面数。",
     "dice.message.error.value.sides.out_of_range": "骰子面数不得小于 2。",
+    "dice.message.error.value.success_line.invalid": "无效的成功线。",
     "dice.message.error.value.times.invalid": "无效的投骰次数。",
     "dice.message.error.value.times.out_of_range": "投骰次数不得小于 1 或大于 ${max}。",
     "dice.message.error.value.too_long": "骰子表达式项数超过限制。",
