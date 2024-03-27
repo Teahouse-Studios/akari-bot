@@ -43,7 +43,7 @@ class DiceItemBase(object):
     def GetDetail(self):
         return self.detail
 
-    def Roll(self, msg, use_markdown: bool = False):
+    def Roll(self, msg):
         pass
 
 
@@ -56,109 +56,108 @@ class Dice(DiceItemBase):
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
-        self.type = args[1]
+        self.sides = args[1]
         self.adv = args[2]
-        if self.count <= 0 or self.count > MAX_DICE_COUNT:
+        self.positive = args[3]
+        if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
-        if self.type <= 0:
+        if self.sides < 1:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.n.less_2"),
-                                 self.type)
-        if self.type == 1:
-            raise DiceValueError(msg, msg.locale.t("dice.message.error.value.n.d1"))
+                                 msg.locale.t("dice.message.error.value.sides.out_of_range"),
+                                 self.sides)
+        if self.sides == 1:
+            raise DiceValueError(msg, msg.locale.t("dice.message.error.value.sides.d1"))
         if abs(self.adv) > self.count:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.k.out_of_range"),
+                                 msg.locale.t("dice.message.error.value.advantage.out_of_range"),
                                  self.adv)
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
         dice_code = dice_code.replace("D%", "D100")  # 百分骰别名
         dice_count = '1'  # 骰子数量
-        advantage = '0'  # 保留的骰子量
+        dice_adv = '0'  # 保留的骰子量
+        positive = 0  # 是否保留骰子
         if re.search(r'[^0-9DKQ\%]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         temp = dice_code.split('D')
         if len(temp[0]):
             dice_count = temp[0]
-        dice_type = temp[1]
+        dice_sides = temp[1]
         if 'K' in temp[1]:
             midstrs = temp[1].partition('K')
-            dice_type = midstrs[0]
-            advantage = midstrs[2]
+            dice_sides = midstrs[0]
+            dice_adv = midstrs[2]
+            positive = 1
         elif 'Q' in temp[1]:
             midstrs = temp[1].partition('Q')
-            dice_type = midstrs[0]
-            advantage = f'-{midstrs[2]}'
-        if not len(advantage.removeprefix('-')):
-            advantage += '1'  # K/Q后没有值默认为1
+            dice_sides = midstrs[0]
+            dice_adv = midstrs[2]
+            positive = -1
+        if positive and not len(dice_adv):
+            dice_adv = '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.invalid"),
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
-        if not dice_type.isdigit():
+        if not dice_sides.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.n.invalid"),
-                                dice_type)
-        if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
+                                 msg.locale.t("dice.message.error.value.sides.invalid"),
+                                dice_sides)
+        if not dice_adv.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.k.invalid"),
-                                 advantage)
-        return (int(dice_count), int(dice_type), int(advantage))
+                                 msg.locale.t("dice.message.error.value.advantage.invalid"),
+                                 dice_adv)
+        return (int(dice_count), int(dice_sides), int(dice_adv), positive)
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = self.code
         result = 0
         dice_results = []
         adv = self.adv
+        positive = self.positive
         # 生成随机序列
         for i in range(self.count):
-            dice_results.append(secrets.randbelow(int(self.type)) + 1)
+            dice_results.append(secrets.randbelow(int(self.sides)) + 1)
         if adv != 0:
             new_results = []
             indexes = np.array(dice_results).argsort()
-            indexes = indexes[-adv:] if adv > 0 else indexes[:-adv]
-            output += '=['
-            output_buffer = ''
+            indexes = indexes[-adv:] if positive == 1 else indexes[:adv]
+            output_buffer = '=['
             for i in range(self.count):
-                if use_markdown:
-                    if i in indexes:
-                        new_results.append(dice_results[i])
-                        output_buffer += f"*{str(dice_results[i])}*"
-                    else:
-                        output_buffer += f"{str(dice_results[i])}"
-                else:
-                    output_buffer += str(dice_results[i])
-                    if i in indexes:
-                        new_results.append(dice_results[i])
-                        output_buffer += '*'
+                output_buffer += str(dice_results[i])
+                if i in indexes:
+                    new_results.append(dice_results[i])
+                    output_buffer += '*'
                 if i < self.count - 1:
                     output_buffer += ', '
+            output_buffer += ']'
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer + ']'
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output += output_buffer
             dice_results = new_results
         # 公用加法
         length = len(dice_results)
         if length > 1:
-            output += '=['
-            if length > MAX_OUTPUT_CNT:  # 显示数据含100
-                output += msg.locale.t("dice.message.output.too_long", length=length)
+            output_buffer = '=['
             for i in range(length):
                 result += dice_results[i]
-                if length <= MAX_OUTPUT_CNT:  # 显示数据含100
-                    output += str(dice_results[i])
-                    if i < length - 1:
-                        output += '+'
-            output += ']'
+                output_buffer += str(dice_results[i])
+                if i < length - 1:
+                    output_buffer += '+'
+            output_buffer += ']'
+            if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            output += output_buffer
         else:
             result = dice_results[0]
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
-        self.detail = output + f"={result}"
+        self.detail = output 
         self.result = result
 
 
@@ -171,9 +170,9 @@ class FudgeDice(DiceItemBase):
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
-        if self.count <= 0 or self.count > MAX_DICE_COUNT:
+        if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
 
 
@@ -191,11 +190,11 @@ class FudgeDice(DiceItemBase):
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.invalid"),
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
         return (int(dice_count), 0)
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = self.code
         result = 0
 
@@ -203,12 +202,10 @@ class FudgeDice(DiceItemBase):
         selected_results = [secrets.choice(dice_results) for _ in range(self.count)]
 
         length = len(selected_results)
-        output += '=['
         if length > MAX_OUTPUT_CNT:  # 显示数据含100
-            output += msg.locale.t("dice.message.output.too_long", length=length)
+            output += '=' + msg.locale.t("dice.message.output.too_long", length=length)
         else:
-            output += ', '.join(selected_results)
-        output += ']'
+            output += '=[' + ', '.join(selected_results) + ']'
 
         for res in selected_results:
             if res == '-':
@@ -216,11 +213,11 @@ class FudgeDice(DiceItemBase):
             elif res == '+':
                 result += 1
 
+        output += f'={result}'
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
-        self.detail = output + f"={result}"
+        self.detail = output 
         self.result = result
-
 
 class BonusPunishDice(DiceItemBase):
     """奖惩骰子项"""
@@ -232,33 +229,36 @@ class BonusPunishDice(DiceItemBase):
         args = self.GetArgs(msg)
         self.count = args[0]
         self.positive = args[1]
-        if self.count <= 0 or self.count > MAX_DICE_COUNT:
+        if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.out_of_range", max=MAX_DICE_COUNT),
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
+        dice_count = '1'  # 骰子数量
         if re.search(r'[^0-9BP]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         if 'B' in dice_code:
             positive = False
             temp = dice_code.split('B')
-            dice_count = temp[1] if len(temp[1]) else '1'  # 骰子数量
+            if temp[1]:
+                dice_count = temp[1]
         elif 'P' in dice_code:
             positive = True
-            temp = dice_code.split('P')
-            dice_count = temp[1] if len(temp[1]) else '1'  # 骰子数量
+            temp = dice_code.split('P')    
+            if temp[1]:
+                dice_count = temp[1]
 
         # 语法合法检定
         if not dice_count.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.m.invalid"),
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
 
         return (int(dice_count), positive)
 
-    def Roll(self, msg, use_markdown=False):
+    def Roll(self, msg):
         output = ''
         dice_results = []
         positive = self.positive
@@ -276,24 +276,126 @@ class BonusPunishDice(DiceItemBase):
         new_results = [100 if item == 0 else item for item in new_results]  # 将所有00转为100
 
         if self.count > 1:
-            output += '=['
-            output_buffer = ''
-            for i in range(self.count):
-                output_buffer += str(dice_results[i])
-                if i < self.count - 1:
-                    output_buffer += ', '
             if self.count >= MAX_OUTPUT_CNT:
-                output_buffer = msg.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer + ']'
+                output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+            else:
+                output_buffer = '=['
+                for i in range(self.count):
+                    output_buffer += str(dice_results[i])
+                    if i < self.count - 1:
+                        output_buffer += ', '
+                output_buffer += ']'
+            output += output_buffer
         else:
             output += '=' + str(dice_results[0])
-        if len(output) > MAX_OUTPUT_LEN:
-            output = msg.locale.t("dice.message.too_long")
 
         if positive:
             result = max(new_results)
         else:
             result = min(new_results)
 
-        self.detail = output
+        output += f'={result}'
+        if len(output) > MAX_OUTPUT_LEN:
+            output = msg.locale.t("dice.message.too_long")
+        self.detail = output 
+        self.result = result
+
+
+class DXDice(DiceItemBase):
+    """双重十字骰子项"""
+    def __init__(self, msg, dice_code: str):
+
+        dice_code = dice_code.replace(' ', '')
+        super().__init__(dice_code)
+        args = self.GetArgs(msg)
+        self.count = args[0]
+        self.add_line = args[1]
+        self.sides = args[2]
+        if self.count < 1 or self.count > MAX_DICE_COUNT:
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
+                                 self.count)
+        if self.sides < 1:
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.sides.out_of_range"),
+                                 self.sides)
+        if self.sides == 1:
+            raise DiceValueError(msg, msg.locale.t("dice.message.error.value.sides.d1"))
+        if self.add_line < 2 or self.add_line > self.sides:
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.add_line.out_of_range", max=self.sides),
+                                 self.add_line)
+
+    def GetArgs(self, msg):
+        dice_code = self.code.upper()  # 便于识别
+        dice_sides = '10'  # 骰子面数
+        if re.search(r'[^0-9CM]', dice_code):
+            raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
+        temp = dice_code.split('C')
+        dice_count = temp[0]
+        dice_add_line = temp[1]
+        if 'M' in temp[1]:
+            midstrs = temp[1].split('M')
+            dice_add_line = midstrs[0]
+            dice_sides = midstrs[1]
+        # 语法合法检定
+        if not dice_count.isdigit():
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.count.invalid"),
+                                 dice_count)
+        if not dice_add_line.isdigit():
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.add_line.invalid"),
+                                 dice_add_line)
+        if not dice_sides.isdigit():
+            raise DiceValueError(msg,
+                                 msg.locale.t("dice.message.error.value.sides.invalid"),
+                                dice_sides)
+        return (int(dice_count), int(dice_add_line), int(dice_sides))
+
+    def Roll(self, msg):
+        output = self.code
+        result = 0
+        dice_rounds = 0
+        add_line = self.add_line
+        dice_count = self.count
+        
+        output_buffer = '=['
+        while dice_count:
+            dice_results = []
+            dice_exceed_results = []
+            dice_rounds += 1
+            # 生成随机序列
+            for i in range(dice_count):
+                dice_results.append(secrets.randbelow(int(self.sides)) + 1)
+                if dice_results[i] >= add_line:
+                    dice_exceed_results.append(True)
+                else:
+                    dice_exceed_results.append(False)
+
+            exceed_result = 0
+            output_buffer += '{'
+            for i in range(dice_count):
+                if dice_exceed_results[i]:
+                    exceed_result += 1
+                    output_buffer += '<'
+                    output_buffer += str(dice_results[i])
+                    output_buffer += '>'
+                else:
+                    output_buffer += str(dice_results[i])
+                if i < dice_count - 1:
+                    output_buffer += ', '
+            output_buffer += '}, '
+            dice_count = exceed_result
+        output_buffer = output_buffer[:-2]  # 去除最后的', '
+        output_buffer += ']'
+        if self.count >= MAX_OUTPUT_CNT:
+            output_buffer = '=' + msg.locale.t("dice.message.output.too_long", length=self.count)
+        output += output_buffer
+        
+        result = (dice_rounds - 1) * self.sides + max(dice_results)
+        output += f'={result}'
+        if len(output) > MAX_OUTPUT_LEN:
+            output = msg.locale.t("dice.message.too_long")
+        self.detail = output 
         self.result = result
