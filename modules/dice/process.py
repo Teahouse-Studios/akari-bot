@@ -159,7 +159,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         expr = expr.partition('#')[2]
     if times < 1 or times > MAX_ROLL_TIMES:
         errmsg = msg.locale.t('dice.message.error.value.times.out_of_range', max=MAX_ROLL_TIMES)
-        return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
+        return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg, times).message
 
     for _ in range(times):
         dice_detail_list = dice_expr_list.copy()
