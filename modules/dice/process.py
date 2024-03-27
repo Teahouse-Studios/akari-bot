@@ -38,8 +38,6 @@ math_funcs = {
     'gcd': math.gcd,
     'lcm': math.lcm,
     'log': math.log,
-    'log2': math.log2,
-    'log10': math.log10,
     'perm': math.perm,
     'pow': math.pow,
     'sqrt': math.sqrt,
@@ -159,7 +157,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         expr = expr.partition('#')[2]
     if times < 1 or times > MAX_ROLL_TIMES:
         errmsg = msg.locale.t('dice.message.error.value.times.out_of_range', max=MAX_ROLL_TIMES)
-        return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg, times).message
+        return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
 
     for _ in range(times):
         dice_detail_list = dice_expr_list.copy()
