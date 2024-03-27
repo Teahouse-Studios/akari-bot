@@ -330,7 +330,7 @@ class WODDice(DiceItemBase):
         if self.success_line > self.count or self.success_line_max > self.count:
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.success_line.out_of_range"),
-                                 self.adv)
+                                 self.success_line)
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
