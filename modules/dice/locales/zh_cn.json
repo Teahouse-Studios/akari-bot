@@ -1,7 +1,7 @@
 {
     "dice.help": "投掷指定骰子。",
     "dice.help.desc": "随机骰子，可指定投骰次数与 DC 判断判定。",
-    "dice.help.regex.desc": "(扔|投|掷|丢)<m>个[<n>面]骰子[<N>次] 投掷指定骰子。",
+    "dice.help.regex.desc": "(扔|投|掷|丢)<个数>个[<面数>面]骰子[<次数>次] 投掷指定骰子。",
     "dice.help.rule": "修改 DC 的判定规则。",
     "dice.help.set": "设置默认骰子面数。",
     "dice.message.dc.check": "▷ 判定成功数量：${success}  判定失败数量：${failed}",

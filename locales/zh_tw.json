@@ -31,6 +31,7 @@
     "game.message.running": "目前此遊戲正在進行。",
     "game.message.stop": "已停止。",
     "game.message.stop.none": "目前此遊戲沒有在進行。",
+    "help.option.l": "强制使用旧版。",
     "language": "繁體中文",
     "loader.load.failed": "載入模組中發生了以下錯誤，對應模組未載入：\n${detail}",
     "loader.load.success": "所有模組已正常載入。",
