@@ -19,12 +19,25 @@ from core.utils.i18n import Locale
 
 
 class Plain(PlainT):
-    def __init__(self,
-                 text, *texts):
-        self.text = str(text)
-        for t in texts:
-            self.text += str(t)
-
+    def __init__(self, text, *texts):
+        current_date = datetime.now().date()
+        if (current_date.month == 4 and current_date.day == 1) or Config('???'):
+            text_list = list(str(text))
+            for i in range(len(text_list) - 1):
+                if random.random() < 0.1:
+                    text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
+            for t in texts:
+                t_list = list(str(t))
+                for i in range(len(t_list) - 1):
+                    if random.random() < 0.1:
+                        t_list[i], t_list[i + 1] = t_list[i + 1], t_list[i]
+                text_list += t_list
+            self.text = ''.join(text_list)
+        else:
+            self.text = str(text)
+            for t in texts:
+                self.text += str(t)
+    
     def __str__(self):
         return self.text
 
