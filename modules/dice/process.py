@@ -19,7 +19,7 @@ MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子表达式最多的项�
 dice_patterns = [
     r'(\d+A\d+(?:[KQM]?\d*)?(?:[KQM]?\d*)?(?:[KQM]?\d*)?)',  # WOD骰子
     r'(\d+C\d+M?\d*)',  # 双重十字骰子
-    r'((?:D(?:100|%)?)?[BP]\d*)',  # 奖惩骰子
+    r'(?:D(?:100|%)?)?([BP]\d*)',  # 奖惩骰子
     r'(\d*D?F)',  # 命运骰子
     r'(\d*D\d*%?(?:K\d*|Q\d*)?)',  # 普通骰子
     r'(\d+)',  # 数字
