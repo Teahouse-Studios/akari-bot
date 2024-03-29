@@ -114,12 +114,16 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         if msg.target.sender_info.query.isInBlockList and not msg.target.sender_info.query.isInAllowList and not msg.target.sender_info.query.isSuperUser \
                 or msg.target.sender_id in msg.options.get('ban', []):
             return
-        msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
+
         get_custom_alias = msg.options.get('command_alias')
+        command_split: list = msg.trigger_msg.split(' ')  # 切割消息
         if get_custom_alias:
-            get_display_alias = get_custom_alias.get(msg.trigger_msg)
+            get_display_alias = get_custom_alias.get(command_split[0])
             if get_display_alias:
-                msg.trigger_msg = get_display_alias
+                command_split[0] = get_display_alias # 将自定义别名替换为命令
+        msg.trigger_msg = ' '.join(command_split) # 重新连接消息
+
+        msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
@@ -158,19 +162,19 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             else:
                 return await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
-            no_alias = False
+            not_alias = False
             for moduleName in modules:
                 if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
-                    no_alias = True
-            if not no_alias:
+                    not_alias = True
+            if not not_alias:
                 for um in current_unloaded_modules:
                     if command.startswith(um):
-                        no_alias = True
-            if not no_alias:
+                        not_alias = True
+            if not not_alias:
                 for em in err_modules:
                     if command.startswith(em):
-                        no_alias = True
-            if not no_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
+                        not_alias = True
+            if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                 alias_list = []
                 for alias in ModulesManager.modules_aliases:
                     if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
@@ -182,17 +186,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()
 
-            sudo = False
             mute = False
             if command_first_word == 'mute':
                 mute = True
-            if command_first_word == 'sudo':
-                if not msg.check_super_user():
-                    return await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
-                sudo = True
-                del command_split[0]
-                command_first_word = command_split[0].lower()
-                msg.trigger_msg = ' '.join(command_split)
 
             in_mute = msg.muted
             if in_mute and not mute:
@@ -227,7 +223,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
                             return
                     elif not module.base:
-                        if command_first_word not in msg.enabled_modules and not sudo and require_enable_modules:  # 若未开启
+                        if command_first_word not in msg.enabled_modules and require_enable_modules:  # 若未开启
                             await msg.send_message(
                                 msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
                                              prefix=msg.prefixes[0]))

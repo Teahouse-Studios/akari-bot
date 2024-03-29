@@ -167,6 +167,7 @@ async def _(event: Event):
         if result:
             reason = Locale(lang).t('tos.message.reason.mute')
             await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
+            BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
             await bot.call_action('set_group_leave', group_id=event.group_id)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
@@ -179,19 +180,21 @@ async def _(event: Event):
         if result:
             reason = Locale(lang).t('tos.message.reason.kick')
             await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
+            BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
-"""
+
 @bot.on_message('group')
 async def _(event: Event):
-    if Config('qq_group_allow_list'):
-        result = BotDBUtil.isGroupInAllowList(f'QQ|Group|{str(event.group_id)}')
-        if not result:
-            await bot.send(event=event, message='此群不在白名单中，已自动退群。'
-                                                '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
+        result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
+        if result:
+            res = Locale(lang).t('tos.message.in_group_blocklist')
+            if Config('issue_url'):
+                res += '\n' + Locale(lang).t('tos.message.appeal', issue_url=Config('issue_url'))
+            await bot.send(event=event, message=res)
             await bot.call_action('set_group_leave', group_id=event.group_id)
-"""
+
 
 qq_host = Config("qq_host")
 if qq_host:

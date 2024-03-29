@@ -49,12 +49,8 @@ async def main(msg: Bot.MessageSession):
                 get_info(
                     msg,
                     msg.parsed_msg["<address:port>"],
-                    msg.parsed_msg.get(
-                        '-r',
-                        False),
-                    msg.parsed_msg.get(
-                        '-p',
-                        False),
+                    msg.parsed_msg.get('-r', False),
+                    msg.parsed_msg.get('-p', False),
                     mode)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:

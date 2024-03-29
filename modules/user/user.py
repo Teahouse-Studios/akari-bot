@@ -4,7 +4,7 @@ import urllib.parse
 
 from bs4 import BeautifulSoup as bs
 
-from core.builtins import Plain, MessageSession
+from core.builtins import Bot, Plain
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.utils.http import get_url
@@ -12,7 +12,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.time import strptime2ts
 
 
-async def get_user_info(msg: MessageSession, wikiurl, username, profile=False):
+async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=False):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
         await msg.finish(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))
