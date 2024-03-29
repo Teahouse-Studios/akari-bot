@@ -218,6 +218,7 @@ class FudgeDice(DiceItemBase):
         self.detail = output 
         self.result = result
 
+
 class BonusPunishDice(DiceItemBase):
     """奖惩骰子项"""
 
