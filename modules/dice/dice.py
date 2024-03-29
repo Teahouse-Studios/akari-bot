@@ -237,7 +237,7 @@ class BonusPunishDice(DiceItemBase):
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
         dice_count = '1'  # 骰子数量
-        if re.search(r'[^0-9BP]', dice_code):
+        if re.search(r'[^0-9BDP]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
         if 'B' in dice_code:
             positive = False
