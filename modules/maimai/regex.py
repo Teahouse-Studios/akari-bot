@@ -40,11 +40,11 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     await msg.finish(await get_info(music, Plain(msg.locale.t("maimai.message.song",
-                                                                   artist=music['basic_info']['artist'],
-                                                                   genre=music['basic_info']['genre'],
-                                                                   bpm=music['basic_info']['bpm'],
-                                                                   version=music['basic_info']['from'],
-                                                                   level='/'.join((str(ds) for ds in music['ds']))))))
+                                                              artist=music['basic_info']['artist'],
+                                                              genre=music['basic_info']['genre'],
+                                                              bpm=music['basic_info']['bpm'],
+                                                              version=music['basic_info']['from'],
+                                                              level='/'.join((str(ds) for ds in music['ds']))))))
 
 
 @mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')

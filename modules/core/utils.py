@@ -69,6 +69,7 @@ admin = module('admin',
                       'ban list': 'admin ban list'},
                desc='{core.help.admin.desc}')
 
+
 @admin.command([
     'add <user> {{core.help.admin.add}}',
     'remove <user> {{core.help.admin.remove}}',

@@ -187,13 +187,13 @@ async def _(event: Event):
 
 @bot.on_message('group')
 async def _(event: Event):
-        result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
-        if result:
-            res = Locale(lang).t('tos.message.in_group_blocklist')
-            if Config('issue_url'):
-                res += '\n' + Locale(lang).t('tos.message.appeal', issue_url=Config('issue_url'))
-            await bot.send(event=event, message=res)
-            await bot.call_action('set_group_leave', group_id=event.group_id)
+    result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
+    if result:
+        res = Locale(lang).t('tos.message.in_group_blocklist')
+        if Config('issue_url'):
+            res += '\n' + Locale(lang).t('tos.message.appeal', issue_url=Config('issue_url'))
+        await bot.send(event=event, message=res)
+        await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
 qq_host = Config("qq_host")

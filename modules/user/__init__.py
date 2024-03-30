@@ -6,14 +6,14 @@ from modules.wiki.utils.dbutils import WikiTargetInfo
 from .user import get_user_info
 
 usr = module('user',
-              developers=['OasisAkari'],
-              recommend_modules='wiki'
-            )
+             developers=['OasisAkari'],
+             recommend_modules='wiki'
+             )
 
 
 @usr.command('<username> [-p] {{user.help.desc}}',
-              options_desc={'-p': '{user.help.option.p}'})
-async def user(msg: Bot.MessageSession, username: str, profile = False):
+             options_desc={'-p': '{user.help.option.p}'})
+async def user(msg: Bot.MessageSession, username: str, profile=False):
     if msg.parsed_msg.get('-p', False):
         profile = True
     target = WikiTargetInfo(msg)

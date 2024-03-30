@@ -70,7 +70,7 @@ class FormattedTime:
         self.seconds = seconds
         self.timezone = timezone
 
-    def to_str(self, msg: MessageSession=None):
+    def to_str(self, msg: MessageSession = None):
         ftime_template = []
         if msg:
             if self.date:
@@ -260,7 +260,7 @@ class Embed(EmbedT):
                 else:
                     raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
-    def to_message_chain(self, msg: MessageSession=None):
+    def to_message_chain(self, msg: MessageSession = None):
         text_lst = []
         if self.title:
             text_lst.append(self.title)

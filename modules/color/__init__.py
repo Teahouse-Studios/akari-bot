@@ -101,12 +101,12 @@ async def _(msg: Bot.MessageSession, color: str = None):
         align='center',
         spacing=20)
     await msg.finish(Embed(color=int(color_hex[1:], 16),
-                               image=BImage(img),
-                               fields=[EmbedField('HEX', color_hex, inline=True),
-                                       EmbedField('RGB', color_rgb, inline=True),
-                                       EmbedField('HSL', color_hsl, inline=True),
-                                       EmbedField(css_color_name, css_color_name_raw[0]),
-                                       EmbedField(material_color_name, material_color_name_raw[0])]))
+                           image=BImage(img),
+                           fields=[EmbedField('HEX', color_hex, inline=True),
+                                   EmbedField('RGB', color_rgb, inline=True),
+                                   EmbedField('HSL', color_hsl, inline=True),
+                                   EmbedField(css_color_name, css_color_name_raw[0]),
+                                   EmbedField(material_color_name, material_color_name_raw[0])]))
 
 
 def get_luminance(color: webcolors.HTML5SimpleColor):
