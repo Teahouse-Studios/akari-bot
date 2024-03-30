@@ -25,12 +25,12 @@ class Plain(PlainT):
         if (current_date.month == 4 and current_date.day == 1) or Config('???'):
             text_list = list(str(text))
             for i in range(len(text_list) - 1):
-                if random.random() < 0.1:
+                if random.random() < 0.2:
                     text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
             for t in texts:
                 t_list = list(str(t))
                 for i in range(len(t_list) - 1):
-                    if random.random() < 0.1:
+                    if random.random() < 0.2:
                         t_list[i], t_list[i + 1] = t_list[i + 1], t_list[i]
                 text_list += t_list
             self.text = ''.join(text_list)
