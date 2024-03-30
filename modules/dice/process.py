@@ -55,7 +55,6 @@ async def process_expression(msg, expr: str, dc, use_markdown=False):
         use_markdown = True
     if use_markdown:
         expr = expr.replace('*', '\\*')
-        expr = expr.replace(r'\\*', '\\*')
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)
     if err:
