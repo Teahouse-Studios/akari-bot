@@ -21,7 +21,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=Fals
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
             await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
-                                       match_interwiki.group(2), profile)
+                                match_interwiki.group(2), profile)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
@@ -155,9 +155,9 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=Fals
     if blocked_by := data.get('blocked_by', False):
         msgs.append(msg.locale.t('user.message.blocked', user=user))
         msgs.append(msg.locale.t('user.message.blocked.detail',
-                                  blocked_by=blocked_by,
-                                  blocked_time=data['blocked_time'],
-                                  blocked_expires=data['blocked_expires']))
+                                 blocked_by=blocked_by,
+                                 blocked_time=data['blocked_time'],
+                                 blocked_expires=data['blocked_expires']))
         msgs.append(msg.locale.t('user.message.blocked.reason') + data['blocked_reason'])
 
     if url := data.get('url', False):

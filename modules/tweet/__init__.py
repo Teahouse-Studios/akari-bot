@@ -39,7 +39,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
             await msg.finish(msg.locale.t('tweet.message.invalid'))
         else:
             traceback.print_exc()
-            
+
     res_json = json.loads(res)
     if not res_json['data']:
         await msg.finish(msg.locale.t('tweet.message.not_found'))

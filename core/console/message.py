@@ -30,7 +30,7 @@ class MessageSession(MessageSessionT):
         forward = False
         delete = True
         wait = True
-        
+
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
                            allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
@@ -71,7 +71,7 @@ class MessageSession(MessageSessionT):
             if append_instruction:
                 print(self.locale.t("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
-            
+
         c = await aioconsole.ainput('Confirm: ')
         if message_chain and delete:
             await send.delete()
@@ -94,7 +94,7 @@ class MessageSession(MessageSessionT):
                                              sender_from='TEST', client_name='TEST', message_id=0,
                                              reply_id=None),
                               session=Session(message=c, target='TEST|Console|0', sender='TEST|0'))
-                              
+
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
         send = None
         if message_chain:

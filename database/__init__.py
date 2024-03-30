@@ -304,7 +304,6 @@ class BotDBUtil:
             else:
                 return False
 
-
     class Data:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
             if isinstance(msg, MessageSession):

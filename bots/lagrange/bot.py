@@ -126,7 +126,7 @@ async def _(event):
     if tiny_id == GuildAccountInfo.tiny_id:
         return
     reply_id = None
-    match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
+    match_reply = re.match(r'^\\[CQ:reply,id=(-?\\d+).*\\].*', event.message)
     if match_reply:
         reply_id = int(match_reply.group(1))
     target_id = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'

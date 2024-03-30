@@ -51,6 +51,7 @@ else:
 
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
+
 @a.command('[-4] <question> {{ask.help}}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
@@ -129,7 +130,7 @@ async def _(msg: Bot.MessageSession):
                 content = block['content']['code']
                 try:
                     chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
-                                                                                                block['content']['language'])))))
+                                                                                            block['content']['language'])))))
                 except Exception as e:
                     chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
@@ -142,13 +143,14 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=60))
 
+
 def parse_markdown(md: str):
     regex = r'(```[\s\S]*?\n```|\\\[[\s\S]*?\\\]|[^\n]+)'
 
     blocks = []
     for match in re.finditer(regex, md):
         content = match.group(1)
-        
+
         if content.startswith('```'):
             block = 'code'
             try:
@@ -165,9 +167,11 @@ def parse_markdown(md: str):
 
     return blocks
 
+
 enc = tiktoken.encoding_for_model('gpt-3.5-turbo')
 INSTRUCTIONS_LENGTH = len(enc.encode(INSTRUCTIONS))
 SPECIAL_TOKEN_LENGTH = 109
+
 
 def count_token(text: str):
     return len(enc.encode(text, allowed_special="all")) + SPECIAL_TOKEN_LENGTH + INSTRUCTIONS_LENGTH

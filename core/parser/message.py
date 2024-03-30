@@ -38,6 +38,7 @@ async def check_temp_ban(target):
     else:
         return False
 
+
 async def remove_temp_ban(target):
     if await check_temp_ban(target):
         del temp_ban_counter[target]
@@ -120,8 +121,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         if get_custom_alias:
             get_display_alias = get_custom_alias.get(command_split[0])
             if get_display_alias:
-                command_split[0] = get_display_alias # 将自定义别名替换为命令
-        msg.trigger_msg = ' '.join(command_split) # 重新连接消息
+                command_split[0] = get_display_alias  # 将自定义别名替换为命令
+        msg.trigger_msg = ' '.join(command_split)  # 重新连接消息
 
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
@@ -359,8 +360,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
-                                
-                        
+
                 except AbuseWarning as e:
                     await tos_abuse_warning(msg, e)
 
@@ -383,7 +383,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
-                        msg.locale.t('parser.module.unloaded', module=command_first_word))
+                    msg.locale.t('parser.module.unloaded', module=command_first_word))
             elif command_first_word in err_modules:
                 await msg.send_message(msg.locale.t('error.module.unloaded', module=command_first_word))
 

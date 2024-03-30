@@ -8,6 +8,7 @@ from core.utils.ip import IP
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
+
 class WebRender:
     status = False
     local = False

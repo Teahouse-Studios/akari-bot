@@ -335,7 +335,7 @@ async def query_song_info(msg, query, username):
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
     await query_plate(msg, plate, username)
 
-    
+
 async def query_plate(msg, plate, username):
     if not username:
         if msg.target.sender_from == "QQ":
@@ -442,7 +442,6 @@ async def _(msg: Bot.MessageSession, level: str, page: str, username: str = None
             await msg.finish(output.strip())
     else:
         await msg.finish([Plain(output.strip())])
-
 
 
 @mai.command('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')

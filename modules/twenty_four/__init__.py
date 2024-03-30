@@ -63,25 +63,25 @@ async def find_solution(numbers):
             try:
                 if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
                     return exp
-            except:
+            except BaseException:
                 pass
             exp = '({}{}{}){}({}{}{})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             try:
                 if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
                     return exp
-            except:
+            except BaseException:
                 pass
             exp = '{}{}({}{}({}{}{}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             try:
                 if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
                     return exp
-            except:
+            except BaseException:
                 pass
             exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             try:
                 if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
                     return exp
-            except:
+            except BaseException:
                 pass
     return None
 
@@ -109,7 +109,7 @@ play_state = {}
 
 
 @tf.command('{{twenty_four.help}}')
-async def _(msg: Bot.MessageSession, use_markdown = False):
+async def _(msg: Bot.MessageSession, use_markdown=False):
     if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
         use_markdown = True
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
@@ -133,14 +133,14 @@ async def _(msg: Bot.MessageSession, use_markdown = False):
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
             if use_markdown:
-                send.replace('*', '\*')
+                send.replace('*', '\\*')
             await answer.finish(send)
         elif check_valid(expr):
             result = calc(expr)
             if not result:
                 await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
-            elif (result == 24 or 0 < 24 - result < 1e-13 ) \
-                and contains_all_numbers(expr, numbers):
+            elif (result == 24 or 0 < 24 - result < 1e-13) \
+                    and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
