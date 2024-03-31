@@ -218,8 +218,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             plain_slice.append(r.desc)
 
                     if r.link:
-                        plain_slice.append(
-                            str(Url(r.link, use_mm=not r.info.in_allowlist)))
+                        plain_slice.append(Url(r.link, use_mm=not r.info.in_allowlist))
 
                     if r.file:
                         dl_list.append(r.file)
@@ -232,8 +231,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                           (r.templates and
                                            ('Template:Disambiguation' in r.templates or
                                             'Template:Version disambiguation' in r.templates))}})
-                    if plain_slice:
-                        msg_list.append(Plain('\n'.join(plain_slice)))
+                    msg_list = plain_slice
                     if WebRender.status:
                         if r.invalid_section and r.info.in_allowlist:
                             if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
@@ -248,7 +246,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
-
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
                                     if display.isdigit():
@@ -256,8 +253,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         if display <= len(r.sections):
                                             r.selected_section = display - 1
                                             await query_pages(session, title=r.title + '#' + r.sections[display - 1])
+                                msgchain = [Plain(i_msg_lst)]
 
-                                await session.send_message(i_msg_lst, callback=_callback)
+                                await session.send_message(callback=_callback)
                             else:
                                 msg_list.append(Plain(session.locale.t('wiki.message.invalid_section')))
                 else:

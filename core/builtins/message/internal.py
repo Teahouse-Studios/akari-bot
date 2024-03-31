@@ -20,9 +20,9 @@ from core.utils.i18n import Locale
 
 
 class Plain(PlainT):
-    def __init__(self, text, *texts):
+    def __init__(self, text, *texts, what_is_this=True):
         current_date = datetime.now().date()
-        if (current_date.month == 4 and current_date.day == 1) or Config('???'):
+        if what_is_this and ((current_date.month == 4 and current_date.day == 1) or Config('???')):
             text_list = list(str(text))
             for i in range(len(text_list) - 1):
                 if random.random() < 0.2:
@@ -38,7 +38,7 @@ class Plain(PlainT):
             self.text = str(text)
             for t in texts:
                 self.text += str(t)
-    
+
     def __str__(self):
         return self.text
 
@@ -84,7 +84,7 @@ class FormattedTime:
         self.seconds = seconds
         self.timezone = timezone
 
-    def to_str(self, msg: MessageSession=None):
+    def to_str(self, msg: MessageSession = None):
         ftime_template = []
         if msg:
             if self.date:
@@ -274,7 +274,7 @@ class Embed(EmbedT):
                 else:
                     raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
-    def to_message_chain(self, msg: MessageSession=None):
+    def to_message_chain(self, msg: MessageSession = None):
         text_lst = []
         if self.title:
             text_lst.append(self.title)
