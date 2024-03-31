@@ -12,7 +12,8 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     d = []
     for x in query['query']['recentchanges'][:10]:
         if 'title' in x:
-            d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False)} - {x['title']} .. {x['user']}")
+            d.append(
+                f"•{msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False)} - {x['title']} .. {x['user']}")
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:

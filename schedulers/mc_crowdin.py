@@ -44,11 +44,7 @@ async def check_crowdin():
                     if not first and not CrowdinActivityRecords.check(identify):
                         await JobQueue.trigger_hook_all('mc_crowdin', message=[Embed(title='New Crowdin Updates', description=m).to_dict()])
                 else:
-                    detail_url = f"https://crowdin.com/backend/project_actions/activity_stream_details?request_type=project&type={
-                        act["type"]}&timestamp={
-                        act["timestamp"]}&offset=0&user_id={
-                        act["user_id"]}&project_id={
-                        act["project_id"]}&language_id=0&after_build=0&before_build=0"
+                    detail_url = f"https://crowdin.com/backend/project_actions/activity_stream_details?request_type=project&type={act["type"]}&timestamp={act["timestamp"]}&offset=0&user_id={act["user_id"]}&project_id={act["project_id"]}&language_id=0&after_build=0&before_build=0"
                     get_detail_json: dict = await get_url(detail_url, 200, attempt=1, headers=headers,
                                                           fmt='json')
                     if get_detail_json:

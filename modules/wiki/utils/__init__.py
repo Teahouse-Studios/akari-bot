@@ -13,6 +13,7 @@ from .rc_qq import rc_qq
 
 rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
 
+
 @rc_.command()
 @rc_.command('[-l] {{wiki.help.rc}}',
              options_desc={'-l': '{help.option.l}'},
@@ -50,8 +51,8 @@ ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
 
 @ab_.command()
 @ab_.command('[-l] {{wiki.help.ab}}',
-           options_desc={'-l': '{help.option.l}'},
-           available_for=['QQ', 'QQ|Group'])
+             options_desc={'-l': '{help.option.l}'},
+             available_for=['QQ', 'QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -75,7 +76,7 @@ async def ab_loader(msg: Bot.MessageSession):
 
 
 @ab_.command('{{wiki.help.ab}}',
-           exclude_from=['QQ', 'QQ|Group'])
+             exclude_from=['QQ', 'QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:

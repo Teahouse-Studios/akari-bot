@@ -30,8 +30,8 @@ m = module('module',
             'load <module> ...',
             'unload <module> ...',
             'list [-l] {{core.help.module.list}}'],
-            options_desc={'-l': '{help.option.l}'},
-            exclude_from=['QQ|Guild'])
+           options_desc={'-l': '{help.option.l}'},
+           exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
@@ -437,10 +437,10 @@ async def _(msg: Bot.MessageSession):
                 if module_.developers:
                     appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 if module_.base and not (
-                    module_.hide or module_.required_superuser or module_.required_base_superuser):
+                        module_.hide or module_.required_superuser or module_.required_base_superuser):
                     essential.append(appends)
                 if x in target_enabled_list and not (
-                    module_.hide or module_.required_superuser or module_.required_base_superuser):
+                        module_.hide or module_.required_superuser or module_.required_base_superuser):
                     m.append(appends)
             if essential:
                 tables.append(ImageTable(
@@ -472,15 +472,15 @@ async def _(msg: Bot.MessageSession):
         help_msg = [msg.locale.t("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
-            if module_list[x].base and not (module_list[x].hide or
-                    module_list[x].required_superuser or module_list[x].required_base_superuser):
+            if module_list[x].base and not (
+                    module_list[x].hide or module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
         help_msg.append(msg.locale.t("core.message.help.legacy.external"))
         module_ = []
         for x in module_list:
-            if x in target_enabled_list and not (module_list[x].hide or
-                    module_list[x].required_superuser or module_list[x].required_base_superuser):
+            if x in target_enabled_list and not (
+                    module_list[x].hide or module_list[x].required_superuser or module_list[x].required_base_superuser):
                 module_.append(x)
         help_msg.append(' | '.join(module_))
         help_msg.append(
@@ -507,7 +507,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
     help_msg = [msg.locale.t("core.message.module.list.prompt", prefix=msg.prefixes[0])]
     if Config('help_url'):
         help_msg.append(msg.locale.t(
-                       "core.message.help.more_information.document",
+            "core.message.help.more_information.document",
                         url=Config('help_url')))
     if msg.Feature.image and not legacy:
         try:
@@ -572,7 +572,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
             if x[0] == '_':
                 continue
             if module_list[x].base or module_list[x].hide or \
-            module_list[x].required_superuser or module_list[x].required_base_superuser:
+                    module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))

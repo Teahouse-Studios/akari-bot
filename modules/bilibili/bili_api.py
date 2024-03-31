@@ -10,7 +10,7 @@ headers = {
 }
 
 
-async def get_video_info(msg: Bot.MessageSession, query, get_detail = False, use_embed = False):
+async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_embed=False):
     if msg.target.sender_from in ['Discord|Client']:
         use_embed = True
     try:

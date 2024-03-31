@@ -7,7 +7,7 @@ from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 from modules.wiki.utils.wikilib import WikiLib
 
 wb = module('wiki_bot', required_superuser=True,
-             alias='wbot')
+            alias='wbot')
 
 
 @wb.handle('login <apilink> <account> <password>')

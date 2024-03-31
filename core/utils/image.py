@@ -103,8 +103,8 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                 data = await fi.read()
                 try:
                     ftt = ft.match(data)
-                    lst.append(f'<img src="data:{ftt.mime};base64,{
-                        (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
+                    lst.append(
+                        f'<img src="data:{ftt.mime};base64,{(base64.encodebytes(data)).decode("utf-8")}" width="720" />')
                 except TypeError:
                     traceback.print_exc()
         if isinstance(m, Voice):
@@ -135,12 +135,12 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
     except aiohttp.ClientConnectorError:
         if use_local:
             pic = await download_to_cache(webrender('element_screenshot', use_local=False),
-                                            status_code=200,
-                                            method='POST',
-                                            headers={'Content-Type': 'application/json'},
-                                            post_data=html_,
-                                            request_private_ip=True
-                                            )
+                                          status_code=200,
+                                          method='POST',
+                                          headers={'Content-Type': 'application/json'},
+                                          post_data=html_,
+                                          request_private_ip=True
+                                          )
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False

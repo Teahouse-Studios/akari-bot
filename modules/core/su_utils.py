@@ -217,6 +217,7 @@ async def _(msg: Bot.MessageSession, target: str):
 
 res = module('reset', required_superuser=True, base=True)
 
+
 @res.command()
 async def reset(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
@@ -329,6 +330,7 @@ if Info.subprocess:
 
 
 exit_ = module('exit', required_superuser=True, base=True, available_for=['TEST|Console'])
+
 
 @exit_.command()
 async def _(msg: Bot.MessageSession):
@@ -524,6 +526,7 @@ if Config('enable_petal'):
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
 
 lagrange = module('lagrange', required_superuser=True, base=True)
+
 
 @lagrange.command()
 async def _(msg: Bot.MessageSession):

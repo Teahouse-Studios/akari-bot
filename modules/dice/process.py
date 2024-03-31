@@ -19,8 +19,8 @@ MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子表达式最多的项�
 dice_patterns = [
     r'(\d+A\d+(?:[KQM]?\d*)?(?:[KQM]?\d*)?(?:[KQM]?\d*)?)',  # WOD骰子
     r'(\d+C\d+M?\d*)',  # 双重十字骰子
-    r'([BP]\d*)',  # 奖惩骰子
-    r'(\d*D?F)',  # 命运骰子
+    r'(?:D(?:100|%)?)?([BP]\d*)',  # 奖惩骰子
+    r'D?(\d*F)',  # 命运骰子
     r'(\d*D\d*%?(?:K\d*|Q\d*)?)',  # 普通骰子
     r'(\d+)',  # 数字
     r'([\(\)])',  # 括号
@@ -47,15 +47,14 @@ se = SimpleEval()
 se.functions.update(math_funcs)
 
 
-async def process_expression(msg, expr: str, dc, use_markdown = False):
+async def process_expression(msg, expr: str, dc, use_markdown=False):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
     if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
         use_markdown = True
     if use_markdown:
-        expr = expr.replace('*', '\*')
-        expr = expr.replace(r'\\*', '\*')
+        expr = expr.replace('*', '\\*')
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)
     if err:
@@ -68,7 +67,7 @@ def parse_dice_expression(msg, dices):
     dice_item_list = []
     math_func_pattern = '(' + '|'.join(re.escape(func) for func in math_funcs.keys()) + ')'  # 数学函数
     errmsg = None
-        
+
     # 切分骰子表达式
     if '#' in dices:
         times = dices.partition('#')[0]
@@ -83,7 +82,7 @@ def parse_dice_expression(msg, dices):
     dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白元素
     for item in range(len(dice_expr_list)):
         if dice_expr_list[item][-1].upper() == 'D' and dice_expr_list[item] not in math_funcs.keys()\
-        and msg.data.options.get('dice_default_sides'):
+                and msg.data.options.get('dice_default_sides'):
             dice_expr_list[item] += str(msg.data.options.get('dice_default_sides'))
 
     for i, item in enumerate(dice_expr_list):  # 将所有骰子项切片转为大写
@@ -102,7 +101,7 @@ def parse_dice_expression(msg, dices):
     if len(dice_item_list) > MAX_ITEM_COUNT:
         errmsg = msg.locale.t('dice.message.error.value.too_long')
         return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + errmsg).message
-        
+
     dice_count = 0
     # 初始化骰子序列
     for j, item in enumerate(dice_expr_list):
@@ -133,6 +132,8 @@ def parse_dice_expression(msg, dices):
     return dice_expr_list, dice_count, int(times), None
 
 # 在数字与数字之间加上乘号
+
+
 def insert_multiply(lst, use_markdown=False):
     result = []
     asterisk = '/*' if use_markdown else '*'
@@ -140,18 +141,20 @@ def insert_multiply(lst, use_markdown=False):
         if i == 0:
             result.append(lst[i])
         else:
-            if lst[i-1][-1].isdigit() and lst[i][0].isdigit():
+            if lst[i - 1][-1].isdigit() and lst[i][0].isdigit():
                 result.append(asterisk)
-            elif lst[i-1][-1] == ')' and lst[i][0] == '(':
+            elif lst[i - 1][-1] == ')' and lst[i][0] == '(':
                 result.append(asterisk)
-            elif lst[i-1][-1].isdigit() and lst[i][0] == '(':
+            elif lst[i - 1][-1].isdigit() and lst[i][0] == '(':
                 result.append(asterisk)
-            elif lst[i-1][-1] == ')' and lst[i][0].isdigit():
+            elif lst[i - 1][-1] == ')' and lst[i][0].isdigit():
                 result.append(asterisk)
             result.append(lst[i])
     return result
 
 # 开始投掷并生成消息
+
+
 def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
     success_num = 0
     fail_num = 0
@@ -185,7 +188,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
         try:
             if dice_res_list:
                 dice_res = ''.join(dice_res_list)
-                dice_res = dice_res.replace('\*', '*')
+                dice_res = dice_res.replace('\\*', '*')
                 Logger.debug(dice_res)
                 result = int(se.eval(dice_res))
             else:

@@ -6,7 +6,7 @@ dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon', 'DoroWol
 
 
 @dice.command('<dices> [<dc>] {{dice.help}}')
-async def _(msg: Bot.MessageSession, dices: str, dc = None):
+async def _(msg: Bot.MessageSession, dices: str, dc=None):
     await msg.finish(await process_expression(msg, dices, dc))
 
 

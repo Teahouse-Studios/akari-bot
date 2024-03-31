@@ -1,7 +1,7 @@
 {
     "dice.help": "投掷指定骰子。",
     "dice.help.desc": "随机骰子，可指定投骰次数与 DC 判断判定。",
-    "dice.help.regex.desc": "(扔|投|掷|丢)<m>个[<n>面]骰子[<N>次] 投掷指定骰子。",
+    "dice.help.regex.desc": "(扔|投|掷|丢)<个数>个[<面数>面]骰子[<次数>次] 投掷指定骰子。",
     "dice.help.rule": "修改 DC 的判定规则。",
     "dice.help.set": "设置默认骰子面数。",
     "dice.message.dc.check": "▷ 判定成功数量：${success}  判定失败数量：${failed}",
@@ -22,6 +22,7 @@
     "dice.message.error.value.sides.d1": "1 面的骰子？",
     "dice.message.error.value.sides.invalid": "无效的骰子面数。",
     "dice.message.error.value.sides.out_of_range": "骰子面数不得小于 2。",
+    "dice.message.error.value.success_line.invalid": "无效的成功线。",
     "dice.message.error.value.times.invalid": "无效的投骰次数。",
     "dice.message.error.value.times.out_of_range": "投骰次数不得小于 1 或大于 ${max}。",
     "dice.message.error.value.too_long": "骰子表达式项数超过限制。",
