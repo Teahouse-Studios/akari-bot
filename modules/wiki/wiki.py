@@ -253,9 +253,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         if display <= len(r.sections):
                                             r.selected_section = display - 1
                                             await query_pages(session, title=r.title + '#' + r.sections[display - 1])
-                                msgchain = [Plain(i_msg_lst)]
 
-                                await session.send_message(callback=_callback)
+                                await session.send_message(i_msg_lst, callback=_callback)
                             else:
                                 msg_list.append(Plain(session.locale.t('wiki.message.invalid_section')))
                 else:
