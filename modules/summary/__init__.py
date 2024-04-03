@@ -73,7 +73,7 @@ async def _(msg: Bot.MessageSession):
             ]
         )
         output = completion.choices[0].message.content
-        tokens = completion.usage.total_token
+        tokens = completion.usage.total_tokens
 
         petal = await count_petal(msg, tokens)
         if petal != 0:
