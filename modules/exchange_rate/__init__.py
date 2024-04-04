@@ -32,9 +32,9 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
             amount = 1.0
 
         if amount <= 0:
-            await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
+            await msg.finish(msg.locale.t('exchange_rate.message.invalid.non_positive'))
     except ValueError:
-        await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
+        await msg.finish(msg.locale.t('exchange_rate.message.invalid.non_digital'))
     await msg.finish(await exchange(base_currency, target, amount, msg))
 
 
@@ -55,7 +55,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         else:
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
-            await msg.finish(f"{msg.locale.t('exchange_rate.message.error.unit')}{' '.join(unsupported_currencies)}")
+            await msg.finish(f"{msg.locale.t('exchange_rate.message.invalid.unit')}{' '.join(unsupported_currencies)}")
     else:
         raise Exception(data['error-type'])
 
