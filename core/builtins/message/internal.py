@@ -27,7 +27,7 @@ class Plain(PlainT):
         current_date = datetime.now().date()
         if not disable_joke:
             if Config('???') or (Config('???') is None and (current_date.month == 4 and current_date.day == 1)):
-                self.text = self.to_joke(self)
+                self.text = self.to_joke()
 
     def __str__(self):
         return self.text
