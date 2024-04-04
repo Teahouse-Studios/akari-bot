@@ -177,7 +177,7 @@
     "core.message.setup.typing.disable": "已停用輸入提醒。",
     "core.message.setup.typing.enable": "已啟用輸入提醒。",
     "core.message.update.failed": "嘗試從 GitHub 取得更新失敗。",
-    "core.message.version": "目前機器人版本號：${commit}",
+    "core.message.version": "目前機器人版本號：${commit}\nCommit訊息：${commit_url}",
     "core.message.version.unknown": "無法取得版本號。此實例可能沒有使用 Git 進行部署。",
     "core.message.whoami": "你的 ID 是：${sender}\n此對話的 ID 是：${target}",
     "core.message.whoami.admin": "（你擁有此對話的管理員權限）",

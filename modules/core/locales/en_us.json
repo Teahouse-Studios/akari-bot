@@ -177,7 +177,7 @@
     "core.message.setup.typing.disable": "Input prompt disabled.",
     "core.message.setup.typing.enable": "Input prompt enabled.",
     "core.message.update.failed": "Failed to fetch update from GitHub.",
-    "core.message.version": "Current bot version: ${commit}",
+    "core.message.version": "Current bot version: ${commit}\nCommit details：${commit_url}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
     "core.message.whoami": "Your ID: ${sender}\nConversation ID: ${target}",
     "core.message.whoami.admin": "(You have admin permission for this conversation)",
