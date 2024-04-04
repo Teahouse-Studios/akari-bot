@@ -13,6 +13,8 @@ from core.utils.info import Info
 from core.utils.web_render import WebRender
 from database import BotDBUtil
 
+import subprocess
+
 jwt_secret = Config('jwt_secret')
 
 ver = module('version', base=True)
@@ -21,7 +23,11 @@ ver = module('version', base=True)
 @ver.command('{{core.help.version}}')
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
-        await msg.finish(msg.locale.t('core.message.version', commit=Info.version[0:6]))
+        commit = Info.version[0:6]
+        repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
+        repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
+        commit_url = f"{repo_url}/commit/{commit}"
+        await msg.finish(msg.locale.t('core.message.version', commit=commit, commit_url=commit_url))
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
