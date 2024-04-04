@@ -20,24 +20,14 @@ from core.utils.i18n import Locale
 
 
 class Plain(PlainT):
-    def __init__(self, text, *texts, what_is_this=True):
+    def __init__(self, text, *texts, disable_joke: bool = False):
+        self.text = str(text)
+        for t in texts:
+            self.text += str(t)
         current_date = datetime.now().date()
-        if what_is_this and ((current_date.month == 4 and current_date.day == 1) or Config('???')):
-            text_list = list(str(text))
-            for i in range(len(text_list) - 1):
-                if random.random() < 0.2:
-                    text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
-            for t in texts:
-                t_list = list(str(t))
-                for i in range(len(t_list) - 1):
-                    if random.random() < 0.2:
-                        t_list[i], t_list[i + 1] = t_list[i + 1], t_list[i]
-                text_list += t_list
-            self.text = ''.join(text_list)
-        else:
-            self.text = str(text)
-            for t in texts:
-                self.text += str(t)
+        if not disable_joke:
+            if Config('???') or (Config('???') is None and (current_date.month == 4 and current_date.day == 1)):
+                self.text = self.to_joke(self)
 
     def __str__(self):
         return self.text
@@ -47,6 +37,13 @@ class Plain(PlainT):
 
     def to_dict(self):
         return {'type': 'plain', 'data': {'text': self.text}}
+
+    def to_joke(self):
+        text_list = list(self.text)
+        for i in range(len(text_list) - 1):
+            if random.random() < 0.2:
+                text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
+        return ''.join(text_list)
 
 
 class Url(UrlT):
