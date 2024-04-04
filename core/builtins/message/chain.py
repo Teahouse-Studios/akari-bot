@@ -31,7 +31,7 @@ class MessageChain(MessageChainT):
                 if isinstance(e, ErrorMessage):
                     self.value.append(Plain(str(e)))
                 elif isinstance(e, Url):
-                    self.value.append(Plain(e.url))
+                    self.value.append(Plain(e, disable_joke=True))
                 elif isinstance(e, (Plain, Image, Voice, Embed, FormattedTime, I18NContext)):
                     if isinstance(e, Plain):
                         if e.text != '':
