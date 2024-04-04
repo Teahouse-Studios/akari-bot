@@ -1,4 +1,5 @@
 import base64
+import random
 import re
 import uuid
 from datetime import datetime
@@ -19,11 +20,14 @@ from core.utils.i18n import Locale
 
 
 class Plain(PlainT):
-    def __init__(self,
-                 text, *texts):
+    def __init__(self, text, *texts, disable_joke: bool = False):
         self.text = str(text)
         for t in texts:
             self.text += str(t)
+        current_date = datetime.now().date()
+        if not disable_joke:
+            if Config('???') or (Config('???') is None and (current_date.month == 4 and current_date.day == 1)):
+                self.text = self.to_joke()
 
     def __str__(self):
         return self.text
@@ -33,6 +37,13 @@ class Plain(PlainT):
 
     def to_dict(self):
         return {'type': 'plain', 'data': {'text': self.text}}
+
+    def to_joke(self):
+        text_list = list(self.text)
+        for i in range(len(text_list) - 1):
+            if random.random() < 0.2:
+                text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
+        return ''.join(text_list)
 
 
 class Url(UrlT):
