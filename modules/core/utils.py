@@ -13,6 +13,8 @@ from core.utils.info import Info
 from core.utils.web_render import WebRender
 from database import BotDBUtil
 
+import subprocess
+
 jwt_secret = Config('jwt_secret')
 
 ver = module('version', base=True)
