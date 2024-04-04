@@ -112,7 +112,7 @@ async def _(msg: Bot.MessageSession, target: str):
         elif v.upper() == 'FALSE':
             v = False
         target_data.edit_option(k, v)
-        await msg.finish(msg.locale.t("core.message.set.option.edit.success", key=k, value=v))
+        await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
     elif 'remove' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         target_data.remove_option(k)
@@ -128,7 +128,7 @@ if Bot.client_name == 'QQ':
         k = 'in_post_whitelist'
         v = not target_data.options.get(k, False)
         target_data.edit_option(k, v)
-        await msg.finish(msg.locale.t("core.message.set.option.edit.success", key=k, value=v))
+        await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
 ae = module('abuse', alias='ae', required_superuser=True, base=True)
