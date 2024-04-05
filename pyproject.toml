@@ -12,6 +12,7 @@ authors = [
 license = "AGPL-3.0"
 readme = "README.md"
 
+
 [tool.poetry.dependencies]
 python = "^3.12.0"
 Pillow = "^10.2.0"
@@ -63,10 +64,15 @@ future = "^1.0.0"
 fastapi = "^0.109.2"
 oss2 = "^2.18.4"
 
-
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
 pycodestyle = "2.10.0"
+
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "default"
 
 [build-system]
 requires = ["poetry-core"]
