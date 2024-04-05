@@ -364,7 +364,7 @@ class FetchTarget(FetchedTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        match_channel = re.match(r"^(Matrix)\|(.*)", target_id)
+        match_channel = re.match(r"^(Matrix\|.*?)\|(.*)", target_id)
         if match_channel:
             target_from = sender_from = match_channel.group(1)
             target_id = match_channel.group(2)
