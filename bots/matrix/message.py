@@ -65,6 +65,7 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         sentMessages: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(self, embed=False):
+
             async def sendMsg(content):
                 reply_to = None
                 reply_to_user = None
