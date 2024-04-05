@@ -1,5 +1,4 @@
 import base64
-import random
 import re
 import uuid
 from datetime import datetime
@@ -13,6 +12,7 @@ from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
 from config import Config
+from core.builtins.utils import shuffle_joke
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.types.message import MessageSession
@@ -24,10 +24,8 @@ class Plain(PlainT):
         self.text = str(text)
         for t in texts:
             self.text += str(t)
-        current_date = datetime.now().date()
         if not disable_joke:
-            if Config('???') or (Config('???') is None and (current_date.month == 4 and current_date.day == 1)):
-                self.text = self.to_joke()
+            self.text = shuffle_joke(self.text)
 
     def __str__(self):
         return self.text
@@ -37,20 +35,6 @@ class Plain(PlainT):
 
     def to_dict(self):
         return {'type': 'plain', 'data': {'text': self.text}}
-
-    def to_joke(self):
-        urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', self.text)
-        url_positions = [(m.start(), m.end(), url) for url, m in zip(urls, re.finditer(r'http[s]?://', self.text))]
-
-        text_without_urls = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '__URL__', self.text)
-        text_list = list(text_without_urls)
-        for i in range(len(text_list) - 1):
-            if random.random() < 0.2:
-                text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
-        for start, end, url in url_positions:
-            text_list[start:end] = url
-
-        return ''.join(text_list)
 
 
 class Url(UrlT):

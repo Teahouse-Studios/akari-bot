@@ -23,7 +23,7 @@ async def uuid_to_skin_and_cape(uuid):
             'https://crafatar.com/skins/' + uuid)
         is_cape = True
         try:
-            await get_url('https://crafatar.com/capes/' + uuid, status_code=200)
+            await get_url('https://crafatar.com/capes/' + uuid, 200, logging_err_resp=False)
         except ValueError:
             is_cape = False
         path = None

@@ -6,6 +6,7 @@ import aiohttp
 import ujson as json
 from tabulate import tabulate
 
+from core.builtins.utils import shuffle_joke
 from core.logger import Logger
 from .cache import random_cache_path
 from .http import download_to_cache
@@ -35,12 +36,14 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             for row in tbl.data:
                 cs = []
                 for c in row:
+                    c = shuffle_joke(c)
                     cs.append(re.sub(r'\n', '<br>', escape(c)))
                 d.append(cs)
-            w = len(tbl.headers) * 500
+            headers = [shuffle_joke(header) for header in tbl.headers]
+            w = len(headers) * 500
             if w > max_width:
                 max_width = w
-            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, tbl.headers, tablefmt='unsafehtml')))
+            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, headers, tablefmt='unsafehtml')))
         tblst = '<table>' + '\n'.join(tblst) + '</table>'
         css = """
         <style>table {

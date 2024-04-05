@@ -1,3 +1,7 @@
+import random
+import re
+from datetime import datetime
+
 from config import Config
 from core.types import PrivateAssets, Secret
 
@@ -10,4 +14,31 @@ class EnableDirtyWordCheck:
     status = False
 
 
-__all__ = ["confirm_command", "command_prefix", "EnableDirtyWordCheck", "PrivateAssets", "Secret"]
+def shuffle_joke(text: str):
+    current_date = datetime.now().date()
+    if Config('???') or (Config('???') is None and (current_date.month == 4 and current_date.day == 1)):
+        urls = re.finditer(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+        url_positions = [(url.start(), url.end()) for url in urls]
+
+        parts = []
+        start = 0
+        for start_pos, end_pos in url_positions:
+            if start < start_pos:
+                parts.append(text[start:start_pos])
+            parts.append(text[start_pos:end_pos])
+            start = end_pos
+        if start < len(text):
+            parts.append(text[start:])
+
+        for i in range(0, len(parts), 2):
+            text_list = list(parts[i])
+            for j in range(len(text_list) - 1):
+                if random.random() < 0.2:
+                    text_list[j], text_list[j + 1] = text_list[j + 1], text_list[j]
+            parts[i] = ''.join(text_list)
+        return ''.join(parts)
+    else:
+        return text
+
+
+__all__ = ["confirm_command", "command_prefix", "shuffle_joke", "EnableDirtyWordCheck", "PrivateAssets", "Secret"]
