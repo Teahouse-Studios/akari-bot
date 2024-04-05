@@ -76,6 +76,8 @@ class CFG:
         value = value_s.get(q)
         if value is None:
             value = value_n.get(q)
+        if value is None:
+            print(f'[Config] Config {q} not found, is it configured?')
         if value is None and default is not None:
             return default
         if default is not None:

@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 import re
 import uuid
 from datetime import datetime
@@ -35,7 +35,6 @@ class Plain(PlainT):
 
     def to_dict(self):
         return {'type': 'plain', 'data': {'text': self.text}}
-
 
 class Url(UrlT):
     mm = False
