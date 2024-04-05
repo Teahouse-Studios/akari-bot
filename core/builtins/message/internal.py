@@ -40,19 +40,15 @@ class Plain(PlainT):
 
     def to_joke(self):
         urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', self.text)
-        placeholders = []
-        for url in urls:
-            placeholder = f'__URL_{len(placeholders)}__'
-            self.text = self.text.replace(url, placeholder)
-            placeholders.append((url, placeholder))
+        url_positions = [(m.start(), m.end(), url) for url, m in zip(urls, re.finditer(r'http[s]?://', self.text))]
 
-        text_list = list(self.text)
+        text_without_urls = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '__URL__', self.text)
+        text_list = list(text_without_urls)
         for i in range(len(text_list) - 1):
             if random.random() < 0.2:
                 text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
-
-        for url, placeholder in placeholders:
-            self.text = self.text.replace(placeholder, url)
+        for start, end, url in url_positions:
+            text_list[start:end] = url
 
         return ''.join(text_list)
 
