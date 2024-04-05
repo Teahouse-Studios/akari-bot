@@ -9,7 +9,7 @@ from khl import MessageTypes, Message
 from bots.kook.client import bot
 from bots.kook.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
@@ -72,7 +72,7 @@ class MessageSession(MessageSessionT):
         self.session.message: Message
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
         self.sent.append(message_chain)
         count = 0
         send = []
@@ -104,7 +104,7 @@ class MessageSession(MessageSessionT):
             msg_ids.append(x['msg_id'])
             if callback:
                 MessageTaskManager.add_callback(x['msg_id'], callback)
-        return FinishedSession(self, msg_ids, {self.session.message.channel_type.name: send})
+        return FinishedSession(self, msg_ids, {self.session.message.channel_type.name.title(): send})
 
     async def check_native_permission(self):
         self.session.message: Message
@@ -172,11 +172,11 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
-        if self.target.target_from == 'Kook|GROUP':
+        if self.target.target_from == 'Kook|Group':
             get_channel = await bot.client.fetch_public_channel(self.session.target)
             if not get_channel:
                 return False
-        elif self.target.target_from == 'Kook|PERSON':
+        elif self.target.target_from == 'Kook|Person':
             get_channel = await bot.client.fetch_user(self.session.target)
             Logger.debug(f'get_channel: {get_channel}')
             if not get_channel:

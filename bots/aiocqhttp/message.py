@@ -14,7 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from config import Config
-from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice, MessageTaskManager
+from core.builtins import Bot, base_superuser_list, command_prefix, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
@@ -121,7 +121,7 @@ class MessageSession(MessageSessionT):
             msg = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:
