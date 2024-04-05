@@ -101,7 +101,7 @@
     "core.message.leave.confirm": "此行為不可逆，你確定嗎？",
     "core.message.leave.success": "已執行，再見。",
     "core.message.locale": "目前使用的語言：${lang}",
-    "core.message.locale.contribute": "歡迎前往協助翻譯：",
+    "core.message.locale.contribute": "歡迎前往協助翻譯：\n${url}",
     "core.message.locale.langlist": "已支援的語言碼：${langlist}",
     "core.message.locale.reload.failed": "以下字串重新加載失敗：",
     "core.message.locale.set.invalid": "語言碼無效。",

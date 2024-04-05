@@ -101,7 +101,7 @@
     "core.message.leave.confirm": "This operation is irreversible. Are you sure?",
     "core.message.leave.success": "Goodbye.",
     "core.message.locale": "Current language: ${lang}",
-    "core.message.locale.contribute": "Help with translation:",
+    "core.message.locale.contribute": "Help with translation: \n${url}",
     "core.message.locale.langlist": "Supported language codes: ${langlist}",
     "core.message.locale.reload.failed": "Failed to reload the following string:",
     "core.message.locale.set.invalid": "Invalid language code.",
