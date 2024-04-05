@@ -69,7 +69,9 @@ class MessageSession(MessageSessionT):
                     content[
                         'body'] = f">{' *' if reply_to_type == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
                     content['format'] = 'org.matrix.custom.html'
-                    html_text = x.text.replace('\n', '<br />')
+                    html_text = x.text
+                    html_text = html_text.replace("<", "&lt;").replace(">", "&gt;")
+                    html_text = html_text.replace("\n", "<br />")
                     content[
                         'formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{html_text}"
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
