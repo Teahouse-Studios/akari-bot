@@ -6,7 +6,7 @@ import psutil
 from cpuinfo import get_cpu_info
 
 from config import Config
-from core.builtins import Bot
+from core.builtins import Bot, Plain, Url
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
@@ -27,7 +27,7 @@ async def bot_version(msg: Bot.MessageSession):
         repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
         repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
         commit_url = f"{repo_url}/commit/{commit}"
-        await msg.finish(msg.locale.t('core.message.version', commit=commit, commit_url=commit_url))
+        await msg.finish([Plain(msg.locale.t('core.message.version', commit=commit)), Url(commit_url)])
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
@@ -141,11 +141,11 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang
 @locale.command()
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
+    res = [Plain(msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
-        msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
+        msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang))]
     if Config('locale_url'):
-        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url'))
+        res += [Plain(msg.locale.t("core.message.locale.contribute")), Url(Config('locale_url'))]
     await msg.finish(res)
 
 
@@ -166,7 +166,7 @@ async def reload_locale(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
+        await msg.finish([Plain(msg.locale.t("core.message.locale.reload.failed")), Plain('\n'.join(err))])
 
 
 whoami = module('whoami', base=True)

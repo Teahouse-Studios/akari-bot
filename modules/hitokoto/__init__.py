@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, Plain, Url
 from core.component import module
 from core.utils.http import get_url
 
@@ -26,4 +26,4 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
     from_who = data["from_who"] or ""
     tp = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + data['type'])
     link = f"https://hitokoto.cn?id={data['id']}"
-    await msg.finish(f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}\n{link}")
+    await msg.finish([Plain(f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}"), Url(link)])

@@ -112,7 +112,7 @@ async def _(msg: Bot.MessageSession, target: str):
         elif v.upper() == 'FALSE':
             v = False
         target_data.edit_option(k, v)
-        await msg.finish(msg.locale.t("core.message.set.option.edit.success", key=k, value=v))
+        await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
     elif 'remove' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         target_data.remove_option(k)
@@ -128,7 +128,7 @@ if Bot.client_name == 'QQ':
         k = 'in_post_whitelist'
         v = not target_data.options.get(k, False)
         target_data.edit_option(k, v)
-        await msg.finish(msg.locale.t("core.message.set.option.edit.success", key=k, value=v))
+        await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
 ae = module('abuse', alias='ae', required_superuser=True, base=True)
@@ -197,22 +197,23 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
-@ae.command('block <target>', available_for='QQ|Group')
-async def _(msg: Bot.MessageSession, target: str):
-    if not target.startswith(f'{msg.target.target_from}|'):
-        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-    if target == msg.target.target_id:
-        await msg.finish(msg.locale.t("core.message.abuse.block.self"))
-    if BotDBUtil.GroupBlockList.add(target):
-        await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
+if Bot.client_name == 'QQ':
+    @ae.command('block <target>')
+    async def _(msg: Bot.MessageSession, target: str):
+        if not target.startswith('QQ|Group|'):
+            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
+        if target == msg.target.target_id:
+            await msg.finish(msg.locale.t("core.message.abuse.block.self"))
+        if BotDBUtil.GroupBlockList.add(target):
+            await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
 
-@ae.command('unblock <target>', available_for='QQ|Group')
-async def _(msg: Bot.MessageSession, target: str):
-    if not target.startswith(f'{msg.target.target_from}|'):
-        await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-    if BotDBUtil.GroupBlockList.remove(target):
-        await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
+    @ae.command('unblock <target>')
+    async def _(msg: Bot.MessageSession, target: str):
+        if not target.startswith('QQ|Group|'):
+            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
+        if BotDBUtil.GroupBlockList.remove(target):
+            await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
 
 
 res = module('reset', required_superuser=True, base=True)
