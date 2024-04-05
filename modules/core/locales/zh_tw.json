@@ -103,7 +103,7 @@
     "core.message.locale": "目前使用的語言：${lang}",
     "core.message.locale.contribute": "歡迎前往協助翻譯：\n${url}",
     "core.message.locale.langlist": "已支援的語言碼：${langlist}",
-    "core.message.locale.reload.failed": "以下字串重新加載失敗：",
+    "core.message.locale.reload.failed": "以下字串重新加載失敗：\n${detail}",
     "core.message.locale.set.invalid": "語言碼無效。",
     "core.message.locale.set.prompt": "可使用「${prefix}locale <語言碼>」設定語言。",
     "core.message.module.disable.already": "失敗：「${module}」模組已停用。",
