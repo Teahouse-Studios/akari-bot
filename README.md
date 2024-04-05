@@ -53,7 +53,7 @@
 
 #### Matrix
 
-链接：<https://www.matrix.to/#/@akaribot:matrix.org>，支持私聊和群聊。
+链接：<https://matrix.to/#/@akaribot:matrix.org>，支持私聊和群聊。
 
 ### 自搭建
 
