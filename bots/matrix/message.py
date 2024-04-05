@@ -137,7 +137,7 @@ class MessageSession(MessageSessionT):
                         f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{html_text}"
                     )
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
-                sendMsg(content)
+                await sendMsg(content)
             elif isinstance(x, Image):
                 split = [x]
                 if allow_split_image:
@@ -190,7 +190,7 @@ class MessageSession(MessageSessionT):
                         Logger.info(
                             f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
                         )
-                        sendMsg(content)
+                        await sendMsg(content)
             elif isinstance(x, Voice):
                 path = x.path
                 filename = os.path.basename(path)
@@ -239,7 +239,7 @@ class MessageSession(MessageSessionT):
                 Logger.info(
                     f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
                 )
-                sendMsg(content)
+                await sendMsg(content)
         if callback:
             for x in sentMessages:
                 MessageTaskManager.add_callback(x.event_id, callback)
