@@ -39,10 +39,11 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                     c = shuffle_joke(c)
                     cs.append(re.sub(r'\n', '<br>', escape(c)))
                 d.append(cs)
-            w = len(tbl.headers) * 500
+            headers = [shuffle_joke(header) for header in tbl.headers]
+            w = len(headers) * 500
             if w > max_width:
                 max_width = w
-            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, tbl.headers, tablefmt='unsafehtml')))
+            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, headers, tablefmt='unsafehtml')))
         tblst = '<table>' + '\n'.join(tblst) + '</table>'
         css = """
         <style>table {
