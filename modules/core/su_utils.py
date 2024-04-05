@@ -201,7 +201,7 @@ if Bot.client_name == 'QQ':
     @ae.command('block <target>')
     async def _(msg: Bot.MessageSession, target: str):
         if not target.startswith('QQ|Group|'):
-            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group|'))
+            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
         if target == msg.target.target_id:
             await msg.finish(msg.locale.t("core.message.abuse.block.self"))
         if BotDBUtil.GroupBlockList.add(target):
@@ -211,7 +211,7 @@ if Bot.client_name == 'QQ':
     @ae.command('unblock <target>')
     async def _(msg: Bot.MessageSession, target: str):
         if not target.startswith('QQ|Group|'):
-            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group|'))
+            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
         if BotDBUtil.GroupBlockList.remove(target):
             await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
 
