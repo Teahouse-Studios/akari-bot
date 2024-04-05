@@ -63,13 +63,62 @@ class MessageSession(MessageSessionT):
                 Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe")))
             )
         self.sent.append(message_chain)
-        send: list[nio.RoomSendResponse] = []
+        sentMessages: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(self, embed=False):
             reply_to = None
             reply_to_user = None
-            if quote and len(send) == 0:
+            if quote and len(sentMessages) == 0:
                 reply_to = self.target.message_id
                 reply_to_user = self.session.sender
+
+            async def sendMsg(content):
+                if reply_to:
+                    # rich reply
+                    content["m.relates_to"] = {"m.in_reply_to": {"event_id": reply_to}}
+                    # mention target user
+                    content["m.mentions"] = {"user_ids": [reply_to_user]}
+
+                if (
+                    self.session.message
+                    and "m.relates_to" in self.session.message["content"]
+                ):
+                    relates_to = self.session.message["content"]["m.relates_to"]
+                    if (
+                        "rel_type" in relates_to
+                        and relates_to["rel_type"] == "m.thread"
+                    ):
+                        # replying in thread
+                        thread_root = relates_to["event_id"]
+                        if reply_to:
+                            # reply to msg replying in thread
+                            content["m.relates_to"] = {
+                                "rel_type": "m.thread",
+                                "event_id": thread_root,
+                                "is_falling_back": False,
+                                "m.in_reply_to": {"event_id": reply_to},
+                            }
+                            pass
+                        else:
+                            # reply in thread
+                            content["m.relates_to"] = {
+                                "rel_type": "m.thread",
+                                "event_id": thread_root,
+                                "is_falling_back": True,
+                                "m.in_reply_to": {"event_id": self.target.message_id},
+                            }
+
+                resp = await bot.room_send(
+                    self.session.target,
+                    "m.room.message",
+                    content,
+                    ignore_unverified_devices=True,
+                )
+                if "status_code" in resp.__dict__:
+                    Logger.error(f"Error in sending message: {str(resp)}")
+                else:
+                    sentMessages.append(resp)
+                reply_to = None
+                reply_to_user = None
 
             if isinstance(x, Plain):
                 content = {"msgtype": "m.notice", "body": x.text}
@@ -88,53 +137,60 @@ class MessageSession(MessageSessionT):
                         f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{html_text}"
                     )
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                sendMsg(content)
             elif isinstance(x, Image):
-                path = await x.get()
-                with open(path, "rb") as image:
-                    filename = os.path.basename(path)
-                    filesize = os.path.getsize(path)
-                    (content_type, content_encoding) = mimetypes.guess_type(path)
-                    if not content_type or not content_encoding:
-                        content_type = "image"
-                        content_encoding = "png"
-                    mimetype = f"{content_type}/{content_encoding}"
+                split = [x]
+                if allow_split_image:
+                    Logger.info(f"Split image: {str(x.__dict__)}")
+                    split = await image_split(x)
+                for xs in split:
+                    path = await xs.get()
+                    with open(path, "rb") as image:
+                        filename = os.path.basename(path)
+                        filesize = os.path.getsize(path)
+                        (content_type, content_encoding) = mimetypes.guess_type(path)
+                        if not content_type or not content_encoding:
+                            content_type = "image"
+                            content_encoding = "png"
+                        mimetype = f"{content_type}/{content_encoding}"
 
-                    encrypted = self.session.target in bot.encrypted_rooms
-                    (upload, upload_encryption) = await bot.upload(
-                        image,
-                        content_type=mimetype,
-                        filename=filename,
-                        encrypt=encrypted,
-                        filesize=filesize,
-                    )
-                    Logger.info(
-                        f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}"
-                    )
-                    # todo: provide more image info
-                    if not encrypted:
-                        content = {
-                            "msgtype": "m.image",
-                            "url": upload.content_uri,
-                            "body": filename,
-                            "info": {
-                                "size": filesize,
-                                "mimetype": mimetype,
-                            },
-                        }
-                    else:
-                        upload_encryption["url"] = upload.content_uri
-                        content = {
-                            "msgtype": "m.image",
-                            "body": filename,
-                            "file": upload_encryption,
-                            "info": {
-                                "size": filesize,
-                                "mimetype": mimetype,
-                            },
-                        }
-                    Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
-                    )
+                        encrypted = self.session.target in bot.encrypted_rooms
+                        (upload, upload_encryption) = await bot.upload(
+                            image,
+                            content_type=mimetype,
+                            filename=filename,
+                            encrypt=encrypted,
+                            filesize=filesize,
+                        )
+                        Logger.info(
+                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}"
+                        )
+                        # todo: provide more image info
+                        if not encrypted:
+                            content = {
+                                "msgtype": "m.image",
+                                "url": upload.content_uri,
+                                "body": filename,
+                                "info": {
+                                    "size": filesize,
+                                    "mimetype": mimetype,
+                                },
+                            }
+                        else:
+                            upload_encryption["url"] = upload.content_uri
+                            content = {
+                                "msgtype": "m.image",
+                                "body": filename,
+                                "file": upload_encryption,
+                                "info": {
+                                    "size": filesize,
+                                    "mimetype": mimetype,
+                                },
+                            }
+                        Logger.info(
+                            f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
+                        )
+                        sendMsg(content)
             elif isinstance(x, Voice):
                 path = x.path
                 filename = os.path.basename(path)
@@ -183,54 +239,12 @@ class MessageSession(MessageSessionT):
                 Logger.info(
                     f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
                 )
-
-            if reply_to:
-                # rich reply
-                content["m.relates_to"] = {"m.in_reply_to": {"event_id": reply_to}}
-                # mention target user
-                content["m.mentions"] = {"user_ids": [reply_to_user]}
-
-            if (
-                self.session.message
-                and "m.relates_to" in self.session.message["content"]
-            ):
-                relates_to = self.session.message["content"]["m.relates_to"]
-                if "rel_type" in relates_to and relates_to["rel_type"] == "m.thread":
-                    # replying in thread
-                    thread_root = relates_to["event_id"]
-                    if reply_to:
-                        # reply to msg replying in thread
-                        content["m.relates_to"] = {
-                            "rel_type": "m.thread",
-                            "event_id": thread_root,
-                            "is_falling_back": False,
-                            "m.in_reply_to": {"event_id": reply_to},
-                        }
-                        pass
-                    else:
-                        # reply in thread
-                        content["m.relates_to"] = {
-                            "rel_type": "m.thread",
-                            "event_id": thread_root,
-                            "is_falling_back": True,
-                            "m.in_reply_to": {"event_id": self.target.message_id},
-                        }
-
-            resp = await bot.room_send(
-                self.session.target,
-                "m.room.message",
-                content,
-                ignore_unverified_devices=True,
-            )
-            if "status_code" in resp.__dict__:
-                Logger.error(f"Error in sending message: {str(resp)}")
-            else:
-                send.append(resp)
+                sendMsg(content)
         if callback:
-            for x in send:
+            for x in sentMessages:
                 MessageTaskManager.add_callback(x.event_id, callback)
         return FinishedSession(
-            self, [resp.event_id for resp in send], self.session.target
+            self, [resp.event_id for resp in sentMessages], self.session.target
         )
 
     async def check_native_permission(self):
