@@ -82,9 +82,9 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         return
     sender_name = resp.displayname
 
-    msg = MessageSession(MsgInfo(target_id=f'Matrix|{target_id}',
+    msg = MessageSession(MsgInfo(target_id=f'Matrix|Room|{target_id}',
                                  sender_id=f'Matrix|{event.sender}',
-                                 target_from=f'Matrix',
+                                 target_from=f'Matrix|Room',
                                  sender_from='Matrix',
                                  sender_name=sender_name,
                                  client_name=client_name,

@@ -11,7 +11,7 @@ from bots.discord.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed, ErrorMessage, Voice
+from core.builtins.message.internal import Embed, Voice
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.http import download_to_cache
@@ -74,7 +74,7 @@ class MessageSession(MessageSessionT):
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
         self.sent.append(message_chain)
         count = 0
         send = []

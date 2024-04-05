@@ -22,16 +22,16 @@ Url.md_format = True
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
 async def msg_handler(message: Message):
     if message.channel_type.name == "GROUP":
-        target_id = f'Kook|{message.channel_type.name}|{message.target_id}'
+        target_id = f'Kook|Group|{message.target_id}'
     else:
-        target_id = f'Kook|{message.channel_type.name}|{message.author_id}'
+        target_id = f'Kook|{message.channel_type.name.title()}|{message.author_id}'
     reply_id = None
     if 'quote' in message.extra:
         reply_id = message.extra['quote']['rong_id']
 
     msg = MessageSession(MsgInfo(target_id=target_id,
                                  sender_id=f'Kook|User|{message.author_id}',
-                                 target_from=f'Kook|{message.channel_type.name}',
+                                 target_from=f'Kook|{message.channel_type.name.title()}',
                                  sender_from='Kook|User', sender_name=message.author.nickname,
                                  client_name=client_name,
                                  message_id=message.id,

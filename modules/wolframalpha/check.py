@@ -24,5 +24,4 @@ async def secret_check(query):
             if (index == 0 or not query[index - 1].isalpha()) and \
                (index + len(word) == len(query) or not query[index + len(word)].isalpha()):
                 return True
-              
     return False

@@ -20,12 +20,13 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
     need_revoke = False
     send_msg = []
     if msg.target.target_from in [
+        'Discord|Channel',
+        'Kook|Group',
+        'Matrix|Room',
         'QQ|Group',
         'QQ|Guild',
-        'Discord|Channel',
-        'Telegram|group',
-        'Telegram|supergroup',
-            'Kook|GROUP']:
+        'Telegram|Group',
+        'Telegram|Supergroup',]:
         send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False))
         need_revoke = True
     headers = p_headers.copy()

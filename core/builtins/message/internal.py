@@ -39,10 +39,17 @@ class Plain(PlainT):
         return {'type': 'plain', 'data': {'text': self.text}}
 
     def to_joke(self):
-        text_list = list(self.text)
+        urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', self.text)
+        url_positions = [(m.start(), m.end(), url) for url, m in zip(urls, re.finditer(r'http[s]?://', self.text))]
+
+        text_without_urls = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '__URL__', self.text)
+        text_list = list(text_without_urls)
         for i in range(len(text_list) - 1):
             if random.random() < 0.2:
                 text_list[i], text_list[i + 1] = text_list[i + 1], text_list[i]
+        for start, end, url in url_positions:
+            text_list[start:end] = url
+
         return ''.join(text_list)
 
 
