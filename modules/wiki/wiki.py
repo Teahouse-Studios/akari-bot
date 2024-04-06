@@ -218,7 +218,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             plain_slice.append(r.desc)
 
                     if r.link:
-                        plain_slice.append(Url(r.link, use_mm=not r.info.in_allowlist))
+                        plain_slice.append(str(Url(r.link, use_mm=not r.info.in_allowlist)))
 
                     if r.file:
                         dl_list.append(r.file)
@@ -231,7 +231,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                           (r.templates and
                                            ('Template:Disambiguation' in r.templates or
                                             'Template:Version disambiguation' in r.templates))}})
-                    msg_list = plain_slice
+                    if plain_slice:
+                        msg_list.append(Plain('\n'.join(plain_slice)))
                     if WebRender.status:
                         if r.invalid_section and r.info.in_allowlist:
                             if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
