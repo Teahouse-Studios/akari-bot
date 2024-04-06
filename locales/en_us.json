@@ -31,7 +31,6 @@
     "game.message.running": "This game is currently in progress.",
     "game.message.stop": "Stopped.",
     "game.message.stop.none": "This game is not in progress.",
-    "help.option.l": "强制使用旧版。",
     "language": "English",
     "loader.load.failed": "The following error occurred during modules loading and module(s) with error were not loaded: \n${detail}",
     "loader.load.success": "Successfully loaded all modules.",

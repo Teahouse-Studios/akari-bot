@@ -29,13 +29,12 @@ m = module('module',
             'reload <module> ...',
             'load <module> ...',
             'unload <module> ...',
-            'list [-l] {{core.help.module.list}}'],
-           options_desc={'-l': '{help.option.l}'},
+            'list [legacy] {{core.help.module.list}}'],
            exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if msg.parsed_msg.get('-l', False):
+        if msg.parsed_msg.get('legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -48,14 +47,13 @@ async def _(msg: Bot.MessageSession):
             'reload <module> ...',
             'load <module> ...',
             'unload <module> ...',
-            'list [-l] {{core.help.module.list}}'],
-           options_desc={'-g': '{core.help.option.module.g}',
-                         '-l': '{help.option.l}'},
+            'list [legacy] {{core.help.module.list}}'],
+           options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if msg.parsed_msg.get('-l', False):
+        if msg.parsed_msg.get('legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -388,8 +386,7 @@ async def bot_help(msg: Bot.MessageSession):
 
 
 @hlp.command()
-@hlp.command('[-l] {{core.help.help}}',
-             options_desc={'-l': '{help.option.l}'})
+@hlp.command('[legacy] {{core.help.help}}')
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)

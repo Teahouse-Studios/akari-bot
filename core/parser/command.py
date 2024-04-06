@@ -60,6 +60,7 @@ class CommandParser:
                     for l in locale_str:
                         x = x.replace(f'{{{l}}}', self.lang.t(l, fallback_failed_prompt=False))
                 options_desc_localed.append(x)
+            options_desc_localed = list(set(options_desc_localed))  # 移除重复内容
             args += f'\n{self.lang.t("core.help.options")}\n' + '\n'.join(options_desc_localed)
         return args
 
