@@ -304,7 +304,7 @@ async def config_modules(msg: Bot.MessageSession):
 hlp = module('help', base=True)
 
 
-@hlp.command('<module> {{core.help.help.detail}}')
+@hlp.command('[legacy] <module> {{core.help.help.detail}}')
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
@@ -362,7 +362,7 @@ async def bot_help(msg: Bot.MessageSession):
                                                url=Config('help_url')) + '/' + help_name
             else:
                 wiki_msg = ''
-            if len(doc) > 500 and msg.Feature.image:
+            if len(doc) > 500 and not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
                                          [msg.locale.t("core.message.help.table.header.help"),
