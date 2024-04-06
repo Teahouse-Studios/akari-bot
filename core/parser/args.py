@@ -138,11 +138,13 @@ def parse_template(argv: List[str]) -> List[Template]:
                 optional_patterns = strip_pattern[1:-1].split(' ')
                 flag = None
                 args = []
-                if optional_patterns[0][0] == '-':
+                if optional_patterns[0].startswith('<'):
+                    if not optional_patterns[0].endswith('>'):
+                        raise InvalidTemplatePattern(p)
+                    args += optional_patterns
+                else:
                     flag = optional_patterns[0]
                     args += optional_patterns[1:]
-                else:
-                    args += optional_patterns
                 template.args.append(OptionalPattern(flag=flag,
                                                      args=parse_template(
                                                          [' '.join(args).strip()]) if len(

@@ -31,7 +31,6 @@
     "game.message.running": "当前此游戏正在进行中。",
     "game.message.stop": "已停止。",
     "game.message.stop.none": "当前此游戏未在进行。",
-    "help.option.l": "强制使用旧版。",
     "language": "简体中文",
     "loader.load.failed": "加载模块中发生了以下错误，对应模块未加载：\n${detail}",
     "loader.load.success": "所有模块已正常加载。",

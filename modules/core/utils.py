@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession):
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang))]
     if Config('locale_url'):
-        res += [Plain(msg.locale.t("core.message.locale.contribute")), Url(Config('locale_url'))]
+        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url'))
     await msg.finish(res)
 
 
@@ -166,7 +166,7 @@ async def reload_locale(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish([Plain(msg.locale.t("core.message.locale.reload.failed")), Plain('\n'.join(err))])
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
 
 
 whoami = module('whoami', base=True)

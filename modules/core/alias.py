@@ -8,8 +8,7 @@ ali = module('alias', required_admin=True, base=True)
 @ali.command('add <alias> <command> {{core.help.alias.add}}',
              'remove <alias> {{core.help.alias.remove}}',
              'reset {{core.help.alias.reset}}',
-             'list [-l] {{core.help.alias.list}}',
-             options_desc={'-l': '{help.option.l}'})
+             'list [legacy] {{core.help.alias.list}}')
 async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
     alias = msg.parsed_msg.get('<alias>', False)
@@ -45,7 +44,7 @@ async def set_alias(msg: Bot.MessageSession):
         legacy = True
         if len(aliases) == 0:
             await msg.finish(msg.locale.t("core.message.alias.list.none"))
-        elif not msg.parsed_msg.get('-l', False):
+        elif not msg.parsed_msg.get('legacy', False):
             table = ImageTable([[k, aliases[k]] for k in aliases],
                                [msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
