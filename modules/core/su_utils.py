@@ -21,7 +21,7 @@ from database import BotDBUtil
 
 
 target_list = ["Discord|Channel", "Discord|DM|Channel", "Kook|Group",
-               "Matrix|Room", "QQ", "QQ|Group", "QQ|Guild", "Telegram|Channel",
+               "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
                "Telegram|Group", "Telegram|Private", "Telegram|Supergroup",]
 sender_list = ["Discord|Client", "Kook|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User",]
 
