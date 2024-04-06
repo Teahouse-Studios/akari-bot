@@ -79,11 +79,11 @@ async def message_handler(event: Event):
                 event.message = 'help'
             prefix = ['']
 
-    target_id = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
+    target_id = f'Group|{str(event.group_id)}' if event.detail_type == 'group' else f'Private|{str(event.user_id)}'
 
-    msg = MessageSession(MsgInfo(target_id=target_id,
+    msg = MessageSession(MsgInfo(target_id=f'QQ|{target_id}',
                                  sender_id=f'QQ|{str(event.user_id)}',
-                                 target_from='QQ|Group' if event.detail_type == 'group' else 'QQ',
+                                 target_from='QQ|Group' if event.detail_type == 'group' else 'QQ|Private',
                                  sender_from='QQ', sender_name=event.sender['nickname'], client_name=client_name,
                                  message_id=event.message_id,
                                  reply_id=reply_id),
