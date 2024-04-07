@@ -67,26 +67,29 @@ class CFG:
         cls._ts = os.path.getmtime(config_path)
 
     @classmethod
-    def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None) -> Any:
-        q = q.lower()
-        if os.path.getmtime(config_path) != cls._ts:
-            cls.load()
-        value_s = cls.value.get('secret')
-        value_n = cls.value.get('cfg')
-        value = value_s.get(q)
-        if value is None:
-            value = value_n.get(q)
-        if value is None and default is not None:
-            return default
-        if cfg_type is not None:
-            if isinstance(cfg_type, Union):
+def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None) -> Any:
+    q = q.lower()
+    if os.path.getmtime(config_path) != cls._ts:
+        cls.load()
+    value_s = cls.value.get('secret')
+    value_n = cls.value.get('cfg')
+    value = value_s.get(q)
+    if value is None:
+        value = value_n.get(q)
+    if value is None and default is not None:
+        return default
+    if cfg_type is not None:
+        if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
+            if isinstance(cfg_type, tuple):
                 cfg_type = tuple(cfg_type.__args__)
-            if not isinstance(value, cfg_type):
+            elif not isinstance(value, cfg_type):
                 print(f'[Config] Config {q} has a wrong type, expected {cfg_type}, got {type(value)}.')
-        elif default is not None:
-            if not isinstance(value, type(default)):
-                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
-        return value
+        else:
+            print("[Config] Invalid cfg_type provided. cfg_type should be a type or a tuple of types.")
+    elif default is not None:
+        if not isinstance(value, type(default)):
+            print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
+    return value
 
     @classmethod
     def write(cls, q, value, secret=False):
