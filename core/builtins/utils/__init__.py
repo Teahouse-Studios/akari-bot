@@ -18,13 +18,13 @@ class EnableDirtyWordCheck:
 def shuffle_joke(text: str):
     current_date = datetime.now().date()
     shuffle_rate = Config('shuffle_rate', 0.2, Union[float, int])
-    make_fun = Config('???', cfg_type = Union[bool, None])
+    have_fun = Config('???', cfg_type = (bool, type(None)))
     if shuffle_rate < 0.0:
         shuffle_rate = 0.0
     elif shuffle_rate > 1.0:
         shuffle_rate = 1.0
     
-    if make_fun or make_fun is None and (current_date.month == 4 and current_date.day == 1):
+    if have_fun or have_fun is None and (current_date.month == 4 and current_date.day == 1):
         urls = re.finditer(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
         url_positions = [(url.start(), url.end()) for url in urls]
 

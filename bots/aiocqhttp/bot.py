@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import sys
-from typing import Union
 
 import ujson as json
 from aiocqhttp import Event
@@ -26,7 +25,7 @@ from database import BotDBUtil
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
-qq_account = str(Config("qq_account", cfg_type = Union[int, str]))
+qq_account = str(Config("qq_account", cfg_type = (int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
 lagrange_account = str(Config("lagrange_account", cfg_type = int))
 lang = Config('locale', 'zh_cn')

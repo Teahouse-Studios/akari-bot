@@ -3,7 +3,6 @@ import inspect
 import re
 import traceback
 from datetime import datetime
-from typing import Union
 
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
@@ -345,7 +344,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except SendMessageFailed:
                     if msg.target.target_from == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = Union[str, int]))}]')
+                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = (str, int)))}]')
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -501,7 +500,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                       message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = Union[int, str]))}]')
+                                       message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = (int, str)))}]')
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg

@@ -1,5 +1,4 @@
 import urllib.parse
-from typing import Union
 
 from config import Config
 from core.dirty_check import check
@@ -12,7 +11,7 @@ from core.builtins import MessageSession
 
 async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = int(Config("qq_account", cfg_type = Union[int, str]))
+    qq_account = int(Config("qq_account", cfg_type = (int, str)))
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                 rclimit=99,

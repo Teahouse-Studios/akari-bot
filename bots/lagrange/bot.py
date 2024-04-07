@@ -2,7 +2,6 @@ import logging
 import os
 import re
 import sys
-from typing import Union
 
 from aiocqhttp import Event
 
@@ -26,7 +25,7 @@ from core.queue import JobQueue
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
-qq_account = str(Config("qq_account", cfg_type = Union[int, str]))
+qq_account = str(Config("qq_account", cfg_type = (int, str)))
 lang = Config('locale', 'zh_cn')
 
 
