@@ -12,7 +12,7 @@ from core.utils.http import download_to_cache, get_url
 from .check import secret_check
 
 
-appid = Config('wolfram_alpha_appid')
+appid = Config('wolfram_alpha_appid', '')
 
 w = module(
     'wolframalpha',

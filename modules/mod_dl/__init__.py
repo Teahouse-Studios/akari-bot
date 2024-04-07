@@ -13,7 +13,7 @@ mod_dl = module(
     recommend_modules=['mcmod'],
     alias='moddl')
 
-x_api_key = Config("curseforge_api_key")
+x_api_key = Config("curseforge_api_key", "")
 if not x_api_key:
     # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
     enable_mirror = True

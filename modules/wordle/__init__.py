@@ -15,7 +15,7 @@ from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cooldown import CoolDown
 
-text_mode = Config('wordle_disable_image')
+text_mode = Config('wordle_disable_image', False)
 
 wordle = module('wordle',
                 desc='{wordle.help.desc}', developers=['Dianliang233', 'DoroWolf']

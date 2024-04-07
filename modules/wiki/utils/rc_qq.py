@@ -11,7 +11,7 @@ from core.builtins import MessageSession
 
 async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = Config("qq_account")
+    qq_account = Config("qq_account", 0)
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                 rclimit=99,

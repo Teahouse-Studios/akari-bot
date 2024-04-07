@@ -8,7 +8,7 @@ from modules.wiki.utils.wikilib import WikiLib
 
 async def ab_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = Config("qq_account")
+    qq_account = Config("qq_account", 0)
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp',
                                 afllimit=99, _no_login=not msg.options.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", 'Special:AbuseLog')

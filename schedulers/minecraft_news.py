@@ -41,7 +41,7 @@ class Article:
         return random_tags
 
 
-@Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180))
+@Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule', False) else 180))
 async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
@@ -67,7 +67,7 @@ async def start_check_news():
                     alist.append(title)
                     update_stored_list('scheduler', 'mcnews', alist)
     except Exception:
-        if Config('debug'):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())
 
 
@@ -96,5 +96,5 @@ async def feedback_news():
                     alist.append(name)
                     update_stored_list('scheduler', 'mcfeedbacknews', alist)
         except Exception:
-            if Config('debug'):
+            if Config('debug', False):
                 Logger.error(traceback.format_exc())

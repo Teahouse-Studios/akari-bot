@@ -17,11 +17,11 @@ from core.utils.bot import init_async
 from database import BotDBUtil, session
 from database.tables import DBVersion
 
-if not Config('db_path'):
-    raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path" field\n'
-                         'Example: \ndb_path = sqlite:///database/save.db\n'
+if not Config('db_path', ''):
+    raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
+                         'Example: \ndb_path = \"sqlite:///database/save.db\"\n'
                          '(Also you can fill in the above example directly,'
-                         ' bot will automatically create a SQLite database in the "./database/save.db")')
+                         ' bot will automatically create a SQLite database in the \"./database/save.db\")')
 
 query_dbver = session.query(DBVersion).first()
 if not query_dbver:

@@ -18,10 +18,10 @@ from core.utils.i18n import Locale
 from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
-enable_tos = Config('enable_tos')
-enable_analytics = Config('enable_analytics')
-lang = Config('locale')
-report_targets = Config('report_targets')
+enable_tos = Config('enable_tos', False)
+enable_analytics = Config('enable_analytics', True)
+lang = Config('locale', 'zh_cn')
+report_targets = Config('report_targets', [])
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
@@ -102,7 +102,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     :return: 无返回
     """
     identify_str = f'[{msg.target.sender_id}{f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
-    limited_action = 'touch' if Config('use_shamrock') else 'poke'
+    limited_action = 'touch' if Config('use_shamrock', False) else 'poke'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
@@ -373,8 +373,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     tb = traceback.format_exc()
                     Logger.error(tb)
                     errmsg = msg.locale.t('error.prompt', detail=str(e))
-                    if Config('bug_report_url'):
-                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+                    if Config('bug_report_url', ''):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', ''))))
                     await msg.send_message(errmsg)
                     if report_targets:
                         for target in report_targets:
@@ -485,9 +485,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             tb = traceback.format_exc()
                             Logger.error(tb)
                             errmsg = msg.locale.t('error.prompt', detail=str(e))
-                            if Config('bug_report_url'):
+                            if Config('bug_report_url', ''):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url'))))
+                                                              url=str(Url(Config('bug_report_url', ''))))
                             await msg.send_message(errmsg)
                             if report_targets:
                                 for target in report_targets:

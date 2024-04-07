@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from config import Config
 from database.orm_base import Base
 
-DB_LINK = Config('db_path')
+DB_LINK = Config('db_path', '')
 
 
 class DBSession:

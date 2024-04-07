@@ -20,9 +20,9 @@ async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
             if result and enable_urlmanager and not check.value.in_allowlist and msg.target.sender_from in [
                     'QQ', 'Kook|User']:
                 prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
-                if Config("wiki_whitelist_url"):
+                if Config("wiki_whitelist_url", ""):
                     prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                                  url=Config("wiki_whitelist_url"))
+                                                  url=Config("wiki_whitelist_url", ""))
             else:
                 prompt = ''
             await msg.finish(msg.locale.t("wiki.message.set.success", name=check.value.name) + prompt)
@@ -44,9 +44,9 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
             if result and enable_urlmanager and not check.value.in_allowlist and msg.target.sender_from in [
                     'QQ', 'Kook|User']:
                 prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
-                if Config("wiki_whitelist_url"):
+                if Config("wiki_whitelist_url", ""):
                     prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                                  url=Config("wiki_whitelist_url"))
+                                                  url=Config("wiki_whitelist_url", ""))
             else:
                 prompt = ''
             await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)

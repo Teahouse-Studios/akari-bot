@@ -1,6 +1,5 @@
 from bots.lagrange.client import bot
 from aiocqhttp.exceptions import ActionFailed
-from config import Config
 
 
 def get_plain_msg(array_msg: list) -> str:

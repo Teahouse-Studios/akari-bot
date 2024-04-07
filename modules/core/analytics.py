@@ -27,7 +27,7 @@ ana = module('analytics', required_superuser=True, base=True)
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
+    if Config('enable_analytics', True):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
 
@@ -43,7 +43,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command('days [<module>]')
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
+    if Config('enable_analytics', True):
         first_record = BotDBUtil.Analytics.get_first()
         module_ = None
         if '<module>' in msg.parsed_msg:
@@ -83,7 +83,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command('year [<module>]')
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
+    if Config('enable_analytics', True):
         first_record = BotDBUtil.Analytics.get_first()
         module_ = None
         if '<module>' in msg.parsed_msg:
@@ -125,7 +125,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command('export')
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics'):
+    if Config('enable_analytics', True):
         await msg.send_message(msg.locale.t("core.message.analytics.export.waiting"))
         expires = Config('analytics_expires', 600)
         url = export_analytics(expires=expires)

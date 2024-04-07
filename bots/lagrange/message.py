@@ -25,7 +25,7 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
-enable_analytics = Config('enable_analytics')
+enable_analytics = Config('enable_analytics', True)
 
 
 class FinishedSession(FinS):
@@ -249,7 +249,7 @@ class MessageSession(MessageSessionT):
                     if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                         return
                 last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
-                action = 'touch' if Config('use_shamrock') else 'poke'
+                action = 'touch' if Config('use_shamrock', False) else 'poke'
                 await bot.send_group_msg(group_id=self.msg.session.target,
                                          message=f'[CQ:{action},qq={self.msg.session.sender}]')"""
 

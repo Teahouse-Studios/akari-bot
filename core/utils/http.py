@@ -16,8 +16,8 @@ from core.logger import Logger
 from .cache import random_cache_path
 
 logging_resp = False
-debug = Config('debug')
-if not (proxy := Config('proxy')):
+debug = Config('debug', False)
+if not (proxy := Config('proxy', '')):
     proxy = ''
 
 _matcher_private_ips = re.compile(
@@ -60,7 +60,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     async def get_():
         Logger.debug(f'[GET] {url}')
 
-        if not Config('allow_request_private_ip') and not request_private_ip:
+        if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
         async with aiohttp.ClientSession(headers=headers,
@@ -117,7 +117,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _post():
         Logger.debug(f'[POST] {url}')
-        if not Config('allow_request_private_ip') and not request_private_ip:
+        if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
         async with aiohttp.ClientSession(headers=headers,
@@ -178,7 +178,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def download_():
-        if not Config('allow_request_private_ip') and not request_private_ip:
+        if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
         data = None
@@ -199,7 +199,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
                     ftt = 'txt'
                 path = f'{random_cache_path()}.{ftt}'
             else:
-                path = Config("cache_path") + f'/{filename}'
+                path = Config("cache_path", "./cache/") + f'/{filename}'
             async with async_open(path, 'wb+') as file:
                 await file.write(data)
                 return path

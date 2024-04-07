@@ -10,7 +10,7 @@ from core.builtins.message.internal import Embed, ErrorMessage
 from core.logger import Logger
 from core.types import FinishedSession as FinS
 
-enable_analytics = Config('enable_analytics')
+enable_analytics = Config('enable_analytics', True)
 
 
 class FinishedSession(FinS):

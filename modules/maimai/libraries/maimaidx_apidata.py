@@ -26,7 +26,7 @@ async def update_alias():
         with open(file_path, 'w') as file:
             json.dump(data, file)
     except Exception:
-        if Config('debug'):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())
         return False
     return True
@@ -49,7 +49,7 @@ async def update_covers():
         if os.path.exists(static_cover_dir):
             shutil.move(static_cover_dir, cover_dir)
     except Exception:
-        if Config('debug'):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())
         return False
 

@@ -67,7 +67,7 @@ class CFG:
         cls._ts = os.path.getmtime(config_path)
 
     @classmethod
-    def get(cls, q: str, default: Union[Any, None] = None) -> Any:
+    def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None) -> Any:
         q = q.lower()
         if os.path.getmtime(config_path) != cls._ts:
             cls.load()
@@ -78,9 +78,14 @@ class CFG:
             value = value_n.get(q)
         if value is None and default is not None:
             return default
-        if default is not None:
+        if cfg_type is not None:
+            if isinstance(cfg_type, Union):
+                cfg_type = tuple(cfg_type.__args__)
+            if not isinstance(value, cfg_type):
+                print(f'[Config] Config {q} has a wrong type, expected {cfg_type}, got {type(value)}.')
+        elif default is not None:
             if not isinstance(value, type(default)):
-                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}')
+                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
         return value
 
     @classmethod

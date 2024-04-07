@@ -6,12 +6,12 @@ from nio import AsyncClient, AsyncClientConfig
 from config import Config
 from core.logger import Logger
 
-homeserver: str = Config('matrix_homeserver')
-user: str = Config('matrix_user')
-device_id: str = Config('matrix_device_id')
-device_name: str = Config('matrix_device_name')
-token: str = Config('matrix_token')
-megolm_backup_passphrase: str = Config('matrix_megolm_backup_passphrase')
+homeserver = Config('matrix_homeserver', '')
+user = Config('matrix_user', '')
+device_id = Config('matrix_device_id', '')
+device_name = Config('matrix_device_name', '')
+token = Config('matrix_token', '')
+megolm_backup_passphrase = Config('matrix_megolm_backup_passphrase', '')
 
 store_path = os.path.abspath('./matrix_store')
 store_path_nio = os.path.join(store_path, 'nio')
