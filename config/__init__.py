@@ -83,7 +83,7 @@ class CFG:
                 if isinstance(cfg_type, tuple):
                     cfg_type_args = get_args(cfg_type)
                     if not all(isinstance(t, type) for t in cfg_type_args):
-                        print("[Config] Invalid cfg_type provided in config {q}. cfg_type tuple should contain only types.")
+                        print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type tuple should contain only types.')
                         return None
                     cfg_type_str = ', '.join([t.__name__ for t in cfg_type_args])
                     if value is not None and not isinstance(value, cfg_type):
