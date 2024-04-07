@@ -199,8 +199,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('maimai.message.unbind.success'))
 
 
-@mai.command(['b50 [<username>] {{maimai.help.b50}}',
-             'b50 beta [<username>] {{maimai.help.b50.beta}}'])
+@mai.command('b50 [<username>] [-b] {{maimai.help.b50}}',
+             options_desc={'-b': '{maimai.help.option.b}'})
 async def _(msg: Bot.MessageSession, username: str = None):
     beta = True
     if not username:
@@ -214,7 +214,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     else:
         payload = {'username': username, 'b50': True}
 
-    if not msg.parsed_msg.get('beta', False):
+    if not msg.parsed_msg.get('-b', False):
         try:
             img = await generate(msg, payload)
             beta = False
