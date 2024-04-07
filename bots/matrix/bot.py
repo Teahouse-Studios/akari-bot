@@ -60,8 +60,6 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if event.source['content']['msgtype'] == 'm.notice':
         # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
-    is_room = room.member_count != 2 or room.join_rule != 'invite'
-    target_id = room.room_id if is_room else event.sender
     reply_id = None
     if 'm.relates_to' in event.source['content']:
         relatesTo = event.source['content']['m.relates_to']
@@ -82,7 +80,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         return
     sender_name = resp.displayname
 
-    msg = MessageSession(MsgInfo(target_id=f'Matrix|Room|{target_id}',
+    msg = MessageSession(MsgInfo(target_id=f'Matrix|Room|{room.room_id}',
                                  sender_id=f'Matrix|{event.sender}',
                                  target_from='Matrix|Room',
                                  sender_from='Matrix',
