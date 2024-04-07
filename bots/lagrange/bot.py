@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+from typing import Union
 
 from aiocqhttp import Event
 

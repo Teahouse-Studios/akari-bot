@@ -1,4 +1,5 @@
 import urllib.parse
+from typing import Union
 
 from config import Config
 from core.dirty_check import check

@@ -3,6 +3,7 @@ import inspect
 import re
 import traceback
 from datetime import datetime
+from typing import Union
 
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \

@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import sys
+from typing import Union
 
 import ujson as json
 from aiocqhttp import Event

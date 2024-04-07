@@ -1,3 +1,5 @@
+from typing import Union
+
 from config import Config
 from core.builtins import MessageSession
 from core.dirty_check import check

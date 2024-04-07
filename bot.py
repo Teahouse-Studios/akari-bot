@@ -5,6 +5,7 @@ import sys
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
+from typing import Union
 
 import psutil
 from loguru import logger

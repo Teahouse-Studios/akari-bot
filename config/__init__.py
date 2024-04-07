@@ -1,6 +1,6 @@
 import os
 from os.path import abspath
-from typing import Union, Any
+from typing import Union, Any, get_origin, get_args
 
 import toml
 

@@ -1,6 +1,7 @@
 import random
 import re
 from datetime import datetime
+from typing import Union
 
 from config import Config
 from core.types import PrivateAssets, Secret
