@@ -18,7 +18,7 @@ class EnableDirtyWordCheck:
 def shuffle_joke(text: str):
     current_date = datetime.now().date()
     shuffle_rate = Config('shuffle_rate', 0.2, Union[float, int])
-    have_fun = Config('???', cfg_type = (bool, type(None)))
+    have_fun = Config('???', cfg_type = bool)
     if shuffle_rate < 0.0:
         shuffle_rate = 0.0
     elif shuffle_rate > 1.0:
