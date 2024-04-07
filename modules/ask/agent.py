@@ -10,7 +10,7 @@ from modules.ask.tools import tools
 llm = ChatOpenAI(
     model='gpt-3.5-turbo-0613',
     temperature=0,
-    openai_api_key=Config('openai_api_key', ''),
+    openai_api_key=Config('openai_api_key', cfg_type = str),
     model_kwargs={
         'frequency_penalty': 0.0,
         'presence_penalty': 0.0})

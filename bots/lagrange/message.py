@@ -25,7 +25,7 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
-enable_analytics = Config('enable_analytics', True)
+enable_analytics = Config('enable_analytics', False)
 
 
 class FinishedSession(FinS):

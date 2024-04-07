@@ -96,7 +96,7 @@ class FetchedSession(FetchedSessionT):
 
 Bot.FetchedSession = FetchedSession
 
-base_superuser_list = Config("base_superuser")
+base_superuser_list = Config("base_superuser", cfg_type = Union[str, list])
 
 if isinstance(base_superuser_list, str):
     base_superuser_list = [base_superuser_list]

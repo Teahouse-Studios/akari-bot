@@ -16,9 +16,9 @@ from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
 from database import BotDBUtil
 
-enable_analytics = Config('enable_analytics', True)
+enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"
-kook_headers = {f'Authorization': f"Bot {Config('kook_token', '')}"}
+kook_headers = {f'Authorization': f"Bot {Config('kook_token', cfg_type = str)}"}
 
 
 async def direct_msg_delete(msg_id: str):

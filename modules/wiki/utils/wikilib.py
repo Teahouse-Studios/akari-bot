@@ -445,7 +445,7 @@ class WikiLib:
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if _tried > 5:
-            if Config('enable_tos', False):
+            if Config('enable_tos', True):
                 raise WhatAreUDoingError
         selected_section = None
         if title:

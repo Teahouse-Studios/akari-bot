@@ -14,8 +14,8 @@ from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-EnableDirtyWordCheck.status = True if Config('enable_dirty_check', True) else False
-Url.disable_mm = False if Config('enable_urlmanager', True) else True
+EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
+Url.disable_mm = False if Config('enable_urlmanager', False) else True
 Url.md_format = True
 
 

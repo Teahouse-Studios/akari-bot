@@ -139,8 +139,8 @@ class ErrorMessage(EMsg):
                 for l in locale_str:
                     error_message = error_message.replace(f'{{{l}}}', locale.t(l))
             self.error_message = locale.t('error') + error_message
-            if Config('bug_report_url', ''):
-                self.error_message += '\n' + locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', ''))))
+            if Config('bug_report_url', cfg_type = str):
+                self.error_message += '\n' + locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
 
     def __str__(self):
         return self.error_message

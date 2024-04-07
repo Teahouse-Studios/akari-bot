@@ -23,11 +23,11 @@ from core.utils.i18n import Locale
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-EnableDirtyWordCheck.status = True if Config('enable_dirty_check', True) else False
-Url.disable_mm = False if Config('enable_urlmanager', True) else True
-qq_account = str(Config("qq_account", 0))
+EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
+Url.disable_mm = False if Config('enable_urlmanager', False) else True
+qq_account = str(Config("qq_account", cfg_type = Union[int, str]))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
-lagrange_account = str(Config("lagrange_account", 0))
+lagrange_account = str(Config("lagrange_account", cfg_type = int))
 lang = Config('locale', 'zh_cn')
 
 
@@ -51,7 +51,7 @@ async def _(event: Event):
 async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
-            if Config('qq_disable_temp_session', False):
+            if Config('qq_disable_temp_session', True):
                 return await bot.send(event, Locale(lang).t('qq.message.disable_temp_session'))
     if event.user_id == lagrange_account:
         return
@@ -137,7 +137,7 @@ async def _(event):
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
         return {'approve': True}
-    if not Config('qq_allow_approve_friend', True):
+    if not Config('qq_allow_approve_friend', False):
         await bot.send_private_msg(user_id=event.user_id,
                                    message=Locale(lang).t('qq.message.disable_friend_request'))
     else:
@@ -150,7 +150,7 @@ async def _(event: Event):
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
         return {'approve': True}
-    if not Config('qq_allow_approve_group_invite', True):
+    if not Config('qq_allow_approve_group_invite', False):
         await bot.send_private_msg(user_id=event.user_id,
                                    message=Locale(lang).t('qq.message.disable_group_invite'))
     else:
@@ -190,13 +190,13 @@ async def _(event: Event):
     result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
     if result:
         res = Locale(lang).t('tos.message.in_group_blocklist')
-        if Config('issue_url', ''):
-            res += '\n' + Locale(lang).t('tos.message.appeal', issue_url=Config('issue_url', ''))
+        if Config('issue_url', cfg_type = str):
+            res += '\n' + Locale(lang).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type = str))
         await bot.send(event=event, message=res)
         await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
-qq_host = Config("qq_host", "127.0.0.1:11451")
+qq_host = Config("qq_host", cfg_type = str)
 if qq_host:
     argv = sys.argv
     if 'subprocess' in sys.argv:

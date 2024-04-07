@@ -19,7 +19,7 @@ def darkCheck(msg: str):
         'zhao',
         'programthink'
     ]
-    if Config('enable_dirty_check', True):
+    if Config('enable_dirty_check', False):
         for i in blacklist:
             if msg.find(i) > -1:
                 return True

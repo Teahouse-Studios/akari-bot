@@ -22,7 +22,7 @@ Url.disable_mm = True
 
 count = 0
 
-dc_token = Config('dc_token', '')
+dc_token = Config('dc_token', cfg_type = str)
 
 
 @client.event

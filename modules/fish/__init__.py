@@ -157,7 +157,7 @@ async def _(msg: Bot.MessageSession):
         await finish_fish(msg)
     else:
         rand_result = random.randint(1, 100)
-        if Config('enable_get_petal', True) or rand_result < 90:
+        if Config('enable_get_petal', False) or rand_result < 90:
             send = msg.locale.t('fish.message.not_started.1', prefix=msg.prefixes[0])
         else:
             send = msg.locale.t('fish.message.not_started.2')

@@ -15,7 +15,7 @@ from database import BotDBUtil
 
 import subprocess
 
-jwt_secret = Config('jwt_secret', '')
+jwt_secret = Config('jwt_secret', cfg_type = str)
 
 ver = module('version', base=True)
 
@@ -144,8 +144,8 @@ async def _(msg: Bot.MessageSession):
     res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
-    if Config('locale_url', ''):
-        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', ''))
+    if Config('locale_url', cfg_type = str):
+        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', cfg_type = str))
     await msg.finish(res)
 
 

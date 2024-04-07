@@ -62,7 +62,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
     :returns: 消耗的花瓣数量，保留两位小数。
     '''
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
-    if Config('enable_petal', True) and not msg.check_super_user():
+    if Config('enable_petal', False) and not msg.check_super_user():
         petal_exchange_rate = await load_or_refresh_cache()
         if gpt4:
             price = tokens / ONE_K * PRICE_PER_1K_TOKEN_GPT_4
@@ -74,7 +74,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
             Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
             petal = price * USD_TO_CNY * CNY_TO_PETAL
 
-        if Config('db_path', '').startswith('sqlite'):
+        if Config('db_path', cfg_type = str).startswith('sqlite'):
             amount = petal.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
             msg.data.modify_petal(-int(amount))
         else:
@@ -91,7 +91,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
     :param amount: 增加的花瓣数量。
     :returns: 增加花瓣的提示消息。
     '''
-    if Config('enable_petal', True) and Config('enable_get_petal', True):
+    if Config('enable_petal', False) and Config('enable_get_petal', False):
         limit = Config('gained_petal_limit', 10)
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
@@ -130,7 +130,7 @@ async def lost_petal(msg: Bot.MessageSession, amount):
     :param amount: 减少的花瓣数量。
     :returns: 减少花瓣的提示消息。
     '''
-    if Config('enable_petal', True) and Config('enable_get_petal', True):
+    if Config('enable_petal', False) and Config('enable_get_petal', False):
         limit = Config('lost_petal_limit', 5)
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:

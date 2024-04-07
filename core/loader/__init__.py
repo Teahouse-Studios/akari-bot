@@ -18,7 +18,7 @@ err_modules = []
 
 
 def load_modules():
-    unloaded_modules = Config('unloaded_modules')
+    unloaded_modules = Config('unloaded_modules', [])
     if not unloaded_modules:
         unloaded_modules = []
     err_prompt = []

@@ -17,7 +17,7 @@ from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.http import download_to_cache
 from database import BotDBUtil
 
-enable_analytics = Config('enable_analytics', True)
+enable_analytics = Config('enable_analytics', False)
 
 
 async def convert_embed(embed: Embed):

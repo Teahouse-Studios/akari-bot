@@ -24,7 +24,7 @@ jwt_secret =
 
 [cfg]
 api_port = 5000
-base_superuser = "QQ|2596322644"
+base_superuser = ["QQ|2596322644",]
 debug = false
 cache_path = "./cache/"
 command_prefix = ["~", "～",]
@@ -55,7 +55,6 @@ no_confirm = false
 slower_schedule = false
 enable_dirty_check = true
 enable_rickroll = true
-??? =
 shuffle_rate = 0.2
 rickroll_msg = "https://wdf.ink/6OUp"
 enable_urlmanager = true

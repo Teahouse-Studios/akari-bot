@@ -18,8 +18,8 @@ from core.utils.i18n import Locale
 from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
-enable_tos = Config('enable_tos', False)
-enable_analytics = Config('enable_analytics', True)
+enable_tos = Config('enable_tos', True)
+enable_analytics = Config('enable_analytics', False)
 lang = Config('locale', 'zh_cn')
 report_targets = Config('report_targets', [])
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
@@ -344,7 +344,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except SendMessageFailed:
                     if msg.target.target_from == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:{limited_action},qq={Config("qq_account")}]')
+                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = Union[str, int]))}]')
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -373,8 +373,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     tb = traceback.format_exc()
                     Logger.error(tb)
                     errmsg = msg.locale.t('error.prompt', detail=str(e))
-                    if Config('bug_report_url', ''):
-                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', ''))))
+                    if Config('bug_report_url', cfg_type = str):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
                     await msg.send_message(errmsg)
                     if report_targets:
                         for target in report_targets:
@@ -485,9 +485,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             tb = traceback.format_exc()
                             Logger.error(tb)
                             errmsg = msg.locale.t('error.prompt', detail=str(e))
-                            if Config('bug_report_url', ''):
+                            if Config('bug_report_url', cfg_type = str):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url', ''))))
+                                                              url=str(Url(Config('bug_report_url', cfg_type = str))))
                             await msg.send_message(errmsg)
                             if report_targets:
                                 for target in report_targets:
@@ -500,7 +500,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                       message=f'[CQ:{limited_action},qq={Config("qq_account")}]')
+                                       message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = Union[int, str]))}]')
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg

@@ -21,7 +21,7 @@ for doc in docs:
     for i in text_splitter.split_documents(documents):
         texts.append(i)
 
-embeddings = OpenAIEmbeddings(openai_api_key=Config('openai_api_key', ''))
+embeddings = OpenAIEmbeddings(openai_api_key=Config('openai_api_key', cfg_type = str))
 doc_search = Chroma.from_documents(
     texts,
     embeddings,
@@ -32,7 +32,7 @@ doc_search = Chroma.from_documents(
 doc_search.persist()
 llm = ChatOpenAI(
     temperature=0,
-    openai_api_key=Config('openai_api_key', ''),
+    openai_api_key=Config('openai_api_key', cfg_type = str),
     model_kwargs={
         'frequency_penalty': 0.0,
         'presence_penalty': 0.0})

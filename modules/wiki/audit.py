@@ -8,7 +8,7 @@ from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
 
-if Config('enable_urlmanager', True):
+if Config('enable_urlmanager', False):
     aud = module('wiki_audit', required_superuser=True,
                  alias='wau')
 

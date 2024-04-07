@@ -44,7 +44,7 @@ def enqueue_output(out, queue):
 
 
 def init_bot():
-    base_superuser = Config('base_superuser')
+    base_superuser = Config('base_superuser', cfg_type = Union[str, list])
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
@@ -58,7 +58,7 @@ disabled_bots = Config('disabled_bots', [])
 
 
 def run_bot():
-    cache_path = os.path.abspath(Config('cache_path'))
+    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     os.mkdir(cache_path)

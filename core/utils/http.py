@@ -17,7 +17,7 @@ from .cache import random_cache_path
 
 logging_resp = False
 debug = Config('debug', False)
-if not (proxy := Config('proxy', '')):
+if not (proxy := Config('proxy', cfg_type = str)):
     proxy = ''
 
 _matcher_private_ips = re.compile(
