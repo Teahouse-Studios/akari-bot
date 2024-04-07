@@ -74,22 +74,26 @@ class CFG:
         value_s = cls.value.get('secret')
         value_n = cls.value.get('cfg')
         value = value_s.get(q)
-        if value is None:
-            value = value_n.get(q)
-        if value is None and default is not None:
-            return default
-        if cfg_type is not None:
-            if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
-                if isinstance(cfg_type, tuple):
-                    cfg_type = tuple(cfg_type.__args__)
-                if value is not None and not isinstance(value, cfg_type):
-                    print(f'[Config] Config {q} has a wrong type, expected {cfg_type}, got {type(value)}.')
-            else:
-                print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
-        elif default is not None:
-            if not isinstance(value, type(default)):
-                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
-        return value
+    if value is None:
+        value = value_n.get(q)
+    if value is None and default is not None:
+        return default
+    if cfg_type is not None:
+        if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
+            if isinstance(cfg_type, tuple):
+                cfg_type_args = get_args(cfg_type)
+                if not all(isinstance(t, type) for t in cfg_type_args):
+                    print("[Config] Invalid cfg_type provided. cfg_type tuple should contain only types.")
+                    return None
+                cfg_type = tuple(cfg_type_args)
+            if not isinstance(value, cfg_type):
+                print(f'[Config] Config {q} has a wrong type, expected {cfg_type}, got {type(value)}.')
+        else:
+            print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
+    elif default is not None:
+        if not isinstance(value, type(default)):
+            print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
+    return value
 
     @classmethod
     def write(cls, q, value, secret=False):
