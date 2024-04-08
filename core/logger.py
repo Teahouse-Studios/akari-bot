@@ -7,7 +7,7 @@ from loguru import logger
 
 from config import Config
 
-debug = Config('debug')
+debug = Config('debug', False)
 
 logpath = os.path.abspath('./logs')
 if not os.path.exists(logpath):

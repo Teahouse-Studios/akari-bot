@@ -22,6 +22,12 @@ from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
 
 
+target_list = ["Discord|Channel", "Discord|DM|Channel", "Kook|Group",
+               "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
+               "Telegram|Group", "Telegram|Private", "Telegram|Supergroup",]
+sender_list = ["Discord|Client", "Kook|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User",]
+
+
 su = module('superuser', alias='su', required_superuser=True, base=True)
 
 
@@ -52,7 +58,7 @@ purge = module('purge', required_superuser=True, base=True)
 
 @purge.command()
 async def _(msg: Bot.MessageSession):
-    cache_path = os.path.abspath(Config('cache_path'))
+    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
@@ -426,7 +432,7 @@ async def _(msg: Bot.MessageSession):
     raise TestException(e)
 
 
-if Config('enable_eval'):
+if Config('enable_eval', False):
     _eval = module('eval', required_superuser=True, base=True)
 
     @_eval.command('<display_msg>')
@@ -489,7 +495,7 @@ async def _(msg: Bot.MessageSession, k: str):
         await msg.finish(msg.locale.t("failed"))
 
 
-if Config('enable_petal'):
+if Config('enable_petal', False):
     petal = module('petal', base=True, alias='petals')
 
     @petal.command()

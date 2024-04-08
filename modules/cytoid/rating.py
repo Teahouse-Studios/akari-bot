@@ -83,7 +83,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         """)
 
         result = await client.execute_async(query)
-        workdir = os.path.abspath(Config("cache_path") + str(uuid.uuid4()))
+        workdir = os.path.abspath(Config("cache_path", "./cache/") + str(uuid.uuid4()))
         os.mkdir(workdir)
         best_records = result['profile'][query_type]
         rank = 0
@@ -209,7 +209,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         if __name__ == '__main__':
             b30img.show()
         else:
-            savefilename = os.path.abspath(f'{Config("cache_path")}{str(uuid.uuid4())}.jpg')
+            savefilename = os.path.abspath(f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.jpg')
             b30img.convert("RGB").save(savefilename)
             # shutil.rmtree(workdir)
             return {'status': True, 'path': savefilename}

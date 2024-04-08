@@ -1,6 +1,6 @@
 import os
 from os.path import abspath
-from typing import Union, Any
+from typing import Union, Any, get_origin, get_args
 
 import toml
 
@@ -67,7 +67,7 @@ class CFG:
         cls._ts = os.path.getmtime(config_path)
 
     @classmethod
-    def get(cls, q: str, default: Union[Any, None] = None) -> Any:
+    def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None) -> Any:
         q = q.lower()
         if os.path.getmtime(config_path) != cls._ts:
             cls.load()
@@ -80,9 +80,21 @@ class CFG:
             print(f'[Config] Config {q} not found, is it configured?')
         if value is None and default is not None:
             return default
-        if default is not None:
+        if cfg_type is not None:
+            if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
+                if isinstance(cfg_type, tuple):
+                    cfg_type_args = get_args(cfg_type)
+                    if not all(isinstance(t, type) for t in cfg_type_args):
+                        print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type tuple should contain only types.')
+                    else:
+                        cfg_type_str = ', '.join([t.__name__ for t in cfg_type_args])
+                        if value is not None and not isinstance(value, cfg_type):
+                            print(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value)}.')
+            else:
+                print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
+        elif default is not None:
             if not isinstance(value, type(default)):
-                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}')
+                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
         return value
 
     @classmethod

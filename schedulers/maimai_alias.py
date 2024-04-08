@@ -12,5 +12,5 @@ async def update_maimai_alias():
     try:
         await update_alias()
     except Exception:
-        if Config('debug'):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())

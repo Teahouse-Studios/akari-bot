@@ -17,7 +17,7 @@ from core.types import FetchTarget as FetchedTargetT, \
 from core.utils.image import image_split
 from database import BotDBUtil
 
-enable_analytics = Config('enable_analytics')
+enable_analytics = Config("enable_analytics", False)
 
 
 class FinishedSession(FinS):

@@ -50,7 +50,7 @@ class MessageSession(MessageSessionT):
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
         send = None
-        if Config('no_confirm'):
+        if Config('no_confirm', False):
             return True
         if message_chain:
             if append_instruction:

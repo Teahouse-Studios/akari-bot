@@ -39,7 +39,7 @@ class MessageSession(MessageSessionT):
             -> bool:
         send = None
         ExecutionLockList.remove(self)
-        if Config('no_confirm'):
+        if Config('no_confirm', False):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)

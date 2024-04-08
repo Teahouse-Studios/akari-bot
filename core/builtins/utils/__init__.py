@@ -6,8 +6,8 @@ from config import Config
 from core.types import PrivateAssets, Secret
 
 
-confirm_command = Config('confirm_command', default=["是", "对", "對", "yes", "Yes", "YES", "y", "Y"])
-command_prefix = Config('command_prefix', default=['~', '～'])  # 消息前缀
+confirm_command = Config('confirm_command', ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"])
+command_prefix = Config('command_prefix', ['~', '～'])  # 消息前缀
 
 
 class EnableDirtyWordCheck:
@@ -16,7 +16,10 @@ class EnableDirtyWordCheck:
 
 def shuffle_joke(text: str):
     current_date = datetime.now().date()
-    if Config('???') or (Config('???') is None and (current_date.month == 4 and current_date.day == 1)):
+    shuffle_rate = Config('shuffle_rate', 0.1, (float, int))
+    have_fun = Config('???', cfg_type = bool)
+    
+    if have_fun or have_fun is None and (current_date.month == 4 and current_date.day == 1):
         urls = re.finditer(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
         url_positions = [(url.start(), url.end()) for url in urls]
 
@@ -33,7 +36,7 @@ def shuffle_joke(text: str):
         for i in range(0, len(parts), 2):
             text_list = list(parts[i])
             for j in range(len(text_list) - 1):
-                if random.random() < 0.2:
+                if random.random() <= shuffle_rate:
                     text_list[j], text_list[j + 1] = text_list[j + 1], text_list[j]
             parts[i] = ''.join(text_list)
         return ''.join(parts)
