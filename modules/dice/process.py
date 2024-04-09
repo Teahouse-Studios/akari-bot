@@ -51,7 +51,7 @@ async def process_expression(msg, expr: str, dc, use_markdown=False):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
+    if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
         use_markdown = True
     if use_markdown:
         expr = expr.replace('*', '\\*')

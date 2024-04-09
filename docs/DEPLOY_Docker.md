@@ -254,9 +254,9 @@ docker pull silianz/akari-bot:dev-docker
 
 `tg_token =` - 填写你获取到的机器人 Token。
 
-#### Kook
+#### KOOK
 
-你需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
+你需要在 [KOOK 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
 
 `kook_token =` - 填写你获取到的机器人 Token。
 
@@ -308,7 +308,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 #### 屏蔽词
 
-小可内置了[阿里云内容安全服务](https://www.aliyun.com/product/lvwang)对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
+小可内置了[阿里云内容安全服务](https://www.aliyun.com/product/lvwang)对接，可用于 QQ 和 KOOK 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
@@ -424,7 +424,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 #### 其他功能
 
-`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|Client|<ClientID>`、`Telegram|Client|<ClientID>`、`Kook|User|<UserID>`，可在机器人开启后使用 `~whoami` 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
+`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|Client|<ClientID>`、`Telegram|Client|<ClientID>`、`KOOK|User|<UserID>`，可在机器人开启后使用 `~whoami` 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
 `qq_disable_temp_session = true` - 是否禁用 QQ 平台的临时会话功能。
 

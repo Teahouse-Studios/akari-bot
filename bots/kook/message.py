@@ -172,11 +172,11 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
-        if self.target.target_from == 'Kook|Group':
+        if self.target.target_from == 'KOOK|Group':
             get_channel = await bot.client.fetch_public_channel(self.session.target)
             if not get_channel:
                 return False
-        elif self.target.target_from == 'Kook|Person':
+        elif self.target.target_from == 'KOOK|Person':
             get_channel = await bot.client.fetch_user(self.session.target)
             Logger.debug(f'get_channel: {get_channel}')
             if not get_channel:
@@ -209,12 +209,12 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        match_channel = re.match(r'^(Kook\|.*?)\|(.*)', target_id)
+        match_channel = re.match(r'^(KOOK\|.*?)\|(.*)', target_id)
         if match_channel:
             target_from = sender_from = match_channel.group(1)
             target_id = match_channel.group(2)
             if sender_id:
-                match_sender = re.match(r'^(Kook\|User)\|(.*)', sender_id)
+                match_sender = re.match(r'^(KOOK\|User)\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
@@ -249,7 +249,7 @@ class FetchTarget(FetchTargetT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Kook")
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "KOOK")
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:

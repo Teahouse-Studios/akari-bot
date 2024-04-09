@@ -20,10 +20,10 @@ from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
 
 
-target_list = ["Discord|Channel", "Discord|DM|Channel", "Kook|Group",
+target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group",
                "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
                "Telegram|Group", "Telegram|Private", "Telegram|Supergroup",]
-sender_list = ["Discord|Client", "Kook|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User",]
+sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User",]
 
 
 su = module('superuser', alias='su', required_superuser=True, base=True)

@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
     send_msg = []
     if msg.target.target_from in [
         'Discord|Channel',
-        'Kook|Group',
+        'KOOK|Group',
         'Matrix|Room',
         'QQ|Group',
         'QQ|Guild',

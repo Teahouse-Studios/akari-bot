@@ -47,7 +47,7 @@ body:
       options:
         - QQ 群
         - QQ 频道
-        - Kook
+        - KOOK
         - Discord
         - Telegram
   - type: input
