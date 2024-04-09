@@ -1,3 +1,8 @@
+# 说明
+本项目为Teahouse/akari-bot的分支项目，对比原始项目存在对TOS、模块i18n等部分的自定义，并包括了一个研究中的原神模块。
+
+原项目说明见下
+
 <div align="center">
   <img width="256" src="./assets/character_marked.png" alt="logo">
 
@@ -50,10 +55,6 @@
 #### KOOK
 
 邀请链接：<https://www.kookapp.cn/app/oauth2/authorize?id=19512&permissions=949248&client_id=xiDWoVygvPsP6bov&redirect_uri=&scope=bot>
-
-#### Matrix
-
-链接：<https://matrix.to/#/@akaribot:matrix.org>，支持私聊和群聊。
 
 ### 自搭建
 

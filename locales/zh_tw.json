@@ -86,7 +86,7 @@
     "tos.message.report": "使用者 ${sender} 在對話 ${target} 觸發了濫用警告。",
     "tos.message.tempbanned": "提示：\n由於你的行為觸發了警告，我們已對你暫時封鎖。\n距解除時間還有 ${ban_time} 秒。",
     "tos.message.tempbanned.warning": "提示：\n即使已被暫時封鎖，嘗試繼續濫用指令可能會導致你被再次警告。\n距解除時間還有 ${ban_time} 秒。",
-    "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
+    "tos.message.warning": "警告：\n本bot嚴禁濫用，您已觸發濫用閾值。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
     "tos.message.warning.last": "這是最後一次警告。",
     "unknown": "未知",
