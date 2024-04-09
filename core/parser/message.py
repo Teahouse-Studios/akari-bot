@@ -391,7 +391,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         if msg.muted:
             return
         if running_mention:
-            if msg.trigger_msg.find('小可') != -1:
+            if msg.trigger_msg.lower().find(msg.locale.t('bot_name')) != -1:
                 if ExecutionLockList.check(msg):
                     return await msg.send_message(msg.locale.t('parser.command.running.prompt2'))
 

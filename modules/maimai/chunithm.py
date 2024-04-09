@@ -13,7 +13,7 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
 chu = module('chunithm',
              developers=['DoroWolf'],
              alias='chu',
-             support_languages=['zh_cn'],
+             support_languages=['zh_cn', 'zh_tw'],
              desc='{chunithm.help.desc}')
 
 

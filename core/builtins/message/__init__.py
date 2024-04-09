@@ -29,6 +29,7 @@ class MessageSession(MessageSessionT):
         self.custom_admins = self.data.custom_admins
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
+        self.name = self.locale.t('bot_name')
         self.timestamp = datetime.now()
         self.tmp = {}
         self._tz_offset = self.options.get(
