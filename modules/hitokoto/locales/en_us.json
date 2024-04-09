@@ -4,7 +4,7 @@
     "hitokoto.message.invalid": "Invalid type.",
     "hitokoto.message.type": "Type: ",
     "hitokoto.message.type.a": "Anime",
-    "hitokoto.message.type.b": "Comic",
+    "hitokoto.message.type.b": "Manga",
     "hitokoto.message.type.c": "Game",
     "hitokoto.message.type.d": "Literature",
     "hitokoto.message.type.e": "Original",
@@ -14,5 +14,5 @@
     "hitokoto.message.type.i": "Poetry",
     "hitokoto.message.type.j": "NetEase Cloud",
     "hitokoto.message.type.k": "Philosophy",
-    "hitokoto.message.type.l": "Show oneself"
+    "hitokoto.message.type.l": "Humorous"
 }
