@@ -18,7 +18,7 @@ async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
             if result and enable_urlmanager and not check.value.in_allowlist and msg.target.sender_from in [
-                    'QQ', 'Kook|User']:
+                    'QQ', 'KOOK|User']:
                 prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
                 if Config("wiki_whitelist_url", cfg_type = str):
                     prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = target.config_interwikis(interwiki, check.value.api, let_it=True)
             if result and enable_urlmanager and not check.value.in_allowlist and msg.target.sender_from in [
-                    'QQ', 'Kook|User']:
+                    'QQ', 'KOOK|User']:
                 prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
                 if Config("wiki_whitelist_url", cfg_type = str):
                     prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",

@@ -110,7 +110,7 @@ play_state = {}
 
 @tf.command('{{twenty_four.help}}')
 async def _(msg: Bot.MessageSession, use_markdown=False):
-    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
+    if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
         use_markdown = True
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         await msg.finish(msg.locale.t('game.message.running'))
