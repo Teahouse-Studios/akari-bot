@@ -107,7 +107,7 @@ async def config_modules(msg: Bot.MessageSession):
                 query = BotDBUtil.TargetInfo(f'{msg.target.target_from}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
-                msglist.append(msg.locale.t("core.message.module.enable.qq_channel_global.success", module=x))
+                msglist.append(msg.locale.t("core.message.module.enable.qqchannel_global.success", module=x))
         else:
             if msg.data.enable(enable_list):
                 for x in enable_list:
