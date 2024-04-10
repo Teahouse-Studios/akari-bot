@@ -5,5 +5,5 @@
     "mkey.message.error.inquiry_num": "Invalid inquiry number.",
     "mkey.message.error.device": "Invalid device.",
     "mkey.message.error.hal": "Switch needs to specify device ID.",
-    "mkey.message.result": "Your master key is: ${result}."
+    "mkey.message.result": "Your master key is ${result}."
 }
