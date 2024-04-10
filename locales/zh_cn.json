@@ -4,7 +4,7 @@
     "check.redacted.all": "<全部吃掉了>",
     "core.help.alias": "命令别名：",
     "core.help.none": "（此模块没有帮助信息）",
-    "core.help.options": "参数：",
+    "core.help.options": "选项：",
     "core.message.confirm": "你确定吗？",
     "error": "发生错误：",
     "error.config.invalid": "配置参数无效或未找到，请检查配置文件。",
