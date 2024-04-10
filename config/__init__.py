@@ -4,7 +4,7 @@ from typing import Union, Any, get_origin, get_args
 
 import toml
 
-from core.exceptions import ConfigFileNotFound
+from core.exceptions import ConfigFileNotFound, ConfigValueError
 
 config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)
@@ -63,7 +63,10 @@ class CFG:
                 convert_cfg_to_toml()
             else:
                 raise ConfigFileNotFound(config_path) from None
-        cls.value = toml.loads(open(config_path, 'r', encoding='utf-8').read())
+        try:
+            cls.value = toml.loads(open(config_path, 'r', encoding='utf-8').read())
+        except Exception as e:
+            raise ConfigValueError(e)
         cls._ts = os.path.getmtime(config_path)
 
     @classmethod
