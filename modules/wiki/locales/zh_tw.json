@@ -26,7 +26,7 @@
     "wiki.help.wiki_inline.page": "在 [[ ]] 內輸入標題以自動查詢頁面。",
     "wiki.help.wiki_inline.template": "在 {{ }} 內輸入標題以自動查詢模板。",
     "wiki.help.wiki_inline.url": "傳送 Wiki 頁面的 URL 以生成 Infobox 圖片。",
-    "wiki.message.ab.slice": "•${title} - ${user} 於 ${time}\n 過濾器描述：${filter_name}\n 採取的動作：${result}",
+    "wiki.message.ab.slice": "•${time} - ${user} 在 ${title} 執行操作「${action}」時觸發防濫用過濾器。\n过滤器描述：${filter_name}\n采取的行动：${result}",
     "wiki.message.error.add": "發生錯誤：無法新增此 Wiki。",
     "wiki.message.error.blocked": "發生錯誤：${name} 處於黑名單中。",
     "wiki.message.error.fetch_log": "發生錯誤：無法取得日誌，可能是此 Wiki 設定了日誌的檢視權限。",
