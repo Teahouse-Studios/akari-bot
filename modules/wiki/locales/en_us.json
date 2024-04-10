@@ -65,7 +65,7 @@
     "wiki.message.prefix.set.success": "The prefix have been updated: ${wiki_prefix}",
     "wiki.message.redirect": "(Redirect [${title}] -> [${redirected_title}])",
     "wiki.message.redirect.autofix": "(Specified [${title}] redirected to [${redirected_title}].)",
-    "wiki.message.redirect.template_to_page": "([${title}] does not exist and automatically redirected to [${redirected_title}])",
+    "wiki.message.redirect.template_to_page": "([${title}] does not exist, automatically redirected to [${redirected_title}])",
     "wiki.message.redlink.disable": "Disabled to return the edit link if the page does not exist.",
     "wiki.message.redlink.enable": "Enabled to return the edit link if the page does not exist.",
     "wiki.message.redlink.not_found": "(Page does not exist)",

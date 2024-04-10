@@ -4,7 +4,7 @@
     "check.redacted.all": "<全部已編輯>",
     "core.help.alias": "指令別名：",
     "core.help.none": "（此模組沒有說明資訊）",
-    "core.help.options": "參數：",
+    "core.help.options": "選項：",
     "core.message.confirm": "你確定嗎？",
     "error": "發生錯誤：",
     "error.config.invalid": "設定參數無效或未找到，請檢查設定檔。",
