@@ -1,5 +1,5 @@
 name: 申请推送白名单
-description: 提交申请推送白名单，使 QQ 侧公共实例订阅模块优先推送消息到本群/QQ。
+description: 提交申请推送白名单，使 QQ 侧公共实例订阅模块优先推送消息到本群聊。
 title: "[REQUEST]: 推送白名单申请"
 labels: ["request"]
 assignees:
@@ -10,15 +10,15 @@ body:
     attributes:
       label: 开始之前……
       options:
-        - label: 我确定本群/QQ 需要使用小可的推送模块（如 `mcv_rss`、`minecraft_news` 等），且消息需要及时推送。
+        - label: 我确定本 QQ 群聊需要使用小可的推送模块（如 `mcv_rss`、`minecraft_news` 等），且消息需要及时推送。
           required: true
   - type: dropdown
     id: group-type
     attributes:
       label: 类型
       options:
-        - QQ 群
-        - QQ
+        - QQ 群聊
+        - QQ 私聊
     validations:
       required: true
   - type: input
@@ -32,8 +32,8 @@ body:
   - type: input
     id: group-id
     attributes:
-      label: QQ 群
+      label: QQ 群号
       description: 你想要申请的群号。
       placeholder: e.g. 1000000
     validations:
-      required: true
+      required: false

@@ -1,7 +1,7 @@
 {
-    "random.help.choice": "Select an element from a given set.",
+    "random.help.choice": "Select an element from a given list.",
     "random.help.desc": "Random number generator (cryptographically secure)",
     "random.help.number": "Generate a random integer within a given range.",
-    "random.help.shuffle": "Shuffle the order of a given set.",
+    "random.help.shuffle": "Shuffle the order of a given list.",
     "random.help.uuid": "Generate random UUID (v4)."
 }

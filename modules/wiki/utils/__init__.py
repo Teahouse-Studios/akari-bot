@@ -16,7 +16,8 @@ rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
 
 @rc_.command()
 @rc_.command('[legacy] {{wiki.help.rc}}',
-             available_for=['QQ', 'QQ|Group'])
+             available_for=['QQ|Private', 'QQ|Group'],
+             recommend_modules='wiki')
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -36,7 +37,8 @@ async def rc_loader(msg: Bot.MessageSession):
 
 
 @rc_.command('{{wiki.help.rc}}',
-             exclude_from=['QQ', 'QQ|Group'])
+             exclude_from=['QQ', 'QQ|Group'],
+             recommend_modules='wiki')
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -50,7 +52,8 @@ ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
 
 @ab_.command()
 @ab_.command('[legacy] {{wiki.help.ab}}',
-             available_for=['QQ', 'QQ|Group'])
+             available_for=['QQ|Private', 'QQ|Group'],
+             recommend_modules='wiki')
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -74,7 +77,8 @@ async def ab_loader(msg: Bot.MessageSession):
 
 
 @ab_.command('{{wiki.help.ab}}',
-             exclude_from=['QQ', 'QQ|Group'])
+             exclude_from=['QQ', 'QQ|Group'],
+             recommend_modules='wiki')
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -90,7 +94,8 @@ async def ab_loader(msg: Bot.MessageSession):
 new = module('newbie', developers=['OasisAkari'], recommend_modules='wiki')
 
 
-@new.command('{{wiki.help.newbie}}')
+@new.command('{{wiki.help.newbie}}',
+             recommend_modules='wiki')
 async def newbie_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:

@@ -93,7 +93,7 @@ async def config_modules(msg: Bot.MessageSession):
                     if modules_[module_].required_superuser and not msg.check_super_user():
                         msglist.append(msg.locale.t("cparser.superuser.permission.denied"))
                     elif modules_[module_].base:
-                        msglist.append(msg.locale.t("core.message.module.enable.base", module=module_))
+                        msglist.append(msg.locale.t("core.message.module.enable.already", module=module_))
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
@@ -130,8 +130,6 @@ async def config_modules(msg: Bot.MessageSession):
                         recommend_modules_help_doc_list.append(msg.locale.tl_str(modules_[m].desc))
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
-                    if not hdoc:
-                        hdoc = msg.locale.t('core.help.none')
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass

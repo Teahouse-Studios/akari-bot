@@ -17,7 +17,7 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法。
+        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/bot/issues) 中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法。
           required: true
   - type: dropdown
     id: platform
@@ -31,7 +31,7 @@ body:
         - Discord
         - Telegram
         - Matrix
-        - 开发者控制台
+        - 控制台
         - 所有平台均有此问题
     validations:
       required: true
@@ -39,16 +39,16 @@ body:
     id: user-id
     attributes:
       label: 用户 ID
-      description: 你的 QQ 号/Telegram ID/Discord handle。
-      placeholder: e.g. QQ 10000/TG @Example/DC Example#1234
+      description: 你的用户 ID，可使用 `whoami` 命令查看。
+      placeholder: e.g. QQ|10000
     validations:
       required: true
   - type: input
     id: group-id
     attributes:
-      label: 群组 ID
-      description: 你的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
-      placeholder: e.g. QQ 1000000/TG <https://t.me/example>/DC 12345678910111213/DC <https://discord.gg/exAmpl3>
+      label: 对话 ID
+      description: 你的对话 ID，可使用 `whoami` 命令查看。
+      placeholder: e.g. QQ|Group|1000000
     validations:
       required: true
   - type: textarea
@@ -57,7 +57,7 @@ body:
       label: 错误信息
       description: 请复制粘贴机器人的报错信息（若有）。
       placeholder: |
-        发生错误：object bool can't be used in 'await' expression
+        执行命令时发生错误，请报告机器人开发者：object bool can't be used in 'await' expression
         错误汇报地址：https://s.wd-ljt.com/botreportbug
     validations:
       required: false

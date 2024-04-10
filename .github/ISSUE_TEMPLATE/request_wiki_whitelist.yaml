@@ -1,5 +1,5 @@
 name: 申请 Wiki 链接白名单
-description: 提交申请 Wiki 链接白名单，使 QQ 侧公共实例使用 Wiki 模块查询对象 Wiki 时，直接展示 Wiki 链接而不是”非官方页面“跳转链接。
+description: 提交申请 Wiki 链接白名单，使 QQ 侧公共实例使用 `wiki` 模块查询对象 Wiki 时，直接展示 Wiki 链接而不是“非官方页面”跳转链接。
 title: "[REQUEST]: Wiki 链接白名单申请"
 labels: ["request"]
 assignees:

@@ -244,7 +244,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, required_admin=True, available_for='QQ|Group', alias='dismiss')
+leave = module('leave', base=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
 
 
 @leave.command('{{core.help.leave}}')
