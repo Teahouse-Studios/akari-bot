@@ -37,7 +37,7 @@ async def rc_loader(msg: Bot.MessageSession):
 
 
 @rc_.command('{{wiki.help.rc}}',
-             exclude_from=['QQ', 'QQ|Group'],
+             exclude_from=['QQ|Private', 'QQ|Group'],
              recommend_modules='wiki')
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
