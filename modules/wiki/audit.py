@@ -7,14 +7,14 @@ from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
-audit_available_list = ['KOOK|User', 'QQ', 'QQ|Tiny']
+audit_available_list = ["KOOK|Group", "QQ|Group", "QQ|Guild", "QQ|Private"]
 
 
 if Config('enable_urlmanager', False):
     aud = module('wiki_audit',
                  required_superuser=True,
                  alias='wau',
-                 available_for=["KOOK|Group", "QQ|Group", "QQ|Guild", "QQ|Private"])
+                 available_for=audit_available_list)
 
     @aud.command(['trust <apilink>',
                   'block <apilink>'])
