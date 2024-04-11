@@ -532,9 +532,9 @@ class WikiLib:
                 if 'invalid' in page_raw:
                     match = re.search(r'"(.)"', page_raw['invalidreason'])
                     if match:
-                        rs = self.locale.t("wiki.message.utils.wikilib.error.invalid_character", char=match.group(1))
+                        rs = self.locale.t("wiki.message.utils.wikilib.invalid.invalid_character", char=match.group(1))
                     else:
-                        rs = self.locale.t("wiki.message.utils.wikilib.error.empty_title")
+                        rs = self.locale.t("wiki.message.utils.wikilib.invalid.empty_title")
                     page_info.desc = rs
                 elif 'missing' in page_raw:
                     if 'title' in page_raw:

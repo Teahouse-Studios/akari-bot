@@ -157,7 +157,7 @@ async def _(msg: Bot.MessageSession):
                                     i_msg_lst.append(Image(await
                                                            image_table_render(
                                                                ImageTable(session_data,
-                                                                          ['ID',
+                                                                          [msg.locale.t('wiki.message.table.id'),
                                                                            msg.locale.t('wiki.message.table.section')]))))
                                     i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section.select')))
                                     i_msg_lst.append(Plain(msg.locale.t('message.reply.prompt')))

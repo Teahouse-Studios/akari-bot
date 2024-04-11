@@ -5,6 +5,7 @@ from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
+from .audit import audit_available_list
 from .wiki import wiki
 
 enable_urlmanager = Config('enable_urlmanager')
@@ -15,19 +16,19 @@ async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
     target = WikiTargetInfo(msg)
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
-        if not check.value.in_blocklist or check.value.in_allowlist:
-            result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
-            if result and enable_urlmanager and not check.value.in_allowlist and msg.target.sender_from in [
-                    'QQ', 'KOOK|User']:
-                prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
-                if Config("wiki_whitelist_url", cfg_type = str):
-                    prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                                  url=Config("wiki_whitelist_url", cfg_type = str))
+        if msg.target.sender_from in audit_available_list:
+            if not check.value.in_blocklist or check.value.in_allowlist:
+                result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
+                if result and enable_urlmanager and not check.value.in_allowlist:
+                    prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
+                    if Config("wiki_whitelist_url", cfg_type = str):
+                        prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
+                                                      url=Config("wiki_whitelist_url", cfg_type = str))
+                else:
+                    prompt = ''
+                await msg.finish(msg.locale.t("wiki.message.set.success", name=check.value.name) + prompt)
             else:
-                prompt = ''
-            await msg.finish(msg.locale.t("wiki.message.set.success", name=check.value.name) + prompt)
-        else:
-            await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
+                await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
     else:
         result = msg.locale.t('wiki.message.error.add') + \
             ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
@@ -39,19 +40,19 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     target = WikiTargetInfo(msg)
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
-        if not check.value.in_blocklist or check.value.in_allowlist:
-            result = target.config_interwikis(interwiki, check.value.api, let_it=True)
-            if result and enable_urlmanager and not check.value.in_allowlist and msg.target.sender_from in [
-                    'QQ', 'KOOK|User']:
-                prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
-                if Config("wiki_whitelist_url", cfg_type = str):
-                    prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                                  url=Config("wiki_whitelist_url", cfg_type = str))
+        if msg.target.sender_from in audit_available_list:
+            if not check.value.in_blocklist or check.value.in_allowlist:
+                result = target.config_interwikis(interwiki, check.value.api, let_it=True)
+                if result and enable_urlmanager and not check.value.in_allowlist:
+                    prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
+                    if Config("wiki_whitelist_url", cfg_type = str):
+                        prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
+                                                      url=Config("wiki_whitelist_url", cfg_type = str))
+                else:
+                    prompt = ''
+                await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)
             else:
-                prompt = ''
-            await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)
-        else:
-            await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
+                await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
     else:
         result = msg.locale.t('wiki.message.error.add') + \
             ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
