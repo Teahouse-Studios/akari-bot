@@ -387,7 +387,7 @@ async def bot_help(msg: Bot.MessageSession):
 @hlp.command('[legacy] {{core.help.help}}')
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from).sort()
+        target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
     legacy_help = True
     if not msg.parsed_msg and msg.Feature.image:
@@ -497,7 +497,7 @@ async def _(msg: Bot.MessageSession):
 
 async def modules_help(msg: Bot.MessageSession, legacy):
     module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from).sort()
+        target_from=msg.target.target_from)
     legacy_help = True
     help_msg = [msg.locale.t("core.message.module.list.prompt", prefix=msg.prefixes[0])]
     if Config('help_url', cfg_type = str):
