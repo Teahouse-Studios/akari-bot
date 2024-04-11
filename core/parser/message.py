@@ -14,13 +14,12 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module
-from core.utils.i18n import Locale
+from core.utils.i18n import Locale, default_locale
 from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
-lang = Config('locale', 'zh_cn')
 report_targets = Config('report_targets', [])
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
 
@@ -380,7 +379,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                     msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -493,7 +492,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 
