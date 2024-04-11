@@ -45,7 +45,7 @@
 
 #### Telegram
 
-邀请链接：<https://t.me/oasisakaribot>。
+邀请链接：<https://t.me/oasisakaribot>
 
 #### KOOK
 
@@ -53,7 +53,7 @@
 
 #### Matrix
 
-邀请链接：<https://matrix.to/#/@akaribot:matrix.org>。
+邀请链接：<https://matrix.to/#/@akaribot:matrix.org>
 
 ### 自搭建
 
