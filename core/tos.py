@@ -1,9 +1,8 @@
 from config import Config
 from core.builtins import Bot
-from core.utils.i18n import Locale
+from core.utils.i18n import Locale, default_locale
 from database import BotDBUtil
 
-lang = Config('locale', 'zh_cn')
 report_targets = Config('report_targets', [])
 WARNING_COUNTS = Config('tos_warning_counts', 5)
 
@@ -49,7 +48,7 @@ async def warn_user(user: str, count=1):
 
 
 async def tos_report(sender, target, reason=None, banned=False):
-    locale = Locale(lang)
+    locale = Locale(default_locale)
     if report_targets:
         warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
         if reason:

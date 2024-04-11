@@ -7,7 +7,7 @@ from modules.wiki.utils.wikilib import QueryInfo
 
 
 async def moegirl(term: str, locale: Locale):
-    result = await query_pages(QueryInfo('https://zh.moegirl.org.cn/api.php', headers={'accept': '*/*',
+    result = await query_pages(QueryInfo('https://mzh.moegirl.org.cn/api.php', headers={'accept': '*/*',
                                                                                        'accept-encoding': 'gzip, deflate',
                                                                                        'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',
                                                                                        'content-type': 'application/json',
@@ -25,7 +25,7 @@ async def moegirl(term: str, locale: Locale):
                 r'(?<=是：\[)(.*?)(?=\]。)', msg_item.text).group(0)
             Logger.debug(redirect)
             if redirect:
-                wait = await query_pages(QueryInfo('https://zh.moegirl.org.cn/api.php', headers={'accept': '*/*',
+                wait = await query_pages(QueryInfo('https://mzh.moegirl.org.cn/api.php', headers={'accept': '*/*',
                                                                                                  'accept-encoding': 'gzip, deflate',
                                                                                                  'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',
                                                                                                  'content-type': 'application/json',

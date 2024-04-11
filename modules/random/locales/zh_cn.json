@@ -1,7 +1,7 @@
 {
-    "random.help.choice": "从集合中选择元素。",
+    "random.help.choice": "从列表中选择元素。",
     "random.help.desc": "随机数生成器（密码学安全）",
     "random.help.number": "生成区间内的随机整数。",
-    "random.help.shuffle": "打乱集合的顺序。",
+    "random.help.shuffle": "打乱列表的顺序。",
     "random.help.uuid": "生成随机 UUID（v4）。"
 }

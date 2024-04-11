@@ -11,7 +11,7 @@ hitokoto = module(
     'hitokoto',
     developers=['bugungu', 'DoroWolf'],
     desc='{hitokoto.help.desc}',
-    alias='htkt',
+    alias=['htkt', 'yiyan'],
     support_languages=['zh_cn', 'zh_tw'])
 
 

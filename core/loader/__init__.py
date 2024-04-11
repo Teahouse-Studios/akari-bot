@@ -157,20 +157,21 @@ class ModulesManager:
     @classmethod
     def return_modules_list(cls, target_from: str = None) -> \
             Dict[str, Module]:
+        modules = {bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)}
         if target_from:
             if target_from in cls._return_cache:
                 return cls._return_cache[target_from]
             returns = {}
-            for m in cls.modules:
-                if isinstance(cls.modules[m], Module):
-                    if target_from in cls.modules[m].exclude_from:
+            for m in modules:
+                if isinstance(modules[m], Module):
+                    if target_from in modules[m].exclude_from:
                         continue
-                    available = cls.modules[m].available_for
+                    available = modules[m].available_for
                     if target_from in available or '*' in available:
-                        returns.update({m: cls.modules[m]})
+                        returns.update({m: modules[m]})
             cls._return_cache.update({target_from: returns})
             return returns
-        return cls.modules
+        return modules
 
     @classmethod
     def reload_module(cls, module_name: str):

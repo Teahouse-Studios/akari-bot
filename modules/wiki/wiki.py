@@ -242,7 +242,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 i_msg_lst.append(Image(await
                                                        image_table_render(
                                                            ImageTable(session_data,
-                                                                      ['ID',
+                                                                      [session.locale.t('wiki.message.table.id'),
                                                                        session.locale.t('wiki.message.table.section')]))))
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))

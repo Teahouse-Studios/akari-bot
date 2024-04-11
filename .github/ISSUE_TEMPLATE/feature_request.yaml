@@ -17,7 +17,7 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的建议，确定没有人提出过此建议
+        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/bot/issues) 中搜索过我的建议，确定没有人提出过此建议。
           required: true
   - type: textarea
     id: description

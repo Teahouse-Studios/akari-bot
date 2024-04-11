@@ -26,7 +26,7 @@ m = module('module',
             'enable all {{core.help.module.enable_all}}',
             'disable <module>... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
-            'reload <module> ...',
+            'reload [-f] <module> ...',
             'load <module> ...',
             'unload <module> ...',
             'list [legacy] {{core.help.module.list}}'],
@@ -40,11 +40,11 @@ async def _(msg: Bot.MessageSession):
     await config_modules(msg)
 
 
-@m.command(['enable <module> ... {{core.help.module.enable}}',
-            'enable all {{core.help.module.enable_all}}',
-            'disable <module> ... {{core.help.module.disable}}',
-            'disable all {{core.help.module.disable_all}}',
-            'reload <module> ...',
+@m.command(['enable [-g] <module> ... {{core.help.module.enable}}',
+            'enable all [-g] {{core.help.module.enable_all}}',
+            'disable [-g]  <module> ... {{core.help.module.disable}}',
+            'disable all [-g] {{core.help.module.disable_all}}',
+            'reload [-f] <module> ...',
             'load <module> ...',
             'unload <module> ...',
             'list [legacy] {{core.help.module.list}}'],
@@ -93,7 +93,7 @@ async def config_modules(msg: Bot.MessageSession):
                     if modules_[module_].required_superuser and not msg.check_super_user():
                         msglist.append(msg.locale.t("cparser.superuser.permission.denied"))
                     elif modules_[module_].base:
-                        msglist.append(msg.locale.t("core.message.module.enable.base", module=module_))
+                        msglist.append(msg.locale.t("core.message.module.enable.already", module=module_))
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
@@ -107,7 +107,7 @@ async def config_modules(msg: Bot.MessageSession):
                 query = BotDBUtil.TargetInfo(f'{msg.target.target_from}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
-                msglist.append(msg.locale.t("core.message.module.enable.qq_channel_global.success", module=x))
+                msglist.append(msg.locale.t("core.message.module.enable.qqchannel_global.success", module=x))
         else:
             if msg.data.enable(enable_list):
                 for x in enable_list:
@@ -130,8 +130,6 @@ async def config_modules(msg: Bot.MessageSession):
                         recommend_modules_help_doc_list.append(msg.locale.tl_str(modules_[m].desc))
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
-                    if not hdoc:
-                        hdoc = msg.locale.t('core.help.none')
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
