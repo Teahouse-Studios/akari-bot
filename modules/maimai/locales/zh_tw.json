@@ -65,7 +65,7 @@
     "maimai.message.plate.advanced": "Advanced 剩餘 ${song_remain} 首",
     "maimai.message.plate.expert": "Expert 剩餘 ${song_remain} 首",
     "maimai.message.plate.master": "Master 剩餘 ${song_remain} 首",
-    "maimai.message.plate.remaster": "，Re:MASTER 剩餘 ${song_remain} 首",
+    "maimai.message.plate.remaster": "Re:MASTER 剩餘 ${song_remain} 首",
     "maimai.message.process": "你還有 ${song_remain} 首 ${process} 級曲目沒有達成 ${goal}。",
     "maimai.message.process.completed": "你已達成 ${process} 級曲目全譜面 ${goal}。",
     "maimai.message.process.last": "你的 ${process} 級歌曲全譜面 ${goal} 剩餘曲目如下：",
