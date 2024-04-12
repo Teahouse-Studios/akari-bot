@@ -545,7 +545,7 @@ async def get_plate_process(msg, payload, plate):
                           song_remain_master=len(song_remain_master))
 
     if version in ['舞', '覇']:  # 霸者和舞牌需要Re:MASTER难度
-        prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
+        prompt += '\n' + msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
 
     prompt += msg.locale.t('message.end')
     await msg.send_message(prompt.strip())
