@@ -27,6 +27,7 @@ counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
 
 temp_ban_counter = {}  # 临时封禁计数
+cooldown_counter = {}  # 冷却计数
 
 
 async def check_temp_ban(target):
@@ -88,6 +89,24 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
                 raise AbuseWarning(msg.locale.t("tos.message.reason.ignore"))
+
+
+async def check_target_cooldown(msg: Bot.MessageSession):
+    cooldown_time = int(msg.options.get('cooldown_time', 0))
+    if await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user():
+        neutralized = True
+    else:
+        neutralized = False
+
+    if cooldown_time and not neutralized:
+        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
+            time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
+            if time > cooldown_time:
+                cooldown_counter[msg.target.target_id][msg.target.sender_id] = {'ts': datetime.now().timestamp()}
+            else:
+                await msg.finish(msg.locale.t('message.cooldown', time=cooldown_time - time))
+        else:
+            cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
@@ -197,6 +216,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
                 time_start = datetime.now()
                 try:
+                    await check_target_cooldown(msg)
                     if enable_tos:
                         await temp_ban_check(msg)
 
@@ -436,6 +456,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                         f'{identify_str} -> [Bot]: {msg.trigger_msg}')
                                 if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
+                                if rfunc.show_typing:
+                                    await check_target_cooldown(msg)
                                 if rfunc.required_superuser:
                                     if not msg.check_super_user():
                                         continue

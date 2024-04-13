@@ -166,7 +166,7 @@ async def reload_locale(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
 whoami = module('whoami', base=True)
@@ -230,6 +230,15 @@ async def _(msg: Bot.MessageSession, offset: str):
     msg.data.edit_option('timezone_offset', offset)
     await msg.finish(msg.locale.t('core.message.setup.timeoffset.success',
                                   offset='' if offset == '+0' else offset))
+
+
+@setup.command('cooldown <second> {{core.help.setup.cooldown}}', required_admin=True)
+async def _(msg: Bot.MessageSession, second: str):
+    if not second.isdigit():
+        await msg.finish(msg.locale.t('core.message.setup.cooldown.invalid'))
+    else:
+        msg.data.edit_option('cooldown_time', second)
+        await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
 
 
 mute = module('mute', base=True, required_admin=True)

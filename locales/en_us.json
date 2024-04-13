@@ -38,7 +38,7 @@
     "message.brackets": " (${msg})",
     "message.collapse": "...show only the first ${amount} items.",
     "message.colon": ": ",
-    "message.cooldown": "${time} second(s) have passed since the last execution. The cooldown time of this command are ${cd_time} second(s).",
+    "message.cooldown": "You need to wait ${time} before executing the command again.",
     "message.delimiter": ", ",
     "message.embed.author": "Author: ",
     "message.end": ".",
