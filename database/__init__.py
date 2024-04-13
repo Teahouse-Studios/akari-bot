@@ -251,34 +251,6 @@ class BotDBUtil:
             session.expire_all()
             return True
 
-    class CoolDown:
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def __init__(self, msg: MessageSession, name):
-            self.msg = msg
-            self.name = name
-            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.sender_id),
-                                                                     commandName=name).first()
-            self.need_insert = True if not self.query else False
-
-        def check(self, delay):
-            if not self.need_insert:
-                now = datetime.datetime.now().timestamp() - self.query.timestamp.timestamp()
-                if now > delay:
-                    return 0
-                return now
-            return 0
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def reset(self):
-            if not self.need_insert:
-                session.delete(self.query)
-                session.commit()
-            session.add_all([CommandTriggerTime(targetId=self.msg.target.sender_id, commandName=self.name)])
-            session.commit()
-            session.expire_all()
-
     class GroupBlockList:
         @staticmethod
         @retry(stop=stop_after_attempt(3))

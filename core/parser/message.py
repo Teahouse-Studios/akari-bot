@@ -146,6 +146,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
+        msg.prefixes = [px for px in set(msg.prefixes) if px.strip()] # 过滤重复与空白前缀
 
         disable_prefix = False
         if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀

@@ -92,7 +92,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
             except asyncio.exceptions.TimeoutError:
                 raise ValueError(f'Request timeout.')
             except Exception as e:
-                Logger.error(f'Error while requesting {url}: \n{e}')
+                if logging_err_resp:
+                    Logger.error(f'Error while requesting {url}: \n{e}')
                 raise e
 
     return await get_()
@@ -150,7 +151,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
             except asyncio.exceptions.TimeoutError:
                 raise ValueError(f'Request timeout.')
             except Exception as e:
-                Logger.error(f'Error while requesting {url}: {e}')
+                if logging_err_resp:
+                    Logger.error(f'Error while requesting {url}: {e}')
                 raise e
 
     return await _post()
