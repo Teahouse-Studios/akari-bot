@@ -204,7 +204,7 @@ async def svg_render(file_path: str, use_local=True):
     <title>File</title>
 </head>
 <body>
-    <div class="botbox"'>
+    <div class="botbox">
     ${content}
     </div>
 </body>
