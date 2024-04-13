@@ -339,6 +339,7 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+        print(module_name, message)
         _tsk = []
         blocked = False
 
@@ -390,7 +391,7 @@ class FetchTarget(FetchTargetT):
             for x in user_list:
                 await post_(x)
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "QQ|Private")
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "QQ")
             group_list_raw = await bot.call_action('get_group_list')
             group_list = [g['group_id'] for g in group_list_raw]
             friend_list_raw = await bot.call_action('get_friend_list')
