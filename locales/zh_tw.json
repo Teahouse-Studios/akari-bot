@@ -38,7 +38,7 @@
     "message.brackets": "（${msg}）",
     "message.collapse": "……僅顯示前 ${amount} 條內容。",
     "message.colon": "：",
-    "message.cooldown": "距上次執行已過去 ${time} 秒，此指令的冷卻時間為 ${cd_time} 秒。",
+    "message.cooldown": "等待 ${time} 秒後才能再次使用指令。",
     "message.delimiter": "、",
     "message.embed.author": "作者：",
     "message.end": "。",

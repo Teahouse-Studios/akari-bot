@@ -232,6 +232,15 @@ async def _(msg: Bot.MessageSession, offset: str):
                                   offset='' if offset == '+0' else offset))
 
 
+@setup.command('cooldown <second> {{core.help.setup.cooldown}}', required_admin=True)
+async def _(msg: Bot.MessageSession, second: str):
+    if not second.isdigit():
+        await msg.finish(msg.locale.t('core.message.setup.cooldown.invalid'))
+    else:
+        msg.data.edit_option('cooldown_time', second)
+        await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
+
+
 mute = module('mute', base=True, required_admin=True)
 
 
