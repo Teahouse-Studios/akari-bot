@@ -102,7 +102,7 @@ async def check_target_cooldown(msg: Bot.MessageSession):
         if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
             time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
             if time > cooldown_time:
-                cooldown_counter[msg.target.target_id][msg.target.sender_id] = {'ts': datetime.now().timestamp()}
+                cooldown_counter[msg.target.target_id].update({msg.target.sender_id: {'ts': datetime.now().timestamp()}})
             else:
                 await msg.finish(msg.locale.t('message.cooldown', time=cooldown_time - time))
         else:
