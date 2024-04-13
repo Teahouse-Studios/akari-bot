@@ -166,7 +166,7 @@ async def reload_locale(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
 whoami = module('whoami', base=True)
