@@ -339,7 +339,6 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        print(module_name, message)
         _tsk = []
         blocked = False
 
