@@ -448,6 +448,9 @@ class WikiLib:
             if Config('enable_tos', True):
                 raise WhatAreUDoingError
         selected_section = None
+        query_props = ['info', 'imageinfo', 'langlinks', 'templates']
+        if self.wiki_info.api.find('moegirl.org.cn') != -1:
+            query_props.remove('imageinfo')
         if title:
             if inline:
                 split_name = re.split(r'(#)', title)
@@ -485,19 +488,21 @@ class WikiLib:
             page_info.selected_section = selected_section
             if not selected_section and used_quote:
                 page_info.invalid_section = True
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
+            query_string = {'action': 'query', 'prop': '|'.join(query_props), 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
-                            'redirects': 'True', 'titles': title}
+                            'redirects': 'true', 'titles': title}
+
         elif pageid:
             page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
-                            'inprop': 'url', 'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
+            query_string = {'action': 'query', 'prop': '|'.join(query_props), 'llprop': 'url',
+                            'inprop': 'url', 'iiprop': 'url', 'redirects': 'true', 'pageids': pageid}
         else:
             return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
                             interwiki_prefix=_prefix, templates=[])
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts and not selected_section:
-            query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
+            query_props += ['extracts', 'pageprops']
+            query_string.update({'prop': "|".join(query_props),
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
