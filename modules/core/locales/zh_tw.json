@@ -147,6 +147,7 @@
     "core.message.petal.no_petals": "本對話內的花瓣不足。",
     "core.message.petal.self": "目前本對話的花瓣數為 ${petal}。",
     "core.message.ping.detail": "系統啟動時間：${system_boot_time}\n機器人已運行：${bot_running_time}\nPython 版本：${python_version}\nWebrender 狀態：${web_render_status}\n處理器型號：${cpu_brand}\n目前處理器使用率：${cpu_usage}%\n物理記憶體：${ram}M 使用率：${ram_percent}%\nSwap 記憶體：${swap}M 使用率：${swap_percent}%\n磁碟容量：${disk_space}G/${disk_space_total}G",
+    "core.message.ping.simple": "機器人已運行：${bot_running_time}\n磁碟容量：${disk_space}G/${disk_space_total}G",
     "core.message.prefix.add.already": "此指令前綴已存在於自訂前綴列表。",
     "core.message.prefix.add.success": "已新增自訂指令前綴：${prefix}",
     "core.message.prefix.list": "自訂指令前綴：${prefixes}",
