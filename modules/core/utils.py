@@ -40,8 +40,8 @@ started_time = datetime.now()
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
     result = "Pong!"
+    timediff = str(datetime.now() - started_time).split('.')[0]
     if msg.check_super_user():
-        timediff = str(datetime.now() - started_time)
         boot_start = msg.ts2strftime(psutil.boot_time())
         web_render_status = str(WebRender.status)
         cpu_usage = psutil.cpu_percent()
@@ -64,8 +64,12 @@ async def _(msg: Bot.MessageSession):
                                       swap_percent=swap_percent,
                                       disk_space=disk,
                                       disk_space_total=disk_total)
+    else:
+        disk_percent =psutil.disk_usage('/').percent
+        result += '\n' + msg.locale.t("core.message.ping.simple",
+                                      bot_running_time=timediff,
+                                      disk_percent=disk_percent)
     await msg.finish(result)
-
 
 admin = module('admin',
                base=True,

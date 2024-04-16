@@ -371,13 +371,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     time_used = datetime.now() - time_start
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
-                    if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module') and enable_tos:
-                        try:
-                            await tos_msg_counter(msg, msg.trigger_msg)
-                        except AbuseWarning as e:
-                            await tos_abuse_warning(msg, e)
-                    else:
-                        Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
+                    if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module'):
+                        if enable_tos:
+                            try:
+                                await tos_msg_counter(msg, msg.trigger_msg)
+                            except AbuseWarning as e:
+                                await tos_abuse_warning(msg, e)
+                        else:
+                            Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
