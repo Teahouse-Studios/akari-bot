@@ -41,8 +41,6 @@ started_time = datetime.now()
 async def _(msg: Bot.MessageSession):
     result = "Pong!"
     timediff = str(datetime.now() - started_time)
-    disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
-    disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
     if msg.check_super_user():
         boot_start = msg.ts2strftime(psutil.boot_time())
         web_render_status = str(WebRender.status)
@@ -51,6 +49,8 @@ async def _(msg: Bot.MessageSession):
         ram_percent = psutil.virtual_memory().percent
         swap = int(psutil.swap_memory().total / (1024 * 1024))
         swap_percent = psutil.swap_memory().percent
+        disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
+        disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,
@@ -65,12 +65,11 @@ async def _(msg: Bot.MessageSession):
                                       disk_space=disk,
                                       disk_space_total=disk_total)
     else:
+        disk_percent =psutil.disk_usage('/').percent
         result += '\n' + msg.locale.t("core.message.ping.simple",
                                       bot_running_time=timediff,
-                                      disk_space=disk,
-                                      disk_space_total=disk_total)
+                                      disk_percent=disk_percent)
     await msg.finish(result)
-
 
 admin = module('admin',
                base=True,
