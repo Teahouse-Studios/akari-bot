@@ -40,7 +40,7 @@ started_time = datetime.now()
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
     result = "Pong!"
-    timediff = str(datetime.now() - started_time)
+    timediff = str(datetime.now() - started_time).split('.')[0]
     if msg.check_super_user():
         boot_start = msg.ts2strftime(psutil.boot_time())
         web_render_status = str(WebRender.status)
