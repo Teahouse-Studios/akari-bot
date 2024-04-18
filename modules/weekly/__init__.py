@@ -31,8 +31,7 @@ async def get_weekly(with_img=False, zh_tw=False):
     text = unescape(text)
     img = html.find('div', class_='weekly-image').find(class_='image')
 
-    if img:
-        img_filename = re.match(r'/w/(.*)', img.attrs['href'])
+    img_filename = re.match(r'/w/(.*)', img.attrs['href']) if img else None
     page = re.findall(r'(?<=<b><a href=").*?(?=")', str(content))
     msg_list = [Plain(locale.t("weekly.message.expired") if page[
         0] == '/w/%E7%8E%BB%E7%92%83' else locale.t(
