@@ -128,7 +128,7 @@ if Bot.client_name == 'QQ':
 
     @post_whitelist.command('<group_id>')
     async def _(msg: Bot.MessageSession, group_id: str):
-        if not target.startswith('QQ|Group|'):
+        if not group_id.startswith('QQ|Group|'):
             await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
         target_data = BotDBUtil.TargetInfo(group_id)
         k = 'in_post_whitelist'
