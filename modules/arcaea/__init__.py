@@ -7,6 +7,7 @@ from core.component import module
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url
 from core.utils.web_render import webrender
+from core.utils.image import get_fontsize
 
 
 assets_path = os.path.abspath('./assets/arcaea')
@@ -119,8 +120,8 @@ async def pttimg(msg: Bot.MessageSession, ptt: str):
             if len(ptt2) < 2:
                 ptt2 += '0'
         ptttext_width, ptttext_height = ptttext.size
-        font1_width, font1_height = font1.getsize(ptt1 + '.')
-        font2_width, font2_height = font2.getsize(ptt2)
+        font1_width, font1_height = get_fontsize(font1, ptt1 + '.')
+        font2_width, font2_height = get_fontsize(font2, ptt2)
         pttimg = Image.new("RGBA", (font1_width + font2_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
         stroke_color = '#52495d'
@@ -132,7 +133,7 @@ async def pttimg(msg: Bot.MessageSession, ptt: str):
     elif ptt == -1:
         ptt = '--'
         ptttext_width, ptttext_height = ptttext.size
-        font1_width, font1_height = font1.getsize(ptt)
+        font1_width, font1_height = get_fontsize(font1, ptt)
         pttimg = Image.new("RGBA", (font1_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
         drawptt.text((0, 0), ptt, 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
