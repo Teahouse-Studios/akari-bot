@@ -9,7 +9,7 @@
 
 ## 介绍
 
-**小可**是基于多个框架开发的可扩展、多平台机器人。图标由 [Rin 十一](https://mihuashi.com/profiles/75826?role=painter)绘制。
+**小可**是基于多个框架开发的可扩展、多平台机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
 
 目前小可还正在持续开发中。
 
