@@ -1,6 +1,6 @@
 # https://toml.io/en/v1.0.0
 # REMEMBER: TOML is not like Python. Do not use Python syntax here.
-# Example: Boolean values in TOML must be lowercase.
+# Note: Boolean values in TOML must be lowercase.
 # If you don't need some functions, please delete the corresponding keys.
 
 [secret]
@@ -55,6 +55,7 @@ no_confirm = false
 slower_schedule = false
 enable_dirty_check = true
 enable_rickroll = true
+??? =
 shuffle_rate = 0.1
 rickroll_msg = "https://wdf.ink/6OUp"
 enable_urlmanager = true
