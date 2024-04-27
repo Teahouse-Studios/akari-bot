@@ -260,16 +260,13 @@ def update_dependencies():
 
 @upd.command()
 async def update_bot(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
-    if confirm:
-        pull_repo_result = pull_repo()
-        if pull_repo_result:
-            await msg.send_message(pull_repo_result)
-        else:
-            await msg.send_message(msg.locale.t("core.message.update.failed"))
-        await msg.finish(update_dependencies())
+    pull_repo_result = pull_repo()
+    if pull_repo_result:
+        await msg.send_message(pull_repo_result)
     else:
-        await msg.finish()
+        await msg.send_message(msg.locale.t("core.message.update.failed"))
+    await msg.finish(update_dependencies())
+    
 
 if Info.subprocess:
     rst = module('restart', required_superuser=True, base=True)
@@ -348,7 +345,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Bot.FetchTarget.name == 'QQ':
-    resume = module('resume', required_superuser=True)
+    resume = module('resume', required_base_superuser=True, base=True)
 
     @resume.command()
     async def resume_sending_group_message(msg: Bot.MessageSession):
