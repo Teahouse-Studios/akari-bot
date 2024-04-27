@@ -162,5 +162,5 @@ async def offset(ctx: discord.ApplicationContext, offset: str):
 
 @setup.command(name="cooldown", description="Set up the command cooldown time within the conversation.")
 @discord.option(name="second", description="The command cooldown seconds.")
-async def offset(ctx: discord.ApplicationContext, offset: str):
+async def cooldown(ctx: discord.ApplicationContext, second: str):
     await slash_parser(ctx, f"cooldown {second}")
