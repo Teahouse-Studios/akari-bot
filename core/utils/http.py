@@ -69,7 +69,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                 ck = SimpleCookie()
                 ck.load(cookies)
                 session.cookie_jar.update_cookies(ck)
-                Logger.info(f'Using cookies: {ck}')
+                Logger.debug(f'Using cookies: {ck}')
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
                                        proxy=proxy, params=params) as req:
@@ -92,7 +92,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
             except asyncio.exceptions.TimeoutError:
                 raise ValueError(f'Request timeout.')
             except Exception as e:
-                Logger.error(f'Error while requesting {url}: \n{e}')
+                if logging_err_resp:
+                    Logger.error(f'Error while requesting {url}: \n{e}')
                 raise e
 
     return await get_()
@@ -126,6 +127,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                 ck = SimpleCookie()
                 ck.load(cookies)
                 session.cookie_jar.update_cookies(ck)
+                Logger.debug(f'Using cookies: {ck}')
             try:
                 async with session.post(url, data=data, headers=headers,
                                         timeout=aiohttp.ClientTimeout(total=timeout),
@@ -149,7 +151,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
             except asyncio.exceptions.TimeoutError:
                 raise ValueError(f'Request timeout.')
             except Exception as e:
-                Logger.error(f'Error while requesting {url}: {e}')
+                if logging_err_resp:
+                    Logger.error(f'Error while requesting {url}: {e}')
                 raise e
 
     return await _post()

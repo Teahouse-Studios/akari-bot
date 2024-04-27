@@ -1,6 +1,6 @@
 # https://toml.io/en/v1.0.0
 # REMEMBER: TOML is not like Python. Do not use Python syntax here.
-# Example: Boolean values in TOML must be lowercase.
+# Note: Boolean values in TOML must be lowercase.
 # If you don't need some functions, please delete the corresponding keys.
 
 [secret]
@@ -12,7 +12,6 @@ proxy =
 dc_token =
 tg_token =
 kook_token =
-matrix_homeserver =
 matrix_device_id =
 matrix_token =
 matrix_megolm_backup_passphrase =
@@ -47,14 +46,16 @@ qq_disable_temp_session = false
 qq_allow_approve_friend = true
 qq_allow_approve_group_invite = true
 qq_enable_listening_self_message = false
-matrix_user = "@akaribot:matrix.org"
 matrix_device_name = 
+matrix_homeserver =
+matrix_user = "@akaribot:matrix.org"
 allow_request_private_ip = false
 allow_reload_base = false
 no_confirm = false
 slower_schedule = false
 enable_dirty_check = true
 enable_rickroll = true
+??? =
 shuffle_rate = 0.1
 rickroll_msg = "https://wdf.ink/6OUp"
 enable_urlmanager = true

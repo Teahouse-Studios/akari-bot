@@ -69,6 +69,7 @@ async def get_target(target_id: str):
     command_prefix = target.get_option('command_prefix')
     ban = target.get_option('ban')
     typo_check = target.get_option('typo_check')
+    cooldown_time = target.get_option('cooldown_time')
     dice_dc_reversed = target.get_option('dice_dc_reversed')
     dice_default_sides = target.get_option('dice_default_sides')
     wiki_fandom_addon = target.get_option('wiki_fandom_addon')
@@ -90,6 +91,7 @@ async def get_target(target_id: str):
         'commandPrefix': command_prefix,
         'ban': ban,
         'typoCheck': typo_check,
+        'cooldownTime': cooldown_time,
         'diceDCReversed': dice_dc_reversed,
         'diceDefaultFace': dice_default_sides,
         'wordleDarkTheme': wordle_dark_theme,

@@ -128,7 +128,7 @@ if Bot.client_name == 'QQ':
 
     @post_whitelist.command('<group_id>')
     async def _(msg: Bot.MessageSession, group_id: str):
-        if not target.startswith('QQ|Group|'):
+        if not group_id.startswith('QQ|Group|'):
             await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
         target_data = BotDBUtil.TargetInfo(group_id)
         k = 'in_post_whitelist'
@@ -260,16 +260,13 @@ def update_dependencies():
 
 @upd.command()
 async def update_bot(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
-    if confirm:
-        pull_repo_result = pull_repo()
-        if pull_repo_result:
-            await msg.send_message(pull_repo_result)
-        else:
-            await msg.send_message(msg.locale.t("core.message.update.failed"))
-        await msg.finish(update_dependencies())
+    pull_repo_result = pull_repo()
+    if pull_repo_result:
+        await msg.send_message(pull_repo_result)
     else:
-        await msg.finish()
+        await msg.send_message(msg.locale.t("core.message.update.failed"))
+    await msg.finish(update_dependencies())
+    
 
 if Info.subprocess:
     rst = module('restart', required_superuser=True, base=True)
@@ -348,7 +345,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Bot.FetchTarget.name == 'QQ':
-    resume = module('resume', required_superuser=True)
+    resume = module('resume', required_base_superuser=True, base=True)
 
     @resume.command()
     async def resume_sending_group_message(msg: Bot.MessageSession):

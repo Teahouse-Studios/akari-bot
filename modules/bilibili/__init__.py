@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         return await msg.finish(msg.locale.t('bilibili.message.invalid'))
     res = await get_video_info(msg, query, get_detail)
     if res:
-        await msg.finish(msg.locale.t('message.cooldown', time=int(res), cd_time=30))
+        await msg.finish(msg.locale.t('message.cooldown', time=int(30 - res)))
 
 
 @bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='A', desc="{bilibili.help.regex.av}")

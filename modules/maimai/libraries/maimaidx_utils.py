@@ -538,17 +538,15 @@ async def get_plate_process(msg, payload, plate):
     song_remain: list[list] = song_remain_basic + song_remain_advanced + \
         song_remain_expert + song_remain_master + song_remain_remaster
 
-    prompt = msg.locale.t('maimai.message.plate', plate=plate,
-                          song_remain_basic=len(song_remain_basic),
-                          song_remain_advanced=len(song_remain_advanced),
-                          song_remain_expert=len(song_remain_expert),
-                          song_remain_master=len(song_remain_master))
-
+    prompt = [msg.locale.t('maimai.message.plate.prompt', plate=plate)]
+    prompt.append(msg.locale.t('maimai.message.plate.basic', song_remain=len(song_remain_basic)))
+    prompt.append(msg.locale.t('maimai.message.plate.advanced', song_remain=len(song_remain_advanced)))
+    prompt.append(msg.locale.t('maimai.message.plate.expert', song_remain=len(song_remain_expert)))
+    prompt.append(msg.locale.t('maimai.message.plate.master', song_remain=len(song_remain_master)))
     if version in ['舞', '覇']:  # 霸者和舞牌需要Re:MASTER难度
-        prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
+        prompt.append(msg.locale.t('maimai.message.plate.remaster', song_remain=len(song_remain_remaster)))
 
-    prompt += msg.locale.t('message.end')
-    await msg.send_message(prompt.strip())
+    await msg.send_message('\n'.join(prompt))
 
     song_record = [[s['id'], s['level_index']] for s in verlist]
 

@@ -40,9 +40,10 @@ started_time = datetime.now()
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
     result = "Pong!"
+    timediff = str(datetime.now() - started_time).split('.')[0]
     if msg.check_super_user():
-        timediff = str(datetime.now() - started_time)
         boot_start = msg.ts2strftime(psutil.boot_time())
+        web_render_status = str(WebRender.status)
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -50,11 +51,11 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
-        web_render_status = str(WebRender.status)
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,
                                       python_version=platform.python_version(),
+                                      web_render_status=web_render_status,
                                       cpu_brand=get_cpu_info()['brand_raw'],
                                       cpu_usage=cpu_usage,
                                       ram=ram,
@@ -62,10 +63,13 @@ async def _(msg: Bot.MessageSession):
                                       swap=swap,
                                       swap_percent=swap_percent,
                                       disk_space=disk,
-                                      disk_space_total=disk_total,
-                                      web_render_status=web_render_status)
+                                      disk_space_total=disk_total)
+    else:
+        disk_percent =psutil.disk_usage('/').percent
+        result += '\n' + msg.locale.t("core.message.ping.simple",
+                                      bot_running_time=timediff,
+                                      disk_percent=disk_percent)
     await msg.finish(result)
-
 
 admin = module('admin',
                base=True,
@@ -166,7 +170,7 @@ async def reload_locale(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
 whoami = module('whoami', base=True)
@@ -230,6 +234,15 @@ async def _(msg: Bot.MessageSession, offset: str):
     msg.data.edit_option('timezone_offset', offset)
     await msg.finish(msg.locale.t('core.message.setup.timeoffset.success',
                                   offset='' if offset == '+0' else offset))
+
+
+@setup.command('cooldown <second> {{core.help.setup.cooldown}}', required_admin=True)
+async def _(msg: Bot.MessageSession, second: str):
+    if not second.isdigit():
+        await msg.finish(msg.locale.t('core.message.setup.cooldown.invalid'))
+    else:
+        msg.data.edit_option('cooldown_time', second)
+        await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
 
 
 mute = module('mute', base=True, required_admin=True)

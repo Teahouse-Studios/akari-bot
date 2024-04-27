@@ -14,13 +14,12 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module
-from core.utils.i18n import Locale
+from core.utils.i18n import Locale, default_locale
 from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
-lang = Config('locale', 'zh_cn')
 report_targets = Config('report_targets', [])
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
 
@@ -28,6 +27,7 @@ counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
 
 temp_ban_counter = {}  # 临时封禁计数
+cooldown_counter = {}  # 冷却计数
 
 
 async def check_temp_ban(target):
@@ -91,6 +91,24 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 raise AbuseWarning(msg.locale.t("tos.message.reason.ignore"))
 
 
+async def check_target_cooldown(msg: Bot.MessageSession):
+    cooldown_time = int(msg.options.get('cooldown_time', 0))
+    if await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user():
+        neutralized = True
+    else:
+        neutralized = False
+
+    if cooldown_time and not neutralized:
+        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
+            time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
+            if time > cooldown_time:
+                cooldown_counter[msg.target.target_id].update({msg.target.sender_id: {'ts': datetime.now().timestamp()}})
+            else:
+                await msg.finish(msg.locale.t('message.cooldown', time=cooldown_time - time))
+        else:
+            cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
+
+
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
@@ -128,6 +146,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
+        msg.prefixes = [px for px in set(msg.prefixes) if px.strip()] # 过滤重复与空白前缀
 
         disable_prefix = False
         if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
@@ -198,6 +217,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
                 time_start = datetime.now()
                 try:
+                    await check_target_cooldown(msg)
                     if enable_tos:
                         await temp_ban_check(msg)
 
@@ -351,13 +371,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     time_used = datetime.now() - time_start
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
-                    if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module') and enable_tos:
-                        try:
-                            await tos_msg_counter(msg, msg.trigger_msg)
-                        except AbuseWarning as e:
-                            await tos_abuse_warning(msg, e)
-                    else:
-                        Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
+                    if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module'):
+                        if enable_tos:
+                            try:
+                                await tos_msg_counter(msg, msg.trigger_msg)
+                            except AbuseWarning as e:
+                                await tos_abuse_warning(msg, e)
+                        else:
+                            Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
@@ -380,7 +401,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                     msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -437,6 +458,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                         f'{identify_str} -> [Bot]: {msg.trigger_msg}')
                                 if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
+                                if rfunc.show_typing:
+                                    await check_target_cooldown(msg)
                                 if rfunc.required_superuser:
                                     if not msg.check_super_user():
                                         continue
@@ -493,7 +516,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            Locale(lang).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 
