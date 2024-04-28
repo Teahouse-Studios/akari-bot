@@ -85,6 +85,7 @@
     "core.message.help.author.type2": "模块作者",
     "core.message.help.helpdoc.address": "在线模块文档：\n${url}",
     "core.message.help.legacy.availables": "当前可用的模块有：",
+    "core.message.help.legacy.availables.none": "当前没有可用的模块。",
     "core.message.help.legacy.base": "基础命令：",
     "core.message.help.legacy.external": "模块扩展命令：",
     "core.message.help.legacy.more_information": "使用“${prefix}help <对应模块名>”查看详细信息。\n使用“${prefix}module list”查看所有的可用模块。",

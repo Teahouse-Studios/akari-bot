@@ -471,13 +471,14 @@ async def _(msg: Bot.MessageSession):
                     module_list[x].hide or module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
-        help_msg.append(msg.locale.t("core.message.help.legacy.external"))
         module_ = []
         for x in module_list:
             if x in target_enabled_list and not (
                     module_list[x].hide or module_list[x].required_superuser or module_list[x].required_base_superuser):
                 module_.append(x)
-        help_msg.append(' | '.join(module_))
+        if module_:
+            help_msg.append(msg.locale.t("core.message.help.legacy.external"))
+            help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
                 "core.message.help.legacy.more_information",
@@ -561,7 +562,6 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         except Exception:
             traceback.print_exc()
     if legacy_help:
-        help_msg = [msg.locale.t("core.message.help.legacy.availables")]
         module_ = []
         for x in module_list:
             if x[0] == '_':
@@ -570,7 +570,11 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                     module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(module_))
+        if module_:
+            help_msg = [msg.locale.t("core.message.help.legacy.availables")]
+            help_msg.append(' | '.join(module_))
+        else:
+            help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
         help_msg.append(
             msg.locale.t(
                 "core.message.module.list.prompt",

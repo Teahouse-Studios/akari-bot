@@ -85,6 +85,7 @@
     "core.message.help.author.type2": "Module Author",
     "core.message.help.helpdoc.address": "Online module document: \n${url}",
     "core.message.help.legacy.availables": "Currently available module(s):",
+    "core.message.help.legacy.availables.none": "There are currently no modules available.",
     "core.message.help.legacy.base": "Base Command: ",
     "core.message.help.legacy.external": "Module Extension Command: ",
     "core.message.help.legacy.more_information": "Use \"${prefix}help <module name>\" to view details.\nUse \"${prefix}module list\" to view all available modules.",
