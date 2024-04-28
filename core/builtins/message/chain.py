@@ -196,6 +196,8 @@ class MessageChain(MessageChainT):
             elif isinstance(x, FormattedTime):
                 x = x.to_str(msg=msg)
                 if isinstance(value[-1], Plain):
+                    if not value[-1].text.endswith("\n"):
+                        value[-1].text += "\n"
                     value[-1].text += x
                 else:
                     value.append(Plain(x))
