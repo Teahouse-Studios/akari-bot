@@ -4,11 +4,11 @@ from typing import Awaitable, Callable, List, Tuple
 from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal
+from core.utils.game import PlayState
 
 tic_tac_toe = module('tic_tac_toe',
                      desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'],
                      alias=['ttt', 'tictactoe'])
-play_state = {}
 
 
 def check_winner(board: List[List[int]]):
@@ -40,9 +40,10 @@ async def game(msg: Bot.MessageSession,
                x_callback: GameCallback,
                o_callback: GameCallback) -> 0 | 1 | 2:
     # 0 = empty; 1 = x; 2 = o
+    play_state = PlayState('tic_tac_toe', msg)
     board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     while True:
-        if not play_state[msg.target.target_id]['active']:
+        if not play_state.check():
             raise TerminationError
         x = await x_callback(board)
         board[x[0]][x[1]] = 1
@@ -75,9 +76,10 @@ def format_board(board: GameBoard):
 
 def generate_human_callback(msg: Bot.MessageSession, player: str):
     async def callback(board: List[List[int]]):
+        play_state = PlayState('tic_tac_toe', msg)
         await msg.send_message(format_board(board) + f'\n{msg.locale.t("tic_tac_toe.message.turn", player=player)}', quote=False)
         while True:
-            if not play_state[msg.target.target_id]['active']:
+            if not play_state.check():
                 raise TerminationError
             wait = await msg.wait_anyone(timeout=3600)
             text = wait.as_display(text_only=True)
@@ -247,13 +249,10 @@ async def random_bot_callback(board: GameBoard):
 
 @tic_tac_toe.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
-    state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
-    if state:  # 若有
-        if state['active']:  # 检查是否为活跃状态
-            play_state[msg.target.target_id]['active'] = False  # 标记为非活跃状态
-            await msg.finish(msg.locale.t('game.message.stop'))
-        else:
-            await msg.finish(msg.locale.t('game.message.stop.none'))
+    play_state = PlayState('tic_tac_toe', msg)
+    if play_state.check():
+        play_state.disable()
+        await msg.finish(msg.locale.t('game.message.stop'))
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
 
@@ -276,16 +275,18 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     else:
         game_type = 'random'
         bot_callback = random_bot_callback
-    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+    play_state = PlayState('tic_tac_toe', msg)
+    if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
-    play_state.update({msg.target.target_id: {'active': True}})
+    else:
+        play_state.enable()
 
     try:
         winner, board = await game(msg, generate_human_callback(msg, 'X'), bot_callback)
     except TerminationError:
         return
 
-    play_state[msg.target.target_id]['active'] = False
+    play_state.disable()
     g_msg = ''
     if winner == 0:
         await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.draw'), quote=False)
@@ -299,16 +300,18 @@ async def ttt_with_bot(msg: Bot.MessageSession):
 
 @tic_tac_toe.command('duo {{tic_tac_toe.duo.help}}')
 async def ttt_multiplayer(msg: Bot.MessageSession):
-    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+    play_state = PlayState('tic_tac_toe', msg)
+    if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
-    play_state.update({msg.target.target_id: {'active': True}})
+    else:
+        play_state.enable()
 
     try:
         winner, board = await game(msg, generate_human_callback(msg, 'X'), generate_human_callback(msg, 'O'))
     except TerminationError:
         return
 
-    play_state[msg.target.target_id]['active'] = False
+    play_state.disable()
     if winner == 0:
         await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.draw'), quote=False)
     await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O'), quote=False)

@@ -14,6 +14,7 @@ from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cooldown import CoolDown
+from core.utils.game import PlayState
 
 text_mode = Config('wordle_disable_image', False)
 
@@ -24,7 +25,6 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'),
     word_list = handle.read().splitlines()
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt'), encoding='utf8') as handle:
     answers_list = handle.read().splitlines()
-play_state = {}
 
 
 class WordleState(Enum):
@@ -180,31 +180,32 @@ class WordleBoardImage:
 
 @wordle.command('{{wordle.help}}')
 async def _(msg: Bot.MessageSession):
-    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+    play_state = PlayState('wordle', msg)
+    if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
 
     qc = CoolDown('wordle', msg, all=True)
     if not msg.target.target_from == 'TEST|Console' and not msg.check_super_user():
-        c = qc.check(30)
+        c = qc.check(150)
         if c != 0:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(30 - c)))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(150 - c)))
 
     board = WordleBoard.from_random_word()
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
-    play_state[msg.target.target_id] = {'answer': board.word, 'active': True}
-
+    play_state.enable()
+    play_state.update(answer=board.word)
     Logger.info(f'Answer: {board.word}')
     if text_mode:
         await msg.send_message(msg.locale.t('wordle.message.start'))
     else:
         await msg.send_message([BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))])
 
-    while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
-        if not play_state[msg.target.target_id]['active']:
+    while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
+        if not play_state.check():
             return
-        wait = await msg.wait_anyone(timeout=3600)
-        if not play_state[msg.target.target_id]['active']:
+        wait = await msg.wait_anyone(timeout=None)
+        if not play_state.check():
             return
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
@@ -223,7 +224,7 @@ async def _(msg: Bot.MessageSession):
             else:
                 await wait.send_message([BImage(board_image.image)])
 
-    play_state[msg.target.target_id]['active'] = False
+    play_state.disable()
     attempt = board.get_trials() - 1
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
     if board.board[-1] == board.word:
@@ -241,16 +242,13 @@ async def _(msg: Bot.MessageSession):
 @wordle.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
+    play_state = PlayState('wordle', msg)
     qc = CoolDown('wordle', msg, all=True)
-    state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
-    if state:
-        if state['active']:  # 检查是否为活跃状态
-            play_state[msg.target.target_id]['active'] = False
-            board.reset_board()
-            qc.reset()
-            await msg.finish(msg.locale.t('wordle.message.stop', answer=state['answer']))
-        else:
-            await msg.finish(msg.locale.t('game.message.stop.none'))
+    if play_state.check():
+        play_state.disable()
+        board.reset_board()
+        qc.reset()
+        await msg.finish(msg.locale.t('wordle.message.stop', answer=play_state.check('answer')))
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
 
