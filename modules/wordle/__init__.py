@@ -180,7 +180,7 @@ class WordleBoardImage:
 
 @wordle.command('{{wordle.help}}')
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState('wordle', msg)
+    play_state = PlayState('wordle', msg, all=True)
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
 

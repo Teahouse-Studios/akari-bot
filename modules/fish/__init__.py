@@ -37,7 +37,7 @@ fish_list_by_name = {x: y for y in fish_list for x in fish_list[y]}
 
 
 async def finish_fish(msg: Bot.MessageSession):
-    play_state = PlayState('fish', msg)
+    play_state = PlayState('fish', msg, all=True)
     play_state.disable()
     if msg.target.target_from != 'TEST|Console':
         qc = CoolDown('fish', msg, all=True)
@@ -71,7 +71,7 @@ async def finish_fish(msg: Bot.MessageSession):
 
 @fish.command('{{fish.help}}')
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState('fish', msg)
+    play_state = PlayState('fish', msg, all=True)
     if play_state.check():
         return await finish_fish(msg)
     if msg.target.target_from != 'TEST|Console':
@@ -155,7 +155,7 @@ async def _(msg: Bot.MessageSession):
 @fish.handle('retract {{fish.retract.help}}')
 @fish.regex(r'^(?:收杆|收)$')
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState('fish', msg)
+    play_state = PlayState('fish', msg, all=True)
     if play_state.check():
         await finish_fish(msg)
     else:

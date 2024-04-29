@@ -5,12 +5,15 @@ playstate_lst: Dict[str, Dict[Union[MessageSession, str], Dict[str, Union[int, D
 
 class PlayState:
 
-    def __init__(self, game: str, msg: Union[MessageSession, str]):
+    def __init__(self, game: str, msg: Union[MessageSession, str], all: bool = False):
         self.game = game
         self.msg = msg
         self.sender_id = self.msg
         if isinstance(self.sender_id, MessageSession):
-            self.sender_id = self.sender_id.target.sender_id
+            if all:
+                self.sender_id = self.msg.target.target_id
+            else:
+                self.sender_id = self.sender_id.target.sender_id
 
     def enable(self):
         if self.sender_id not in playstate_lst:
