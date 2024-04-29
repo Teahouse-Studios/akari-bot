@@ -85,8 +85,7 @@ async def _(msg: Bot.MessageSession):
     async def generate_fish(msg: Bot.MessageSession):
         fish_name = random.choice(list(fish_list_by_name.keys()))
         fish_type = fish_list_by_name[fish_name]
-        play_state.update(fish_type=fish_type)
-        play_state.update(fish_name=fish_name)
+        play_state.update(fish_type=fish_type, fish_name=fish_name)
         hooked_time_chance = random.randint(1, 100)
         if 0 <= hooked_time_chance < 70:
             hooked_time = random.randint(1, 2)
