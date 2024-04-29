@@ -85,6 +85,7 @@
     "core.message.help.author.type2": "模組作者",
     "core.message.help.helpdoc.address": "線上模組說明文件：\n${url}",
     "core.message.help.legacy.availables": "目前可用的模組有：",
+    "core.message.help.legacy.availables.none": "目前沒有可用的模組。",
     "core.message.help.legacy.base": "基礎指令：",
     "core.message.help.legacy.external": "模組擴充指令：",
     "core.message.help.legacy.more_information": "使用「${prefix}help <對應模組名>」檢視詳細資訊。\n使用「${prefix}module list」檢視所有的可用模組。",

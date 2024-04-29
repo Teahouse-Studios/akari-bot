@@ -14,6 +14,7 @@ from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cache import random_cache_path
+from core.utils.game import PlayState
 from core.utils.http import get_url, download_to_cache
 from core.utils.text import remove_prefix
 
@@ -96,7 +97,6 @@ ccode = module('chemical_code', alias={'cc': 'chemical_code',
                                        'ccode': 'chemical_code',
                                        'ccaptcha': 'chemical_code captcha'},
                desc='{chemical_code.help.desc}', developers=['OasisAkari'])
-play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
 @ccode.command('{{chemical_code.help}}')
@@ -111,15 +111,12 @@ async def _(msg: Bot.MessageSession):
 
 @ccode.command('stop {{game.help.stop}}')
 async def s(msg: Bot.MessageSession):
-    state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
-    if state:
-        if state['active']:
-            play_state[msg.target.target_id]['active'] = False
-            await msg.finish(
-                msg.locale.t('chemical_code.stop.message', answer=play_state[msg.target.target_id]["answer"]),
-                quote=False)
-        else:
-            await msg.finish(msg.locale.t('game.message.stop.none'))
+    play_state = PlayState('chemical_code', msg)
+    if play_state.check():
+        play_state.disable()
+        await msg.finish(
+            msg.locale.t('chemical_code.stop.message', answer=play_state.check(key='answer')),
+            quote=False)
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
 
@@ -137,17 +134,19 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
 
 
 async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, captcha_mode=False):
-    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+    play_state = PlayState('chemical_code', msg)
+    if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
-    play_state.update({msg.target.target_id: {'active': True}})
+    else:
+        play_state.enable()
     try:
         csr = await search_csr(id)
     except Exception as e:
         traceback.print_exc()
-        play_state[msg.target.target_id]['active'] = False
+        play_state.disable()
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
-    play_state[msg.target.target_id]['answer'] = csr['name']
+    play_state.update(answer=csr['name'])
     Logger.info(f'Answer: {csr["name"]}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
@@ -171,7 +170,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
 
     async def ans(msg: Bot.MessageSession, answer, random_mode):
         wait = await msg.wait_anyone(timeout=3600)
-        if play_state[msg.target.target_id]['active']:
+        if play_state.check():
             if (wait_text := wait.as_display(text_only=True)) != answer:
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
                     try:
@@ -224,15 +223,15 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 if random_mode:
                     if (g_msg := await gained_petal(wait, 1)):
                         send_ += '\n' + g_msg
-                play_state[msg.target.target_id]['active'] = False
+                play_state.disable()
                 await wait.finish(send_)
 
     async def timer(start):
-        if play_state[msg.target.target_id]['active']:
+        if play_state.check():
             if datetime.now().timestamp() - start > 60 * set_timeout:
-                play_state[msg.target.target_id]['active'] = False
+                play_state.disable()
                 await msg.finish(
-                    msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.target_id]["answer"]))
+                    msg.locale.t('chemical_code.message.timeup', answer=play_state.check(key='answer')))
 
             else:
                 await msg.sleep(1)  # 防冲突
@@ -248,8 +247,8 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
                                                                                  times=set_timeout))], timeout=3600, append_instruction=False)
-        if play_state[msg.target.target_id]['active']:
-            play_state[msg.target.target_id]['active'] = False
+        if play_state.check():
+            play_state.disable()
             if result.as_display(text_only=True) == csr['name']:
                 send_ = msg.locale.t('chemical_code.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
@@ -257,4 +256,4 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 await result.finish(send_)
             else:
                 await result.finish(
-                    msg.locale.t('chemical_code.message.incorrect', answer=play_state[msg.target.target_id]["answer"]))
+                    msg.locale.t('chemical_code.message.incorrect', answer=play_state.check(key='answer')))

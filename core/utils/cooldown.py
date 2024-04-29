@@ -9,7 +9,7 @@ _cd_lst: Dict[str, Dict[Union[MessageSession, str], int]] = {}
 
 class CoolDown:
 
-    def __init__(self, key: str, msg: Union[MessageSession, str], all=False):
+    def __init__(self, key: str, msg: Union[MessageSession, str], all: bool = False):
         self.key = key
         self.msg = msg
         self.sender_id = self.msg

@@ -6,6 +6,7 @@ from simpleeval import simple_eval
 from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal, lost_petal
+from core.utils.game import PlayState
 
 no_solution = ['无解', '無解', 'none', 'n/a', 'na', 'n.a.', ]
 
@@ -105,24 +106,25 @@ def contains_all_numbers(expr, numbers):
 
 tf = module('twenty_four', alias=['twentyfour', '24'],
             desc='{twenty_four.help.desc}', developers=['DoroWolf'])
-play_state = {}
 
 
 @tf.command('{{twenty_four.help}}')
 async def _(msg: Bot.MessageSession, use_markdown=False):
+    play_state = PlayState('twenty_four', msg)
     if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
         use_markdown = True
-    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+    if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
-    play_state.update({msg.target.target_id: {'active': True}})
+    else:
+        play_state.enable()
 
     numbers = [random.randint(1, 13) for _ in range(4)]
     solution = await find_solution(numbers)
 
-    answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=3600, append_instruction=False)
+    answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=None, append_instruction=False)
     expr = answer.as_display(text_only=True)
-    if play_state[msg.target.target_id]['active']:
-        play_state[msg.target.target_id]['active'] = False
+    if play_state.check():
+        play_state.disable()
         if expr.lower() in no_solution:
             if solution:
                 send = msg.locale.t('twenty_four.message.incorrect.have_solution', solution=solution)
@@ -153,12 +155,9 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
 
 @tf.command('stop {{game.help.stop}}')
 async def s(msg: Bot.MessageSession):
-    state = play_state.get(msg.target.target_id, False)
-    if state:
-        if state['active']:
-            play_state[msg.target.target_id]['active'] = False
-            await msg.finish(msg.locale.t('game.message.stop'))
-        else:
-            await msg.finish(msg.locale.t('game.message.stop.none'))
+    play_state = PlayState('twenty_four', msg)
+    if play_state.check():
+        play_state.disable()
+        await msg.finish(msg.locale.t('game.message.stop'))
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
