@@ -44,7 +44,7 @@ def enqueue_output(out, queue):
 
 
 def init_bot():
-    base_superuser = Config('base_superuser', cfg_type = (str, list))
+    base_superuser = Config('base_superuser', cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
