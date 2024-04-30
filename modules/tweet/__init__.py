@@ -1,11 +1,12 @@
 import re
+import traceback
+
 import ujson as json
 
 from core.builtins import Bot
 from core.builtins.message import Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.logger import Logger
 from core.utils.http import download_to_cache, get_url
 from core.utils.web_render import webrender
 

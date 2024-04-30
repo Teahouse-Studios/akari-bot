@@ -215,7 +215,7 @@ class MessageChain(MessageChainT):
             )
         return value
 
-    def to_list(self, locale="zh_cn", embed=True):
+    def to_list(self, locale="zh_cn", embed=True, msg: MessageSession = None):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
