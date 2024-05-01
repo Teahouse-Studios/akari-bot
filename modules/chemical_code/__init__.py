@@ -150,7 +150,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     Logger.info(f'Answer: {play_state.check('answer')}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
-        newpath = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
+        newpath = os.path.abspath(f'./assets/chemical_code/special_id/{csr["id"]}.png')
     else:
         download = await download_to_cache(csr['image'])
         with PILImage.open(download) as im:
