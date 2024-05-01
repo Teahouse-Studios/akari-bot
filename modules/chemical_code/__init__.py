@@ -147,30 +147,27 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
     play_state.update(answer=csr['name'])
-    Logger.info(f'Answer: {csr["name"]}')
+    Logger.info(f'Answer: {play_state.check('answer')}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
-        exists_file = os.path.exists(file_path)
-        if exists_file:
-            download = file_path
-    if not download:
+    else:
         download = await download_to_cache(csr['image'])
-
-    with PILImage.open(download) as im:
-        im = im.convert("RGBA")
-        image = PILImage.new("RGBA", im.size, 'white')
-        image.alpha_composite(im, (0, 0))
-        newpath = random_cache_path() + '.png'
-        image.save(newpath)
-
+        with PILImage.open(download) as im:
+            im = im.convert("RGBA")
+            image = PILImage.new("RGBA", im.size, 'white')
+            image.alpha_composite(im, (0, 0))
+            newpath = random_cache_path() + '.png'
+            image.save(newpath)
+            
     set_timeout = csr['length'] // 30
     if set_timeout < 2:
         set_timeout = 2
 
-    async def ans(msg: Bot.MessageSession, answer, random_mode):
-        wait = await msg.wait_anyone(timeout=3600)
+    async def ans(msg: Bot.MessageSession, random_mode):
+        wait = await msg.wait_anyone(timeout=None)
         if play_state.check():
+            answer = play_state.check('answer')
             if (wait_text := wait.as_display(text_only=True)) != answer:
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
                     try:
@@ -217,7 +214,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                         traceback.print_exc()
 
                 Logger.info(f'{wait_text} != {answer}')
-                return await ans(wait, answer, random_mode)
+                return await ans(wait, random_mode)
             else:
                 send_ = wait.locale.t('chemical_code.message.correct')
                 if random_mode:
@@ -242,14 +239,14 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                 Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
         time_start = datetime.now().timestamp()
 
-        await asyncio.gather(ans(msg, csr['name'], random_mode), timer(time_start))
+        await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], timeout=3600, append_instruction=False)
+                                                                                 times=set_timeout))], timeout=None, append_instruction=False)
         if play_state.check():
             play_state.disable()
-            if result.as_display(text_only=True) == csr['name']:
+            if result.as_display(text_only=True) == play_state.check('answer'):
                 send_ = msg.locale.t('chemical_code.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send_ += '\n' + g_msg
