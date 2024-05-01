@@ -115,7 +115,7 @@ async def s(msg: Bot.MessageSession):
     if play_state.check():
         play_state.disable()
         await msg.finish(
-            msg.locale.t('chemical_code.stop.message', answer=play_state.check(key='answer')),
+            msg.locale.t('chemical_code.stop.message', answer=play_state.check("id")),
             quote=False)
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
