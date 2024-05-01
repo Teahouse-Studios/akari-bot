@@ -150,15 +150,19 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     Logger.info(f'Answer: {play_state.check('answer')}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
-        newpath = os.path.abspath(f'./assets/chemical_code/special_id/{csr["id"]}.png')
-    else:
+        file_path = os.path.abspath(f'./assets/chemical_code/special_id/{csr["id"]}.png')
+        exists_file = os.path.exists(file_path)
+        if exists_file:
+            download = file_path
+    if not download:
         download = await download_to_cache(csr['image'])
-        with PILImage.open(download) as im:
-            im = im.convert("RGBA")
-            image = PILImage.new("RGBA", im.size, 'white')
-            image.alpha_composite(im, (0, 0))
-            newpath = random_cache_path() + '.png'
-            image.save(newpath)
+
+    with PILImage.open(download) as im:
+        im = im.convert("RGBA")
+        image = PILImage.new("RGBA", im.size, 'white')
+        image.alpha_composite(im, (0, 0))
+        newpath = random_cache_path() + '.png'
+        image.save(newpath)
             
     set_timeout = csr['length'] // 30
     if set_timeout < 2:
