@@ -1,6 +1,6 @@
 from __future__ import annotations
 import asyncio
-from typing import List, Union, Dict, Coroutine, Awaitable
+from typing import List, Union, Dict, Coroutine, Awaitable, Any
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
@@ -92,7 +92,7 @@ class MessageSession:
                            quote=True,
                            disable_secret_check=False,
                            allow_split_image=True,
-                           callback: Coroutine = None) -> FinishedSession:
+                           callback: Coroutine[Any] = None) -> FinishedSession:
         """
         用于向消息发送者回复消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链

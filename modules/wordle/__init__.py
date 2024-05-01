@@ -242,7 +242,7 @@ async def _(msg: Bot.MessageSession):
 @wordle.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
-    play_state = PlayState('wordle', msg)
+    play_state = PlayState('wordle', msg, all=True)
     qc = CoolDown('wordle', msg, all=True)
     if play_state.check():
         play_state.disable()

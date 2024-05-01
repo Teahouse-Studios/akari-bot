@@ -54,8 +54,8 @@ async def check(*text) -> list:
     :param text: 字符串（List/Union）。
     :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
     '''
-    access_key_id = Config("check_accessKeyId", cfg_type = str)
-    access_key_secret = Config("check_accessKeySecret", cfg_type = str)
+    access_key_id = Config("check_accessKeyId", cfg_type=str)
+    access_key_secret = Config("check_accessKeySecret", cfg_type=str)
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
@@ -105,7 +105,7 @@ async def check(*text) -> list:
         url = '/green/text/scan?{}'.format(client_info)
 
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
-        date = datetime.datetime.utcnow().strftime(gmt_format)
+        date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
         content_md5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
         headers = {
@@ -162,7 +162,7 @@ async def check_bool(*text):
 
 
 def rickroll(msg):
-    if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type = str):
-        return Config("rickroll_msg", cfg_type = str)
+    if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
+        return Config("rickroll_msg", cfg_type=str)
     else:
         return msg.locale.t("error.message.chain.unsafe")
