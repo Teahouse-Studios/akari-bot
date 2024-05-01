@@ -47,8 +47,8 @@ class PlayState:
 
     def check(self, key: str = 'status'):
         if self.target_id not in playstate_lst:
-            return False
+            return None
         if self.all:
-            return playstate_lst[self.target_id].get(self.game, {}).get(key, False)
+            return playstate_lst[self.target_id].get(self.game, {}).get(key, None)
         else:
-            return playstate_lst[self.target_id].get(self.sender_id, {}).get(self.game, {}).get(key, False)
+            return playstate_lst[self.target_id].get(self.sender_id, {}).get(self.game, {}).get(key, None) 
