@@ -146,8 +146,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         play_state.disable()
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
-    play_state.update(answer=csr['name'])
-    Logger.info(f'Answer: {play_state.check('answer')}')
+    play_state.update(csr=csr)
+    csr = play_state.check('csr')  # 储存并获取不同用户所需的信息
+    Logger.info(f'Answer: {csr["answer"]}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemical_code/special_id/{csr["id"]}.png')
@@ -171,8 +172,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     async def ans(msg: Bot.MessageSession, random_mode):
         wait = await msg.wait_anyone(timeout=None)
         if play_state.check():
-            answer = play_state.check('answer')
-            if (wait_text := wait.as_display(text_only=True)) != answer:
+            if (wait_text := wait.as_display(text_only=True)) != csr["answer"]:
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
                     try:
                         parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
@@ -217,7 +217,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                     except ValueError:
                         traceback.print_exc()
 
-                Logger.info(f'{wait_text} != {answer}')
+                Logger.info(f'{wait_text} != {csr["answer"]}')
                 return await ans(wait, random_mode)
             else:
                 send_ = wait.locale.t('chemical_code.message.correct')
@@ -250,7 +250,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                                                                  times=set_timeout))], timeout=None, append_instruction=False)
         if play_state.check():
             play_state.disable()
-            if result.as_display(text_only=True) == play_state.check('answer'):
+            if result.as_display(text_only=True) == csr["answer"]:
                 send_ = msg.locale.t('chemical_code.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send_ += '\n' + g_msg
