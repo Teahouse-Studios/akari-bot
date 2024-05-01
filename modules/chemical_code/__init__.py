@@ -171,7 +171,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     async def ans(msg: Bot.MessageSession, random_mode):
         wait = await msg.wait_anyone(timeout=None)
         if play_state.check():
-            if (wait_text := wait.as_display(text_only=True)) != csr["answer"]:
+            if (wait_text := wait.as_display(text_only=True)) != play_state.check("answer"):
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
                     try:
                         parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
@@ -237,7 +237,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 await timer(start)
 
     if not captcha_mode:
-        await msg.send_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])), Image(newpath),
+        await msg.send_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))), Image(newpath),
                                 Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
         time_start = datetime.now().timestamp()
 
