@@ -46,10 +46,9 @@ class PlayState:
             game_dict.update(kwargs)
 
     def check(self, key: str = 'status'):
-        try:
-            if self.all:
-                return playstate_lst[self.target_id][self.game][key]
-            else:
-                return playstate_lst[self.target_id][self.sender_id][self.game][key]
-        except:
+        if self.target_id not in playstate_lst:
             return False
+        if self.all:
+            return playstate_lst[self.target_id].get(self.game, {}).get(key, False)
+        else:
+            return playstate_lst[self.target_id].get(self.sender_id, {}).get(self.game, {}).get(key, False)
