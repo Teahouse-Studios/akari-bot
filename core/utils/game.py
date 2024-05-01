@@ -13,17 +13,28 @@ class PlayState:
         self.sender_id = self.msg.target.sender_id
 
     def enable(self):
+        if self.target_id not in playstate_lst:
+            playstate_lst[self.target_id] = {}
+        if self.game not in playstate_lst[self.target_id]:
+            playstate_lst[self.target_id][self.game] = {'status': False}
+            
         if self.all:
             playstate_lst[self.target_id][self.game]['status'] = True
         else:
-            playstate_lst[self.target_id][self.sender_id][self.game]['status'] = True
+            if self.sender_id not in playstate_lst[self.target_id]:
+                playstate_lst[self.target_id][self.sender_id] = {}
+            playstate_lst[self.target_id][self.sender_id][self.game] = {'status': True}
             
     def disable(self):
+        if self.target_id not in playstate_lst:
+            return
         if self.all:
             playstate_lst[self.target_id][self.game]['status'] = False
         else:
+            if self.sender_id not in playstate_lst[self.target_id]:
+                return
             playstate_lst[self.target_id][self.sender_id][self.game]['status'] = False
-        
+
     def update(self, **kwargs):
         target_dict = playstate_lst.setdefault(self.target_id, {})
         if self.all:
