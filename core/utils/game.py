@@ -8,41 +8,37 @@ class PlayState:
     def __init__(self, game: str, msg: Union[MessageSession, str], all: bool = False):
         self.game = game
         self.msg = msg
-        self.sender_id = self.msg
-        if isinstance(self.sender_id, MessageSession):
-            if all:
-                self.sender_id = self.msg.target.target_id
-            else:
-                self.sender_id = self.sender_id.target.sender_id
+        self.all = all
+        self.target_id = self.msg.target.target_id
+        self.sender_id = self.msg.target.sender_id
 
     def enable(self):
-        if self.sender_id not in playstate_lst:
-            playstate_lst[self.sender_id] = {}
-        if self.game not in playstate_lst[self.sender_id]:
-            playstate_lst[self.sender_id][self.game] = {'status': True}
+        if self.all:
+            playstate_lst[self.target_id][self.game]['status'] = True
         else:
-            playstate_lst[self.sender_id][self.game]['status'] = True
-
+            playstate_lst[self.target_id][self.sender_id][self.game]['status'] = True
+            
     def disable(self):
-        if self.sender_id not in playstate_lst:
-            playstate_lst[self.sender_id] = {}
-        if self.game not in playstate_lst[self.sender_id]:
-            playstate_lst[self.sender_id][self.game] = {'status': False}
+        if self.all:
+            playstate_lst[self.target_id][self.game]['status'] = False
         else:
-            playstate_lst[self.sender_id][self.game]['status'] = False
-
+            playstate_lst[self.target_id][self.sender_id][self.game]['status'] = False
+        
     def update(self, **kwargs):
-        if self.sender_id not in playstate_lst:
-            playstate_lst[self.sender_id] = {}
-        if self.game not in playstate_lst[self.sender_id]:
-            playstate_lst[self.sender_id][self.game] = {'status': False, **kwargs}
+        target_dict = playstate_lst.setdefault(self.target_id, {})
+        if self.all:
+            game_dict = target_dict.setdefault(self.game, {'status': False})
+            game_dict.update(kwargs)
         else:
-            playstate_lst[self.sender_id][self.game].update(kwargs)
+            sender_dict = target_dict.setdefault(self.sender_id, {})
+            game_dict = sender_dict.setdefault(self.game, {'status': False})
+            game_dict.update(kwargs)
 
     def check(self, key: str = 'status'):
-        if self.sender_id not in playstate_lst:
-            return False
-        if self.game in playstate_lst[self.sender_id]:
-            return playstate_lst[self.sender_id][self.game].get(key, False)
-        else:
+        try:
+            if self.all:
+                return playstate_lst[self.target_id][self.game][key]
+            else:
+                return playstate_lst[self.target_id][self.sender_id][self.game][key]
+        except:
             return False
