@@ -94,7 +94,7 @@
     "core.message.help.more_information.donate": "若你有經濟實力，歡迎在愛發電提供贊助：\n${url}",
     "core.message.help.not_found": "此模組可能不存在，請校對輸入。",
     "core.message.help.regex.detail": "（${msg}）",
-    "core.message.help.regex.no_information": "無描述",
+    "core.message.help.regex.no_information": "（無描述）",
     "core.message.help.support_regex": "此模組支援正規表示式，訊息傳送時將會尋找相符的以下內容：",
     "core.message.help.table.header.alias": "指令別名",
     "core.message.help.table.header.base": "基礎模組列表",
