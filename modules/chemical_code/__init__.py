@@ -82,7 +82,7 @@ async def search_csr(id=None):
     if wh < 500:
         wh = 500
     return {'id': answer_id,
-            'name': name,
+            'answer': name,
             'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
                      (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
             'length': value,
@@ -115,7 +115,7 @@ async def s(msg: Bot.MessageSession):
     if play_state.check():
         play_state.disable()
         await msg.finish(
-            msg.locale.t('chemical_code.stop.message', answer=play_state.check(key='answer')),
+            msg.locale.t('chemical_code.stop.message', answer=play_state.check("answer")),
             quote=False)
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
@@ -146,16 +146,16 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         play_state.disable()
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
-    play_state.update(answer=csr['name'])
-    Logger.info(f'Answer: {csr["name"]}')
+    play_state.update(**csr)  # 储存并获取不同用户所需的信息
+    Logger.info(f'Answer: {play_state.check("answer")}')
     download = False
-    if csr["id"] in special_id:  # 如果正确答案在 special_id 中
-        file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
+    if play_state.check("id") in special_id:  # 如果正确答案在 special_id 中
+        file_path = os.path.abspath(f'./assets/chemical_code/special_id/{play_state.check("id")}.png')
         exists_file = os.path.exists(file_path)
         if exists_file:
             download = file_path
     if not download:
-        download = await download_to_cache(csr['image'])
+        download = await download_to_cache(play_state.check('image'))
 
     with PILImage.open(download) as im:
         im = im.convert("RGBA")
@@ -163,32 +163,32 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         image.alpha_composite(im, (0, 0))
         newpath = random_cache_path() + '.png'
         image.save(newpath)
-
-    set_timeout = csr['length'] // 30
+            
+    set_timeout = play_state.check('length') // 30
     if set_timeout < 2:
         set_timeout = 2
 
-    async def ans(msg: Bot.MessageSession, answer, random_mode):
-        wait = await msg.wait_anyone(timeout=3600)
+    async def ans(msg: Bot.MessageSession, random_mode):
+        wait = await msg.wait_next_message(timeout=None)
         if play_state.check():
-            if (wait_text := wait.as_display(text_only=True)) != answer:
+            if (wait_text := wait.as_display(text_only=True)) != play_state.check("answer"):
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
                     try:
                         parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
                         value = 0
                         for i in parse_:
                             value += parse_[i]
-                        v_ = csr['length'] - value
+                        v_ = play_state.check('length') - value
                         if v_ < 0:
                             v_ = -v_
                         if v_ > 6:
                             await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind1'))
                         else:
-                            if csr['elements'] == parse_:
+                            if play_state.check('elements') == parse_:
                                 await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind5'))
                             elif v_ <= 2:
                                 missing_something = False
-                                for i in csr['elements']:
+                                for i in play_state.check('elements'):
                                     if i not in parse_:
                                         await wait.send_message(
                                             wait.locale.t('chemical_code.message.incorrect.remind4'))
@@ -198,9 +198,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                     await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind3'))
                             else:
                                 incorrect_list = []
-                                for i in csr['elements']:
+                                for i in play_state.check('elements'):
                                     if i in parse_:
-                                        if parse_[i] != csr['elements'][i]:
+                                        if parse_[i] != play_state.check('elements')[i]:
                                             incorrect_list.append(i)
                                     else:
                                         await wait.send_message(
@@ -212,12 +212,11 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                     incorrect_elements = wait.locale.t('message.delimiter').join(incorrect_list)
                                     await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind2',
                                                                           elements=incorrect_elements))
-
                     except ValueError:
                         traceback.print_exc()
 
-                Logger.info(f'{wait_text} != {answer}')
-                return await ans(wait, answer, random_mode)
+                Logger.info(f'{wait_text} != {play_state.check("answer")}')
+                return await ans(wait, random_mode)
             else:
                 send_ = wait.locale.t('chemical_code.message.correct')
                 if random_mode:
@@ -231,29 +230,29 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
             if datetime.now().timestamp() - start > 60 * set_timeout:
                 play_state.disable()
                 await msg.finish(
-                    msg.locale.t('chemical_code.message.timeup', answer=play_state.check(key='answer')))
+                    msg.locale.t('chemical_code.message.timeup', answer=play_state.check("answer")))
 
             else:
                 await msg.sleep(1)  # 防冲突
                 await timer(start)
 
     if not captcha_mode:
-        await msg.send_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])), Image(newpath),
+        await msg.send_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))), Image(newpath),
                                 Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
         time_start = datetime.now().timestamp()
 
-        await asyncio.gather(ans(msg, csr['name'], random_mode), timer(time_start))
+        await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:
-        result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
+        result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], timeout=3600, append_instruction=False)
+                                                                                 times=set_timeout))], timeout=None, append_instruction=False)
         if play_state.check():
             play_state.disable()
-            if result.as_display(text_only=True) == csr['name']:
+            if result.as_display(text_only=True) == play_state.check("answer"):
                 send_ = msg.locale.t('chemical_code.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send_ += '\n' + g_msg
                 await result.finish(send_)
             else:
                 await result.finish(
-                    msg.locale.t('chemical_code.message.incorrect', answer=play_state.check(key='answer')))
+                    msg.locale.t('chemical_code.message.incorrect', answer=play_state.check("answer")))
