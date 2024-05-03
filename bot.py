@@ -18,8 +18,8 @@ bots_required_configs = {
     'aiocqhttp': [
         'qq_host',
         'qq_account'],
-    'discord': ['dc_token'],
-    'aiogram': ['tg_token'],
+    'discord': ['discord_token'],
+    'aiogram': ['telegram_token'],
     'kook': ['kook_token'],
     'matrix': [
         'matrix_homeserver',

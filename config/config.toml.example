@@ -5,12 +5,12 @@
 
 [secret]
 db_path = "mysql+pymysql://"
-check_accessKeyId =
-check_accessKeySecret =
+check_access_key_id =
+check_access_key_secret =
 web_render =
 proxy =
-dc_token =
-tg_token =
+discord_token =
+telegram_token =
 kook_token =
 matrix_device_id =
 matrix_token =
