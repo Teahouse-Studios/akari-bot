@@ -1992,9 +1992,9 @@ tiktoken==0.6.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0
 toml==0.10.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
-tqdm==4.66.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:1ee4f8a893eb9bef51c6e35730cebf234d5d0b6bd112b0271e10ed7c24a02bd9 \
-    --hash=sha256:6cd52cdf0fef0e0f543299cfc96fec90d7b8a7e88745f411ec33eb44d5ed3531
+tqdm==4.66.3; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:23097a41eba115ba99ecae40d06444c15d1c0c698d527a01c6c8bd1c5d0647e5 \
+    --hash=sha256:4f41d54107ff9a223dca80b53efe4fb654c67efaba7f47bada3ee9d50e05bd53
 typing-extensions==4.9.0 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:23478f88c37f27d76ac8aee6c905017a143b0b1b886c3c9f66bc2fd94f9f5783 \
     --hash=sha256:af72aea155e91adfc61c3ae9e0e342dbc0cba726d6cba4b6c72c1f34e47291cd
