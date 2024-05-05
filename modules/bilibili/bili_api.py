@@ -86,10 +86,13 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
 
 def format_num(number):
     if number >= 1000000000:
-        return f'{number / 1000000000:.1f}G'
+        formatted_number = number / 1000000000
+        return f'{formatted_number:.2f}G' if formatted_number < 100 else f'{formatted_number:.1f}G'
     elif number >= 1000000:
-        return f'{number / 1000000:.1f}M'
+        formatted_number = number / 1000000
+        return f'{formatted_number:.2f}M' if formatted_number < 100 else f'{formatted_number:.1f}M'
     elif number >= 1000:
-        return f'{number / 1000:.1f}k'
+        formatted_number = number / 1000
+        return f'{formatted_number:.2f}k' if formatted_number < 100 else f'{formatted_number:.1f}k'
     else:
         return str(number)
