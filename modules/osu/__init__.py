@@ -29,6 +29,7 @@ async def _(msg: Bot.MessageSession, username: str):
                 m = f"{getcode[1]}{msg.locale.t('message.brackets', msg=getcode[0])}"
             else:
                 m = getcode[0]
+        await msg.finish(msg.locale.t('osu.message.bind.success') + m)
     else:
         await msg.finish(msg.locale.t('osu.message.bind.failed'))
 

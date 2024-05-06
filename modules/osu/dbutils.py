@@ -38,3 +38,4 @@ class OsuBindInfoManager:
     def remove_bind_info(self):
         session.delete(self.query)
         session.commit()
+        return True

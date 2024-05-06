@@ -4,12 +4,12 @@ from datetime import datetime
 import ujson as json
 
 from config import Config
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot
 from core.exceptions import ConfigValueError
 from core.utils.http import get_url
 
 
-def second2dhm(seconds):
+def second2dhm(seconds: int):
     days = seconds // (24 * 3600)
     hours = (seconds % (24 * 3600)) // 3600
     minutes = (seconds % 3600) // 60
@@ -29,7 +29,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         level = int(float(profile['level']))
         join_date = datetime.strptime(profile['join_date'], "%Y-%m-%d %H:%M:%S").timestamp()
         join_date = msg.ts2strftime(join_date, iso=True, timezone=False)
-        total_seconds_played = profile['total_seconds_played']
+        total_seconds_played = int(profile['total_seconds_played'])
         total_play_time = second2dhm(total_seconds_played)
         playcount = profile['playcount']
         accuracy = profile['accuracy']
@@ -60,12 +60,14 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         if a:
             grade_t.append(f'A: {a}')
     except BaseException:
+        if Config('debug', False):
+            traceback.print_exc()
         await msg.finish(msg.locale.t('osu.message.not_found'))
 
     text = f'UID: {userid}\n' + \
            f'Username: {username}\n' + \
            f'Country: {country}\n' + \
-           f'Level: {country}\n' + \
+           f'Level: {level}\n' + \
            f'Join Date: {join_date}\n' + \
            f'Total Play Time: {total_play_time}\n' + \
            f'Play Count: {playcount}\n' + \
