@@ -15,9 +15,10 @@ kook_token =
 matrix_device_id =
 matrix_token =
 matrix_megolm_backup_passphrase =
-openai_api_key =
 curseforge_api_key =
 exchange_rate_api_key =
+openai_api_key =
+osu_api_key =
 wolfram_alpha_appid =
 jwt_secret =
 
