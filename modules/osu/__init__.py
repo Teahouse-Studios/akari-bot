@@ -4,11 +4,11 @@ from .dbutils import OsuBindInfoManager
 from .profile import osu_profile
 from .utils import get_profile_name
 
-osu = module('osu', developers=['DoroWolf'], desc='{osu.help.desc}',
-              options_desc={'-t': '{osu.help.option.t}'})
+osu = module('osu', developers=['DoroWolf'], desc='{osu.help.desc}')
 
 
-@osu.handle('profile [<username>] [-t <mode>] {{osu.help.profile}}')
+@osu.handle('profile [<username>] [-t <mode>] {{osu.help.profile}}',
+             options_desc={'-t': '{osu.help.option.t}'})
 async def _(msg: Bot.MessageSession, username: str = None):
     if username:
         query_id = username.lower()
