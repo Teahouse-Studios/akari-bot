@@ -31,5 +31,3 @@ async def secret_check(query):
     for prompt in unsafe_prompt_list:
         if prompt in query:
             return True
-            
-    return False

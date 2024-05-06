@@ -16,7 +16,7 @@ jobs:
         with:
           ref: master
 
-      - uses: rui-costa/action-automatic-semver-releases@v1
+      - uses: rui-costa/action-automatic-semver-releases@1.1.1
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMVER: PATCH

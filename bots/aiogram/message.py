@@ -43,7 +43,7 @@ class MessageSession(MessageSessionT):
                            allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
+            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(message_chain)
         count = 0
         send = []
@@ -93,12 +93,12 @@ class MessageSession(MessageSessionT):
 
     async def check_native_permission(self):
         if not self.session.message:
-            chat = await bot.get_chat(self.session.target)
+            chat = await dp.bot.get_chat(self.session.target)
         else:
             chat = self.session.message.chat
         if chat.type == 'private':
             return True
-        admins = [member.user.id for member in await bot.get_chat_administrators(chat.id)]
+        admins = [member.user.id for member in await dp.bot.get_chat_administrators(chat.id)]
         if self.session.sender in admins:
             return True
         return False

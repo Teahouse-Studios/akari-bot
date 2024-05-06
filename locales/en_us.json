@@ -86,7 +86,7 @@
     "tos.message.report": "User ${sender} triggered an abuse warning in conversation ${target}.",
     "tos.message.tempbanned": "Note:\nWe have temporarily banned you because your action triggered a warning.\n${ban_time} second(s) remaining until unban.",
     "tos.message.tempbanned.warning": "Note:\nAlthough the temporary ban was triggered, using commands still may cause you to be warned again.\n${ban_time} second(s) remaining until unban.",
-    "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
+    "tos.message.warning": "Warning:\nCommand abuse is strictly forbidden, you have reached that redline.",
     "tos.message.warning.count": "You have received ${current_warns} warnings. Your account will be blocked if you receive more than ${warn_counts} warnings.",
     "tos.message.warning.last": "This is the last warning.",
     "unknown": "Unknown",
