@@ -11,9 +11,14 @@ ctd = module('cytoid', desc='{cytoid.help.desc}',
 
 
 @ctd.handle('profile [<username>] {{cytoid.help.profile}}')
-async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg['profile']:
-        await cytoid_profile(msg)
+async def _(msg: Bot.MessageSession, username: str = None):
+    if username:
+        query_id = username.lower()
+    else:
+        query_id = CytoidBindInfoManager(msg).get_bind_username()
+        if not query_id:
+            await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
+    await cytoid_profile(msg, query_id)
 
 
 @ctd.handle('b30 [<username>] {{cytoid.help.b30}}',
@@ -26,7 +31,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     else:
         return
     if username:
-        query_id = username
+        query_id = username.lower()
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if not query_id:
@@ -60,7 +65,7 @@ async def _(msg: Bot.MessageSession, username: str):
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])
         if bind:
             if getcode[1]:
-                m = f'{getcode[1]}({getcode[0]})'
+                m = f"{getcode[1]}{msg.locale.t('message.brackets', msg=getcode[0])}"
             else:
                 m = getcode[0]
             await msg.finish(msg.locale.t('cytoid.message.bind.success') + m)

@@ -4,18 +4,10 @@ import ujson as json
 
 from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
-from .dbutils import CytoidBindInfoManager
 
 
-async def cytoid_profile(msg: Bot.MessageSession):
-    pat = msg.parsed_msg.get('<UserID>', False)
-    if pat:
-        query_id = pat.lower()
-    else:
-        query_id = CytoidBindInfoManager(msg).get_bind_username()
-        if not query_id:
-            await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
-    profile_url = 'http://services.cytoid.io/profile/' + query_id
+async def cytoid_profile(msg: Bot.MessageSession, uid):
+    profile_url = 'http://services.cytoid.io/profile/' + uid
     try:
         profile = json.loads(await get_url(profile_url, 200))
     except ValueError as e:
