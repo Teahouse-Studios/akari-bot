@@ -26,7 +26,7 @@ m = module('module',
             'enable all {{core.help.module.enable_all}}',
             'disable <module>... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
-            'reload [-f] <module> ...',
+            'reload <module> ...',
             'load <module> ...',
             'unload <module> ...',
             'list [legacy] {{core.help.module.list}}'],
@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
             'enable all [-g] {{core.help.module.enable_all}}',
             'disable [-g]  <module> ... {{core.help.module.disable}}',
             'disable all [-g] {{core.help.module.disable_all}}',
-            'reload [-f] <module> ...',
+            'reload <module> ...',
             'load <module> ...',
             'unload <module> ...',
             'list [legacy] {{core.help.module.list}}'],
@@ -188,9 +188,7 @@ async def config_modules(msg: Bot.MessageSession):
 
             for module_ in wait_config_list:
                 base_module = False
-                if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
-                    msglist.append(module_reload(module_, []))
-                elif module_ not in modules_:
+                if module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.reload.not_found", module=module_))
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)

@@ -1,3 +1,5 @@
+import traceback
+
 import ujson as json
 
 from config import Config
@@ -14,6 +16,12 @@ async def get_profile_name(msg: Bot.MessageSession, uid):
         profile = json.loads(await get_url(profile_url, 200))[0]
         userid = profile['user_id']
         username = profile['username']
+    except ValueError as e:
+        if str(e).startswith('401'):
+            raise ConfigValueError(msg.locale.t("error.config.invalid"))
+        else:
+            traceback.print_exc()
+            return False
     except BaseException:
         return False
 

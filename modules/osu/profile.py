@@ -59,6 +59,11 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         a = profile['count_rank_a']
         if a:
             grade_t.append(f'A: {a}')
+    except ValueError as e:
+        if str(e).startswith('401'):
+            raise ConfigValueError(msg.locale.t("error.config.invalid"))
+        else:
+            traceback.print_exc()
     except BaseException:
         if Config('debug', False):
             traceback.print_exc()
