@@ -20,9 +20,9 @@ async def mcv(msg):
         time_snapshot = None
         for v in data['versions']:
             if v['id'] == release:
-                time_release = datetime.fromisoformat(v['releaseTime']).astimezone(timezone.utc).timestamp()
+                time_release = datetime.fromisoformat(v['releaseTime']).replace(tzinfo=timezone.utc).timestamp()
             if v['id'] == snapshot:
-                time_snapshot = datetime.fromisoformat(v['releaseTime']).astimezone(timezone.utc).timestamp()
+                time_snapshot = datetime.fromisoformat(v['releaseTime']).replace(tzinfo=timezone.utc).timestamp()
 
         message1 = msg.locale.t(
             "mcv.message.mcv.launcher",
