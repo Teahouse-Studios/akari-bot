@@ -37,16 +37,3 @@ def parse_time_string(time_str: str) -> timedelta:
         return timedelta(hours=hour, minutes=minute)
     except ValueError:
         return timedelta()
-
-
-def ts2utc(timestamp: float, time_offset: str = '') -> float:
-    try:
-        local_dt = datetime.fromtimestamp(timestamp)
-        if time_offset:
-            offset = parse_time_string(time_offset)
-            local_dt -= offset
-        else:
-            local_dt = local_dt.astimezone(timezone.utc)
-        return local_dt.timestamp()
-    except:
-        return timestamp

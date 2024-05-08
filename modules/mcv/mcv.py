@@ -1,6 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import re
-import traceback
 
 from google_play_scraper import app as google_play_scraper
 import ujson as json
@@ -20,9 +19,9 @@ async def mcv(msg):
         time_snapshot = None
         for v in data['versions']:
             if v['id'] == release:
-                time_release = datetime.fromisoformat(v['releaseTime']).replace(tzinfo=timezone.utc).timestamp()
+                time_release = datetime.fromisoformat(v['releaseTime']).timestamp()
             if v['id'] == snapshot:
-                time_snapshot = datetime.fromisoformat(v['releaseTime']).replace(tzinfo=timezone.utc).timestamp()
+                time_snapshot = datetime.fromisoformat(v['releaseTime']).timestamp()
 
         message1 = msg.locale.t(
             "mcv.message.mcv.launcher",

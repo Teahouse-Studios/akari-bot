@@ -1,4 +1,4 @@
-from datetime imoort datetime, timezone
+from datetime import datetime
 import re
 import traceback
 from urllib.parse import quote
@@ -73,9 +73,9 @@ async def mcv_rss():
         time_snapshot = 0
         for v in file['versions']:
             if v['id'] == release:
-                time_release = datetime.fromisoformat(v['releaseTime']).astimezone(timezone.utc).timestamp()
+                time_release = datetime.fromisoformat(v['releaseTime']).timestamp()
             if v['id'] == snapshot:
-                time_snapshot = datetime.fromisoformat(v['releaseTime']).astimezone(timezone.utc).timestamp()
+                time_snapshot = datetime.fromisoformat(v['releaseTime']).timestamp()
 
         if release not in verlist:
             Logger.info(f'Huh, we find {release}.')

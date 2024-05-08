@@ -1,10 +1,10 @@
+from datetime import timezone
+
 from whois import whois
 
-from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from core.utils.text import parse_time_string
 
 
 def process(input_):
@@ -57,14 +57,17 @@ async def get_whois(msg, domain):
     if updated_date:  # 此时间为UTC时间
         if isinstance(updated_date, list):
             updated_date = updated_date[0]
+        updated_date = updated_date.replace(tzinfo=timezone.utc)
 
     if creation_date:  # 此时间为UTC时间
         if isinstance(creation_date, list):
             creation_date = creation_date[0]
+        creation_date = creation_date.replace(tzinfo=timezone.utc)
 
     if expiration_date:  # 此时间为UTC时间
         if isinstance(expiration_date, list):
             expiration_date = expiration_date[0]
+        expiration_date = expiration_date.replace(tzinfo=timezone.utc)
 
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""

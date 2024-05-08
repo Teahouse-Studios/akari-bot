@@ -2,7 +2,6 @@ import traceback
 
 from core.builtins import Bot, Embed, EmbedField, Image, Plain, Url
 from core.utils.http import get_url
-from core.utils.text import ts2utc
 
 DESC_LENGTH = 100
 
@@ -37,8 +36,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
     tname = view['tname']
     desc = view['desc']
     desc = (desc[:100] + '...') if len(desc) > 100 else desc
-    time = ts2utc(view['ctime'], '+8')
-    time = msg.ts2strftime(time, iso=True, timezone=False)
+    time = msg.ts2strftime(view['ctime'], iso=True, timezone=False)
 
     if len(view['pages']) > 1:
         pages = msg.locale.t("message.brackets", msg=f"{len(view['pages'])}P")

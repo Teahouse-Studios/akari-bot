@@ -1,5 +1,5 @@
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 
 import ujson as json
 
@@ -27,7 +27,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         username = profile['username']
         country = profile['country']
         level = int(float(profile['level']))
-        join_date = datetime.strptime(profile['join_date'], "%Y-%m-%d %H:%M:%S").timestamp()
+        join_date = datetime.strptime(profile['join_date'], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
         join_date = msg.ts2strftime(join_date, iso=True, timezone=False)
         total_seconds_played = int(profile['total_seconds_played'])
         total_play_time = second2dhm(total_seconds_played)
