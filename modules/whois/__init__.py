@@ -56,18 +56,15 @@ async def get_whois(msg, domain):
 
     if updated_date:  # 此时间为UTC时间
         if isinstance(updated_date, list):
-            updated_date = updated_date[0]
-        updated_date = (updated_date + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+            updated_date = updated_date[0].timestamp()
 
     if creation_date:  # 此时间为UTC时间
         if isinstance(creation_date, list):
-            creation_date = creation_date[0]
-        creation_date = (creation_date + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+            creation_date = creation_date[0].timestamp()
 
     if expiration_date:  # 此时间为UTC时间
         if isinstance(expiration_date, list):
-            expiration_date = expiration_date[0]
-        expiration_date = (expiration_date + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+            expiration_date = expiration_date[0].timestamp()
 
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""
