@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 import re
 import traceback
 
@@ -20,9 +20,9 @@ async def mcv(msg):
         time_snapshot = None
         for v in data['versions']:
             if v['id'] == release:
-                time_release = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
+                time_release = datetime.fromisoformat(v['releaseTime']).astimezone(timezone.utc).timestamp()
             if v['id'] == snapshot:
-                time_snapshot = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
+                time_snapshot = datetime.fromisoformat(v['releaseTime']).astimezone(timezone.utc).timestamp()
 
         message1 = msg.locale.t(
             "mcv.message.mcv.launcher",
