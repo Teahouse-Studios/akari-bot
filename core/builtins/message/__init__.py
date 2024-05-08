@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, UTC
+from datetime import datetime
 from typing import List
 
 from config import Config
