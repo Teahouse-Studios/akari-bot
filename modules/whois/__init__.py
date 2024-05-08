@@ -56,23 +56,23 @@ async def get_whois(msg, domain):
 
     if updated_date:  # 此时间为UTC时间
         if isinstance(updated_date, list):
-            updated_date = updated_date[0].timestamp()
+            updated_date = updated_date[0]
 
     if creation_date:  # 此时间为UTC时间
         if isinstance(creation_date, list):
-            creation_date = creation_date[0].timestamp()
+            creation_date = creation_date[0]
 
     if expiration_date:  # 此时间为UTC时间
         if isinstance(expiration_date, list):
-            expiration_date = expiration_date[0].timestamp()
+            expiration_date = expiration_date[0]
 
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""
 {msg.locale.t('whois.message.registrar')}{registrar}""" if registrar else ''}{f"""
 {msg.locale.t('whois.message.whois_server')}{whois_server}""" if whois_server else ''}{f"""
-{msg.locale.t('whois.message.updated_date')}{msg.ts2strftime(updated_date)}""" if updated_date else ''}{f"""
-{msg.locale.t('whois.message.creation_date')}{msg.ts2strftime(creation_date)}""" if creation_date else ''}{f"""
-{msg.locale.t('whois.message.expiration_date')}{msg.ts2strftime(expiration_date)}""" if expiration_date else ''}{f"""
+{msg.locale.t('whois.message.updated_date')}{msg.ts2strftime(updated_date.timestamp())}""" if updated_date else ''}{f"""
+{msg.locale.t('whois.message.creation_date')}{msg.ts2strftime(creation_date.timestamp())}""" if creation_date else ''}{f"""
+{msg.locale.t('whois.message.expiration_date')}{msg.ts2strftime(expiration_date.timestamp())}""" if expiration_date else ''}{f"""
 {msg.locale.t('whois.message.name_servers')}{process(name_servers)}""" if name_servers else ''}{f"""
 {msg.locale.t('whois.message.email')}{process(emails)}""" if emails else ''}{f"""
 {msg.locale.t('whois.message.dnssec')}{process(dnssec)}""" if dnssec else ''}{f"""
