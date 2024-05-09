@@ -24,7 +24,7 @@ ana = module('analytics', alias='ana', required_superuser=True, base=True)
 @ana.command()
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.timestamp(), iso=True)
+        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.timestamp(), iso=True, timezone=False)
         get_counts = BotDBUtil.Analytics.get_count()
 
         new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession):
 @ana.command('days [<module>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.timestamp(), iso=True)
+        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.timestamp(), iso=True, timezone=False)
         module_ = None
         if '<module>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<module>']
@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession):
 @ana.command('year [<module>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.timestamp(), iso=True)
+        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.timestamp(), iso=True, timezone=False)
         module_ = None
         if '<module>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<module>']
