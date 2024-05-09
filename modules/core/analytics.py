@@ -1,42 +1,40 @@
 import base64
 import urllib.parse
-
-
-from config import Config
-from typing import Tuple
-
-from core.builtins import Bot, Plain, Image
-from core.component import module
-from database import session, BotDBUtil
-from database.tables import AnalyticsData
-from core.utils.cache import random_cache_path
 from datetime import datetime, timedelta
-
-import ujson as json
-import zipfile
-import oss2
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import oss2
+import ujson as json
+import zipfile
 from dateutil.relativedelta import relativedelta
 
+from config import Config
+from core.builtins import Bot, Plain, Image
+from core.component import module
+from core.utils.cache import random_cache_path
+from database import session, BotDBUtil
+from database.tables import AnalyticsData
 
-ana = module('analytics', required_superuser=True, base=True)
+
+ana = module('analytics', alias='ana', required_superuser=True, base=True)
 
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = BotDBUtil.Analytics.get_first()
+        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp, iso=True)
         get_counts = BotDBUtil.Analytics.get_count()
 
         new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
         old = datetime.now().replace(hour=0, minute=0, second=0)
         get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
 
-        await msg.finish(msg.locale.t("core.message.analytics.counts", first_record=first_record.timestamp,
-                                      counts=get_counts, counts_today=get_counts_today))
+        await msg.finish(msg.locale.t("core.message.analytics.counts",
+                                      first_record=first_record,
+                                      counts=get_counts,
+                                      counts_today=get_counts_today))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -44,15 +42,15 @@ async def _(msg: Bot.MessageSession):
 @ana.command('days [<module>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = BotDBUtil.Analytics.get_first()
+        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp, iso=True)
         module_ = None
         if '<module>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<module>']
         if not module_:
-            result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
+            result = msg.locale.t("core.message.analytics.days.total", first_record=first_record)
         else:
             result = msg.locale.t("core.message.analytics.days", module=module_,
-                                  first_record=first_record.timestamp)
+                                  first_record=first_record)
         data_ = {}
         for d in range(30):
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
@@ -84,15 +82,15 @@ async def _(msg: Bot.MessageSession):
 @ana.command('year [<module>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = BotDBUtil.Analytics.get_first()
+        first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp, iso=True)
         module_ = None
         if '<module>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<module>']
         if not module_:
-            result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
+            result = msg.locale.t("core.message.analytics.year.total", first_record=first_record)
         else:
             result = msg.locale.t("core.message.analytics.year", module=module_,
-                                  first_record=first_record.timestamp)
+                                  first_record=first_record)
         data_ = {}
         for m in range(12):
             new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
