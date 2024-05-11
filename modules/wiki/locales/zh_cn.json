@@ -90,6 +90,7 @@
     "wiki.message.utils.wikilib.get_failed.timeout": "尝试建立连接超时。",
     "wiki.message.utils.wikilib.invalid.empty_title": "请求的页面标题为空，或只包含命名空间名称。",
     "wiki.message.utils.wikilib.invalid.invalid_character": "请求的页面标题包含无效字符：“${char}”。",
+    "wiki.message.utils.wikilib.get_failed.text_too_long": "错误：请求的页面段落文本过长，无法展示。",
     "wiki.message.utils.wikilib.no_textextracts": "警告：此 Wiki 没有开启 TextExtracts 扩展，返回的页面预览内容将为未处理的原始 Wikitext 文本。",
     "wiki.message.wiki_audit.add.failed": "失败：${api} 已存在于${list_name}中。",
     "wiki.message.wiki_audit.add.success": "成功加入${list_name}：${api}",
@@ -112,5 +113,6 @@
     "wiki.message.wiki_bot.login.success": "登录成功。",
     "wiki.message.wiki_bot.toggle.disable": "已关闭使用机器人账户。",
     "wiki.message.wiki_bot.toggle.enable": "已开启使用机器人账户。",
-    "wiki.message.wiki_inline.flies": "此页面包括以下文件：\n${file}"
+    "wiki.message.wiki_inline.flies": "此页面包括以下文件：\n${file}",
+
 }
