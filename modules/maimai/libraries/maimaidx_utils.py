@@ -552,7 +552,8 @@ async def get_plate_process(msg, payload, plate):
     if version in ['舞', '覇'] and len(song_remain_remaster):  # 霸者和舞牌需要Re:MASTER难度
         prompt.append(msg.locale.t('maimai.message.plate.remaster', song_remain=len(song_remain_remaster)))
 
-    await msg.send_message('\n'.join(prompt))
+    if len(song_remain):
+        await msg.send_message('\n'.join(prompt))
 
     song_record = [[s['id'], s['level_index']] for s in verlist]
 
