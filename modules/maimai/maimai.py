@@ -53,11 +53,13 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
                                diff_label[i],
                                music['level'][i],
                                music['type']))
-    page = 1
+
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get('-p', False)
     if get_page and get_page['<page>'].isdigit():
-        page = max(min(int(get_page['<page>'], total_pages), 1))
+        page = max(min(int(get_page['<page>']), total_pages), 1)
+    else:
+        page = 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -65,8 +67,6 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    elif len(result_set) > 200:
-        await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
@@ -92,7 +92,9 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
                                music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     if page and page.isdigit():
-        page = max(min(int(page, total_pages), 1))
+        page = max(min(int(page), total_pages), 1)
+    else:
+        page = 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -124,7 +126,9 @@ async def _(msg: Bot.MessageSession, page: str = None):
                            music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     if page and page.isdigit():
-        page = max(min(int(page, total_pages), 1))
+        page = max(min(int(page), total_pages), 1)
+    else:
+        page = 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -149,32 +153,32 @@ async def _(msg: Bot.MessageSession, page: str = None):
 async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
     name = keyword.strip()
     result_set = []
-    res = (await total_list.get()).filter(title_search=name)
-    if len(res) == 0:
+    data = (await total_list.get()).filter(title_search=name)
+    if len(data) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    elif len(res) > 200:
-        await msg.finish(msg.locale.t("maimai.message.too_much", length=len(res)))
-    else:
-        for music in sorted(data, key=lambda i: int(i['id'])):
-            result_set.append((music['id'], music['title'], music['type']))
-        total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-        if page and page.isdigit():
-            page = max(min(int(page, total_pages), 1))
-        start_index = (page - 1) * SONGS_PER_PAGE
-        end_index = page * SONGS_PER_PAGE
 
-        s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
-        for elem in result_set[start_index:end_index]:
-            s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
-        if len(res) <= SONGS_PER_PAGE:
-            await msg.finish(s.strip())
+    for music in sorted(data, key=lambda i: int(i['id'])):
+        result_set.append((music['id'], music['title'], music['type']))
+    total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+    if page and page.isdigit():
+        page = max(min(int(page), total_pages), 1)
+    else:
+        page = 1
+    start_index = (page - 1) * SONGS_PER_PAGE
+    end_index = page * SONGS_PER_PAGE
+
+    s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
+    for elem in result_set[start_index:end_index]:
+        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
+    if len(data) <= SONGS_PER_PAGE:
+        await msg.finish(s.strip())
+    else:
+        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        img = await msgchain2image([Plain(s)])
+        if img:
+            await msg.finish([BImage(img)])
         else:
-            s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
-            img = await msgchain2image([Plain(s)])
-            if img:
-                await msg.finish([BImage(img)])
-            else:
-                await msg.finish(s)
+            await msg.finish(s)
 
 
 @mai.command('alias <sid> {{maimai.help.alias}}')
@@ -244,11 +248,10 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
-@mai.command('id <id> [<diff>] {{maimai.help.id}}',
-             options_desc={'-d': '{maimai.help.option.d}'})
+@mai.command('id <id> [<diff>] {{maimai.help.id}}')
 @mai.command('song <id_or_alias> [-d <diff>] {{maimai.help.song}}',
              options_desc={'-d': '{maimai.help.option.d}'})
-async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
+async def _(msg: Bot.MessageSession, id_or_alias: str):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
     elif id_or_alias[:2].lower() == "id":
@@ -269,8 +272,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    get_diff = msg.parsed_msg.get('-d', False)
-    diff = get_user['<diff>'] if get_diff else diff
+    getdiff = msg.parsed_msg.get('-d', False)
+    if getdiff:
+        diff = getdiff['<diff>']
+    elif '<diff>' in msg.parsed_msg:
+        diff = msg.parsed_msg['<diff>']
     if diff:
         diff_index = get_diff(diff)  # diff_index 的输出结果可能为 0
         if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
@@ -450,10 +456,8 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)
     username = get_user['<username>'] if get_user else None
-    page = 1
     get_page = msg.parsed_msg.get('-p', False)
-    if get_page and get_page['<page>'].isdigit():
-        page = max(min(int(get_page['<page>'], total_pages), 1))
+    page = get_page['<page>'] if get_page else 1
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}
