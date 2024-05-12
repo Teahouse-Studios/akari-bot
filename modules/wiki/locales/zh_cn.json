@@ -77,10 +77,11 @@
     "wiki.message.section.rendering": "（章节渲染中……）",
     "wiki.message.set.default": "没有设置起始 Wiki，已默认为中文 Minecraft Wiki，使用“${prefix}wiki set”设置自定义起始 Wiki。\n示例：${prefix}wiki set https://zh.minecraft.wiki/",
     "wiki.message.set.success": "成功设置起始 Wiki：${name}",
-    "wiki.message.table.section": "章节",
     "wiki.message.table.id": "编号",
+    "wiki.message.table.section": "章节",
     "wiki.message.utils.redacted": "检测到外来信息介入，请前往滥用日志查看所有消息。",
     "wiki.message.utils.wikilib.error.empty": "发生错误：API 未返回任何内容，请联系此站点管理员获取原因。",
+    "wiki.message.utils.wikilib.error.text_too_long": "发生错误：请求的页面段落文本过长，无法显示。",
     "wiki.message.utils.wikilib.get_failed.api": "从 API 获取信息时出错：",
     "wiki.message.utils.wikilib.get_failed.cloudflare": "CloudFlare 拦截了机器人的请求，请联系站点管理员解决此问题。",
     "wiki.message.utils.wikilib.get_failed.forbidden": "服务器拒绝了机器人的请求。",
@@ -90,7 +91,6 @@
     "wiki.message.utils.wikilib.get_failed.timeout": "尝试建立连接超时。",
     "wiki.message.utils.wikilib.invalid.empty_title": "请求的页面标题为空，或只包含命名空间名称。",
     "wiki.message.utils.wikilib.invalid.invalid_character": "请求的页面标题包含无效字符：“${char}”。",
-    "wiki.message.utils.wikilib.get_failed.text_too_long": "错误：请求的页面段落文本过长，无法展示。",
     "wiki.message.utils.wikilib.no_textextracts": "警告：此 Wiki 没有开启 TextExtracts 扩展，返回的页面预览内容将为未处理的原始 Wikitext 文本。",
     "wiki.message.wiki_audit.add.failed": "失败：${api} 已存在于${list_name}中。",
     "wiki.message.wiki_audit.add.success": "成功加入${list_name}：${api}",
@@ -113,6 +113,5 @@
     "wiki.message.wiki_bot.login.success": "登录成功。",
     "wiki.message.wiki_bot.toggle.disable": "已关闭使用机器人账户。",
     "wiki.message.wiki_bot.toggle.enable": "已开启使用机器人账户。",
-    "wiki.message.wiki_inline.flies": "此页面包括以下文件：\n${file}",
-
+    "wiki.message.wiki_inline.flies": "此页面包括以下文件：\n${file}"
 }

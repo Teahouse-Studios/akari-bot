@@ -359,7 +359,7 @@ class WikiLib:
         h.single_line_break = True
         parse_text = get_parse['parse']['text']['*']
         if len(parse_text) > 65535:
-            return self.locale.t("wiki.message.utils.wikilib.text_get_failed.too_long")
+            return self.locale.t("wiki.message.utils.wikilib.error.text_too_long")
         t = h.handle(get_parse['parse']['text']['*'])
         if section:
             for i in range(1, 7):

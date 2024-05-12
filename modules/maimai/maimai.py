@@ -450,6 +450,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)
     username = get_user['<username>'] if get_user else None
+    page = 1
     get_page = msg.parsed_msg.get('-p', False)
     if get_page and get_page['<page>'].isdigit():
         page = max(min(int(get_page['<page>'], total_pages), 1))
