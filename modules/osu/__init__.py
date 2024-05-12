@@ -17,10 +17,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if not query_id:
             await msg.finish(msg.locale.t('osu.message.user_unbound', prefix=msg.prefixes[0]))
     get_mode = msg.parsed_msg.get('-t', False)
-    if get_mode:
-        mode = get_mode['<mode>']
-    else:
-        mode = '0'
+    mode = get_mode['<mode>'] if get_mode else '0'
     await osu_profile(msg, query_id, mode)
 
 

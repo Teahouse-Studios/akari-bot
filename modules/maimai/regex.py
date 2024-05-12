@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
-@mai_regex.regex(re.compile(r"(.+)\s?段位(?:[任認]定列)?表"), desc='{maimai.help.maimai_regex.grade}')
+@mai_regex.regex(re.compile(r"(.+)\s?段位(?:[任認]定)?列?表"), desc='{maimai.help.maimai_regex.grade}')
 async def _(msg: Bot.MessageSession):
     grade = msg.matched_msg.groups()[0]
     await get_grade_info(msg, grade)

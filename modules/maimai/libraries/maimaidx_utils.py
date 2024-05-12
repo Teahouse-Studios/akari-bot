@@ -389,7 +389,6 @@ async def get_score_list(msg, payload, level, page):
 
     output_lines = []
     total_pages = (len(song_list) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if page.isdigit() else 1
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
             music = (await total_list.get()).by_id(str(s['id']))
@@ -538,9 +537,7 @@ async def get_plate_process(msg, payload, plate):
     song_remain: list[list] = song_remain_basic + song_remain_advanced + \
         song_remain_expert + song_remain_master + song_remain_remaster
 
-    prompt = []
-    if len(song_remain):
-        prompt.append(msg.locale.t('maimai.message.plate.prompt', plate=plate))
+    prompt = [msg.locale.t('maimai.message.plate.prompt', plate=plate)]
     if len(song_remain_basic):
         prompt.append(msg.locale.t('maimai.message.plate.basic', song_remain=len(song_remain_basic)))
     if len(song_remain_advanced):
