@@ -72,16 +72,19 @@ class MessageSession(MessageSessionT):
                         # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                         # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                         reply_to_type = self.session.message["content"]["msgtype"]
-                        content["body"] = (
-                            f">{' *' if reply_to_type == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
-                        )
+                        content["body"] = (f">{' *' if reply_to_type == 'm.emote' else ''} <{self.session.sender}> {
+                            self.session.message['content']['body']}\n\n{x.text}")
                         content["format"] = "org.matrix.custom.html"
                         html_text = x.text
                         html_text = html_text.replace("<", "&lt;").replace(">", "&gt;")
                         html_text = html_text.replace("\n", "<br />")
                         content["formatted_body"] = (
-                            f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{html_text}"
-                        )
+                            f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{
+                                self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{
+                                ' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{
+                                self.session.sender}\">{
+                                self.session.sender}</a><br/>{
+                                self.session.message['content']['body']}</blockquote></mx-reply>{html_text}")
 
                 if (
                     self.session.message
@@ -154,8 +157,8 @@ class MessageSession(MessageSessionT):
                             filesize=filesize,
                         )
                         Logger.info(
-                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}"
-                        )
+                            f"Uploaded image {filename} to media repo, uri: {
+                                upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                         # todo: provide more image info
                         if not encrypted:
                             content = {
@@ -201,9 +204,8 @@ class MessageSession(MessageSessionT):
                         encrypt=encrypted,
                         filesize=filesize,
                     )
-                Logger.info(
-                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}"
-                )
+                Logger.info(f"Uploaded audio {filename} to media repo, uri: {
+                    upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                 # todo: provide audio duration info
                 if not encrypted:
                     content = {
@@ -407,6 +409,7 @@ class FetchTarget(FetchedTargetT):
                             )
                         else:
                             msgchain = MessageChain([Plain(message)])
+                    msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add("", module_name, "schedule")
@@ -426,6 +429,7 @@ class FetchTarget(FetchedTargetT):
                                 )
                             else:
                                 msgchain = MessageChain([Plain(message)])
+                        msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add("", module_name, "schedule")

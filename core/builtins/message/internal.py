@@ -1,9 +1,10 @@
 import base64
+import random
 import re
 import uuid
 from datetime import datetime
 from os.path import abspath
-from typing import List
+from typing import List, Self
 from urllib import parse
 
 import aiohttp
@@ -139,8 +140,9 @@ class ErrorMessage(EMsg):
                 for l in locale_str:
                     error_message = error_message.replace(f'{{{l}}}', locale.t(l))
             self.error_message = locale.t('error') + error_message
-            if Config('bug_report_url', cfg_type = str):
-                self.error_message += '\n' + locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
+            if Config('bug_report_url', cfg_type=str):
+                self.error_message += '\n' + locale.t('error.prompt.address',
+                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
 
     def __str__(self):
         return self.error_message
@@ -195,6 +197,21 @@ class Image(ImageT):
 
     def to_dict(self):
         return {'type': 'image', 'data': {'path': self.path}}
+
+    async def add_random_noise(self) -> Self:
+        image = PImage.open(await self.get())
+        image = image.convert('RGBA')
+
+        noise_image = PImage.new('RGBA', (50, 50))
+        for i in range(50):
+            for j in range(50):
+                noise_image.putpixel((i, j), (i, j, i, random.randint(0, 1)))
+
+        image.alpha_composite(noise_image)
+
+        save = f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.png'
+        image.save(save)
+        return Image(save)
 
 
 class Voice(VoiceT):

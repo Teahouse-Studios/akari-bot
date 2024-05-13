@@ -18,7 +18,7 @@ from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"
-kook_headers = {f'Authorization': f"Bot {Config('kook_token', cfg_type = str)}"}
+kook_headers = {f'Authorization': f"Bot {Config('kook_token', cfg_type=str)}"}
 
 
 async def direct_msg_delete(msg_id: str):
@@ -243,6 +243,7 @@ class FetchTarget(FetchTargetT):
                             msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
                         else:
                             msgchain = MessageChain([Plain(message)])
+                    msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
@@ -260,6 +261,7 @@ class FetchTarget(FetchTargetT):
                                 msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
                             else:
                                 msgchain = MessageChain([Plain(message)])
+                        msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
