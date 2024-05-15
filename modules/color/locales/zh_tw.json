@@ -1,5 +1,5 @@
 {
-    "color.help": "提供色彩資訊。支援十六進位、RGB、HSL 顏色代碼或 CSS 和 Material Design 中的顏色名稱，空白則隨機顏色。",
+    "color.help": "提供色彩資訊。支援十六進位、RGB、HSL 色彩代碼或 CSS 和 Material Design 中的色彩名稱，空白則隨機色彩。",
     "color.help.desc": "取得色彩資訊。",
     "color.message.embed.css": "CSS 色彩名稱",
     "color.message.embed.css.approximate": "最相似的 CSS 色彩名稱",
