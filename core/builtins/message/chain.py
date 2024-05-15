@@ -37,9 +37,6 @@ class MessageChain(MessageChainT):
         ] = None,
     ):
         self.value = []
-        if isinstance(elements, MessageChain):
-            self.value = elements.value
-            return
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
         if isinstance(elements, str):
@@ -118,6 +115,8 @@ class MessageChain(MessageChainT):
                         self.value += match_kecode(e)
                 else:
                     Logger.error(f"Unexpected message type: {elements}")
+        elif isinstance(elements, MessageChain):
+            self.value = elements.value
         elif not elements:
             pass
         else:
