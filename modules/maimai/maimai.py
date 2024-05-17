@@ -251,7 +251,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 @mai.command('id <id> [<diff>] {{maimai.help.id}}')
 @mai.command('song <id_or_alias> [-d <diff>] {{maimai.help.song}}',
              options_desc={'-d': '{maimai.help.option.d}'})
-async def _(msg: Bot.MessageSession, id_or_alias: str):
+async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
     elif id_or_alias[:2].lower() == "id":
