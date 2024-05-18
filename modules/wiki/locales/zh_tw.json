@@ -96,6 +96,7 @@
     "wiki.message.wiki_audit.add.success": "成功加入${list_name}：${api}",
     "wiki.message.wiki_audit.list.allowlist": "現有白名單：",
     "wiki.message.wiki_audit.list.blocklist": "現有黑名單：",
+    "wiki.message.wiki_audit.list.none": "目前名單為空。",
     "wiki.message.wiki_audit.list.table.header.apilink": "API 連結",
     "wiki.message.wiki_audit.list.table.header.date": "新增日期",
     "wiki.message.wiki_audit.list_name.allowlist": "白名單",

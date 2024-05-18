@@ -96,6 +96,7 @@
     "wiki.message.wiki_audit.add.success": "Successfully added to ${list_name}: ${api}",
     "wiki.message.wiki_audit.list.allowlist": "Existing Whitelist:",
     "wiki.message.wiki_audit.list.blocklist": "Existing Blacklist:",
+    "wiki.message.wiki_audit.list.none": "The list is currently empty.",
     "wiki.message.wiki_audit.list.table.header.apilink": "API Link",
     "wiki.message.wiki_audit.list.table.header.date": "Add Date",
     "wiki.message.wiki_audit.list_name.allowlist": "Whitelist",

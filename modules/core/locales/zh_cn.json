@@ -75,6 +75,7 @@
     "core.message.analytics.disabled": "机器人未开启命令统计功能。",
     "core.message.analytics.export": "导出地址：\n${url}\n将在 ${expires} 秒后过期。",
     "core.message.analytics.export.waiting": "正在导出数据……可能需要一些时间。",
+    "core.message.analytics.none": "机器人命令统计数据为空。",
     "core.message.analytics.year": "最近一年的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.message.analytics.year.total": "最近一年的所有命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.message.config.write.failed": "失败，请尝试转义引号或检查输入。",

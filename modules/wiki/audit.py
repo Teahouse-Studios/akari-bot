@@ -107,10 +107,16 @@ if Config('enable_urlmanager', False):
                 await msg.finish(send_msgs)
                 legacy = False
         if legacy:
-            wikis = [msg.locale.t('wiki.message.wiki_audit.list.allowlist')]
-            for al in allow_list:
-                wikis.append(f'{al[0]} ({msg.ts2strftime(al[1].timestamp(), iso=True, timezone=False)})')
-            wikis.append(msg.locale.t('wiki.message.wiki_audit.list.blocklist'))
-            for bl in block_list:
-                wikis.append(f'{bl[0]} ({bl[1]})')
-            await msg.finish('\n'.join(wikis))
+            wikis = []
+            if allow_list:
+                wikis.append(msg.locale.t('wiki.message.wiki_audit.list.allowlist'))
+                for al in allow_list:
+                    wikis.append(f'{al[0]} ({msg.ts2strftime(al[1].timestamp(), iso=True, timezone=False)})')
+            if block_list:
+                wikis.append(msg.locale.t('wiki.message.wiki_audit.list.blocklist'))
+                for bl in block_list:
+                    wikis.append(f'{bl[0]} ({bl[1]})')
+            if wikis:
+                await msg.finish('\n'.join(wikis))
+            else:
+                await msg.finish(msg.locale.t('wiki.message.wiki_audit.list.none'))
