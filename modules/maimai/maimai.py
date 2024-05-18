@@ -275,8 +275,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     getdiff = msg.parsed_msg.get('-d', False)
     if getdiff:
         diff = getdiff['<diff>']
-    elif '<diff>' in msg.parsed_msg:
-        diff = msg.parsed_msg['<diff>']
+        
     if diff:
         diff_index = get_diff(diff)  # diff_index 的输出结果可能为 0
         if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
@@ -435,7 +434,7 @@ async def _(msg: Bot.MessageSession, level: str, goal: str):
 
 
 @mai.command('rank [<username>] {{maimai.help.rank}}')
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}
