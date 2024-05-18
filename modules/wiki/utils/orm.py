@@ -32,14 +32,14 @@ class WikiAllowList(Base):
     __tablename__ = table_prefix + 'WikiAllowList'
     __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
-    operator = Column(String(512))
+    timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
 class WikiBlockList(Base):
     __tablename__ = table_prefix + 'WikiBlockList'
     __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
-    operator = Column(String(512))
+    timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
 class WikiBotAccountList(Base):

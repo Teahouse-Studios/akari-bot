@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import timezone
 
 from config import Config
 from core.builtins import Bot, Plain, Image
@@ -19,15 +19,14 @@ if Config('enable_urlmanager', False):
     @aud.command(['trust <apilink>',
                   'block <apilink>'])
     async def _(msg: Bot.MessageSession, apilink: str):
-        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         check = await WikiLib(apilink).check_wiki_available()
         if check.available:
             apilink = check.value.api
             if msg.parsed_msg.get('trust', False):
-                res = Audit(apilink).add_to_AllowList(date)
+                res = Audit(apilink).add_to_AllowList()
                 list_name = msg.locale.t('wiki.message.wiki_audit.list_name.allowlist')
             else:
-                res = Audit(apilink).add_to_BlockList(date)
+                res = Audit(apilink).add_to_BlockList()
                 list_name = msg.locale.t('wiki.message.wiki_audit.list_name.blocklist')
             if not res:
                 await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.failed', list_name=list_name, api=apilink))
@@ -82,7 +81,7 @@ if Config('enable_urlmanager', False):
         legacy = True
         if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             send_msgs = []
-            allow_columns = [[x[0], x[1]] for x in allow_list]
+            allow_columns = [[x[0], msg.ts2strftime(x[1].replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in allow_list]
             if allow_columns:
                 allow_table = ImageTable(data=allow_columns, headers=[
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.apilink'),
@@ -93,7 +92,7 @@ if Config('enable_urlmanager', False):
                     if allow_image:
                         send_msgs.append(Plain(msg.locale.t('wiki.message.wiki_audit.list.allowlist')))
                         send_msgs.append(Image(allow_image))
-            block_columns = [[x[0], x[1]] for x in block_list]
+            block_columns = [[x[0], msg.ts2strftime(x[1].replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in block_list]
             if block_columns:
                 block_table = ImageTable(data=block_columns, headers=[
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.apilink'),
@@ -110,7 +109,7 @@ if Config('enable_urlmanager', False):
         if legacy:
             wikis = [msg.locale.t('wiki.message.wiki_audit.list.allowlist')]
             for al in allow_list:
-                wikis.append(f'{al[0]} ({al[1]})')
+                wikis.append(f'{al[0]} ({msg.ts2strftime(al[1].timestamp(), iso=True, timezone=False)})')
             wikis.append(msg.locale.t('wiki.message.wiki_audit.list.blocklist'))
             for bl in block_list:
                 wikis.append(f'{bl[0]} ({bl[1]})')
