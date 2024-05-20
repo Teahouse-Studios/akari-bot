@@ -24,7 +24,7 @@ from core.logger import Logger  # noqa: E402
 
 
 app = FastAPI()
-jwt_secret = Config('jwt_secret', cfg_type = str)
+jwt_secret = Config('jwt_secret', cfg_type=str)
 
 
 @app.on_event("startup")

@@ -18,6 +18,14 @@ from database import session, BotDBUtil
 from database.tables import AnalyticsData
 
 
+def get_first_record(msg: Bot.MessageSession):
+    if Config('db_path', cfg_type=str).startswith('mysql'):
+        first_record = BotDBUtil.Analytics.get_first().timestamp.timestamp()
+    else:
+        first_record = BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp()
+    return msg.ts2strftime(first_record, iso=True, timezone=False)
+
+
 ana = module('analytics', alias='ana', required_superuser=True, base=True)
 
 
@@ -25,7 +33,7 @@ ana = module('analytics', alias='ana', required_superuser=True, base=True)
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
         try:
-            first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)
+            first_record = get_first_record(msg)
             get_counts = BotDBUtil.Analytics.get_count()
 
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
@@ -46,7 +54,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
         try:
-            first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)
+            first_record = get_first_record(msg)
             module_ = None
             if '<module>' in msg.parsed_msg:
                 module_ = msg.parsed_msg['<module>']
@@ -89,7 +97,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
         try:
-            first_record = msg.ts2strftime(BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)
+            first_record = get_first_record(msg)
             module_ = None
             if '<module>' in msg.parsed_msg:
                 module_ = msg.parsed_msg['<module>']

@@ -22,7 +22,7 @@ Url.disable_mm = True
 
 count = 0
 
-dc_token = Config('discord_token', cfg_type = str)
+dc_token = Config('discord_token', cfg_type=str)
 
 
 @client.event
