@@ -29,13 +29,14 @@ async def get_weekly(with_img=False, zh_tw=False):
     text = re.sub(r'\n\n\n', '\n\n', text)  # 移除不必要的空行
     text = re.sub(r'\n*$', '', text)
     text = unescape(text)
-    img = html.find('div', class_='weekly-image').find(class_='image')
+    img = html.find('div', class_='weekly-image').find('a')
 
     img_filename = re.match(r'/w/(.*)', img.attrs['href']) if img else None
-    page = re.findall(r'(?<=<b><a href=").*?(?=")', str(content))
-    msg_list = [Plain(locale.t("weekly.message.expired") if page[
-        0] == '/w/%E7%8E%BB%E7%92%83' else locale.t(
-        "weekly.message.prompt", text=text))]
+    page = re.findall(r'(?<=<a href=").*?(?=")', str(content))
+    if (page and page[0] == '/w/%E7%8E%BB%E7%92%83'):
+        msg_list = [Plain(locale.t("weekly.message.expired"))]
+    else:
+        msg_list = [Plain(locale.t("weekly.message.prompt", text=text))]
     imglink = None
     if img_filename:
         get_image = await (WikiLib('https://zh.minecraft.wiki/')).parse_page_info(img_filename.group(1))
