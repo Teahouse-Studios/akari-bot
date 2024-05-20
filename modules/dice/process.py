@@ -199,24 +199,26 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
         output_line += '=' + str(result)
 
-        if dc:
-            output_line += f'/{dc}  '
-            if msg.data.options.get('dice_dc_reversed'):
-                if result <= int(dc):
-                    output_line += msg.locale.t('dice.message.dc.success')
-                    success_num += 1
+        try:
+            if dc:
+                output_line += f'/{dc}  '
+                if msg.data.options.get('dice_dc_reversed'):
+                    if result <= int(dc):
+                        output_line += msg.locale.t('dice.message.dc.success')
+                        success_num += 1
+                    else:
+                        output_line += msg.locale.t('dice.message.dc.failed')
+                        fail_num += 1
                 else:
-                    output_line += msg.locale.t('dice.message.dc.failed')
-                    fail_num += 1
-            else:
-                if result >= int(dc):
-                    output_line += msg.locale.t('dice.message.dc.success')
-                    success_num += 1
-                else:
-                    output_line += msg.locale.t('dice.message.dc.failed')
-                    fail_num += 1
-        output += f'\n{expr}={output_line}'
-    if dc and times > 1:
-        output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
-
+                    if result >= int(dc):
+                        output_line += msg.locale.t('dice.message.dc.success')
+                        success_num += 1
+                    else:
+                        output_line += msg.locale.t('dice.message.dc.failed')
+                        fail_num += 1
+            output += f'\n{expr}={output_line}'
+            if dc and times > 1:
+                output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
+        except ValueError:
+            output = msg.locale.t("dice.message.dc.invalid") + dc
     return output
