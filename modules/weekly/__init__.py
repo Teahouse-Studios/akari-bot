@@ -32,7 +32,7 @@ async def get_weekly(with_img=False, zh_tw=False):
     img = html.find('div', class_='weekly-image').find('a')
 
     img_filename = re.match(r'/w/(.*)', img.attrs['href']) if img else None
-    page = re.findall(r'(?<=<a href=").*?(?=")', str(content))
+    page = re.findall(r'(?<=<b><a href=").*?(?=")', str(content))
     if (page and page[0] == '/w/%E7%8E%BB%E7%92%83'):
         msg_list = [Plain(locale.t("weekly.message.expired"))]
     else:
@@ -48,7 +48,7 @@ async def get_weekly(with_img=False, zh_tw=False):
                 "weekly.message.link",
                 img=imglink if imglink else locale.t("none"),
                 article=str(
-                    Url(f'https://zh.minecraft.wiki{page[0]}')),
+                    Url(f'https://zh.minecraft.wiki{page[0]}') if page else locale.t("none")),
                 link=str(
                     Url(f'https://zh.minecraft.wiki/wiki/?oldid={str(result["parse"]["revid"])}')))))
     if imglink and with_img:
