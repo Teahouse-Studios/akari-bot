@@ -456,7 +456,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)
     username = get_user['<username>'] if get_user else None
     get_page = msg.parsed_msg.get('-p', False)
-    page = get_page['<page>'] if get_page else 1
+    page = get_page['<page>'] if get_page else '1'
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}

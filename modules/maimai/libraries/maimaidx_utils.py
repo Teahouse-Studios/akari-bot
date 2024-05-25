@@ -375,7 +375,7 @@ async def get_level_process(msg, payload, process, goal):
     return output, get_img
 
 
-async def get_score_list(msg, payload, level, page = '1'):
+async def get_score_list(msg, payload, level, page):
     player_data = await get_record(msg, payload)
 
     payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
