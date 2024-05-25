@@ -29,9 +29,9 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         await msg.finish(msg.locale.t('message.cooldown', time=int(30 - res)))
 
 
-@bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='A', desc="{bilibili.help.regex.av}")
+@bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='M', desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
-    query = f"?aid={msg.matched_msg[0]}"
+    query = f"?aid={msg.matched_msg.group(1)}"
     await get_video_info(msg, query)
 
 

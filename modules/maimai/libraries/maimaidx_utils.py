@@ -289,7 +289,7 @@ async def get_player_score(msg, payload, input_id):
             output_lines.append(f"{diffs[level]} {music['level'][level]}")  # 难度字典转换
             for score in scores:
                 level, achievements, score_rank, combo_rank, sync_rank = score
-                entry_output = f"{achievements} {score_rank}"
+                entry_output = f"{achievements:.4f} {score_rank}"
                 if combo_rank and sync_rank:
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
@@ -357,7 +357,7 @@ async def get_level_process(msg, payload, process, goal):
                 if [int(s[0]), s[-2]] in song_record:
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in scoreRank:
-                        self_record = str(verlist[record_index]['achievements']) + '%'
+                        self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
                     elif goal in comboRank:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
@@ -393,7 +393,7 @@ async def get_score_list(msg, payload, level, page):
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
             music = (await total_list.get()).by_id(str(s['id']))
-            output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']}%"
+            output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']:.4f}%"
             if s["fc"] and s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
             elif s["fc"] or s["fs"]:
@@ -559,7 +559,7 @@ async def get_plate_process(msg, payload, plate):
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余13+以上歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['將', '者']:
-                        self_record = f"{str(verlist[record_index]['achievements'])}%"
+                        self_record = f"{str("{:.4f}".format(verlist[record_index]['achievements']))}%"
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
@@ -584,7 +584,7 @@ async def get_plate_process(msg, payload, plate):
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['將', '者']:
-                        self_record = str(verlist[record_index]['achievements']) + '%'
+                        self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
