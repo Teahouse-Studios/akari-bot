@@ -213,8 +213,8 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
                         output_line += msg.locale.t('dice.message.dc.failed')
                         fail_num += 1
             output += f'\n{expr}={output_line}'
-            if dc and times > 1:
-                output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
         except ValueError:
-            output = msg.locale.t("dice.message.dc.invalid") + dc
+            return msg.locale.t("dice.message.dc.invalid") + dc
+    if dc and times > 1:
+        output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
     return output
