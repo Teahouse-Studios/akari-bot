@@ -20,7 +20,7 @@ dice_patterns = [
     r'(\d+A\d+(?:[KQM]?\d*)?(?:[KQM]?\d*)?(?:[KQM]?\d*)?)',  # WOD骰子
     r'(\d+C\d+M?\d*)',  # 双重十字骰子
     r'(?:D(?:100|%)?)?([BP]\d*)',  # 奖惩骰子
-    r'D?(\d*F)',  # 命运骰子
+    r'(\d+DF|\d*F)',  # 命运骰子
     r'(\d*D\d*%?(?:K\d*|Q\d*)?)',  # 普通骰子
     r'(\d+)',  # 数字
     r'([\(\)])',  # 括号
@@ -132,8 +132,6 @@ def parse_dice_expression(msg, dices):
     return dice_expr_list, dice_count, int(times), None
 
 # 在数字与数字之间加上乘号
-
-
 def insert_multiply(lst, use_markdown=False):
     result = []
     asterisk = '/*' if use_markdown else '*'
@@ -153,8 +151,6 @@ def insert_multiply(lst, use_markdown=False):
     return result
 
 # 开始投掷并生成消息
-
-
 def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
     success_num = 0
     fail_num = 0
