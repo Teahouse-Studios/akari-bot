@@ -193,7 +193,7 @@ class FudgeDice(DiceItemBase):
         return (int(dice_count), 0)
 
     def Roll(self, msg):
-        output = self.code
+        output = self.code.replace('D', '')  # 去除“D”
         result = 0
 
         dice_results = ['-', '-', '0', '0', '+', '+']
