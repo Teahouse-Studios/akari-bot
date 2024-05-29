@@ -199,7 +199,7 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
             else:
                 result = str(result)
             output_line += '=' + result
-        except ValueError:
+        except Exception:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + msg.locale.t('dice.message.too_long')).message
 
         try:
