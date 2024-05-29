@@ -1,4 +1,4 @@
-import os
+limport os
 from enum import Enum
 from typing import List, Optional
 
@@ -40,12 +40,22 @@ class WordleBoard:
 
     def add_word(self, word: str, last_word_state: Optional[List[WordleState]]):
         if last_word_state:
+            yellow_letters = {}
             for index, state in enumerate(last_word_state):
-                if state == WordleState.YELLOW and self.word[index] not in word:
+                if state == WordleState.YELLOW:
+                    letter = self.word[index]
+                    if letter in yellow_letters:
+                        yellow_letters[letter].append(index)
+                    else:
+                        yellow_letters[letter] = [index]
+            for letter, indices in yellow_letters.items():
+                if word.count(letter) < len(indices):
                     return False
+                    
             for index, state in enumerate(last_word_state):
                 if state == WordleState.GREEN and self.word[index] != word[index]:
                     return False
+                    
         self.board.append(word)
         return self.test_board()
 
