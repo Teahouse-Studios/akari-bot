@@ -1,9 +1,12 @@
 {
     "wordle.help": "Start a new game.",
     "wordle.help.desc": "Play Wordle.",
+    "wordle.help.hard": "Play Wordle in hard mode.",
     "wordle.help.theme": "Set whether to use dark theme.",
     "wordle.message.finish": "Game over. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "Congratulations! You complete the game in ${attempt} turn(s).",
+    "wordle.message.hard": "Tips: Hard mode is enabled. The letters that were color-coded in the previous turn must appear in the following turn and must meet the corresponding requirements.",
+    "wordle.message.hard.not_matched": "The word does not correspond.",
     "wordle.message.not_a_word": "This is not a valid word.",
     "wordle.message.start": "The game has started. You will guess a 5-letter word by testing up to 6 words.\nGreen indicates the letter is in the word and is in its place; yellow indicates the letter is in the word, but it is not at its current location; gray indicates the letter is not in the word.",
     "wordle.message.stop": "Stopped. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
