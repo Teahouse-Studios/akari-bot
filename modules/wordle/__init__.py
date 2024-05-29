@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from attr import define, field
 from collections import Counter
