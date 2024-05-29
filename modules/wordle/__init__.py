@@ -38,8 +38,9 @@ class WordleBoard:
     word: str
     board: List[str] = field(factory=list)
 
-    def add_word(self, word: str, last_word, last_word_state: Optional[List[WordleState]]):
-        if last_word and last_word_state:
+def add_word(self, word: str, last_word: Optional[str] = None):
+        if last_word:
+            last_word_state = self.test_word(last_word)
             yellow_letters = {}
             for index, state in enumerate(last_word_state):
                 if state == WordleState.YELLOW:
@@ -210,7 +211,6 @@ async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
     hard_mode = True if msg.parsed_msg else False
     last_word = None
-    last_word_state = None
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
     play_state.enable()
@@ -235,12 +235,10 @@ async def _(msg: Bot.MessageSession):
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue
-        if hard_mode:
-            last_word_state = board.test_word(last_word) if last_word else None
         if not board.verify_word(word):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
             continue
-        if not board.add_word(word, last_word, last_word_state):
+        if not board.add_word(word, last_word):
             await wait.send_message(msg.locale.t('wordle.message.hard.not_matched'))
             continue
         last_word = word
@@ -260,6 +258,7 @@ async def _(msg: Bot.MessageSession):
     if board.board[-1] == board.word:
         g_msg = msg.locale.t('wordle.message.finish.success', attempt=attempt)
         petal = 2 if attempt <= 3 else 1
+        petal += 1 if hard_mode else 0
         if reward := await gained_petal(msg, petal):
             g_msg += '\n' + reward
     qc.reset()
