@@ -206,7 +206,7 @@ async def _(msg: Bot.MessageSession):
     else:
         start_msg = [BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))]
         if hard_mode:
-            start_msg.append(Plain(msg.locale.t('wordle.message.hard'))
+            start_msg.append(Plain(msg.locale.t('wordle.message.hard')))
     await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
