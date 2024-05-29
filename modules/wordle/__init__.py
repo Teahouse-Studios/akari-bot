@@ -241,7 +241,8 @@ async def _(msg: Bot.MessageSession):
         if not board.add_word(word, last_word):
             await wait.send_message(msg.locale.t('wordle.message.hard.not_matched'))
             continue
-        last_word = word
+        if hard_mode:
+            last_word = word
         board_image.update_board()
         await msg.sleep(2)  # 防冲突
 
