@@ -210,6 +210,7 @@ async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
     hard_mode = True if msg.parsed_msg else False
     last_word = None
+    last_word_state = None
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
     play_state.enable()
