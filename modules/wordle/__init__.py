@@ -44,12 +44,11 @@ class WordleBoard:
             for index, state in enumerate(last_word_state):
                 if state == WordleState.YELLOW:
                     letter = self.word[index]
-                    if letter in yellow_letters:
-                        yellow_letters[letter].append(index)
-                    else:
-                        yellow_letters[letter] = [index]
-            for letter, indices in yellow_letters.items():
-                if word.count(letter) < len(indices):
+                    if letter not in yellow_letters:
+                        yellow_letters[letter] = 0
+                    yellow_letters[letter] += 1
+            for letter, count in yellow_letters.items():
+                if word.count(letter) < count:
                     return False
                     
             for index, state in enumerate(last_word_state):
