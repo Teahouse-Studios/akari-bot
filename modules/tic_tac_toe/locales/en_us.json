@@ -1,10 +1,10 @@
 {
     "tic_tac_toe.help.desc": "Play Tic-tac-toe.",
     "tic_tac_toe.help": "Play Tic-tac-toe with robot.",
-    "tic_tac_toe.expert.help": "Play Tic-tac-toe with an expert robot.",
-    "tic_tac_toe.master.help": "Play Tic-tac-toe with a master robot.",
-    "tic_tac_toe.noob.help": "Play Tic-tac-toe with a noob robot.",
-    "tic_tac_toe.duo.help": "Tic-tac-toe duo.",
+    "tic_tac_toe.help.expert": "Play Tic-tac-toe with an expert robot.",
+    "tic_tac_toe.help.master": "Play Tic-tac-toe with a master robot.",
+    "tic_tac_toe.help.noob": "Play Tic-tac-toe with a noob robot.",
+    "tic_tac_toe.help.duo": "Tic-tac-toe duo.",
     "tic_tac_toe.message.turn": "${player}'s turn.\n(Send numbers to determine where to drop)",
     "tic_tac_toe.message.draw": "Game over, tie.",
     "tic_tac_toe.message.winner": "Game over, ${winner} wins."
