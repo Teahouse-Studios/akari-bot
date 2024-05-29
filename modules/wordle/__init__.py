@@ -38,7 +38,14 @@ class WordleBoard:
     word: str
     board: List[str] = field(factory=list)
 
-    def add_word(self, word: str):
+    def add_word(self, word: str, last_word_state: Optional[List[WordleState]]):
+        if last_word_state:
+            for index, state in enumerate(last_word_state):
+                if state == WordleState.YELLOW and self.word[index] not in word:
+                    return False
+            for index, state in enumerate(last_word_state):
+                if state == WordleState.GREEN and self.word[index] != word[index]:
+                    return False
         self.board.append(word)
         return self.test_board()
 
@@ -192,7 +199,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('message.cooldown', time=int(150 - c)))
 
     board = WordleBoard.from_random_word()
-    hard_mode = True if 'hard' in msg.parsed_msg else False
+    hard_mode = True if msg.parsed_msg else False
     last_word_state = None
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
