@@ -179,6 +179,7 @@ class WordleBoardImage:
 
 
 @wordle.command('{{wordle.help}}')
+@wordle.command('hard {{wordle.help.hard}}')
 async def _(msg: Bot.MessageSession):
     play_state = PlayState('wordle', msg, all=True)
     if play_state.check():
@@ -191,15 +192,22 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('message.cooldown', time=int(150 - c)))
 
     board = WordleBoard.from_random_word()
+    hard_mode = True if 'hard' in msg.parsed_msg else False
+    last_word_state = None
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
     play_state.enable()
     play_state.update(answer=board.word)
     Logger.info(f'Answer: {board.word}')
     if text_mode:
-        await msg.send_message(msg.locale.t('wordle.message.start'))
+        start_msg = msg.locale.t('wordle.message.start')
+        if hard_mode:
+            start_msg += '\n' + msg.locale.t('wordle.message.hard')
     else:
-        await msg.send_message([BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))])
+        start_msg = [BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))]
+        if hard_mode:
+            start_msg.append(Plain(msg.locale.t('wordle.message.hard'))
+    await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
         if not play_state.check():
@@ -210,10 +218,14 @@ async def _(msg: Bot.MessageSession):
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue
+        if hard_mode:
+            last_word_state = board.test_board()[-1] if board.get_trials() > 1 else None
         if not board.verify_word(word):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
             continue
-        board.add_word(word)
+        if not board.add_word(word, last_word_state):
+            await wait.send_message(msg.locale.t('wordle.message.hard.not_matched'))
+            continue
         board_image.update_board()
         await msg.sleep(2)  # 防冲突
 
