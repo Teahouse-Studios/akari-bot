@@ -38,7 +38,7 @@ class WordleBoard:
     word: str
     board: List[str] = field(factory=list)
 
-def add_word(self, word: str, last_word: Optional[str] = None):
+    def add_word(self, word: str, last_word: Optional[str] = None):
         if last_word:
             last_word_state = self.test_word(last_word)
             yellow_letters = {}
