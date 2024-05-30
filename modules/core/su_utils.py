@@ -87,11 +87,18 @@ async def _(msg: Bot.MessageSession, target: str):
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.target_from)]
         target_data.enable(modules)
-        await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
+        if modules:
+            await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
+        else:
+            await msg.finish(msg.locale.t("core.message.set.module.enable.failed"))
     elif 'disable' in msg.parsed_msg:
-        modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])]
+        modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
+               if m in target_data.enabled_modules]
         target_data.disable(modules)
-        await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
+        if modules:
+            await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
+        else:
+            await msg.finish(msg.locale.t("core.message.set.module.disable.failed"))
     elif 'list' in msg.parsed_msg:
         modules = sorted(target_data.enabled_modules)
         if modules:
