@@ -75,7 +75,7 @@
     "core.message.analytics.disabled": "機器人未啟用指令統計功能。",
     "core.message.analytics.export": "导出地址：\n${url}\n将在 ${expires} 秒后过期。",
     "core.message.analytics.export.waiting": "正在导出数据……可能需要一些时间。",
-    "core.message.analytics.none": "機器人指令統計資料為空。",
+    "core.message.analytics.none": "機器人資料庫為空，正在初始化……",
     "core.message.analytics.year": "最近一年的「${module}」指令呼叫次數统计（自 ${first_record} 開始統計）：",
     "core.message.analytics.year.total": "最近一年的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
     "core.message.config.write.failed": "失敗，請嘗試使用跳脫引號或校對輸入。",
