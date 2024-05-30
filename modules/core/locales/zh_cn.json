@@ -170,7 +170,7 @@
     "core.message.resume.processing": "正在重发 ${counts} 条消息……",
     "core.message.resume.skip": "跳过一条消息，正在重发 ${counts} 条消息……",
     "core.message.set.confirm.init": "该对话未初始化，确认进行操作吗？",
-    "core.message.set.module.disable.failed": "没有作出更改，模块可能不存在。",
+    "core.message.set.module.disable.failed": "没有作出更改，模块可能未开启或不存在。",
     "core.message.set.module.disable.success": "成功为对话关闭了以下模块：",
     "core.message.set.module.enable.failed": "没有作出更改，模块可能不存在。",
     "core.message.set.module.enable.success": "成功为对话开启了以下模块：",
