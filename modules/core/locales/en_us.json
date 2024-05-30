@@ -75,7 +75,7 @@
     "core.message.analytics.disabled": "Analytics command is not enabled.",
     "core.message.analytics.export": "导出地址：\n${url}\n将在 ${expires} 秒后过期。",
     "core.message.analytics.export.waiting": "正在导出数据……可能需要一些时间。",
-    "core.message.analytics.none": "The command execution data are empty.",
+    "core.message.analytics.none": "The database is empty. Initializing...",
     "core.message.analytics.year": "Last year for command \"${module}\" calls (from ${first_record}): ",
     "core.message.analytics.year.total": "Last year for all commands calls (from ${first_record}): ",
     "core.message.config.write.failed": "Failed. Try to use escaped quotes or check the input.",

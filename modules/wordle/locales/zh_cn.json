@@ -1,7 +1,7 @@
 {
     "wordle.help": "开始新游戏。",
     "wordle.help.desc": "玩 Wordle。",
-    "wordle.help.hard": "使用困难模式玩 Wordle。",
+    "wordle.help.hard": "使用困难模式。",
     "wordle.help.theme": "设置是否使用深色主题。",
     "wordle.message.finish": "游戏结束，答案为：${answer}。\n查询词典：https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "祝贺！你在 ${attempt} 回合内完成了游戏。",
