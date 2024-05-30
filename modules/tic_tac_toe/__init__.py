@@ -258,9 +258,9 @@ async def terminate(msg: Bot.MessageSession):
 
 
 @tic_tac_toe.command('{{tic_tac_toe.help}}')
-@tic_tac_toe.command('noob {{tic_tac_toe.noob.help}}')
-@tic_tac_toe.command('expert {{tic_tac_toe.expert.help}}')
-@tic_tac_toe.command('master {{tic_tac_toe.master.help}}')
+@tic_tac_toe.command('noob {{tic_tac_toe.help.noob}}')
+@tic_tac_toe.command('expert {{tic_tac_toe.help.expert}}')
+@tic_tac_toe.command('master {{tic_tac_toe.help.master}}')
 async def ttt_with_bot(msg: Bot.MessageSession):
     if msg.parsed_msg:
         if 'expert' in msg.parsed_msg:
@@ -298,7 +298,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
 
-@tic_tac_toe.command('duo {{tic_tac_toe.duo.help}}')
+@tic_tac_toe.command('duo {{tic_tac_toe.help.duo}}')
 async def ttt_multiplayer(msg: Bot.MessageSession):
     play_state = PlayState('tic_tac_toe', msg, all=True)
     if play_state.check():

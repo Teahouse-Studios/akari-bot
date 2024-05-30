@@ -17,7 +17,7 @@ from core.utils.bot import init_async
 from database import BotDBUtil, session
 from database.tables import DBVersion
 
-if not Config('db_path', cfg_type = str):
+if not Config('db_path', cfg_type=str):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
                          'Example: \ndb_path = \"sqlite:///database/save.db\"\n'
                          '(Also you can fill in the above example directly,'

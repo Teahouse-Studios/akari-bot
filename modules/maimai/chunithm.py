@@ -17,7 +17,8 @@ chu = module('chunithm',
              desc='{chunithm.help.desc}')
 
 
-@chu.command('base <constant> [<constant_max>] {{maimai.help.base}}')
+@chu.command('base <constant> [<constant_max>] [-p <page>] {{maimai.help.base}}',
+             options_desc={'-p': '{maimai.help.option.p}'})
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     result_set = []
     if constant <= 0:
@@ -47,15 +48,22 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
                                diff_label[i],
                                music['level'][i]))
 
-    for elem in result_set:
+    total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+    get_page = msg.parsed_msg.get('-p', False)
+    if get_page and get_page['<page>'].isdigit():
+        page = max(min(int(get_page['<page>']), total_pages), 1)
+
+    start_index = (page - 1) * SONGS_PER_PAGE
+    end_index = page * SONGS_PER_PAGE
+
+    for elem in result_set[start_index:end_index]:
         s += f"{elem[0]}\u200B. {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    elif len(result_set) > 200:
-        await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
+        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
         if img:
             await msg.finish([BImage(img)])
@@ -74,9 +82,11 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
                                music['ds'][i],
                                diff_label[i],
                                music['level'][i]))
-
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if page and page.isdigit() else 1
+    if page and page.isdigit():
+        page = max(min(int(page), total_pages), 1)
+    else:
+        page = 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -97,26 +107,36 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
             await msg.finish(s)
 
 
-@chu.command('search <keyword> {{maimai.help.search}}')
-async def _(msg: Bot.MessageSession, keyword: str):
+@chu.command('search <keyword> [<page>] {{maimai.help.search}}')
+async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
     name = keyword.strip()
-    res = (await total_list.get()).filter(title_search=name)
-    if len(res) == 0:
+    result_set = []
+    data = (await total_list.get()).filter(title_search=name)
+    if len(data) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    elif len(res) > 200:
-        await msg.finish(msg.locale.t("maimai.message.too_much", length=len(res)))
     else:
-        result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
-        for music in sorted(res, key=lambda i: int(i['id'])):
-            result += f"{music['id']}\u200B. {music['title']}\n"
-        if len(res) <= SONGS_PER_PAGE:
-            await msg.finish([Plain(result.strip())])
+        for music in sorted(data, key=lambda i: int(i['id'])):
+            result_set.append((music['id'], music['title']))
+        total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+        if page and page.isdigit():
+            page = max(min(int(page), total_pages), 1)
         else:
-            img = await msgchain2image([Plain(result)])
+            page = 1
+        start_index = (page - 1) * SONGS_PER_PAGE
+        end_index = page * SONGS_PER_PAGE
+
+        s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
+        for elem in result_set[start_index:end_index]:
+            s += f"{elem[0]}\u200B. {elem[1]}\n"
+        if len(data) <= SONGS_PER_PAGE:
+            await msg.finish(s.strip())
+        else:
+            s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+            img = await msgchain2image([Plain(s)])
             if img:
                 await msg.finish([BImage(img)])
             else:
-                await msg.finish(result)
+                await msg.finish(s)
 
 
 @chu.command('b30 [<username>] {{chunithm.help.b30}}')
@@ -136,7 +156,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
-@chu.command('id <id> [<diff>] {{maimai.help.id}}')
+@chu.command('id <id> [<diff>] {{maimai.help.id}}',)
 @chu.command('song <song> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if '<id>' in msg.parsed_msg:

@@ -25,7 +25,7 @@ from core.queue import JobQueue
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
-qq_account = str(Config("qq_account", cfg_type = (int, str)))
+qq_account = str(Config("qq_account", cfg_type=(int, str)))
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1))
@@ -199,13 +199,13 @@ async def _(event: Event):
         result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
         if result:
             res = Locale(default_locale).t('tos.message.in_group_blocklist')
-            if Config('issue_url', cfg_type = str):
-                res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type = str))
+            if Config('issue_url', cfg_type=str):
+                res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str))
             await bot.send(event=event, message=str(res))
             await bot.call_action('set_group_leave', group_id=event.group_id)
 """
 
-qq_host = Config("lagrange_host", cfg_type = str)
+qq_host = Config("lagrange_host", cfg_type=str)
 if qq_host:
     argv = sys.argv
     if 'subprocess' in sys.argv:

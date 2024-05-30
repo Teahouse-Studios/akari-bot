@@ -1,42 +1,51 @@
 import base64
 import urllib.parse
-
-
-from config import Config
+from datetime import datetime, timedelta, timezone
 from typing import Tuple
-
-from core.builtins import Bot, Plain, Image
-from core.component import module
-from database import session, BotDBUtil
-from database.tables import AnalyticsData
-from core.utils.cache import random_cache_path
-from datetime import datetime, timedelta
-
-import ujson as json
-import zipfile
-import oss2
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import oss2
+import ujson as json
+import zipfile
 from dateutil.relativedelta import relativedelta
 
+from config import Config
+from core.builtins import Bot, Plain, Image
+from core.component import module
+from core.utils.cache import random_cache_path
+from database import session, BotDBUtil
+from database.tables import AnalyticsData
 
-ana = module('analytics', required_superuser=True, base=True)
+
+def get_first_record(msg: Bot.MessageSession):
+    if Config('db_path', cfg_type=str).startswith('mysql'):
+        first_record = BotDBUtil.Analytics.get_first().timestamp.timestamp()
+    else:
+        first_record = BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp()
+    return msg.ts2strftime(first_record, iso=True, timezone=False)
+
+
+ana = module('analytics', alias='ana', required_superuser=True, base=True)
 
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = BotDBUtil.Analytics.get_first()
-        get_counts = BotDBUtil.Analytics.get_count()
+        try:
+            first_record = get_first_record(msg)
+            get_counts = BotDBUtil.Analytics.get_count()
 
-        new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
-        old = datetime.now().replace(hour=0, minute=0, second=0)
-        get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
+            new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
+            old = datetime.now().replace(hour=0, minute=0, second=0)
+            get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
 
-        await msg.finish(msg.locale.t("core.message.analytics.counts", first_record=first_record.timestamp,
-                                      counts=get_counts, counts_today=get_counts_today))
+            await msg.finish(msg.locale.t("core.message.analytics.counts",
+                                          first_record=first_record,
+                                          counts=get_counts,
+                                          counts_today=get_counts_today))
+        except AttributeError:
+            await msg.finish(msg.locale.t("core.message.analytics.none"))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -44,21 +53,24 @@ async def _(msg: Bot.MessageSession):
 @ana.command('days [<module>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = BotDBUtil.Analytics.get_first()
-        module_ = None
-        if '<module>' in msg.parsed_msg:
-            module_ = msg.parsed_msg['<module>']
-        if not module_:
-            result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
-        else:
-            result = msg.locale.t("core.message.analytics.days", module=module_,
-                                  first_record=first_record.timestamp)
+        try:
+            first_record = get_first_record(msg)
+            module_ = None
+            if '<module>' in msg.parsed_msg:
+                module_ = msg.parsed_msg['<module>']
+            if not module_:
+                result = msg.locale.t("core.message.analytics.days.total", first_record=first_record)
+            else:
+                result = msg.locale.t("core.message.analytics.days", module=module_,
+                                      first_record=first_record)
+            for d in range(30):
+                new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
+                old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
+                get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
+        except AttributeError:
+            await msg.finish(msg.locale.t("core.message.analytics.none"))
         data_ = {}
-        for d in range(30):
-            new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
-            old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
-            get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
-            data_[old.day] = get_
+        data_[old.day] = get_
         data_x = []
         data_y = []
         for x in data_:
@@ -84,23 +96,26 @@ async def _(msg: Bot.MessageSession):
 @ana.command('year [<module>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
-        first_record = BotDBUtil.Analytics.get_first()
-        module_ = None
-        if '<module>' in msg.parsed_msg:
-            module_ = msg.parsed_msg['<module>']
-        if not module_:
-            result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
-        else:
-            result = msg.locale.t("core.message.analytics.year", module=module_,
-                                  first_record=first_record.timestamp)
+        try:
+            first_record = get_first_record(msg)
+            module_ = None
+            if '<module>' in msg.parsed_msg:
+                module_ = msg.parsed_msg['<module>']
+            if not module_:
+                result = msg.locale.t("core.message.analytics.year.total", first_record=first_record)
+            else:
+                result = msg.locale.t("core.message.analytics.year", module=module_,
+                                      first_record=first_record)
+            for m in range(12):
+                new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
+                    relativedelta(months=12 - m - 1)
+                old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
+                    relativedelta(months=12 - m)
+                get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
+        except AttributeError:
+            await msg.finish(msg.locale.t("core.message.analytics.none"))
         data_ = {}
-        for m in range(12):
-            new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
-                relativedelta(months=12 - m - 1)
-            old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
-                relativedelta(months=12 - m)
-            get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
-            data_[old.month] = get_
+        data_[old.month] = get_
         data_x = []
         data_y = []
         for x in data_:

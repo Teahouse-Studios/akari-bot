@@ -5,19 +5,20 @@
 
 [secret]
 db_path = "mysql+pymysql://"
-check_accessKeyId =
-check_accessKeySecret =
+check_access_key_id =
+check_access_key_secret =
 web_render =
 proxy =
-dc_token =
-tg_token =
+discord_token =
+telegram_token =
 kook_token =
 matrix_device_id =
 matrix_token =
 matrix_megolm_backup_passphrase =
-openai_api_key =
 curseforge_api_key =
 exchange_rate_api_key =
+openai_api_key =
+osu_api_key =
 wolfram_alpha_appid =
 jwt_secret =
 

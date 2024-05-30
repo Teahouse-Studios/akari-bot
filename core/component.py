@@ -162,7 +162,7 @@ def module(
     :param developers: 模块作者。
     :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
-    :param base: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
+    :param hide: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
     :param available_for: 此命令支持的平台列表。

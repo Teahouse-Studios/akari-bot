@@ -232,7 +232,7 @@ class MessageSession:
     def ts2strftime(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
         """
         用于将时间戳转换为可读的时间格式。
-        :param timestamp: 时间戳
+        :param timestamp: 时间戳（UTC时间）
         :param date: 是否显示日期
         :param iso: 是否以ISO格式显示
         :param time: 是否显示时间

@@ -1,5 +1,4 @@
 import re
-import traceback
 import urllib.parse
 
 from bs4 import BeautifulSoup as bs

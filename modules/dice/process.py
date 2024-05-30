@@ -20,7 +20,7 @@ dice_patterns = [
     r'(\d+A\d+(?:[KQM]?\d*)?(?:[KQM]?\d*)?(?:[KQM]?\d*)?)',  # WOD骰子
     r'(\d+C\d+M?\d*)',  # 双重十字骰子
     r'(?:D(?:100|%)?)?([BP]\d*)',  # 奖惩骰子
-    r'D?(\d*F)',  # 命运骰子
+    r'(\d*D?F)',  # 命运骰子
     r'(\d*D\d*%?(?:K\d*|Q\d*)?)',  # 普通骰子
     r'(\d+)',  # 数字
     r'([\(\)])',  # 括号
@@ -132,8 +132,6 @@ def parse_dice_expression(msg, dices):
     return dice_expr_list, dice_count, int(times), None
 
 # 在数字与数字之间加上乘号
-
-
 def insert_multiply(lst, use_markdown=False):
     result = []
     asterisk = '/*' if use_markdown else '*'
@@ -153,8 +151,6 @@ def insert_multiply(lst, use_markdown=False):
     return result
 
 # 开始投掷并生成消息
-
-
 def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
     success_num = 0
     fail_num = 0
@@ -197,26 +193,35 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
             return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax')).message
         except Exception as e:
             return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + str(e)).message
-        output_line += '=' + str(result)
-
-        if dc:
-            output_line += f'/{dc}  '
-            if msg.data.options.get('dice_dc_reversed'):
-                if result <= int(dc):
-                    output_line += msg.locale.t('dice.message.dc.success')
-                    success_num += 1
-                else:
-                    output_line += msg.locale.t('dice.message.dc.failed')
-                    fail_num += 1
+        try:
+            if abs(result) >= 10 ** 9:
+                result = "{:.10e}".format(result)
             else:
-                if result >= int(dc):
-                    output_line += msg.locale.t('dice.message.dc.success')
-                    success_num += 1
+                result = str(result)
+            output_line += '=' + result
+        except Exception:
+            return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + msg.locale.t('dice.message.too_long')).message
+
+        try:
+            if dc:
+                output_line += f'/{dc}  '
+                if msg.data.options.get('dice_dc_reversed'):
+                    if result <= int(dc):
+                        output_line += msg.locale.t('dice.message.dc.success')
+                        success_num += 1
+                    else:
+                        output_line += msg.locale.t('dice.message.dc.failed')
+                        fail_num += 1
                 else:
-                    output_line += msg.locale.t('dice.message.dc.failed')
-                    fail_num += 1
-        output += f'\n{expr}={output_line}'
+                    if result >= int(dc):
+                        output_line += msg.locale.t('dice.message.dc.success')
+                        success_num += 1
+                    else:
+                        output_line += msg.locale.t('dice.message.dc.failed')
+                        fail_num += 1
+            output += f'\n{expr}={output_line}'
+        except ValueError:
+            return msg.locale.t("dice.message.dc.invalid") + dc
     if dc and times > 1:
         output += '\n' + msg.locale.t('dice.message.dc.check', success=success_num, failed=fail_num)
-
     return output

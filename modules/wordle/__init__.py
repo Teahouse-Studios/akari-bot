@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from attr import define, field
 from collections import Counter
@@ -38,7 +38,24 @@ class WordleBoard:
     word: str
     board: List[str] = field(factory=list)
 
-    def add_word(self, word: str):
+    def add_word(self, word: str, last_word: Optional[str] = None):
+        if last_word:
+            last_word_state = self.test_word(last_word)
+            yellow_letters = {}
+            for index, state in enumerate(last_word_state):
+                if state == WordleState.YELLOW:
+                    letter = last_word[index]
+                    if letter not in yellow_letters:
+                        yellow_letters[letter] = 0
+                    yellow_letters[letter] += 1
+            for letter, count in yellow_letters.items():
+                if word.count(letter) < count:
+                    return False
+                    
+            for index, state in enumerate(last_word_state):
+                if state == WordleState.GREEN and self.word[index] != word[index]:
+                    return False
+                    
         self.board.append(word)
         return self.test_board()
 
@@ -179,6 +196,7 @@ class WordleBoardImage:
 
 
 @wordle.command('{{wordle.help}}')
+@wordle.command('hard {{wordle.help.hard}}')
 async def _(msg: Bot.MessageSession):
     play_state = PlayState('wordle', msg, all=True)
     if play_state.check():
@@ -191,15 +209,22 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('message.cooldown', time=int(150 - c)))
 
     board = WordleBoard.from_random_word()
+    hard_mode = True if msg.parsed_msg else False
+    last_word = None
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
     play_state.enable()
     play_state.update(answer=board.word)
     Logger.info(f'Answer: {board.word}')
     if text_mode:
-        await msg.send_message(msg.locale.t('wordle.message.start'))
+        start_msg = msg.locale.t('wordle.message.start')
+        if hard_mode:
+            start_msg += '\n' + msg.locale.t('wordle.message.hard')
     else:
-        await msg.send_message([BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))])
+        start_msg = [BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))]
+        if hard_mode:
+            start_msg.append(Plain(msg.locale.t('wordle.message.hard')))
+    await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
         if not play_state.check():
@@ -213,7 +238,11 @@ async def _(msg: Bot.MessageSession):
         if not board.verify_word(word):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
             continue
-        board.add_word(word)
+        if not board.add_word(word, last_word):
+            await wait.send_message(msg.locale.t('wordle.message.hard.not_matched'))
+            continue
+        if hard_mode:
+            last_word = word
         board_image.update_board()
         await msg.sleep(2)  # 防冲突
 
@@ -230,6 +259,7 @@ async def _(msg: Bot.MessageSession):
     if board.board[-1] == board.word:
         g_msg = msg.locale.t('wordle.message.finish.success', attempt=attempt)
         petal = 2 if attempt <= 3 else 1
+        petal += 1 if hard_mode else 0
         if reward := await gained_petal(msg, petal):
             g_msg += '\n' + reward
     qc.reset()

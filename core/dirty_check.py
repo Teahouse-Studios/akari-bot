@@ -1,6 +1,6 @@
 '''利用阿里云API检查字符串是否合规。
 
-在使用前，应该在配置中填写"check_accessKeyId"和"check_accessKeySecret"以便进行鉴权。
+在使用前，应该在配置中填写"check_access_key_id"和"check_access_key_secret"以便进行鉴权。
 '''
 import base64
 import datetime
@@ -54,8 +54,8 @@ async def check(*text) -> list:
     :param text: 字符串（List/Union）。
     :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
     '''
-    access_key_id = Config("check_accessKeyId", cfg_type=str)
-    access_key_secret = Config("check_accessKeySecret", cfg_type=str)
+    access_key_id = Config("check_access_key_id", cfg_type=str)
+    access_key_secret = Config("check_access_key_secret", cfg_type=str)
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
@@ -132,7 +132,7 @@ async def check(*text) -> list:
             date=headers['Date'], step1=step1, step2=step2)
         sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
         headers['Authorization'] = sign
-        # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
+        # 'Authorization': "acs {}:{}".format(access_key_id, sign)
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
                 if resp.status == 200:

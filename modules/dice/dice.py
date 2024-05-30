@@ -177,6 +177,7 @@ class FudgeDice(DiceItemBase):
 
     def GetArgs(self, msg):
         dice_code = self.code.upper()  # 便于识别
+        dice_code = dice_code.replace('D', '')  # 去除“D”
         dice_count = '4'  # 骰子数量
         if re.search(r'[^0-9F]', dice_code):
             raise DiceSyntaxError(msg, msg.locale.t("dice.message.error.invalid"))
@@ -192,7 +193,7 @@ class FudgeDice(DiceItemBase):
         return (int(dice_count), 0)
 
     def Roll(self, msg):
-        output = self.code
+        output = self.code.replace('D', '')  # 去除“D”
         result = 0
 
         dice_results = ['-', '-', '0', '0', '+', '+']

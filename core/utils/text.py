@@ -1,5 +1,5 @@
 import sys
-import datetime
+from datetime import datetime, timedelta, timezone
 from typing import TypeVar
 
 T = TypeVar("T", str, bytes, bytearray)
@@ -18,7 +18,7 @@ else:
         return string[len(prefix):] if string.startswith(prefix) else string
 
 
-def parse_time_string(time_str):
+def parse_time_string(time_str: str) -> timedelta:
     try:
         negative = False
         if time_str[0] == '+':
@@ -34,6 +34,6 @@ def parse_time_string(time_str):
         if negative:
             hour = -hour
             minute = -minute
-        return datetime.timedelta(hours=hour, minutes=minute)
+        return timedelta(hours=hour, minutes=minute)
     except ValueError:
-        return datetime.timedelta()
+        return timedelta()

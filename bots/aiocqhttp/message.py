@@ -356,8 +356,14 @@ class FetchTarget(FetchTargetT):
                             msgchain = MessageChain([Plain(fetch_.parent.locale.t(message, **kwargs))])
                         else:
                             msgchain = MessageChain([Plain(message)])
-
-                    await fetch_.send_direct_message(msgchain)
+                    msgchain = MessageChain(msgchain)
+                    new_msgchain = []
+                    for v in msgchain.value:
+                        if isinstance(v, Image):
+                            new_msgchain.append(await v.add_random_noise())
+                        else:
+                            new_msgchain.append(v)
+                    await fetch_.send_direct_message(new_msgchain)
                     if _tsk:
                         _tsk = []
                 if enable_analytics:

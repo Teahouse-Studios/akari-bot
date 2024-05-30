@@ -74,7 +74,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
             Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
             petal = price * USD_TO_CNY * CNY_TO_PETAL
 
-        if Config('db_path', cfg_type = str).startswith('sqlite'):
+        if Config('db_path', cfg_type=str).startswith('sqlite'):
             amount = petal.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
             msg.data.modify_petal(-int(amount))
         else:

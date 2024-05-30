@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, UTC
+from datetime import datetime
 from typing import List
 
 from config import Config
@@ -173,7 +173,7 @@ class MessageSession(MessageSessionT):
                 ftime_template.append("(UTC)")
             else:
                 ftime_template.append(f"(UTC{self._tz_offset})")
-        return (datetime.fromtimestamp(timestamp, UTC) + self.timezone_offset).strftime(' '.join(ftime_template))
+        return (datetime.utcfromtimestamp(timestamp) + self.timezone_offset).strftime(' '.join(ftime_template))
 
 
 __all__ = ["MessageSession"]

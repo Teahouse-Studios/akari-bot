@@ -25,9 +25,9 @@ from database import BotDBUtil
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
-qq_account = str(Config("qq_account", cfg_type = (int, str)))
+qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
-lagrange_account = str(Config("lagrange_account", cfg_type = int))
+lagrange_account = str(Config("lagrange_account", cfg_type=int))
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=20))
@@ -189,13 +189,13 @@ async def _(event: Event):
     result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
     if result:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
-        if Config('issue_url', cfg_type = str):
-            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type = str))
+        if Config('issue_url', cfg_type=str):
+            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str))
         await bot.send(event=event, message=res)
         await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
-qq_host = Config("qq_host", cfg_type = str)
+qq_host = Config("qq_host", cfg_type=str)
 if qq_host:
     argv = sys.argv
     if 'subprocess' in sys.argv:

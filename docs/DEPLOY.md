@@ -397,7 +397,7 @@ pip install -r requirements.txt
 
 为了达到目的，你需要于 [Discord 开发者平台](https://discord.com/developers)创建一个机器人并获取 Token。
 
-`dc_token =` - 填写你获取到的机器人 Token。
+`discord_token =` - 填写你获取到的机器人 Token。
 
 #### Telegram
 
@@ -405,7 +405,7 @@ pip install -r requirements.txt
 
 为了达到目的，你需要在 Telegram 搜索 `@BotFather` 来创建机器人。
 
-`tg_token =` - 填写你获取到的机器人 Token。
+`telegram_token =` - 填写你获取到的机器人 Token。
 
 #### KOOK
 
@@ -467,9 +467,9 @@ pip3 install matrix-nio[e2e] ; PIP
 
 另请注意，由于阿里云政策限制，内容安全服务**不面向个人开发者**，若账号未完成阿里云企业认证，即使生成 AccessKey 也不会调用相关接口。
 
-`check_accessKeyId =` - 填写获取的 AccessKeyID。
+`check_access_key_id =` - 填写获取的 AccessKeyID。
 
-`check_accessKeySecret =` - 填写获取的 AccessKeySecret。
+`check_access_key_secret =` - 填写获取的 AccessKeySecret。
 
 #### QQ 频道消息处理（Beta）
 
