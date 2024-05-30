@@ -172,6 +172,8 @@
     "core.message.set.confirm.init": "此對話未初始化，確認操作嗎？",
     "core.message.set.module.disable.success": "成功為對話禁用了以下模組：",
     "core.message.set.module.enable.success": "成功為對話啟用了以下模組：",
+    "core.message.set.module.list": "此對話已啟用的模組：",
+    "core.message.set.module.list.none": "此對話沒有啟用任何模組。",
     "core.message.set.option.edit.success": "成功為對話設定了以下參數：${k} -> ${v}",
     "core.message.setup.check.disable": "已停用指令錯誤檢查提醒。",
     "core.message.setup.check.enable": "已啟用指令錯誤檢查提醒。",
