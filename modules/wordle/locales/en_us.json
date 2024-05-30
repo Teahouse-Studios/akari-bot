@@ -1,7 +1,7 @@
 {
     "wordle.help": "Start a new game.",
     "wordle.help.desc": "Play Wordle.",
-    "wordle.help.hard": "Play Wordle in hard mode.",
+    "wordle.help.hard": "Use hard mode.",
     "wordle.help.theme": "Set whether to use dark theme.",
     "wordle.message.finish": "Game over. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "Congratulations! You complete the game in ${attempt} turn(s).",
