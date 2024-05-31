@@ -93,7 +93,7 @@ async def search_by_alias(input_):
     for s in res:
         result.append(s['id'])
     if input_.isdigit():
-        music = (await total_list.get()).by_id(sid)
+        music = (await total_list.get()).by_id(input_)
         if music:
             result.append(input_)
 
