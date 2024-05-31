@@ -77,8 +77,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
     if not start_wiki:
         if isinstance(session, Bot.MessageSession):
-            await session.send_message(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
-        start_wiki = 'https://zh.minecraft.wiki/api.php'
+            await session.finish(session.locale.t('wiki.message.set.not_set', prefix=session.prefixes[0]))
     if lang in interwiki_list:
         start_wiki = interwiki_list[lang]
         lang = None

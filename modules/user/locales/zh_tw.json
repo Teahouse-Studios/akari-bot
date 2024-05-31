@@ -4,7 +4,7 @@
     "user.message.blocked": "${user} 正在被封鎖中！",
     "user.message.blocked.detail": "被 ${blocked_by} 封鎖，時間從 ${blocked_time} 到 ${blocked_expires}",
     "user.message.blocked.reason": "理由：",
-    "user.message.blocked.time.infinity": "無限期",
+    "user.message.blocked.time.infinity": "不限期",
     "user.message.created_page_count": "創建數：",
     "user.message.deleted_count": "刪除數：",
     "user.message.edited_count": "編輯數：",

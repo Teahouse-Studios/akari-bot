@@ -22,8 +22,7 @@ async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], 
     prefix = target.get_prefix()
     enabled_fandom_addon = msg.options.get('wiki_fandom_addon')
     if not start_wiki:
-        await msg.send_message(msg.locale.t('wiki.message.set.default', prefix=msg.prefixes[0]))
-        start_wiki = 'https://zh.minecraft.wiki/api.php'
+        await msg.finish(msg.locale.t('wiki.message.set.not_set', prefix=msg.prefixes[0]))
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}

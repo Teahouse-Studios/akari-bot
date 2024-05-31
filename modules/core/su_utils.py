@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession, target: str):
     elif 'list' in msg.parsed_msg:
         modules = sorted(target_data.enabled_modules)
         if modules:
-            await msg.finish(msg.locale.t("core.message.set.module.list") + "\n" + " | ".join(modules))
+            await msg.finish([Plain(msg.locale.t("core.message.set.module.list")), Plain(" | ".join(modules))])
         else:
             await msg.finish(msg.locale.t("core.message.set.module.list.none"))
 
