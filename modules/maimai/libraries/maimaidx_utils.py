@@ -10,7 +10,6 @@ from .maimaidx_apidata import get_record, get_plate
 from .maimaidx_music import TotalList
 
 SONGS_PER_PAGE = 20
-JINGLEBELL_SONG_ID = 70
 
 assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
@@ -527,13 +526,28 @@ async def get_plate_process(msg, payload, plate):
             song_remain_difficult.append([music.id, music.title, diffs[song[1]],
                                           music.ds[song[1]], song[1], music.type])
 
-    if version == '真':  # 真代歌曲不包含“​ジングルベル”
-        song_remain_basic = [music for music in song_remain_basic if music[0] != JINGLEBELL_SONG_ID]
-        song_remain_advanced = [music for music in song_remain_advanced if music[0] != JINGLEBELL_SONG_ID]
-        song_remain_expert = [music for music in song_remain_expert if music[0] != JINGLEBELL_SONG_ID]
-        song_remain_master = [music for music in song_remain_master if music[0] != JINGLEBELL_SONG_ID]
-        song_remain_remaster = [music for music in song_remain_remaster if music[0] != JINGLEBELL_SONG_ID]
-        song_remain_difficult = [music for music in song_remain_difficult if int(music[0]) != JINGLEBELL_SONG_ID]
+    if version == '真':
+        song_expect = [70]
+    elif version == '檄':
+        song_expect = [341]
+    elif version == '桃':
+        song_expect = [451, 455, 460]
+    elif version == '菫':
+        song_expect = [853]
+    elif version == '輝':
+        song_expect = [792]
+    elif version == '舞':
+        song_expect = [341, 451, 455, 460, 792, 853]
+    else:
+        song_expect = []
+
+    song_remain_basic = [music for music in song_remain_basic if music[0] not in song_expect]
+    song_remain_advanced = [music for music in song_remain_advanced if music[0] not in song_expect]
+    song_remain_expert = [music for music in song_remain_expert if music[0] not in song_expect]
+    song_remain_master = [music for music in song_remain_master if music[0] not in song_expect]
+    song_remain_remaster = [music for music in song_remain_remaster if music[0] not in song_expect]
+    song_remain_difficult = [music for music in song_remain_difficult if int(music[0]) not in song_expect]
+
 
     song_remain: list[list] = song_remain_basic + song_remain_advanced + \
         song_remain_expert + song_remain_master + song_remain_remaster
