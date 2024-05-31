@@ -75,7 +75,7 @@
     "wiki.message.search.not_found": "未找到结果。",
     "wiki.message.search.prompt": "回复编号以查询对应的页面。",
     "wiki.message.section.rendering": "（章节渲染中……）",
-    "wiki.message.set.default": "没有设置起始 Wiki，已默认为中文 Minecraft Wiki，使用“${prefix}wiki set”设置自定义起始 Wiki。\n示例：${prefix}wiki set https://zh.minecraft.wiki/",
+    "wiki.message.set.not_set": "没有设置起始 Wiki，使用“${prefix}wiki set”设置自定义起始 Wiki。",
     "wiki.message.set.success": "成功设置起始 Wiki：${name}",
     "wiki.message.table.id": "编号",
     "wiki.message.table.section": "章节",
