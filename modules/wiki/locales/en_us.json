@@ -75,7 +75,7 @@
     "wiki.message.search.not_found": "No result found.",
     "wiki.message.search.prompt": "Reply with the number to query the corresponding page.",
     "wiki.message.section.rendering": "(Section rendering...)",
-    "wiki.message.set.default": "There is no start wiki set. Defaulted to the Chinese Minecraft Wiki. Use \"${prefix}wiki set\" to set a custom start wiki.\nExample: ${prefix}wiki set https://zh.minecraft.wiki/",
+    "wiki.message.set.not_set": "There is no start wiki set. Use \"${prefix}wiki set\" to set a start wiki.",
     "wiki.message.set.success": "Successfully set up start wiki: ${name}",
     "wiki.message.table.id": "ID",
     "wiki.message.table.section": "Section",
