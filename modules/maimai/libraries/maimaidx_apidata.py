@@ -93,12 +93,14 @@ async def search_by_alias(input_):
     for s in res:
         result.append(s['id'])
     if input_.isdigit():
-        result.append(input_)
+        music = (await total_list.get()).by_id(sid)
+        if music:
+            result.append(input_)
 
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
-        return result
+        return list(set(result))
 
     with open(file_path, 'r') as file:
         data = json.load(file)
