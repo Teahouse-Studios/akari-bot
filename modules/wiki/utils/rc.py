@@ -14,16 +14,17 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
     d = []
     for x in query['query']['recentchanges']:
-        count = x['newlen'] - x['oldlen']
-        if count > 0:
-            count = f'+{str(count)}'
-        else:
-            count = str(count)
-        d.append(
-            f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {x['title']} .. ({count}) .. {x['user']}")
-        if x['comment']:
-            comment = msg.locale.t('message.brackets', msg=x['comment'])
-            d.append(comment)
+        if 'title' in x:
+            count = x['newlen'] - x['oldlen']
+            if count > 0:
+                count = f'+{str(count)}'
+            else:
+                count = str(count)
+            d.append(
+                f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {x['title']} .. ({count}) .. {x['user']}")
+            if x['comment']:
+                comment = msg.locale.t('message.brackets', msg=x['comment'])
+                d.append(comment)
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:
