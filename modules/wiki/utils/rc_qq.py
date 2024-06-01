@@ -100,7 +100,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 if x['revid'] != 0:
                     t.append(pageurl.replace(
                         "$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))
-        rclist.append('\n'.join(t))
+            rclist.append('\n'.join(t))
     for x in rclist:
         nodelist.append(
             {
