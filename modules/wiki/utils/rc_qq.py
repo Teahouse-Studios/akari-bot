@@ -4,7 +4,6 @@ from config import Config
 from core.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.time import strptime2ts
-from modules.wiki.utils.action_cn import action
 from modules.wiki.utils.wikilib import WikiLib
 from core.builtins import MessageSession
 
