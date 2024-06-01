@@ -109,7 +109,7 @@
     "wiki.message.rc.curseprofile.comment-replied": "${user} 于 ${title} 的个人信息页回复了评论",
     "wiki.message.rc.curseprofile.profile-edited": " ${title} 编辑了个人信息页",
     "wiki.message.rc.new_redirect": "新重定向",
-    "wiki.message.rc.qq.durations": "时长：",
+    "wiki.message.rc.qq.duration": "时长：",
     "wiki.message.rc.qq.link.prompt": "提示：复制粘贴下面的任一消息到聊天窗口发送可获取此次更改详细信息的截图。",
     "wiki.message.rc.qq.link.title": "最近更改地址",
     "wiki.message.rc.qq.target_title": "目标：",

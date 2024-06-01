@@ -89,8 +89,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 log = f"{user} {x['logaction']} {title}"
             t.append(log)
             params = x['logparams']
-            if 'durations' in params:
-                t.append(msg.locale.t('wiki.message.rc.qq.durations') + params['durations'])
+            if 'duration' in params:
+                t.append(msg.locale.t('wiki.message.rc.qq.duration') + params['duration'])
             if 'target_title' in params:
                 t.append(msg.locale.t('wiki.message.rc.qq.target_title') + params['target_title'])
             if x['comment']:
