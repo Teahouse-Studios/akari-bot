@@ -87,7 +87,7 @@
     "wiki.message.rc.action.managetags.delete": "${user} 删除了标签“${title}”",
     "wiki.message.rc.action.merge": "${user} 合并了 ${title}",
     "wiki.message.rc.action.move": "${user} 移动了页面 ${title}",
-    "wiki.message.rc.action.move_redir": "${user} 移动了页面 ${title} 覆盖重定向",
+    "wiki.message.rc.action.move.move_redir": "${user} 移动了页面 ${title} 覆盖重定向",
     "wiki.message.rc.action.newusers.autocreate": "自动创建了用户 ${title}",
     "wiki.message.rc.action.newusers.byemail": "${user} 创建了用户 ${title}，并且密码已通过电子邮件发送",
     "wiki.message.rc.action.newusers.create": "用户 ${title} 已创建",

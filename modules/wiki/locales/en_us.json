@@ -87,7 +87,7 @@
     "wiki.message.rc.action.managetags.delete": "${user} deleted the tag \"${title}\"",
     "wiki.message.rc.action.merge": "${user} merged ${title}",
     "wiki.message.rc.action.move": "${user} moved page ${title}",
-    "wiki.message.rc.action.move_redir": "${user} moved page ${title} over a redirect without leaving a redirect",
+    "wiki.message.rc.action.move.move_redir": "${user} moved page ${title} over a redirect without leaving a redirect",
     "wiki.message.rc.action.newusers.autocreate": "User account ${title} was created automatically",
     "wiki.message.rc.action.newusers.byemail": "User account ${title} was created by ${user} and password was sent by email",
     "wiki.message.rc.action.newusers.create": "User account ${title} was created",
