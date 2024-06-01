@@ -40,9 +40,9 @@ async def ab_qq(msg: MessageSession, wiki_url):
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']
-        if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
-            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+        if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
+            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         title_checked_map[t['original']] = title_checked
     for x in query["query"]["abuselog"]:
         t = []

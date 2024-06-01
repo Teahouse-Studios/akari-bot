@@ -50,13 +50,14 @@ async def rc_qq(msg: MessageSession, wiki_url):
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']
-        if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
-            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+        if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
+            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         title_checked_map[t['original']] = title_checked
     for x in query["query"]["recentchanges"]:
         t = []
         user = user_checked_map[x['user']]
+        title = title_checked_map[x['title']]
         time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
         t.append(time)
         if x['type'] == 'edit':
@@ -65,31 +66,32 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 count = f'+{str(count)}'
             else:
                 count = str(count)
-            t.append(f"{title_checked_map[x['title']]} .. ({count}) .. {user}")
+            t.append(f"{title} .. ({count}) .. {user}")
             comment = x['comment'] if x['comment'] else msg.locale.t('wiki.message.rc.no_summary')
             t.append(comment)
             t.append(
                 pageurl.replace(
                     '$1',
-                    f"{urllib.parse.quote(title_checked_map[x['title']])}?oldid={x['old_revid']}&diff={x['revid']}"))
+                    f"{urllib.parse.quote(title)}?oldid={x['old_revid']}&diff={x['revid']}"))
         if x['type'] == 'new':
             r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.redirect')) if 'redirect' in x else ''
-            t.append(f"{title_checked_map[x['title']]}{r} .. (+{x['newlen']}) .. {user}")
+            t.append(f"{title}{r} .. (+{x['newlen']}) .. {user}")
             comment = x['comment'] if x['comment'] else msg.locale.t('wiki.message.rc.no_summary')
             t.append(comment)
-
         if x['type'] == 'log':
-            log = x['logaction'] + '了' + title_checked_map[x['title']]
-            if x['logtype'] in action:
-                a = action[x['logtype']].get(x['logaction'])
-                if a:
-                    log = a % title_checked_map[x['title']]
+            try:
+                if x['logtype'] == x['logaction'] or x['logaction'] == '*':
+                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
+                else:
+                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
+            except:
+                log = f"{user} {x['logaction']} {title}"
             t.append(log)
             params = x['logparams']
             if 'durations' in params:
-                t.append('时长：' + params['durations'])
+                t.append(msg.locale.t('wiki.message.rc.qq.durations') + params['durations'])
             if 'target_title' in params:
-                t.append('对象页面：' + params['target_title'])
+                t.append(msg.locale.t('wiki.message.rc.qq.target_title') + params['target_title'])
             if x['revid'] != 0:
                 t.append(pageurl.replace(
                     "$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))
