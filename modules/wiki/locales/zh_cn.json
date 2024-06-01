@@ -110,7 +110,7 @@
     "wiki.message.rc.new_redirect": "新重定向",
     "wiki.message.rc.params.duration": "封禁时长：",
     "wiki.message.rc.params.suppress_redirect": "（不留重定向）",
-    "wiki.message.rc.params.tags": "标签：",
+    "wiki.message.rc.params.tag": "标签：",
     "wiki.message.rc.params.target_title": "目标标题：",
     "wiki.message.rc.qq.link.prompt": "提示：复制粘贴下面的任一消息到聊天窗口发送可获取此次更改详细信息的截图。",
     "wiki.message.rc.qq.link.title": "最近更改地址",

@@ -110,7 +110,7 @@
     "wiki.message.rc.new_redirect": "新重新導向",
     "wiki.message.rc.params.duration": "封鎖時長：",
     "wiki.message.rc.params.suppress_redirect": "（未留重新導向頁面）",
-    "wiki.message.rc.params.tags": "標籤：",
+    "wiki.message.rc.params.tag": "標籤：",
     "wiki.message.rc.params.target_title": "目標標題：",
     "wiki.message.rc.qq.link.prompt": "提示：複製並貼上下方的任意訊息到聊天視窗並傳送可取得此次改動詳細訊息的截圖。",
     "wiki.message.rc.qq.link.title": "近期變更網址",
