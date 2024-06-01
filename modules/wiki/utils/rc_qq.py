@@ -67,8 +67,9 @@ async def rc_qq(msg: MessageSession, wiki_url):
             else:
                 count = str(count)
             t.append(f"{title} .. ({count}) .. {user}")
-            comment = x['comment'] if x['comment'] else msg.locale.t('wiki.message.rc.no_summary')
-            t.append(comment)
+            if x['comment']:
+                comment = x['comment']
+                t.append(comment)
             t.append(
                 pageurl.replace(
                     '$1',
@@ -76,8 +77,9 @@ async def rc_qq(msg: MessageSession, wiki_url):
         if x['type'] == 'new':
             r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.new_redirect')) if 'redirect' in x else ''
             t.append(f"{title}{r} .. (+{x['newlen']}) .. {user}")
-            comment = x['comment'] if x['comment'] else msg.locale.t('wiki.message.rc.no_summary')
-            t.append(comment)
+            if x['comment']:
+                comment = x['comment']
+                t.append(comment)
         if x['type'] == 'log':
             try:
                 if x['logtype'] == x['logaction'] or x['logaction'] == '*':
@@ -92,6 +94,9 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 t.append(msg.locale.t('wiki.message.rc.qq.durations') + params['durations'])
             if 'target_title' in params:
                 t.append(msg.locale.t('wiki.message.rc.qq.target_title') + params['target_title'])
+            if x['comment']:
+                comment = x['comment']
+                t.append(comment)
             if x['revid'] != 0:
                 t.append(pageurl.replace(
                     "$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))

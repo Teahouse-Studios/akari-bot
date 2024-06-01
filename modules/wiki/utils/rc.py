@@ -19,10 +19,11 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             count = f'+{str(count)}'
         else:
             count = str(count)
-        comment = msg.locale.t('message.brackets', msg=x['comment']) if x['comment'] else msg.locale.t('wiki.message.rc.no_summary')
         d.append(
             f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {x['title']} .. ({count}) .. {x['user']}")
-        d.append(comment)
+        if x['comment']:
+            comment = msg.locale.t('message.brackets', msg=x['comment'])
+            d.append(comment)
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:
