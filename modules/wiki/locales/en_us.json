@@ -26,7 +26,7 @@
     "wiki.help.wiki_inline.page": "Enter a title within [[ ]] to automatically query the page.",
     "wiki.help.wiki_inline.template": "Enter a title within {{ }} to automatically query the template.",
     "wiki.help.wiki_inline.url": "Send the URL of the wiki page to generate the Infobox image.",
-    "wiki.message.ab.slice": "•${time} - ${user} trigerred an abuse filter, performing the action \"${action}\" on ${title}.\nActions taken: ${result}\nFilter description: ${filter_name}",
+    "wiki.message.ab.slice": "${time} - ${user} trigerred an abuse filter, performing the action \"${action}\" on ${title}.\nActions taken: ${result}\nFilter description: ${filter_name}",
     "wiki.message.error.add": "An error occurred: This wiki cannot be added.",
     "wiki.message.error.fetch_log": "An error occurred: Unable to fetch the log. It may be that this wiki has set the permission to view logs.",
     "wiki.message.error.info": "Detail: ",

@@ -6,14 +6,28 @@ from modules.wiki.utils.wikilib import WikiLib
 
 async def rc(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    query = await wiki.get_json(action='query', list='recentchanges', rcprop='title|user|timestamp', rctype='edit',
+    query = await wiki.get_json(action='query', list='recentchanges',
+                                rcprop='title|user|timestamp|loginfo|comment|sizes',
+                                rclimit=10,
+                                rctype='edit|new',
                                 _no_login=not msg.options.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
     d = []
-    for x in query['query']['recentchanges'][:10]:
-        if 'title' in x:
+    for x in query['query']['recentchanges']:
+        if x['type'] == 'edit':
+            count = x['newlen'] - x['oldlen']
+            if count > 0:
+                count = f'+{str(count)}'
+            else:
+                count = str(count)
+            comment = msg.locale.t('message.brackets', msg=x['comment']) if x['comment'] else ''
             d.append(
-                f"•{msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False)} - {x['title']} .. {x['user']}")
+                f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {x['title']} .. ({count}) .. {x['user']}{comment}")
+        if x['type'] == 'new':
+            comment = msg.locale.t('message.brackets', msg=x['comment']) if x['comment'] else ''
+            r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.redirect')) if 'redirect' in x else ''
+            d.append(
+                f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {x['title']}{r} .. (+{x['newlen']}) .. {x['user']}{comment}")
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:

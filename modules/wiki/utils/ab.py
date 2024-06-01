@@ -13,10 +13,10 @@ async def ab(msg: Bot.MessageSession, wiki_url):
     for x in query['query']['abuselog'][:5]:
         if 'title' in x:
             result = 'pass' if not x['result'] else x['result']
-            d.append(msg.locale.t("wiki.message.ab.slice",
+            d.append('•' + msg.locale.t("wiki.message.ab.slice",
                                   title=x['title'],
                                   user=x['user'],
-                                  time=msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False),
+                                  time=msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False),
                                   action=x['action'],
                                   filter_name=x['filter'],
                                   result=result))
