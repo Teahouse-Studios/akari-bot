@@ -74,7 +74,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                     '$1',
                     f"{urllib.parse.quote(title)}?oldid={x['old_revid']}&diff={x['revid']}"))
         if x['type'] == 'new':
-            r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.redirect')) if 'redirect' in x else ''
+            r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.new_redirect')) if 'redirect' in x else ''
             t.append(f"{title}{r} .. (+{x['newlen']}) .. {user}")
             comment = x['comment'] if x['comment'] else msg.locale.t('wiki.message.rc.no_summary')
             t.append(comment)
