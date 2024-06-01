@@ -46,15 +46,16 @@ async def ab_qq(msg: MessageSession, wiki_url):
         title_checked_map[t['original']] = title_checked
     for x in query["query"]["abuselog"]:
         t = []
-        time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
-        t.append(time)
-        result = 'pass' if not x['result'] else x['result']
-        t.append(msg.locale.t("wiki.message.ab.qq.slice",
-                                  title=title_checked_map[x['title']],
-                                  user=user_checked_map[x['user']],
-                                  action=x['action'],
-                                  filter_name=x['filter'],
-                                  result=result))
+        if 'title' in x:
+            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
+            t.append(time)
+            result = 'pass' if not x['result'] else x['result']
+            t.append(msg.locale.t("wiki.message.ab.qq.slice",
+                                      title=title_checked_map[x['title']],
+                                      user=user_checked_map[x['user']],
+                                      action=x['action'],
+                                      filter_name=x['filter'],
+                                      result=result))
         ablist.append('\n'.join(t))
     for x in ablist:
         nodelist.append(
