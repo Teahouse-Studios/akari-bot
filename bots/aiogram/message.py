@@ -28,7 +28,6 @@ class FinishedSession(FinS):
         except Exception:
             Logger.error(traceback.format_exc())
 
-
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
@@ -123,8 +122,10 @@ class MessageSession(MessageSessionT):
         try:
             for x in self.session.message:
                 await x.delete()
+            return True
         except Exception:
             Logger.error(traceback.format_exc())
+            return False
 
     sendMessage = send_message
     asDisplay = as_display

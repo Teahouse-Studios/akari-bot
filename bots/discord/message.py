@@ -147,8 +147,10 @@ class MessageSession(MessageSessionT):
     async def delete(self):
         try:
             await self.session.message.delete()
+            return True
         except Exception:
             Logger.error(traceback.format_exc())
+            return False
 
     sendMessage = send_message
     asDisplay = as_display

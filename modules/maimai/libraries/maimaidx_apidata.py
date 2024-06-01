@@ -92,11 +92,15 @@ async def search_by_alias(input_):
     res = (await total_list.get()).filter(title=input_)
     for s in res:
         result.append(s['id'])
+    if input_.isdigit():
+        music = (await total_list.get()).by_id(input_)
+        if music:
+            result.append(input_)
 
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
-        return result
+        return list(set(result))
 
     with open(file_path, 'r') as file:
         data = json.load(file)
@@ -104,11 +108,9 @@ async def search_by_alias(input_):
     for sid, aliases in data.items():
         aliases = [alias.lower() for alias in aliases]
         if input_ in aliases or convinput in aliases:
-            if sid in result:
-                result.remove(sid)
             result.append(sid)  # 此处的列表是歌曲 ID 列表
 
-    return result
+    return list(set(result))
 
 
 async def get_record(msg: Bot.MessageSession, payload):

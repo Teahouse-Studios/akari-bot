@@ -73,7 +73,8 @@ set_ = module('set', required_superuser=True, base=True)
 
 
 @set_.command('module enable <target> <modules> ...',
-              'module disable <target> <modules> ...')
+              'module disable <target> <modules> ...',
+              'module list <target>')
 async def _(msg: Bot.MessageSession, target: str):
     if not any(target.startswith(f'{target_from}|') for target_from in target_list):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
@@ -82,14 +83,28 @@ async def _(msg: Bot.MessageSession, target: str):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-    modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in ModulesManager.return_modules_list(msg.target.target_from)]
     if 'enable' in msg.parsed_msg:
+        modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
+               if m in ModulesManager.return_modules_list(msg.target.target_from)]
         target_data.enable(modules)
-        await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
-    if 'disable' in msg.parsed_msg:
+        if modules:
+            await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
+        else:
+            await msg.finish(msg.locale.t("core.message.set.module.enable.failed"))
+    elif 'disable' in msg.parsed_msg:
+        modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
+               if m in target_data.enabled_modules]
         target_data.disable(modules)
-        await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
+        if modules:
+            await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
+        else:
+            await msg.finish(msg.locale.t("core.message.set.module.disable.failed"))
+    elif 'list' in msg.parsed_msg:
+        modules = sorted(target_data.enabled_modules)
+        if modules:
+            await msg.finish([Plain(msg.locale.t("core.message.set.module.list")), Plain(" | ".join(modules))])
+        else:
+            await msg.finish(msg.locale.t("core.message.set.module.list.none"))
 
 
 @set_.command('option get <target> [<k>]',

@@ -31,8 +31,12 @@ async def rc_loader(msg: Bot.MessageSession):
             traceback.print_exc()
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
-        res = await rc(msg, start_wiki)
-        await msg.finish(res)
+        try:
+            res = await rc(msg, start_wiki)
+            await msg.finish(res)
+        except Exception:
+            Logger.error(traceback.format_exc())
+            await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
 @rc_.command('{{wiki.help.rc}}',
@@ -41,8 +45,12 @@ async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t('wiki.message.not_set'))
-    res = await rc(msg, start_wiki)
-    await msg.finish(res)
+    try:
+        res = await rc(msg, start_wiki)
+        await msg.finish(res)
+    except Exception:
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
 ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')

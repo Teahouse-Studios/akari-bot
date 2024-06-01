@@ -18,7 +18,7 @@ mai = module('maimai',
              recommend_modules='maimai_regex',
              developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
              alias='mai',
-             support_languages=['zh_cn', 'zh_tw'],
+             support_languages=['zh_cn'],
              desc='{maimai.help.desc}')
 
 

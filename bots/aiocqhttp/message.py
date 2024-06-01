@@ -226,8 +226,10 @@ class MessageSession(MessageSessionT):
                         await bot.call_action('delete_msg', message_id=x['message_id'])
                 else:
                     await bot.call_action('delete_msg', message_id=self.session.message['message_id'])
+                return True
             except Exception:
                 Logger.error(traceback.format_exc())
+                return False
 
     async def get_text_channel_list(self):
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)

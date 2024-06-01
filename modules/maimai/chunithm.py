@@ -13,7 +13,7 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
 chu = module('chunithm',
              developers=['DoroWolf'],
              alias='chu',
-             support_languages=['zh_cn', 'zh_tw'],
+             support_languages=['zh_cn'],
              desc='{chunithm.help.desc}')
 
 
@@ -157,7 +157,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @chu.command('id <id> [<diff>] {{maimai.help.id}}',)
-@chu.command('song <song> [<diff>] {{maimai.help.song}}')
+@chu.command('song <song> [-d <diff>] {{maimai.help.song}}',
+             options_desc={'-d': '{maimai.help.option.d}'})
 async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
@@ -172,6 +173,10 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
+    getdiff = msg.parsed_msg.get('-d', False)
+    if getdiff:
+        diff = getdiff['<diff>']
+        
     if diff:
         diff_index = get_diff(diff)  # diff_index 的结果可能为 0
         if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):

@@ -149,8 +149,10 @@ class MessageSession(MessageSessionT):
                 await direct_msg_delete(self.session.message.id)
             else:
                 await channel_msg_delete(self.session.message.id)
+            return True
         except Exception:
             Logger.error(traceback.format_exc())
+            return False
 
     sendMessage = send_message
     asDisplay = as_display
