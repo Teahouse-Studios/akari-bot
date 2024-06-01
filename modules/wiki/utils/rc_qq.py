@@ -89,10 +89,16 @@ async def rc_qq(msg: MessageSession, wiki_url):
                     log = f"{user} {x['logtype']} {x['logaction']} {title}"
                 t.append(log)
                 params = x['logparams']
+                if 'suppressredirect' in params:
+                    t.append(msg.locale.t('wiki.message.rc.params.suppress_redirect'))
                 if 'duration' in params:
-                    t.append(msg.locale.t('wiki.message.rc.qq.duration') + params['duration'])
+                    t.append(msg.locale.t('wiki.message.rc.params.duration') + params['duration'])
+                if 'flags' in params:
+                    t.append(', '.join(params['flags']))
+                if 'tag' in params:
+                    t.append(msg.locale.t('wiki.message.rc.params.tag') + params['tag'])
                 if 'target_title' in params:
-                    t.append(msg.locale.t('wiki.message.rc.qq.target_title') + params['target_title'])
+                    t.append(msg.locale.t('wiki.message.rc.params.target_title') + params['target_title'])
                 if x['comment']:
                     comment = x['comment']
                     t.append(comment)
