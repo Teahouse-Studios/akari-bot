@@ -81,13 +81,12 @@ async def rc_qq(msg: MessageSession, wiki_url):
                     comment = x['comment']
                     t.append(comment)
             if x['type'] == 'log':
-                if title_checked.find(msg.locale.t('error.i18n.fallback')) == -1:
-                    if x['logtype'] == x['logaction'] or x['logaction'] == '*':
-                        log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
-                    else:
-                        log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
+                if x['logtype'] == x['logaction'] or x['logaction'] == '*':
+                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
                 else:
-                    log = f"{user} {x['logaction']} {title}"
+                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
+                if log.find(msg.locale.t('error.i18n.fallback')) == -1:
+                    log = f"{user} {x['logaction']} {x['logtype']} {title}"
                 t.append(log)
                 params = x['logparams']
                 if 'duration' in params:

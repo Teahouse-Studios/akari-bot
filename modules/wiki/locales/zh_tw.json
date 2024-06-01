@@ -86,6 +86,8 @@
     "wiki.message.rc.action.managetags.deactivate": "${user} 已停用標籤 ${title}",
     "wiki.message.rc.action.managetags.delete": "${user} 已删除標籤 ${title}",
     "wiki.message.rc.action.merge": "${user} 已合併 ${title}",
+    "wiki.message.rc.action.move": "${user} 已移動頁面 ${title}",
+    "wiki.message.rc.action.move_redir": "${user} 已移動頁面 ${title} 覆蓋重新導向頁面",
     "wiki.message.rc.action.newusers.autocreate": "已自动建立使用者帳號 ${title}",
     "wiki.message.rc.action.newusers.byemail": "${user} 已建立使用者帳號 ${title} 並且以電子郵件通知密碼",
     "wiki.message.rc.action.newusers.create": "已建立使用者帳號 ${title}",
