@@ -45,8 +45,8 @@ async def ab_qq(msg: MessageSession, wiki_url):
             title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         title_checked_map[t['original']] = title_checked
     for x in query["query"]["abuselog"]:
-        t = []
         if 'title' in x:
+            t = []
             time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
             t.append(time)
             result = 'pass' if not x['result'] else x['result']
@@ -56,7 +56,7 @@ async def ab_qq(msg: MessageSession, wiki_url):
                                       action=x['action'],
                                       filter_name=x['filter'],
                                       result=result))
-        ablist.append('\n'.join(t))
+            ablist.append('\n'.join(t))
     for x in ablist:
         nodelist.append(
             {
