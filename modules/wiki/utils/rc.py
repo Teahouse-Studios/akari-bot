@@ -64,6 +64,6 @@ async def rc(msg: Bot.MessageSession, wiki_url):
 def compare_groups(old_groups, new_groups):
     added_groups = [group for group in new_groups if group not in old_groups]
     removed_groups = [group for group in old_groups if group not in new_groups]
-    added = "+" + ",".join(map(str, add_groups)) if add_groups else ""
-    removed = "-" + ",".join(map(str, removed_groups)) if add_groups else ""
+    added = "+" + ",".join(map(str, added_groups)) if added_groups else ""
+    removed = "-" + ",".join(map(str, removed_groups)) if removed_groups else ""
     return added, removed
