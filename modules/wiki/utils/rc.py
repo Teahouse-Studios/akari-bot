@@ -35,6 +35,10 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                     log = f"{user} {x['logtype']} {x['logaction']} {title}"
                 d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
                 params = x['logparams']
+                if 'oldgroups' and 'newgroups' in params:
+                    added, removed = compare_groups(params['old_groups'], params['new_groups'])
+                    d.append(added)
+                    d.append(removed)
                 if 'suppressredirect' in params:
                     d.append(msg.locale.t('wiki.message.rc.params.suppress_redirect'))
                 if 'duration' in params:
@@ -56,3 +60,10 @@ async def rc(msg: Bot.MessageSession, wiki_url):
         return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}\n{msg.locale.t("wiki.message.utils.redacted")}'
     else:
         return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}'
+
+def compare_groups(old_groups, new_groups):
+    added_groups = [group for group in new_groups if group not in old_groups]
+    removed_groups = [group for group in old_groups if group not in new_groups]
+    added = "+" + ",".join(map(str, add_groups)) if add_groups else ""
+    removed = "-" + ",".join(map(str, removed_groups)) if add_groups else ""
+    return added, removed
