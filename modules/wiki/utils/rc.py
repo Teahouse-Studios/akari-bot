@@ -39,6 +39,8 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                     d.append(msg.locale.t('wiki.message.rc.params.suppress_redirect'))
                 if 'oldgroups' and 'newgroups' in params:
                     d.append(compare_groups(params['oldgroups'], params['newgroups']))
+                if 'oldmodel' and 'newmodel' in params:
+                    d.append(f"{params['oldmodel']} -> {params['newmodel']}")
                 if 'description' in params:
                     d.append(params['description'])
                 if 'duration' in params:

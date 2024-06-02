@@ -94,7 +94,6 @@
     "wiki.message.rc.action.protect.move_prot": "${user} 已移動 ${title} 的保護設定",
     "wiki.message.rc.action.protect.unprotect": "${user} 已移除 ${title} 的保護",
     "wiki.message.rc.action.rights": "${user} 已變更 ${title} 的使用者群組",
-    "wiki.message.rc.action.tag.update": "${user} 已對頁面 ${title} 新增標籤",
     "wiki.message.rc.action.upload": "${user} 已上传 ${title}",
     "wiki.message.rc.action.upload.overwrite": "${user} 已上传 ${title} 的新版本",
     "wiki.message.rc.action.upload.revent": "${user} 已還原 ${title} 至舊版本",

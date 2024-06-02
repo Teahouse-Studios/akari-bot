@@ -94,7 +94,6 @@
     "wiki.message.rc.action.protect.move_prot": "${user} moved protection settings from ${title}",
     "wiki.message.rc.action.protect.unprotect": "${user} removed protection from ${title}",
     "wiki.message.rc.action.rights": "${user} changed group membership for ${title}",
-    "wiki.message.rc.action.tag.update": "${user} add the tag to revision of page ${title}",
     "wiki.message.rc.action.upload": "${user} uploaded ${title}",
     "wiki.message.rc.new_redirect": "New redirect",
     "wiki.message.rc.params.duration": "Duration: ",

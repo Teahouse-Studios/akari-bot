@@ -93,6 +93,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
                     t.append(msg.locale.t('wiki.message.rc.params.suppress_redirect'))
                 if 'oldgroups' and 'newgroups' in params:
                     t.append(compare_groups(params['oldgroups'], params['newgroups']))
+                if 'oldmodel' and 'newmodel' in params:
+                    t.append(f"{params['oldmodel']} -> {params['newmodel']}")
                 if 'description' in params:
                     t.append(params['description'])
                 if 'duration' in params:
