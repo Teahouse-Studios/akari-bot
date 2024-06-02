@@ -66,8 +66,6 @@
     "wiki.message.not_set": "未設定起始 Wiki。",
     "wiki.message.prefix.reset.success": "已重設請求時所使用的前綴。",
     "wiki.message.prefix.set.success": "成功：已更新請求時所使用的前綴：${wiki_prefix}",
-    "wiki.message.rc.action.abusefilter.create": "${user} 已建立 ${title}",
-    "wiki.message.rc.action.abusefilter.modify": "${user} 已修改 ${title}",
     "wiki.message.rc.action.block": "${user} 已封鎖 ${title}",
     "wiki.message.rc.action.block.reblock": "${user} 已變更 ${title} 的封鎖設定",
     "wiki.message.rc.action.block.unblock": "${user} 已解除封鎖 ${title}",

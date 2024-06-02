@@ -89,12 +89,12 @@ async def rc_qq(msg: MessageSession, wiki_url):
                     log = f"{user} {x['logtype']} {x['logaction']} {title}"
                 t.append(log)
                 params = x['logparams']
-                if 'oldgroups' and 'newgroups' in params:
-                    t.append(compare_groups(params['oldgroups'], params['newgroups']))
-                if 'target_title' in params:
-                    t.append(msg.locale.t('wiki.message.rc.params.target_title') + params['target_title'])
                 if 'suppressredirect' in params:
                     t.append(msg.locale.t('wiki.message.rc.params.suppress_redirect'))
+                if 'oldgroups' and 'newgroups' in params:
+                    t.append(compare_groups(params['oldgroups'], params['newgroups']))
+                if 'description' in params:
+                    t.append(msg.locale.t('wiki.message.rc.params.description') + params['description'])
                 if 'duration' in params:
                     t.append(msg.locale.t('wiki.message.rc.params.duration') + params['duration'])
                 if 'flags' in params:
@@ -126,6 +126,6 @@ async def rc_qq(msg: MessageSession, wiki_url):
 def compare_groups(old_groups, new_groups):
     added_groups = [group for group in new_groups if group not in old_groups]
     removed_groups = [group for group in old_groups if group not in new_groups]
-    added = "+" + ",".join(map(str, added_groups)) if added_groups else ""
-    removed = "-" + ",".join(map(str, removed_groups)) if removed_groups else ""
-    return f"{added} {removed}"
+    added = "+" + ", ".join(map(str, added_groups)) if added_groups else ""
+    removed = "-" + ", ".join(map(str, removed_groups)) if removed_groups else ""
+    return f"{added} {removed}" if added and removed else f"{added}{removed}"
