@@ -90,9 +90,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 t.append(log)
                 params = x['logparams']
                 if 'oldgroups' and 'newgroups' in params:
-                    added, removed = compare_groups(params['oldgroups'], params['newgroups'])
-                    t.append(added)
-                    t.append(removed)
+                    t.append(compare_groups(params['oldgroups'], params['newgroups']))
                 if 'target_title' in params:
                     t.append(msg.locale.t('wiki.message.rc.params.target_title') + params['target_title'])
                 if 'suppressredirect' in params:
@@ -130,4 +128,4 @@ def compare_groups(old_groups, new_groups):
     removed_groups = [group for group in old_groups if group not in new_groups]
     added = "+" + ",".join(map(str, added_groups)) if added_groups else ""
     removed = "-" + ",".join(map(str, removed_groups)) if removed_groups else ""
-    return added, removed
+    return f"{added} {removed}"
