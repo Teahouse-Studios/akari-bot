@@ -1,10 +1,8 @@
 {
     "user.help.desc": "Get information about a MediaWiki user.",
-    "user.help.option.p": "Get extra information about sites using SocialProFile extension.",
     "user.message.blocked": "${user} is being blocked!",
     "user.message.blocked.detail": "Blocked by ${blocked_by}. Time from ${blocked_time} to ${blocked_expires}",
     "user.message.blocked.reason": "Reason: ",
-    "user.message.blocked.time.infinity": "Infinity",
     "user.message.created_page_count": "Created Count: ",
     "user.message.deleted_count": "Deleted Count: ",
     "user.message.edited_count": "Edited Count: ",
@@ -23,6 +21,5 @@
     "user.message.site_rank": "Site Rank: ",
     "user.message.username": "User: ",
     "user.message.users_groups": "User Group: ",
-    "user.message.wiki_unavailable": "${wikiurl} is unavailable.",
-    "user.message.wikipoints": "Wikipoints: "
+    "user.message.wiki_unavailable": "${wikiurl} is unavailable."
 }

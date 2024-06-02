@@ -20,7 +20,6 @@ async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], 
     interwiki_list = target.get_interwikis()
     headers = target.get_headers()
     prefix = target.get_prefix()
-    enabled_fandom_addon = msg.options.get('wiki_fandom_addon')
     if not start_wiki:
         await msg.finish(msg.locale.t('wiki.message.set.not_set', prefix=msg.prefixes[0]))
     if isinstance(title, str):
@@ -45,26 +44,6 @@ async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], 
                             'query': [], 'iw_prefix': g1}
                     query_task[interwiki_url]['query'].append(g2)
                     matched = True
-                elif g1 == 'w' and enabled_fandom_addon:
-                    if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                        if match_interwiki.group(1) == 'c':
-                            if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                                interwiki_split = match_interwiki.group(
-                                    1).split('.')
-                                if len(interwiki_split) == 2:
-                                    get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                                    find = interwiki_split[0] + \
-                                        ':' + match_interwiki.group(2)
-                                    iw = 'w:c:' + interwiki_split[0]
-                                else:
-                                    get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
-                                    find = match_interwiki.group(2)
-                                    iw = 'w:c:' + match_interwiki.group(1)
-                                if get_link not in query_task:
-                                    query_task[get_link] = {
-                                        'query': [], 'iw_prefix': iw}
-                                query_task[get_link]['query'].append(find)
-                                matched = True
             if not matched:
                 query_task[start_wiki]['query'].append(t)
     Logger.debug(query_task)

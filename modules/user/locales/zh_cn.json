@@ -1,10 +1,8 @@
 {
     "user.help.desc": "获取一个 MediaWiki 用户的信息。",
-    "user.help.option.p": "获取使用 SocialProFile 扩展站点的额外信息。",
     "user.message.blocked": "${user} 正在被封禁中！",
     "user.message.blocked.detail": "被 ${blocked_by} 封禁，时间从 ${blocked_time} 到 ${blocked_expires}",
     "user.message.blocked.reason": "理由：",
-    "user.message.blocked.time.infinity": "无限期",
     "user.message.created_page_count": "创建数：",
     "user.message.deleted_count": "删除数：",
     "user.message.edited_count": "编辑数：",
@@ -23,6 +21,5 @@
     "user.message.site_rank": "本站排名：",
     "user.message.username": "用户：",
     "user.message.users_groups": "用户组：",
-    "user.message.wiki_unavailable": "${wikiurl} 不可用。",
-    "user.message.wikipoints": "Wikipoints："
+    "user.message.wiki_unavailable": "${wikiurl} 不可用。"
 }

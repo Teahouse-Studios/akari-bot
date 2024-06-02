@@ -11,7 +11,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.time import strptime2ts
 
 
-async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=False):
+async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
         await msg.finish(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))
@@ -20,7 +20,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=Fals
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
             await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
-                                match_interwiki.group(2), profile)
+                                match_interwiki.group(2))
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
@@ -61,39 +61,14 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=Fals
         data['gender'] = msg.locale.t('unknown')
     # if one day LGBTers...
 
-    if profile:
-        try:
-            gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath), 200, logging_err_resp=False),
-                            'html.parser')
-            dd = gp_clawler.find('div', class_='section stats').find_all('dd')
-            data['edited_wiki_count'] = dd[0].text
-            data['created_page_count'] = dd[1].text
-            data['edited_count'] = dd[2].text
-            data['deleted_count'] = dd[3].text
-            data['patrolled_count'] = dd[4].text
-            data['site_rank'] = dd[5].text
-            data['global_rank'] = dd[6].text
-            data['friends_count'] = dd[7].text
-            data['wikipoints'] = gp_clawler.find('div', class_='score').text
-            data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
-        except ValueError:
-            pass
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
-        if data['blocked_time'] in ['infinity', 'infinite']:
-            data['blocked_time'] = msg.locale.t('user.message.blocked.time.infinity')
-        else:
-            data['blocked_time'] = msg.ts2strftime(strptime2ts(data['blocked_time'])) \
-                if data['blocked_time'] else msg.locale.t(
-                'unknown')
+        data['blocked_time'] = msg.ts2strftime(strptime2ts(data['blocked_time'])) \
+            if data['blocked_time'] else msg.locale.t('unknown')
         data['blocked_expires'] = base_user_info.get('blockexpiry', None)
-        if data['blocked_expires'] in ['infinity', 'infinite']:
-            data['blocked_expires'] = msg.locale.t('user.message.blocked.time.infinity')
-        else:
-            data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires'])) if data[
-                'blocked_expires'] else msg.locale.t(
-                'unknown')
+        data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires'])) \
+            if data['blocked_expires'] else msg.locale.t('unknown')
         data['blocked_reason'] = base_user_info['blockreason']
         data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] else msg.locale.t(
             'unknown')
@@ -129,19 +104,12 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username, profile=Fals
         sub_edit_counts3.append(msg.locale.t('user.message.site_rank') + site_rank)
     if global_rank := data.get('global_rank', False):
         sub_edit_counts3.append(msg.locale.t('user.message.global_rank') + global_rank)
-    sub_edit_counts4 = []
-    if friends_count := data.get('friends_count', False):
-        sub_edit_counts4.append(msg.locale.t('user.message.friends_count') + friends_count)
-    if wikipoints := data.get('wikipoints', False):
-        sub_edit_counts4.append(msg.locale.t('user.message.wikipoints') + wikipoints)
     if sub_edit_counts1:
         msgs.append(' | '.join(sub_edit_counts1))
     if sub_edit_counts2:
         msgs.append(' | '.join(sub_edit_counts2))
     if sub_edit_counts3:
         msgs.append(' | '.join(sub_edit_counts3))
-    if sub_edit_counts4:
-        msgs.append(' | '.join(sub_edit_counts4))
 
     if global_users_groups := data.get('global_users_groups', False):
         msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('message.delimiter').join(
