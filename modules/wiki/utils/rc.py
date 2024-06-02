@@ -32,7 +32,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                 else:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=x['user'], title=x['title'])
                 if log.find("{") != -1 and log.find("}") != -1:
-                    log = f"{user} {x['logtype']} {x['logaction']} {title}"
+                    log = f"{x['user']} {x['logtype']} {x['logaction']} {x['title']}"
                 d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
                 params = x['logparams']
                 if 'suppressredirect' in params:
