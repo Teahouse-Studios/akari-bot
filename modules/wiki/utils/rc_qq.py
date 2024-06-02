@@ -94,7 +94,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 if 'oldgroups' and 'newgroups' in params:
                     t.append(compare_groups(params['oldgroups'], params['newgroups']))
                 if 'description' in params:
-                    t.append(msg.locale.t('wiki.message.rc.params.description') + params['description'])
+                    t.append(params['description'])
                 if 'duration' in params:
                     t.append(msg.locale.t('wiki.message.rc.params.duration') + params['duration'])
                 if 'flags' in params:

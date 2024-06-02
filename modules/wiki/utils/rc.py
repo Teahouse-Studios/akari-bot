@@ -40,7 +40,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                 if 'oldgroups' and 'newgroups' in params:
                     d.append(compare_groups(params['oldgroups'], params['newgroups']))
                 if 'description' in params:
-                    d.append(msg.locale.t('wiki.message.rc.params.description') + params['description'])
+                    d.append(params['description'])
                 if 'duration' in params:
                     d.append(msg.locale.t('wiki.message.rc.params.duration') + params['duration'])
                 if 'flags' in params:
