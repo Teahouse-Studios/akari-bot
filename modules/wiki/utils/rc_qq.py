@@ -33,6 +33,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
     rclist = []
     userlist = []
     titlelist = []
+    commentlist = []
     for x in query["query"]["recentchanges"]:
         if 'title' in x:
             userlist.append(x['user'])
