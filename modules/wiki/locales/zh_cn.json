@@ -123,6 +123,7 @@
     "wiki.message.utils.redacted": "检测到外来信息介入，请前往滥用日志查看所有消息。",
     "wiki.message.utils.wikilib.error.empty": "发生错误：API 未返回任何内容，请联系此站点管理员获取原因。",
     "wiki.message.utils.wikilib.error.text_too_long": "发生错误：请求的页面段落文本过长，无法显示。",
+    "wiki.message.utils.wikilib.error.invalid_interwiki": "站点设置的 Interwiki 无效。",
     "wiki.message.utils.wikilib.get_failed.api": "从 API 获取信息时出错：",
     "wiki.message.utils.wikilib.get_failed.cloudflare": "CloudFlare 拦截了机器人的请求，请联系站点管理员解决此问题。",
     "wiki.message.utils.wikilib.get_failed.forbidden": "服务器拒绝了机器人的请求。",

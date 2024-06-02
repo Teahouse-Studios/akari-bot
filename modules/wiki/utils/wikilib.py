@@ -739,7 +739,10 @@ class WikiLib:
                     iw_title = iw_title.group(1)
                     _prefix += i['iw'] + ':'
                     _iw = True
-                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']], headers=self.headers) \
+
+                    if not (get_iw := self.wiki_info.interwiki.get(i['iw'])):
+                        raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.error.invalid_interwiki"))
+                    iw_query = await WikiLib(url=get_iw, headers=self.headers) \
                         .parse_page_info(iw_title, lang=lang,
                                          _tried=_tried + 1,
                                          _prefix=_prefix,
