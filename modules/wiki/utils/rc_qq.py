@@ -68,7 +68,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
             t = []
             user = user_checked_map[x['user']]
             title = title_checked_map[x['title']]
-            comment = commant_checked_map[x['comment']] if x['comment'] else None
+            comment = comment_checked_map[x['comment']] if x['comment'] else None
             time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
             t.append(time)
             if x['type'] == 'edit':
