@@ -63,6 +63,8 @@
     "wiki.message.not_set": "Start wiki not set.",
     "wiki.message.prefix.reset.success": "The prefix have been reset.",
     "wiki.message.prefix.set.success": "The prefix have been updated: ${wiki_prefix}",
+    "wiki.message.rc.action.abusefilter.create": "${user} created ${title}",
+    "wiki.message.rc.action.abusefilter.modify": "${user} modified ${title}",
     "wiki.message.rc.action.block": "${user} blocked ${title}",
     "wiki.message.rc.action.block.reblock": "${user} changed block settings for ${title}",
     "wiki.message.rc.action.block.unblock": "${user} unblocked ${title}",

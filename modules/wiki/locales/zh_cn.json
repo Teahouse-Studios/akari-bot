@@ -63,6 +63,8 @@
     "wiki.message.not_set": "未设置起始 Wiki。",
     "wiki.message.prefix.reset.success": "已重置请求时所使用的前缀。",
     "wiki.message.prefix.set.success": "已更新请求时所使用的前缀：${wiki_prefix}",
+    "wiki.message.rc.action.abusefilter.create": "${user} 建立了 ${title}",
+    "wiki.message.rc.action.abusefilter.modify": "${user} 修改了 ${title}",
     "wiki.message.rc.action.block": "${user} 封禁了 ${title}",
     "wiki.message.rc.action.block.reblock": "${user} 更改了 ${title} 的封禁设置",
     "wiki.message.rc.action.block.unblock": "${user} 解封了 ${title}",
