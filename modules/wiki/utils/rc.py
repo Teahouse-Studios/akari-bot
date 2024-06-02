@@ -36,7 +36,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                 d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
                 params = x['logparams']
                 if 'oldgroups' and 'newgroups' in params:
-                    added, removed = compare_groups(params['old_groups'], params['new_groups'])
+                    added, removed = compare_groups(params['oldgroups'], params['newgroups'])
                     d.append(added)
                     d.append(removed)
                 if 'suppressredirect' in params:

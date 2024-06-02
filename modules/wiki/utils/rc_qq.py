@@ -90,7 +90,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 t.append(log)
                 params = x['logparams']
                 if 'oldgroups' and 'newgroups' in params:
-                    added, removed = compare_groups(params['old_groups'], params['new_groups'])
+                    added, removed = compare_groups(params['oldgroups'], params['newgroups'])
                     t.append(added)
                     t.append(removed)
                 if 'target_title' in params:
