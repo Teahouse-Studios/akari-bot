@@ -28,9 +28,9 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                     d.append(comment)
             if x['type'] == 'log':
                 if x['logtype'] == x['logaction'] or x['logaction'] == '*':
-                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
+                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=x['user'], title=x['title'])
                 else:
-                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
+                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=x['user'], title=x['title'])
                 if log.find("{") != -1 and log.find("}") != -1:
                     log = f"{user} {x['logtype']} {x['logaction']} {title}"
                 d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
