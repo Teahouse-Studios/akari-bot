@@ -37,6 +37,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
         if 'title' in x:
             userlist.append(x['user'])
             titlelist.append(x['title'])
+            commentlist.append(x['comment'] if x['comment'] else '')
     checked_userlist = await check(*userlist)
     user_checked_map = {}
     for u in checked_userlist:
@@ -53,11 +54,20 @@ async def rc_qq(msg: MessageSession, wiki_url):
             title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
             title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         title_checked_map[t['original']] = title_checked
+    checked_commentlist = await check(*commentlist)
+    comment_checked_map = {}
+    for c in checked_commentlist:
+        comment_checked = c['content']
+        if comment_checked.find("<吃掉了>") != -1 or comment_checked.find("<全部吃掉了>") != -1:
+            comment_checked = comment_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            comment_checked = comment_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+        comment_checked_map[c['original']] = comment_checked
     for x in query["query"]["recentchanges"]:
         if 'title' in x:
             t = []
             user = user_checked_map[x['user']]
             title = title_checked_map[x['title']]
+            comment = title_checked_map[x['comment']] if x['comment'] else None
             time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
             t.append(time)
             if x['type'] == 'edit':
@@ -67,8 +77,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 else:
                     count = str(count)
                 t.append(f"{title} .. ({count}) .. {user}")
-                if x['comment']:
-                    comment = x['comment']
+                if comment:
                     t.append(comment)
                 t.append(
                     pageurl.replace(
@@ -77,8 +86,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
             if x['type'] == 'new':
                 r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.new_redirect')) if 'redirect' in x else ''
                 t.append(f"{title}{r} .. (+{x['newlen']}) .. {user}")
-                if x['comment']:
-                    comment = x['comment']
+                if comment:
                     t.append(comment)
             if x['type'] == 'log':
                 if x['logtype'] == x['logaction'] or x['logaction'] == '*':
@@ -105,8 +113,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                     t.append(msg.locale.t('wiki.message.rc.params.tag') + params['tag'])
                 if 'target_title' in params:
                     t.append(msg.locale.t('wiki.message.rc.params.target_title') + params['target_title'])
-                if x['comment']:
-                    comment = x['comment']
+                if comment:
                     t.append(comment)
                 if x['revid'] != 0:
                     t.append(pageurl.replace(
