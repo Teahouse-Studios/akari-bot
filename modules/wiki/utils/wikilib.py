@@ -744,7 +744,7 @@ class WikiLib:
                     _iw = True
 
                     if not (get_iw := self.wiki_info.interwiki.get(i['iw'])):
-                        raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.error.invalid_interwiki"))
+                        raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
                     iw_query = await WikiLib(url=get_iw, headers=self.headers) \
                         .parse_page_info(iw_title, lang=lang,
                                          _tried=_tried + 1,
