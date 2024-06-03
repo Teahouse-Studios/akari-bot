@@ -19,7 +19,7 @@ diffs = 'Basic Advanced Expert Master Re:Master'.split(' ')
 
 
 class ChartInfo(object):
-    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int,
+    async def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int,
                  scoreId: int, title: str, ds: float, lv: str):
         self.idNum = idNum
         self.diff = diff
@@ -441,8 +441,8 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
     dx: List[Dict] = resp["charts"]["dx"]
     sd: List[Dict] = resp["charts"]["sd"]
     for c in sd:
-        sd_best.push(ChartInfo.from_json(c))
+        sd_best.push(await ChartInfo.from_json(c))
     for c in dx:
-        dx_best.push(ChartInfo.from_json(c))
+        dx_best.push(await ChartInfo.from_json(c))
     pic = DrawBest(sd_best, dx_best, resp["nickname"]).getDir()
     return pic
