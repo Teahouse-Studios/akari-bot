@@ -19,7 +19,7 @@ diffs = 'Basic Advanced Expert Master Re:Master'.split(' ')
 
 
 class ChartInfo(object):
-    async def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int,
+    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int,
                  scoreId: int, title: str, ds: float, lv: str):
         self.idNum = idNum
         self.diff = diff
@@ -43,7 +43,7 @@ class ChartInfo(object):
         return self.ra < other.ra
 
     @classmethod
-    def from_json(cls, data):
+    async def from_json(cls, data):
         rate = ['d', 'c', 'b', 'bb', 'bbb', 'a', 'aa', 'aaa', 's', 'sp', 'ss', 'ssp', 'sss', 'sssp']
         ri = rate.index(data["rate"])
         fc = ['', 'fc', 'fcp', 'ap', 'app']
