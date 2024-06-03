@@ -51,7 +51,7 @@ class ChartInfo(object):
         fs = ['', 'fs', 'fsp', 'fsd', 'fsdp']
         si = fs.index(data["fs"])
         return cls(
-            idNum=(await total_list.get()).by_title(data["title"]).id,
+            idNum=data["song_id"],
             title=data["title"],
             diff=data["level_index"],
             ra=data["ra"],
