@@ -43,7 +43,7 @@ class ChartInfo(object):
         return self.ra < other.ra
 
     @classmethod
-    async def from_json(cls, data):
+    def from_json(cls, data):
         rate = ['d', 'c', 'b', 'bb', 'bbb', 'a', 'aa', 'aaa', 's', 'sp', 'ss', 'ssp', 'sss', 'sssp']
         ri = rate.index(data["rate"])
         fc = ['', 'fc', 'fcp', 'ap', 'app']
@@ -441,8 +441,8 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
     dx: List[Dict] = resp["charts"]["dx"]
     sd: List[Dict] = resp["charts"]["sd"]
     for c in sd:
-        sd_best.push(await ChartInfo.from_json(c))
+        sd_best.push(ChartInfo.from_json(c))
     for c in dx:
-        dx_best.push(await ChartInfo.from_json(c))
+        dx_best.push(ChartInfo.from_json(c))
     pic = DrawBest(sd_best, dx_best, resp["nickname"]).getDir()
     return pic
