@@ -27,12 +27,15 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                     comment = msg.locale.t('message.brackets', msg=x['comment'])
                     d.append(comment)
             if x['type'] == 'log':
-                if x['logtype'] == x['logaction'] or x['logaction'] == '*':
+                if x['logtype'] == x['logaction']:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=x['user'], title=x['title'])
                 else:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=x['user'], title=x['title'])
                 if log.find("{") != -1 and log.find("}") != -1:
-                    log = f"{x['user']} {x['logtype']} {x['logaction']} {x['title']}"
+                    if x['logaction'] == x['logtype']:
+                        log = f"{x['user']} {x['logtype']} {x['title']}"
+                    else:
+                        log = f"{x['user']} {x['logaction']} {x['logtype']} {x['title']}"
                 d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {log}")
                 params = x['logparams']
                 if 'suppressredirect' in params:

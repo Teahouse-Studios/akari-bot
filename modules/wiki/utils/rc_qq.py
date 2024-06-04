@@ -90,12 +90,15 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 if comment:
                     t.append(comment)
             if x['type'] == 'log':
-                if x['logtype'] == x['logaction'] or x['logaction'] == '*':
+                if x['logtype'] == x['logaction']:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
                 else:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
                 if log.find("{") != -1 and log.find("}") != -1:
-                    log = f"{user} {x['logtype']} {x['logaction']} {title}"
+                    if x['logtype'] == x['logaction']:
+                        log = f"{user} {x['logtype']} {title}"
+                    else:
+                        log = f"{user} {x['logaction']} {x['logtype']} {title}"
                 t.append(log)
                 params = x['logparams']
                 if 'suppressredirect' in params:
