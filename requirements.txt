@@ -780,9 +780,9 @@ itsdangerous==2.1.2 ; python_full_version >= "3.12.0" and python_full_version < 
 jaraco-context==4.3.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:4dad2404540b936a20acedec53355bdaea223acb88fd329fa6de9261c941566e \
     --hash=sha256:5d9e95ca0faa78943ed66f6bc658dd637430f16125d86988e77844c741ff2f11
-jinja2==3.1.3 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa \
-    --hash=sha256:ac8bd6544d4bb2c9792bf3a159e80bba8fda7f07e81bc3aed565432d5925ba90
+Jinja2==3.1.4; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369 \
+    --hash=sha256:bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d
 jmespath==0.10.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9 \
     --hash=sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f
