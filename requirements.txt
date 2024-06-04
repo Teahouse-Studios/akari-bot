@@ -1583,9 +1583,9 @@ pydantic==2.5.3 ; python_full_version >= "3.12.0" and python_version < "4.0" \
 pyjwt[crypto]==2.8.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de \
     --hash=sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320
-pymysql==1.1.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:4f13a7df8bf36a51e81dd9f3605fede45a4878fe02f9236349fd82a3f0612f96 \
-    --hash=sha256:8969ec6d763c856f7073c4c64662882675702efcb114b4bcbb955aea3a069fa7
+PyMySQL==1.1.1; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c \
+    --hash=sha256:e127611aaf2b417403c60bf4dc570124aeb4a57f5f37b8e95ae399a42f904cd0
 pyparsing==3.1.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:32c7c0b711493c72ff18a981d24f28aaf9c1fb7ed5e9667c9e84e3db623bdbfb \
     --hash=sha256:ede28a1a32462f5a9705e07aea48001a08f7cf81a021585011deba701581a0db
