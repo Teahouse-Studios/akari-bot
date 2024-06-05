@@ -553,14 +553,19 @@ async def get_plate_process(msg, payload, plate):
         song_remain_expert + song_remain_master + song_remain_remaster
 
     prompt = [msg.locale.t('maimai.message.plate.prompt', plate=plate)]
-    prompt.append(msg.locale.t('maimai.message.plate.basic', song_remain=len(song_remain_basic)))
-    prompt.append(msg.locale.t('maimai.message.plate.advanced', song_remain=len(song_remain_advanced)))
-    prompt.append(msg.locale.t('maimai.message.plate.expert', song_remain=len(song_remain_expert)))
-    prompt.append(msg.locale.t('maimai.message.plate.master', song_remain=len(song_remain_master)))
-    if version in ['舞', '覇']:  # 霸者和舞牌需要Re:MASTER难度
+    if song_remain_basic:
+        prompt.append(msg.locale.t('maimai.message.plate.basic', song_remain=len(song_remain_basic)))
+    if song_remain_advanced:
+        prompt.append(msg.locale.t('maimai.message.plate.advanced', song_remain=len(song_remain_advanced)))
+    if song_remain_expert:
+        prompt.append(msg.locale.t('maimai.message.plate.expert', song_remain=len(song_remain_expert)))
+    if song_remain_master:
+        prompt.append(msg.locale.t('maimai.message.plate.master', song_remain=len(song_remain_master)))
+    if version in ['舞', '覇'] and song_remain_remaster:  # 霸者和舞牌需要Re:MASTER难度
         prompt.append(msg.locale.t('maimai.message.plate.remaster', song_remain=len(song_remain_remaster)))
 
-    await msg.send_message('\n'.join(prompt))
+    if song_remain:
+        await msg.send_message('\n'.join(prompt))
 
     song_record = [[s['id'], s['level_index']] for s in verlist]
 
@@ -573,7 +578,7 @@ async def get_plate_process(msg, payload, plate):
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余13+以上歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['將', '者']:
-                        self_record = f"{str("{:.4f}".format(verlist[record_index]['achievements']))}%"
+                        self_record = f"{str('{:.4f}'.format(verlist[record_index]['achievements']))}%"
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
