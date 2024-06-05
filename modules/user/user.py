@@ -25,7 +25,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
     if 'missing' in base_user_info:
-        return [Plain(msg.locale.t('user.message.not_found'))]
+        await msg.finish(msg.locale.t('user.message.not_found'))
     data['username'] = base_user_info['name']
     data['url'] = re.sub(r'\$1', urllib.parse.quote('User:' + username), wiki.wiki_info.articlepath)
     groups = {}
