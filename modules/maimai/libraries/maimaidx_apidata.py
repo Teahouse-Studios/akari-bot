@@ -63,7 +63,7 @@ async def get_info(music: Music, *details):
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
         await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
         info.append(Image(img))
-    except BaseException:
+    except Exception:
         info.append(Image("https://www.diving-fish.com/covers/00000.png"))
     if details:
         info.extend(details)

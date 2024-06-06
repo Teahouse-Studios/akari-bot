@@ -40,7 +40,8 @@ plate_conversion = {
     '宙': 'maimai でらっくす UNiVERSE',
     '星': 'maimai でらっくす UNiVERSE',
     '祭': 'maimai でらっくす FESTiVAL',
-    '祝': 'maimai でらっくす FESTiVAL'
+    '祝': 'maimai でらっくす FESTiVAL',
+    'bud': 'maimai でらっくす BUDDiES'
 }
 
 grade_conversion = {
@@ -77,6 +78,8 @@ grade_conversion = {
     'EXPERT中级': 'expert2',
     'EXPERT上級': 'expert3',
     'EXPERT上级': 'expert3',
+    'EXPERT超上級': 'expert4',
+    'EXPERT超上級': 'expert4',
     'MASTER初級': 'master1',
     'MASTER初级': 'master1',
     'MASTER中級': 'master2',
@@ -112,6 +115,7 @@ combo_conversion = {
 }
 
 sync_conversion = {
+    "sync": "SYNC",
     "fs": "FS",
     "fsp": "FS+",
     "fsd": "FDX",
@@ -547,8 +551,6 @@ async def get_plate_process(msg, payload, plate):
     song_remain_master = [music for music in song_remain_master if music[0] not in song_expect]
     song_remain_remaster = [music for music in song_remain_remaster if music[0] not in song_expect]
     song_remain_difficult = [music for music in song_remain_difficult if int(music[0]) not in song_expect]
-
-
     song_remain: list[list] = song_remain_basic + song_remain_advanced + \
         song_remain_expert + song_remain_master + song_remain_remaster
 
@@ -663,7 +665,8 @@ async def get_grade_info(msg, grade):
     else:
         base = grade_data["base"]
         level = grade_data["level_index"]
-        music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[level])
+        level = [level] if not isinstance(level, list) else level
+        music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=level)
 
         for i in range(4):
             music = music_data.random()
