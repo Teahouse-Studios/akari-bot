@@ -41,6 +41,8 @@ async def check_crowdin():
                     continue
                 if 'unapproved' in m:
                     continue
+                if 'canceled' in m:
+                    continue
                 if act['count'] == 1:
                     identify = f'{act["user_id"]}{str(act['timestamp'])}{m}'
                     if not first and not CrowdinActivityRecords.check(identify):
