@@ -1,5 +1,6 @@
 import os
 import ujson as json
+from collections import Counter
 from datetime import datetime
 
 from core.builtins import Plain
@@ -664,14 +665,32 @@ async def get_grade_info(msg, grade):
 
     else:
         base = grade_data["base"]
-        level = grade_data["level_index"]
-        level = [level] if not isinstance(level, list) else level
-        music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=level)
-
-        for i in range(4):
+        if 'master' in grade_key:
+            music_data_master = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[3])
+            music_data_remaster = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[4])
+            music_data = music_data_master + music_data_remaster
             music = music_data.random()
-            chart_info.append(
-                f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+
+            master_counter = Counter(music_data_master)
+            remaster_counter = Counter(music_data_remaster)
+
+            for i in range(4):
+                music = music_data.random()
+                if music in master_counter and music in remaster_counter:
+                    level = random.choice([3, 4])
+                elif music in remaster_counter:
+                    level = 4
+                else:
+                    level = 3
+                chart_info.append(
+                    f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+        else:
+            level = 2
+            music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[level])
+            for i in range(4):
+                music = music_data.random()
+                chart_info.append(
+                    f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
     content = '\n'.join(chart_info)
     condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
