@@ -185,7 +185,7 @@ async def generate_best50_text(msg, payload):
     dx_charts = data["charts"]["dx"]
     sd_charts = data["charts"]["sd"]
 
-    html = "<style>pre { font-size: 15px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
+    html = "<style>pre { font-size: 13px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
     html += f"{msg.locale.t('maimai.message.b50.text_prompt', user=data['username'], rating=data['rating'])}\n<pre>"
     html += f"Standard ({sum(chart['ra'] for chart in sd_charts)})\n"
     for idx, chart in enumerate(sd_charts, start=1):
