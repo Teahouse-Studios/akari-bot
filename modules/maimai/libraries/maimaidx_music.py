@@ -94,7 +94,6 @@ class Music(Dict):
     release_date: Optional[str] = None
     artist: Optional[str] = None
     is_new: Optional[bool] = False
-
     diff: List[int] = []
 
     def __getattribute__(self, item):

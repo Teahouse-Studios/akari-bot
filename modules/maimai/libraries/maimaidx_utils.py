@@ -671,14 +671,11 @@ async def get_grade_info(msg, grade):
             music_data_remaster = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[4])
             music_data = music_data_master + music_data_remaster
 
-            master_counter = Counter(music_data_master)
-            remaster_counter = Counter(music_data_remaster)
-
             for i in range(4):
                 music = random.choice(music_data)
-                if music in master_counter and music in remaster_counter:
+                if music in music_data_master and music in music_data_remaster:
                     level = random.choice([3, 4])
-                elif music in remaster_counter:
+                elif music in music_data_remaster:
                     level = 4
                 else:
                     level = 3
