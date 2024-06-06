@@ -175,7 +175,7 @@ def calc_dxstar(dxscore, dxscore_max):
         stars = "✦✦✦"
     elif 95.00 <= percentage < 97.00:
         stars = "✦✦✦✦"
-    elif 97.00 <= percentage <= 100.00:
+    else:
         stars = "✦✦✦✦✦"
     return stars
 
@@ -185,7 +185,7 @@ async def generate_best50_text(msg, payload):
     dx_charts = data["charts"]["dx"]
     sd_charts = data["charts"]["sd"]
 
-    html = "<style>pre { font-size: 12px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
+    html = "<style>pre { font-size: 15px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
     html += f"{msg.locale.t('maimai.message.b50.text_prompt', user=data['username'], rating=data['rating'])}\n<pre>"
     html += f"Standard ({sum(chart['ra'] for chart in sd_charts)})\n"
     for idx, chart in enumerate(sd_charts, start=1):
@@ -199,7 +199,7 @@ async def generate_best50_text(msg, payload):
         )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:>5} {:<3} {:>8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:>4}/{:<4} {:<5} {:<20}\n".format( 
+        line = "#{:<2} {:>5} {:<3} {:>8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:<5} {:<20}\n".format( 
             idx,
             chart["song_id"],
             level,
@@ -209,8 +209,6 @@ async def generate_best50_text(msg, payload):
             sync_conversion.get(chart["fs"], ""),
             chart["ds"],
             chart["ra"],
-            chart["dxScore"],
-            dxscore_max,
             dxstar,
             title
         )
@@ -225,7 +223,7 @@ async def generate_best50_text(msg, payload):
         )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:>5} {:<3} {:>8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:>4}/{:<4} {:<5} {:<20}\n".format( 
+        line = "#{:<2} {:>5} {:<3} {:>8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:<5} {:<20}\n".format( 
             idx,
             chart["song_id"],
             level,
@@ -235,8 +233,6 @@ async def generate_best50_text(msg, payload):
             sync_conversion.get(chart["fs"], ""),
             chart["ds"],
             chart["ra"],
-            chart["dxScore"],
-            dxscore_max,
             dxstar,
             title
         )
