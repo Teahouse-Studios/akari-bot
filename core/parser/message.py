@@ -50,7 +50,8 @@ async def tos_abuse_warning(msg: Bot.MessageSession, e):
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
     else:
-        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=e))
+        reason = msg.locale.tl_str(str(e))
+        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=reason))
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
