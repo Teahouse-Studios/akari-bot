@@ -51,7 +51,7 @@ async def tos_report(sender, target, reason, banned = False):
     locale = Locale(default_locale)
     if report_targets:
         warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
-        reason = Locale.tl_str(reason)
+        reason = locale.tl_str(reason)
         warn_template.append(locale.t("tos.message.reason") + reason)
         if banned:
             action = locale.t("tos.message.action.banned")
