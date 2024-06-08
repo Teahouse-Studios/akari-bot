@@ -470,7 +470,7 @@ async def get_plate_process(msg, payload, plate):
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
     elif version in ['覇', '舞']:  # 霸者和舞牌需要全版本
-        payload['version'] = list(set(ver for ver in list(sd_plate_conversion.values())[:-9]))
+        payload['version'] = list(set(ver for ver in list(sd_plate_conversion.values())))
     elif version in plate_conversion and version != '初':  # “初”不是版本名称
         payload['version'] = [plate_conversion[version]]
     else:
