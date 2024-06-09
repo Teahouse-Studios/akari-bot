@@ -33,7 +33,7 @@ sd_plate_conversion = {
     '白': 'maimai MiLK',
     '雪': 'MiLK PLUS',
     '輝': 'maimai FiNALE',
-    '辉': 'maimai FiNALE',
+    '辉': 'maimai FiNALE'
 }
 
 dx_plate_conversion = {
@@ -46,7 +46,7 @@ dx_plate_conversion = {
     '星': 'maimai でらっくす UNiVERSE',
     '祭': 'maimai でらっくす FESTiVAL',
     '祝': 'maimai でらっくす FESTiVAL',
-    'bud': 'maimai でらっくす BUDDiES'
+    'bud': 'maimai でらっくす BUDDiES',
 }
 
 grade_conversion = {
@@ -143,7 +143,7 @@ combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示�
 sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 plate_conversion = sd_plate_conversion | dx_plate_conversion
 
-def get_diff(diff):
+def get_diff(diff: str) -> int:
     diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
     diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
     diff_label_zhs = ['绿', '黄', '红', '紫', '白']
@@ -164,13 +164,61 @@ def get_diff(diff):
         level = None
     return level
 
+def compute_rating(ds: float, achievement: float) -> int:
+    achievement = round(achievement, 4)
+    if achievement >= 100.5:
+        base_ra = 22.4
+    elif achievement == 100.4999:
+        base_ra = 22.2
+    elif achievement >= 100:
+        base_ra = 21.6
+    elif achievement == 99.9999:
+        base_ra = 21.4
+    elif achievement >= 99.5:
+        base_ra = 21.1
+    elif achievement >= 99:
+        base_ra = 20.8
+    elif achievement == 98.9999:
+        base_ra = 20.6
+    elif achievement >= 98:
+        base_ra = 20.3
+    elif achievement >= 97:
+        base_ra = 20.0
+    elif achievement == 96.9999:
+        base_ra = 17.6
+    elif achievement >= 94:
+        base_ra = 16.8
+    elif achievement >= 90:
+        base_ra = 15.2
+    elif achievement >= 80:
+        base_ra = 13.6
+    elif achievement == 79.9999:
+        base_ra = 12.8
+    elif achievement >= 75:
+        base_ra = 12.0
+    elif achievement >= 70:
+        base_ra = 11.2
+    elif achievement >= 60:
+        base_ra = 9.6
+    elif achievement >= 50:
+        base_ra = 8.0
+    elif achievement >= 40:
+        base_ra = 6.4
+    elif achievement >= 30:
+        base_ra = 4.8
+    elif achievement >= 20:
+        base_ra = 3.2
+    else:
+        base_ra = 1.6
+    return max(0, math.floor(ds * (min(100.5, achievement) / 100) * base_ra))
 
-def calc_dxstar(dxscore, dxscore_max):
+
+def calc_dxstar(dxscore: int, dxscore_max: int) -> str:
     percentage = (dxscore / dxscore_max) * 100
     stars = ""
     if 0.00 <= percentage < 85.00:
         stars = ""
-    elif 85.00 <= percentage < 90.00:
+    if 85.00 <= percentage < 90.00:
         stars = "✦"
     elif 90.00 <= percentage < 93.00:
         stars = "✦✦"

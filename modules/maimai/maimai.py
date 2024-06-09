@@ -4,8 +4,8 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
-from .libraries.maimaidx_best50 import generate, computeRa
+from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias
+from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
 
@@ -573,12 +573,12 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
 @mai.command('calc <base> <score> {{maimai.help.calc}}')
 async def _(msg: Bot.MessageSession, base: float, score: float):
     if score:
-        await msg.finish([Plain(max(0, computeRa(base, score)))])
+        await msg.finish([Plain(compute_rating(base, score))])
 
 
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    if await update_alias() and await update_covers():
+    if await update_alias():
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))

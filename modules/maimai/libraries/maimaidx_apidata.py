@@ -32,31 +32,6 @@ async def update_alias():
     return True
 
 
-async def update_covers():
-    try:
-        cover_dir = f"{assets_path}/static/mai/cover"
-        url = f"https://www.diving-fish.com/maibot/static.zip"
-        download_file = await download_to_cache(url, timeout=60, logging_err_resp=False)
-
-        Logger.info('Maimai covers download completed.')
-        ca = random_cache_path()
-        shutil.unpack_archive(download_file, ca)
-
-        if os.path.exists(cover_dir):
-            shutil.rmtree(cover_dir)
-
-        static_cover_dir = os.path.join(ca, 'mai/cover')
-        if os.path.exists(static_cover_dir):
-            shutil.move(static_cover_dir, cover_dir)
-    except Exception:
-        if Config('debug', False):
-            Logger.error(traceback.format_exc())
-        return False
-
-    os.remove(download_file)
-    return True
-
-
 async def get_info(music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     try:
