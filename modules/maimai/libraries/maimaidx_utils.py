@@ -203,8 +203,14 @@ def compute_rating(ds: float, achievement: float) -> int:
         base_ra = 9.6
     elif achievement >= 50:
         base_ra = 8.0
+    elif achievement >= 40:
+        base_ra = 6.4
+    elif achievement >= 30:
+        base_ra = 4.8
+    elif achievement >= 20:
+        base_ra = 3.2
     else:
-        base_ra = 0
+        base_ra = 1.6
     return max(0, math.floor(ds * (min(100.5, achievement) / 100) * base_ra))
 
 
