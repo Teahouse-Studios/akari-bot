@@ -17,7 +17,7 @@ SONGS_PER_PAGE = 20
 assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
 
-sd_plate_conversion = {
+plate_conversion = {
     '初': 'maimai',
     '真': 'maimai PLUS',
     '超': 'maimai GreeN',
@@ -34,10 +34,7 @@ sd_plate_conversion = {
     '白': 'maimai MiLK',
     '雪': 'MiLK PLUS',
     '輝': 'maimai FiNALE',
-    '辉': 'maimai FiNALE'
-}
-
-dx_plate_conversion = {
+    '辉': 'maimai FiNALE',
     '熊': 'maimai でらっくす',
     '華': 'maimai でらっくす',
     '华': 'maimai でらっくす',
@@ -142,7 +139,6 @@ comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示�
 syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
 combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
 sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
-plate_conversion = sd_plate_conversion | dx_plate_conversion
 
 def get_diff(diff: str) -> int:
     diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
@@ -519,7 +515,7 @@ async def get_plate_process(msg, payload, plate):
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
     elif version in ['覇', '舞']:  # 霸者和舞牌需要全版本
-        payload['version'] = list(set(ver for ver in list(sd_plate_conversion.values())))
+        payload['version'] = ['all FiNALE']
     elif version in plate_conversion and version != '初':  # “初”不是版本名称
         payload['version'] = [plate_conversion[version]]
     else:
