@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession):
                             if get_page.status and wiki_.wiki_info.in_allowlist:
                                 if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
                                     is_disambiguation = False
-                                    if get_page.templates:
+                                    if get_page.templates and get_page.title:
                                         is_disambiguation = 'Template:Disambiguation' in get_page.templates or 'Template:Version disambiguation' in get_page.templates
                                     content_mode = get_page.has_template_doc or get_page.title.split(':')[0] in [
                                         'User'] or is_disambiguation
