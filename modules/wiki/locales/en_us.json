@@ -95,6 +95,8 @@
     "wiki.message.rc.action.protect.unprotect": "${user} removed protection from ${title}",
     "wiki.message.rc.action.rights": "${user} changed group membership for ${title}",
     "wiki.message.rc.action.upload": "${user} uploaded ${title}",
+    "wiki.message.rc.action.upload.overwrite": "${user} updated a new version of ${title}",
+    "wiki.message.rc.action.upload.revent": "${user} reverted ${title} to an old version",
     "wiki.message.rc.new_redirect": "New redirect",
     "wiki.message.rc.params.duration": "Duration: ",
     "wiki.message.rc.params.suppress_redirect": "(Without leaving a redirect)",
