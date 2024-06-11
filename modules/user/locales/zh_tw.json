@@ -1,10 +1,8 @@
 {
     "user.help.desc": "取得一個 MediaWiki 使用者的資訊。",
-    "user.help.option.p": "取得使用 SocialProFile 擴展功能網站的更多資訊。",
     "user.message.blocked": "${user} 正在被封鎖中！",
     "user.message.blocked.detail": "被 ${blocked_by} 封鎖，時間從 ${blocked_time} 到 ${blocked_expires}",
     "user.message.blocked.reason": "理由：",
-    "user.message.blocked.time.infinity": "不限期",
     "user.message.created_page_count": "創建數：",
     "user.message.deleted_count": "刪除數：",
     "user.message.edited_count": "編輯數：",
@@ -23,6 +21,5 @@
     "user.message.site_rank": "本站排名：",
     "user.message.username": "使用者：",
     "user.message.users_groups": "使用者群組：",
-    "user.message.wiki_unavailable": "${wikiurl} 不可用。",
-    "user.message.wikipoints": "Wikipoints："
+    "user.message.wiki_unavailable": "${wikiurl} 不可用。"
 }

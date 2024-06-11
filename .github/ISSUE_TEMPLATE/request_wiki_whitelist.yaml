@@ -17,7 +17,7 @@ body:
     attributes:
       label: Wiki 链接
       description: 需要申请白名单的 Wiki 的链接。
-      placeholder: e.g. https://minecraft.fandom.com/zh/wiki/Minecraft_Wiki
+      placeholder: e.g. https://zh.minecraft.wiki/wiki/Minecraft_Wiki
     validations:
       required: true
   - type: textarea

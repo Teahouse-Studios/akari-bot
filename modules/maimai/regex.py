@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession):
                                                               level='/'.join((str(ds) for ds in music['ds']))))))
 
 
-@mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
-@mai_regex.regex(re.compile(r"(.+)\s?段位(?:[任認]定)?列?表"), desc='{maimai.help.maimai_regex.grade}')
+@mai_regex.regex(re.compile(r"(.+)\s?段位(?:[认認]定)?列?表"), desc='{maimai.help.maimai_regex.grade}')
 async def _(msg: Bot.MessageSession):
     grade = msg.matched_msg.groups()[0]
     await get_grade_info(msg, grade)

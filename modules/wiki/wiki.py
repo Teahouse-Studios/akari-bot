@@ -65,13 +65,11 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         interwiki_list = target.get_interwikis()
         headers = target.get_headers()
         prefix = target.get_prefix()
-        enabled_fandom_addon = session.options.get('wiki_fandom_addon')
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
         headers = session.headers
         prefix = session.prefix
-        enabled_fandom_addon = False
     else:
         raise TypeError('Session must be Bot.MessageSession or QueryInfo.')
 
@@ -85,7 +83,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
-            raise AbuseWarning(session.locale.t('tos.message.reason.wiki_abuse'))
+            raise AbuseWarning('{tos.message.reason.wiki_abuse}')
         query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
         for t in title:
             if prefix and use_prefix:
@@ -108,26 +106,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 'query': [], 'iw_prefix': g1}
                         query_task[interwiki_url]['query'].append(g2)
                         matched = True
-                    elif g1 == 'w' and enabled_fandom_addon:
-                        if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                            if match_interwiki.group(1) == 'c':
-                                if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                                    interwiki_split = match_interwiki.group(
-                                        1).split('.')
-                                    if len(interwiki_split) == 2:
-                                        get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                                        find = interwiki_split[0] + \
-                                            ':' + match_interwiki.group(2)
-                                        iw = 'w:c:' + interwiki_split[0]
-                                    else:
-                                        get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
-                                        find = match_interwiki.group(2)
-                                        iw = 'w:c:' + match_interwiki.group(1)
-                                    if get_link not in query_task:
-                                        query_task[get_link] = {
-                                            'query': [], 'iw_prefix': iw}
-                                    query_task[get_link]['query'].append(find)
-                                    matched = True
                 if not matched:
                     query_task[start_wiki]['query'].append(t)
     elif pageid:
@@ -312,7 +290,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         wait_msg_list.append(
                             Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
-            raise AbuseWarning(session.locale.t('tos.message.reason.too_many_redirects'))
+            raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
                 await session.send_message(session.locale.t('error') + str(e))

@@ -11,11 +11,8 @@ usr = module('user',
              )
 
 
-@usr.command('<username> [-p] {{user.help.desc}}',
-             options_desc={'-p': '{user.help.option.p}'})
-async def user(msg: Bot.MessageSession, username: str, profile=False):
-    if msg.parsed_msg.get('-p', False):
-        profile = True
+@usr.command('<username> {{user.help.desc}}')
+async def user(msg: Bot.MessageSession, username: str):
     target = WikiTargetInfo(msg)
     get_url = target.get_start_wiki()
     if get_url:
@@ -24,6 +21,6 @@ async def user(msg: Bot.MessageSession, username: str, profile=False):
             interwikis = target.get_interwikis()
             if match_interwiki.group(1) in interwikis:
                 await get_user_info(msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2), profile)
-        await get_user_info(msg, get_url, username, profile)
+        await get_user_info(msg, get_url, username)
     else:
         await msg.finish(msg.locale.t('wiki.message.not_set'))

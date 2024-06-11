@@ -61,6 +61,7 @@ class Chart(Dict):
     touch: Optional[int] = None
     brk: Optional[int] = None
     charter: Optional[int] = None
+    dxscore: Optional[int] = None
 
     def __getattribute__(self, item):
         if item == 'tap':
@@ -73,6 +74,8 @@ class Chart(Dict):
             return self['notes'][3] if len(self['notes']) == 5 else 0
         elif item == 'brk':
             return self['notes'][-1]
+        elif item == 'dxscore':
+            return sum(self['charter']) * 3
         elif item == 'charter':
             return self['charter']
         return super().__getattribute__(item)
@@ -91,7 +94,6 @@ class Music(Dict):
     release_date: Optional[str] = None
     artist: Optional[str] = None
     is_new: Optional[bool] = False
-
     diff: List[int] = []
 
     def __getattribute__(self, item):

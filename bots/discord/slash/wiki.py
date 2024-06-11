@@ -159,11 +159,6 @@ async def reset_prefix(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'prefix reset')
 
 
-@wiki.command(name="fandom", description="Toggle whether to use Fandom global Interwiki queries.")
-async def fandom(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, 'fandom')
-
-
 @wiki.command(name="redlink", description="Toggle whether to return the edit link when the page does not exist.")
 async def redlink(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'redlink')

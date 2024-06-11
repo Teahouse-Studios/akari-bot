@@ -166,18 +166,6 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.message.prefix.reset.success"))
 
 
-@wiki.command('fandom {{wiki.help.fandom}}', required_admin=True)
-async def _(msg: Bot.MessageSession):
-    fandom_addon_state = msg.data.options.get('wiki_fandom_addon')
-
-    if fandom_addon_state:
-        msg.data.edit_option('wiki_fandom_addon', False)
-        await msg.finish(msg.locale.t("wiki.message.fandom.disable"))
-    else:
-        msg.data.edit_option('wiki_fandom_addon', True)
-        await msg.finish(msg.locale.t("wiki.message.fandom.enable"))
-
-
 @wiki.command('redlink {{wiki.help.redlink}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     redlink_state = msg.data.options.get('wiki_redlink')

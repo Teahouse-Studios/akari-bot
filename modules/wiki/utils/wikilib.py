@@ -253,6 +253,9 @@ class WikiLib:
             except (TimeoutError, asyncio.TimeoutError):
                 return WikiStatus(available=False, value=False, message=self.locale.t(
                     "wiki.message.utils.wikilib.get_failed.timeout"))
+            except IndexError:
+                return WikiStatus(available=False, value=False, message=self.locale.t(
+                    "wiki.message.utils.wikilib.get_failed.not_mediawiki"))
             except Exception as e:
                 if Config('debug', False):
                     Logger.error(traceback.format_exc())
@@ -261,7 +264,7 @@ class WikiLib:
                 elif not re.match(r'^(https?://).*', self.url):
                     message = self.locale.t("wiki.message.utils.wikilib.get_failed.no_http_or_https_headers")
                 else:
-                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.not_a_mediawiki") + str(e)
+                    message = self.locale.t("wiki.message.utils.wikilib.get_failed.may_not_mediawiki") + str(e)
                 if self.url.find('moegirl.org.cn') != -1:
                     message += '\n' + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
                 return WikiStatus(available=False, value=False, message=message)
@@ -739,7 +742,10 @@ class WikiLib:
                     iw_title = iw_title.group(1)
                     _prefix += i['iw'] + ':'
                     _iw = True
-                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']], headers=self.headers) \
+
+                    if not (get_iw := self.wiki_info.interwiki.get(i['iw'])):
+                        raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.invalid_interwiki"))
+                    iw_query = await WikiLib(url=get_iw, headers=self.headers) \
                         .parse_page_info(iw_title, lang=lang,
                                          _tried=_tried + 1,
                                          _prefix=_prefix,

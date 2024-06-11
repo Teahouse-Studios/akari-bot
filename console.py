@@ -7,7 +7,7 @@ import aioconsole
 
 from bot import init_bot
 from config import Config
-from core.builtins import PrivateAssets, EnableDirtyWordCheck
+from core.builtins import PrivateAssets, EnableDirtyWordCheck, Url
 from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers
 from core.logger import Logger
@@ -38,6 +38,7 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
     sys.exit()
 
 EnableDirtyWordCheck.status = True
+Url.disable_mm = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 

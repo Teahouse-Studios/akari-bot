@@ -7,13 +7,13 @@ report_targets = Config('report_targets', [])
 WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
-async def warn_target(msg: Bot.MessageSession, reason=None):
+async def warn_target(msg: Bot.MessageSession, reason: str):
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
         warn_template = [msg.locale.t("tos.message.warning")]
-        if reason:
-            warn_template.append(msg.locale.t("tos.message.reason") + reason)
+        i18n_reason = msg.locale.tl_str(reason)
+        warn_template.append(msg.locale.t("tos.message.reason") + i18n_reason)
         if current_warns < WARNING_COUNTS:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(
@@ -47,12 +47,12 @@ async def warn_user(user: str, count=1):
     return current_warns
 
 
-async def tos_report(sender, target, reason=None, banned=False):
+async def tos_report(sender, target, reason, banned = False):
     locale = Locale(default_locale)
     if report_targets:
         warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
-        if reason:
-            warn_template.append(locale.t("tos.message.reason") + reason)
+        reason = locale.tl_str(reason)
+        warn_template.append(locale.t("tos.message.reason") + reason)
         if banned:
             action = locale.t("tos.message.action.banned")
         else:

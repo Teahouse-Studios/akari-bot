@@ -50,7 +50,8 @@ async def tos_abuse_warning(msg: Bot.MessageSession, e):
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
     else:
-        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=e))
+        reason = msg.locale.tl_str(str(e))
+        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=reason))
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
@@ -62,7 +63,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         same['count'] += 1
         if same['count'] > 10:
-            raise AbuseWarning(msg.locale.t("tos.message.reason.cooldown"))
+            raise AbuseWarning("{tos.message.reason.cooldown}")
     all_ = counter_all.get(msg.target.sender_id)
     if not all_ or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {'count': 1,
@@ -70,7 +71,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         all_['count'] += 1
         if all_['count'] > 20:
-            raise AbuseWarning(msg.locale.t("tos.message.reason.abuse"))
+            raise AbuseWarning("{tos.message.reason.abuse}")
 
 
 async def temp_ban_check(msg: Bot.MessageSession):
@@ -88,7 +89,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 is_temp_banned['count'] += 1
                 await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning(msg.locale.t("tos.message.reason.ignore"))
+                raise AbuseWarning("{tos.message.reason.ignore}")
 
 
 async def check_target_cooldown(msg: Bot.MessageSession):
@@ -376,14 +377,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             try:
                                 await tos_msg_counter(msg, msg.trigger_msg)
                             except AbuseWarning as e:
-                                await tos_abuse_warning(msg, e)
+                                await tos_abuse_warning(msg, str(e))
                         else:
                             Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
                 except AbuseWarning as e:
-                    await tos_abuse_warning(msg, e)
+                    await tos_abuse_warning(msg, str(e))
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
@@ -490,7 +491,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 try:
                                     await tos_msg_counter(msg, msg.trigger_msg)
                                 except AbuseWarning as e:
-                                    await tos_abuse_warning(msg, e)
+                                    await tos_abuse_warning(msg, str(e))
                             else:
                                 Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
@@ -502,7 +503,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:
-                            await tos_abuse_warning(msg, e)
+                            await tos_abuse_warning(msg, str(e))
 
                         except Exception as e:
                             tb = traceback.format_exc()

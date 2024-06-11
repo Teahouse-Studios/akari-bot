@@ -1,3 +1,4 @@
+import re
 from datetime import timezone
 
 from config import Config
@@ -40,10 +41,12 @@ if Config('enable_urlmanager', False):
     @aud.command(['distrust <apilink>',
                   'unblock <apilink>'])
     async def _(msg: Bot.MessageSession, apilink: str):
+        if not re.match(r'^.*(/api\.php)$', apilink):
+            await msg.finish(msg.locale.t("wiki.message.wiki_audit.remove.failed.not_api"))
         if msg.parsed_msg.get('distrust', False):
             res = Audit(apilink).remove_from_AllowList()  # 已关闭的站点无法验证有效性
             if not res:
-                await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed.other', api=apilink))
+                await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed.other_wiki', api=apilink))
             list_name = msg.locale.t('wiki.message.wiki_audit.list_name.allowlist')
         else:
             res = Audit(apilink).remove_from_BlockList()

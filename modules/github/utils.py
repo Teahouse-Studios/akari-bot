@@ -61,8 +61,7 @@ async def dirty_check(text, *allowlist_check):
     ]
     if allowlist_check in allowlist:
         return False
-    check = await dirty.check(text)
-    for x in check:
-        if not x['status']:
-            return True
+    check = await dirty.check_bool(text)
+    if not check:
+        return True
     return False
