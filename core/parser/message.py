@@ -4,6 +4,9 @@ import re
 import traceback
 from datetime import datetime
 
+from aiocqhttp import NetworkError
+from tenacity import RetryError
+
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
@@ -181,7 +184,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)
             else:
-                return await msg.send_message(msg.locale.t("parser.command.running.prompt"))
+                await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
             not_alias = False
             for moduleName in modules:
@@ -391,6 +394,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     err_msg = msg.locale.tl_str(str(e))
                     await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
+                except (NetworkError, RetryError) as e:
+                    tb = traceback.format_exc()
+                    Logger.error(tb)
+                    errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
+                    if Config('bug_report_url', cfg_type = str):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
+                    await msg.send_message(errmsg)
+
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
@@ -503,7 +514,15 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:
-                            await tos_abuse_warning(msg, str(e))
+                            await tos_abuse_warning(msg, str(e))\
+
+                        except (NetworkError, RetryError) as e:
+                            tb = traceback.format_exc()
+                            Logger.error(tb)
+                            errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
+                            if Config('bug_report_url', cfg_type = str):
+                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
+                            await msg.send_message(errmsg)
 
                         except Exception as e:
                             tb = traceback.format_exc()
