@@ -132,6 +132,8 @@ def parse_dice_expression(msg, dices):
     return dice_expr_list, dice_count, int(times), None
 
 # 在数字与数字之间加上乘号
+
+
 def insert_multiply(lst, use_markdown=False):
     result = []
     asterisk = '/*' if use_markdown else '*'
@@ -151,6 +153,8 @@ def insert_multiply(lst, use_markdown=False):
     return result
 
 # 开始投掷并生成消息
+
+
 def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
     success_num = 0
     fail_num = 0
@@ -200,7 +204,8 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
                 result = str(result)
             output_line += '=' + result
         except Exception:
-            return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + msg.locale.t('dice.message.too_long')).message
+            return DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' +
+                                  msg.locale.t('dice.message.too_long')).message
 
         try:
             if dc:

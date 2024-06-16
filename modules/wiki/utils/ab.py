@@ -14,17 +14,18 @@ async def ab(msg: Bot.MessageSession, wiki_url):
         if 'title' in x:
             result = 'pass' if not x['result'] else x['result']
             d.append('•' + msg.locale.t("wiki.message.ab.slice",
-                                  title=x['title'],
-                                  user=x['user'],
-                                  time=msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False),
-                                  action=x['action'],
-                                  filter_name=x['filter'],
-                                  result=result))
+                                        title=x['title'],
+                                        user=x['user'],
+                                        time=msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False),
+                                        action=x['action'],
+                                        filter_name=x['filter'],
+                                        result=result))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:
         y = y.replace("<吃掉了>", msg.locale.t("check.redacted"))
         y = y.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="5")}\n{msg.locale.t("wiki.message.utils.redacted")}'
+        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="5")}\n{
+            msg.locale.t("wiki.message.utils.redacted")}'
     else:
         return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="5")}'

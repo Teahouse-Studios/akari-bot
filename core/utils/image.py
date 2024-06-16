@@ -103,8 +103,8 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                 data = await fi.read()
                 try:
                     ftt = ft.match(data)
-                    lst.append(
-                        f'<img src="data:{ftt.mime};base64,{(base64.encodebytes(data)).decode("utf-8")}" width="720" />')
+                    lst.append(f'<img src="data:{ftt.mime};base64,{
+                        (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
                 except TypeError:
                     traceback.print_exc()
         if isinstance(m, Voice):

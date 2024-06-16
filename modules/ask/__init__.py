@@ -16,13 +16,13 @@ from core.utils.cooldown import CoolDown
 
 from .formatting import generate_latex, generate_code_snippet  # noqa: E402
 
-if Config('openai_api_key', cfg_type = str):
+if Config('openai_api_key', cfg_type=str):
     client = AsyncOpenAI(
-        api_key=Config('openai_api_key', cfg_type = str),
+        api_key=Config('openai_api_key', cfg_type=str),
     )
 
     sync_client = OpenAI(
-        api_key=Config('openai_api_key', cfg_type = str),
+        api_key=Config('openai_api_key', cfg_type=str),
     )
 
     INSTRUCTIONS = '''You are the chat mode of AkariBot (Chinese: 小可), a chat bot created by Teahouse Studios (Chinese: 茶馆工作室)
@@ -56,7 +56,7 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
-    if not Config('openai_api_key', cfg_type = str):
+    if not Config('openai_api_key', cfg_type=str):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     if Config('enable_petal', False) and not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals'))

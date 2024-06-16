@@ -51,11 +51,11 @@ class WordleBoard:
             for letter, count in yellow_letters.items():
                 if word.count(letter) < count:
                     return False
-                    
+
             for index, state in enumerate(last_word_state):
                 if state == WordleState.GREEN and self.word[index] != word[index]:
                     return False
-                    
+
         self.board.append(word)
         return self.test_board()
 

@@ -137,7 +137,8 @@ async def _(msg: Bot.MessageSession):
                                     is_disambiguation = False
                                     if get_page.templates:
                                         is_disambiguation = 'Template:Disambiguation' in get_page.templates or 'Template:Version disambiguation' in get_page.templates
-                                    content_mode = get_page.has_template_doc or get_page.title.split(':')[0] in ['User'] or is_disambiguation
+                                    content_mode = get_page.has_template_doc or get_page.title.split(':')[0] in [
+                                        'User'] or is_disambiguation
                                     get_infobox = await generate_screenshot_v2(qq,
                                                                                allow_special_page=q[qq].in_allowlist,
                                                                                content_mode=content_mode)

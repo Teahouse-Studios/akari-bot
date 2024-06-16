@@ -28,6 +28,7 @@ class FinishedSession(FinS):
         except Exception:
             Logger.error(traceback.format_exc())
 
+
 class MessageSession(MessageSessionT):
     class Feature:
         image = True

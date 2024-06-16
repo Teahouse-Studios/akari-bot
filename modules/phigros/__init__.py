@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'QQ|Group',
         'QQ|Guild',
         'Telegram|Group',
-        'Telegram|Supergroup',]:
+            'Telegram|Supergroup',]:
         send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False))
         need_revoke = True
     headers = p_headers.copy()

@@ -11,7 +11,7 @@ from core.petal import count_petal
 from core.utils.cooldown import CoolDown
 
 client = AsyncOpenAI(
-    api_key=Config('openai_api_key', cfg_type = str),
+    api_key=Config('openai_api_key', cfg_type=str),
 ) if Config('openai_api_key') else None
 
 s = module('summary',
@@ -23,7 +23,7 @@ s = module('summary',
 @s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
-    if not Config('openai_api_key', cfg_type = str):
+    if not Config('openai_api_key', cfg_type=str):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     if Config('enable_petal', False) and not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals'))
@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
         prev = ''
         while nth < len(texts):
             prompt = f'请总结下列聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。请使用{msg.locale.locale}输出结果。除了聊天记录的摘要以外，不要输出其他任何内容。' \
-                     f'''{f"""同时<ctx_start>与<|ctx_end|>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录来输出。
+                f'''{f"""同时<ctx_start>与<|ctx_end|>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录来输出。
 
     <|ctx_start|>{prev}<|ctx_end|>""" if nth != 0 else ""}'''
             len_prompt = len(prompt)

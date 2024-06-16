@@ -85,9 +85,11 @@ if Config('enable_urlmanager', False):
         if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             send_msgs = []
             if Config('db_path', cfg_type=str).startswith('mysql'):
-                allow_columns = [[x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)] for x in allow_list]
+                allow_columns = [[x[0], msg.ts2strftime(
+                    x[1].timestamp(), iso=True, timezone=False)] for x in allow_list]
             else:
-                allow_columns = [[x[0], msg.ts2strftime(x[1].replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in allow_list]
+                allow_columns = [[x[0], msg.ts2strftime(x[1].replace(
+                    tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in allow_list]
 
             if allow_columns:
                 allow_table = ImageTable(data=allow_columns, headers=[
@@ -100,9 +102,11 @@ if Config('enable_urlmanager', False):
                         send_msgs.append(Plain(msg.locale.t('wiki.message.wiki_audit.list.allowlist')))
                         send_msgs.append(Image(allow_image))
             if Config('db_path', cfg_type=str).startswith('mysql'):
-                block_columns = [[x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
+                block_columns = [[x[0], msg.ts2strftime(
+                    x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
             else:
-                block_columns = [[x[0], msg.ts2strftime(x[1].replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in block_list]
+                block_columns = [[x[0], msg.ts2strftime(x[1].replace(
+                    tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in block_list]
             if block_columns:
                 block_table = ImageTable(data=block_columns, headers=[
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.apilink'),

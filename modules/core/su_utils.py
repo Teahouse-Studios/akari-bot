@@ -85,7 +85,7 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish()
     if 'enable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in ModulesManager.return_modules_list(msg.target.target_from)]
+                   if m in ModulesManager.return_modules_list(msg.target.target_from)]
         target_data.enable(modules)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish(msg.locale.t("core.message.set.module.enable.failed"))
     elif 'disable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in target_data.enabled_modules]
+                   if m in target_data.enabled_modules]
         target_data.disable(modules)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
@@ -228,7 +228,6 @@ if Bot.client_name == 'QQ':
         if BotDBUtil.GroupBlockList.add(target):
             await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
-
     @ae.command('unblock <target>')
     async def _(msg: Bot.MessageSession, target: str):
         if not target.startswith('QQ|Group|'):
@@ -281,7 +280,7 @@ async def update_bot(msg: Bot.MessageSession):
     else:
         await msg.send_message(msg.locale.t("core.message.update.failed"))
     await msg.finish(update_dependencies())
-    
+
 
 if Info.subprocess:
     rst = module('restart', required_superuser=True, base=True)

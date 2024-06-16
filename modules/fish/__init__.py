@@ -54,8 +54,8 @@ async def finish_fish(msg: Bot.MessageSession):
             if fish_words == fish_words_key:
                 fish_words = msg.locale.t('fish.message.fished', name=fish_name)
             text = f'{fish_words}\n' + \
-                   (f'{msg.locale.t("fish.message.size")}'
-                    f'{msg.locale.t("fish.message.size." + play_state.check(key="fish_type"))}')
+                (f'{msg.locale.t("fish.message.size")}'
+                 f'{msg.locale.t("fish.message.size." + play_state.check(key="fish_type"))}')
             if play_state.check(key='hooked_time') < 2:
                 if g := await gained_petal(msg, 1):
                     text += '\n' + g

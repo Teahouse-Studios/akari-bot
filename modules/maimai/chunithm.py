@@ -176,7 +176,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     getdiff = msg.parsed_msg.get('-d', False)
     if getdiff:
         diff = getdiff['<diff>']
-        
+
     if diff:
         diff_index = get_diff(diff)  # diff_index 的结果可能为 0
         if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):

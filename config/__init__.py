@@ -86,13 +86,15 @@ class CFG:
                 if isinstance(cfg_type, tuple):
                     cfg_type_args = get_args(cfg_type)
                     if not all(isinstance(t, type) for t in cfg_type_args):
-                        print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type tuple should contain only types.')
+                        print(f'[Config] Invalid cfg_type provided in config {
+                              q}. cfg_type tuple should contain only types.')
                     else:
                         cfg_type_str = ', '.join([t.__name__ for t in cfg_type_args])
                         if value is not None and not isinstance(value, cfg_type):
                             print(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value)}.')
             else:
-                print(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
+                print(f'[Config] Invalid cfg_type provided in config {
+                      q}. cfg_type should be a type or a tuple of types.')
         elif default is not None:
             if not isinstance(value, type(default)):
                 print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')

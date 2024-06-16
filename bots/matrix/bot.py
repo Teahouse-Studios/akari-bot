@@ -166,7 +166,7 @@ async def start():
                 keys = 0
                 while True:
                     resp = await bot.keys_claim({client.user: [client.device_id]})
-                    Logger.info(f"Matrix OTK claim resp #{keys+1}: {resp}")
+                    Logger.info(f"Matrix OTK claim resp #{keys + 1}: {resp}")
                     if isinstance(resp, nio.KeysClaimError):
                         break
                     keys += 1

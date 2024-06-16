@@ -277,7 +277,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     getdiff = msg.parsed_msg.get('-d', False)
     if getdiff:
         diff = getdiff['<diff>']
-        
+
     if diff:
         diff_index = get_diff(diff)  # diff_index 的输出结果可能为 0
         if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
@@ -324,8 +324,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
              options_desc={'-u': '{maimai.help.option.u}'})
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     get_user = msg.parsed_msg.get('-u', False)
-    username = get_user['<username>'] if get_user else None 
+    username = get_user['<username>'] if get_user else None
     await query_song_info(msg, id_or_alias, username)
+
 
 async def query_song_info(msg, query, username):
     if query[:2].lower() == "id":
@@ -452,7 +453,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @mai.command('scorelist <level> [-p <page>] [-u <username>] {{maimai.help.scorelist}}',
-             options_desc={'-p': '{maimai.help.option.p}', 
+             options_desc={'-p': '{maimai.help.option.p}',
                            '-u': '{maimai.help.option.u}'})
 async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)

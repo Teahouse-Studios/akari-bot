@@ -45,7 +45,8 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
                     servers.append(''.join(text))
 
             if 'players' in jejson:
-                onlinesplayer = f"{msg.locale.t('server.message.player')}{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
+                onlinesplayer = f"{msg.locale.t('server.message.player')}{str(
+                    jejson['players']['online'])} / {str(jejson['players']['max'])}"
                 servers.append(onlinesplayer)
                 if showplayer:
                     playerlist = []

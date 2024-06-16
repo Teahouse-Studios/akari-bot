@@ -28,6 +28,7 @@ async def jiki(term: str, locale: Locale):
 
         results = bs.select('.lite-card').__len__()
         count = str(result) if results < 15 else '15+'
-        return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.result", result=count)}{title}\n{content}\n{str(Url(link))}'
+        return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.result", result=count)}{
+            title}\n{content}\n{str(Url(link))}'
     except Exception:
         return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.error")}'

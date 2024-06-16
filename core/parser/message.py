@@ -106,7 +106,8 @@ async def check_target_cooldown(msg: Bot.MessageSession):
         if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
             time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
             if time > cooldown_time:
-                cooldown_counter[msg.target.target_id].update({msg.target.sender_id: {'ts': datetime.now().timestamp()}})
+                cooldown_counter[msg.target.target_id].update(
+                    {msg.target.sender_id: {'ts': datetime.now().timestamp()}})
             else:
                 await msg.finish(msg.locale.t('message.cooldown', time=cooldown_time - time))
         else:
@@ -123,7 +124,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行
     :return: 无返回
     """
-    identify_str = f'[{msg.target.sender_id}{f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
+    identify_str = f'[{msg.target.sender_id}{
+        f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
     limited_action = 'touch' if Config('use_shamrock', False) else 'poke'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
@@ -150,7 +152,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
-        msg.prefixes = [px for px in set(msg.prefixes) if px.strip()] # 过滤重复与空白前缀
+        msg.prefixes = [i for i in set(msg.prefixes) if i.strip()]  # 过滤重复与空白前缀
 
         disable_prefix = False
         if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
@@ -368,7 +370,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except SendMessageFailed:
                     if msg.target.target_from == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = (str, int)))}]')
+                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type=(str, int)))}]')
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -395,25 +397,26 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                 except (asyncio.exceptions.TimeoutError, RetryError, NetworkError) as e:
-                    tb = traceback.format_exc()
-                    Logger.error(tb)
+                    Logger.error(traceback.format_exc())
                     errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
-                    if Config('bug_report_url', cfg_type = str):
-                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
+                    if Config('bug_report_url', cfg_type=str):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
                     await msg.send_message(errmsg)
 
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
-                    errmsg = msg.locale.t('error.prompt', detail=str(e))
-                    if Config('bug_report_url', cfg_type = str):
-                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
+                    errmsg = msg.locale.t('error.prompt.report', detail=str(e))
+                    if Config('bug_report_url', cfg_type=str):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
                     await msg.send_message(errmsg)
                     if report_targets:
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                     msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -517,33 +520,33 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             await tos_abuse_warning(msg, str(e))\
 
                         except (asyncio.exceptions.TimeoutError, RetryError, NetworkError) as e:
-                            tb = traceback.format_exc()
-                            Logger.error(tb)
+                            Logger.error(traceback.format_exc())
                             errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
-                            if Config('bug_report_url', cfg_type = str):
-                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url', cfg_type = str))))
+                            if Config('bug_report_url', cfg_type=str):
+                                errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                              url=str(Url(Config('bug_report_url', cfg_type=str))))
                             await msg.send_message(errmsg)
 
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
-                            errmsg = msg.locale.t('error.prompt', detail=str(e))
-                            if Config('bug_report_url', cfg_type = str):
+                            errmsg = msg.locale.t('error.prompt.report', detail=str(e))
+                            if Config('bug_report_url', cfg_type=str):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url', cfg_type = str))))
+                                                              url=str(Url(Config('bug_report_url', cfg_type=str))))
                             await msg.send_message(errmsg)
                             if report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
-                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg) + tb, disable_secret_check=True)
+                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                       message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type = (int, str)))}]')
+                                       message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type=(int, str)))}]')
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg

@@ -84,7 +84,7 @@ async def search_csr(id=None):
     return {'id': answer_id,
             'answer': name,
             'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
-                     (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
+            (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
             'length': value,
             'elements': elements}
 
@@ -163,7 +163,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         image.alpha_composite(im, (0, 0))
         newpath = random_cache_path() + '.png'
         image.save(newpath)
-            
+
     set_timeout = play_state.check('length') // 30
     if set_timeout < 2:
         set_timeout = 2

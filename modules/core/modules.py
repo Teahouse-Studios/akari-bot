@@ -353,9 +353,9 @@ async def bot_help(msg: Bot.MessageSession):
                 devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
                 devs_msg = ''
-            if Config('help_url', cfg_type = str):
+            if Config('help_url', cfg_type=str):
                 wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                               url=Config('help_url', cfg_type = str)) + '/' + help_name
+                                               url=Config('help_url', cfg_type=str)) + '/' + help_name
             else:
                 wiki_msg = ''
             if len(doc) > 500 and not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
@@ -452,12 +452,12 @@ async def _(msg: Bot.MessageSession):
                     legacy_help = False
                     help_msg_list = [Image(render), Plain(msg.locale.t("core.message.help.more_information",
                                                                        prefix=msg.prefixes[0]))]
-                    if Config('help_url', cfg_type = str):
+                    if Config('help_url', cfg_type=str):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.document",
-                                                                url=Config('help_url', cfg_type = str))))
-                    if Config('donate_url', cfg_type = str):
+                                                                url=Config('help_url', cfg_type=str))))
+                    if Config('donate_url', cfg_type=str):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.donate",
-                                                                url=Config('donate_url', cfg_type = str))))
+                                                                url=Config('donate_url', cfg_type=str))))
                     await msg.finish(help_msg_list)
         except Exception:
             traceback.print_exc()
@@ -481,16 +481,16 @@ async def _(msg: Bot.MessageSession):
             msg.locale.t(
                 "core.message.help.legacy.more_information",
                 prefix=msg.prefixes[0]))
-        if Config('help_url', cfg_type = str):
+        if Config('help_url', cfg_type=str):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.more_information.document",
-                    url=Config('help_url', cfg_type = str)))
-        if Config('donate_url', cfg_type = str):
+                    url=Config('help_url', cfg_type=str)))
+        if Config('donate_url', cfg_type=str):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.more_information.donate",
-                    url=Config('donate_url', cfg_type = str)))
+                    url=Config('donate_url', cfg_type=str)))
         await msg.finish('\n'.join(help_msg))
 
 
@@ -499,10 +499,10 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         target_from=msg.target.target_from)
     legacy_help = True
     help_msg = [msg.locale.t("core.message.module.list.prompt", prefix=msg.prefixes[0])]
-    if Config('help_url', cfg_type = str):
+    if Config('help_url', cfg_type=str):
         help_msg.append(msg.locale.t(
             "core.message.help.more_information.document",
-                        url=Config('help_url', cfg_type = str)))
+                        url=Config('help_url', cfg_type=str)))
     if msg.Feature.image and not legacy:
         try:
             tables = []
@@ -577,9 +577,9 @@ async def modules_help(msg: Bot.MessageSession, legacy):
             msg.locale.t(
                 "core.message.module.list.prompt",
                 prefix=msg.prefixes[0]))
-        if Config('help_url', cfg_type = str):
+        if Config('help_url', cfg_type=str):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.more_information.document",
-                    url=Config('help_url', cfg_type = str)))
+                    url=Config('help_url', cfg_type=str)))
         await msg.finish('\n'.join(help_msg))

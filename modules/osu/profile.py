@@ -27,7 +27,8 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         username = profile['username']
         country = profile['country']
         level = int(float(profile['level']))
-        join_date = datetime.strptime(profile['join_date'], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
+        join_date = datetime.strptime(profile['join_date'],
+                                      "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
         join_date = msg.ts2strftime(join_date, iso=True, timezone=False)
         total_seconds_played = int(profile['total_seconds_played'])
         total_play_time = second2dhm(total_seconds_played)
@@ -70,18 +71,18 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         await msg.finish(msg.locale.t('osu.message.not_found'))
 
     text = f'UID: {userid}\n' + \
-           f'Username: {username}\n' + \
-           f'Country: {country}\n' + \
-           f'Level: {level}\n' + \
-           f'Join Date: {join_date}\n' + \
-           f'Total Play Time: {total_play_time}\n' + \
-           f'Play Count: {playcount}\n' + \
-           f'Hit Accuracy: {round(float(accuracy), 2)}%\n' + \
-           f'Performance Point: {pp_raw}\n' + \
-           f'Ranked Score: {ranked_score}\n' + \
-           f'Total Score: {total_score}\n' + \
-           f'Total Hits: {total_hits}\n' + \
-           f'Global Ranking: #{pp_rank}\n' + \
-           f'Country Ranking: #{pp_country_rank}\n' + \
-           f'Grade: {", ".join(grade_t)}'
+        f'Username: {username}\n' + \
+        f'Country: {country}\n' + \
+        f'Level: {level}\n' + \
+        f'Join Date: {join_date}\n' + \
+        f'Total Play Time: {total_play_time}\n' + \
+        f'Play Count: {playcount}\n' + \
+        f'Hit Accuracy: {round(float(accuracy), 2)}%\n' + \
+        f'Performance Point: {pp_raw}\n' + \
+        f'Ranked Score: {ranked_score}\n' + \
+        f'Total Score: {total_score}\n' + \
+        f'Total Hits: {total_hits}\n' + \
+        f'Global Ranking: #{pp_rank}\n' + \
+        f'Country Ranking: #{pp_country_rank}\n' + \
+        f'Grade: {", ".join(grade_t)}'
     await msg.finish(text)

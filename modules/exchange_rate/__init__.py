@@ -6,7 +6,7 @@ from core.component import module
 from core.exceptions import ConfigValueError
 from core.utils.http import get_url
 
-api_key = Config('exchange_rate_api_key', cfg_type = str)
+api_key = Config('exchange_rate_api_key', cfg_type=str)
 
 excr = module('exchange_rate',
               desc='{exchange_rate.help.desc}',
