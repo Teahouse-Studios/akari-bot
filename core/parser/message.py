@@ -394,7 +394,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     err_msg = msg.locale.tl_str(str(e))
                     await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
-                except (asyncio.TimeoutError, RetryError, NetworkError) as e:
+                except (asyncio.exceptions.TimeoutError, RetryError, NetworkError) as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
                     errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
@@ -516,7 +516,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         except AbuseWarning as e:
                             await tos_abuse_warning(msg, str(e))\
 
-                        except (asyncio.TimeoutError, RetryError, NetworkError) as e:
+                        except (asyncio.exceptions.TimeoutError, RetryError, NetworkError) as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
                             errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
