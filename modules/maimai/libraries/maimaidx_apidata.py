@@ -151,7 +151,6 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict) -> Optional[s
         data = await post_url(url,
                               data=json.dumps(payload),
                               status_code=200,
-                              timeout=0.5,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
         if data:
@@ -188,7 +187,6 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str) -> Opt
         data = await post_url(url,
                               data=json.dumps(payload),
                               status_code=200,
-                              timeout=0.5,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
         if data:
