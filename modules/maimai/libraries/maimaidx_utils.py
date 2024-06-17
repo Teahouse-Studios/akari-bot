@@ -433,7 +433,7 @@ async def get_level_process(msg, payload, process, goal):
     if len(song_remain) > 0:
         song_record = [[s['id'], s['level_index']] for s in verlist]
         output += f"{msg.locale.t('maimai.message.process.last', process=process, goal=goal)}\n"
-        for i, s in enumerate(sorted(songs, key=lambda i: i[3])):  # 显示剩余歌曲信息
+        for i, s in enumerate(sorted(songs, key=lambda i: i[3], reverse=True)):  # 显示剩余歌曲信息
             self_record = ''
             if [int(s[0]), s[-2]] in song_record:
                 record_index = song_record.index([int(s[0]), s[-2]])
