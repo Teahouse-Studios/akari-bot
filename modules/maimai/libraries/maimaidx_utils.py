@@ -1,15 +1,14 @@
 import math
 import os
 import random
-import ujson as json
-from collections import Counter
 from datetime import datetime
+
+import ujson as json
 
 from core.builtins import Plain
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
-from core.utils.cache import random_cache_path
-from .maimaidx_apidata import get_record, get_plate
+from .maimaidx_apidata import get_record, get_total_record, get_plate
 from .maimaidx_music import TotalList
 
 SONGS_PER_PAGE = 20
@@ -342,8 +341,7 @@ async def get_rank(msg, payload):
 
 
 async def get_player_score(msg, payload, input_id):
-    payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
-    res = await get_plate(msg, payload)  # 获取用户成绩信息
+    res = await get_total_record(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
     music = (await total_list.get()).by_id(input_id)
@@ -390,8 +388,7 @@ async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
 
-    payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
-    res = await get_plate(msg, payload)  # 获取用户成绩信息
+    res = await get_total_record(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
@@ -462,8 +459,7 @@ async def get_level_process(msg, payload, process, goal):
 async def get_score_list(msg, payload, level, page):
     player_data = await get_record(msg, payload)
 
-    payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
-    res = await get_plate(msg, payload)  # 获取用户成绩信息
+    res = await get_total_record(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
     song_list = []
@@ -529,7 +525,7 @@ async def get_plate_process(msg, payload, plate):
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    res = await get_plate(msg, payload)  # 获取用户成绩信息
+    res = await get_plate(msg, payload, version)  # 获取用户成绩信息
     verlist = res["verlist"]
 
     if goal in ['將', '者']:

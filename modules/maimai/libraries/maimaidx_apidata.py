@@ -11,6 +11,7 @@ from core.builtins import Bot, Image, MessageChain, Plain
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
+from .maimaidx_utils import plate_conversion
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
 assets_dir = os.path.abspath('./assets/maimai')
@@ -88,7 +89,7 @@ async def search_by_alias(input_) -> list:
 
 
 async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
-    cache_path = os.path.join(cache_dir, f'{msg.target.sender_id.replace('|', '_')}_maimai_record.json')
+    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
         data = await post_url(url,
@@ -123,8 +124,46 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                 return None
 
 
-async def get_plate(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
-    cache_path = os.path.join(cache_dir, f'{msg.target.sender_id.replace('|', '_')}_maimai_plate.json')
+async def get_total_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
+    payload['version'] = list(set(version for version in plate_conversion.values()))
+    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
+    url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
+    try:
+        data = await post_url(url,
+                              data=json.dumps(payload),
+                              status_code=200,
+                              timeout=0.5,
+                              headers={'Content-Type': 'application/json', 'accept': '*/*'},
+                              fmt='json')
+        if data:
+            with open(cache_path, 'w') as f:
+                json.dump(data, f)
+        return data
+    except ValueError as e:
+        if str(e).startswith('400'):
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+        elif str(e).startswith('403'):
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.forbidden"))
+    except Exception:
+        Logger.error(traceback.format_exc())
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, 'r') as f:
+                    data = json.load(f)
+                await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                return data
+            except Exception:
+                return None
+
+
+async def get_plate(msg: Bot.MessageSession, payload: dict, version: str) -> Optional[str]:
+    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_{version}_plate.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
         data = await post_url(url,
