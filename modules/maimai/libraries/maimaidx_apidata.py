@@ -157,7 +157,7 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         if not utage:
-            data = {'verlist': [d for d in data if d.get('id', 0) < 100000]}  # 过滤宴谱
+            data = {'verlist': [d for d in data['verlist'] if d.get('id', 0) < 100000]}  # 过滤宴谱
         return data
     except ValueError as e:
         if str(e).startswith('400'):
@@ -178,7 +178,7 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
                     data = json.load(f)
                 await msg.send_message(msg.locale.t("maimai.message.use_cache"))
                 if not utage:
-                    data = {'verlist': [d for d in data if d.get('id', 0) < 100000]}  # 过滤宴谱
+                    data = {'verlist': [d for d in data['verlist'] if d.get('id', 0) < 100000]}  # 过滤宴谱
                 return data
             except Exception:
                 return None
