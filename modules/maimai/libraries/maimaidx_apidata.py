@@ -143,7 +143,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                 return None
 
 
-async def get_total_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
+async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
     payload['version'] = versions
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
@@ -156,6 +156,8 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict) -> Optional[s
         if data:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
+        if not utage:
+            data = {'verlist': [d for d in data if d.get('id', 0) < 100000]}  # 过滤宴谱
         return data
     except ValueError as e:
         if str(e).startswith('400'):
@@ -175,6 +177,8 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict) -> Optional[s
                 with open(cache_path, 'r') as f:
                     data = json.load(f)
                 await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                if not utage:
+                    data = {'verlist': [d for d in data if d.get('id', 0) < 100000]}  # 过滤宴谱
                 return data
             except Exception:
                 return None
