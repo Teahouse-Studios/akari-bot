@@ -431,26 +431,27 @@ async def get_level_process(msg, payload, process, goal):
     output = ''
     get_img = False
     if len(song_remain) > 0:
-        if len(song_remain) < 50:  # 若剩余歌曲小于50个则显示
-            song_record = [[s['id'], s['level_index']] for s in verlist]
-            output += f"{msg.locale.t('maimai.message.process.last', process=process, goal=goal)}\n"
-            for i, s in enumerate(sorted(songs, key=lambda i: i[3])):  # 显示剩余歌曲信息
-                self_record = ''
-                if [int(s[0]), s[-2]] in song_record:
-                    record_index = song_record.index([int(s[0]), s[-2]])
-                    if goal in scoreRank:
-                        self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
-                    elif goal in comboRank:
-                        if verlist[record_index]['fc']:
-                            self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
-                    elif goal in syncRank:
-                        if verlist[record_index]['fs']:
-                            self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
-            if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
-                get_img = True
-        else:
-            await msg.finish(msg.locale.t('maimai.message.process', song_remain=len(song_remain), process=process, goal=goal))
+        song_record = [[s['id'], s['level_index']] for s in verlist]
+        output += f"{msg.locale.t('maimai.message.process.last', process=process, goal=goal)}\n"
+        for i, s in enumerate(sorted(songs, key=lambda i: i[3])):  # 显示剩余歌曲信息
+            self_record = ''
+            if [int(s[0]), s[-2]] in song_record:
+                record_index = song_record.index([int(s[0]), s[-2]])
+                if goal in scoreRank:
+                    self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
+                elif goal in comboRank:
+                    if verlist[record_index]['fc']:
+                        self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
+                elif goal in syncRank:
+                    if verlist[record_index]['fs']:
+                        self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+            output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+            if i == 49:
+                break
+        if len(song_remain) > 50:
+            output += msg.locale.t('maimai.message.process', song_remain=len(song_remain), process=process, goal=goal)
+        if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
+            get_img = True
     else:
         await msg.finish(msg.locale.t('maimai.message.process.completed', process=process, goal=goal))
 
