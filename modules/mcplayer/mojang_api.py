@@ -34,7 +34,7 @@ async def uuid_to_skin_and_cape(uuid):
             path = 'cache/' + uuid + '_fixed.png'
             cape.save(path)
         return {'render': render, 'skin': skin, 'cape': path}
-    except BaseException:
+    except Exception:
         Logger.warn("Unable to render player module, skip.")
         return None
 

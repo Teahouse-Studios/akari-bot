@@ -1,27 +1,28 @@
 import os
 import sys
 
+import aioconsole
 import asyncio
 import traceback
-import aioconsole
 
-from bot import init_bot
 from config import Config
-from core.builtins import PrivateAssets, EnableDirtyWordCheck, Url
-from core.console.message import MessageSession
-from core.extra.scheduler import load_extra_schedulers
 from core.logger import Logger
-from core.parser.message import parser
-from core.types import MsgInfo, Session
-from core.utils.bot import init_async
-from database import BotDBUtil, session
-from database.tables import DBVersion
 
 if not Config('db_path', cfg_type=str):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
-                         'Example: \ndb_path = \"sqlite:///database/save.db\"\n'
+                         'Example: \ndb_path = "sqlite:///database/save.db"\n'
                          '(Also you can fill in the above example directly,'
-                         ' bot will automatically create a SQLite database in the \"./database/save.db\")')
+                         ' bot will automatically create a SQLite database in the "./database/save.db")')
+
+from bot import init_bot
+from core.builtins import PrivateAssets, EnableDirtyWordCheck, Url
+from core.console.message import MessageSession
+from core.extra.scheduler import load_extra_schedulers
+from core.parser.message import parser
+from core.utils.bot import init_async
+from core.types import MsgInfo, Session
+from database import BotDBUtil, session
+from database.tables import DBVersion
 
 query_dbver = session.query(DBVersion).first()
 if not query_dbver:
@@ -49,12 +50,12 @@ async def console_scheduler():
 
 async def console_command():
     try:
-        m = await aioconsole.ainput('> ')
-        asyncio.create_task(console_command())
-        await send_command(m)
+        while True:
+            m = await aioconsole.ainput('> ')
+            await send_command(m)
     except KeyboardInterrupt:
-        print('Exited.')
-        exit()
+        print('\nExited.')
+        asyncio.get_event_loop().stop()
     except Exception:
         Logger.error(traceback.format_exc())
 
@@ -63,19 +64,22 @@ async def send_command(msg):
     Logger.info('-------Start-------')
     returns = await parser(MessageSession(target=MsgInfo(target_id='TEST|Console|0',
                                                          sender_id='TEST|0',
-                                                         sender_name='',
+                                                         sender_name='Console',
                                                          target_from='TEST|Console',
                                                          sender_from='TEST', client_name='TEST', message_id=0,
                                                          reply_id=None),
                                           session=Session(message=msg, target='TEST|Console|0', sender='TEST|0')))
-    # print(returns)
     Logger.info('----Process end----')
     return returns
 
-
 if __name__ == '__main__':
     init_bot()
-    loop = asyncio.new_event_loop()
-    loop.create_task(console_scheduler())
-    loop.create_task(console_command())
-    loop.run_forever()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(console_scheduler())
+    try:
+        loop.run_until_complete(console_command())
+    except KeyboardInterrupt:
+        print('Exited.')
+        loop.stop()
+    finally:
+        loop.close()

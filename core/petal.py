@@ -36,7 +36,7 @@ async def get_petal_exchange_rate():
 
 
 async def load_or_refresh_cache():
-    cache_dir = Config('cache_path', './cache/')
+    cache_dir = os.path.abspath(Config('cache_path', './cache/'))
     file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
