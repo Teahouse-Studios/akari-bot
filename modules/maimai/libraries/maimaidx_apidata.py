@@ -11,11 +11,30 @@ from core.builtins import Bot, Image, MessageChain, Plain
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
-from .maimaidx_utils import plate_conversion
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
 assets_dir = os.path.abspath('./assets/maimai')
 total_list = TotalList()
+
+versions = ['maimai',
+            'maimai PLUS',
+            'maimai GreeN',
+            'maimai GreeN PLUS',
+            'maimai ORANGE',
+            'maimai ORANGE PLUS',
+            'maimai PiNK',
+            'maimai PiNK PLUS',
+            'maimai MURASAKi',
+            'maimai MURASAKi PLUS',
+            'maimai MiLK',
+            'MiLK PLUS',
+            'maimai FiNALE',
+            'maimai でらっくす',
+            'maimai でらっくす Splash',
+            'maimai でらっくす UNiVERSE',
+            'maimai でらっくす FESTiVAL',
+            'maimai でらっくす BUDDiES',
+            ]
 
 
 async def update_alias() -> bool:
@@ -125,7 +144,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
 
 
 async def get_total_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
-    payload['version'] = list(set(version for version in plate_conversion.values()))
+    payload['version'] = versions
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
