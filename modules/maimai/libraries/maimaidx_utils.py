@@ -46,7 +46,8 @@ dx_plate_conversion = {
     '星': 'maimai でらっくす UNiVERSE',
     '祭': 'maimai でらっくす FESTiVAL',
     '祝': 'maimai でらっくす FESTiVAL',
-    'bud': 'maimai でらっくす BUDDiES',
+    '双': 'maimai でらっくす BUDDiES',
+    '雙': 'maimai でらっくす BUDDiES',
 }
 
 grade_conversion = {
@@ -503,7 +504,7 @@ async def get_plate_process(msg, payload, plate):
     song_remain_remaster = []
     song_remain_difficult = []
 
-    version_mapping = {'霸': '覇', '晓': '暁', '樱': '櫻', '堇': '菫', '辉': '輝', '华': '華'}
+    version_mapping = {'霸': '覇', '晓': '暁', '樱': '櫻', '堇': '菫', '辉': '輝', '华': '華', '雙': '双'}
     goal_mapping = {'将': '將', '极': '極'}
 
     version = plate[0]
