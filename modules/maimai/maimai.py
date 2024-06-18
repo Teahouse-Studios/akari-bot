@@ -234,11 +234,11 @@ async def _(msg: Bot.MessageSession, username: str = None):
             payload = {'username': username, 'b50': True}
     else:
         payload = {'username': username, 'b50': True}
-        try:
-            img = await generate(msg, payload)
-            await msg.finish([BImage(img)])
-        except BaseException:
-            traceback.print_exc()
+    try:
+        img = await generate(msg, payload)
+        await msg.finish([BImage(img)])
+    except BaseException:
+        traceback.print_exc()
 
 @mai.command('id <id> [<diff>] {{maimai.help.id}}')
 @mai.command('song <id_or_alias> [-d <diff>] {{maimai.help.song}}',
