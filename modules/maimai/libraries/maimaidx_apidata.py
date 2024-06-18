@@ -37,6 +37,7 @@ versions = ['maimai',
             'maimai でらっくす BUDDiES',
             ]
 
+
 async def update_cover() -> bool:
     id_list = ['00000', '01000']
     for song in (await total_list.get()):
@@ -58,7 +59,7 @@ async def update_cover() -> bool:
                                     if not chunk:
                                         break
                                     f.write(chunk)
-                            Logger.debug(f'Success to download {get_cover_len5_id(id)}.png')
+                            Logger.debug(f'Successfully download {get_cover_len5_id(id)}.png')
                         else:
                             if Config('debug', False):
                                 Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
