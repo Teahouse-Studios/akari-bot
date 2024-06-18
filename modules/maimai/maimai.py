@@ -1,11 +1,8 @@
-import traceback
-
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias
-from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
 

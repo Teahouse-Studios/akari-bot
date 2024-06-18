@@ -1,8 +1,6 @@
-import ujson as json
 from datetime import datetime
 
 from core.builtins import Plain
-from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from .chunithm_apidata import get_record
 
