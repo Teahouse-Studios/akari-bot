@@ -4,7 +4,7 @@ from core.builtins import Plain
 from core.utils.image import msgchain2image
 from .chunithm_apidata import get_record
 
-SONGS_PER_PAGE = 20
+SONGS_PER_PAGE = 30
 
 score_to_rank = {
     (0, 499999): "D",
