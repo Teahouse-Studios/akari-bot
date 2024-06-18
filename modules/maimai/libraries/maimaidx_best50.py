@@ -111,7 +111,7 @@ class DrawBest(object):
         for dx in dxBest:
             self.dxRating += compute_rating(dx.ds, dx.achievement)
         self.playerRating = self.sdRating + self.dxRating
-        self.cover_dir = 'assets/maimai/static/mai/cover/'
+        self.cover_dir = os.path.abspath('./assets/maimai/static/mai/cover/')
         self.img = Image.new('RGBA', (860, 1300), color=(211, 211, 211, 255))  # 创建空白图像
         self.ROWS_IMG = []
         for i in range(7):
@@ -147,7 +147,8 @@ class DrawBest(object):
         Color = [(69, 193, 36), (255, 186, 1), (255, 90, 102), (134, 49, 200), (217, 197, 233)]
         levelTriagle = [(itemW, 0), (itemW - 27, 0), (itemW, 27)]
         imgDraw = ImageDraw.Draw(img)
-        titleFontName = 'assets/Noto Sans CJK DemiLight.otf'
+        textFontPath = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
+        symbolFontPath = os.path.abspath('./assets/NotoSansSymbols2-Regular.ttf')
 
         for num in range(min(len(self.sdBest), 35)):
             i = num // 5
@@ -164,29 +165,29 @@ class DrawBest(object):
 
             tempDraw = ImageDraw.Draw(temp)
             tempDraw.polygon(levelTriagle, Color[chartInfo.diff])
-            font = ImageFont.truetype(titleFontName, 18, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
             title = chartInfo.title
             if self._coloumWidth(title) > 12:
                 title = self._changeColumnWidth(title, 12) + '...'
             tempDraw.text((6, 7), title, 'white', font)
-            font = ImageFont.truetype(titleFontName, 10, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
             tempDraw.text((7, 28), f'ID: {chartInfo.idNum}', 'white', font)
-            font = ImageFont.truetype(titleFontName, 16, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
-            font = ImageFont.truetype(titleFontName, 18, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
             tempDraw.text((96, 42), scoreRank[chartInfo.scoreId], 'white', font)
-            font = ImageFont.truetype(titleFontName, 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             if chartInfo.comboId:
                 tempDraw.text((80, 27), combo[chartInfo.comboId], 'white', font)
             if chartInfo.syncId:
                 tempDraw.text((110, 27), sync[chartInfo.syncId], 'white', font)
-            font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                           font)
-            font = ImageFont.truetype('assets/NotoSansSymbols2-Regular.ttf', 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
                           font)
-            font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 80), f'{chartInfo.ds} -> {compute_rating(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
             tempDraw.text((120, 80), f'#{num + 1}', 'white', font)
@@ -211,29 +212,29 @@ class DrawBest(object):
 
             tempDraw = ImageDraw.Draw(temp)
             tempDraw.polygon(levelTriagle, Color[chartInfo.diff])
-            font = ImageFont.truetype(titleFontName, 18, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
             title = chartInfo.title
             if self._coloumWidth(title) > 12:
                 title = self._changeColumnWidth(title, 12) + '...'
             tempDraw.text((6, 7), title, 'white', font)
-            font = ImageFont.truetype(titleFontName, 10, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
             tempDraw.text((7, 28), f'ID: {chartInfo.idNum}', 'white', font)
-            font = ImageFont.truetype(titleFontName, 16, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
-            font = ImageFont.truetype(titleFontName, 18, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
             tempDraw.text((96, 42), scoreRank[chartInfo.scoreId], 'white', font)
-            font = ImageFont.truetype(titleFontName, 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             if chartInfo.comboId:
                 tempDraw.text((80, 27), combo[chartInfo.comboId], 'white', font)
             if chartInfo.syncId:
                 tempDraw.text((110, 27), sync[chartInfo.syncId], 'white', font)
-            font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                           font)
-            font = ImageFont.truetype('assets/NotoSansSymbols2-Regular.ttf', 12, encoding='utf-8')
+            font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
             tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
                           font)
-            font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 12, encoding='utf-8')
+            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 80), f'{chartInfo.ds} -> {compute_rating(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
             tempDraw.text((120, 80), f'#{num + 1}', 'white', font)

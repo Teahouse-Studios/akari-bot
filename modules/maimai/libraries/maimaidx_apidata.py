@@ -2,6 +2,7 @@ import os
 import traceback
 from typing import Optional
 
+import aiohttp
 import ujson as json
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn
@@ -13,7 +14,7 @@ from core.utils.http import get_url, post_url
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
-assets_dir = os.path.abspath('./assets/maimai')
+assets_dir = os.path.abspath('./assets/maimai/')
 total_list = TotalList()
 
 versions = ['maimai',
@@ -36,6 +37,36 @@ versions = ['maimai',
             'maimai でらっくす BUDDiES',
             ]
 
+async def update_cover() -> bool:
+    id_list = ['00000', '01000']
+    for song in (await total_list.get()):
+        id_list.append(song['id'])
+    cover_dir = os.path.join(assets_dir, "static", "mai", "cover")
+    if not os.path.exists(cover_dir):
+        os.makedirs(cover_dir)
+    for id in id_list:
+        cover_path = os.path.join(cover_dir, f'{get_cover_len5_id(id)}.png')
+        if not os.path.exists(cover_path):
+            try:
+                url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(id)}.png"
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            with open(cover_path, 'wb') as f:
+                                while True:
+                                    chunk = await response.content.read(1024)
+                                    if not chunk:
+                                        break
+                                    f.write(chunk)
+                            Logger.debug(f'Success to download {get_cover_len5_id(id)}.png')
+                        else:
+                            if Config('debug', False):
+                                Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
+            except Exception:
+                Logger.error(traceback.format_exc())
+                return False
+    return True
+
 
 async def update_alias() -> bool:
     try:
@@ -53,12 +84,14 @@ async def update_alias() -> bool:
 
 async def get_info(music: Music, *details) -> MessageChain:
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
-    try:
-        img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
-        await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
-        info.append(Image(img))
-    except Exception:
-        info.append(Image("https://www.diving-fish.com/covers/00000.png"))
+    cover_dir = os.path.join(assets_dir, "static", "mai", "cover")
+    cover_path = os.path.join(cover_dir, f'{get_cover_len5_id(music.id)}.png')
+    if os.path.exists(cover_path):
+        info.append(Image(cover_path))
+    else:
+        cover_path = os.path.join(cover_dir, '00000.png')
+        if os.path.exists(cover_path):
+            info.append(Image(cover_path))
     if details:
         info.extend(details)
     return info

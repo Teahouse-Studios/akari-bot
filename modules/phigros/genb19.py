@@ -11,9 +11,10 @@ levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
 
 def drawb19(username, rks_acc, b19data):
     b19img = Image.new("RGBA", (1570, 1320), '#1e2129')
-    font = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
-    font2 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 15)
-    font3 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 25)
+    font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
+    font = ImageFont.truetype(font_path, 20)
+    font2 = ImageFont.truetype(font_path, 15)
+    font3 = ImageFont.truetype(font_path, 25)
 
     # username
     drawtext = ImageDraw.Draw(b19img)
