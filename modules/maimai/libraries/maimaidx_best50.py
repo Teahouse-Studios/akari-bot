@@ -155,7 +155,7 @@ class DrawBest(object):
             chartInfo = sdBest[num]
             pngPath = self.cover_dir + f'{get_cover_len5_id(chartInfo.idNum)}.png'
             if not os.path.exists(pngPath):
-                pngPath = self.cover_dir + '0.png'
+                pngPath = self.cover_dir + '01000.png'
             temp = Image.open(pngPath).convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
