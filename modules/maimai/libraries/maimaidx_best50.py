@@ -277,10 +277,10 @@ class DrawBest(object):
         font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 30, encoding='utf-8')
         imgDraw.text((34, 24), " ".join(self.userName), fill='black', font=font)
         font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 16, encoding='utf-8')
-        imgDraw.text((34, 64), f"Rating    {self.playerRating}", fill='black', font=font)
+        imgDraw.text((34, 64), f"RATING    {self.playerRating}", fill='black', font=font)
         font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 20, encoding='utf-8')
-        imgDraw.text((34, 114), f"Standard ({self.sdRating})", fill='black', font=font)
-        imgDraw.text((34, 914), f"New ({self.dxRating})", fill='black', font=font)
+        imgDraw.text((34, 114), f"STANDARD ({self.sdRating})", fill='black', font=font)
+        imgDraw.text((34, 914), f"NEW ({self.dxRating})", fill='black', font=font)
         self._drawBestList(self.img, self.sdBest, self.dxBest)
 
         font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 10, encoding='utf-8')

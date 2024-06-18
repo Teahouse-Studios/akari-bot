@@ -222,7 +222,7 @@ def calc_dxstar(dxscore: int, dxscore_max: int) -> str:
     stars = ""
     if 0.00 <= percentage < 85.00:
         stars = ""
-    if 85.00 <= percentage < 90.00:
+    elif 85.00 <= percentage < 90.00:
         stars = "✦"
     elif 90.00 <= percentage < 93.00:
         stars = "✦✦"
@@ -230,7 +230,7 @@ def calc_dxstar(dxscore: int, dxscore_max: int) -> str:
         stars = "✦✦✦"
     elif 95.00 <= percentage < 97.00:
         stars = "✦✦✦✦"
-    else:
+    elif percentage >= 97.00:
         stars = "✦✦✦✦✦"
     return stars
 
