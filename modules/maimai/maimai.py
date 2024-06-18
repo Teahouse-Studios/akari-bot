@@ -238,13 +238,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         payload = {'username': username, 'b50': True}
 
     if not msg.parsed_msg.get('-b', False):
-        try:
-            img = await generate(msg, payload)
-            beta = False
-        except BaseException:
-            traceback.print_exc()
-        if not beta:
-            await msg.send_message('提示：由于源代码已停止维护，未来或将不再支持以此方式渲染成绩图，请谅解。')
+        ...
     if beta:
         img = await generate_best50_text(msg, payload)
     await msg.finish([BImage(img)])
