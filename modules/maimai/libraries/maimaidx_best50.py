@@ -171,7 +171,7 @@ class DrawBest(object):
                 title = self._changeColumnWidth(title, 12) + '...'
             tempDraw.text((6, 7), title, 'white', font)
             font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
-            tempDraw.text((7, 28), f'ID: {chartInfo.idNum}', 'white', font)
+            tempDraw.text((7, 29), f'ID: {chartInfo.idNum}', 'white', font)
             font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
             font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
@@ -184,7 +184,7 @@ class DrawBest(object):
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                           font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+            font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
             tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
                           font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
@@ -218,7 +218,7 @@ class DrawBest(object):
                 title = self._changeColumnWidth(title, 12) + '...'
             tempDraw.text((6, 7), title, 'white', font)
             font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
-            tempDraw.text((7, 28), f'ID: {chartInfo.idNum}', 'white', font)
+            tempDraw.text((7, 29), f'ID: {chartInfo.idNum}', 'white', font)
             font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
             font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
