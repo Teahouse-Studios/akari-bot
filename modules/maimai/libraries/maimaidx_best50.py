@@ -5,8 +5,8 @@ from typing import Optional, Dict, List, Tuple
 import ujson as json
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-from core.utils.http import post_url
 from .maimaidx_music import get_cover_len5_id, TotalList
+from .maimaidx_apidata import get_record
 from .maimaidx_utils import compute_rating, calc_dxstar
 
 total_list = TotalList()
@@ -291,25 +291,7 @@ class DrawBest(object):
 
 
 async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
-    try:
-        resp = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player',
-                              data=json.dumps(payload),
-                              status_code=200,
-                              headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except ValueError as e:
-        if str(e).startswith('400'):
-            if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
-            else:
-                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        elif str(e).startswith('403'):
-            if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
-            else:
-                await msg.finish(msg.locale.t("maimai.message.forbidden"))
-        else:
-            traceback.print_exc()
-
+    resp = await get_record(msg, payload)
     sd_best = BestList(35)
     dx_best = BestList(15)
     dx: List[Dict] = resp["charts"]["dx"]

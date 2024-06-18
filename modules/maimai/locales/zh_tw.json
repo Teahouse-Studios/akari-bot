@@ -23,7 +23,6 @@
     "maimai.help.maimai_regex.random": "隨個[dx|標準][綠黃紅紫白]<難度> 隨機一首指定條件的歌曲。",
     "maimai.help.maimai_regex.song": "<ID 或別名>是什麼歌 輸入 ID 或別名查詢歌曲資訊，ID 需要加入前綴「id」。",
     "maimai.help.new": "查看目前版本最新歌曲。",
-    "maimai.help.option.b": "使用 Beta 版查詢。",
     "maimai.help.option.d": "查詢特定難度。",
     "maimai.help.option.p": "指定頁數，預設為 1。",
     "maimai.help.option.u": "查詢特定使用者。",

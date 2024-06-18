@@ -218,7 +218,7 @@ def compute_rating(ds: float, achievement: float) -> int:
 
 
 def calc_dxstar(dxscore: int, dxscore_max: int) -> str:
-    percentage = (dxscore / dxscore_max) * 100
+    percentage = round((dxscore / dxscore_max) * 100, 2)
     stars = ""
     if 0.00 <= percentage < 85.00:
         stars = ""
