@@ -58,7 +58,10 @@ class MessageSession(MessageSessionT):
                 print(self.locale.t("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
         try:
-            c = inputimeout('Confirm: ', timeout=timeout)
+            if timeout:
+                c = inputimeout('Confirm: ', timeout=timeout)
+            else:
+                c = input('Confirm: ')
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
@@ -77,7 +80,10 @@ class MessageSession(MessageSessionT):
                 print(self.locale.t("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
         try:
-            c = inputimeout('Confirm: ', timeout=timeout)
+            if timeout:
+                c = inputimeout('Confirm: ', timeout=timeout)
+            else:
+                c = input('Confirm: ')
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
@@ -94,7 +100,10 @@ class MessageSession(MessageSessionT):
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.send_message(message_chain)
         try:
-            c = inputimeout('Reply: ', timeout=timeout)
+            if timeout:
+                c = inputimeout('Reply: ', timeout=timeout)
+            else:
+                c = input('Reply: ')
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
@@ -114,7 +123,10 @@ class MessageSession(MessageSessionT):
         if message_chain:
             send = await self.send_message(message_chain)
         try:
-            c = inputimeout('Confirm: ', timeout=timeout)
+            if timeout:
+                c = inputimeout('Confirm: ', timeout=timeout)
+            else:
+                c = input('Confirm: ')
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
