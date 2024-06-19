@@ -62,6 +62,7 @@ pandas = "^2.2.0"
 future = "^1.0.0"
 fastapi = "^0.109.2"
 oss2 = "^2.18.4"
+inputimeout = "^1.0.4"
 
 
 [tool.poetry.group.dev.dependencies]

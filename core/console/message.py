@@ -1,14 +1,15 @@
 import asyncio
 from typing import List, Union
 
+from inputimeout import inputimeout, TimeoutOccurred
 from PIL import Image
-import aioconsole
 
 from config import Config
 from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.exceptions import WaitCancelException
 from core.logger import Logger
 from core.types import Session, MsgInfo, FinishedSession as FinS
 
@@ -56,8 +57,12 @@ class MessageSession(MessageSessionT):
             if append_instruction:
                 print(self.locale.t("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
-
-        c = await aioconsole.ainput('Confirm: ')
+        try:
+            c = inputimeout('Confirm: ', timeout=timeout)
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
         if message_chain and delete:
             await send.delete()
         if c in confirm_command:
@@ -71,8 +76,12 @@ class MessageSession(MessageSessionT):
             if append_instruction:
                 print(self.locale.t("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
-
-        c = await aioconsole.ainput('Confirm: ')
+        try:
+            c = inputimeout('Confirm: ', timeout=timeout)
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
         if message_chain and delete:
             await send.delete()
         self.session.message = c
@@ -84,7 +93,12 @@ class MessageSession(MessageSessionT):
         if append_instruction:
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.send_message(message_chain)
-        c = await aioconsole.ainput('Reply: ')
+        try:
+            c = inputimeout('Reply: ', timeout=timeout)
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
         if message_chain and delete:
             await send.delete()
         return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
@@ -99,7 +113,12 @@ class MessageSession(MessageSessionT):
         send = None
         if message_chain:
             send = await self.send_message(message_chain)
-        c = await aioconsole.ainput('Confirm: ')
+        try:
+            c = inputimeout('Confirm: ', timeout=timeout)
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
         if message_chain and delete:
             await send.delete()
         self.session.message = c

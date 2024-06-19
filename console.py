@@ -51,11 +51,8 @@ async def console_scheduler():
 async def console_command():
     try:
         while True:
-            m = await aioconsole.ainput('> ')
+            m = await aioconsole.ainput()
             await send_command(m)
-    except KeyboardInterrupt:
-        print('\nExited.')
-        asyncio.get_event_loop().stop()
     except Exception:
         Logger.error(traceback.format_exc())
 
@@ -78,7 +75,7 @@ if __name__ == '__main__':
     loop.run_until_complete(console_scheduler())
     try:
         loop.run_until_complete(console_command())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         print('Exited.')
         loop.stop()
     finally:

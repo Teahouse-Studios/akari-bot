@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import ujson as json
 
@@ -354,7 +354,7 @@ exit_ = module('exit', required_superuser=True, base=True, available_for=['TEST|
 async def _(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False, delete=False)
     if confirm:
-        print('Exited.')
+        await msg.sleep(0.1)
         sys.exit()
 
 
