@@ -5,17 +5,28 @@ from typing import Optional
 import ujson as json
 
 from config import Config
-from core.builtins import Bot, Plain
+from core.builtins import Bot, Image, MessageChain, Plain
 from core.logger import Logger
 from core.utils.http import post_url
 from .chunithm_music import Music
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
+assets_dir = os.path.abspath('./assets/maimai/')
 
 
 async def get_info(music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}")]
     # 此处未来会添加图片
+    if details:
+        info.extend(details)
+    return info
+
+async def get_info(music: Music, *details) -> MessageChain:
+    info = [Plain(f"{music.id}\u200B. {music.title}")]
+    cover_dir = os.path.join(assets_dir, "static", "chu", "cover")
+    cover_path = os.path.join(cover_dir, f'{music.id}.png')
+    if os.path.exists(cover_path):
+        info.append(Image(cover_path))
     if details:
         info.extend(details)
     return info

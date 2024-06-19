@@ -52,7 +52,8 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     get_page = msg.parsed_msg.get('-p', False)
     if get_page and get_page['<page>'].isdigit():
         page = max(min(int(get_page['<page>']), total_pages), 1)
-
+    else:
+        page = 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 

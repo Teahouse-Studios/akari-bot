@@ -390,26 +390,6 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `dice_count_limit = 10` - 骰子表达式最多的项数。
 
-##### maimai
-
-`maimai` 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
-
-1. 下载[资源文件](https://www.diving-fish.com/maibot/static.zip)，并于 `assets` 目录下创建一个 `maimai` 文件夹。
-
-2. 解压资源文件，形成以下目录结构：
-
-    ```angular2html
-    assets
-    └─maimai
-        └─static
-            │  adobe_simhei.otf
-            │  aliases.csv
-            │  msyh.ttc
-            │
-            └─mai
-                │...
-    ```
-
 ##### secret
 
 此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
