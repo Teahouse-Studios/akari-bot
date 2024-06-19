@@ -1,12 +1,13 @@
 import os
 import sys
 
-import aioconsole
 import asyncio
 import traceback
 
 from config import Config
 from core.logger import Logger
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
 
 if not Config('db_path', cfg_type=str):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
@@ -41,7 +42,9 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
 EnableDirtyWordCheck.status = True
 Url.disable_mm = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-
+console_history_path = os.path.abspath(os.path.dirname(__file__) + '/.console_history')
+if os.path.exists(console_history_path):
+    os.remove(console_history_path)
 
 async def console_scheduler():
     load_extra_schedulers()
@@ -50,8 +53,9 @@ async def console_scheduler():
 
 async def console_command():
     try:
+        session = PromptSession(history=FileHistory(console_history_path))
         while True:
-            m = await aioconsole.ainput()
+            m = await asyncio.to_thread(session.prompt, '> ')
             await send_command(m)
     except Exception:
         Logger.error(traceback.format_exc())
@@ -63,7 +67,9 @@ async def send_command(msg):
                                                          sender_id='TEST|0',
                                                          sender_name='Console',
                                                          target_from='TEST|Console',
-                                                         sender_from='TEST', client_name='TEST', message_id=0,
+                                                         sender_from='TEST',
+                                                         client_name='TEST',
+                                                         message_id=0,
                                                          reply_id=None),
                                           session=Session(message=msg, target='TEST|Console|0', sender='TEST|0')))
     Logger.info('----Process end----')
@@ -77,6 +83,5 @@ if __name__ == '__main__':
         loop.run_until_complete(console_command())
     except (KeyboardInterrupt, SystemExit):
         print('Exited.')
-        loop.stop()
     finally:
         loop.close()

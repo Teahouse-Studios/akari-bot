@@ -16,5 +16,6 @@ bots/**/assets
 .version*
 .pid_last
 .cache_loader
+.console_history
 *.log
 matrix_store
