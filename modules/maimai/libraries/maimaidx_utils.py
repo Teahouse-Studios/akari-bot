@@ -86,7 +86,7 @@ grade_conversion = {
     'EXPERT上級': 'expert3',
     'EXPERT上级': 'expert3',
     'EXPERT超上級': 'expert4',
-    'EXPERT超上級': 'expert4',
+    'EXPERT超上级': 'expert4',
     'MASTER初級': 'master1',
     'MASTER初级': 'master1',
     'MASTER中級': 'master2',
