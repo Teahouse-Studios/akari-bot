@@ -18,6 +18,6 @@
     "bilibili.message.embed.type": "類型",
     "bilibili.message.embed.view": "觀看",
     "bilibili.message.error.rejected": "發生錯誤：由於觸發嗶哩嗶哩安全風控策略，此次訪問請求已被拒絕，請稍後重試。\n如果錯誤持續存在，請聯絡開發人員解決問題。",
-    "bilibili.message.invalid": "影片編號無效，請校對輸入。",
+    "bilibili.message.invalid": "影片編號無效。",
     "bilibili.message.not_found": "未找到對應的影片。"
 }
