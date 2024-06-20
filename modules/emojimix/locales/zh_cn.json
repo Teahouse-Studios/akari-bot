@@ -1,0 +1,6 @@
+{
+    "emojimix.help": "将两个 Emoji 合成为一张图片。",
+    "emojimix.message.invalid": "无效的 Emoji。",
+    "emojimix.message.unsupported": "不支持的 Emoji：",
+    "emojimix.message.not_found": "不支持该 Emoji 组合。"
+}

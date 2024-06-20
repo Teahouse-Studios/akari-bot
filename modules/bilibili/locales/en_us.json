@@ -18,6 +18,6 @@
     "bilibili.message.embed.type": "Category",
     "bilibili.message.embed.view": "View",
     "bilibili.message.error.rejected": "An error occurred: The request was rejected because of the Bilibili security control policy. Please try again later.\nIf the error persists, please contact the developers to resolve the issue.",
-    "bilibili.message.invalid": "Invalid video ID. Please check your input.",
+    "bilibili.message.invalid": "Invalid video ID.",
     "bilibili.message.not_found": "No corresponding video is found."
 }

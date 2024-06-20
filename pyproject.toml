@@ -63,6 +63,7 @@ fastapi = "^0.109.2"
 oss2 = "^2.18.4"
 inputimeout = "^1.0.4"
 prompt-toolkit = "^3.0.47"
+emoji = "^2.12.1"
 
 
 [tool.poetry.group.dev.dependencies]
