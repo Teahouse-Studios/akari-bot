@@ -67,9 +67,9 @@ async def mix_emoji(msg: Bot.MessageSession, emoji1: str, emoji2: str) -> Option
 
         for url in urls:
             try:
-                await get_url(url, 200, fmt='read', logging_err_resp=False)
+                await get_url(url, 200, timeout=10, fmt='read', logging_err_resp=False)
                 return url
-            except ValueError:
+            except Exception:
                 if Config('debug', False):
                     Logger.error(traceback.format_exc())
                 pass
