@@ -1,6 +1,7 @@
 {
     "emojimix.help": "將两个 Emoji 合成為一張圖片。",
     "emojimix.message.invalid": "無效的 Emoji。",
+    "emojimix.message.composite_emoji": "不支援多個 Emoji。",
     "emojimix.message.unsupported": "不支援的 Emoji：",
     "emojimix.message.not_found": "不支援此 Emoji 組合。"
 }

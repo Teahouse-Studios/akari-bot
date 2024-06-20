@@ -19,15 +19,20 @@ emojimix = module('emojimix', developers=['MeetWq', 'DoroWolf'])
 
 @emojimix.handle('<emoji1> <emoji2> {{emojimix.help}}')
 async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str):
-    if not (check_emoji(emoji1) and check_emoji(emoji2)):
+    if not (check_valid_emoji(emoji1) and check_valid_emoji(emoji2)):
         await msg.finish(msg.locale.t("emojimix.message.invalid"))
+    if not (check_composite_emoji(emoji1) and check_composite_emoji(emoji2)):
+        await msg.finish(msg.locale.t("emojimix.message.composite_emoji"))
         
     result = await mix_emoji(msg, emoji1, emoji2)
     await msg.finish(Image(result))
 
 
-def check_emoji(str):
-    return len(str) == 1 and emoji.is_emoji(str)
+def check_valid_emoji(str):
+    return emoji.is_emoji(str)
+
+def check_composite_emoji(str):
+    return len(str) == 1
 
 
 def create_url(date: str, emoji1: List[int], emoji2: List[int]) -> str:
@@ -48,17 +53,17 @@ def find_emoji(emoji_code: str) -> Optional[List[int]]:
 
 
 async def mix_emoji(msg: Bot.MessageSession, emoji1: str, emoji2: str) -> Optional[str]:
-    emoji1 = find_emoji(emoji1)
-    emoji2 = find_emoji(emoji2)
-    if not emoji1:
+    emoji_code1 = find_emoji(emoji1)
+    emoji_code2 = find_emoji(emoji2)
+    if not emoji_code1:
         await msg.finish(msg.locale.t("emojimix.message.unsupported") + emoji1)
-    if not emoji2:
+    if not emoji_code2:
         await msg.finish(msg.locale.t("emojimix.message.unsupported") + emoji2)
 
     urls: List[str] = []
     for date in dates:
-        urls.append(create_url(date, emoji1, emoji2))
-        urls.append(create_url(date, emoji2, emoji1))
+        urls.append(create_url(date, emoji_code1, emoji_code2))
+        urls.append(create_url(date, emoji_code2, emoji_code1))
 
         for url in urls:
             try:

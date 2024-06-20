@@ -1,6 +1,7 @@
 {
     "emojimix.help": "Combine two Emojis into an image.",
     "emojimix.message.invalid": "Invalid Emoji.",
+    "emojimix.message.composite_emoji": "The composite emoji is not supported.",
     "emojimix.message.unsupported": "Unsupported Emoji: ",
     "emojimix.message.not_found": "This Emoji combination is not supported."
 }
