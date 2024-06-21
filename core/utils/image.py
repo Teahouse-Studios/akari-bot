@@ -11,7 +11,7 @@ from aiofile import async_open
 from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
 
@@ -123,7 +123,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
         fi.write(d['content'])
 
     try:
-        pic = await download_to_cache(webrender('element_screenshot', use_local=use_local),
+        pic = await download(webrender('element_screenshot', use_local=use_local),
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",
@@ -134,7 +134,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                                       )
     except aiohttp.ClientConnectorError:
         if use_local:
-            pic = await download_to_cache(webrender('element_screenshot', use_local=False),
+            pic = await download(webrender('element_screenshot', use_local=False),
                                           status_code=200,
                                           method='POST',
                                           headers={'Content-Type': 'application/json'},
@@ -224,7 +224,7 @@ async def svg_render(file_path: str, use_local=True):
         fi.write(d['content'])
 
     try:
-        pic = await download_to_cache(webrender('element_screenshot', use_local=use_local),
+        pic = await download(webrender('element_screenshot', use_local=use_local),
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",
@@ -235,7 +235,7 @@ async def svg_render(file_path: str, use_local=True):
                                       )
     except aiohttp.ClientConnectorError:
         if use_local:
-            pic = await download_to_cache(webrender('element_screenshot', use_local=False),
+            pic = await download(webrender('element_screenshot', use_local=False),
                                           status_code=200,
                                           method='POST',
                                           headers={'Content-Type': 'application/json'},

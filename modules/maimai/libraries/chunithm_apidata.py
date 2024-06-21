@@ -14,13 +14,6 @@ cache_dir = os.path.abspath(Config('cache_path', './cache/'))
 assets_dir = os.path.abspath('./assets/maimai/')
 
 
-async def get_info(music: Music, *details):
-    info = [Plain(f"{music.id}\u200B. {music.title}")]
-    # 此处未来会添加图片
-    if details:
-        info.extend(details)
-    return info
-
 async def get_info(music: Music, *details) -> MessageChain:
     info = [Plain(f"{music.id}\u200B. {music.title}")]
     cover_dir = os.path.join(assets_dir, "static", "chu", "cover")

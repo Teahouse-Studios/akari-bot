@@ -3,7 +3,7 @@ import traceback
 
 from core.builtins import Bot, Image, Plain, Url
 from core.dirty_check import rickroll
-from core.utils.http import get_url, download_to_cache
+from core.utils.http import get_url, download
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -59,7 +59,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             await msg.send_message([Plain(message)])
 
             async def download():
-                download_pic = await download_to_cache(
+                download_pic = await download(
                     f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
                 if download_pic:
                     await msg.finish([Image(download_pic)], quote=False)

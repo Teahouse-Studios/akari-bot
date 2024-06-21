@@ -2,7 +2,7 @@ import ujson as json
 from PIL import Image
 
 from core.logger import Logger
-from core.utils.http import get_url, download_to_cache
+from core.utils.http import get_url, download
 
 
 async def uuid_to_name(uuid):
@@ -17,9 +17,9 @@ async def name_to_uuid(name):
 
 async def uuid_to_skin_and_cape(uuid):
     try:
-        render = await download_to_cache(
+        render = await download(
             'https://crafatar.com/renders/body/' + uuid + '?overlay')
-        skin = await download_to_cache(
+        skin = await download(
             'https://crafatar.com/skins/' + uuid)
         is_cape = True
         try:
@@ -28,7 +28,7 @@ async def uuid_to_skin_and_cape(uuid):
             is_cape = False
         path = None
         if is_cape:
-            cape = Image.open(await download_to_cache(
+            cape = Image.open(await download(
                 'https://crafatar.com/capes/' + uuid))
             cape.crop((0, 0, 10, 16))
             path = 'cache/' + uuid + '_fixed.png'

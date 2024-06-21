@@ -8,7 +8,7 @@ import ujson as json
 
 from config import Config
 from core.utils.cache import random_cache_path
-from core.utils.http import get_url, download_to_cache
+from core.utils.http import get_url, download
 from core.logger import Logger
 
 assets_path = os.path.abspath('./assets/phigros')
@@ -55,7 +55,7 @@ async def update_assets():
         song_name = remove_punctuations(update_json[song]['song'])
         if song_name not in illustration_list:
             try:
-                download_file = await download_to_cache(update_json[song]['illustration'])
+                download_file = await download(update_json[song]['illustration'])
                 if download_file:
                     shutil.move(download_file, os.path.join(illustration_path, song_name))
             except Exception:
@@ -64,9 +64,9 @@ async def update_assets():
     another_assets_url = 'https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
     another_assets_url_mirror = 'https://gh.api.99988866.xyz/https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
     try:
-        download_file = await download_to_cache(another_assets_url)
+        download_file = await download(another_assets_url)
     except TimeoutError:
-        download_file = await download_to_cache(another_assets_url_mirror)
+        download_file = await download(another_assets_url_mirror)
     if download_file:
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)

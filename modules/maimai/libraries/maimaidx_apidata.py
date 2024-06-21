@@ -10,7 +10,7 @@ from langconv.language.zh import zh_cn
 from config import Config
 from core.builtins import Bot, Image, MessageChain, Plain
 from core.logger import Logger
-from core.utils.http import get_url, post_url
+from core.utils.http import download, get_url, post_url
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
@@ -50,19 +50,12 @@ async def update_cover() -> bool:
         if not os.path.exists(cover_path):
             try:
                 url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(id)}.png"
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        if response.status == 200:
-                            with open(cover_path, 'wb') as f:
-                                while True:
-                                    chunk = await response.content.read(1024)
-                                    if not chunk:
-                                        break
-                                    f.write(chunk)
-                            Logger.debug(f'Successfully download {get_cover_len5_id(id)}.png')
-                        else:
-                            if Config('debug', False):
-                                Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
+                await download(url, status_code=200, path=cover_dir, filename=f'{get_cover_len5_id(id)}.png', attempt=1)
+                Logger.debug(f'Successfully download {get_cover_len5_id(id)}.png')
+            except ValueError as e:
+                if str(e).startswith('404'):
+                    if Config('debug', False):
+                        Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
             except Exception:
                 Logger.error(traceback.format_exc())
                 return False

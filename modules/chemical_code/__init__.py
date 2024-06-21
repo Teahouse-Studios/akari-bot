@@ -15,7 +15,7 @@ from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
-from core.utils.http import get_url, download_to_cache
+from core.utils.http import get_url, download
 from core.utils.text import remove_prefix
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
@@ -155,7 +155,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         if exists_file:
             download = file_path
     if not download:
-        download = await download_to_cache(play_state.check('image'))
+        download = await download(play_state.check('image'))
 
     with PILImage.open(download) as im:
         im = im.convert("RGBA")

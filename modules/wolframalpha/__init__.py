@@ -8,7 +8,7 @@ from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.dirty_check import rickroll
 from core.exceptions import ConfigValueError
-from core.utils.http import download_to_cache, get_url
+from core.utils.http import download, get_url
 from .check import secret_check
 
 
@@ -32,7 +32,7 @@ async def _(msg: Bot.MessageSession, query: str):
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
-        img_path = await download_to_cache(url, status_code=200)
+        img_path = await download(url, status_code=200)
         if img_path:
             with Image.open(img_path) as img:
                 output = os.path.splitext(img_path)[0] + ".png"

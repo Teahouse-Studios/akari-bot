@@ -14,7 +14,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, Voice
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
@@ -134,7 +134,7 @@ class MessageSession(MessageSessionT):
         lst = []
         lst.append(Plain(self.session.message.content))
         for x in self.session.message.attachments:
-            d = await download_to_cache(x.url)
+            d = await download(x.url)
             if filetype.is_image(d):
                 lst.append(Image(d))
         return MessageChain(lst)

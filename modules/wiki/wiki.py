@@ -10,7 +10,7 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
@@ -359,7 +359,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
             if dl_list:
                 for f in dl_list:
-                    dl = await download_to_cache(f)
+                    dl = await download(f)
                     guess_type = filetype.guess(dl)
                     if guess_type:
                         if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:

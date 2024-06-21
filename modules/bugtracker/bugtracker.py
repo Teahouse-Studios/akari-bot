@@ -7,7 +7,7 @@ from PIL import ImageFont
 
 from core.builtins import Url
 from core.logger import Logger
-from core.utils.http import download_to_cache, get_url
+from core.utils.http import download, get_url
 from core.utils.web_render import WebRender, webrender
 
 elements = ['div#descriptionmodule']
@@ -24,7 +24,7 @@ async def make_screenshot(page_link, use_local=True):
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
-        img = await download_to_cache(webrender('element_screenshot', use_local=use_local),
+        img = await download(webrender('element_screenshot', use_local=use_local),
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",

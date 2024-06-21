@@ -7,7 +7,7 @@ from core.builtins import Bot
 from core.builtins.message import Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.utils.http import download_to_cache, get_url
+from core.utils.http import download, get_url
 from core.utils.web_render import webrender
 
 
@@ -84,7 +84,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
             }
         '''
 
-        pic = await download_to_cache(web_render, method='POST', headers={
+        pic = await download(web_render, method='POST', headers={
             'Content-Type': 'application/json',
         }, post_data=json.dumps(
             {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,

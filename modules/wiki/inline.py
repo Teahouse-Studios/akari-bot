@@ -8,7 +8,7 @@ from core.builtins import Bot, Plain, Image, Voice
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.web_render import WebRender
@@ -107,7 +107,7 @@ async def _(msg: Bot.MessageSession):
                         get_page = await wiki_.parse_page_info(title)
                     if get_page:
                         if get_page.status and get_page.file:
-                            dl = await download_to_cache(get_page.file)
+                            dl = await download(get_page.file)
                             guess_type = filetype.guess(dl)
                             if guess_type:
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:

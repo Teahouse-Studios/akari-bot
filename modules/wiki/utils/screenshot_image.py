@@ -10,7 +10,7 @@ import ujson as json
 from bs4 import BeautifulSoup, Comment
 
 from core.logger import Logger
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
@@ -34,7 +34,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
             elements_.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
         try:
-            img = await download_to_cache(webrender('element_screenshot', use_local=use_local),
+            img = await download(webrender('element_screenshot', use_local=use_local),
                                           status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",
@@ -57,7 +57,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
     else:
         Logger.info('[Webrender] Generating section screenshot...')
         try:
-            img = await download_to_cache(webrender('section_screenshot', use_local=use_local),
+            img = await download(webrender('section_screenshot', use_local=use_local),
                                           status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",

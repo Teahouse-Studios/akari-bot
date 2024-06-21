@@ -1,7 +1,9 @@
 import asyncio.exceptions
+import os
 import re
 import socket
 import urllib.parse
+import uuid
 from http.cookies import SimpleCookie
 from typing import Union
 
@@ -13,7 +15,6 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
 from core.logger import Logger
-from .cache import random_cache_path
 
 logging_resp = False
 debug = Config('debug', False)
@@ -158,13 +159,14 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     return await _post()
 
 
-async def download_to_cache(url: str, filename=None, status_code: int = False, method="GET", post_data=None,
+async def download(url: str, filename=None, path=None, status_code: int = False, method="GET", post_data=None,
                             headers: dict = None, timeout=20, attempt=3, request_private_ip=False,
                             logging_err_resp=True) -> Union[str, bool]:
-    '''利用AioHttp下载指定url的内容，并保存到缓存（默认./cache目录）。
+    '''利用AioHttp下载指定url的内容，并保存到指定目录。
 
     :param url: 需要获取的url。
     :param filename: 指定保存的文件名，默认为随机文件名。
+    :param path: 指定目录，默认为缓存目录。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
     :param method: 指定请求方式。
     :param post_data: 如果指定请求方式为POST，需要传入的数据。
@@ -180,7 +182,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
         method = 'POST'
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
-    async def download_():
+    async def download_(filename=filename, path=path):
         if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
@@ -200,9 +202,10 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
                     ftt = ft.match(data).extension
                 except AttributeError:
                     ftt = 'txt'
-                path = f'{random_cache_path()}.{ftt}'
-            else:
-                path = Config("cache_path", "./cache/") + f'/{filename}'
+                filename = f'{str(uuid.uuid4())}.{ftt}'
+            if not path:
+                path = os.path.abspath(Config('cache_path', './cache/'))
+            path = os.path.join(path, filename)
             async with async_open(path, 'wb+') as file:
                 await file.write(data)
                 return path
@@ -212,4 +215,4 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
     return await download_()
 
 
-__all__ = ['get_url', 'post_url', 'download_to_cache']
+__all__ = ['get_url', 'post_url', 'download']
