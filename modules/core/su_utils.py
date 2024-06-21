@@ -7,14 +7,13 @@ from datetime import datetime
 import ujson as json
 
 from config import Config, CFG
-from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins import Bot, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
-from core.utils.cache import random_cache_path
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
