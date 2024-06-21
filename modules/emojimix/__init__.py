@@ -63,10 +63,12 @@ class EmojimixGenerator:
         return url
 
 
-    def list_supported_emojis(self, emoji: Optional[str] = None) -> List[str]:
+    def list_supported_emojis(self, emoji: Optional[str] = None) -> Optional[List[str]]:
         supported_combinations: List[str] = []
 
         if emoji:
+            if emoji not in self.known_supported_emoji:
+                return None
             emoji_symbol = emoji
 
             if emoji_symbol in self.known_supported_emoji:
@@ -121,6 +123,9 @@ def check_valid_emoji(str):
 async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
-        await msg.finish(msg.locale.t('emojimix.message.combine_supported', emoji=emoji) + '\n' + ' '.join(supported_emojis))
+        if supported_emojis:
+            await msg.finish(msg.locale.t('emojimix.message.combine_supported', emoji=emoji) + '\n' + ' '.join(supported_emojis))
+        else:
+            await msg.finish(msg.locale.t('emojimix.message.unsupported') + emoji)
     else:
         await msg.finish(msg.locale.t('emojimix.message.all_supported') + '\n' + ' '.join(supported_emojis))
