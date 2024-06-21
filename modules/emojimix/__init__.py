@@ -1,7 +1,5 @@
-import codecs
 import os
-import traceback
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import emoji
 import ujson as json
@@ -19,21 +17,21 @@ class EmojimixGenerator:
     def __init__(self):
         with open(data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        self.known_supported_emoji = data["knownSupportedEmoji"]
-        self.data = data["data"]
-        self.date_mapping = {date: idx for date, idx in enumerate(data["date"])}
+        self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
+        self.data: dict = data["data"]
+        self.date_mapping: dict = {date: idx for idx, date in enumerate(data["date"])}
 
 
     @staticmethod
-    def make_emoji_tuple(emoji1, emoji2):
+    def make_emoji_tuple(emoji1: str, emoji2: str) -> Tuple[str, str]:
         unicode_emoji1 = '-'.join(f'{ord(char):x}' for char in emoji1)
         unicode_emoji2 = '-'.join(f'{ord(char):x}' for char in emoji2)
         return (unicode_emoji1, unicode_emoji2)
-    
 
-    def check_supported(self, emoji_tuple):
-        unsupported_emojis = []
-        checked = set()
+
+    def check_supported(self, emoji_tuple: Tuple[str, str]) -> List[str]:
+        unsupported_emojis: List[str] = []
+        checked: set = set()
         for emoji in emoji_tuple:
             if emoji not in self.known_supported_emoji and emoji not in checked:
                 emoji_symbol = ''.join(chr(int(segment, 16)) for segment in emoji.split('-'))
@@ -42,7 +40,7 @@ class EmojimixGenerator:
         return unsupported_emojis
 
 
-    def mix_emoji(self, emoji_tuple):
+    def mix_emoji(self, emoji_tuple: Tuple[str, str]) -> Optional[str]:
         str_tuple_1 = f"({emoji_tuple[0]}, {emoji_tuple[1]})"
         str_tuple_2 = f"({emoji_tuple[1]}, {emoji_tuple[0]})"
 
@@ -65,20 +63,17 @@ class EmojimixGenerator:
         return url
 
 
-    def list_supported_emojis(self, emoji=None):
-        supported_combinations = []
+    def list_supported_emojis(self, emoji: Optional[str] = None) -> List[str]:
+        supported_combinations: List[str] = []
 
         if emoji:
             emoji_symbol = emoji
 
-            # Check if the emoji symbol is supported
             if emoji_symbol in self.known_supported_emoji:
                 supported_combinations.append(emoji_symbol)
 
-            # Convert emoji symbol to Unicode code points
             emoji_code = '-'.join(f'{ord(char):x}' for char in emoji_symbol)
 
-            # Check combinations involving this emoji
             for key in self.data:
                 if emoji_code in key:
                     pair = key.replace('(', '').replace(')', '').split(', ')
@@ -96,8 +91,8 @@ class EmojimixGenerator:
 
         return supported_combinations
 
-
 mixer = EmojimixGenerator()
+
 
 emojimix = module('emojimix', developers=['DoroWolf'])
 
