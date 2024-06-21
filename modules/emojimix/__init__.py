@@ -120,22 +120,8 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
         if supported_emojis:
-            if Bot.client_name == 'Discord':
-                grouped_emojis = [supported_emojis[i:i+200] for i in range(0, len(supported_emojis), 200)]
-                message_chain = [Plain(msg.locale.t('emojimix.message.combine_supported', emoji=emoji))]
-                for emojis in grouped_emojis:
-                    message_chain.append(Plain(' '.join(emojis)))
-                await msg.finish(message_chain)
-            else:
-                await msg.finish([Plain(msg.locale.t('emojimix.message.combine_supported', emoji=emoji)), Plain(' '.join(supported_emojis))])
+            await msg.finish([Plain(msg.locale.t('emojimix.message.combine_supported', emoji=emoji)), Plain(''.join(supported_emojis))])
         else:
             await msg.finish(msg.locale.t('emojimix.message.unsupported') + emoji)
     else:
-        if Bot.client_name == 'Discord':
-            grouped_emojis = [supported_emojis[i:i+200] for i in range(0, len(supported_emojis), 200)]
-            message_chain = [Plain(msg.locale.t('emojimix.message.all_supported'))]
-            for emojis in grouped_emojis:
-                message_chain.append(Plain(' '.join(emojis)))
-            await msg.finish(message_chain)
-        else:
-            await msg.finish([Plain(msg.locale.t('emojimix.message.all_supported')), Plain(' '.join(supported_emojis))])
+        await msg.finish([Plain(msg.locale.t('emojimix.message.all_supported')), Plain(''.join(supported_emojis))])
