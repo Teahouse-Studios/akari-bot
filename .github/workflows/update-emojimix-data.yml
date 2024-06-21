@@ -1,45 +1,51 @@
-name: Build and Push Emojimix Data
+name: Push Emoji Data
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.8'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install aiohttp
 
-      - name: Run Python script
-        run: |
-          python scripts/fetch_emojimix_data.py
+      - name: Generate compressed JSON
+        run: python scripts/fetch_emojimix_data.py
 
-      - name: Move generated file to assets folder
+      - name: Compare files
+        id: compare
         run: |
-          mkdir -p ./assets/emojimix
-          mv output.json ./assets/emojimix/emoji_data.json
+          if cmp --silent output.json /assets/emojimix/emoji_data.json; then
+            echo "Files are identical. Skipping commit."
+            exit 1
+          fi
+
+      - name: Move file to assets directory
+        run: mv output.json /assets/emojimix/emoji_data.json
 
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ./assets/emojimix/emoji_data.json
-          git commit -m "Auto-generated emoji data"
-      
+          git add /assets/emojimix/emoji_data.json
+          git commit -m "Update emoji data [skip ci]"
+
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main

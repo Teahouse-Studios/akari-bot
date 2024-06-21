@@ -1,7 +1,7 @@
 import json
-import os
-import requests
 from collections import defaultdict
+
+import requests
 
 def get_data_from_api(api_url):
     response = requests.get(api_url)
@@ -54,7 +54,6 @@ if __name__ == "__main__":
     api_url = "https://raw.githubusercontent.com/xsalazar/emoji-kitchen-backend/main/app/metadata.json"
     input_data = get_data_from_api(api_url)
     compressed_data = compress_json(input_data)
-#    output_file = os.path.abspath("./assets/emojimix/output.json")
     
     with open('output.json', "w", encoding="utf-8") as f:
         json.dump(compressed_data, f, ensure_ascii=False, indent=2)
