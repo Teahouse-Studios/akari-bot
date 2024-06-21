@@ -69,12 +69,11 @@ class EmojimixGenerator:
         if emoji:
             emoji_symbol = emoji
 
-            if emoji_symbol in self.known_supported_emoji:
-                supported_combinations.append(emoji_symbol)
-
             emoji_code = '-'.join(f'{ord(char):x}' for char in emoji_symbol)
+            Logger.warn(emoji_code)
             if emoji_code not in self.known_supported_emoji:
                 return None
+            
             for key in self.data:
                 if emoji_code in key:
                     pair = key.replace('(', '').replace(')', '').split(', ')
