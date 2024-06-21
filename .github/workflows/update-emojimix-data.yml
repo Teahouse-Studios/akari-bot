@@ -1,0 +1,45 @@
+name: Build and Push Emojimix Data
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run Python script
+        run: |
+          python scripts/fetch_emojimix_data.py
+
+      - name: Move generated file to assets folder
+        run: |
+          mkdir -p ./assets/emojimix
+          mv output.json ./assets/emojimix/emoji_data.json
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ./assets/emojimix/emoji_data.json
+          git commit -m "Auto-generated emoji data"
+      
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
