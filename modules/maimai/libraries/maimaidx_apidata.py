@@ -2,7 +2,6 @@ import os
 import traceback
 from typing import Optional
 
-import aiohttp
 import ujson as json
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn

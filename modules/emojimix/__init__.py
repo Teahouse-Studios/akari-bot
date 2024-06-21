@@ -19,7 +19,7 @@ class EmojimixGenerator:
             data = json.load(f)
         self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
-        self.date_mapping: dict = {date: idx for idx, date in enumerate(data["date"])}
+        self.date_mapping: dict = {idx: date for idx, date in enumerate(data["date"])}
 
 
     @staticmethod
