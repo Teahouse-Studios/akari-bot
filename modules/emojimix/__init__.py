@@ -67,15 +67,14 @@ class EmojimixGenerator:
         supported_combinations: List[str] = []
 
         if emoji:
-            if emoji not in self.known_supported_emoji:
-                return None
             emoji_symbol = emoji
 
             if emoji_symbol in self.known_supported_emoji:
                 supported_combinations.append(emoji_symbol)
 
             emoji_code = '-'.join(f'{ord(char):x}' for char in emoji_symbol)
-
+            if emoji_code not in self.known_supported_emoji:
+                return None
             for key in self.data:
                 if emoji_code in key:
                     pair = key.replace('(', '').replace(')', '').split(', ')
