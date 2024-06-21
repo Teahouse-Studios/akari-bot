@@ -70,7 +70,6 @@ class EmojimixGenerator:
             emoji_symbol = emoji
 
             emoji_code = '-'.join(f'{ord(char):x}' for char in emoji_symbol)
-            Logger.warn(emoji_code)
             if emoji_code not in self.known_supported_emoji:
                 return None
             
