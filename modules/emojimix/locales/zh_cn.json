@@ -1,5 +1,5 @@
 {
-    "emojimix.help": "将两个 Emoji 合成为一张图片。",
+    "emojimix.help": "将两个 Emoji 合成为一张图片，留空则随机组合。",
     "emojimix.help.list": "列出所有支持的 Emoji。",
     "emojimix.message.all_supported": "所有支持的 Emoji：",
     "emojimix.message.combine_supported": "支持“${emoji}”的 Emoji 组合：",

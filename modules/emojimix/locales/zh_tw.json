@@ -1,8 +1,8 @@
 {
-    "emojimix.help": "將两个 Emoji 合成為一張圖片。",
+    "emojimix.help": "將两个 Emoji 合成為一張圖片，空白則隨機組合。",
     "emojimix.help.list": "列出所有已支援的 Emoji。",
     "emojimix.message.all_supported": "所有已支援的 Emoji：",
-    "emojimix.message.combine_supported": "已支援「${emoji}」的 Emoji 组合：",
+    "emojimix.message.combine_supported": "已支援「${emoji}」的 Emoji 組合：",
     "emojimix.message.invalid": "無效的 Emoji。",
     "emojimix.message.not_found": "不支援此 Emoji 組合。",
     "emojimix.message.unsupported": "不支援的 Emoji："

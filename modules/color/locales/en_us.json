@@ -1,5 +1,5 @@
 {
-    "color.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design.",
+    "color.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design. Leave blank for a random color.",
     "color.help.desc": "Get color information.",
     "color.message.embed.css": "CSS Color Name",
     "color.message.embed.css.approximate": "Approximate CSS Color Name",
