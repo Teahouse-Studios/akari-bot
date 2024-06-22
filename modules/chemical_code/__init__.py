@@ -148,16 +148,16 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     # print(csr)
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
     Logger.info(f'Answer: {play_state.check("answer")}')
-    download = False
+    dl_image = False
     if play_state.check("id") in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemical_code/special_id/{play_state.check("id")}.png')
         exists_file = os.path.exists(file_path)
         if exists_file:
-            download = file_path
-    if not download:
-        download = await download(play_state.check('image'))
+            dl_image = file_path
+    if not dl_image:
+        dl_image = await download(play_state.check('image'))
 
-    with PILImage.open(download) as im:
+    with PILImage.open(dl_image) as im:
         im = im.convert("RGBA")
         image = PILImage.new("RGBA", im.size, 'white')
         image.alpha_composite(im, (0, 0))
