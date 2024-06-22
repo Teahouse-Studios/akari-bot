@@ -29,7 +29,7 @@ class EmojimixGenerator:
         return (emoji_code1, emoji_code2)
     
 
-    def random_choice_emoji(self, emoji: Optional[str] = None) -> Tuple[str, str]:
+    def random_choice_emoji(self, emoji: Optional[str] = None) -> Optional[Tuple[str, str]]:
         if emoji:
             emoji_code = '-'.join(f'{ord(char):x}' for char in emoji)
             emoji_combo_list = []
@@ -132,6 +132,9 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         if unsupported_emojis:
             await msg.finish(f"{msg.locale.t('emojimix.message.unsupported')}{' '.join(unsupported_emojis)}")
     else:
+        emoji_code1 = '-'.join(f'{ord(char):x}' for char in emoji1)
+        if emoji_code1 not in mixer.known_supported_emoji:
+            await msg.finish(msg.locale.t('emojimix.message.unsupported') + emoji1)
         combo = mixer.random_choice_emoji(emoji1)
         Logger.debug(str(combo))
     result = mixer.mix_emoji(combo)
