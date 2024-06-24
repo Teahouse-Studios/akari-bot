@@ -353,7 +353,11 @@ async def bot_help(msg: Bot.MessageSession):
                 devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
                 devs_msg = ''
-            if Config('help_url', cfg_type=str):
+            if Config('help_page_url', cfg_type=str):
+                wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                                               url=Config('help_page_url', cfg_type=str).replace('${module}', help_name))
+
+            elif Config('help_url', cfg_type=str):
                 wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                url=Config('help_url', cfg_type=str)) + '/' + help_name
             else:
