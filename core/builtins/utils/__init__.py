@@ -17,7 +17,7 @@ class EnableDirtyWordCheck:
 def shuffle_joke(text: str):
     current_date = datetime.now().date()
     shuffle_rate = Config('shuffle_rate', 0.1, (float, int))
-    have_fun = Config('???', cfg_type=bool)
+    have_fun = Config('enable_shuffle_joke', cfg_type=bool)
 
     if have_fun or have_fun is None and (current_date.month == 4 and current_date.day == 1):
         urls = re.finditer(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
