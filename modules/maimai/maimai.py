@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
+from core.logger import Logger
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
@@ -238,7 +239,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         img = await generate(msg, payload)
         await msg.finish([BImage(img)])
     except BaseException:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
 
 @mai.command('id <id> [<diff>] {{maimai.help.id}}')
 @mai.command('song <id_or_alias> [-d <diff>] {{maimai.help.song}}',

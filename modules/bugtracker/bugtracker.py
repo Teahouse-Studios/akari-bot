@@ -3,7 +3,6 @@ import traceback
 
 import aiohttp
 import ujson as json
-from PIL import ImageFont
 
 from core.builtins import Url
 from core.logger import Logger
@@ -60,7 +59,7 @@ async def bugtracker_get(msg, mojira_id: str):
         if str(e).startswith('401'):
             return msg.locale.t("bugtracker.message.get_failed"), None
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
     if mojira_id not in spx_cache:
         get_spx = await get_url('https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json', 200)
         if get_spx:

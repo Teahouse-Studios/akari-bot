@@ -1,6 +1,7 @@
 import traceback
 
 from core.builtins import Bot, Embed, EmbedField, Image, Plain, Url
+from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.web_render import webrender
 
@@ -22,7 +23,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
         if str(e).startswith('412'):
             await msg.finish(msg.locale.t('bilibili.message.error.rejected'))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
     view = res['data']['View']
     stat = view['stat']

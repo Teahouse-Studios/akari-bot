@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Url, Bot
 from core.dirty_check import rickroll
+from core.logger import Logger
 from core.utils.http import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
@@ -47,4 +48,4 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())

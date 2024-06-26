@@ -28,7 +28,7 @@ async def rc_loader(msg: Bot.MessageSession):
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
         try:

@@ -4,6 +4,8 @@ import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
+from core.logger import Logger
+
 assets_path = os.path.abspath('./assets/phigros')
 
 levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
@@ -110,7 +112,7 @@ def drawb19(username, rks_acc, b19data):
             fname += 1
             s += 1
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             break
     if __name__ == '__main__':
         b19img.show()

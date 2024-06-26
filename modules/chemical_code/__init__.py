@@ -142,7 +142,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     try:
         csr = await search_csr(id)
     except Exception as e:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         play_state.disable()
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
@@ -213,7 +213,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                     await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind2',
                                                                           elements=incorrect_elements))
                     except ValueError:
-                        traceback.print_exc()
+                        Logger.error(traceback.format_exc())
 
                 Logger.info(f'{wait_text} != {play_state.check("answer")}')
                 return await ans(wait, random_mode)

@@ -4,8 +4,9 @@ import traceback
 
 from core.builtins import Bot, Image
 from core.component import module
+from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.http import get_url, download
+from core.utils.http import get_url
 from .dbutils import PgrBindInfoManager
 from .game_record import parse_game_record
 from .genb19 import drawb19
@@ -76,7 +77,7 @@ async def _(msg: Bot.MessageSession):
                 rks_acc += [0] * (20 - len(rks_acc))
             await msg.finish(Image(drawb19(bind[1], round(sum(rks_acc) / len(rks_acc), 2), b19_data)))
         except Exception as e:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
 
 

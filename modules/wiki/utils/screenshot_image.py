@@ -95,7 +95,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                 async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
         except BaseException:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             return False
         soup = BeautifulSoup(html, 'html.parser')
         pagename = uuid.uuid4()
@@ -358,5 +358,5 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                             jpg.write(await resp.read())
         return picname
     except Exception:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False

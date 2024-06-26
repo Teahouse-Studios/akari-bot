@@ -155,7 +155,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 output.convert('RGBA')
                 b30img.alpha_composite(output, (1825, 22))
             except BaseException:
-                traceback.print_exc()
+                Logger.error(traceback.format_exc())
 
         font4 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Regular.ttf'), 35)
         drawtext = ImageDraw.Draw(b30img)
@@ -204,7 +204,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 fname += 1
                 s += 1
             except Exception:
-                traceback.print_exc()
+                Logger.error(traceback.format_exc())
                 break
         if __name__ == '__main__':
             b30img.show()
@@ -216,7 +216,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
     except Exception as e:
         if e.args == (404,):
             await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return {'status': False, 'text': msg.locale.t("error") + str(e)}
 
 
@@ -240,7 +240,7 @@ async def download_cover_thumb(uid):
         else:
             return path
     except BaseException:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False
 
 
@@ -261,7 +261,7 @@ async def download_avatar_thumb(link, id):
                     await jpg.write(await resp.read())
                     return path
     except BaseException:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False
 
 

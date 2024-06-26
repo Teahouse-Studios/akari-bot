@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Bot, Url
 from core.dirty_check import rickroll
+from core.logger import Logger
 from core.utils.http import get_url
 from modules.github.utils import dirty_check, darkCheck
 
@@ -30,4 +31,4 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
         await msg.finish(message)
     except BaseException:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
