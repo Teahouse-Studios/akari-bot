@@ -16,6 +16,7 @@ from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
+from core.utils.text import isfloat, isint
 from database import BotDBUtil
 
 
@@ -454,22 +455,6 @@ if Config('enable_eval', False):
 
 
 cfg_ = module('config', required_superuser=True, alias='cfg', base=True)
-
-
-def isfloat(num):
-    try:
-        float(num)
-        return True
-    except ValueError:
-        return False
-
-
-def isint(num):
-    try:
-        int(num)
-        return True
-    except ValueError:
-        return False
 
 
 @cfg_.command('get <k>')

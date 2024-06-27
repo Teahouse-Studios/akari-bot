@@ -8,6 +8,7 @@ import ujson as json
 from core.builtins import Bot, MessageChain, Plain
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
+from core.utils.text import isint
 from .maimaidx_apidata import get_record, get_total_record, get_plate
 from .maimaidx_music import TotalList
 
@@ -472,7 +473,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
 
     output_lines = []
     total_pages = (len(song_list) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if page.isdigit() else 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
             music = (await total_list.get()).by_id(str(s['id']))

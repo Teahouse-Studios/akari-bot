@@ -5,27 +5,11 @@ from typing import Union, Any, get_origin, get_args
 import toml
 
 from core.exceptions import ConfigFileNotFound, ConfigValueError
-
+from core.utils.text import isfloat, isint
 config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)
 
 old_cfg_file_path = abspath('./config/config.cfg')
-
-
-def isfloat(num):
-    try:
-        float(num)
-        return True
-    except ValueError:
-        return False
-
-
-def isint(num):
-    try:
-        int(num)
-        return True
-    except ValueError:
-        return False
 
 
 def convert_cfg_to_toml():

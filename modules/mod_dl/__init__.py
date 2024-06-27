@@ -5,6 +5,7 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.utils.http import get_url
+from core.utils.text import isint
 
 mod_dl = module(
     bind_prefix='mod_dl',
@@ -138,7 +139,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
-        if replied.isdigit():
+        if isint(replied):
             replied = int(replied)
             if replied > len(cache_result):
                 await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))

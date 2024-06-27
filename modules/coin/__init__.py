@@ -4,6 +4,7 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import ConfigValueError
+from core.utils.text import isint
 from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = Config('coin_limit', 10000)
@@ -23,7 +24,7 @@ async def _(msg: Bot.MessageSession, amount: int = 1):
 async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
-    if count.isdigit():
+    if isint(count):
         count = int(count)
     else:
         try:
