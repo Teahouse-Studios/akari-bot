@@ -6,6 +6,7 @@ from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 from config import Config
 from core.exceptions import ConfigValueError
 from core.logger import Logger
+from core.utils.text import isint
 from .dice import *
 
 # 配置常量
@@ -74,7 +75,7 @@ def parse_dice_expression(msg, dices):
         dices = dices.partition('#')[2]
     else:
         times = '1'
-    if not times.isdigit():
+    if not isint(times):
         errmsg = msg.locale.t('dice.message.error.value.times.invalid')
         return None, None, None, DiceValueError(msg, msg.locale.t('dice.message.error') + '\n' + errmsg).message
 
@@ -123,8 +124,10 @@ def parse_dice_expression(msg, dices):
             elif 'D' in item:
                 dice_count += 1
                 dice_expr_list[j] = Dice(msg, item)
-            elif item.isdigit():
+            elif isint(item):
                 dice_count += 1
+            else:
+                continue
         except (DiceSyntaxError, DiceValueError) as ex:
             errmsg = msg.locale.t('dice.message.error.prompt', i=dice_count) + ex.message
     if errmsg:
@@ -141,13 +144,13 @@ def insert_multiply(lst, use_markdown=False):
         if i == 0:
             result.append(lst[i])
         else:
-            if lst[i - 1][-1].isdigit() and lst[i][0].isdigit():
+            if isint(lst[i - 1][-1]) and isint(lst[i][0]):
                 result.append(asterisk)
             elif lst[i - 1][-1] == ')' and lst[i][0] == '(':
                 result.append(asterisk)
-            elif lst[i - 1][-1].isdigit() and lst[i][0] == '(':
+            elif isint(lst[i - 1][-1]) and lst[i][0] == '(':
                 result.append(asterisk)
-            elif lst[i - 1][-1] == ')' and lst[i][0].isdigit():
+            elif lst[i - 1][-1] == ')' and isint(lst[i][0]):
                 result.append(asterisk)
             result.append(lst[i])
     return result

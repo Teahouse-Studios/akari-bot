@@ -4,6 +4,7 @@ from typing import Union
 
 from core.builtins import Bot, Plain
 from core.logger import Logger
+from core.utils.text import isint
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
@@ -73,7 +74,7 @@ async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], 
     else:
         await msg.finish(msg.locale.t('wiki.message.search.not_found'))
     reply = await msg.wait_reply(Plain('\n'.join(msg_list)))
-    if reply.as_display(text_only=True).isdigit():
+    if isint(reply.as_display(text_only=True)):
         reply_number = int(reply.as_display(text_only=True)) - 1
         await query_pages(reply, wait_msg_list[reply_number])
     else:

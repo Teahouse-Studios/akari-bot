@@ -9,6 +9,7 @@ from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.utils.http import download, get_url
+from core.utils.text import isint
 from core.utils.web_render import webrender
 
 
@@ -21,7 +22,7 @@ t = module('tweet',
 
 @t.handle('<tweet> {{tweet.help}}')
 async def _(msg: Bot.MessageSession, tweet: str):
-    if tweet.isdigit():
+    if isint(tweet):
         tweet_id = tweet
     else:
         match = re.search(r"status/(\d+)", tweet)

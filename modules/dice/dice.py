@@ -4,6 +4,7 @@ import secrets
 import numpy as np
 
 from config import Config
+from core.utils.text import isint
 
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
 MAX_OUTPUT_CNT = Config('dice_output_count', 50)  # 输出的最多数据量
@@ -99,15 +100,15 @@ class Dice(DiceItemBase):
         if positive and not len(dice_adv):
             dice_adv = '1'  # K/Q后没有值默认为1
         # 语法合法检定
-        if not dice_count.isdigit():
+        if not isint(dice_count):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
-        if not dice_sides.isdigit():
+        if not isint(dice_sides):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.sides.invalid"),
                                  dice_sides)
-        if not dice_adv.isdigit():
+        if not isint(dice_adv):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.advantage.invalid"),
                                  dice_adv)
@@ -186,7 +187,7 @@ class FudgeDice(DiceItemBase):
             dice_count = temp[0]
 
         # 语法合法检定
-        if not dice_count.isdigit():
+        if not isint(dice_count):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
@@ -249,7 +250,7 @@ class BonusPunishDice(DiceItemBase):
                 dice_count = temp[1]
 
         # 语法合法检定
-        if not dice_count.isdigit():
+        if not isint(dice_count):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
@@ -338,23 +339,23 @@ class WODDice(DiceItemBase):
         dice_success_line_max = match.group(4) if match.group(4) else '0'  # 最大成功线
         dice_sides = match.group(5) if match.group(5) else '10'  # 骰子面数
         # 语法合法检定
-        if not dice_count.isdigit():
+        if not isint(dice_count):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
-        if not dice_add_line.isdigit():
+        if not isint(dice_add_line):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.add_line.invalid"),
                                  dice_add_line)
-        if not dice_success_line.isdigit():
+        if not isint(dice_success_line):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.dice_success_line.invalid"),
                                  dice_success_line)
-        if not dice_success_line_max.isdigit():
+        if not isint(dice_success_line_max):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.dice_success_line.invalid"),
                                  dice_success_line_max)
-        if not dice_sides.isdigit():
+        if not isint(dice_sides):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.sides.invalid"),
                                  dice_sides)
@@ -467,15 +468,15 @@ class DXDice(DiceItemBase):
         dice_add_line = match.group(2)  # 加骰线
         dice_sides = match.group(3) if match.group(3) else '10'  # 骰子面数
         # 语法合法检定
-        if not dice_count.isdigit():
+        if not isint(dice_count):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.count.invalid"),
                                  dice_count)
-        if not dice_add_line.isdigit():
+        if not isint(dice_add_line):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.add_line.invalid"),
                                  dice_add_line)
-        if not dice_sides.isdigit():
+        if not isint(dice_sides):
             raise DiceValueError(msg,
                                  msg.locale.t("dice.message.error.value.sides.invalid"),
                                  dice_sides)

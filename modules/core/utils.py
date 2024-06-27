@@ -10,6 +10,7 @@ from core.builtins import Bot, Plain, Url
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
+from core.utils.text import isint
 from core.utils.web_render import WebRender
 from database import BotDBUtil
 
@@ -238,7 +239,7 @@ async def _(msg: Bot.MessageSession, offset: str):
 
 @setup.command('cooldown <second> {{core.help.setup.cooldown}}', required_admin=True)
 async def _(msg: Bot.MessageSession, second: str):
-    if not second.isdigit():
+    if not isint(second):
         await msg.finish(msg.locale.t('core.message.setup.cooldown.invalid'))
     else:
         msg.data.edit_option('cooldown_time', second)

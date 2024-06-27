@@ -2,7 +2,7 @@ from core.builtins import Bot, Plain, Image, Url
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.http import get_url
-from core.logger import logger
+from core.utils.text import isint
 
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
@@ -64,7 +64,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
 
-            if query.isdigit():
+            if isint(query):
                 query = int(query)
                 if query > song_count:
                     await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
@@ -105,7 +105,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
 
-            if query.isdigit():
+            if isint(query):
                 query = int(query)
                 if query > song_count:
                     await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))

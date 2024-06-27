@@ -16,7 +16,7 @@ from core.petal import gained_petal
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
 from core.utils.http import get_url, download
-from core.utils.text import remove_prefix
+from core.utils.text import isint, remove_prefix
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
@@ -124,7 +124,7 @@ async def s(msg: Bot.MessageSession):
 @ccode.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']
-    if id.isdigit():
+    if isint(id):
         if int(id) == 0:  # 若 id 为 0，则随机
             await chemical_code(msg)
         else:

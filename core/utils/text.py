@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import TypeVar
 
 T = TypeVar("T", str, bytes, bytearray)
@@ -16,6 +16,22 @@ else:
 
     def remove_prefix(string: T, prefix: T) -> T:
         return string[len(prefix):] if string.startswith(prefix) else string
+
+
+def isfloat(num_str: str) -> bool:
+    try:
+        float(num_str)
+        return True
+    except ValueError:
+        return False
+
+
+def isint(num_str: str) -> bool:
+    try:
+        int(num_str)
+        return True
+    except ValueError:
+        return False
 
 
 def parse_time_string(time_str: str) -> timedelta:

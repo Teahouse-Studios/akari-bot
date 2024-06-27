@@ -11,6 +11,7 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
+from core.utils.text import isint
 from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
@@ -92,7 +93,7 @@ async def _(msg: Bot.MessageSession):
                     get_id = re.sub(r'.*curid=(\d+)', '\\1', qq)
                     get_title = re.sub(r'' + articlepath, '\\1', qq)
                     get_page = None
-                    if get_id.isdigit():
+                    if isint(get_id):
                         get_page = await wiki_.parse_page_info(pageid=int(get_id))
                         if not q[qq].in_allowlist:
                             for result in await check(get_page.title):
@@ -164,7 +165,7 @@ async def _(msg: Bot.MessageSession):
 
                                     async def _callback(msg: Bot.MessageSession):
                                         display = msg.as_display(text_only=True)
-                                        if display.isdigit():
+                                        if isint(display):
                                             display = int(display)
                                             if display <= len(get_page.sections):
                                                 get_page.selected_section = display - 1

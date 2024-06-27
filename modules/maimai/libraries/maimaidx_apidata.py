@@ -10,6 +10,7 @@ from config import Config
 from core.builtins import Bot, Image, MessageChain, Plain
 from core.logger import Logger
 from core.utils.http import download, get_url, post_url
+from core.utils.text import isint
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
@@ -112,7 +113,7 @@ async def search_by_alias(input_) -> list:
     res = (await total_list.get()).filter(title=input_)
     for s in res:
         result.append(s['id'])
-    if input_.isdigit():
+    if isint(input_):
         music = (await total_list.get()).by_id(input_)
         if music:
             result.append(input_)
