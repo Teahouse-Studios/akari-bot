@@ -52,7 +52,7 @@ mcdv_jira_rss = module('mcdv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        desc='{mcv_rss.help.mcdv_jira_rss.desc}',
                        alias='mcdvjirarss',
-                       hide=True)
+                       hidden=True)
 
 
 @mcdv_jira_rss.hook()
@@ -64,7 +64,7 @@ mclgv_jira_rss = module('mclgv_jira_rss',
                         developers=['OasisAkari', 'Dianliang233'],
                         desc='{mcv_rss.help.mclgv_jira_rss.desc}',
                         alias='mclgvjirarss',
-                        hide=True)
+                        hidden=True)
 
 
 @mclgv_jira_rss.hook()

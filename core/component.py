@@ -7,7 +7,8 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.loader import ModulesManager
+from core.exceptions import InvalidCommandFormatError
+from core.loader import ModulesManager, invalid_module_names
 from core.parser.args import parse_template
 from core.types import Module
 from core.types.module.component_meta import *
@@ -145,7 +146,7 @@ def module(
     developers: Union[str, list, tuple, None] = None,
     required_admin: bool = False,
     base: bool = False,
-    hide: bool = False,
+    hidden: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
     available_for: Union[str, list, tuple] = '*',
@@ -162,7 +163,7 @@ def module(
     :param developers: 模块作者。
     :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
-    :param hide: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
+    :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
     :param available_for: 此命令支持的平台列表。
@@ -170,19 +171,38 @@ def module(
     :param support_languages: 此命令支持的语言列表。
     :return: 此类型的模块。
     """
-    module = Module(alias=alias,
-                    bind_prefix=bind_prefix,
-                    desc=desc,
-                    recommend_modules=recommend_modules,
-                    developers=developers,
-                    base=base,
-                    hide=hide,
-                    required_admin=required_admin,
-                    required_superuser=required_superuser,
-                    required_base_superuser=required_base_superuser,
-                    available_for=available_for,
-                    exclude_from=exclude_from,
-                    support_languages=support_languages)
-    frame = inspect.currentframe()
-    ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
-    return Bind.Module(bind_prefix)
+    def check_module_names(module_name: Union[str, list, tuple, dict]):
+        if isinstance(module_name, str):
+            return module_name in invalid_module_names
+        elif isinstance(module_name, (list, tuple)):
+            for item in module_name:
+                if isinstance(item, str) and item in invalid_module_names:
+                    return True
+        elif isinstance(module_name, dict):
+            for key in module_name:
+                if isinstance(key, str) and key in invalid_module_names:
+                    return True
+        else:
+            return False
+
+        return False
+    
+    if not check_module_names(bind_prefix) and not check_module_names(alias):
+        module = Module(alias=alias,
+                        bind_prefix=bind_prefix,
+                        desc=desc,
+                        recommend_modules=recommend_modules,
+                        developers=developers,
+                        base=base,
+                        hidden=hidden,
+                        required_admin=required_admin,
+                        required_superuser=required_superuser,
+                        required_base_superuser=required_base_superuser,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        support_languages=support_languages)
+        frame = inspect.currentframe()
+        ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
+        return Bind.Module(bind_prefix)
+    else:
+        raise InvalidCommandFormatError('Invalid module name found')

@@ -270,7 +270,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish()
 
 
-token = module('token', base=True, hide=True)
+token = module('token', base=True, hidden=True)
 
 
 @token.command('<code> {{core.help.token}}')
