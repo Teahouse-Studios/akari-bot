@@ -108,7 +108,7 @@ async def on_verify(event: nio.KeyVerificationEvent):
         Logger.info(f"Key verification {event.transaction_id} succeeded: {mac}")
         await bot.to_device(mac)
     else:
-        Logger.warn(f"Unknown key verification event: {event}")
+        Logger.warning(f"Unknown key verification event: {event}")
 
 
 async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown):
@@ -161,7 +161,7 @@ async def start():
             if isinstance(
                     resp,
                     nio.KeysUploadError) and "One time key" in resp.message and "already exists." in resp.message:
-                Logger.warn(
+                Logger.warning(
                     f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}")
                 keys = 0
                 while True:

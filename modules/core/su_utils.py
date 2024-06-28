@@ -340,7 +340,7 @@ if Info.subprocess:
                 await msg.send_message(pull_repo_result)
                 await msg.send_message(update_dependencies())
             else:
-                Logger.warn(f'Failed to get Git repository result.')
+                Logger.warning(f'Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
             restart()
         else:

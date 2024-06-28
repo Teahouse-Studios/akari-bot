@@ -552,7 +552,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         return msg
 
     except WaitCancelException:  # 出现于等待被取消的情况
-        Logger.warn('Waiting task cancelled by user.')
+        Logger.warning('Waiting task cancelled by user.')
 
     except Exception:
         Logger.error(traceback.format_exc())

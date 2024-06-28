@@ -28,7 +28,7 @@ class Logginglogger:
         self.info = self.log.info
         self.error = self.log.error
         self.debug = self.log.debug
-        self.warn = self.log.warning
+        self.warning = self.log.warning
         self.exception = self.log.exception
         if debug:
             self.log.warning("Debug mode is enabled.")

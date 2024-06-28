@@ -58,7 +58,7 @@ async def check(*text) -> list:
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
-        Logger.warn('Dirty words filter was disabled, skip.')
+        Logger.warning('Dirty words filter was disabled, skip.')
         query_list = []
         for t in text:
             query_list.append({'content': t, 'status': True, 'original': t})

@@ -35,7 +35,7 @@ async def uuid_to_skin_and_cape(uuid):
             cape.save(path)
         return {'render': render, 'skin': skin, 'cape': path}
     except Exception:
-        Logger.warn("Unable to render player module, skip.")
+        Logger.warning("Unable to render player module, skip.")
         return None
 
 __all__ = ['uuid_to_name', 'name_to_uuid', 'uuid_to_skin_and_cape']

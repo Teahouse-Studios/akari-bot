@@ -50,7 +50,7 @@ def load_modules():
                 Logger.debug(f'Loading modules.{fun_file}...')
                 all_modules.append(fun_file)
                 if fun_file in unloaded_modules:
-                    Logger.warn(f'Skipped modules.{fun_file}!')
+                    Logger.warning(f'Skipped modules.{fun_file}!')
                     current_unloaded_modules.append(fun_file)
                     continue
                 modules = 'modules.' + fun_file

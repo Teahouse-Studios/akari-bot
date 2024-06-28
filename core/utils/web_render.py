@@ -39,7 +39,7 @@ def webrender(method: str = '', url: str = '', use_local: bool = True):
 async def check_web_render():
     if not web_render_local:
         if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
+            Logger.warning('[Webrender] Webrender is not configured.')
         else:
             WebRender.status = True
     else:

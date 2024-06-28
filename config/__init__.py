@@ -2,10 +2,13 @@ import os
 from os.path import abspath
 from typing import Union, Any, get_origin, get_args
 
+from loguru import logger
 import toml
 
 from core.exceptions import ConfigFileNotFound, ConfigValueError
 from core.utils.text import isfloat, isint
+
+
 config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)
 
@@ -65,23 +68,28 @@ class CFG:
             value = value_n.get(q)
         if value is None and default is not None:
             return default
-        if cfg_type is not None:
+        if cfg_type:
             if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
                 if isinstance(cfg_type, tuple):
                     cfg_type_args = get_args(cfg_type)
                     if not all(isinstance(t, type) for t in cfg_type_args):
-                        print(f'[Config] Invalid cfg_type provided in config {
+                        logger.warning(f'[Config] Invalid cfg_type provided in config {
                               q}. cfg_type tuple should contain only types.')
                     else:
-                        cfg_type_str = ', '.join([t.__name__ for t in cfg_type_args])
+                        cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
                         if value is not None and not isinstance(value, cfg_type):
-                            print(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value)}.')
+                            logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value).__name__}.')
+                else:
+                    if value is not None and not isinstance(value, cfg_type):
+                        logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type.__name__}, got {type(value).__name__}.')
+
             else:
-                print(f'[Config] Invalid cfg_type provided in config {
+                logger.warning(f'[Config] Invalid cfg_type provided in config {
                       q}. cfg_type should be a type or a tuple of types.')
-        elif default is not None:
+        elif default:
             if not isinstance(value, type(default)):
-                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}.')
+                logger.warning(f'[Config] Config {q} has a wrong type, expected {type(default).__name__}, got {type(value).__name__}.')
+                return default
         return value
 
     @classmethod
