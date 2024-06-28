@@ -360,7 +360,7 @@ async def bot_help(msg: Bot.MessageSession):
 
             elif Config('help_url', cfg_type=str):
                 wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                               url=Config('help_url', cfg_type=str)) + '/' + help_name
+                                               url=(CFG.get_url('help_url') + help_name))
             else:
                 wiki_msg = ''
             if len(doc) > 500 and not msg.parsed_msg.get('legacy', False) and msg.Feature.image:

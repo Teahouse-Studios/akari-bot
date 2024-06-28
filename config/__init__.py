@@ -85,7 +85,7 @@ class CFG:
         return value
 
     @classmethod
-    def write(cls, q, value, secret=False):
+    def write(cls, q: str, value: Union[Any, None], secret: bool = False):
         q = q.lower()
         if os.path.getmtime(config_path) != cls._ts:
             cls.load()
@@ -107,7 +107,7 @@ class CFG:
         cls.load()
 
     @classmethod
-    def delete(cls, q):
+    def delete(cls, q: str) -> bool:
         q = q.lower()
         if os.path.getmtime(config_path) != cls._ts:
             cls.load()
@@ -127,8 +127,8 @@ class CFG:
         return True
 
     @classmethod
-    def get_url(cls, q):
-        q = cls.get(q)
+    def get_url(cls, q: str, default: Union[str, None] = None) -> Union[str, None]:
+        q = cls.get(q, default, str)
         if q:
             if q[-1] != '/':
                 q += '/'
