@@ -71,14 +71,9 @@ class CFG:
         if cfg_type:
             if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
                 if isinstance(cfg_type, tuple):
-                    cfg_type_args = get_args(cfg_type)
-                    if not all(isinstance(t, type) for t in cfg_type_args):
-                        logger.warning(f'[Config] Invalid cfg_type provided in config {
-                              q}. cfg_type tuple should contain only types.')
-                    else:
-                        cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
-                        if value is not None and not isinstance(value, cfg_type):
-                            logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value).__name__}.')
+                    cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
+                    if value is not None and not isinstance(value, cfg_type):
+                        logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value).__name__}.')
                 else:
                     if value is not None and not isinstance(value, cfg_type):
                         logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type.__name__}, got {type(value).__name__}.')
