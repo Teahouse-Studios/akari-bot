@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get('-p', False)
-    if isint(get_page['<page>']):
+    if get_page and isint(get_page['<page>']):
         page = max(min(int(get_page['<page>']), total_pages), 1)
     else:
         page = 1
@@ -443,7 +443,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)
     username = get_user['<username>'] if get_user else None
     get_page = msg.parsed_msg.get('-p', False)
-    page = get_page['<page>'] if isint(get_page['<page>']) else 1
+    page = get_page['<page>'] if get_page and isint(get_page['<page>']) else 1
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}
