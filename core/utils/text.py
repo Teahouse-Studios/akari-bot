@@ -22,7 +22,7 @@ def isfloat(num_str: str) -> bool:
     try:
         float(num_str)
         return True
-    except ValueError:
+    except Exception:
         return False
 
 
@@ -30,7 +30,7 @@ def isint(num_str: str) -> bool:
     try:
         int(num_str)
         return True
-    except ValueError:
+    except Exception:
         return False
 
 
@@ -51,5 +51,5 @@ def parse_time_string(time_str: str) -> timedelta:
             hour = -hour
             minute = -minute
         return timedelta(hours=hour, minutes=minute)
-    except ValueError:
+    except Exception:
         return timedelta()

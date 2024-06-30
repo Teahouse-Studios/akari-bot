@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get('-p', False)
-    if isint(get_page):
+    if isint(get_page['<page>']):
         page = max(min(int(get_page['<page>']), total_pages), 1)
     else:
         page = 1
@@ -93,10 +93,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
                                music['level'][i],
                                music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    if isint(page):
-        page = max(min(int(page), total_pages), 1)
-    else:
-        page = 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -127,10 +124,7 @@ async def _(msg: Bot.MessageSession, page: str = None):
                            music['title'],
                            music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    if isint(page):
-        page = max(min(int(page), total_pages), 1)
-    else:
-        page = 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -162,10 +156,7 @@ async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
     for music in sorted(data, key=lambda i: int(i['id'])):
         result_set.append((music['id'], music['title'], music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    if isint(page):
-        page = max(min(int(page), total_pages), 1)
-    else:
-        page = 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -452,7 +443,7 @@ async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)
     username = get_user['<username>'] if get_user else None
     get_page = msg.parsed_msg.get('-p', False)
-    page = get_page['<page>'] if get_page else '1'
+    page = get_page['<page>'] if isint(get_page['<page>']) else 1
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}
