@@ -13,9 +13,12 @@ assets/maimai*
 !assets/maimai/mai_grade_info.json
 assets/phigros*
 bots/**/assets
-.version*
+version*
 .pid_last
 .cache_loader
 .console_history
 *.log
 matrix_store
+assets/arc.apk
+assets/arcaea
+/modules/ask/tools/self_knowledge
