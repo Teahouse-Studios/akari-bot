@@ -81,7 +81,7 @@
     "maimai.message.search": "“${keyword}”的搜索结果：",
     "maimai.message.song": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}\n难度：${level}",
     "maimai.message.song.dx": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${brk}\n谱师：${charter}",
-    "maimai.message.song.prompt": "以下是可能的结果：",
+    "maimai.message.disambiguation": "以下是可能的结果：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
     "maimai.message.unbind.success": "解绑成功。",

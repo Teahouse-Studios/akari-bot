@@ -247,11 +247,12 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
+            res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes)
+            await msg.finish(res)
         else:
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
@@ -321,11 +322,12 @@ async def query_song_info(msg, query, username):
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
+            res += msg.locale.t("maimai.message.info.prompt", prefix=msg.prefixes)
+            await msg.finish(res)
         else:
             sid = str(sid_list[0])
 
