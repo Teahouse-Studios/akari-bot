@@ -32,7 +32,7 @@ async def _(msg: Bot.MessageSession):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes)
+            res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:
             sid = str(sid_list[0])
