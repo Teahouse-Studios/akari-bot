@@ -3,7 +3,6 @@ import traceback
 
 import aiohttp
 import ujson as json
-from asyncio.exceptions import TimeoutError
 
 from core.logger import Logger
 from core.utils.http import get_url
@@ -27,7 +26,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             url = f'http://motd.wd-api.com/v1/java?host={serip}&port={port1}'
             jemotd = await get_url(url, 200, logging_err_resp=False)
             jejson = json.loads(jemotd)
-        except (ValueError, TimeoutError):
+        except ValueError:
             return ''
         try:
             servers.append('[JE]')
@@ -76,7 +75,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             url = f'http://motd.wd-api.com/v1/bedrock?host={serip}&port={port2}'
             bemotd = await get_url(url, 200, logging_err_resp=False)
             bejson = json.loads(bemotd)
-        except (ValueError, TimeoutError):
+        except ValueError:
             return ''
         try:
             unpack_data = bejson['data'].split(';')
