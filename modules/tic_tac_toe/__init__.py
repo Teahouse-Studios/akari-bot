@@ -81,7 +81,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
         while True:
             if not play_state.check():
                 raise TerminationError
-            wait = await msg.wait_anyone(timeout=3600)
+            wait = await msg.wait_anyone(timeout=None)
             text = wait.as_display(text_only=True)
             if text == 'stop':
                 raise TerminationError

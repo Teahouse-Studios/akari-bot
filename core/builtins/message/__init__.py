@@ -30,6 +30,7 @@ class MessageSession(MessageSessionT):
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
         self.name = self.locale.t('bot_name')
+        self.petal = self.data.petal
         self.timestamp = datetime.now()
         self.tmp = {}
         self._tz_offset = self.options.get(

@@ -320,11 +320,23 @@ async def get_rank(msg: Bot.MessageSession, payload: dict):
     total_rating = 0
     total_rank = len(rank_data)
 
+    # 记录上一个ra的值和排名
+    previous_ra = None
+    previous_rank = None
+
     for i, scoreboard in enumerate(rank_data):
+        if scoreboard['ra'] != previous_ra:
+            current_rank = i + 1
+            previous_rank = current_rank
+        elif scoreboard['ra'] == previous_ra:
+            current_rank = previous_rank
+
         if scoreboard['username'] == username:
-            rank = i + 1
+            rank = current_rank
             rating = scoreboard['ra']
+
         total_rating += scoreboard['ra']
+        previous_ra = scoreboard['ra']
 
     if not rank:
         rank = total_rank

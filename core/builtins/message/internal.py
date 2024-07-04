@@ -2,7 +2,7 @@ import base64
 import random
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from os.path import abspath
 from typing import List, Self
 from urllib import parse
@@ -96,7 +96,7 @@ class FormattedTime:
         if not msg:
             return datetime.fromtimestamp(self.timestamp).strftime(' '.join(ftime_template))
         else:
-            return (datetime.utcfromtimestamp(self.timestamp) + msg.timezone_offset).strftime(' '.join(ftime_template))
+            return (datetime.fromtimestamp(self.timestamp, tz=timezone.utc) + msg.timezone_offset).strftime(' '.join(ftime_template))
 
     def __str__(self):
         return self.to_str()

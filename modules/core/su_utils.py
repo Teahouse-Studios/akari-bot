@@ -495,7 +495,7 @@ if Config('enable_petal', False):
 
     @petal.command()
     async def _(msg: Bot.MessageSession):
-        await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
+        await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
     @petal.command('[<target>] {{core.help.petal}}', required_superuser=True)
     async def _(msg: Bot.MessageSession):
@@ -517,7 +517,7 @@ if Config('enable_petal', False):
                 msg.locale.t('core.message.petal.modify', target=target, add_petal=petal, petal=target_info.petal))
         else:
             msg.data.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.data.petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.petal))
 
     @petal.command('clear [<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):
