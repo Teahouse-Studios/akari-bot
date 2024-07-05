@@ -5,7 +5,7 @@ from inputimeout import inputimeout, TimeoutOccurred
 from PIL import Image
 
 from config import Config
-from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
+from core.builtins import (Plain, I18NContext, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
@@ -77,7 +77,7 @@ class MessageSession(MessageSessionT):
         send = None
         if message_chain:
             if append_instruction:
-                print(self.locale.t("message.wait.prompt.next_message"))
+                message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
         try:
             if timeout:
@@ -97,7 +97,7 @@ class MessageSession(MessageSessionT):
                          all_=False, append_instruction=True):
         message_chain = MessageChain(message_chain)
         if append_instruction:
-            message_chain.append(Plain(self.locale.t("message.reply.prompt")))
+            message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain)
         try:
             if timeout:

@@ -2,7 +2,7 @@ import re
 import traceback
 
 from config import Config, CFG
-from core.builtins import Image, Plain, Bot
+from core.builtins import Bot, I18NContext ,Image, Plain
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -455,14 +455,14 @@ async def _(msg: Bot.MessageSession):
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    help_msg_list = [Image(render), Plain(msg.locale.t("core.message.help.more_information",
-                                                                       prefix=msg.prefixes[0]))]
+                    help_msg_list = [Image(render), I18NContext("core.message.help.more_information",
+                                                                prefix=msg.prefixes[0])]
                     if Config('help_url', cfg_type=str):
-                        help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.document",
-                                                                url=Config('help_url', cfg_type=str))))
+                        help_msg_list.append(I18NContext("core.message.help.more_information.document",
+                                                         url=Config('help_url', cfg_type=str)))
                     if Config('donate_url', cfg_type=str):
-                        help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.donate",
-                                                                url=Config('donate_url', cfg_type=str))))
+                        help_msg_list.append(I18NContext("core.message.help.more_information.donate",
+                                                         url=Config('donate_url', cfg_type=str)))
                     await msg.finish(help_msg_list)
         except Exception:
             Logger.error(traceback.format_exc())

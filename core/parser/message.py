@@ -237,8 +237,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                             prefix=msg.prefixes[0])
                             await msg.send_message(desc)
                         else:
-                            await msg.send_message(ErrorMessage(msg.locale.t("error.module.unbound",
-                                                                             module=command_first_word)))
+                            await msg.send_message(ErrorMessage("{error.module.unbound}", module=command_first_word))
                         return
 
                     if module.required_base_superuser:
@@ -352,8 +351,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             except InvalidHelpDocTypeError:
                                 Logger.error(traceback.format_exc())
                                 await msg.send_message(
-                                    ErrorMessage(msg.locale.t("error.module.helpdoc.invalid",
-                                                              module=command_first_word)))
+                                    ErrorMessage("{error.module.helpdoc.invalid}", module=command_first_word))
                                 return
 
                         await execute_submodule(msg, command_first_word, command_split)

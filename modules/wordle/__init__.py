@@ -9,7 +9,7 @@ import random
 import unicodedata
 
 from config import Config
-from core.builtins import Bot, Plain, Image as BImage
+from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
@@ -221,9 +221,9 @@ async def _(msg: Bot.MessageSession):
         if hard_mode:
             start_msg += '\n' + msg.locale.t('wordle.message.hard')
     else:
-        start_msg = [BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))]
+        start_msg = [BImage(board_image.image), I18NContext('wordle.message.start')]
         if hard_mode:
-            start_msg.append(Plain(msg.locale.t('wordle.message.hard')))
+            start_msg.append(I18NContext('wordle.message.hard'))
     await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():

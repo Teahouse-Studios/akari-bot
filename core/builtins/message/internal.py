@@ -14,7 +14,8 @@ from tenacity import retry, stop_after_attempt
 
 from config import Config
 from core.builtins.utils import shuffle_joke
-from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
+from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT, 
+                                         FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.types.message import MessageSession
 from core.utils.i18n import Locale
@@ -64,7 +65,7 @@ class Url(UrlT):
         return {'type': 'url', 'data': {'url': self.url}}
 
 
-class FormattedTime:
+class FormattedTime(FormattedTimeT):
     def __init__(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
         self.timestamp = timestamp
         self.date = date
@@ -116,7 +117,7 @@ class FormattedTime:
                 'timezone': self.timezone}}
 
 
-class I18NContext:
+class I18NContext(I18NContextT):
     def __init__(self, key, **kwargs):
         self.key = key
         self.kwargs = kwargs
@@ -132,15 +133,16 @@ class I18NContext:
 
 
 class ErrorMessage(EMsg):
-    def __init__(self, error_message, locale=None):
+    def __init__(self, error_message, locale=None, enable_report=True, **kwargs):
         self.error_message = error_message
+
         if locale:
             locale = Locale(locale)
             if locale_str := re.findall(r'\{(.*)}', error_message):
                 for l in locale_str:
-                    error_message = error_message.replace(f'{{{l}}}', locale.t(l))
+                    error_message = error_message.replace(f'{{{l}}}', locale.t(l, **kwargs))
             self.error_message = locale.t('error') + error_message
-            if Config('bug_report_url', cfg_type=str):
+            if enable_report and Config('bug_report_url', cfg_type=str):
                 self.error_message += '\n' + locale.t('error.prompt.address',
                                                       url=str(Url(Config('bug_report_url', cfg_type=str))))
 

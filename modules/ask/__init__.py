@@ -7,7 +7,7 @@ import tiktoken
 
 from config import Config
 from core.logger import Logger
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
@@ -125,17 +125,17 @@ async def _(msg: Bot.MessageSession):
                     img = PILImage.open(io.BytesIO(content))
                     chain.append(Image(img))
                 except Exception as e:
-                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
+                    chain.append(I18NContext('ask.message.text2img.error', text=content))
             elif block['type'] == 'code':
                 content = block['content']['code']
                 try:
                     chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
                                                                                             block['content']['language'])))))
                 except Exception as e:
-                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
+                    chain.append(I18NContext('ask.message.text2img.error', text=content))
 
         if petal != 0:
-            chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
+            chain.append(I18NContext('petal.message.cost', count=petal))
 
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()

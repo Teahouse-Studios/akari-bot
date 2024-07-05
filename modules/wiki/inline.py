@@ -4,7 +4,7 @@ import urllib.parse
 
 import filetype
 
-from core.builtins import Bot, Plain, Image, Voice
+from core.builtins import Bot, I18NContext, Image, Voice
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
@@ -114,21 +114,21 @@ async def _(msg: Bot.MessageSession):
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                                     if msg.Feature.image:
                                         await msg.send_message(
-                                            [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
+                                            [I18NContext('wiki.message.wiki_inline.flies', file=get_page.file),
                                              Image(dl)],
                                             quote=False)
                                         img_send = True
                                 elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                                     if msg.Feature.voice:
                                         await msg.send_message(
-                                            [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
+                                            [I18NContext('wiki.message.wiki_inline.flies', file=get_page.file),
                                              Voice(dl)],
                                             quote=False)
                             elif check_svg(dl):
                                 rd = await svg_render(dl)
                                 if msg.Feature.image and rd:
                                     await msg.send_message(
-                                        [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
+                                        [I18NContext('wiki.message.wiki_inline.flies', file=get_page.file),
                                          Image(rd)],
                                         quote=False)
 
@@ -154,14 +154,14 @@ async def _(msg: Bot.MessageSession):
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in
                                                     range(len(get_page.sections))]
-                                    i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section.prompt')))
+                                    i_msg_lst.append(I18NContext('wiki.message.invalid_section.prompt'))
                                     i_msg_lst.append(Image(await
                                                            image_table_render(
                                                                ImageTable(session_data,
                                                                           [msg.locale.t('wiki.message.table.id'),
                                                                            msg.locale.t('wiki.message.table.section')]))))
-                                    i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section.select')))
-                                    i_msg_lst.append(Plain(msg.locale.t('message.reply.prompt')))
+                                    i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
+                                    i_msg_lst.append(I18NContext('message.reply.prompt'))
 
                                     async def _callback(msg: Bot.MessageSession):
                                         display = msg.as_display(text_only=True)
@@ -174,7 +174,7 @@ async def _(msg: Bot.MessageSession):
 
                                     await msg.send_message(i_msg_lst, callback=_callback)
                                 else:
-                                    await msg.send_message(Plain(msg.locale.t('wiki.message.invalid_section')))
+                                    await msg.send_message(I18NContext('wiki.message.invalid_section'))
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:

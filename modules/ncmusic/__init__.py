@@ -1,4 +1,4 @@
-from core.builtins import Bot, Plain, Image, Url
+from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.http import get_url
@@ -24,7 +24,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
     if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
 
-        send_msg = [Plain(msg.locale.t('ncmusic.message.search.result') + '\n')]
+        send_msg = [I18NContext('ncmusic.message.search.result')]
         data = [[
                 str(i),
                 song['name'] + (f" ({' / '.join(song['transNames'])})" if 'transNames' in song else ''),
@@ -49,10 +49,10 @@ async def search(msg: Bot.MessageSession, keyword: str):
             send_msg.append(Image(img))
             if song_count > 10:
                 song_count = 10
-                send_msg.append(Plain(msg.locale.t("message.collapse", amount="10")))
+                send_msg.append(I18NContext("message.collapse", amount="10"))
 
         if song_count == 1:
-            send_msg.append(Plain(msg.locale.t('ncmusic.message.search.confirm')))
+            send_msg.append(I18NContext('ncmusic.message.search.confirm'))
             query = await msg.wait_confirm(send_msg, delete=False)
             if query:
                 sid = result['result']['songs'][0]['id']
@@ -60,7 +60,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 await msg.finish()
 
         else:
-            send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
+            send_msg.append(I18NContext('ncmusic.message.search.prompt'))
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
 
@@ -127,13 +127,13 @@ async def info(msg: Bot.MessageSession, sid: str):
         artist = ' / '.join([ar['name'] for ar in info['ar']])
         song_url = f"https://music.163.com/#/song?id={info['id']}"
 
-        send_msg = msg.locale.t('ncmusic.message.info',
-                                name=info['name'],
-                                id=info['id'],
-                                artists=artist,
-                                album=info['al']['name'],
-                                album_id=info['al']['id'])
 
-        await msg.finish([Image(info['al']['picUrl']), Url(song_url), Plain(send_msg)])
+        await msg.finish([Image(info['al']['picUrl']), Url(song_url),
+                          I18NContext('ncmusic.message.info',
+                                      name=info['name'],
+                                      id=info['id'],
+                                      artists=artist,
+                                      album=info['al']['name'],
+                                      album_id=info['al']['id'])])
     else:
         await msg.finish(msg.locale.t('ncmusic.message.info.not_found'))

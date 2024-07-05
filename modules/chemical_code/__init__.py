@@ -9,7 +9,7 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
@@ -237,15 +237,15 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 await timer(start)
 
     if not captcha_mode:
-        await msg.send_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))), Image(newpath),
-                                Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
+        await msg.send_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")), Image(newpath),
+                                I18NContext('chemical_code.message', times=set_timeout)])
         time_start = datetime.now().timestamp()
 
         await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:
-        result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))),
-                                              Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], timeout=None, append_instruction=False)
+        result = await msg.wait_next_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")),
+                                              Image(newpath), I18NContext('chemical_code.message.captcha',
+                                                                                 times=set_timeout)], timeout=None, append_instruction=False)
         if play_state.check():
             play_state.disable()
             if result.as_display(text_only=True) == play_state.check("answer"):

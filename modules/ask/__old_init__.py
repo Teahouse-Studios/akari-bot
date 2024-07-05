@@ -5,7 +5,7 @@ import re
 from PIL import Image as PILImage
 
 from config import Config
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.exceptions import ConfigValueError
@@ -63,19 +63,19 @@ if Config('enable_langsmith'):
                         img = PILImage.open(io.BytesIO(content))
                         chain.append(Image(img))
                     except Exception as e:
-                        chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
+                        chain.append(I18NContext('ask.message.text2img.error', text=content))
                 elif block['type'] == 'code':
                     content = block['content']['code']
                     try:
                         chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
                                                                                                 block['content']['language'])))))
                     except Exception as e:
-                        chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
+                        chain.append(I18NContext('ask.message.text2img.error', text=content))
 
             if await check_bool(res):
                 await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
             if petal != 0:
-                chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
+                chain.append(I18NContext('petal.message.cost', count=petal))
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()

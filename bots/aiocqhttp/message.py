@@ -14,7 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from config import Config
-from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice, MessageTaskManager
+from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, I18NContext, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
@@ -121,7 +121,7 @@ class MessageSession(MessageSessionT):
             msg = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+            return await self.send_message((ErrorMessage("{error.message.chain.unsafe}", locale=self.locale.locale, enable_report=False)))
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:
@@ -142,7 +142,7 @@ class MessageSession(MessageSessionT):
                     self.locale.t("error.message.timeout")))
             except aiocqhttp.exceptions.ActionFailed:
                 img_chain = message_chain.copy()
-                img_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
+                img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
                 msg2img = MessageSegment.image(Path(await msgchain2image(img_chain, self)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)

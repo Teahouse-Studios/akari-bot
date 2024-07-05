@@ -9,7 +9,7 @@ from khl import MessageTypes, Message
 from bots.kook.client import bot
 from bots.kook.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, MessageTaskManager
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
@@ -72,7 +72,7 @@ class MessageSession(MessageSessionT):
         self.session.message: Message
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
+            return await self.send_message((ErrorMessage("{error.message.chain.unsafe}", locale=self.locale.locale, enable_report=False)))
         self.sent.append(message_chain)
         count = 0
         send = []

@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple
 import emoji
 import ujson as json
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
 from core.logger import Logger
 
@@ -153,8 +153,19 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
         if supported_emojis:
-            await msg.finish([Plain(msg.locale.t('emojimix.message.combine_supported', emoji=emoji)), Plain(''.join(supported_emojis))])
+            send_msgs = [I18NContext('emojimix.message.combine_supported', emoji=emoji)]
+            if Bot.FetchTarget.name == 'Discord':
+                send_msgs.extend([Plain(''.join(supported_emojis[i:i+200])) for i in range(0, len(supported_emojis), 200)])
+            else:
+                send_msgs.append(Plain(''.join(supported_emojis)))
+            await msg.finish(send_msgs)
         else:
             await msg.finish(msg.locale.t('emojimix.message.unsupported') + emoji)
     else:
-        await msg.finish([Plain(msg.locale.t('emojimix.message.all_supported')), Plain(''.join(supported_emojis))])
+        send_msgs = [I18NContext('emojimix.message.all_supported')]
+        if Bot.FetchTarget.name == 'Discord':
+            send_msgs.extend([Plain(''.join(supported_emojis[i:i+200])) for i in range(0, len(supported_emojis), 200)])
+        else:
+            send_msgs.append(Plain(''.join(supported_emojis)))
+        await msg.finish(send_msgs)
+

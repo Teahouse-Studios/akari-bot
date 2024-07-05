@@ -7,7 +7,7 @@ from datetime import datetime
 import ujson as json
 
 from config import Config, CFG
-from core.builtins import Bot, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession, target: str):
     elif 'list' in msg.parsed_msg:
         modules = sorted(target_data.enabled_modules)
         if modules:
-            await msg.finish([Plain(msg.locale.t("core.message.set.module.list")), Plain(" | ".join(modules))])
+            await msg.finish([I18NContext("core.message.set.module.list"), Plain(" | ".join(modules))])
         else:
             await msg.finish(msg.locale.t("core.message.set.module.list.none"))
 

@@ -2,7 +2,7 @@ import re
 from datetime import timezone
 
 from config import Config
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, I18NContext, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
@@ -99,7 +99,7 @@ if Config('enable_urlmanager', False):
                 if allow_table:
                     allow_image = await image_table_render(allow_table)
                     if allow_image:
-                        send_msgs.append(Plain(msg.locale.t('wiki.message.wiki_audit.list.allowlist')))
+                        send_msgs.append(I18NContext('wiki.message.wiki_audit.list.allowlist'))
                         send_msgs.append(Image(allow_image))
             if Config('db_path', cfg_type=str).startswith('mysql'):
                 block_columns = [[x[0], msg.ts2strftime(
@@ -115,7 +115,7 @@ if Config('enable_urlmanager', False):
                 if block_table:
                     block_image = await image_table_render(block_table)
                     if block_image:
-                        send_msgs.append(Plain(msg.locale.t('wiki.message.wiki_audit.list.blocklist')))
+                        send_msgs.append(I18NContext('wiki.message.wiki_audit.list.blocklist'))
                         send_msgs.append(Image(block_image))
             if send_msgs:
                 await msg.finish(send_msgs)
