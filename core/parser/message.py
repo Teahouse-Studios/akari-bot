@@ -543,8 +543,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
-                    await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                       message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                    if not Config('use_llonebot', False):
+                        await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                    else:
+                        await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id, emoji_id='10060')
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg

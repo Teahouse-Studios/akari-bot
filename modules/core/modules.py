@@ -2,7 +2,7 @@ import re
 import traceback
 
 from config import Config, CFG
-from core.builtins import Bot, I18NContext ,Image, Plain
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules

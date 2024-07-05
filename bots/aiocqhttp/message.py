@@ -279,9 +279,13 @@ class MessageSession(MessageSessionT):
                     if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                         return
                 last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
-                action = 'touch' if Config('use_shamrock', False) else 'poke'
-                await bot.send_group_msg(group_id=self.msg.session.target,
-                                         message=f'[CQ:{action},qq={self.msg.session.sender}]')
+                if not Config('use_llonebot', False):
+                    action = 'touch' if Config('use_shamrock', False) else 'poke'
+                    await bot.send_group_msg(group_id=self.msg.session.target,
+                                             message=f'[CQ:{action},qq={self.msg.session.sender}]')
+                else:
+                    await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
+                                          emoji_id='212')
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
