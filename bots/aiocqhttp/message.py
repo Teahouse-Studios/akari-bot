@@ -275,11 +275,11 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == 'QQ|Group':
-                if self.msg.session.sender in last_send_typing_time:
-                    if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
-                        return
-                last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
                 if not Config('use_llonebot', False):
+                    if self.msg.session.sender in last_send_typing_time:
+                        if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
+                            return
+                    last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
                     action = 'touch' if Config('use_shamrock', False) else 'poke'
                     await bot.send_group_msg(group_id=self.msg.session.target,
                                              message=f'[CQ:{action},qq={self.msg.session.sender}]')
