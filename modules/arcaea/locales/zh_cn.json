@@ -6,7 +6,5 @@
     "arcaea.help.rank.free": "查看当前免费包游玩排行。",
     "arcaea.help.rank.paid": "查看当前付费包游玩排行。",
     "arcaea.message.download": "目前的最新版本为 ${version}。\n下载地址：${url}",
-    "arcaea.message.get_failed": "获取失败。",
-    "ptt.help": "生成一张 Arcaea 潜力值图片。",
-    "ptt.message.invalid": "潜力值必须为 ≥0.00 且 ≤99.99 的数字。"
+    "arcaea.message.get_failed": "获取失败。"
 }
