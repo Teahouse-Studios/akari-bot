@@ -66,7 +66,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
             if isint(query):
                 query = int(query)
-                if query > song_count:
+                if not query or query > song_count:
                     await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
                 else:
                     sid = result['result']['songs'][query - 1]['id']

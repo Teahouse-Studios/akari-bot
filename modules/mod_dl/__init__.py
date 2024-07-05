@@ -141,7 +141,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         # 查找 Mod
         if isint(replied):
             replied = int(replied)
-            if replied > len(cache_result):
+            if not replied or replied > len(cache_result):
                 await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
             else:
                 mod_info = cache_result[replied - 1]
