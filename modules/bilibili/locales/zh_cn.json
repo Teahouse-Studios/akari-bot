@@ -17,7 +17,7 @@
     "bilibili.message.embed.time": "日期",
     "bilibili.message.embed.type": "类型",
     "bilibili.message.embed.view": "观看",
-    "bilibili.message.error.rejected": "发生错误：由于触发哔哩哔哩安全风控策略，此次访问请求已被拒绝，请稍后重试。\n如果错误持续存在，请联系开发者解决问题。",
+    "bilibili.message.error.rejected": "由于触发哔哩哔哩安全风控策略，此次访问请求已被拒绝，请稍后重试。\n如果错误持续存在，请联系开发者解决问题。",
     "bilibili.message.invalid": "视频编号无效。",
     "bilibili.message.not_found": "未找到对应的视频。"
 }
