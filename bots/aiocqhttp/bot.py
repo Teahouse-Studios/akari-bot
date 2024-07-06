@@ -47,7 +47,7 @@ async def _(event: Event):
     await load_prompt(FetchTarget)
 
 
-ignore_ids = [2854196310]
+ignore_ids = [2854196310]  # Q群管家
 
 
 async def message_handler(event: Event):
