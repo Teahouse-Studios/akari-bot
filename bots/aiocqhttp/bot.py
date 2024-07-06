@@ -47,12 +47,17 @@ async def _(event: Event):
     await load_prompt(FetchTarget)
 
 
+ignore_ids = [2854196310]  # Q群管家
+
+
 async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session', True):
                 return await bot.send(event, Locale(default_locale).t('qq.message.disable_temp_session'))
     if event.user_id == lagrange_account:
+        return
+    if event.user_id in ignore_ids:
         return
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
     if filter_msg:

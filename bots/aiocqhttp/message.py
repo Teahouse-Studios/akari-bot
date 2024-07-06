@@ -285,7 +285,7 @@ class MessageSession(MessageSessionT):
                                              message=f'[CQ:{action},qq={self.msg.session.sender}]')
                 else:
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
-                                          emoji_id='212')
+                                          emoji_id='181')
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
