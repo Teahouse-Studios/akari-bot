@@ -32,6 +32,7 @@ confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y",]
 disabled_bots = ["",]
 report_targets = ["",]
 use_llonebot = false
+llonebot_typing_emoji = 181
 use_shamrock = false
 locale = "zh_cn"
 timezone_offset = "+8"
