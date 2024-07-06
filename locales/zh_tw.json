@@ -45,7 +45,7 @@
     "message.end": "。",
     "message.id.invalid.sender": "ID 格式錯誤，格式應為「${sender}|<使用者 ID>」。",
     "message.id.invalid.target": "ID 格式錯誤，格式應為「${target}|<對話 ID>」。",
-    "message.reply.prompt": "（請使用指定的詞語回覆此訊息）",
+    "message.reply.prompt": "（請使用指定的詞語引用回覆此訊息）",
     "message.wait.prompt.confirm": "（傳送「是」或符合確認條件的詞語確認）",
     "message.wait.prompt.next_message": "（傳送符合條件的詞語確認）",
     "no": "否",
