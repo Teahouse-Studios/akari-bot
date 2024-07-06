@@ -45,7 +45,7 @@
     "message.end": ".",
     "message.id.invalid.sender": "Invalid ID format. The format should be \"${sender}|<User ID>\".",
     "message.id.invalid.target": "Invalid ID format. The format should be \"${target}|<conversation ID>\".",
-    "message.reply.prompt": "(Please reply to this message using the specified words)",
+    "message.reply.prompt": "(Please quote to reply this message using the specified words)",
     "message.wait.prompt.confirm": "(Send \"Yes\" or other matching words to confirm)",
     "message.wait.prompt.next_message": "(Send matching words to confirm)",
     "no": "No",

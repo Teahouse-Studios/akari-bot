@@ -45,7 +45,7 @@
     "message.end": "。",
     "message.id.invalid.sender": "ID 格式错误，格式应为“${sender}|<用户 ID>”。",
     "message.id.invalid.target": "ID 格式错误，格式应为“${target}|<对话 ID>”。",
-    "message.reply.prompt": "（请使用指定的词语回复本条消息）",
+    "message.reply.prompt": "（请使用指定的词语引用回复本条消息）",
     "message.wait.prompt.confirm": "（发送“是”或符合确认条件的词语来确认）",
     "message.wait.prompt.next_message": "（发送符合条件的词语来确认）",
     "no": "否",
