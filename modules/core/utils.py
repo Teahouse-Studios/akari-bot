@@ -25,10 +25,13 @@ ver = module('version', base=True)
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
-        repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
-        repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
-        commit_url = f"{repo_url}/commit/{commit}"
-        await msg.finish([I18NContext('core.message.version', commit=commit), Url(commit_url)])
+        send_msgs = [I18NContext('core.message.version', commit=commit)]
+        if Config('enable_commit_url', True):
+            repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
+            repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
+            commit_url = f"{repo_url}/commit/{commit}"
+            send_msgs.append(Url(commit_url))
+        await msg.finish(send_msgs)
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
