@@ -47,16 +47,16 @@ body:
          对于任何违反上述协议、或是由我们判定为出现其它不合适的行为，我们将视情况终止对你的服务，并有权利公开相关的不良行为。
         
          请注意：上述提示不能视为对服务条款的替代。
-   - type: dropdown
-     id: group-type
-     attributes:
-       label: 类型
-       description: 你要申请加入什么样的QQ群聊？是老掉牙的群还是最新潮流的QQ频道（beta）？
-       options:
-         - QQ群
-         - QQ频道（beta）
-     validations:
-       required: true
+#   - type: dropdown
+#     id: group-type
+#     attributes:
+#       label: 类型
+#       description: 你要申请加入什么样的QQ群聊？是老掉牙的群还是最新潮流的QQ频道（beta）？
+#       options:
+#         - QQ群
+#         - QQ频道（beta）
+#     validations:
+#       required: true
    - type: input
      id: qq-id
      attributes:
@@ -69,7 +69,7 @@ body:
      id: group-id
      attributes:
        label: QQ群
-       description: 你想要让机器人加入的群的群号，如你要申请的是频道，请将通行证链接发送到此处即可。
+       description: 你想要让机器人加入的群的群号。
        placeholder: e.g. 1000000
      validations:
        required: true
