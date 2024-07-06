@@ -224,6 +224,8 @@ pip install -r requirements.txt
 
 ### 配置平台机器人
 
+**注意 QQ 侧平台拥有多种部署方式，只需选择一种即可。**
+
 #### QQ（OpenShamrock）
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [OpenShamrock](https://github.com/whitechi73/OpenShamrock) 客户端。
@@ -234,7 +236,7 @@ pip install -r requirements.txt
 
 2. 安装完后，请在小可机器人的配置文件 `config.toml` 填写以下字段：
 
-    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 LLOneBot 反向连接。
 
     `qq_account = 2314163511` - 填写机器人的 QQ 号。
 
@@ -259,6 +261,29 @@ pip install -r requirements.txt
 
 > [!NOTE]
 > 若在安装和配置中遇到问题，请参阅 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/)。
+
+#### QQ（LLOneBot）
+
+我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [LLOneBot](https://github.com/LLOneBot/LLOneBot) 插件。
+
+1. 尝试根据 [LLOneBot](https://llonebot.github.io/zh-CN/guide/getting-started) 的官方文档进行插件的安装。
+
+2. 安装完后，请在小可机器人的配置文件 `config.toml` 填写以下字段：
+
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 OpenShamrock 反向连接。
+
+    `qq_account = 2314163511` - 填写机器人的 QQ 号。
+
+    `use_llonebot = true` - 告诉机器人正在使用 LLOneBot，以启用一些特殊功能（消息回应）。
+
+3. 安装完后，打开 QQ 的设置，找到 LLOneBot 的设置，将 “启用反向 Websocket 服务” 打开，并添加好 Websocket 服务器的地址。
+
+   - 如示例地址： `ws://127.0.0.1:11451/ws` 。
+
+4. 将 “新消息上报模式” 更改为 “CQ 码”。
+
+5. 关闭设置窗口，确认配置文件保存。（请注意 LLOneBot 似乎保存配置方面存在Bug，反向 Websocket 配置有概率无法正常保存，可能需要反复开关填写配置）
+
 
 #### QQ（go-cqhttp）
 
