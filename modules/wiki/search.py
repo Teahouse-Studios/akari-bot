@@ -75,8 +75,9 @@ async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], 
         await msg.finish(msg.locale.t('wiki.message.search.not_found'))
     reply = await msg.wait_reply(Plain('\n'.join(msg_list)))
     reply_ = reply.as_display(text_only=True)
-    if reply_ and isint(reply_):
+    if isint(reply_):
         reply_number = int(reply_) - 1
+    if reply_number:
         await query_pages(reply, wait_msg_list[reply_number])
     else:
         await msg.finish()
