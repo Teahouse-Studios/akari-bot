@@ -122,7 +122,7 @@ class MessageSession(MessageSessionT):
                     ignore_unverified_devices=True,
                 )
                 if "status_code" in resp.__dict__:
-                    Logger.error(f"Error in sending message: {str(resp)}")
+                    Logger.error(f"Error while sending message: {str(resp)}")
                 else:
                     sentMessages.append(resp)
                 reply_to = None

@@ -45,7 +45,7 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     if room.member_count == 1 and event.membership == 'leave':
         resp = await bot.room_leave(room.room_id)
         if resp is nio.ErrorResponse:
-            Logger.error(f"Error leaving empty room {room.room_id}: {str(resp)}")
+            Logger.error(f"Error while leaving empty room {room.room_id}: {str(resp)}")
         else:
             Logger.info(f"Left empty room: {room.room_id}")
 
@@ -198,10 +198,10 @@ async def start():
     await init_async()
     await load_prompt(FetchTarget)
 
-    Logger.info(f"starting sync loop")
+    Logger.info(f"starting sync loop...")
     await bot.set_presence('online', f"akari-bot {Info.version}")
     await bot.sync_forever(timeout=30000, full_state=False)
-    Logger.info(f"sync loop stopped")
+    Logger.info(f"sync loop stopped.")
 
     if bot.olm:
         if client.megolm_backup_passphrase:
