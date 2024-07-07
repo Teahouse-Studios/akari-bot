@@ -407,18 +407,20 @@ class FetchTarget(FetchTargetT):
             group_list = [g['group_id'] for g in group_list_raw]
             friend_list_raw = await bot.call_action('get_friend_list')
             friend_list = [f['user_id'] for f in friend_list_raw]
-            guild_list_raw = await bot.call_action('get_guild_list')
+
             guild_list = []
-            for g in guild_list_raw:
-                try:
-                    get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
-                                                             no_cache=True)
-                    for channel in get_channel_list:
-                        if channel['channel_type'] == 1:
-                            guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
-                except Exception:
-                    traceback.print_exc()
-                    continue
+            if not Config('use_llonebot', False):
+                guild_list_raw = await bot.call_action('get_guild_list')
+                for g in guild_list_raw:
+                    try:
+                        get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
+                                                                 no_cache=True)
+                        for channel in get_channel_list:
+                            if channel['channel_type'] == 1:
+                                guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
+                    except Exception:
+                        traceback.print_exc()
+                        continue
 
             in_whitelist = []
             else_ = []
