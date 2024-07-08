@@ -77,7 +77,7 @@ async def update_alias() -> bool:
 
 
 async def get_info(music: Music, *details) -> MessageChain:
-    info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
+    info = [Plain(f"{music.id} - {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     cover_dir = os.path.join(assets_dir, "static", "mai", "cover")
     cover_path = os.path.join(cover_dir, f'{get_cover_len5_id(music.id)}.png')
     if os.path.exists(cover_path):

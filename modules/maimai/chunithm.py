@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     end_index = page * SONGS_PER_PAGE
 
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]}\u200B. {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]} - {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
 
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]}\u200B. {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]} - {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
 
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -120,7 +120,7 @@ async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
 
         s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
         for elem in result_set[start_index:end_index]:
-            s += f"{elem[0]}\u200B. {elem[1]}\n"
+            s += f"{elem[0]} - {elem[1]}\n"
         if len(data) <= SONGS_PER_PAGE:
             await msg.finish(s.strip())
         else:

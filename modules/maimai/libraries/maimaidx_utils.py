@@ -458,7 +458,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
                 elif goal in syncRank:
                     if verlist[record_index]['fs']:
                         self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-            output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+            output += f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
             if i == SONGS_PER_PAGE - 1:
                 break
         if len(song_remain) > SONGS_PER_PAGE:
@@ -488,7 +488,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
             music = (await total_list.get()).by_id(str(s['id']))
-            output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {
+            output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {
                 music.ds[s['level_index']]} {s['achievements']:.4f}%"
             if s["fc"] and s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
@@ -680,7 +680,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) 
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]
+                output += f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]
                                                                                    } {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > SONGS_NEED_IMG:
                 get_img = True
@@ -706,7 +706,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) 
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type ==
+                output += f"{m.id} - {m.title}{' (DX)' if m.type ==
                                                     'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
             if len(song_remain) > SONGS_NEED_IMG:
                 get_img = True
@@ -755,11 +755,11 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
             level = chart['level_index']
             chart_info.append(
                 f"{
-                    music['id']}\u200B. {
+                    music['id']} - {
                     music['title']}{
                     ' (DX)' if music['type'] == 'DX' else ''} {
                     diffs[level]} {
-                        music['level'][level]}")
+                    music['level'][level]}")
 
     else:
         base = grade_data["base"]
@@ -778,7 +778,7 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
                     level = 3
                 chart_info.append(
                     f"{
-                        music['id']}\u200B. {
+                        music['id']} - {
                         music['title']}{
                         ' (DX)' if music['type'] == 'DX' else ''} {
                         diffs[level]} {
@@ -790,7 +790,7 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
                 music = music_data.random()
                 chart_info.append(
                     f"{
-                        music['id']}\u200B. {
+                        music['id']} - {
                         music['title']}{
                         ' (DX)' if music['type'] == 'DX' else ''} {
                         diffs[level]} {

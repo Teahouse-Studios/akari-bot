@@ -15,7 +15,7 @@ assets_dir = os.path.abspath('./assets/maimai/')
 
 
 async def get_info(music: Music, *details) -> MessageChain:
-    info = [Plain(f"{music.id}\u200B. {music.title}")]
+    info = [Plain(f"{music.id} - {music.title}")]
     cover_dir = os.path.join(assets_dir, "static", "chu", "cover")
     cover_path = os.path.join(cover_dir, f'{music.id}.png')
     if os.path.exists(cover_path):
