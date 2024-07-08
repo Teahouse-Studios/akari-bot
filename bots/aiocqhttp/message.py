@@ -409,7 +409,7 @@ class FetchTarget(FetchTargetT):
             friend_list = [f['user_id'] for f in friend_list_raw]
 
             guild_list = []
-            if not qq_frame_type() == 'ntqq':
+            if qq_frame_type() == 'mirai':
                 guild_list_raw = await bot.call_action('get_guild_list')
                 for g in guild_list_raw:
                     try:
