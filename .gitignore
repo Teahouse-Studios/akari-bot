@@ -3,10 +3,13 @@ __pycache__/
 config/*.cfg
 config/*.toml
 .idea
+.DS_Store
 .vscode
 test*
 *.db
 cache/*
+assets/arc.apk
+assets/arcaea
 assets/cytoid-avatar/
 assets/cytoid-cover/
 assets/maimai*
@@ -19,6 +22,4 @@ version*
 .console_history
 *.log
 matrix_store
-assets/arc.apk
-assets/arcaea
-/modules/ask/tools/self_knowledge
+modules/ask/tools/self_knowledge

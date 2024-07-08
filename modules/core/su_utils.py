@@ -252,34 +252,32 @@ async def reset(msg: Bot.MessageSession):
         await msg.finish()
 
 
-upd = module('update', required_superuser=True, base=True)
+if Info.version:
+    upd = module('update', required_superuser=True, base=True)
+    
+    def pull_repo():
+        pull_repo_result = os.popen('git pull', 'r').read()[:-1]
+        if pull_repo_result == '':
+            return False
+        return pull_repo_result
 
+    def update_dependencies():
+        poetry_install = os.popen('poetry install').read()[:-1]
+        if poetry_install != '':
+            return poetry_install
+        pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
+        if len(pip_install) > 500:
+            return '...' + pip_install[-500:]
+        return pip_install
 
-def pull_repo():
-    pull_repo_result = os.popen('git pull', 'r').read()[:-1]
-    if pull_repo_result == '':
-        return False
-    return pull_repo_result
-
-
-def update_dependencies():
-    poetry_install = os.popen('poetry install').read()[:-1]
-    if poetry_install != '':
-        return poetry_install
-    pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
-    if len(pip_install) > 500:
-        return '...' + pip_install[-500:]
-    return pip_install
-
-
-@upd.command()
-async def update_bot(msg: Bot.MessageSession):
-    pull_repo_result = pull_repo()
-    if pull_repo_result:
-        await msg.send_message(pull_repo_result)
-    else:
-        await msg.send_message(msg.locale.t("core.message.update.failed"))
-    await msg.finish(update_dependencies())
+    @upd.command()
+    async def update_bot(msg: Bot.MessageSession):
+        pull_repo_result = pull_repo()
+        if pull_repo_result:
+            await msg.send_message(pull_repo_result)
+        else:
+            await msg.send_message(msg.locale.t("core.message.update.failed"))
+        await msg.finish(update_dependencies())
 
 
 if Info.subprocess:
@@ -326,6 +324,8 @@ if Info.subprocess:
         else:
             await msg.finish()
 
+
+if Info.version and Info.subprocess:
     upds = module('update&restart', required_superuser=True, alias='u&r', base=True)
 
     @upds.command()

@@ -1,0 +1,6 @@
+.github
+.vscode
+.gitignore
+.editorconfig
+.pre-commit-config.yaml
+crowdin.yml
