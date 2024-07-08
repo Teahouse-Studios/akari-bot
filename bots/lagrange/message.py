@@ -14,7 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.lagrange.client import bot
 from bots.lagrange.info import client_name
 from config import Config
-from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice, \
+from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, \
     MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
@@ -96,7 +96,7 @@ class MessageSession(MessageSessionT):
         """
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message((ErrorMessage("{error.message.chain.unsafe}", locale=self.locale.locale, enable_report=False)))
+            return await self.send_message((I18NContext("{error.message.chain.unsafe}", locale=self.locale.locale)))
         self.sent.append(message_chain)
         count = 0
         for x in message_chain.as_sendable(self, embed=False):
