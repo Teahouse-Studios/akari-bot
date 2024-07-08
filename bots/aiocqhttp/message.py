@@ -12,7 +12,7 @@ import ujson as json
 from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import client_name
+from bots.aiocqhttp.info import client_name, qq_frame_type
 from config import Config
 from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, I18NContext, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
@@ -275,17 +275,17 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == 'QQ|Group':
-                if not Config('use_llonebot', False):
+                if not qq_frame_type() == 'ntqq':
                     if self.msg.session.sender in last_send_typing_time:
                         if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                             return
                     last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
-                    action = 'touch' if Config('use_shamrock', False) else 'poke'
+                    action = 'touch' if qq_frame_type() == 'shamrock' else 'poke'
                     await bot.send_group_msg(group_id=self.msg.session.target,
                                              message=f'[CQ:{action},qq={self.msg.session.sender}]')
                 else:
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
-                                          emoji_id=str(Config('llonebot_typing_emoji', '181', (str, int))))
+                                          emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
@@ -409,7 +409,7 @@ class FetchTarget(FetchTargetT):
             friend_list = [f['user_id'] for f in friend_list_raw]
 
             guild_list = []
-            if not Config('use_llonebot', False):
+            if not qq_frame_type() == 'ntqq':
                 guild_list_raw = await bot.call_action('get_guild_list')
                 for g in guild_list_raw:
                     try:

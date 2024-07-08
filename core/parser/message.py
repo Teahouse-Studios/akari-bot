@@ -7,6 +7,8 @@ from datetime import datetime
 from aiocqhttp import NetworkError
 from tenacity import RetryError
 
+
+from bots.aiocqhttp.info import qq_frame_type
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
@@ -126,7 +128,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     """
     identify_str = f'[{msg.target.sender_id}{
         f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
-    limited_action = 'touch' if Config('use_shamrock', False) else 'poke'
+    limited_action = 'touch' if qq_frame_type() == 'shamrock' else 'poke'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
@@ -367,8 +369,12 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except SendMessageFailed:
                     if msg.target.target_from == 'QQ|Group':
-                        await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type=(str, int)))}]')
+                        if not qq_frame_type() == 'ntqq':
+                            await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                               message=f'[CQ:{limited_action},qq={int(Config('qq_account', cfg_type=(int, str)))}]')
+                        else:
+                            await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                                               emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -543,11 +549,12 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
             except SendMessageFailed:
                 if msg.target.target_from == 'QQ|Group':
-                    if not Config('use_llonebot', False):
+                    if not qq_frame_type() == 'ntqq':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:{limited_action},qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:{limited_action},qq={int(Config('qq_account', cfg_type=(int, str)))}]')
                     else:
-                        await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id, emoji_id='10060')
+                        await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                                           emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg
