@@ -121,7 +121,7 @@ class MessageSession(MessageSessionT):
             msg = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message((I18NContext("{error.message.chain.unsafe}", locale=self.locale.locale)))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:

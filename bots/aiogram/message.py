@@ -43,7 +43,7 @@ class MessageSession(MessageSessionT):
                            allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message((I18NContext("{error.message.chain.unsafe}", locale=self.locale.locale)))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         count = 0
         send = []
