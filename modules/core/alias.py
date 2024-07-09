@@ -14,11 +14,12 @@ ali = module('alias', required_admin=True, base=True)
             options_desc={'--legacy': '{help.option.legacy}'})
 async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
-    alias = msg.parsed_msg.get('<alias>', False).replace('\s', ' ')
+    alias = msg.parsed_msg.get('<alias>', False)
     command = msg.parsed_msg.get('<command>', False)
     if not aliases:
         aliases = {}
     if 'add' in msg.parsed_msg:
+        alias = alias.replace('\s', ' ')
         if alias not in aliases:
             has_prefix = False
             for prefixes in msg.prefixes:
