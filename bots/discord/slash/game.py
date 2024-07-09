@@ -4,11 +4,6 @@ from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
 
-@client.slash_command(name="stone", description="Stone Skipping.")
-async def stone(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "")
-
-
 ccode = client.create_group("chemical_code", "A game about chemical formulas.")
 
 
@@ -26,19 +21,6 @@ async def captcha(ctx: discord.ApplicationContext):
 @ccode.command(name="stop", description="Stop the current game.")
 async def stop(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "stop")
-
-
-fish = client.create_group("fish", "Fishing game.")
-
-
-@fish.command(name="start", description="Throw the fishing rod.")
-async def start(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "")
-
-
-@fish.command(name="retract", description="Retract the fishing rod.")
-async def stop(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "retract")
 
 
 tf = client.create_group("twenty_four", "24 puzzle game.")
