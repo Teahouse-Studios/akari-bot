@@ -7,8 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.exceptions import InvalidCommandFormatError
-from core.loader import ModulesManager, invalid_module_names
+from core.loader import ModulesManager
 from core.parser.args import parse_template
 from core.types import Module
 from core.types.module.component_meta import *
@@ -171,38 +170,19 @@ def module(
     :param support_languages: 此命令支持的语言列表。
     :return: 此类型的模块。
     """
-    def check_module_names(module_name: Union[str, list, tuple, dict]):
-        if isinstance(module_name, str):
-            return module_name in invalid_module_names
-        elif isinstance(module_name, (list, tuple)):
-            for item in module_name:
-                if isinstance(item, str) and item in invalid_module_names:
-                    return True
-        elif isinstance(module_name, dict):
-            for key in module_name:
-                if isinstance(key, str) and key in invalid_module_names:
-                    return True
-        else:
-            return False
-
-        return False
-    
-    if not check_module_names(bind_prefix) and not check_module_names(alias):
-        module = Module(alias=alias,
-                        bind_prefix=bind_prefix,
-                        desc=desc,
-                        recommend_modules=recommend_modules,
-                        developers=developers,
-                        base=base,
-                        hidden=hidden,
-                        required_admin=required_admin,
-                        required_superuser=required_superuser,
-                        required_base_superuser=required_base_superuser,
-                        available_for=available_for,
-                        exclude_from=exclude_from,
-                        support_languages=support_languages)
-        frame = inspect.currentframe()
-        ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
-        return Bind.Module(bind_prefix)
-    else:
-        raise InvalidCommandFormatError('Invalid module name found')
+    module = Module(alias=alias,
+                    bind_prefix=bind_prefix,
+                    desc=desc,
+                    recommend_modules=recommend_modules,
+                    developers=developers,
+                    base=base,
+                    hidden=hidden,
+                    required_admin=required_admin,
+                    required_superuser=required_superuser,
+                    required_base_superuser=required_base_superuser,
+                    available_for=available_for,
+                    exclude_from=exclude_from,
+                    support_languages=support_languages)
+    frame = inspect.currentframe()
+    ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
+    return Bind.Module(bind_prefix)

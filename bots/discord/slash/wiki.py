@@ -64,7 +64,7 @@ async def default_wiki(ctx: discord.AutocompleteContext):
 @discord.option(name="lang", description="Find the corresponding language version of this page.")
 async def query(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
     if lang:
-        await slash_parser(ctx, f'{pagename} legacy {lang}')
+        await slash_parser(ctx, f'{pagename} -l {lang}')
     else:
         await slash_parser(ctx, pagename)
 
@@ -74,7 +74,7 @@ async def query(ctx: discord.ApplicationContext, pagename: str, lang: str = None
 @discord.option(name="lang", description="Find the corresponding language version of this page.")
 async def byid(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
     if lang:
-        await slash_parser(ctx, f'id {pageid} legacy {lang}')
+        await slash_parser(ctx, f'id {pageid} -l {lang}')
     else:
         await slash_parser(ctx, f'id {pageid}')
 
@@ -110,7 +110,7 @@ async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
 @iw.command(name="list", description="Lists the currently configured Interwiki.")
 @discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def iw_list(ctx: discord.ApplicationContext, legacy: str):
-    legacy = "legacy" if legacy == "true" else ""
+    legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f'iw list {legacy}')
 
 

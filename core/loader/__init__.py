@@ -12,7 +12,6 @@ from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMet
 from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
-invalid_module_names = ['legacy']
 all_modules = []
 current_unloaded_modules = []
 err_modules = []
@@ -33,9 +32,6 @@ def load_modules():
 
     for file_name in dir_list:
         try:
-            if file_name in invalid_module_names:
-                Logger.error(f'Invalid module found: modules.{file_name}')
-                continue
             if file_name == 'secret' and not Config('enable_secret_module', False):
                 continue
             file_path = os.path.join(load_dir_path, file_name)
