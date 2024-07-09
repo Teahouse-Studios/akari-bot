@@ -36,7 +36,7 @@ m = module('module',
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if msg.parsed_msg.get('legacy', False):
+        if msg.parsed_msg.get('--legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if msg.parsed_msg.get('legacy', False):
+        if msg.parsed_msg.get('--legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -365,7 +365,7 @@ async def bot_help(msg: Bot.MessageSession):
                                                url=(CFG.get_url('help_url') + help_name))
             else:
                 wiki_msg = ''
-            if len(doc) > 500 and not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
+            if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
                                          [msg.locale.t("core.message.help.table.header.help"),

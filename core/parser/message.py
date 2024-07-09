@@ -95,7 +95,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
                 raise AbuseWarning("{tos.message.reason.ignore}")
-
+            
 
 async def check_target_cooldown(msg: Bot.MessageSession):
     cooldown_time = int(msg.options.get('cooldown_time', 0))
@@ -114,6 +114,46 @@ async def check_target_cooldown(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t('message.cooldown', time=cooldown_time - time))
         else:
             cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
+
+
+def transform_command_alias(msg, command: str):
+    aliases = msg.options.get('command_alias')
+    for pattern, replacement in aliases.items():
+        # 使用正则表达式匹配并分隔多个连在一起的占位符
+        pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
+        
+        # 匹配占位符
+        pattern_placeholders = re.findall(r'\$\{([^{}$]+)\}', pattern)
+        replacement_placeholders = re.findall(r'\$\{([^{}$]+)\}', replacement)
+        
+        regex_pattern = re.escape(pattern)
+        for placeholder in pattern_placeholders:
+            regex_pattern = regex_pattern.replace(re.escape(f'${{{placeholder}}}'), r'(\S+)')  # 匹配非空格字符
+        
+        match = re.match(regex_pattern, command)
+        
+        if match:
+            result = replacement
+            groups = match.groups()
+            
+            for i, placeholder in enumerate(pattern_placeholders):
+                if i < len(groups):
+                    result = result.replace(f'${{{placeholder}}}', groups[i])
+                else:
+                    result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')  # 如果存在不匹配的占位符，则保留原始文本
+            
+            # 检查替换字符串中未匹配的占位符并保留原始文本
+            for placeholder in replacement_placeholders:
+                if placeholder not in pattern_placeholders:
+                    result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
+                else:
+                    result = result.replace(f'${{{placeholder}}}', '')
+            
+            Logger.debug(msg.prefixes[0] + result)
+            return msg.prefixes[0] + result
+
+    Logger.debug(command)
+    return command
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
@@ -142,19 +182,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 or msg.target.sender_id in msg.options.get('ban', []):
             return
 
-        get_custom_alias = msg.options.get('command_alias')
-        command_split: list = msg.trigger_msg.split(' ')  # 切割消息
-        if get_custom_alias:
-            get_display_alias = get_custom_alias.get(command_split[0])
-            if get_display_alias:
-                command_split[0] = get_display_alias  # 将自定义别名替换为命令
-        msg.trigger_msg = ' '.join(command_split)  # 重新连接消息
-
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
         msg.prefixes = [i for i in set(msg.prefixes) if i.strip()]  # 过滤重复与空白前缀
+
+        if msg.options.get('command_alias'):
+            msg.trigger_msg = transform_command_alias(msg, msg.trigger_msg)
 
         disable_prefix = False
         if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀

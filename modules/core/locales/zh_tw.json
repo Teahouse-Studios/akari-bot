@@ -66,7 +66,7 @@
     "core.message.alias.list.none": "自訂指令別名列表為空。",
     "core.message.alias.list.table.header.alias": "別名",
     "core.message.alias.list.table.header.command": "指令",
-    "core.message.alias.remove.not_found": "「${alias}」別名不存在於自訂別名列表。",
+    "core.message.alias.not_found": "「${alias}」別名不存在於自訂別名列表。",
     "core.message.alias.remove.success": "已移除自訂指令別名：${alias}",
     "core.message.alias.reset.success": "已重設自訂指令別名列表。",
     "core.message.analytics.counts": "機器人已執行指令次數（自 ${first_record} 開始統計）：${counts}\n今日已執行指令次數：${counts_today}",

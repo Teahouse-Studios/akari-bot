@@ -82,7 +82,7 @@ if Config('enable_urlmanager', False):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()
         legacy = True
-        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
+        if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
             send_msgs = []
             if Config('db_path', cfg_type=str).startswith('mysql'):
                 allow_columns = [[x[0], msg.ts2strftime(

@@ -214,14 +214,14 @@ def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_
             if dc:
                 output_line += f'/{dc}  '
                 if msg.data.options.get('dice_dc_reversed'):
-                    if result <= int(dc):
+                    if int(result) <= int(dc):
                         output_line += msg.locale.t('dice.message.dc.success')
                         success_num += 1
                     else:
                         output_line += msg.locale.t('dice.message.dc.failed')
                         fail_num += 1
                 else:
-                    if result >= int(dc):
+                    if int(result) >= int(dc):
                         output_line += msg.locale.t('dice.message.dc.success')
                         success_num += 1
                     else:
