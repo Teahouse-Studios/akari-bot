@@ -19,7 +19,7 @@ async def set_alias(msg: Bot.MessageSession):
     if not aliases:
         aliases = {}
     if 'add' in msg.parsed_msg:
-        alias = alias.replace('\s', ' ')
+        alias = alias.replace('\\s', ' ')
         if alias not in aliases:
             has_prefix = False
             for prefixes in msg.prefixes:
