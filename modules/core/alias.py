@@ -20,6 +20,7 @@ async def set_alias(msg: Bot.MessageSession):
         aliases = {}
     if 'add' in msg.parsed_msg:
         alias = alias.replace(r'\s', ' ')
+        command = command.replace(r'\s', ' ')
         if alias not in aliases:
             has_prefix = False
             for prefixes in msg.prefixes:
