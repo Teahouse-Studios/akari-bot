@@ -71,7 +71,7 @@ async def set_alias(msg: Bot.MessageSession):
             aliases_list.insert(new_index, alias)
             msg.data.edit_option('command_alias', {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
-            await msg.finish(msg.locale.t("core.message.alias.ascend.success", alias=alias, priority=priority))
+            await msg.finish(msg.locale.t("core.message.alias.descend.success", alias=alias, priority=priority))
         else:
             await msg.finish(msg.locale.t("core.message.alias.descend.failed", alias=alias))
     elif 'list' in msg.parsed_msg:
