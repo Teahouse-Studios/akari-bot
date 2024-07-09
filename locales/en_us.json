@@ -6,6 +6,7 @@
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
     "core.message.confirm": "Are you sure?",
+    "help.option.legacy": "Force text mode.",
     "error": "An error occurred: ",
     "error.config.invalid": "The configuration is invalid or not found. Please check the configuration file.",
     "error.config.secret.not_found": "API key not found. Please check the configuration file.",
