@@ -29,4 +29,4 @@ jobs:
           TAG: ${{ github.sha }}
         run: |
           docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$TAG --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:$TAG -t $IMAGE_NAME:latest --push .

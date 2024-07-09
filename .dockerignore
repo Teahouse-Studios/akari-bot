@@ -5,3 +5,8 @@
 .editorconfig
 .pre-commit-config.yaml
 crowdin.yml
+console.py
+renovate.json
+start
+start.bat
+scripts/
