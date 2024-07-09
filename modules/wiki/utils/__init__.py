@@ -15,8 +15,9 @@ rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
 
 
 @rc_.command()
-@rc_.command('[legacy] {{wiki.help.rc}}',
-             available_for=['QQ|Group'])
+@rc_.command('[--legacy] {{wiki.help.rc}}',
+            options_desc={'--legacy': '{help.option.legacy}'},
+            available_for=['QQ|Group'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -57,8 +58,9 @@ ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
 
 
 @ab_.command()
-@ab_.command('[legacy] {{wiki.help.ab}}',
-             available_for=['QQ|Group'])
+@ab_.command('[--legacy] {{wiki.help.ab}}',
+            options_desc={'--legacy': '{help.option.legacy}'},
+            available_for=['QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:

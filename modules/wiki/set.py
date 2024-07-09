@@ -69,7 +69,8 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         await msg.finish(msg.locale.t("wiki.message.iw.remove.success", iw=interwiki))
 
 
-@wiki.command('iw list [legacy] {{wiki.help.iw.list}}')
+@wiki.command('iw list [--legacy] {{wiki.help.iw.list}}',
+             options_desc={'--legacy': '{help.option.legacy}'})
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()

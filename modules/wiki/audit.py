@@ -77,7 +77,7 @@ if Config('enable_urlmanager', False):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-    @aud.command('list [legacy]')
+    @aud.command('list [--legacy]')
     async def _(msg: Bot.MessageSession):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()

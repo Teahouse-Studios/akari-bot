@@ -8,7 +8,8 @@ ali = module('alias', required_admin=True, base=True)
 @ali.command('add <alias> <command> {{core.help.alias.add}}',
              'remove <alias> {{core.help.alias.remove}}',
              'reset {{core.help.alias.reset}}',
-             'list [legacy] {{core.help.alias.list}}')
+             'list [--legacy] {{core.help.alias.list}}',
+            options_desc={'--legacy': '{help.option.legacy}'})
 async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
     alias = msg.parsed_msg.get('<alias>', False)
