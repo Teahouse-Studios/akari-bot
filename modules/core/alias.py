@@ -19,8 +19,7 @@ async def set_alias(msg: Bot.MessageSession):
     if not aliases:
         aliases = {}
     if 'add' in msg.parsed_msg:
-        alias = alias.replace(r'\s', ' ')
-        command = command.replace(r'\s', ' ')
+        alias = alias.replace('_', ' ').replace('${ }', '${_}')
         if alias not in aliases:
             has_prefix = False
             for prefixes in msg.prefixes:
@@ -35,7 +34,7 @@ async def set_alias(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("core.message.alias.add.already", alias=alias))
     elif 'remove' in msg.parsed_msg:
-        alias = alias.replace(r'\s', ' ')
+        alias = alias.replace('_', ' ').replace('${ }', '${_}')
         if alias in aliases:
             del aliases[alias]
             msg.data.edit_option('command_alias', aliases)
@@ -46,7 +45,7 @@ async def set_alias(msg: Bot.MessageSession):
         msg.data.edit_option('command_alias', {})
         await msg.finish(msg.locale.t("core.message.alias.reset.success"))
     elif 'ascend' in msg.parsed_msg:
-        alias = alias.replace(r'\s', ' ')
+        alias = alias.replace('_', ' ').replace('${ }', '${_}')
         if alias not in aliases:
             await msg.finish(msg.locale.t("core.message.alias.not_found", alias=alias))
         aliases_list = list(aliases.keys())
@@ -61,7 +60,7 @@ async def set_alias(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("core.message.alias.ascend.failed", alias=alias))
     elif 'descend' in msg.parsed_msg:
-        alias = alias.replace(r'\s', ' ')
+        alias = alias.replace('_', ' ').replace('${ }', '${_}')
         if alias not in aliases:
             await msg.finish(msg.locale.t("core.message.alias.not_found", alias=alias))
         aliases_list = list(aliases.keys())
