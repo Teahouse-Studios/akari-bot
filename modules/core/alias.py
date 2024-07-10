@@ -27,10 +27,14 @@ async def set_alias(msg: Bot.MessageSession):
         command = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', command)
         # 检查占位符有效性
         def check_valid_placeholder(alias):
+            alias_noph = alias
             phs = re.findall(r"\${(.*?)}", alias)
             for ph in phs:
                 if not ph or '$' in ph or '}' in ph or '{' in ph:
                    return False
+                alias_noph = alias_noph.replace(f"${{{ph}}}", "")
+            if not alias_noph.strip():
+                return False
             return True
 
         if not (check_valid_placeholder(alias) and check_valid_placeholder(command)):
