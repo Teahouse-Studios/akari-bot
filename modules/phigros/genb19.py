@@ -4,6 +4,8 @@ import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
+from core.logger import Logger
+
 assets_path = os.path.abspath('./assets/phigros')
 
 levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
@@ -11,9 +13,10 @@ levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
 
 def drawb19(username, rks_acc, b19data):
     b19img = Image.new("RGBA", (1570, 1320), '#1e2129')
-    font = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
-    font2 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 15)
-    font3 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 25)
+    font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
+    font = ImageFont.truetype(font_path, 20)
+    font2 = ImageFont.truetype(font_path, 15)
+    font3 = ImageFont.truetype(font_path, 25)
 
     # username
     drawtext = ImageDraw.Draw(b19img)
@@ -109,7 +112,7 @@ def drawb19(username, rks_acc, b19data):
             fname += 1
             s += 1
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             break
     if __name__ == '__main__':
         b19img.show()

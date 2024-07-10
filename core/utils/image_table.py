@@ -9,7 +9,7 @@ from tabulate import tabulate
 from core.builtins.utils import shuffle_joke
 from core.logger import Logger
 from .cache import random_cache_path
-from .http import download_to_cache
+from .http import download
 from .web_render import WebRender, webrender
 
 
@@ -65,7 +65,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                 fi.write(tblst + css)
 
         try:
-            pic = await download_to_cache(
+            pic = await download(
                 webrender(use_local=use_local),
                 method='POST',
                 post_data=json.dumps(html),
@@ -76,7 +76,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             )
         except aiohttp.ClientConnectorError:
             if use_local:
-                pic = await download_to_cache(
+                pic = await download(
                     webrender(use_local=False),
                     method='POST',
                     post_data=json.dumps(html),

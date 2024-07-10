@@ -9,14 +9,14 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
-from core.utils.http import get_url, download_to_cache
-from core.utils.text import remove_prefix
+from core.utils.http import get_url, download
+from core.utils.text import isint, remove_prefix
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
@@ -84,7 +84,7 @@ async def search_csr(id=None):
     return {'id': answer_id,
             'answer': name,
             'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
-                     (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
+            (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
             'length': value,
             'elements': elements}
 
@@ -124,7 +124,7 @@ async def s(msg: Bot.MessageSession):
 @ccode.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']
-    if id.isdigit():
+    if isint(id):
         if int(id) == 0:  # 若 id 为 0，则随机
             await chemical_code(msg)
         else:
@@ -142,28 +142,28 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     try:
         csr = await search_csr(id)
     except Exception as e:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         play_state.disable()
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
     Logger.info(f'Answer: {play_state.check("answer")}')
-    download = False
+    dl_image = False
     if play_state.check("id") in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemical_code/special_id/{play_state.check("id")}.png')
         exists_file = os.path.exists(file_path)
         if exists_file:
-            download = file_path
-    if not download:
-        download = await download_to_cache(play_state.check('image'))
+            dl_image = file_path
+    if not dl_image:
+        dl_image = await download(play_state.check('image'))
 
-    with PILImage.open(download) as im:
+    with PILImage.open(dl_image) as im:
         im = im.convert("RGBA")
         image = PILImage.new("RGBA", im.size, 'white')
         image.alpha_composite(im, (0, 0))
         newpath = random_cache_path() + '.png'
         image.save(newpath)
-            
+
     set_timeout = play_state.check('length') // 30
     if set_timeout < 2:
         set_timeout = 2
@@ -213,7 +213,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                     await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind2',
                                                                           elements=incorrect_elements))
                     except ValueError:
-                        traceback.print_exc()
+                        Logger.error(traceback.format_exc())
 
                 Logger.info(f'{wait_text} != {play_state.check("answer")}')
                 return await ans(wait, random_mode)
@@ -237,15 +237,15 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 await timer(start)
 
     if not captcha_mode:
-        await msg.send_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))), Image(newpath),
-                                Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
+        await msg.send_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")), Image(newpath),
+                                I18NContext('chemical_code.message', times=set_timeout)])
         time_start = datetime.now().timestamp()
 
         await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:
-        result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=play_state.check("id"))),
-                                              Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], timeout=None, append_instruction=False)
+        result = await msg.wait_next_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")),
+                                              Image(newpath), I18NContext('chemical_code.message.captcha',
+                                                                                 times=set_timeout)], timeout=None, append_instruction=False)
         if play_state.check():
             play_state.disable()
             if result.as_display(text_only=True) == play_state.check("answer"):

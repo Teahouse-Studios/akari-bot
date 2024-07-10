@@ -10,7 +10,7 @@ from core.builtins import MessageSession
 
 async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = int(Config("qq_account", cfg_type = (int, str)))
+    qq_account = int(Config("qq_account", cfg_type=(int, str)))
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                 rclimit=99,
@@ -86,7 +86,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
                         '$1',
                         f"{urllib.parse.quote(title)}?oldid={x['old_revid']}&diff={x['revid']}"))
             if x['type'] == 'new':
-                r = msg.locale.t('message.brackets', msg=msg.locale.t('wiki.message.rc.new_redirect')) if 'redirect' in x else ''
+                r = msg.locale.t('message.brackets', msg=msg.locale.t(
+                    'wiki.message.rc.new_redirect')) if 'redirect' in x else ''
                 t.append(f"{title}{r} .. (+{x['newlen']}) .. {user}")
                 if comment:
                     t.append(comment)
@@ -94,7 +95,12 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 if x['logtype'] == x['logaction']:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=user, title=title)
                 else:
-                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=user, title=title)
+                    log = msg.locale.t(
+                        f"wiki.message.rc.action.{
+                            x['logtype']}.{
+                            x['logaction']}",
+                        user=user,
+                        title=title)
                 if log.find("{") != -1 and log.find("}") != -1:
                     if x['logtype'] == x['logaction']:
                         log = f"{user} {x['logtype']} {title}"
@@ -136,6 +142,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
             })
     Logger.debug(nodelist)
     return nodelist
+
 
 def compare_groups(old_groups, new_groups):
     added_groups = [group for group in new_groups if group not in old_groups]

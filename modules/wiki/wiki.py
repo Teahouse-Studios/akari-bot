@@ -10,8 +10,9 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from core.utils.image import svg_render
+from core.utils.text import isint
 from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
@@ -46,7 +47,7 @@ async def _(msg: Bot.MessageSession, pageid: str):
     if match_iw := re.match(r'(.*?):(.*)', pageid):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
-    if not pageid.isdigit():
+    if not isint(pageid):
         await msg.finish(msg.locale.t('wiki.message.id.invalid'))
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
@@ -219,14 +220,14 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 i_msg_lst.append(Image(await
                                                        image_table_render(
                                                            ImageTable(session_data,
-                                                                      [session.locale.t('wiki.message.table.id'),
-                                                                       session.locale.t('wiki.message.table.section')]))))
+                                                                      [session.locale.t('wiki.message.table.header.id'),
+                                                                       session.locale.t('wiki.message.table.header.section')]))))
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
-                                    if display.isdigit():
+                                    if isint(display):
                                         display = int(display)
                                         if display <= len(r.sections):
                                             r.selected_section = display - 1
@@ -359,7 +360,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
             if dl_list:
                 for f in dl_list:
-                    dl = await download_to_cache(f)
+                    dl = await download(f)
                     guess_type = filetype.guess(dl)
                     if guess_type:
                         if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
@@ -380,7 +381,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:
                     auto_index = True
-                elif confirm.as_display(text_only=True).isdigit():
+                elif isint(confirm.as_display(text_only=True)):
                     index = int(confirm.as_display(text_only=True)) - 1
                 else:
                     return

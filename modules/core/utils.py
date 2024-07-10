@@ -6,10 +6,11 @@ import psutil
 from cpuinfo import get_cpu_info
 
 from config import Config
-from core.builtins import Bot, Plain, Url
+from core.builtins import Bot, I18NContext, Url
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
+from core.utils.text import isint
 from core.utils.web_render import WebRender
 from database import BotDBUtil
 
@@ -24,10 +25,13 @@ ver = module('version', base=True)
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
-        repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
-        repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
-        commit_url = f"{repo_url}/commit/{commit}"
-        await msg.finish([Plain(msg.locale.t('core.message.version', commit=commit)), Url(commit_url)])
+        send_msgs = [I18NContext('core.message.version', commit=commit)]
+        if Config('enable_commit_url', True):
+            repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
+            repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
+            commit_url = f"{repo_url}/commit/{commit}"
+            send_msgs.append(Url(commit_url))
+        await msg.finish(send_msgs)
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
@@ -238,7 +242,7 @@ async def _(msg: Bot.MessageSession, offset: str):
 
 @setup.command('cooldown <second> {{core.help.setup.cooldown}}', required_admin=True)
 async def _(msg: Bot.MessageSession, second: str):
-    if not second.isdigit():
+    if not isint(second):
         await msg.finish(msg.locale.t('core.message.setup.cooldown.invalid'))
     else:
         msg.data.edit_option('cooldown_time', second)
@@ -270,7 +274,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish()
 
 
-token = module('token', base=True, hide=True)
+token = module('token', base=True, hidden=True)
 
 
 @token.command('<code> {{core.help.token}}')

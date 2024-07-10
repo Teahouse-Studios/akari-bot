@@ -65,7 +65,7 @@ async def mcbv(msg):
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage(msg.locale.t('mcv.message.error.server'))
+        return ErrorMessage('{mcv.message.error.server}', locale=msg.locale.locale, enable_report=False)
     beta = []
     preview = []
     release = []
@@ -94,7 +94,7 @@ async def mcdv(msg):
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage(msg.locale.t('mcv.message.error.server'))
+        return ErrorMessage('{mcv.message.error.server}', locale=msg.locale.locale, enable_report=False)
     release = []
     for v in data:
         if not v['archived']:
@@ -109,7 +109,7 @@ async def mcev(msg):
         version = re.search(r'(?<=\[)(.*?)(?=])', data)[0]
         Logger.debug(version)
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage(msg.locale.t('mcv.message.error.server'))
+        return ErrorMessage('{mcv.message.error.server}', locale=msg.locale.locale, enable_report=False)
     return msg.locale.t("mcv.message.mcev", version=version)
 
 
@@ -117,7 +117,7 @@ async def mclgv(msg):
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/12200/versions', 200))
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage(msg.locale.t('mcv.message.error.server'))
+        return ErrorMessage('{mcv.message.error.server}', locale=msg.locale.locale, enable_report=False)
     release = []
     for v in data:
         if not v['archived']:

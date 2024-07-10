@@ -28,13 +28,13 @@ if homeserver and user and device_id and token:
         if not os.path.exists(store_path_megolm_backup):
             os.mkdir(store_path_megolm_backup)
         if len(megolm_backup_passphrase) <= 10:
-            Logger.warn("matrix_megolm_backup_passphrase is too short. It is insecure.")
+            Logger.warning("matrix_megolm_backup_passphrase is too short. It is insecure.")
     else:
-        Logger.warn(
+        Logger.warning(
             f"Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
 
     if homeserver.endswith('/'):
-        Logger.warn(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
+        Logger.warning(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
     homeserver_host = urllib3.util.parse_url(homeserver).host
     bot: AsyncClient = AsyncClient(homeserver,
                                    user,

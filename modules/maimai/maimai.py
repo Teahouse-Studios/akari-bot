@@ -2,9 +2,11 @@ import traceback
 
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
+from core.logger import Logger
+from core.utils.text import isint
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias
+from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
@@ -56,7 +58,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get('-p', False)
-    if get_page and get_page['<page>'].isdigit():
+    if get_page and isint(get_page['<page>']):
         page = max(min(int(get_page['<page>']), total_pages), 1)
     else:
         page = 1
@@ -64,7 +66,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     end_index = page * SONGS_PER_PAGE
 
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
@@ -91,16 +93,13 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
                                music['level'][i],
                                music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    if page and page.isdigit():
-        page = max(min(int(page), total_pages), 1)
-    else:
-        page = 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
 
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -125,16 +124,13 @@ async def _(msg: Bot.MessageSession, page: str = None):
                            music['title'],
                            music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    if page and page.isdigit():
-        page = max(min(int(page), total_pages), 1)
-    else:
-        page = 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
     s = msg.locale.t("maimai.message.new") + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
+        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
 
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -160,16 +156,13 @@ async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
     for music in sorted(data, key=lambda i: int(i['id'])):
         result_set.append((music['id'], music['title'], music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    if page and page.isdigit():
-        page = max(min(int(page), total_pages), 1)
-    else:
-        page = 1
+    page = max(min(int(page), total_pages), 1) if isint(page) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
     s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
+        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
     if len(data) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
@@ -183,7 +176,7 @@ async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
 
 @mai.command('alias <sid> {{maimai.help.alias}}')
 async def _(msg: Bot.MessageSession, sid: str):
-    if not sid.isdigit():
+    if not isint(sid):
         if sid[:2].lower() == "id":
             sid = sid[2:]
         else:
@@ -193,7 +186,7 @@ async def _(msg: Bot.MessageSession, sid: str):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    title = f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
         await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
@@ -222,10 +215,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('maimai.message.unbind.success'))
 
 
-@mai.command('b50 [<username>] [-b] {{maimai.help.b50}}',
-             options_desc={'-b': '{maimai.help.option.b}'})
+@mai.command('b50 [<username>] {{maimai.help.b50}}')
 async def _(msg: Bot.MessageSession, username: str = None):
-    beta = True
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender, 'b50': True}
@@ -236,18 +227,11 @@ async def _(msg: Bot.MessageSession, username: str = None):
             payload = {'username': username, 'b50': True}
     else:
         payload = {'username': username, 'b50': True}
-
-    if not msg.parsed_msg.get('-b', False):
-        try:
-            img = await generate(msg, payload)
-            beta = False
-        except BaseException:
-            traceback.print_exc()
-        if not beta:
-            await msg.send_message('提示：由于源代码已停止维护，未来或将不再支持以此方式渲染成绩图，请谅解。')
-    if beta:
-        img = await generate_best50_text(msg, payload)
-    await msg.finish([BImage(img)])
+    try:
+        img = await generate(msg, payload)
+        await msg.finish([BImage(img)])
+    except BaseException:
+        Logger.error(traceback.format_exc())
 
 
 @mai.command('id <id> [<diff>] {{maimai.help.id}}')
@@ -263,11 +247,12 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
+                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes[0])
+            await msg.finish(res)
         else:
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
@@ -277,7 +262,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     getdiff = msg.parsed_msg.get('-d', False)
     if getdiff:
         diff = getdiff['<diff>']
-        
+
     if diff:
         diff_index = get_diff(diff)  # diff_index 的输出结果可能为 0
         if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
@@ -324,8 +309,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
              options_desc={'-u': '{maimai.help.option.u}'})
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     get_user = msg.parsed_msg.get('-u', False)
-    username = get_user['<username>'] if get_user else None 
+    username = get_user['<username>'] if get_user else None
     await query_song_info(msg, id_or_alias, username)
+
 
 async def query_song_info(msg, query, username):
     if query[:2].lower() == "id":
@@ -336,11 +322,12 @@ async def query_song_info(msg, query, username):
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
+                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            res += msg.locale.t("maimai.message.info.prompt", prefix=msg.prefixes[0])
+            await msg.finish(res)
         else:
             sid = str(sid_list[0])
 
@@ -452,13 +439,13 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @mai.command('scorelist <level> [-p <page>] [-u <username>] {{maimai.help.scorelist}}',
-             options_desc={'-p': '{maimai.help.option.p}', 
+             options_desc={'-p': '{maimai.help.option.p}',
                            '-u': '{maimai.help.option.u}'})
 async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get('-u', False)
     username = get_user['<username>'] if get_user else None
     get_page = msg.parsed_msg.get('-p', False)
-    page = get_page['<page>'] if get_page else '1'
+    page = get_page['<page>'] if get_page and isint(get_page['<page>']) else 1
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}
@@ -496,7 +483,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             dx_type = ["SD", "DX"]
 
         for char in condit:
-            if char.isdigit() or char == '+':
+            if isint(char) or char == '+':
                 level += char
             else:
                 diff += char
@@ -530,7 +517,7 @@ async def _(msg: Bot.MessageSession):
 @mai.command('scoreline <sid> <diff> <score> {{maimai.help.scoreline}}')
 async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
     try:
-        if not sid.isdigit():
+        if not isint(sid):
             if sid[:2].lower() == "id":
                 sid = sid[2:]
             else:
@@ -578,7 +565,7 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
 
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    if await update_alias():
+    if await update_alias() and await update_cover():
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))

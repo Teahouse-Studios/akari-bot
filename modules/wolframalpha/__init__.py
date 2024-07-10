@@ -8,11 +8,12 @@ from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.dirty_check import rickroll
 from core.exceptions import ConfigValueError
-from core.utils.http import download_to_cache, get_url
+from core .logger import Logger
+from core.utils.http import download, get_url
 from .check import secret_check
 
 
-appid = Config('wolfram_alpha_appid', cfg_type = str)
+appid = Config('wolfram_alpha_appid', cfg_type=str)
 
 w = module(
     'wolframalpha',
@@ -32,7 +33,7 @@ async def _(msg: Bot.MessageSession, query: str):
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
-        img_path = await download_to_cache(url, status_code=200)
+        img_path = await download(url, status_code=200)
         if img_path:
             with Image.open(img_path) as img:
                 output = os.path.splitext(img_path)[0] + ".png"
@@ -43,7 +44,7 @@ async def _(msg: Bot.MessageSession, query: str):
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
@@ -61,4 +62,4 @@ async def _(msg: Bot.MessageSession, question: str):
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())

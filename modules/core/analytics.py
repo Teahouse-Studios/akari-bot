@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Tuple
 
 import matplotlib.pyplot as plt
-import numpy as np
 import oss2
 import ujson as json
 import zipfile
@@ -55,40 +54,37 @@ async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
         try:
             first_record = get_first_record(msg)
-            module_ = None
-            if '<module>' in msg.parsed_msg:
-                module_ = msg.parsed_msg['<module>']
+            module_ = msg.parsed_msg.get('<module>')
             if not module_:
                 result = msg.locale.t("core.message.analytics.days.total", first_record=first_record)
             else:
-                result = msg.locale.t("core.message.analytics.days", module=module_,
-                                      first_record=first_record)
+                result = msg.locale.t("core.message.analytics.days", module=module_, first_record=first_record)
+            data_ = {}
             for d in range(30):
                 new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
                 old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
                 get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
+                data_[old.day] = get_
+            data_x = []
+            data_y = []
+            for x in data_:
+                data_x.append(str(x))
+                data_y.append(data_[x])
+            plt.plot(data_x, data_y, "-o")
+            plt.plot(data_x[-1], data_y[-1], "-ro")
+            plt.xlabel('Days')
+            plt.ylabel('Counts')
+            plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
+
+            plt.gca().yaxis.get_major_locator().set_params(integer=True)
+            for xitem, yitem in zip(data_x, data_y):
+                plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
+            path = random_cache_path() + '.png'
+            plt.savefig(path)
+            plt.close()
+            await msg.finish([Plain(result), Image(path)])
         except AttributeError:
             await msg.finish(msg.locale.t("core.message.analytics.none"))
-        data_ = {}
-        data_[old.day] = get_
-        data_x = []
-        data_y = []
-        for x in data_:
-            data_x.append(str(x))
-            data_y.append(data_[x])
-        plt.plot(data_x, data_y, "-o")
-        plt.plot(data_x[-1], data_y[-1], "-ro")
-        plt.xlabel('Days')
-        plt.ylabel('Counts')
-        plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
-
-        plt.gca().yaxis.get_major_locator().set_params(integer=True)
-        for xitem, yitem in np.nditer([data_x, data_y]):
-            plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-        path = random_cache_path() + '.png'
-        plt.savefig(path)
-        plt.close()
-        await msg.finish([Plain(result), Image(path)])
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -98,42 +94,37 @@ async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):
         try:
             first_record = get_first_record(msg)
-            module_ = None
-            if '<module>' in msg.parsed_msg:
-                module_ = msg.parsed_msg['<module>']
+            module_ = msg.parsed_msg.get('<module>')
             if not module_:
                 result = msg.locale.t("core.message.analytics.year.total", first_record=first_record)
             else:
-                result = msg.locale.t("core.message.analytics.year", module=module_,
-                                      first_record=first_record)
+                result = msg.locale.t("core.message.analytics.year", module=module_, first_record=first_record)
+            data_ = {}
             for m in range(12):
-                new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
-                    relativedelta(months=12 - m - 1)
-                old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - \
-                    relativedelta(months=12 - m)
+                new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - relativedelta(months=12 - m - 1)
+                old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - relativedelta(months=12 - m)
                 get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
+                data_[old.month] = get_
+            data_x = []
+            data_y = []
+            for x in data_:
+                data_x.append(str(x))
+                data_y.append(data_[x])
+            plt.plot(data_x, data_y, "-o")
+            plt.plot(data_x[-1], data_y[-1], "-ro")
+            plt.xlabel('Months')
+            plt.ylabel('Counts')
+            plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
+
+            plt.gca().yaxis.get_major_locator().set_params(integer=True)
+            for xitem, yitem in zip(data_x, data_y):
+                plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
+            path = random_cache_path() + '.png'
+            plt.savefig(path)
+            plt.close()
+            await msg.finish([Plain(result), Image(path)])
         except AttributeError:
             await msg.finish(msg.locale.t("core.message.analytics.none"))
-        data_ = {}
-        data_[old.month] = get_
-        data_x = []
-        data_y = []
-        for x in data_:
-            data_x.append(str(x))
-            data_y.append(data_[x])
-        plt.plot(data_x, data_y, "-o")
-        plt.plot(data_x[-1], data_y[-1], "-ro")
-        plt.xlabel('Months')
-        plt.ylabel('Counts')
-        plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
-
-        plt.gca().yaxis.get_major_locator().set_params(integer=True)
-        for xitem, yitem in np.nditer([data_x, data_y]):
-            plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-        path = random_cache_path() + '.png'
-        plt.savefig(path)
-        plt.close()
-        await msg.finish([Plain(result), Image(path)])
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 

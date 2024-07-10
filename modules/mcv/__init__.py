@@ -24,7 +24,7 @@ async def mcbv_loader(msg: Bot.MessageSession):
 
 md = module('mcdv',
             developers=['OasisAkari', 'Dianliang233'],
-            hide=True)
+            hidden=True)
 
 
 @md.command('{{mcv.help.mcdv}}')
@@ -34,7 +34,7 @@ async def mcdv_loader(msg: Bot.MessageSession):
 
 me = module('mcev',
             developers=['OasisAkari', 'Dianliang233'],
-            hide=True)
+            hidden=True)
 
 
 @me.command('{{mcv.help.mcev}}')
@@ -44,7 +44,7 @@ async def mcev_loader(msg: Bot.MessageSession):
 
 mlg = module('mclgv',
              developers=['OasisAkari', 'Dianliang233'],
-             hide=True)
+             hidden=True)
 
 
 @mlg.command('{{mcv.help.mclgv}}')

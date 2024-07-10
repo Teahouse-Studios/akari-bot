@@ -7,6 +7,7 @@ from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal, lost_petal
 from core.utils.game import PlayState
+from core.utils.text import isint
 
 no_solution = ['无解', '無解', 'none', 'n/a', 'na', 'n.a.', ]
 
@@ -28,8 +29,8 @@ def check_valid(expr):
     num_numbers = 0
     while i < len(expr):
         char = expr[i]
-        if char.isdigit():
-            while i < len(expr) and expr[i].isdigit():
+        if isint(char):
+            while i < len(expr) and isint(expr[i]):
                 i += 1
             num_numbers += 1
         elif char in valid_chars_set:
@@ -89,19 +90,23 @@ async def find_solution(numbers):
 
 def contains_all_numbers(expr, numbers):
     used_numbers = [str(num) for num in numbers]
+    used_count = {str(num): 0 for num in numbers}
     i = 0
     while i < len(expr):
         char = expr[i]
-        if char.isdigit():
+        if isint(char):
             number = char
-            while i + 1 < len(expr) and expr[i + 1].isdigit():
+            while i + 1 < len(expr) and isint(expr[i + 1]):
                 number += expr[i + 1]
                 i += 1
             if number in used_numbers:
-                used_numbers.remove(number)
+                used_count[number] += 1
+                if used_count[number] > numbers.count(int(number)):
+                    return False
+            else:
+                return False
         i += 1
-
-    return len(used_numbers) == 0
+    return True
 
 
 tf = module('twenty_four', alias=['twentyfour', '24'],

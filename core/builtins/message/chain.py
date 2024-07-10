@@ -133,7 +133,7 @@ class MessageChain(MessageChainT):
                     if secret in ["", None, True, False]:
                         continue
                     if v.text.upper().find(secret.upper()) != -1:
-                        Logger.warn(unsafeprompt("Plain", secret, v.text))
+                        Logger.warning(unsafeprompt("Plain", secret, v.text))
                         return False
             elif isinstance(v, Embed):
                 for secret in Secret.list:
@@ -141,34 +141,34 @@ class MessageChain(MessageChainT):
                         continue
                     if v.title:
                         if v.title.upper().find(secret.upper()) != -1:
-                            Logger.warn(unsafeprompt("Embed.title", secret, v.title))
+                            Logger.warning(unsafeprompt("Embed.title", secret, v.title))
                             return False
                     if v.description:
                         if v.description.upper().find(secret.upper()) != -1:
-                            Logger.warn(
+                            Logger.warning(
                                 unsafeprompt("Embed.description", secret, v.description)
                             )
                             return False
                     if v.footer:
                         if v.footer.upper().find(secret.upper()) != -1:
-                            Logger.warn(unsafeprompt("Embed.footer", secret, v.footer))
+                            Logger.warning(unsafeprompt("Embed.footer", secret, v.footer))
                             return False
                     if v.author:
                         if v.author.upper().find(secret.upper()) != -1:
-                            Logger.warn(unsafeprompt("Embed.author", secret, v.author))
+                            Logger.warning(unsafeprompt("Embed.author", secret, v.author))
                             return False
                     if v.url:
                         if v.url.upper().find(secret.upper()) != -1:
-                            Logger.warn(unsafeprompt("Embed.url", secret, v.url))
+                            Logger.warning(unsafeprompt("Embed.url", secret, v.url))
                             return False
                     for f in v.fields:
                         if f.name.upper().find(secret.upper()) != -1:
-                            Logger.warn(
+                            Logger.warning(
                                 unsafeprompt("Embed.field.name", secret, f.name)
                             )
                             return False
                         if f.value.upper().find(secret.upper()) != -1:
-                            Logger.warn(
+                            Logger.warning(
                                 unsafeprompt("Embed.field.value", secret, f.value)
                             )
                             return False

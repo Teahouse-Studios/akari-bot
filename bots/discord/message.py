@@ -11,10 +11,10 @@ from bots.discord.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed, Voice
+from core.builtins.message.internal import I18NContext, Embed, Voice
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
-from core.utils.http import download_to_cache
+from core.utils.http import download
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
@@ -74,7 +74,7 @@ class MessageSession(MessageSessionT):
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         count = 0
         send = []
@@ -134,7 +134,7 @@ class MessageSession(MessageSessionT):
         lst = []
         lst.append(Plain(self.session.message.content))
         for x in self.session.message.attachments:
-            d = await download_to_cache(x.url)
+            d = await download(x.url)
             if filetype.is_image(d):
                 lst.append(Image(d))
         return MessageChain(lst)

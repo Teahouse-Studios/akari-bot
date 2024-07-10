@@ -1,6 +1,6 @@
 import re
 
-from core.builtins import Bot, Plain, Image as BImage
+from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_music import TotalList
@@ -28,23 +28,24 @@ async def _(msg: Bot.MessageSession):
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
+                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes[0])
+            await msg.finish(res)
         else:
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    await msg.finish(await get_info(music, Plain(msg.locale.t("maimai.message.song",
-                                                              artist=music['basic_info']['artist'],
-                                                              genre=music['basic_info']['genre'],
-                                                              bpm=music['basic_info']['bpm'],
-                                                              version=music['basic_info']['from'],
-                                                              level='/'.join((str(ds) for ds in music['ds']))))))
+    await msg.finish(await get_info(music, I18NContext("maimai.message.song",
+                                                       artist=music['basic_info']['artist'],
+                                                       genre=music['basic_info']['genre'],
+                                                       bpm=music['basic_info']['bpm'],
+                                                       version=music['basic_info']['from'],
+                                                       level='/'.join((str(ds) for ds in music['ds'])))))
 
 
 @mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
@@ -53,7 +54,7 @@ async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    title = f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
         await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))

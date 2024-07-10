@@ -21,8 +21,8 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
                     'tos.message.warning.count',
                     current_warns=current_warns,
                     warn_counts=WARNING_COUNTS))
-            if current_warns <= 2 and Config('issue_url', cfg_type = str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type = str)))
+            if current_warns <= 2 and Config('issue_url', cfg_type=str):
+                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
         elif current_warns == WARNING_COUNTS:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(msg.locale.t('tos.message.warning.last'))
@@ -30,8 +30,8 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
             msg.target.sender_info.edit('isInBlockList', True)
             await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
             warn_template.append(msg.locale.t('tos.message.banned'))
-            if Config('issue_url', cfg_type = str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type = str)))
+            if Config('issue_url', cfg_type=str):
+                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
         await msg.send_message('\n'.join(warn_template))
 
 
@@ -47,14 +47,14 @@ async def warn_user(user: str, count=1):
     return current_warns
 
 
-async def tos_report(sender, target, reason, banned = False):
+async def tos_report(sender, target, reason, banned=False):
     locale = Locale(default_locale)
     if report_targets:
         warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
         reason = locale.tl_str(reason)
         warn_template.append(locale.t("tos.message.reason") + reason)
         if banned:
-            action = locale.t("tos.message.action.banned")
+            action = locale.t("tos.message.action.blocked")
         else:
             action = locale.t("tos.message.action.warning")
         warn_template.append(locale.t("tos.message.action") + action)

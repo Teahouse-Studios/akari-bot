@@ -30,6 +30,7 @@ class MessageSession(MessageSessionT):
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
         self.name = self.locale.t('bot_name')
+        self.petal = self.data.petal
         self.timestamp = datetime.now()
         self.tmp = {}
         self._tz_offset = self.options.get(
@@ -45,7 +46,7 @@ class MessageSession(MessageSessionT):
         if message_chain:
             message_chain = MessageChain(message_chain)
             if append_instruction:
-                message_chain.append(Plain(self.locale.t("message.wait.prompt.confirm")))
+                message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
@@ -72,7 +73,7 @@ class MessageSession(MessageSessionT):
         if message_chain:
             message_chain = MessageChain(message_chain)
             if append_instruction:
-                message_chain.append(Plain(self.locale.t("message.wait.prompt.next_message")))
+                message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
@@ -97,7 +98,7 @@ class MessageSession(MessageSessionT):
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
         if append_instruction:
-            message_chain.append(Plain(self.locale.t("message.reply.prompt")))
+            message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)

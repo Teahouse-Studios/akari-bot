@@ -35,7 +35,7 @@
     "game.message.stop": "Stopped.",
     "game.message.stop.none": "This game is not in progress.",
     "language": "English",
-    "loader.load.failed": "The following error occurred during modules loading and module(s) with error were not loaded: \n${detail}",
+    "loader.load.failed": "The following error occurred during modules loading and module(s) with error were not loaded:",
     "loader.load.success": "Successfully loaded all modules.",
     "message.brackets": " (${msg})",
     "message.collapse": "...show only the first ${amount} items.",

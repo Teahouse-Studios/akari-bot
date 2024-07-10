@@ -1,6 +1,5 @@
 import os
 import json
-import traceback
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -37,7 +36,7 @@ async def get_petal_exchange_rate():
 
 
 async def load_or_refresh_cache():
-    cache_dir = Config('cache_path', './cache/')
+    cache_dir = os.path.abspath(Config('cache_path', './cache/'))
     file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
@@ -71,7 +70,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
         if petal_exchange_rate:
             petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
         else:
-            Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
+            Logger.warning(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
             petal = price * USD_TO_CNY * CNY_TO_PETAL
 
         if Config('db_path', cfg_type=str).startswith('sqlite'):

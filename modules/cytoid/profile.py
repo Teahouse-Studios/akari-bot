@@ -3,6 +3,7 @@ import traceback
 import ujson as json
 
 from core.builtins import Bot, Image, Plain
+from core.logger import Logger
 from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
 
@@ -22,7 +23,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t('cytoid.message.user_not_found'))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
     uid = profile['user']['uid']
     nick = profile['user']['name']
     avatar = profile['user']['avatar']['large']
@@ -65,13 +66,13 @@ async def cytoid_profile(msg: Bot.MessageSession):
     if f:
         grade_t.append(f'F: {f}')
     text = f'UID: {uid}\n' + \
-           (f'Nickname: {nick}\n' if nick else '') + \
-           f'BasicExp: {basic_exp}\n' + \
-           f'LevelExp: {level_exp}\n' + \
-           f'TotalExp: {total_exp}\n' + \
-           f'CurrentLevel: {current_level}\n' + \
-           f'NextLevelExp: {next_level_exp}\n' + \
-           f'Rating: {rating}\n' + \
-           f'Grade: {", ".join(grade_t)}'
+        (f'Nickname: {nick}\n' if nick else '') + \
+        f'BasicExp: {basic_exp}\n' + \
+        f'LevelExp: {level_exp}\n' + \
+        f'TotalExp: {total_exp}\n' + \
+        f'CurrentLevel: {current_level}\n' + \
+        f'NextLevelExp: {next_level_exp}\n' + \
+        f'Rating: {rating}\n' + \
+        f'Grade: {", ".join(grade_t)}'
     message_chain = [Image(path=avatar), Plain(text)]
     await msg.finish(message_chain)

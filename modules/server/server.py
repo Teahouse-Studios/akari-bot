@@ -45,7 +45,8 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
                     servers.append(''.join(text))
 
             if 'players' in jejson:
-                onlinesplayer = f"{msg.locale.t('server.message.player')}{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
+                onlinesplayer = f"{msg.locale.t('server.message.player')}{str(
+                    jejson['players']['online'])} / {str(jejson['players']['max'])}"
                 servers.append(onlinesplayer)
                 if showplayer:
                     playerlist = []
@@ -63,7 +64,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
                 servers.append(versions)
             servers.append(serip + ':' + port1)
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             servers.append(msg.locale.t('server.message.error'))
         if raw:
             return '\n'.join(servers)
@@ -93,7 +94,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             servers.append(bemsg)
             servers.append(serip + ':' + port2)
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             servers.append(msg.locale.t('server.message.error'))
         if raw:
             return '\n'.join(servers)

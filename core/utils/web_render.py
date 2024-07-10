@@ -39,16 +39,16 @@ def webrender(method: str = '', url: str = '', use_local: bool = True):
 async def check_web_render():
     if not web_render_local:
         if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
+            Logger.warning('[Webrender] Webrender is not configured.')
         else:
             WebRender.status = True
     else:
         WebRender.local = True
         WebRender.status = True
-    if IP.country != 'China':
-        ping_url = 'http://www.google.com/'
-    else:
+    if IP.country == 'China':
         ping_url = 'http://www.baidu.com/'
+    else:
+        ping_url = 'http://www.google.com/'
     if WebRender.status:
         try:
             Logger.info('[Webrender] Checking Webrender status...')

@@ -6,7 +6,7 @@ from bots.aiogram.client import dp, bot, token
 from aiogram.types import FSInputFile
 from bots.aiogram.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
@@ -28,6 +28,7 @@ class FinishedSession(FinS):
         except Exception:
             Logger.error(traceback.format_exc())
 
+
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
@@ -42,7 +43,7 @@ class MessageSession(MessageSessionT):
                            allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         count = 0
         send = []

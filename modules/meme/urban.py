@@ -29,7 +29,8 @@ async def urban(term: str, locale: Locale):
             definition = limit_length(data[0]['definition'])
             example = limit_length(data[0]['example'])
             link = data[0]['permalink']
-            return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
+            return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.result", result=count)}\n{
+                word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
         return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.error")}'
 

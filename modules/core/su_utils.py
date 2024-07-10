@@ -2,21 +2,21 @@ import os
 import re
 import shutil
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import ujson as json
 
 from config import Config, CFG
-from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
-from core.utils.cache import random_cache_path
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
+from core.utils.text import isfloat, isint
 from database import BotDBUtil
 
 
@@ -85,7 +85,7 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish()
     if 'enable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in ModulesManager.return_modules_list(msg.target.target_from)]
+                   if m in ModulesManager.return_modules_list(msg.target.target_from)]
         target_data.enable(modules)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish(msg.locale.t("core.message.set.module.enable.failed"))
     elif 'disable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in target_data.enabled_modules]
+                   if m in target_data.enabled_modules]
         target_data.disable(modules)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession, target: str):
     elif 'list' in msg.parsed_msg:
         modules = sorted(target_data.enabled_modules)
         if modules:
-            await msg.finish([Plain(msg.locale.t("core.message.set.module.list")), Plain(" | ".join(modules))])
+            await msg.finish([I18NContext("core.message.set.module.list"), Plain(" | ".join(modules))])
         else:
             await msg.finish(msg.locale.t("core.message.set.module.list.none"))
 
@@ -228,7 +228,6 @@ if Bot.client_name == 'QQ':
         if BotDBUtil.GroupBlockList.add(target):
             await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
-
     @ae.command('unblock <target>')
     async def _(msg: Bot.MessageSession, target: str):
         if not target.startswith('QQ|Group|'):
@@ -275,13 +274,15 @@ def update_dependencies():
 
 @upd.command()
 async def update_bot(msg: Bot.MessageSession):
-    pull_repo_result = pull_repo()
-    if pull_repo_result:
-        await msg.send_message(pull_repo_result)
-    else:
-        await msg.send_message(msg.locale.t("core.message.update.failed"))
+    if Info.version:
+        pull_repo_result = pull_repo()
+        if pull_repo_result:
+            await msg.send_message(pull_repo_result)
+        else:
+            Logger.warning(f'Failed to get Git repository result.')
+            await msg.send_message(msg.locale.t("core.message.update.failed"))
     await msg.finish(update_dependencies())
-    
+
 
 if Info.subprocess:
     rst = module('restart', required_superuser=True, base=True)
@@ -336,13 +337,14 @@ if Info.subprocess:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
             write_version_cache(msg)
-            pull_repo_result = pull_repo()
-            if pull_repo_result != '':
-                await msg.send_message(pull_repo_result)
-                await msg.send_message(update_dependencies())
-            else:
-                Logger.warn(f'Failed to get Git repository result.')
-                await msg.send_message(msg.locale.t("core.message.update.failed"))
+            if Info.version:
+                pull_repo_result = pull_repo()
+                if pull_repo_result != '':
+                    await msg.send_message(pull_repo_result)
+                else:
+                    Logger.warning(f'Failed to get Git repository result.')
+                    await msg.send_message(msg.locale.t("core.message.update.failed"))
+            await msg.send_message(update_dependencies())
             restart()
         else:
             await msg.finish()
@@ -355,7 +357,7 @@ exit_ = module('exit', required_superuser=True, base=True, available_for=['TEST|
 async def _(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False, delete=False)
     if confirm:
-        print('Exited.')
+        await msg.sleep(0.5)
         sys.exit()
 
 
@@ -458,22 +460,6 @@ if Config('enable_eval', False):
 cfg_ = module('config', required_superuser=True, alias='cfg', base=True)
 
 
-def isfloat(num):
-    try:
-        float(num)
-        return True
-    except ValueError:
-        return False
-
-
-def isint(num):
-    try:
-        int(num)
-        return True
-    except ValueError:
-        return False
-
-
 @cfg_.command('get <k>')
 async def _(msg: Bot.MessageSession, k: str):
     await msg.finish(str(Config(k)))
@@ -512,7 +498,7 @@ if Config('enable_petal', False):
 
     @petal.command()
     async def _(msg: Bot.MessageSession):
-        await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
+        await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
     @petal.command('[<target>] {{core.help.petal}}', required_superuser=True)
     async def _(msg: Bot.MessageSession):
@@ -534,7 +520,7 @@ if Config('enable_petal', False):
                 msg.locale.t('core.message.petal.modify', target=target, add_petal=petal, petal=target_info.petal))
         else:
             msg.data.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.data.petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.petal))
 
     @petal.command('clear [<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):

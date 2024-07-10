@@ -45,7 +45,10 @@ class Article:
 async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
-        f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
+        f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={
+            ",".join(
+                Article.random_tags())}&offset=0&pageSize={
+            Article.count}')
     try:
         getpage = await get_url(webrender('source', url), 200, attempt=1, request_private_ip=True, logging_err_resp=False)
         if getpage:

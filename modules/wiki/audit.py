@@ -2,7 +2,7 @@ import re
 from datetime import timezone
 
 from config import Config
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, I18NContext, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
@@ -77,17 +77,19 @@ if Config('enable_urlmanager', False):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-    @aud.command('list [legacy]')
+    @aud.command('list [--legacy]')
     async def _(msg: Bot.MessageSession):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()
         legacy = True
-        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
+        if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
             send_msgs = []
             if Config('db_path', cfg_type=str).startswith('mysql'):
-                allow_columns = [[x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)] for x in allow_list]
+                allow_columns = [[x[0], msg.ts2strftime(
+                    x[1].timestamp(), iso=True, timezone=False)] for x in allow_list]
             else:
-                allow_columns = [[x[0], msg.ts2strftime(x[1].replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in allow_list]
+                allow_columns = [[x[0], msg.ts2strftime(x[1].replace(
+                    tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in allow_list]
 
             if allow_columns:
                 allow_table = ImageTable(data=allow_columns, headers=[
@@ -97,12 +99,14 @@ if Config('enable_urlmanager', False):
                 if allow_table:
                     allow_image = await image_table_render(allow_table)
                     if allow_image:
-                        send_msgs.append(Plain(msg.locale.t('wiki.message.wiki_audit.list.allowlist')))
+                        send_msgs.append(I18NContext('wiki.message.wiki_audit.list.allowlist'))
                         send_msgs.append(Image(allow_image))
             if Config('db_path', cfg_type=str).startswith('mysql'):
-                block_columns = [[x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
+                block_columns = [[x[0], msg.ts2strftime(
+                    x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
             else:
-                block_columns = [[x[0], msg.ts2strftime(x[1].replace(tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in block_list]
+                block_columns = [[x[0], msg.ts2strftime(x[1].replace(
+                    tzinfo=timezone.utc).timestamp(), iso=True, timezone=False)] for x in block_list]
             if block_columns:
                 block_table = ImageTable(data=block_columns, headers=[
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.apilink'),
@@ -111,7 +115,7 @@ if Config('enable_urlmanager', False):
                 if block_table:
                     block_image = await image_table_render(block_table)
                     if block_image:
-                        send_msgs.append(Plain(msg.locale.t('wiki.message.wiki_audit.list.blocklist')))
+                        send_msgs.append(I18NContext('wiki.message.wiki_audit.list.blocklist'))
                         send_msgs.append(Image(block_image))
             if send_msgs:
                 await msg.finish(send_msgs)

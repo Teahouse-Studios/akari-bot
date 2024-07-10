@@ -7,7 +7,7 @@ import tiktoken
 
 from config import Config
 from core.logger import Logger
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
@@ -16,13 +16,13 @@ from core.utils.cooldown import CoolDown
 
 from .formatting import generate_latex, generate_code_snippet  # noqa: E402
 
-if Config('openai_api_key', cfg_type = str):
+if Config('openai_api_key', cfg_type=str):
     client = AsyncOpenAI(
-        api_key=Config('openai_api_key', cfg_type = str),
+        api_key=Config('openai_api_key', cfg_type=str),
     )
 
     sync_client = OpenAI(
-        api_key=Config('openai_api_key', cfg_type = str),
+        api_key=Config('openai_api_key', cfg_type=str),
     )
 
     INSTRUCTIONS = '''You are the chat mode of AkariBot (Chinese: 小可), a chat bot created by Teahouse Studios (Chinese: 茶馆工作室)
@@ -56,9 +56,9 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
-    if not Config('openai_api_key', cfg_type = str):
+    if not Config('openai_api_key', cfg_type=str):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
-    if Config('enable_petal', False) and not is_superuser and msg.data.petal <= 0:  # refuse
+    if Config('enable_petal', False) and not is_superuser and msg.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals'))
 
     qc = CoolDown('call_openai', msg)
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession):
             elif run.status == 'failed':
                 if run.last_error.code == 'rate_limit_exceeded' and \
                    'quota' not in run.last_error.message:
-                    Logger.warn(run.last_error.json())
+                    Logger.warning(run.last_error.json())
                     raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
                 raise RuntimeError(run.last_error.json())
             await msg.sleep(4)
@@ -125,17 +125,17 @@ async def _(msg: Bot.MessageSession):
                     img = PILImage.open(io.BytesIO(content))
                     chain.append(Image(img))
                 except Exception as e:
-                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
+                    chain.append(I18NContext('ask.message.text2img.error', text=content))
             elif block['type'] == 'code':
                 content = block['content']['code']
                 try:
                     chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
                                                                                             block['content']['language'])))))
                 except Exception as e:
-                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
+                    chain.append(I18NContext('ask.message.text2img.error', text=content))
 
         if petal != 0:
-            chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
+            chain.append(I18NContext('petal.message.cost', count=petal))
 
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()

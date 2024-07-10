@@ -21,8 +21,8 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                     count = f'+{str(count)}'
                 else:
                     count = str(count)
-                d.append(
-                    f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True, timezone=False)} - {x['title']} .. ({count}) .. {x['user']}")
+                d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True,
+                                             timezone=False)} - {x['title']} .. ({count}) .. {x['user']}")
                 if x['comment']:
                     comment = msg.locale.t('message.brackets', msg=x['comment'])
                     d.append(comment)
@@ -30,7 +30,12 @@ async def rc(msg: Bot.MessageSession, wiki_url):
                 if x['logtype'] == x['logaction']:
                     log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}", user=x['user'], title=x['title'])
                 else:
-                    log = msg.locale.t(f"wiki.message.rc.action.{x['logtype']}.{x['logaction']}", user=x['user'], title=x['title'])
+                    log = msg.locale.t(
+                        f"wiki.message.rc.action.{
+                            x['logtype']}.{
+                            x['logaction']}",
+                        user=x['user'],
+                        title=x['title'])
                 if log.find("{") != -1 and log.find("}") != -1:
                     if x['logaction'] == x['logtype']:
                         log = f"{x['user']} {x['logtype']} {x['title']}"
@@ -62,9 +67,11 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:
         y = y.replace("<吃掉了>", msg.locale.t("check.redacted"))
         y = y.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}\n{msg.locale.t("wiki.message.utils.redacted")}'
+        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}\n{
+            msg.locale.t("wiki.message.utils.redacted")}'
     else:
         return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}'
+
 
 def compare_groups(old_groups, new_groups):
     added_groups = [group for group in new_groups if group not in old_groups]

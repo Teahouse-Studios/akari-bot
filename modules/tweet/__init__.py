@@ -7,7 +7,9 @@ from core.builtins import Bot
 from core.builtins.message import Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.utils.http import download_to_cache, get_url
+from core.logger import Logger
+from core.utils.http import download, get_url
+from core.utils.text import isint
 from core.utils.web_render import webrender
 
 
@@ -20,7 +22,7 @@ t = module('tweet',
 
 @t.handle('<tweet> {{tweet.help}}')
 async def _(msg: Bot.MessageSession, tweet: str):
-    if tweet.isdigit():
+    if isint(tweet):
         tweet_id = tweet
     else:
         match = re.search(r"status/(\d+)", tweet)
@@ -39,7 +41,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t('tweet.message.invalid'))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
     res_json = json.loads(res)
     if not res_json['data']:
@@ -84,7 +86,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
             }
         '''
 
-        pic = await download_to_cache(web_render, method='POST', headers={
+        pic = await download(web_render, method='POST', headers={
             'Content-Type': 'application/json',
         }, post_data=json.dumps(
             {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,

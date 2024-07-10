@@ -5,6 +5,7 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.utils.http import get_url
+from core.utils.text import isint
 
 mod_dl = module(
     bind_prefix='mod_dl',
@@ -13,7 +14,7 @@ mod_dl = module(
     recommend_modules=['mcmod'],
     alias='moddl')
 
-x_api_key = Config("curseforge_api_key", cfg_type = str)
+x_api_key = Config("curseforge_api_key", cfg_type=str)
 if not x_api_key:
     # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
     enable_mirror = True
@@ -48,14 +49,16 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
     async def search_curseforge(name: str, ver: str):
         if enable_mirror:
             # https://mcim.z0z0r4.top/docs#/Curseforge/curseforge_search_curseforge_search_get
-            url = f'https://mcim.z0z0r4.top/curseforge/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+            url = f'https://mcim.z0z0r4.top/curseforge/search?gameId=432&searchFilter={
+                name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
             headers = None
         else:
             headers = {
                 'Accept': 'application/json',
                 'x-api-key': x_api_key
             }
-            url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+            url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={
+                name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
 
         if ver:
             url += f'&gameVersion={ver}'
@@ -136,9 +139,9 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
-        if replied.isdigit():
+        if isint(replied):
             replied = int(replied)
-            if replied > len(cache_result):
+            if not replied or replied > len(cache_result):
                 await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
             else:
                 mod_info = cache_result[replied - 1]

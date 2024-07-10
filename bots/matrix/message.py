@@ -9,7 +9,7 @@ import nio
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, MessageTaskManager
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchedTargetT, FinishedSession as FinS
@@ -51,7 +51,7 @@ class MessageSession(MessageSessionT):
     ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            await self.send_message(Plain(self.locale.t("error.message.chain.unsafe")))
+            return await self.send_message((I18NContext("error.message.chain.unsafe", locale=self.locale.locale)))
         self.sent.append(message_chain)
         sentMessages: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(self, embed=False):
@@ -122,7 +122,7 @@ class MessageSession(MessageSessionT):
                     ignore_unverified_devices=True,
                 )
                 if "status_code" in resp.__dict__:
-                    Logger.error(f"Error in sending message: {str(resp)}")
+                    Logger.error(f"Error while sending message: {str(resp)}")
                 else:
                     sentMessages.append(resp)
                 reply_to = None

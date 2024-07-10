@@ -5,6 +5,7 @@ import ujson as json
 from config import Config
 from core.builtins import Bot
 from core.exceptions import ConfigValueError
+from core.logger import Logger
 from core.utils.http import get_url
 
 
@@ -20,7 +21,7 @@ async def get_profile_name(msg: Bot.MessageSession, uid):
         if str(e).startswith('401'):
             raise ConfigValueError(msg.locale.t("error.config.invalid"))
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             return False
     except BaseException:
         return False

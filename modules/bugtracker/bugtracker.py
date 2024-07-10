@@ -3,11 +3,10 @@ import traceback
 
 import aiohttp
 import ujson as json
-from PIL import ImageFont
 
 from core.builtins import Url
 from core.logger import Logger
-from core.utils.http import download_to_cache, get_url
+from core.utils.http import download, get_url
 from core.utils.web_render import WebRender, webrender
 
 elements = ['div#descriptionmodule']
@@ -24,7 +23,7 @@ async def make_screenshot(page_link, use_local=True):
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
-        img = await download_to_cache(webrender('element_screenshot', use_local=use_local),
+        img = await download(webrender('element_screenshot', use_local=use_local),
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",
@@ -60,7 +59,7 @@ async def bugtracker_get(msg, mojira_id: str):
         if str(e).startswith('401'):
             return msg.locale.t("bugtracker.message.get_failed"), None
         else:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
     if mojira_id not in spx_cache:
         get_spx = await get_url('https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json', 200)
         if get_spx:

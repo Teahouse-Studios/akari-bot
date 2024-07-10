@@ -4,8 +4,9 @@ import traceback
 
 from core.builtins import Bot, Image
 from core.component import module
+from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.http import get_url, download_to_cache
+from core.utils.http import get_url
 from .dbutils import PgrBindInfoManager
 from .game_record import parse_game_record
 from .genb19 import drawb19
@@ -26,7 +27,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'QQ|Group',
         'QQ|Guild',
         'Telegram|Group',
-        'Telegram|Supergroup',]:
+            'Telegram|Supergroup',]:
         send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False))
         need_revoke = True
     headers = p_headers.copy()
@@ -61,7 +62,7 @@ async def _(msg: Bot.MessageSession):
                                          headers=headers,
                                          fmt='json')
             save_url = get_save_url['results'][0]['gameFile']['url']
-            download = await download_to_cache(save_url)
+            download = await download(save_url)
             rd_path = random_cache_path()
             shutil.unpack_archive(download, rd_path)
             game_records = parse_game_record(os.path.join(rd_path, 'gameRecord'))
@@ -76,7 +77,7 @@ async def _(msg: Bot.MessageSession):
                 rks_acc += [0] * (20 - len(rks_acc))
             await msg.finish(Image(drawb19(bind[1], round(sum(rks_acc) / len(rks_acc), 2), b19_data)))
         except Exception as e:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
 
 

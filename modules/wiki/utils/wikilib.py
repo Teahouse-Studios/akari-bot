@@ -205,7 +205,7 @@ class WikiLib:
                 if '*' in ns and 'canonical' in ns:
                     namespaces_local.update({ns['*']: ns['canonical']})
             except Exception:
-                traceback.print_exc()
+                Logger.error(traceback.format_exc())
         for x in info['query']['namespacealiases']:
             if '*' in x:
                 namespaces[x['*']] = x['id']
@@ -333,7 +333,7 @@ class WikiLib:
                     desc_end = re.findall(r'(.*?[)}\]>\"\'》】’”」）].*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc, re.S | re.M)
                 desc = desc_end[0]
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             desc = ''
         if desc in ['...', '…']:
             desc = ''
@@ -387,7 +387,7 @@ class WikiLib:
                                             prop='wikitext')
             desc = load_desc['parse']['wikitext']['*']
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             desc = ''
         return desc
 

@@ -3,6 +3,7 @@ from typing import Dict, Union
 
 playstate_lst: Dict[str, Dict[Union[MessageSession, str], Dict[str, Union[int, Dict[str, int]]]]] = {}
 
+
 class PlayState:
 
     def __init__(self, game: str, msg: Union[MessageSession, str], all: bool = False):
@@ -17,14 +18,14 @@ class PlayState:
             playstate_lst[self.target_id] = {}
         if self.game not in playstate_lst[self.target_id]:
             playstate_lst[self.target_id][self.game] = {'status': False}
-            
+
         if self.all:
             playstate_lst[self.target_id][self.game]['status'] = True
         else:
             if self.sender_id not in playstate_lst[self.target_id]:
                 playstate_lst[self.target_id][self.sender_id] = {}
             playstate_lst[self.target_id][self.sender_id][self.game] = {'status': True}
-            
+
     def disable(self):
         if self.target_id not in playstate_lst:
             return
@@ -51,4 +52,4 @@ class PlayState:
         if self.all:
             return playstate_lst[self.target_id].get(self.game, {}).get(key, None)
         else:
-            return playstate_lst[self.target_id].get(self.sender_id, {}).get(self.game, {}).get(key, None) 
+            return playstate_lst[self.target_id].get(self.sender_id, {}).get(self.game, {}).get(key, None)

@@ -5,9 +5,10 @@ from datetime import datetime
 from config import Config
 from core.types import PrivateAssets, Secret
 
-
-confirm_command = Config('confirm_command', ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"])
-command_prefix = Config('command_prefix', ['~', '～'])  # 消息前缀
+default_confirm_command = ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y']
+default_command_prefix = ['~', '～']
+confirm_command = [i for i in Config('confirm_command', default_confirm_command) if i.strip()] or default_confirm_command
+command_prefix = [i for i in Config('command_prefix', default_command_prefix) if i.strip()] or default_command_prefix  # 消息前缀
 
 
 class EnableDirtyWordCheck:
@@ -17,8 +18,8 @@ class EnableDirtyWordCheck:
 def shuffle_joke(text: str):
     current_date = datetime.now().date()
     shuffle_rate = Config('shuffle_rate', 0.1, (float, int))
-    have_fun = Config('???', cfg_type = bool)
-    
+    have_fun = Config('enable_shuffle_joke', cfg_type=bool)
+
     if have_fun or have_fun is None and (current_date.month == 4 and current_date.day == 1):
         urls = re.finditer(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
         url_positions = [(url.start(), url.end()) for url in urls]
