@@ -1,3 +1,5 @@
+import re
+
 from core.builtins import Bot, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
@@ -19,7 +21,20 @@ async def set_alias(msg: Bot.MessageSession):
     if not aliases:
         aliases = {}
     if 'add' in msg.parsed_msg:
-        alias = alias.replace('_', ' ').replace('${ }', '${_}')
+        # 处理下划线与空格的情况
+        alias = alias.replace('_', ' ')
+        alias = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', alias)
+        command = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', command)
+        # 检查占位符有效性
+        def check_valid_placeholder(alias):
+            phs = re.findall(r"\${(.*?)}", alias)
+            for ph in phs:
+                if not ph or '$' in ph or '}' in ph or '{' in ph:
+                   return False
+            return True
+
+        if not (check_valid_placeholder(alias) and check_valid_placeholder(command)):
+                await msg.finish(msg.locale.t("core.message.alias.add.invalid_placeholder"))
         if alias not in aliases:
             has_prefix = False
             for prefixes in msg.prefixes:
@@ -45,7 +60,8 @@ async def set_alias(msg: Bot.MessageSession):
         msg.data.edit_option('command_alias', {})
         await msg.finish(msg.locale.t("core.message.alias.reset.success"))
     elif 'ascend' in msg.parsed_msg:
-        alias = alias.replace('_', ' ').replace('${ }', '${_}')
+        alias = alias.replace('_', ' ')
+        alias = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', alias)
         if alias not in aliases:
             await msg.finish(msg.locale.t("core.message.alias.not_found", alias=alias))
         aliases_list = list(aliases.keys())
@@ -60,7 +76,8 @@ async def set_alias(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("core.message.alias.ascend.failed", alias=alias))
     elif 'descend' in msg.parsed_msg:
-        alias = alias.replace('_', ' ').replace('${ }', '${_}')
+        alias = alias.replace('_', ' ')
+        alias = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', alias)
         if alias not in aliases:
             await msg.finish(msg.locale.t("core.message.alias.not_found", alias=alias))
         aliases_list = list(aliases.keys())
