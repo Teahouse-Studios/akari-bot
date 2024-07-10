@@ -126,7 +126,7 @@ async def _(msg: Bot.MessageSession, target: str):
         v = msg.parsed_msg.get('<v>')
         if re.match(r'\[.*\]|{.*}', v):
             try:
-                v = v.replace.replace('\'', '\"')
+                v = v.replace('\'', '\"')
                 v = json.loads(v)
             except BaseException:
                 await msg.finish(msg.locale.t("core.message.config.write.failed"))
@@ -481,7 +481,7 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
         v = float(v)
     elif re.match(r'\[.*\]', v):
         try:
-            v = v.replace.replace('\'', '\"')
+            v = v.replace('\'', '\"')
             v = json.loads(v)
         except BaseException:
             await msg.finish(msg.locale.t("core.message.config.write.failed"))
