@@ -116,8 +116,8 @@ async def check_target_cooldown(msg: Bot.MessageSession):
             cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
 
 
-def transform_command_alias(msg, command: str):
-    aliases = msg.options.get('command_alias')
+def transform_alias_byregex(msg, command: str):
+    aliases = {k: v for k, v in msg.options.get('command_alias').items() if re.search(r'\${[^}]*}', k)}
     for pattern, replacement in aliases.items():
         # 使用正则表达式匹配并分隔多个连在一起的占位符
         pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
@@ -136,13 +136,14 @@ def transform_command_alias(msg, command: str):
             result = replacement
             groups = match.groups()
             
+            # 替换模板中的占位符
             for i, placeholder in enumerate(pattern_placeholders):
                 if i < len(groups):
                     result = result.replace(f'${{{placeholder}}}', groups[i])
                 else:
-                    result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')  # 如果存在不匹配的占位符，则保留原始文本
+                    result = result.replace(f'${{{placeholder}}}', '')
             
-            # 检查替换字符串中未匹配的占位符并保留原始文本
+            # 检查未匹配的占位符并保留原始文本
             for placeholder in replacement_placeholders:
                 if placeholder not in pattern_placeholders:
                     result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
@@ -189,7 +190,15 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         msg.prefixes = [i for i in set(msg.prefixes) if i.strip()]  # 过滤重复与空白前缀
 
         if msg.options.get('command_alias'):
-            msg.trigger_msg = transform_command_alias(msg, msg.trigger_msg)
+            msg.trigger_msg = transform_alias_byregex(msg, msg.trigger_msg)  # 将自定义别名替换为命令
+        #  旧语法兼容
+        get_custom_alias = {k: v for k, v in msg.options.get('command_alias').items() if not re.search(r'\${[^}]*}', k)}
+        command_split = msg.trigger_msg.split(' ')  # 切割消息
+        if get_custom_alias:
+            get_display_alias = get_custom_alias.get(command_split[0])
+            if get_display_alias:
+                command_split[0] = msg.prefixes[0] + get_display_alias  # 将自定义别名替换为命令
+                msg.trigger_msg = ' '.join(command_split)  # 重新连接消息
 
         disable_prefix = False
         if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
