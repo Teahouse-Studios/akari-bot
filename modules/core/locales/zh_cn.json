@@ -185,6 +185,7 @@
     "core.message.set.module.list": "此对话已开启的模块：",
     "core.message.set.module.list.none": "此对话没有开启任何模块。",
     "core.message.set.option.edit.success": "成功为对话设置了以下参数：${k} -> ${v}",
+    "core.message.set.option.edit.failed": "失败，请尝试转义引号或检查输入。",
     "core.message.setup.check.disable": "已关闭错字检查提示。",
     "core.message.setup.check.enable": "已开启错字检查提示。",
     "core.message.setup.cooldown.invalid": "无效的命令冷却时间。",

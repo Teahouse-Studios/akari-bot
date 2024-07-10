@@ -184,6 +184,7 @@
     "core.message.set.module.enable.success": "The following module(s) were successfully enabled for the conversation: ",
     "core.message.set.module.list": "The enabled module(s) for this conversation: ",
     "core.message.set.module.list.none": "There are no enabled modules for this conversation.",
+    "core.message.set.option.edit.failed": "Failed. Try to use escaped quotes or check the input.",
     "core.message.set.option.edit.success": "The following parameter was set for the conversation: ${k} -> ${v}",
     "core.message.setup.check.disable": "Check prompt disabled.",
     "core.message.setup.check.enable": "Check prompt enabled.",

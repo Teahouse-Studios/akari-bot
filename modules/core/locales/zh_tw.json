@@ -184,6 +184,7 @@
     "core.message.set.module.enable.success": "成功為對話啟用了以下模組：",
     "core.message.set.module.list": "此對話已啟用的模組：",
     "core.message.set.module.list.none": "此對話沒有啟用任何模組。",
+    "core.message.set.option.edit.failed": "失敗，請嘗試使用跳脫引號或校對輸入。",
     "core.message.set.option.edit.success": "成功為對話設定了以下參數：${k} -> ${v}",
     "core.message.setup.check.disable": "已停用指令錯誤檢查提醒。",
     "core.message.setup.check.enable": "已啟用指令錯誤檢查提醒。",

@@ -22,8 +22,8 @@ from database import BotDBUtil
 
 target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group",
                "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
-               "Telegram|Group", "Telegram|Private", "Telegram|Supergroup",]
-sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User",]
+               "Telegram|Group", "Telegram|Private", "Telegram|Supergroup", "TEST|Console",]
+sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User", "TEST",]
 
 
 su = module('superuser', alias='su', required_superuser=True, base=True)
@@ -125,7 +125,11 @@ async def _(msg: Bot.MessageSession, target: str):
         k = msg.parsed_msg.get('<k>')
         v = msg.parsed_msg.get('<v>')
         if v.startswith(('[', '{')):
-            v = json.loads(v)
+            try:
+                v = json.dumps(v)
+                v = json.loads(v)
+            except BaseException:
+                await msg.finish(msg.locale.t("core.message.config.write.failed"))
         elif v.upper() == 'TRUE':
             v = True
         elif v.upper() == 'FALSE':
