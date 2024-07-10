@@ -124,8 +124,9 @@ async def _(msg: Bot.MessageSession, target: str):
     elif 'edit' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         v = msg.parsed_msg.get('<v>')
-        if v.startswith(('[', '{')):
+        if elif re.match(r'\[.*\]|{.*}', v):
             try:
+                v = v.replace.replace('\'', '\"')
                 v = json.loads(v)
             except BaseException:
                 await msg.finish(msg.locale.t("core.message.config.write.failed"))
@@ -478,8 +479,9 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
         v = int(v)
     elif isfloat(v):
         v = float(v)
-    elif re.match(r'^\[.*\]$', v):
+    elif re.match(r'\[.*\]', v):
         try:
+            v = v.replace.replace('\'', '\"')
             v = json.loads(v)
         except BaseException:
             await msg.finish(msg.locale.t("core.message.config.write.failed"))
