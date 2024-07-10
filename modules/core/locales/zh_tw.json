@@ -62,6 +62,7 @@
     "core.message.admin.remove.confirm": "你正在移除你自己的權限！你確定嗎？",
     "core.message.admin.remove.success": "成功：已將 ${user} 移出機器人管理員。",
     "core.message.alias.add.already": "「${alias}」別名已存在於自訂別名列表。",
+    "core.message.alias.add.invalid_placeholder": "新增的別名中存在無效的佔位符。",
     "core.message.alias.add.invalid_prefix": "新增的別名對應的指令必須以指令前綴開頭，請校對輸入。",
     "core.message.alias.add.success": "已新增自訂指令別名：${alias} -> ${command}",
     "core.message.alias.ascend.failed": "「${alias}」別名已位於最高優先度。",

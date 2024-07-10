@@ -62,6 +62,7 @@
     "core.message.admin.remove.confirm": "You are removing your own permissions! Are you sure?",
     "core.message.admin.remove.success": "Success: Removed ${user} from bot administrator.",
     "core.message.alias.add.already": "\"${alias}\" alias already exists in custom alias list.",
+    "core.message.alias.add.invalid_placeholder": "Invalid placeholder in the added alias.",
     "core.message.alias.add.invalid_prefix": "The command corresponding to the added alias must start with a command prefix. Please check your input.",
     "core.message.alias.add.success": "Custom command alias added: ${alias} -> ${command}",
     "core.message.alias.ascend.failed": "\"${alias}\" alias already has the highest priority.",
