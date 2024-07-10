@@ -191,14 +191,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
         if msg.options.get('command_alias'):
             msg.trigger_msg = transform_alias_byregex(msg, msg.trigger_msg)  # 将自定义别名替换为命令
-        #  旧语法兼容
-        get_custom_alias = {k: v for k, v in msg.options.get('command_alias').items() if not re.search(r'\${[^}]*}', k)}
-        command_split = msg.trigger_msg.split(' ')  # 切割消息
-        if get_custom_alias:
-            get_display_alias = get_custom_alias.get(command_split[0])
-            if get_display_alias:
-                command_split[0] = msg.prefixes[0] + get_display_alias  # 将自定义别名替换为命令
-                msg.trigger_msg = ' '.join(command_split)  # 重新连接消息
+            #  旧语法兼容
+            get_custom_alias = {k: v for k, v in (msg.options.get('command_alias')).items() if not re.search(r'\${[^}]*}', k)}
+            command_split = msg.trigger_msg.split(' ')  # 切割消息
+            if get_custom_alias:
+                get_display_alias = get_custom_alias.get(command_split[0])
+                if get_display_alias:
+                    command_split[0] = msg.prefixes[0] + get_display_alias  # 将自定义别名替换为命令
+                    msg.trigger_msg = ' '.join(command_split)  # 重新连接消息
 
         disable_prefix = False
         if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀

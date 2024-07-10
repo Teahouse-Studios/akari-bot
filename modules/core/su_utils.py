@@ -126,7 +126,6 @@ async def _(msg: Bot.MessageSession, target: str):
         v = msg.parsed_msg.get('<v>')
         if v.startswith(('[', '{')):
             try:
-                v = json.dumps(v)
                 v = json.loads(v)
             except BaseException:
                 await msg.finish(msg.locale.t("core.message.config.write.failed"))
