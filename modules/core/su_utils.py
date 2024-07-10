@@ -124,7 +124,7 @@ async def _(msg: Bot.MessageSession, target: str):
     elif 'edit' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         v = msg.parsed_msg.get('<v>')
-        if elif re.match(r'\[.*\]|{.*}', v):
+        if re.match(r'\[.*\]|{.*}', v):
             try:
                 v = v.replace.replace('\'', '\"')
                 v = json.loads(v)
