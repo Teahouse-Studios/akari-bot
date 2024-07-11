@@ -2,7 +2,7 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
-from core.loader import ModulesManager
+from config import Config
 from core.utils.i18n import get_available_locales
 
 
@@ -36,9 +36,10 @@ async def ping(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@client.slash_command(name="petal", description="Get the number of petals in the current channel.")
-async def petal(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "")
+if Config('enable_petal', False):
+    @client.slash_command(name="petal", description="Get the number of petals in the current channel.")
+    async def petal(ctx: discord.ApplicationContext):
+        await slash_parser(ctx, "")
 
 
 @client.slash_command(name="version", description="View bot version.")
@@ -106,6 +107,16 @@ async def lst(ctx: discord.ApplicationContext, legacy: str):
     await slash_parser(ctx, f"list {legacy}")
 
 
+@ali.command(name="raise", description="Raise the priority of  custom command alias.")
+async def rise(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "raise")
+
+
+@ali.command(name="lower", description="Reset the priority of  custom command alias.")
+async def lower(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "lower")
+
+
 @ali.command(name="reset", description="Reset custom command alias.")
 async def reset(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "reset")
@@ -154,7 +165,7 @@ async def typing(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "typing")
 
 
-@setup.command(name="timeoffset", description="Set the time offset.")
+@setup.command(name="timeoffset", description="Set the time offset within the conversation.")
 @discord.option(name="offset", description="The timezone offset.")
 async def offset(ctx: discord.ApplicationContext, offset: str):
     await slash_parser(ctx, f"timeoffset {offset}")

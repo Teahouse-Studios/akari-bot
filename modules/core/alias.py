@@ -10,8 +10,8 @@ ali = module('alias', required_admin=True, base=True)
 @ali.command('add <alias> <command> {{core.help.alias.add}}',
              'remove <alias> {{core.help.alias.remove}}',
              'reset {{core.help.alias.reset}}',
-             'ascend <alias> {{core.help.alias.ascend}}',
-             'descend <alias> {{core.help.alias.descend}}',
+             'raise <alias> {{core.help.alias.raise}}',
+             'lower <alias> {{core.help.alias.lower}}',
              'list [--legacy] {{core.help.alias.list}}',
             options_desc={'--legacy': '{help.option.legacy}'})
 async def set_alias(msg: Bot.MessageSession):
@@ -63,7 +63,7 @@ async def set_alias(msg: Bot.MessageSession):
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_alias', {})
         await msg.finish(msg.locale.t("core.message.alias.reset.success"))
-    elif 'ascend' in msg.parsed_msg:
+    elif 'raise' in msg.parsed_msg:
         alias = alias.replace('_', ' ')
         alias = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', alias)
         if alias not in aliases:
@@ -76,10 +76,10 @@ async def set_alias(msg: Bot.MessageSession):
             aliases_list.insert(new_index, alias)
             msg.data.edit_option('command_alias', {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
-            await msg.finish(msg.locale.t("core.message.alias.ascend.success", alias=alias, priority=priority))
+            await msg.finish(msg.locale.t("core.message.alias.raise.success", alias=alias, priority=priority))
         else:
-            await msg.finish(msg.locale.t("core.message.alias.ascend.failed", alias=alias))
-    elif 'descend' in msg.parsed_msg:
+            await msg.finish(msg.locale.t("core.message.alias.raise.failed", alias=alias))
+    elif 'lower' in msg.parsed_msg:
         alias = alias.replace('_', ' ')
         alias = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', alias)
         if alias not in aliases:
@@ -92,9 +92,9 @@ async def set_alias(msg: Bot.MessageSession):
             aliases_list.insert(new_index, alias)
             msg.data.edit_option('command_alias', {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
-            await msg.finish(msg.locale.t("core.message.alias.descend.success", alias=alias, priority=priority))
+            await msg.finish(msg.locale.t("core.message.alias.lower.success", alias=alias, priority=priority))
         else:
-            await msg.finish(msg.locale.t("core.message.alias.descend.failed", alias=alias))
+            await msg.finish(msg.locale.t("core.message.alias.lower.failed", alias=alias))
     elif 'list' in msg.parsed_msg:
         aliases_count = len(list(aliases.keys()))
         legacy = True
