@@ -8,7 +8,7 @@ from aiocqhttp import NetworkError
 from tenacity import RetryError
 
 
-from bots.aiocqhttp.info import qq_frame_type
+from bots.aiocqhttp.utils import qq_frame_type
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list

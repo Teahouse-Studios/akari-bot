@@ -523,12 +523,3 @@ if Config('enable_petal', False):
         else:
             msg.data.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
-
-lagrange = module('lagrange', required_superuser=True, base=True)
-
-
-@lagrange.command()
-async def _(msg: Bot.MessageSession):
-    await msg.finish(f'Keepalive: {str(Temp.data.get("lagrange_keepalive", "None"))}\n'
-                     f'Status: {str(Temp.data.get("lagrange_status", "None"))}\n'
-                     f'Groups: {str(Temp.data.get("lagrange_available_groups", "None"))}')

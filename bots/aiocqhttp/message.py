@@ -12,7 +12,8 @@ import ujson as json
 from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import client_name, qq_frame_type
+from bots.aiocqhttp.info import client_name
+from bots.aiocqhttp.utils import qq_frame_type
 from config import Config
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
