@@ -33,9 +33,7 @@ async def set_alias(msg: Bot.MessageSession):
                 if not ph or '$' in ph or '}' in ph or '{' in ph:
                    return False
                 alias_noph = alias_noph.replace(f"${{{ph}}}", "")
-            if not alias_noph.strip():
-                return False
-            return True
+            return alias_noph.strip()
 
         if not (check_valid_placeholder(alias) and check_valid_placeholder(command)):
                 await msg.finish(msg.locale.t("core.message.alias.add.invalid_placeholder"))

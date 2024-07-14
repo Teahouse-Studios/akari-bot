@@ -15,4 +15,4 @@ def qq_frame_type() -> str:
     elif frame_type in mirai_lst:
         return 'mirai'
     else:
-        return None
+        return ''

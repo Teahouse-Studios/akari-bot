@@ -93,12 +93,6 @@ async def check_job_queue():
                 except Exception:
                     Logger.error(traceback.format_exc())
                     return_val(tsk, {'send': False})
-            if tsk.action == 'lagrange_keepalive':
-                Temp.data['lagrange_keepalive'] = datetime.now().timestamp()
-                return_val(tsk, {})
-            if tsk.action == 'lagrange_available_groups':
-                Temp.data['lagrange_available_groups'] = args
-                return_val(tsk, {})
 
         except Exception as e:
             return_val(tsk, {'traceback': traceback.format_exc()}, status=False)

@@ -27,13 +27,6 @@ EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else F
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
-lagrange_account = str(Config("lagrange_account", cfg_type=int))
-
-
-@Scheduler.scheduled_job(IntervalTrigger(seconds=20))
-async def check_lagrange_alive():
-    if 'lagrange_keepalive' in Temp.data:
-        Temp.data['lagrange_status'] = (datetime.now().timestamp() - Temp.data['lagrange_keepalive']) < 20
 
 
 @bot.on_startup
@@ -55,8 +48,6 @@ async def message_handler(event: Event):
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session', True):
                 return await bot.send(event, Locale(default_locale).t('qq.message.disable_temp_session'))
-    if event.user_id == lagrange_account:
-        return
     if event.user_id in ignore_ids:
         return
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)

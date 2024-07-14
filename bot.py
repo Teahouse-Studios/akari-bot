@@ -25,8 +25,8 @@ bots_required_configs = {
         'matrix_homeserver',
         'matrix_user',
         'matrix_device_id',
-        'matrix_token'],
-    'lagrange': ['lagrange_host']}
+        'matrix_token']
+    }
 
 
 class RestartBot(Exception):
