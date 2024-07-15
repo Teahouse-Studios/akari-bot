@@ -38,7 +38,7 @@ async def init_async(start_scheduler=True) -> None:
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
-    await check_web_render()
+    asyncio.create_task(check_web_render())
     Logger.info(f'Hello, {bot_name}!')
 
 
