@@ -199,4 +199,4 @@ async def _(msg: Bot.MessageSession):
                                 if get_section:
                                     await msg.send_message(Image(get_section))
 
-    await asyncio.create_task(bgtask())
+    asyncio.create_task(bgtask())

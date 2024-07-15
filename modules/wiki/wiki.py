@@ -412,10 +412,10 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
                                       lang=lang)
 
-        await asyncio.create_task(infobox())
-        await asyncio.create_task(section())
-        await asyncio.create_task(image_and_voice())
-        await asyncio.create_task(wait_confirm())
+        asyncio.create_task(infobox())
+        asyncio.create_task(section())
+        asyncio.create_task(image_and_voice())
+        asyncio.create_task(wait_confirm())
     else:
         return {'msg_list': msg_list, 'web_render_list': render_infobox_list, 'dl_list': dl_list,
                 'wait_list': wait_list, 'wait_msg_list': wait_msg_list}
