@@ -8,9 +8,9 @@ def qq_frame_type() -> str:
     shamrock_lst = ['shamrock', 'openshamrock', ]
     mirai_lst = ['mirai', 'gocq', 'gocqhttp', 'go-cqhttp', ]
 
-    if frame_type in ntqq_lst:
+    if frame_type in ntqq_lst or Config('use_llonebot', False):
         return 'ntqq'
-    elif frame_type in shamrock_lst:
+    elif frame_type in shamrock_lst or Config('use_shamrock', False):
         return 'shamrock'
     elif frame_type in mirai_lst:
         return 'mirai'

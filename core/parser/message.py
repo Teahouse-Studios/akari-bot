@@ -167,8 +167,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行
     :return: 无返回
     """
-    identify_str = f'[{msg.target.sender_id}{
-        f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
+    identify_str = f'[{msg.target.sender_id}{f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
     limited_action = 'touch' if qq_frame_type() == 'shamrock' else 'poke'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
