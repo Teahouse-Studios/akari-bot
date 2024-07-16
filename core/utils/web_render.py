@@ -45,10 +45,7 @@ async def check_web_render():
     else:
         WebRender.local = True
         WebRender.status = True
-    if IP.country == 'China':
-        ping_url = 'http://www.baidu.com/'
-    else:
-        ping_url = 'http://www.google.com/'
+    ping_url = 'http://www.bing.com'
     if WebRender.status:
         try:
             Logger.info('[Webrender] Checking Webrender status...')
