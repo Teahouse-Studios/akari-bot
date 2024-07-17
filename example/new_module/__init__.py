@@ -27,7 +27,7 @@ async def _(msg: Bot.MessageSession):
     #  <<< Reply me!
     #  >>> Hello World! >> [Reply me!]
     #  <<< Hello World!
-    s = await msg.wait_reply('Send a word')
+    s = await msg.wait_reply('Reply me!')
     await s.send_message(s.as_display())
 
 
