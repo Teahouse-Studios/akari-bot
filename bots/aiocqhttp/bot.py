@@ -50,6 +50,7 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.message.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
+    
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
     if filter_msg:
         match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
