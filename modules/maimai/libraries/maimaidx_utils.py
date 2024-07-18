@@ -24,23 +24,18 @@ sd_plate_conversion = {
     '檄': 'maimai GreeN PLUS',
     '橙': 'maimai ORANGE',
     '暁': 'maimai ORANGE PLUS',
-    '晓': 'maimai ORANGE PLUS',
     '桃': 'maimai PiNK',
     '櫻': 'maimai PiNK PLUS',
-    '樱': 'maimai PiNK PLUS',
     '紫': 'maimai MURASAKi',
     '菫': 'maimai MURASAKi PLUS',
-    '堇': 'maimai MURASAKi PLUS',
     '白': 'maimai MiLK',
     '雪': 'MiLK PLUS',
     '輝': 'maimai FiNALE',
-    '辉': 'maimai FiNALE'
 }
 
 dx_plate_conversion = {
     '熊': 'maimai でらっくす',
     '華': 'maimai でらっくす',
-    '华': 'maimai でらっくす',
     '爽': 'maimai でらっくす Splash',
     '煌': 'maimai でらっくす Splash',
     '宙': 'maimai でらっくす UNiVERSE',
@@ -48,7 +43,6 @@ dx_plate_conversion = {
     '祭': 'maimai でらっくす FESTiVAL',
     '祝': 'maimai でらっくす FESTiVAL',
     '双': 'maimai でらっくす BUDDiES',
-    '雙': 'maimai でらっくす BUDDiES',
 }
 
 grade_conversion = {
