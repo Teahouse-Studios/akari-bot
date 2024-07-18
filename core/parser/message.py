@@ -4,10 +4,6 @@ import re
 import traceback
 from datetime import datetime
 
-from aiocqhttp import NetworkError
-from tenacity import RetryError
-
-
 from bots.aiocqhttp.utils import qq_frame_type
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
@@ -446,9 +442,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
-                    if "timeout" in str(e).lower():
+                    if "timeout" in str(e).lower().replace(' ',''):
+                        timeout = True
                         errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
                     else:
+                        timeout = False
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                     if Config('bug_report_url', cfg_type=str):
@@ -456,7 +454,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                       url=str(Url(Config('bug_report_url', cfg_type=str))))
                     await msg.send_message(errmsg)
 
-                    if "timeout" not in str(e).lower() and report_targets:
+                    if not timeout and report_targets:
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
@@ -566,9 +564,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
-                            if "timeout" in str(e).lower():
+                            if "timeout" in str(e).lower().replace(' ',''):
+                                timeout = True
                                 errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
                             else:
+                                timeout = False
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                             if Config('bug_report_url', cfg_type=str):
@@ -576,7 +576,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                               url=str(Url(Config('bug_report_url', cfg_type=str))))
                             await msg.send_message(errmsg)
                     
-                            if "timeout" not in str(e).lower() and report_targets:
+                            if not timeout and report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
                                         await f.send_direct_message(
