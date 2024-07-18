@@ -561,7 +561,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:
-                            await tos_abuse_warning(msg, str(e))\
+                            await tos_abuse_warning(msg, str(e))
 
                         except Exception as e:
                             tb = traceback.format_exc()
