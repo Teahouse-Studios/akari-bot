@@ -24,7 +24,7 @@ jobs:
           pip install requests
 
       - name: Generate compressed JSON
-        run: python scripts/fetch_emojimix_data.py
+        run: python .github/scripts/fetch_emojimix_data.py
 
       - name: Compare files
         id: compare
@@ -42,7 +42,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add ./assets/emojimix/emoji_data.json
-          git commit -m "Update emoji data [skip ci]"
+          git commit -m "Update emojimix data [skip ci]"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
