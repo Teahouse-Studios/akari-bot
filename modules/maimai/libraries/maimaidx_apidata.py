@@ -1,6 +1,7 @@
 import os
 import traceback
 from typing import Optional
+from urllib.parse import urlencode
 
 import ujson as json
 from langconv.converter import LanguageConverter
@@ -8,10 +9,13 @@ from langconv.language.zh import zh_cn
 
 from config import Config
 from core.builtins import Bot, Image, MessageChain, Plain
+from core.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.http import download, get_url, post_url
 from core.utils.text import isint
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
+
+DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
 assets_dir = os.path.abspath('./assets/maimai/')
@@ -170,7 +174,49 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                 return None
 
 
-async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
+async def get_total_record_v2(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
+    if DEVELOPER_TOKEN:
+        cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
+        url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/records?{urlencode(payload)}"
+        try:
+            await get_total_record_v1(msg, payload, utage)
+            data = await get_url(url,
+                                 status_code=200,
+                                 headers={'Content-Type': 'application/json',
+                                          'accept': '*/*',
+                                          'Developer-Token': DEVELOPER_TOKEN},
+                                 fmt='json')
+            if data:
+                with open(cache_path, 'w') as f:
+                    json.dump(data, f)
+            if not utage:
+                data = {'records': [d for d in data['records'] if d.get('song_id', 0) < 100000]}  # 过滤宴谱
+            return data
+        except ValueError as e:
+            if str(e).startswith('400'):
+                if 'token' in str(e):
+                    raise ConfigValueError(msg.locale.t('error.config.invalid'))
+                elif "qq" in payload:
+                    await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+                else:
+                    await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+        except Exception:
+            Logger.error(traceback.format_exc())
+            if os.path.exists(cache_path):
+                try:
+                    with open(cache_path, 'r') as f:
+                        data = json.load(f)
+                    await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                    if not utage:
+                        data = {'records': [d for d in data['records'] if d.get('song_id', 0) < 100000]}  # 过滤宴谱
+                    return data
+                except Exception:
+                    return None
+    else:
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
+
+
+async def get_total_record_v1(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
     payload['version'] = versions
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"

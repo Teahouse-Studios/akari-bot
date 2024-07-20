@@ -16,6 +16,7 @@ matrix_device_id =
 matrix_token =
 matrix_megolm_backup_passphrase =
 curseforge_api_key =
+diving_fish_developer_token =
 exchange_rate_api_key =
 openai_api_key =
 osu_api_key =

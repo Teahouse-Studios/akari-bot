@@ -6,9 +6,10 @@ from datetime import datetime
 import ujson as json
 
 from core.builtins import Bot, MessageChain, Plain
+from core.exceptions import ConfigValueError
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
-from .maimaidx_apidata import get_record, get_total_record, get_plate
+from .maimaidx_apidata import get_record, get_total_record_v2, get_total_record_v1, get_plate
 from .maimaidx_music import TotalList
 
 SONGS_PER_PAGE = 30
@@ -349,41 +350,50 @@ async def get_rank(msg: Bot.MessageSession, payload: dict):
 
 
 async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str) -> str:
-    res = await get_total_record(msg, payload, utage=True)  # 获取用户成绩信息
-    verlist = res["verlist"]
+    # 获取用户成绩信息
+    try:
+        res = await get_total_record_v2(msg, payload, utage=True)
+        records = res["records"]
+    except ConfigValueError:
+        res = await get_total_record_v1(msg, payload, utage=True)
+        records = res["verlist"]
 
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music['level']))}  # 获取歌曲难度列表
 
-    for entry in verlist:
-        sid = entry["id"]
-        achievements = entry["achievements"]
-        fc = entry["fc"]
-        fs = entry["fs"]
-        level_index = entry["level_index"]
-
-        if str(sid) == input_id:
+    for entry in records:
+        if str(entry.get("song_id", entry.get("id"))) == input_id:
+            achievements = entry["achievements"]
+            fc = entry["fc"]
+            fs = entry["fs"]
+            level_index = entry["level_index"]
             score_rank = next(
                 # 根据成绩获得等级
                 rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
             )
-
             combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
             sync_rank = sync_conversion.get(fs, "")  # Sync字典转换
+            dxscore = entry.get("dxScore", 0)
+            dxscore_max = sum(music['charts'][level_index]['notes']) * 3
 
-            level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
+            if "dxScore" in entry:
+                level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank, dxscore, dxscore_max))
+            else:
+                level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
     output_lines = []
     for level, scores in level_scores.items():  # 使用循环输出格式化文本
         if scores:
             output_lines.append(f"{diffs[level]} {music['level'][level]}")  # 难度字典转换
             for score in scores:
-                level, achievements, score_rank, combo_rank, sync_rank = score
+                level, achievements, score_rank, combo_rank, sync_rank, *dx = score
                 entry_output = f"{achievements:.4f} {score_rank}"
                 if combo_rank and sync_rank:
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
                     entry_output += f" {combo_rank}{sync_rank}"
+                if dx:
+                    entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
                 output_lines.append(entry_output)
         else:
             output_lines.append(
@@ -396,7 +406,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
     song_played = []
     song_remain = []
 
-    res = await get_total_record(msg, payload)  # 获取用户成绩信息
+    res = await get_total_record_v1(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
@@ -466,13 +476,19 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
 
 
 async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int) -> tuple[str, bool]:
+    # 获取用户成绩信息
+    try:
+        res = await get_total_record_v2(msg, payload)
+        records = res["records"]
+        dx_mode = True
+    except ConfigValueError:
+        res = await get_total_record_v1(msg, payload)
+        records = res["verlist"]
+        dx_mode = False
     player_data = await get_record(msg, payload)
 
-    res = await get_total_record(msg, payload)  # 获取用户成绩信息
-    verlist = res["verlist"]
-
     song_list = []
-    for song in verlist:
+    for song in records:
         if song['level'] == level:
             song_list.append(song)  # 将符合难度的成绩加入列表
 
@@ -481,13 +497,21 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
     page = max(min(int(page), total_pages), 1)
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
-            music = (await total_list.get()).by_id(str(s['id']))
+            if dx_mode:
+                music = (await total_list.get()).by_id(str(s['song_id']))
+                dxscore = s.get("dxScore", 0)
+                dxscore_max = sum(music['charts'][s['level_index']]['notes']) * 3
+            else:
+                music = (await total_list.get()).by_id(str(s['id']))
+
             output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {
                 music.ds[s['level_index']]} {s['achievements']:.4f}%"
             if s["fc"] and s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
             elif s["fc"] or s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
+            if dx_mode and dxscore and dxscore_max:
+                output += f" {dxscore}/{dxscore_max} {calc_dxstar(dxscore, dxscore_max)}"
             output_lines.append(output)
 
     outputs = '\n'.join(output_lines)
