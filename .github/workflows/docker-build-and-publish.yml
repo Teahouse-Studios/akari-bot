@@ -33,6 +33,10 @@ jobs:
 
   build-and-push-arm64:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        architecture: [arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
