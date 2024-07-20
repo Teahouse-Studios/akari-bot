@@ -179,7 +179,7 @@ async def get_total_record_v2(msg: Bot.MessageSession, payload: dict, utage: boo
         cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
         url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/records?{urlencode(payload)}"
         try:
-            await get_total_record_v1(msg, payload, utage)
+            await get_total_record_v1(msg, payload, utage)  # 调用v1以检查用户状态
             data = await get_url(url,
                                  status_code=200,
                                  headers={'Content-Type': 'application/json',
@@ -194,12 +194,7 @@ async def get_total_record_v2(msg: Bot.MessageSession, payload: dict, utage: boo
             return data
         except ValueError as e:
             if str(e).startswith('400'):
-                if 'token' in str(e):
-                    raise ConfigValueError(msg.locale.t('error.config.invalid'))
-                elif "qq" in payload:
-                    await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
-                else:
-                    await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+                raise ConfigValueError(msg.locale.t('error.config.invalid'))
         except Exception:
             Logger.error(traceback.format_exc())
             if os.path.exists(cache_path):
