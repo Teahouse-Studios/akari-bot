@@ -149,9 +149,9 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
-@chu.command('id <id> [<diff>] {{maimai.help.id}}',)
-@chu.command('song <song> [-d <diff>] {{maimai.help.song}}',
-             options_desc={'-d': '{maimai.help.option.d}'})
+@chu.command('id <id> [-c] {{maimai.help.id}}',)
+@chu.command('song <song> [-c] {{maimai.help.song}}',
+             options_desc={'-c': '{maimai.help.option.c}'})
 async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
@@ -160,39 +160,53 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         sid = song[2:]
         music = (await total_list.get()).by_id(sid)
     else:
-        song = song.replace("_", " ").strip().lower()
         music = (await total_list.get()).by_title(song)
 
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    getdiff = msg.parsed_msg.get('-d', False)
-    if getdiff:
-        diff = getdiff['<diff>']
-
-    if diff:
-        diff_index = get_diff(diff)  # diff_index 的结果可能为 0
-        if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
-            await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
-        chart = music['charts'][diff_index]
-        ds = music['ds'][diff_index]
-        level = music['level'][diff_index]
-        res = msg.locale.t(
-            "chunithm.message.song.diff",
-            diff=diff_label[diff_index],
-            level=level,
-            ds=ds,
-            combo=chart['combo'],
-            charter=chart['charter'])
-        await msg.finish(await get_info(music, Plain(res)))
+    if msg.parsed_msg.get('-c', False):
+        res = []
+        if len(music['ds']) == 6:
+            chart = music['charts'][5]
+            ds = music['ds'][5]
+            level = music['level'][5]
+            res.append(msg.locale.t(
+                "chunithm.message.song.chart",
+                diff='World\'s End',
+                level=level,
+                ds=ds,
+                combo=chart['combo'],
+                charter=chart['charter']))
+        else:
+            for diff in range(len(music['ds'])):
+                chart = music['charts'][diff]
+                ds = music['ds'][diff]
+                level = music['level'][diff]
+                res.append(msg.locale.t(
+                    "chunithm.message.song.chart",
+                    diff=diff_label[diff],
+                    level=level,
+                    ds=ds,
+                    combo=chart['combo'],
+                    charter=chart['charter']))
+        await msg.finish(await get_info(music, Plain('\n'.join(res))))
     else:
-        res = msg.locale.t(
-            "chunithm.message.song",
+        if len(music['ds']) == 6:
+            res = msg.locale.t(
+            "chunithm.message.song.worlds_end",
             artist=music['basic_info']['artist'],
             genre=music['basic_info']['genre'],
             bpm=music['basic_info']['bpm'],
-            version=music['basic_info']['from'],
-            level='/'.join((str(ds) for ds in music['ds'])))
+            version=music['basic_info']['from'])
+        else:
+            res = msg.locale.t(
+                "chunithm.message.song",
+                artist=music['basic_info']['artist'],
+                genre=music['basic_info']['genre'],
+                bpm=music['basic_info']['bpm'],
+                version=music['basic_info']['from'],
+                level='/'.join((str(ds) for ds in music['ds'])))
         await msg.finish(await get_info(music, Plain(res)))
 
 
