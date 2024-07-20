@@ -7,6 +7,7 @@ import ujson as json
 
 from core.builtins import Bot, MessageChain, Plain
 from core.exceptions import ConfigValueError
+from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from .maimaidx_apidata import get_record, get_total_record_v2, get_total_record_v1, get_plate
@@ -402,7 +403,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     return '\n'.join(output_lines)
 
 
-async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str, goal: str) -> tuple[str, bool]:
+async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, goal: str) -> tuple[str, bool]:
     song_played = []
     song_remain = []
 
@@ -413,13 +414,13 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
     if goal in scoreRank:
         achievement = achievementList[scoreRank.index(goal) - 1]  # 根据列表将输入评级转换为成绩分界线
         for song in verlist:
-            if song['level'] == process and song['achievements'] < achievement:  # 达成难度条件但未达成目标条件
+            if song['level'] == level and song['achievements'] < achievement:  # 达成难度条件但未达成目标条件
                 song_remain.append([song['id'], song['level_index']])  # 将剩余歌曲ID和难度加入目标列表
             song_played.append([song['id'], song['level_index']])  # 将已游玩歌曲ID和难度加入列表
     elif goal in comboRank:
         combo_index = comboRank.index(goal)  # 根据API结果字典转换
         for song in verlist:
-            if song['level'] == process and (
+            if song['level'] == level and (
                 (song['fc'] and combo_rank.index(
                     song['fc']) < combo_index) or not song['fc']):  # 达成难度条件但未达成目标条件
                 song_remain.append([song['id'], song['level_index']])  # 将剩余歌曲ID和难度加入目标列表
@@ -427,15 +428,15 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
     elif goal in syncRank:
         sync_index = syncRank.index(goal)  # 根据API结果字典转换
         for song in verlist:
-            if song['level'] == process and (
+            if song['level'] == level and (
                 (song['fs'] and sync_rank.index(
                     song['fs']) < sync_index) or not song['fs']):  # 达成难度条件但未达成目标条件
                 song_remain.append([song['id'], song['level_index']])  # 将剩余歌曲ID和难度加入目标列表
             song_played.append([song['id'], song['level_index']])  # 将已游玩歌曲ID和难度加入列表
-    for music in (await total_list.get()):  # 遍历歌曲列表
-        for i, lv in enumerate(music.level[2:]):
-            if lv == process and [int(music.id), i + 2] not in song_played:
-                song_remain.append([int(music.id), i + 2])  # 将未游玩歌曲ID和难度加入目标列表
+    for music in ((await total_list.get()).filter(level=level)):  # 遍历歌曲列表
+        for i in enumerate(music.level):
+            if i[1] == level and [int(music.id), i[0]] not in song_played:
+                song_remain.append([int(music.id), i[0]])  # 将未游玩歌曲ID和难度加入目标列表
 
     song_remain = sorted(song_remain, key=lambda i: int(i[1]))  # 根据难度排序结果
     song_remain = sorted(song_remain, key=lambda i: int(i[0]))  # 根据ID排序结果
@@ -449,7 +450,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
     get_img = False
     if len(song_remain) > 0:
         song_record = [[s['id'], s['level_index']] for s in verlist]
-        output += f"{msg.locale.t('maimai.message.process.last', process=process, goal=goal)}\n"
+        output += f"{msg.locale.t('maimai.message.process.last', level=level, goal=goal)}\n"
         for i, s in enumerate(sorted(songs, key=lambda i: i[3], reverse=True)):  # 显示剩余歌曲信息
             self_record = ''
             if [int(s[0]), s[-2]] in song_record:
@@ -466,25 +467,18 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, process: str
             if i == SONGS_PER_PAGE - 1:
                 break
         if len(song_remain) > SONGS_PER_PAGE:
-            output += msg.locale.t('maimai.message.process', song_remain=len(song_remain), process=process, goal=goal)
+            output += msg.locale.t('maimai.message.process', song_remain=len(song_remain), level=level, goal=goal)
         if len(song_remain) > SONGS_NEED_IMG:
             get_img = True
     else:
-        await msg.finish(msg.locale.t('maimai.message.process.completed', process=process, goal=goal))
+        await msg.finish(msg.locale.t('maimai.message.process.completed', level=level, goal=goal))
 
     return output, get_img
 
 
 async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int) -> tuple[str, bool]:
-    # 获取用户成绩信息
-    try:
-        res = await get_total_record_v2(msg, payload)
-        records = res["records"]
-        dx_mode = True
-    except ConfigValueError:
-        res = await get_total_record_v1(msg, payload)
-        records = res["verlist"]
-        dx_mode = False
+    res = await get_total_record_v1(msg, payload)  # 获取用户成绩信息
+    records = res["verlist"]
     player_data = await get_record(msg, payload)
 
     song_list = []
@@ -497,12 +491,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
     page = max(min(int(page), total_pages), 1)
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
-            if dx_mode:
-                music = (await total_list.get()).by_id(str(s['song_id']))
-                dxscore = s.get("dxScore", 0)
-                dxscore_max = sum(music['charts'][s['level_index']]['notes']) * 3
-            else:
-                music = (await total_list.get()).by_id(str(s['id']))
+            music = (await total_list.get()).by_id(str(s['id']))
 
             output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {
                 music.ds[s['level_index']]} {s['achievements']:.4f}%"
@@ -510,8 +499,6 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
                 output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
             elif s["fc"] or s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
-            if dx_mode and dxscore and dxscore_max:
-                output += f" {dxscore}/{dxscore_max} {calc_dxstar(dxscore, dxscore_max)}"
             output_lines.append(output)
 
     outputs = '\n'.join(output_lines)

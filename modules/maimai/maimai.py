@@ -384,6 +384,10 @@ async def query_plate(msg, plate, username):
 
 @mai.command('process <level> <goal> [<username>] {{maimai.help.process}}')
 async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
+    await query_process(msg, level, goal, username)
+
+
+async def query_process(msg, level, goal, username):
     goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
                  "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
     level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
@@ -400,13 +404,8 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
     else:
         payload = {'username': username}
 
-    if level in level_list:
-        level_num = int(level.split('+')[0])
-        if level_num < 8:
-            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
-    else:
+    if level not in level_list:
         await msg.finish(msg.locale.t("maimai.message.level_invalid"))
-
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.goal_invalid"))
 

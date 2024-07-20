@@ -5,7 +5,7 @@ from core.component import module
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info
-from .maimai import query_plate, query_song_info
+from .maimai import query_plate, query_song_info, query_process
 
 total_list = TotalList()
 
@@ -69,6 +69,14 @@ async def _(msg: Bot.MessageSession):
     songname = msg.matched_msg.groups()[0]
     username = msg.matched_msg.groups()[1]
     await query_song_info(msg, songname, username)
+
+
+@mai_regex.regex(re.compile(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
+async def _(msg: Bot.MessageSession):
+    level = msg.matched_msg.groups()[0]
+    goal = msg.matched_msg.groups()[1]
+    username = msg.matched_msg.groups()[2]
+    await query_process(msg, level, goal, username)
 
 
 @mai_regex.regex(re.compile(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
