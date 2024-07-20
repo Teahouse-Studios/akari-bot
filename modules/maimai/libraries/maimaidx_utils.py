@@ -7,7 +7,6 @@ import ujson as json
 
 from core.builtins import Bot, MessageChain, Plain
 from core.exceptions import ConfigValueError
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from .maimaidx_apidata import get_record, get_total_record_v2, get_total_record_v1, get_plate
