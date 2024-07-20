@@ -358,6 +358,9 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
         res = await get_total_record_v1(msg, payload, utage=True)
         records = res["verlist"]
 
+    if int(input_id) >= 100000:
+        await msg.finish(msg.locale.t("maimai.message.info.utage"))
+
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music['level']))}  # 获取歌曲难度列表
 
