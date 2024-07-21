@@ -243,25 +243,25 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.target.target_from == 'QQ|Group':
+            if self.msg.target.target_from == 'QQ|Group':  # wtf onebot 11
                 if qq_frame_type() == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
                                           emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
-                elif qq_frame_type() == 'lagrange':
-                    await bot.call_action('group_poke', group_id=self.msg.session.target,
-                                          user_id=self.msg.session.sender)
                 else:
                     if self.msg.session.sender in last_send_typing_time:
                         if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                             return
                     last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
-                    if qq_frame_type() == 'mirai':
-                        typing_msg = f'[CQ:poke,qq={self.msg.session.sender}]'
-                    elif qq_frame_type() == 'shamrock':
-                        typing_msg = f'[CQ:touch,id={self.msg.session.sender}]'
-                    await bot.send_group_msg(group_id=self.msg.session.target,
-                                             message=typing_msg)
 
+                    if qq_frame_type() == 'lagrange':
+                        await bot.call_action('group_poke', group_id=self.msg.session.target,
+                                              user_id=self.msg.session.sender)
+                    elif qq_frame_type() == 'shamrock':
+                        await bot.send_group_msg(group_id=self.msg.session.target,
+                                                 message=f'[CQ:touch,id={self.msg.session.sender}]')
+                    elif qq_frame_type() == 'mirai':
+                        await bot.send_group_msg(group_id=self.msg.session.target,
+                                                 message=f'[CQ:poke,qq={self.msg.session.sender}]')
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
