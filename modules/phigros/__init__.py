@@ -38,6 +38,9 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         if bind:
             await msg.send_message(msg.locale.t("phigros.message.bind.success",
                                                                 username=get_user_info['nickname']), quote=False)
+        else:
+            await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
+            
 
 
 @phi.command('unbind {{phigros.help.unbind}}')
