@@ -18,8 +18,6 @@ phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
 
 @phi.command('bind <sessiontoken> {{phigros.help.bind}}')
 async def _(msg: Bot.MessageSession, sessiontoken: str):
-    need_revoke = False
-    send_msg = []
     if msg.target.target_from in [
         'Discord|Channel',
         'KOOK|Group',
@@ -27,21 +25,19 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'QQ|Group',
         'QQ|Guild',
         'Telegram|Group',
-            'Telegram|Supergroup',]:
-        send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False))
-        need_revoke = True
+        'Telegram|Supergroup',]:
+        await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False)
+        deleted = msg.delete()
+        if not deleted:
+            await msg.send_message(msg.locale.t("phigros.message.bind.delete_failed"))
     headers = p_headers.copy()
     headers['X-LC-Session'] = sessiontoken
     get_user_info = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me', headers=headers, fmt='json')
     if 'nickname' in get_user_info:
         bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=sessiontoken, username=get_user_info['nickname'])
         if bind:
-            send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.success",
-                                                                username=get_user_info['nickname']), quote=False))
-        if need_revoke:
-            await msg.sleep(15)
-            for i in send_msg:
-                await i.delete()
+            await msg.send_message(msg.locale.t("phigros.message.bind.success",
+                                                                username=get_user_info['nickname']), quote=False)
 
 
 @phi.command('unbind {{phigros.help.unbind}}')
