@@ -27,9 +27,9 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'Telegram|Group',
         'Telegram|Supergroup',]:
         await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False)
-        deleted = msg.delete()
+        deleted = await msg.delete()
         if not deleted:
-            await msg.send_message(msg.locale.t("phigros.message.bind.delete_failed"))
+            await msg.send_message(msg.locale.t("phigros.message.bind.delete_failed"), quote=False)
     headers = p_headers.copy()
     headers['X-LC-Session'] = sessiontoken
     get_user_info = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me', headers=headers, fmt='json')
