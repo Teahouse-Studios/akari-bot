@@ -176,10 +176,10 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
 
 async def get_total_record_v2(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
     if DEVELOPER_TOKEN:
-        cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
+        cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
         url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/records?{urlencode(payload)}"
         try:
-            await get_total_record_v1(msg, payload, utage)  # 调用v1以检查用户状态
+            await get_record(msg, payload)  # 调用以检查用户状态
             data = await get_url(url,
                                  status_code=200,
                                  headers={'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ async def get_total_record_v2(msg: Bot.MessageSession, payload: dict, utage: boo
 
 async def get_total_record_v1(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
     payload['version'] = versions
-    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_global_record.json")
+    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record_v1.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
         data = await post_url(url,
