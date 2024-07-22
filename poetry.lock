@@ -1795,18 +1795,18 @@ text-helpers = ["chardet (>=5.1.0,<6.0.0)"]
 
 [[package]]
 name = "langconv"
-version = "0.2.0"
-description = ""
+version = "0.3.0"
+description = "A Python library for conversion between Traditional and Simplified Chinese, inspired by MediaWiki's LanguageConverter."
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "langconv-0.2.0-py3-none-any.whl", hash = "sha256:aa4dce595a8933ba5ff53e3e71df62775eb4a5f96f022af8fef61005c25ea572"},
-    {file = "langconv-0.2.0.tar.gz", hash = "sha256:8d6e86f88de3e08d4c5341eb45d3c1df359169a101f680c68a22f4f4f86bd7f5"},
+    {file = "langconv-0.3.0-py3-none-any.whl", hash = "sha256:dfd3484e0373a07ed8271ab60293648e9d216ef460c58ff7dda80315292d0566"},
+    {file = "langconv-0.3.0.tar.gz", hash = "sha256:816bedf81db368a410959293a31aeebe4cd75de516427b50370727003f3bd3ce"},
 ]
 
 [package.dependencies]
-attrs = ">=23.1.0,<24.0.0"
-iso639-lang = ">=2.1.0,<3.0.0"
+attrs = ">=23.2.0,<24.0.0"
+iso639-lang = ">=2.2.3,<3.0.0"
 
 [[package]]
 name = "langsmith"
@@ -4379,4 +4379,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "79c12aacd5b6306efe95876f277b955999fbfe37d881a0a953435751e30f435e"
+content-hash = "7ff37fce8e2a69a9ee5a8cd677922e41f6ba1621285e55227f8b79e46c610741"
