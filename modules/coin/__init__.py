@@ -5,7 +5,6 @@ from core.builtins import Bot
 from core.component import module
 from core.exceptions import ConfigValueError
 from core.utils.text import isint
-from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = Config('coin_limit', 10000)
 FACE_UP_RATE = Config('coin_faceup_rate', 4997)  # n/10000
@@ -14,10 +13,10 @@ FACE_DOWN_RATE = Config('coin_facedown_rate', 4997)
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 
-@coin.command('[<amount>] {{coin.help}}')
 @coin.command()
+@coin.command('[<amount>] {{coin.help}}')
 async def _(msg: Bot.MessageSession, amount: int = 1):
-    await msg.finish(await flipCoins(amount, msg))
+    await msg.finish(await flip_coins(amount, msg))
 
 
 @coin.regex(r"[丢抛]([^个|個|枚]*)?[个個枚]?硬[币幣]", desc='{coin.help.regex.desc}')
@@ -26,15 +25,10 @@ async def _(message: Bot.MessageSession):
     count = groups[0] if groups[0] else '1'
     if isint(count):
         count = int(count)
-    else:
-        try:
-            count = Zh2Int(count)
-        except ValueError as ex:
-            await message.finish(message.locale.t("error") + str(ex))
-    await message.finish(await flipCoins(count, message))
+        await message.finish(await flip_coins(count, message))
 
 
-async def flipCoins(count: int, msg):
+async def flip_coins(count: int, msg):
     if not all([FACE_UP_RATE + FACE_DOWN_RATE <= MAX_COIN_NUM, FACE_UP_RATE >= 0,
                 FACE_DOWN_RATE >= 0, MAX_COIN_NUM > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))

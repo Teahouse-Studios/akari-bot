@@ -22,7 +22,7 @@ from database import BotDBUtil
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
 report_targets = Config('report_targets', [])
-TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
+TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300) if Config('tos_temp_ban_time', 300) > 0 else 300
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -149,7 +149,6 @@ def transform_alias_byregex(msg, command: str):
             Logger.debug(msg.prefixes[0] + result)
             return msg.prefixes[0] + result
 
-    Logger.debug(command)
     return command
 
 
@@ -252,9 +251,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()
 
-            mute = False
-            if command_first_word == 'mute':
-                mute = True
+            mute = True if command_first_word == 'mute' else False
 
             in_mute = msg.muted
             if in_mute and not mute:
