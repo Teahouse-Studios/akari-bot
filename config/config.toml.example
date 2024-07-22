@@ -44,6 +44,7 @@ wiki_whitelist_url = "https://s.wd-ljt.com/botwhitelist"
 web_render_local =
 qq_account = 2314163511
 qq_host = "127.0.0.1:11451"
+qq_frame_type = "go-cqhttp"
 qq_disable_temp_session = false
 qq_allow_approve_friend = true
 qq_allow_approve_group_invite = true
