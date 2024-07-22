@@ -1,7 +1,6 @@
 {
     "dice.help": "投擲指定骰子。",
     "dice.help.desc": "隨機骰子，可指定投骰次數與 DC 判斷判定。",
-    "dice.help.regex.desc": "(扔|投|擲|丟)<個數>個[<面數>面]骰子[<次數>次] 投擲指定骰子。",
     "dice.help.rule": "修改 DC 的判定規則。",
     "dice.help.set": "設定預設骰子面數。",
     "dice.message.dc.check": "▷ 判定成功數量：${success}  判定失敗數量：${failed}",
