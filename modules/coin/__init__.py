@@ -19,15 +19,6 @@ async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flip_coins(amount, msg))
 
 
-@coin.regex(r"[丢抛]([^个|個|枚]*)?[个個枚]?硬[币幣]", desc='{coin.help.regex.desc}')
-async def _(message: Bot.MessageSession):
-    groups = message.matched_msg.groups()
-    count = groups[0] if groups[0] else '1'
-    if isint(count):
-        count = int(count)
-        await message.finish(await flip_coins(count, message))
-
-
 async def flip_coins(count: int, msg):
     if not all([FACE_UP_RATE + FACE_DOWN_RATE <= MAX_COIN_NUM, FACE_UP_RATE >= 0,
                 FACE_DOWN_RATE >= 0, MAX_COIN_NUM > 0]):

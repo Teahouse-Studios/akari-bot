@@ -10,15 +10,6 @@ async def _(msg: Bot.MessageSession, dices: str, dc=None):
     await msg.finish(await process_expression(msg, dices, dc))
 
 
-@dice.regex(r"[扔投掷擲丢]([0-9]*)?[个個]([0-9]*面)?骰子?([0-9]*次)?", desc="{dice.help.regex.desc}")
-async def _(msg: Bot.MessageSession):
-    groups = msg.matched_msg.groups()
-    default_type = msg.data.options.get('dice_default_sides') if msg.data.options.get('dice_default_sides') else '6'
-    dice_sides = groups[1][:-1] if groups[1] else default_type
-    roll_time = groups[2][:-1] if groups[2] else '1'
-    await msg.finish(await process_expression(msg, f'{roll_time}#{groups[0]}D{dice_sides}', None))
-
-
 @dice.command('set <sides> {{dice.help.set}}', required_admin=True)
 async def _(msg: Bot.MessageSession, sides: int):
     if sides > 1:

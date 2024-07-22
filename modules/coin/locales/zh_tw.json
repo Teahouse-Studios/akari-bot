@@ -1,7 +1,6 @@
 {
     "coin.help": "拋任意枚硬幣。",
     "coin.help.desc": "拋硬幣。",
-    "coin.help.regex.desc": "(丟|拋)[<count>(個|枚)]硬幣",
     "coin.message.all.head": "…全是正面！",
     "coin.message.all.prompt": "你抛了 ${count} 枚硬幣…",
     "coin.message.all.stand": "…全部立起來了？！",
