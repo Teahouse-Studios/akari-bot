@@ -78,9 +78,10 @@ async def get_target(target_id: str):
     wiki_headers = wiki_target.get_headers()
     wiki_start_wiki = wiki_target.get_start_wiki()
     wiki_interwikis = wiki_target.get_interwikis()
+    wiki_redlink = target.get_option('wiki_redlink')
 
     return {
-        'target_id': target_id,
+        'targetId': target_id,
         'enabledModules': enabled_modules,
         'isMuted': is_muted,
         'customAdmins': custom_admins,
@@ -94,6 +95,7 @@ async def get_target(target_id: str):
         'diceDCReversed': dice_dc_reversed,
         'diceDefaultFace': dice_default_sides,
         'wordleDarkTheme': wordle_dark_theme,
+        'wikiRedlink': wiki_redlink,
         'wiki': {
             'headers': wiki_headers,
             'startWiki': wiki_start_wiki,
