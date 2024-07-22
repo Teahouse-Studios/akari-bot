@@ -1,7 +1,6 @@
 {
     "dice.help": "Roll the specified dice.",
     "dice.help.desc": "Random dice. You can specify the number of dice rolls and DC check.",
-    "dice.help.regex.desc": "(扔|投|掷|丢)<counts>个[<sides>面]骰子[<times>]次 Roll the specified dice.",
     "dice.help.rule": "Modify the check rule of DC.",
     "dice.help.set": "Set the default sides number of dice.",
     "dice.message.dc.check": "▷ Success: ${success}  Failure: ${failed}",
