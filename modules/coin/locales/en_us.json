@@ -1,7 +1,6 @@
 {
     "coin.help": "Toss any number of coins.",
     "coin.help.desc": "Toss coin.",
-    "coin.help.regex.desc": "(丢|抛)[<count>(个|枚)]硬币",
     "coin.message.all.head": "They are all heads!",
     "coin.message.all.prompt": "You toss ${count} coins...",
     "coin.message.all.stand": "ALL STANDING UP?!",
