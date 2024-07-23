@@ -23,6 +23,14 @@ class EmojimixGenerator:
 
 
     @staticmethod
+    def str2emoji(emoji_str):
+        parts = emoji_str.split('-')
+        emoji_chars = [chr(int(part, 16)) for part in parts]
+        emoji = ''.join(emoji_chars)
+        return emoji
+
+
+    @staticmethod
     def make_emoji_tuple(emoji1: str, emoji2: str) -> Tuple[str, str]:
         emoji_code1 = '-'.join(f'{ord(char):x}' for char in emoji1)
         emoji_code2 = '-'.join(f'{ord(char):x}' for char in emoji2)
@@ -116,7 +124,7 @@ async def _(msg: Bot.MessageSession):
     Logger.debug(str(combo))
     result = mixer.mix_emoji(combo)
     Logger.debug(result)
-    await msg.finish(Image(result))
+    await msg.finish([Plain(f"{mixer.str2emoji(combo[0])} + {mixer.str2emoji(combo[1])}"), Image(result)])
 
 
 @emojimix.handle('<emoji1> [<emoji2>] {{emojimix.help}}')
@@ -140,7 +148,7 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
     result = mixer.mix_emoji(combo)
     Logger.debug(result)
     if result:
-        await msg.finish(Image(result))
+        await msg.finish([Plain(f"{mixer.str2emoji(combo[0])} + {mixer.str2emoji(combo[1])}"), Image(result)])
     else:
         await msg.finish(msg.locale.t("emojimix.message.not_found"))
 
