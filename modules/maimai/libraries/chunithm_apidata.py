@@ -25,16 +25,18 @@ async def get_info(music: Music, *details) -> MessageChain:
     return info
 
 
-async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
+async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f'{msg.target.sender_id.replace('|', '_')}_maimai_record.json')
     url = f"https://www.diving-fish.com/api/chunithmprober/query/player"
+    if 'username' in payload:
+        use_cache = False
     try:
         data = await post_url(url,
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
-        if data:
+        if use_cache and data:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data
@@ -54,7 +56,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
             raise e
     except Exception as e:
         Logger.error(traceback.format_exc())
-        if os.path.exists(cache_path):
+        if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
                     data = json.load(f)

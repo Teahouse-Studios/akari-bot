@@ -139,6 +139,8 @@ async def search_by_alias(input_: str) -> list:
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
+    if 'username' in payload:
+        use_cache = False
     try:
         data = await post_url(url,
                               data=json.dumps(payload),
@@ -146,7 +148,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json'
                               )
-        if data and use_cache:
+        if use_cache and data:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data
@@ -180,6 +182,8 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
     if DEVELOPER_TOKEN:
         cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
         url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
+        if 'username' in payload:
+            use_cache = False
         try:
             if 'username' in payload:
                 await get_record(msg, payload, use_cache=False)
@@ -191,7 +195,7 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
                                           'accept': '*/*',
                                           'Developer-Token': DEVELOPER_TOKEN},
                                  fmt='json')
-            if data and use_cache:
+            if use_cache and data:
                 if os.path.exists(cache_path):
                     with open(cache_path, 'r') as f:
                         try:
@@ -222,16 +226,18 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
 
 async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool = False, 
                            use_cache: bool = True) -> Optional[str]:
-    payload['version'] = versions
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
+    if 'username' in payload:
+        use_cache = False
+    payload['version'] = versions
     try:
         data = await post_url(url,
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
-        if data and use_cache:
+        if use_cache and data:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         if not utage:
@@ -270,13 +276,15 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
 async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_{version}_plate.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
+    if 'username' in payload:
+        use_cache = False
     try:
         data = await post_url(url,
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
-        if data:
+        if use_cache and data:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data

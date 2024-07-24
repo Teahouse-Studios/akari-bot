@@ -231,10 +231,7 @@ def calc_dxstar(dxscore: int, dxscore_max: int) -> str:
 
 
 async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> MessageChain:
-    if 'username' in payload:
-        data = await get_record(msg, payload, use_cache=False)
-    else:
-        data = await get_record(msg, payload)
+    data = await get_record(msg, payload)
 
     dx_charts = data["charts"]["dx"]
     sd_charts = data["charts"]["sd"]
@@ -429,10 +426,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     song_played = []
     song_remain = []
 
-    if 'username' in payload:
-        res = await get_total_record(msg, payload, use_cache=False)
-    else:
-        res = await get_total_record(msg, payload)
+    res = await get_total_record(msg, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
@@ -502,14 +496,10 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
 
 
 async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int) -> tuple[str, bool]:
-    if 'username' in payload:
-        res = await get_total_record(msg, payload, use_cache=False)
-        player_data = await get_record(msg, payload, use_cache=False)
-    else:
-        res = await get_total_record(msg, payload)
-        player_data = await get_record(msg, payload)
+    res = await get_total_record(msg, payload)
     records = res["verlist"]
 
+    player_data = await get_record(msg, payload)
     song_list = []
     for song in records:
         if song['level'] == level:
@@ -574,10 +564,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) 
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    if 'username' in payload:
-        res = await get_plate(msg, payload, use_cache=False)
-    else:
-        res = await get_plate(msg, payload)
+    res = await get_plate(msg, payload)
     verlist = res["verlist"]
 
     if goal in ['將', '者']:
