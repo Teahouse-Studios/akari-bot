@@ -5,6 +5,7 @@ from typing import Optional, Dict, List, Tuple
 import ujson as json
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
+from core.builtins import Bot
 from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_apidata import get_record
 from .maimaidx_utils import compute_rating, calc_dxstar
@@ -291,8 +292,8 @@ class DrawBest(object):
         return self.img
 
 
-async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
-    resp = await get_record(msg, payload)
+async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Tuple[Optional[Image.Image], bool]:
+    resp = await get_record(msg, payload, use_cache)
     sd_best = BestList(35)
     dx_best = BestList(15)
     dx: List[Dict] = resp["charts"]["dx"]

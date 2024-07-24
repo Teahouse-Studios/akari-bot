@@ -40,7 +40,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
@@ -53,9 +53,6 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
-            raise e
-    except Exception as e:
-        Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:

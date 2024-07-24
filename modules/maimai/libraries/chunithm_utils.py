@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.builtins import Plain
+from core.builtins import Bot, Plain
 from core.utils.image import msgchain2image
 from .chunithm_apidata import get_record
 
@@ -51,8 +51,8 @@ def get_diff(diff):
     return level
 
 
-async def generate_best30_text(msg, payload):
-    data = await get_record(msg, payload)
+async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache: bool = True):
+    data = await get_record(msg, payload, use_cache)
     b30_records = data["records"]["b30"]
     r10_records = data["records"]["r10"]
 

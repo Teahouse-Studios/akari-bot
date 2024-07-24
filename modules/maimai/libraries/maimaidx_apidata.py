@@ -139,8 +139,6 @@ async def search_by_alias(input_: str) -> list:
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
-    if 'username' in payload:
-        use_cache = False
     try:
         data = await post_url(url,
                               data=json.dumps(payload),
@@ -152,7 +150,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
@@ -163,8 +161,8 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    except Exception as e:
-        Logger.error(traceback.format_exc())
+        else:
+            Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
@@ -182,8 +180,6 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
     if DEVELOPER_TOKEN:
         cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
         url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
-        if 'username' in payload:
-            use_cache = False
         try:
             if 'username' in payload:
                 await get_record(msg, payload, use_cache=False)
@@ -208,11 +204,11 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
                 with open(cache_path, 'w') as f:
                     json.dump(backup_data, f)
             return data
-        except ValueError as e:
+        except Exception as e:
             if str(e).startswith('400'):
                 raise ConfigValueError(msg.locale.t('error.config.invalid'))
-        except Exception as e:
-            Logger.error(traceback.format_exc())
+            else:
+                Logger.error(traceback.format_exc())
             if use_cache and os.path.exists(cache_path):
                 try:
                     with open(cache_path, 'r') as f:
@@ -231,8 +227,6 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
                            use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
-    if 'username' in payload:
-        use_cache = False
     payload['version'] = versions
     try:
         data = await post_url(url,
@@ -246,7 +240,7 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
         if not utage:
             data = {'verlist': [d for d in data['verlist'] if d.get('id', 0) < 100000]}  # 过滤宴谱
         return data
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
@@ -259,9 +253,6 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
-            raise e
-    except Exception as e:
-        Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
@@ -277,10 +268,9 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
 
 
 async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True) -> Optional[str]:
-    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_{version}_plate.json")
+    version = '舞' if version == '覇' else version  # “覇者”属于舞代
+    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
-    if 'username' in payload:
-        use_cache = False
     try:
         data = await post_url(url,
                               data=json.dumps(payload),
@@ -291,7 +281,7 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
@@ -304,9 +294,6 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
-            raise e
-    except Exception as e:
-        Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:

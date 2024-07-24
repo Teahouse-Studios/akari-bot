@@ -301,14 +301,14 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
         await msg.finish(msg.locale.t("error.config.webrender.invalid"))
 
 
-async def get_rank(msg: Bot.MessageSession, payload: dict):
+async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = True):
     time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 
     url = f"https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt='json')
     rank_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
 
-    player_data = await get_record(msg, payload)
+    player_data = await get_record(msg, payload, use_cache)
     username = player_data['username']
 
     rating = 0
@@ -350,7 +350,7 @@ async def get_rank(msg: Bot.MessageSession, payload: dict):
                                   surpassing_rate="{:.2f}".format(surpassing_rate)))
 
 
-async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str) -> str:
+async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str, use_cache: bool = True) -> str:
     if int(input_id) >= 100000:
         await msg.finish(msg.locale.t("maimai.message.info.utage"))
 
@@ -358,10 +358,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     level_scores = {level: [] for level in range(len(music['level']))}  # 获取歌曲难度列表
 
     try:
-        if 'username' in payload:
-            res = await get_song_record(msg, payload, use_cache=False)
-        else:
-            res = await get_song_record(msg, payload)
+        res = await get_song_record(msg, payload, input_id, use_cache)
         for sid, records in res.items():
             if str(sid) == input_id:
                 for entry in records:
@@ -381,10 +378,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                         (diffs[level_index], achievements, score_rank, combo_rank, sync_rank, dxscore, dxscore_max)
                         )
     except Exception:
-        if 'username' in payload:
-            res = await get_total_record(msg, payload, use_cache=False)
-        else:
-            res = await get_total_record(msg, payload)
+        res = await get_total_record(msg, payload, True, use_cache)
         records = res["verlist"]
 
         for entry in records:
@@ -422,11 +416,12 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     return '\n'.join(output_lines)
 
 
-async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, goal: str) -> tuple[str, bool]:
+async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, goal: str, 
+                            use_cache: bool = True) -> tuple[str, bool]:
     song_played = []
     song_remain = []
 
-    res = await get_total_record(msg, payload)
+    res = await get_total_record(msg, payload, use_cache=use_cache)
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
@@ -495,11 +490,12 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     return output, get_img
 
 
-async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int) -> tuple[str, bool]:
-    res = await get_total_record(msg, payload)
+async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int, 
+                         use_cache: bool = True) -> tuple[str, bool]:
+    res = await get_total_record(msg, payload, use_cache=use_cache)
     records = res["verlist"]
 
-    player_data = await get_record(msg, payload)
+    player_data = await get_record(msg, payload, use_cache)
     song_list = []
     for song in records:
         if song['level'] == level:
@@ -533,7 +529,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
     return res, get_img
 
 
-async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) -> tuple[str, bool]:
+async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[str, bool]:
     song_played = []
     song_remain_basic = []
     song_remain_advanced = []
@@ -564,7 +560,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) 
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    res = await get_plate(msg, payload, version)
+    res = await get_plate(msg, payload, version, use_cache)
     verlist = res["verlist"]
 
     if goal in ['將', '者']:
