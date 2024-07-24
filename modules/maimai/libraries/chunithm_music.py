@@ -1,7 +1,9 @@
 import random
+import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
+from core.logger import Logger
 from core.utils.http import get_url
 
 
@@ -134,14 +136,22 @@ class MusicList(List[Music]):
 class TotalList:
     def __init__(self):
         self.total_list = None
-
+        
     async def get(self):
         if not self.total_list:
+            await self.update()
+        return self.total_list
+
+    async def update(self):
+        try:
             obj = await get_url('https://www.diving-fish.com/api/chunithmprober/music_data', 200, fmt='json')
             total_list: MusicList = MusicList(obj)
             for __i in range(len(total_list)):
                 total_list[__i] = Music(total_list[__i])
                 for __j in range(len(total_list[__i].charts)):
-                    total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
+                        total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
             self.total_list = total_list
-        return self.total_list
+            return True
+        except Exception:
+            Logger.error(traceback.format_exc())
+            return False

@@ -1,7 +1,6 @@
 import os
 import traceback
-from typing import Optional
-from urllib.parse import urlencode
+from typing import Optional, Union
 
 import ujson as json
 from langconv.converter import LanguageConverter
@@ -95,7 +94,7 @@ async def get_info(music: Music, *details) -> MessageChain:
     return info
 
 
-async def get_alias(msg: Bot.MessageSession, sid) -> list:
+async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     file_path = os.path.join(assets_dir, "mai_alias.json")
 
     if not os.path.exists(file_path):
@@ -110,9 +109,8 @@ async def get_alias(msg: Bot.MessageSession, sid) -> list:
     return result
 
 
-async def search_by_alias(input_) -> list:
+async def search_by_alias(input_: str) -> list:
     result = []
-    input_ = input_.replace("_", " ").strip().lower()
     convinput = LanguageConverter.from_language(zh_cn).convert(input_)
     res = (await total_list.get()).filter(title=input_)
     for s in res:
@@ -138,7 +136,7 @@ async def search_by_alias(input_) -> list:
     return list(set(result))
 
 
-async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
+async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
@@ -146,7 +144,8 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
-                              fmt='json')
+                              fmt='json'
+                              )
         if data:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
@@ -162,58 +161,68 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    except Exception:
+    except Exception as e:
         Logger.error(traceback.format_exc())
-        if os.path.exists(cache_path):
+        if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
                     data = json.load(f)
                 await msg.send_message(msg.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:
-                return None
+                raise e
+        else:
+            raise e
 
 
-async def get_total_record_v2(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
+async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str, list[str]], 
+                          use_cache: bool = True) -> Optional[str]:
     if DEVELOPER_TOKEN:
-        cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
-        url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/records?{urlencode(payload)}"
+        cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
+        url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
-            await get_record(msg, payload)  # 调用以检查用户状态
-            data = await get_url(url,
+            await get_record(msg, payload, use_cache=False)
+            payload.update({'music_id': sid})
+            data = await post_url(url,
+                                 data=json.dumps(payload),
                                  status_code=200,
                                  headers={'Content-Type': 'application/json',
                                           'accept': '*/*',
                                           'Developer-Token': DEVELOPER_TOKEN},
                                  fmt='json')
             if data:
+                if os.path.exists(cache_path):
+                    with open(cache_path, 'r') as f:
+                        try:
+                            backup_data = json.load(f)
+                        except Exception:
+                            backup_data = {}
+                else:
+                    backup_data = {}
+                backup_data.update(data)
                 with open(cache_path, 'w') as f:
-                    json.dump(data, f)
-            if not utage:
-                data = {'records': [d for d in data['records'] if d.get('song_id', 0) < 100000]}  # 过滤宴谱
+                    json.dump(backup_data, f)
             return data
-        except ValueError as e:
-            if str(e).startswith('400'):
-                raise ConfigValueError(msg.locale.t('error.config.invalid'))
-        except Exception:
+        except Exception as e:
             Logger.error(traceback.format_exc())
-            if os.path.exists(cache_path):
+            if use_cache and os.path.exists(cache_path):
                 try:
                     with open(cache_path, 'r') as f:
                         data = json.load(f)
                     await msg.send_message(msg.locale.t("maimai.message.use_cache"))
-                    if not utage:
-                        data = {'records': [d for d in data['records'] if d.get('song_id', 0) < 100000]}  # 过滤宴谱
                     return data
                 except Exception:
-                    return None
+                    raise e
+            else:
+                raise e
     else:
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
 
 
-async def get_total_record_v1(msg: Bot.MessageSession, payload: dict, utage: bool = False) -> Optional[str]:
+async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool = False, 
+                           use_cache: bool = True) -> Optional[str]:
     payload['version'] = versions
-    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record_v1.json")
+    cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
         data = await post_url(url,
@@ -238,9 +247,12 @@ async def get_total_record_v1(msg: Bot.MessageSession, payload: dict, utage: boo
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    except Exception:
+        else:
+            Logger.error(traceback.format_exc())
+            raise e
+    except Exception as e:
         Logger.error(traceback.format_exc())
-        if os.path.exists(cache_path):
+        if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
                     data = json.load(f)
@@ -249,10 +261,12 @@ async def get_total_record_v1(msg: Bot.MessageSession, payload: dict, utage: boo
                     data = {'verlist': [d for d in data['verlist'] if d.get('id', 0) < 100000]}  # 过滤宴谱
                 return data
             except Exception:
-                return None
+                raise e
+        else:
+            raise e
 
 
-async def get_plate(msg: Bot.MessageSession, payload: dict, version: str) -> Optional[str]:
+async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True) -> Optional[str]:
     cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_{version}_plate.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
@@ -276,13 +290,18 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str) -> Opt
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    except Exception:
+        else:
+            Logger.error(traceback.format_exc())
+            raise e
+    except Exception as e:
         Logger.error(traceback.format_exc())
-        if os.path.exists(cache_path):
+        if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
                     data = json.load(f)
                 await msg.send_message(msg.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:
-                return None
+                raise e
+        else:
+            raise e

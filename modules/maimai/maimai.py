@@ -616,7 +616,7 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
 
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    if await update_alias() and await update_cover():
+    if await update_alias() and await update_cover() and await total_list.update():
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))

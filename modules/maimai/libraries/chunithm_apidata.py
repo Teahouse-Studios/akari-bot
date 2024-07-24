@@ -49,7 +49,10 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    except Exception:
+        else:
+            Logger.error(traceback.format_exc())
+            raise e
+    except Exception as e:
         Logger.error(traceback.format_exc())
         if os.path.exists(cache_path):
             try:
@@ -58,4 +61,6 @@ async def get_record(msg: Bot.MessageSession, payload: dict) -> Optional[str]:
                 await msg.send_message(msg.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:
-                return None
+                raise e
+        else:
+            raise e

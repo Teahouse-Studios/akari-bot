@@ -6,10 +6,10 @@ from datetime import datetime
 import ujson as json
 
 from core.builtins import Bot, MessageChain, Plain
-from core.exceptions import ConfigValueError
+from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
-from .maimaidx_apidata import get_record, get_total_record_v2, get_total_record_v1, get_plate
+from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_music import TotalList
 
 SONGS_PER_PAGE = 30
@@ -350,38 +350,49 @@ async def get_rank(msg: Bot.MessageSession, payload: dict):
 
 
 async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str) -> str:
-    # 获取用户成绩信息
-    try:
-        res = await get_total_record_v2(msg, payload, utage=True)
-        records = res["records"]
-    except ConfigValueError:
-        res = await get_total_record_v1(msg, payload, utage=True)
-        records = res["verlist"]
-
     if int(input_id) >= 100000:
         await msg.finish(msg.locale.t("maimai.message.info.utage"))
 
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music['level']))}  # 获取歌曲难度列表
 
-    for entry in records:
-        if str(entry.get("song_id", entry.get("id"))) == input_id:
-            achievements = entry["achievements"]
-            fc = entry["fc"]
-            fs = entry["fs"]
-            level_index = entry["level_index"]
-            score_rank = next(
-                # 根据成绩获得等级
-                rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
-            )
-            combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
-            sync_rank = sync_conversion.get(fs, "")  # Sync字典转换
-            dxscore = entry.get("dxScore", 0)
-            dxscore_max = sum(music['charts'][level_index]['notes']) * 3
+    try:
+        res = await get_song_record(msg, payload, sid=input_id)
+        for sid, records in res.items():
+            if str(sid) == input_id:
+                for entry in records:
+                    achievements = entry["achievements"]
+                    fc = entry["fc"]
+                    fs = entry["fs"]
+                    level_index = entry["level_index"]
+                    score_rank = next(
+                    # 根据成绩获得等级
+                        rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
+                    )
+                    combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
+                    sync_rank = sync_conversion.get(fs, "")  # Sync字典转换
+                    dxscore = entry.get("dxScore", 0)
+                    dxscore_max = sum(music['charts'][level_index]['notes']) * 3
+                    level_scores[level_index].append(
+                        (diffs[level_index], achievements, score_rank, combo_rank, sync_rank, dxscore, dxscore_max)
+                        )
+    except Exception as e:
+        Logger.error(str(e))
+        res = await get_total_record(msg, payload, utage=True)
+        records = res["verlist"]
 
-            if "dxScore" in entry:
-                level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank, dxscore, dxscore_max))
-            else:
+        for entry in records:
+            if str(entry.get("id")) == input_id:
+                achievements = entry["achievements"]
+                fc = entry["fc"]
+                fs = entry["fs"]
+                level_index = entry["level_index"]
+                score_rank = next(
+                    # 根据成绩获得等级
+                    rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
+                )
+                combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
+                sync_rank = sync_conversion.get(fs, "")  # Sync字典转换
                 level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
     output_lines = []
@@ -409,7 +420,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     song_played = []
     song_remain = []
 
-    res = await get_total_record_v1(msg, payload)  # 获取用户成绩信息
+    res = await get_total_record(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
@@ -479,7 +490,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
 
 
 async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int) -> tuple[str, bool]:
-    res = await get_total_record_v1(msg, payload)  # 获取用户成绩信息
+    res = await get_total_record(msg, payload)  # 获取用户成绩信息
     records = res["verlist"]
     player_data = await get_record(msg, payload)
 
