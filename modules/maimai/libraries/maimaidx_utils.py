@@ -564,7 +564,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) 
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    res = await get_plate(msg, payload)
+    res = await get_plate(msg, payload, version)
     verlist = res["verlist"]
 
     if goal in ['將', '者']:
