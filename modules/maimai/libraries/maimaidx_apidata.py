@@ -144,9 +144,10 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
-                              fmt='json'
+                              fmt='json', timeout=0.01,
+                   attempt=1
                               )
-        if data:
+        if data and use_cache:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         return data
@@ -181,7 +182,8 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
         cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
         url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
-            await get_record(msg, payload, use_cache=False)
+            if 'username' in payload:
+                await get_record(msg, payload, use_cache=False)
             payload.update({'music_id': sid})
             data = await post_url(url,
                                  data=json.dumps(payload),
@@ -190,7 +192,7 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
                                           'accept': '*/*',
                                           'Developer-Token': DEVELOPER_TOKEN},
                                  fmt='json')
-            if data:
+            if data and use_cache:
                 if os.path.exists(cache_path):
                     with open(cache_path, 'r') as f:
                         try:
@@ -230,7 +232,7 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
-        if data:
+        if data and use_cache:
             with open(cache_path, 'w') as f:
                 json.dump(data, f)
         if not utage:

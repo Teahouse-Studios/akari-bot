@@ -231,7 +231,11 @@ def calc_dxstar(dxscore: int, dxscore_max: int) -> str:
 
 
 async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> MessageChain:
-    data = await get_record(msg, payload)
+    if 'username' in payload:
+        data = await get_record(msg, payload, use_cache=False)
+    else:
+        data = await get_record(msg, payload)
+
     dx_charts = data["charts"]["dx"]
     sd_charts = data["charts"]["sd"]
 
@@ -357,7 +361,10 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     level_scores = {level: [] for level in range(len(music['level']))}  # 获取歌曲难度列表
 
     try:
-        res = await get_song_record(msg, payload, sid=input_id)
+        if 'username' in payload:
+            res = await get_song_record(msg, payload, use_cache=False)
+        else:
+            res = await get_song_record(msg, payload)
         for sid, records in res.items():
             if str(sid) == input_id:
                 for entry in records:
@@ -376,9 +383,11 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     level_scores[level_index].append(
                         (diffs[level_index], achievements, score_rank, combo_rank, sync_rank, dxscore, dxscore_max)
                         )
-    except Exception as e:
-        Logger.error(str(e))
-        res = await get_total_record(msg, payload, utage=True)
+    except Exception:
+        if 'username' in payload:
+            res = await get_total_record(msg, payload, use_cache=False)
+        else:
+            res = await get_total_record(msg, payload)
         records = res["verlist"]
 
         for entry in records:
@@ -420,7 +429,10 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     song_played = []
     song_remain = []
 
-    res = await get_total_record(msg, payload)  # 获取用户成绩信息
+    if 'username' in payload:
+        res = await get_total_record(msg, payload, use_cache=False)
+    else:
+        res = await get_total_record(msg, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
@@ -490,9 +502,13 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
 
 
 async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int) -> tuple[str, bool]:
-    res = await get_total_record(msg, payload)  # 获取用户成绩信息
+    if 'username' in payload:
+        res = await get_total_record(msg, payload, use_cache=False)
+        player_data = await get_record(msg, payload, use_cache=False)
+    else:
+        res = await get_total_record(msg, payload)
+        player_data = await get_record(msg, payload)
     records = res["verlist"]
-    player_data = await get_record(msg, payload)
 
     song_list = []
     for song in records:
@@ -558,7 +574,10 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str) 
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    res = await get_plate(msg, payload, version)  # 获取用户成绩信息
+    if 'username' in payload:
+        res = await get_plate(msg, payload, use_cache=False)
+    else:
+        res = await get_plate(msg, payload)
     verlist = res["verlist"]
 
     if goal in ['將', '者']:
