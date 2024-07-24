@@ -144,8 +144,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
-                              fmt='json', timeout=0.01,
-                   attempt=1
+                              fmt='json'
                               )
         if data and use_cache:
             with open(cache_path, 'w') as f:
