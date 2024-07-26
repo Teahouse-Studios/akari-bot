@@ -772,7 +772,7 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
     grade_key, grade = key_process(grade, grade_conversion)
 
     if not grade_key:
-        await msg.finish(msg.locale.t('maimai.message.grade.grade_not_found'))
+        await msg.finish(msg.locale.t('maimai.message.grade_invalid'))
     elif grade_key.startswith('tgrade'):
         grade_type = 'tgrade'
     elif grade_key.startswith('grade'):

@@ -27,7 +27,7 @@
     "error.prompt.address": "錯誤回報網址：${url}",
     "error.prompt.noreport": "執行指令時發生錯誤：\n${detail}\n此問題並非機器人程式錯誤（API 請求錯誤等），請勿將此訊息回報給機器人開發人員。",
     "error.prompt.report": "執行指令時發生錯誤：\n${detail}\n請將此訊息回報給機器人開發人員。",
-    "error.prompt.timeout": "執行指令時發生錯誤：\n${detail}\n此問題可能因機器人未及時處理訊息導致，若反覆發生，請將此訊息回報給機器人開發人員。",
+    "error.prompt.timeout": "執行指令時發生錯誤：\n${detail}\n此問題可能因機器人未及時處理訊息導致，若重複發生，請將此訊息回報給機器人開發人員。",
     "example": "你好世界！",
     "failed": "失敗。",
     "game.help.stop": "停止目前的遊戲。",
