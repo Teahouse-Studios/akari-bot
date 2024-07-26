@@ -48,7 +48,7 @@ se = SimpleEval()
 se.functions.update(math_funcs)
 
 
-async def process_expression(msg, expr: str, dc, use_markdown=False):
+async def process_expression(msg: Bot.MessageSession, expr: str, dc: str, use_markdown: bool = False):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
@@ -64,7 +64,7 @@ async def process_expression(msg, expr: str, dc, use_markdown=False):
     return output
 
 
-def parse_dice_expression(msg, dices):
+def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     dice_item_list = []
     math_func_pattern = '(' + '|'.join(re.escape(func) for func in math_funcs.keys()) + ')'  # 数学函数
     errmsg = None
@@ -137,7 +137,7 @@ def parse_dice_expression(msg, dices):
 # 在数字与数字之间加上乘号
 
 
-def insert_multiply(lst, use_markdown=False):
+def insert_multiply(lst: list, use_markdown: bool = False):
     result = []
     asterisk = '/*' if use_markdown else '*'
     for i in range(len(lst)):
@@ -158,7 +158,8 @@ def insert_multiply(lst, use_markdown=False):
 # 开始投掷并生成消息
 
 
-def generate_dice_message(msg, expr, dice_expr_list, dice_count, times, dc, use_markdown=False):
+def generate_dice_message(msg: Bot.MessageSession, expr: str, dice_expr_list: list,
+                          dice_count: int, times: int, dc: str, use_markdown: bool = False):
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')

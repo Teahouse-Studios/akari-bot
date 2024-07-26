@@ -4,13 +4,13 @@ import re
 from google_play_scraper import app as google_play_scraper
 import ujson as json
 
-from core.builtins import ErrorMessage
+from core.builtins import Bot, ErrorMessage
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 from core.utils.ip import IP
 
 
-async def mcv(msg):
+async def mcv(msg: Bot.MessageSession):
     try:
         data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
         release = data['latest']['release']
@@ -44,7 +44,7 @@ async def mcv(msg):
     return msg.locale.t("mcv.message.mcv", launcher_ver=message1, jira_ver=message2)
 
 
-async def mcbv(msg):
+async def mcbv(msg: Bot.MessageSession):
     play_store_version = None
     if IP.country != 'China':
         try:  # play store
@@ -90,7 +90,7 @@ async def mcbv(msg):
         msg.locale.t("mcv.message.mcbv", jira_ver=msg2)
 
 
-async def mcdv(msg):
+async def mcdv(msg: Bot.MessageSession):
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
     except (ConnectionError, OSError):  # Probably...
@@ -102,7 +102,7 @@ async def mcdv(msg):
     return msg.locale.t('mcv.message.mcdv', version=" | ".join(release))
 
 
-async def mcev(msg):
+async def mcev(msg: Bot.MessageSession):
     try:
         data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt', 200)
         Logger.debug(data)
@@ -113,7 +113,7 @@ async def mcev(msg):
     return msg.locale.t("mcv.message.mcev", version=version)
 
 
-async def mclgv(msg):
+async def mclgv(msg: Bot.MessageSession):
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/12200/versions', 200))
     except (ConnectionError, OSError):  # Probably...

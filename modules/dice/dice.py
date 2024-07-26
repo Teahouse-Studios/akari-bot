@@ -4,6 +4,7 @@ import secrets
 import numpy as np
 
 from config import Config
+from core.builtins import Bot
 from core.utils.text import isint
 
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -15,14 +16,14 @@ MAX_OUTPUT_LEN = Config('dice_output_len', 200)  # 输出的最大长度
 class DiceSyntaxError(Exception):
     """骰子语法错误"""
 
-    def __init__(self, msg, message):
+    def __init__(self, msg: Bot.MessageSession, message: str):
         self.message = message
 
 
 class DiceValueError(Exception):
     """骰子参数值错误"""
 
-    def __init__(self, msg, message, value=None):
+    def __init__(self, msg: Bot.MessageSession, message: str, value: int = None):
         if value:
             self.message = msg.locale.t("dice.message.error.value", value=value) + message
         else:
@@ -51,7 +52,7 @@ class DiceItemBase(object):
 class Dice(DiceItemBase):
     """骰子项"""
 
-    def __init__(self, msg, dice_code: str):
+    def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
         dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
@@ -75,7 +76,7 @@ class Dice(DiceItemBase):
                                  msg.locale.t("dice.message.error.value.advantage.out_of_range"),
                                  self.adv)
 
-    def GetArgs(self, msg):
+    def GetArgs(self, msg: Bot.MessageSession):
         dice_code = self.code.upper()  # 便于识别
         dice_code = dice_code.replace("D%", "D100")  # 百分骰别名
         dice_count = '1'  # 骰子数量
@@ -114,7 +115,7 @@ class Dice(DiceItemBase):
                                  dice_adv)
         return (int(dice_count), int(dice_sides), int(dice_adv), positive)
 
-    def Roll(self, msg):
+    def Roll(self, msg: Bot.MessageSession):
         output = self.code
         result = 0
         dice_results = []
@@ -165,7 +166,7 @@ class Dice(DiceItemBase):
 class FudgeDice(DiceItemBase):
     """命运骰子项"""
 
-    def __init__(self, msg, dice_code: str):
+    def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
         dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
@@ -176,7 +177,7 @@ class FudgeDice(DiceItemBase):
                                  msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
 
-    def GetArgs(self, msg):
+    def GetArgs(self, msg: Bot.MessageSession):
         dice_code = self.code.upper()  # 便于识别
         dice_code = dice_code.replace('D', '')  # 去除“D”
         dice_count = '4'  # 骰子数量
@@ -193,7 +194,7 @@ class FudgeDice(DiceItemBase):
                                  dice_count)
         return (int(dice_count), 0)
 
-    def Roll(self, msg):
+    def Roll(self, msg: Bot.MessageSession):
         output = self.code.replace('D', '')  # 去除“D”
         result = 0
 
@@ -221,7 +222,7 @@ class FudgeDice(DiceItemBase):
 class BonusPunishDice(DiceItemBase):
     """奖惩骰子项"""
 
-    def __init__(self, msg, dice_code: str):
+    def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
         dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
@@ -233,7 +234,7 @@ class BonusPunishDice(DiceItemBase):
                                  msg.locale.t("dice.message.error.value.count.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
 
-    def GetArgs(self, msg):
+    def GetArgs(self, msg: Bot.MessageSession):
         dice_code = self.code.upper()  # 便于识别
         dice_count = '1'  # 骰子数量
         if re.search(r'[^0-9BP]', dice_code):
@@ -257,7 +258,7 @@ class BonusPunishDice(DiceItemBase):
 
         return (int(dice_count), positive)
 
-    def Roll(self, msg):
+    def Roll(self, msg: Bot.MessageSession):
         output = ''
         dice_results = []
         positive = self.positive
@@ -303,7 +304,7 @@ class BonusPunishDice(DiceItemBase):
 class WODDice(DiceItemBase):
     """无限骰子项"""
 
-    def __init__(self, msg, dice_code: str):
+    def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
         dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
@@ -328,7 +329,7 @@ class WODDice(DiceItemBase):
                                  msg.locale.t("dice.message.error.value.add_line.out_of_range", max=self.sides),
                                  self.add_line)
 
-    def GetArgs(self, msg):
+    def GetArgs(self, msg: Bot.MessageSession):
         dice_code = self.code.upper()  # 便于识别
         match = re.match(r'(\d+)A(\d+)(?:K(\d+))?(?:Q(\d+))?(?:M(\d+))?', dice_code)
         if not match:
@@ -367,7 +368,7 @@ class WODDice(DiceItemBase):
             int(dice_success_line_max),
             int(dice_sides))
 
-    def Roll(self, msg):
+    def Roll(self, msg: Bot.MessageSession):
         output = self.code
         result = 0
         success_count = 0
@@ -436,7 +437,7 @@ class WODDice(DiceItemBase):
 class DXDice(DiceItemBase):
     """双重十字骰子项"""
 
-    def __init__(self, msg, dice_code: str):
+    def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
         dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
@@ -459,7 +460,7 @@ class DXDice(DiceItemBase):
                                  msg.locale.t("dice.message.error.value.add_line.out_of_range", max=self.sides),
                                  self.add_line)
 
-    def GetArgs(self, msg):
+    def GetArgs(self, msg: Bot.MessageSession):
         dice_code = self.code.upper()  # 便于识别
         match = re.match(r'(\d+)C(\d+)(?:M(\d+))?', dice_code)
         if not match:
@@ -482,7 +483,7 @@ class DXDice(DiceItemBase):
                                  dice_sides)
         return (int(dice_count), int(dice_add_line), int(dice_sides))
 
-    def Roll(self, msg):
+    def Roll(self, msg: Bot.MessageSession):
         output = self.code
         result = 0
         dice_rounds = 0

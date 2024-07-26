@@ -14,7 +14,7 @@ import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
-from core.builtins import EnableDirtyWordCheck
+from core.builtins import Bot, EnableDirtyWordCheck
 from core.logger import Logger
 from database.local import DirtyWordCache
 
@@ -160,8 +160,8 @@ async def check_bool(*text):
     return False
 
 
-def rickroll(msg):
+def rickroll(msg: Bot.MessageSession):
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
-        return Config("rickroll_msg", cfg_type=str)
+        return msg.locale.tl_str(Config("rickroll_msg", cfg_type=str))
     else:
         return msg.locale.t("error.message.chain.unsafe")

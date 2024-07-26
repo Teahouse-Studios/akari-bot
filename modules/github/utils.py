@@ -4,7 +4,7 @@ from config import Config
 from core import dirty_check as dirty
 
 
-def darkCheck(msg: str):
+def darkCheck(message: str):
     blacklist = [
         'china-dictatorship'
         'cirosantilli',
@@ -21,7 +21,7 @@ def darkCheck(msg: str):
     ]
     if Config('enable_dirty_check', False):
         for i in blacklist:
-            if msg.find(i) > -1:
+            if message.find(i) > -1:
                 return True
         return False
     else:
@@ -49,7 +49,7 @@ def time_diff(time: str):
     return diff
 
 
-async def dirty_check(text, *allowlist_check):
+async def dirty_check(text: str, *allowlist_check):
     allowlist = [
         'Teahouse-Studios',
         'Dianliang233',
