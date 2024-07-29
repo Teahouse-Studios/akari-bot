@@ -725,7 +725,7 @@ class WikiLib:
                             page_info.link = full_url
                             page_info.file = file
                             page_info.desc = page_desc
-                            if not _iw and not page_info.args:
+                            if not _iw and not page_info.args and page_info.id != -1:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                         else:
                             page_info.title = query_langlinks.title
@@ -758,7 +758,7 @@ class WikiLib:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t:
-                            if before_page_info.args:
+                            if before_page_info.args or page_info.id == -1:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link:
