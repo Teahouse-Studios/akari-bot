@@ -3,9 +3,15 @@
 
 # 小可 · AkariBot v4
 
+[![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)<!--![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?include_prereleases)-->
+[![Crowdin](https://badges.crowdin.net/akari-bot/localized.svg)](https://crowdin.com/project/akari-bot)
+![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
+<br>
+![Python](https://img.shields.io/badge/Python-3.12+-blue)
+![OneBot v11](https://img.shields.io/badge/OneBot-v11-black?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAAIVBMVEUAAAAAAAADAwMHBwceHh4UFBQNDQ0ZGRkoKCgvLy8iIiLWSdWYAAAAAXRSTlMAQObYZgAAAQVJREFUSMftlM0RgjAQhV+0ATYK6i1Xb+iMd0qgBEqgBEuwBOxU2QDKsjvojQPvkJ/ZL5sXkgWrFirK4MibYUdE3OR2nEpuKz1/q8CdNxNQgthZCXYVLjyoDQftaKuniHHWRnPh2GCUetR2/9HsMAXyUT4/3UHwtQT2AggSCGKeSAsFnxBIOuAggdh3AKTL7pDuCyABcMb0aQP7aM4AnAbc/wHwA5D2wDHTTe56gIIOUA/4YYV2e1sg713PXdZJAuncdZMAGkAukU9OAn40O849+0ornPwT93rphWF0mgAbauUrEOthlX8Zu7P5A6kZyKCJy75hhw1Mgr9RAUvX7A3csGqZegEdniCx30c3agAAAABJRU5ErkJggg==)
+[![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/blob/master/LICENSE)
 </div>
-
-![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot) ![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot) ![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot) ![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?include_prereleases) [![Crowdin](https://badges.crowdin.net/akari-bot/localized.svg)](https://crowdin.com/project/akari-bot) ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 
 ## 介绍
 
