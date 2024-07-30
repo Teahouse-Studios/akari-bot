@@ -5,7 +5,6 @@
     "dice.help.set": "Set the default sides number of dice.",
     "dice.message.dc.check": "▷ Success: ${success}  Failure: ${failed}",
     "dice.message.dc.failed": "Failed!",
-    "dice.message.dc.invalid": "Invalid DC: ",
     "dice.message.dc.success": "Success!",
     "dice.message.error": "Unable to parse the dice expression: ",
     "dice.message.error.invalid": "Unrecognized characters in dice expression.",

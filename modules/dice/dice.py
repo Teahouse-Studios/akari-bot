@@ -54,7 +54,6 @@ class Dice(DiceItemBase):
 
     def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
-        dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
@@ -168,7 +167,6 @@ class FudgeDice(DiceItemBase):
 
     def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
-        dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
@@ -224,7 +222,6 @@ class BonusPunishDice(DiceItemBase):
 
     def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
-        dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
@@ -306,7 +303,6 @@ class WODDice(DiceItemBase):
 
     def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
-        dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]
@@ -439,7 +435,6 @@ class DXDice(DiceItemBase):
 
     def __init__(self, msg: Bot.MessageSession, dice_code: str):
 
-        dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code)
         args = self.GetArgs(msg)
         self.count = args[0]

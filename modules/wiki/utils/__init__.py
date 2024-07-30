@@ -3,8 +3,7 @@ import traceback
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from modules.wiki.utils.dbutils import WikiTargetInfo, Audit
-from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
+from modules.wiki.utils.dbutils import WikiTargetInfo
 from .ab import ab
 from .ab_qq import ab_qq
 from .newbie import newbie
