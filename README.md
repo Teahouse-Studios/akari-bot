@@ -3,7 +3,7 @@
 
 # 小可 · AkariBot v4
 
-_基于多框架开发的可扩展、多平台机器人_
+_基于 OneBot 11 开发的可扩展、多平台机器人_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)<!--![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?include_prereleases)-->
@@ -17,7 +17,7 @@ _基于多框架开发的可扩展、多平台机器人_
 
 ## 介绍
 
-**小可**是基于多个框架开发的可扩展、多平台机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
+**小可**是基于 OneBot 11 开发的可扩展、多平台机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
 
 目前小可还正在持续开发中。
 
