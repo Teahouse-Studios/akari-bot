@@ -6,7 +6,6 @@ import ujson as json
 from config import Config
 from core.builtins import Bot
 from core.exceptions import ConfigValueError
-from core.logger import Logger
 from core.utils.http import get_url
 
 
@@ -65,7 +64,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
         if str(e).startswith('401'):
             raise ConfigValueError(msg.locale.t("error.config.invalid"))
         else:
-            Logger.error(traceback.format_exc())
+            raise e
     except Exception:
         Logger.error(traceback.format_exc())
         await msg.finish(msg.locale.t('osu.message.not_found'))

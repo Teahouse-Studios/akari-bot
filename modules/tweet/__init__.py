@@ -1,5 +1,4 @@
 import re
-import traceback
 
 import ujson as json
 
@@ -7,7 +6,6 @@ from core.builtins import Bot
 from core.builtins.message import Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.logger import Logger
 from core.utils.http import download, get_url
 from core.utils.text import isint
 from core.utils.web_render import webrender
@@ -41,7 +39,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t('tweet.message.invalid'))
         else:
-            Logger.error(traceback.format_exc())
+            raise e
 
     res_json = json.loads(res)
     if not res_json['data']:

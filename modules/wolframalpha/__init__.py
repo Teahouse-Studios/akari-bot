@@ -1,5 +1,4 @@
 import os
-import traceback
 import urllib.parse
 from PIL import Image
 
@@ -8,7 +7,6 @@ from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.dirty_check import rickroll
 from core.exceptions import ConfigValueError
-from core .logger import Logger
 from core.utils.http import download, get_url
 from .check import secret_check
 
@@ -44,7 +42,7 @@ async def _(msg: Bot.MessageSession, query: str):
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
         else:
-            Logger.error(traceback.format_exc())
+            raise e
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
@@ -62,4 +60,4 @@ async def _(msg: Bot.MessageSession, question: str):
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
         else:
-            Logger.error(traceback.format_exc())
+            raise e

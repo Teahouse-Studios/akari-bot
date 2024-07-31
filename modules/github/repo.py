@@ -1,10 +1,6 @@
-import asyncio
-import traceback
-
 from core.builtins import Bot, Image, Plain, Url
 from core.dirty_check import rickroll
-from core.logger import Logger
-from core.utils.http import get_url
+from core.utils.http import download, get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -59,16 +55,13 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         else:
             await msg.send_message([Plain(message)])
 
-            async def download():
-                download_pic = await download(
-                    f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
-                if download_pic:
-                    await msg.finish([Image(download_pic)], quote=False)
-
-            asyncio.create_task(download())
+        download_pic = await download(
+            f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
+        if download_pic:
+            await msg.finish([Image(download_pic)], quote=False)
 
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
         else:
-            Logger.error(traceback.format_exc())
+            raise e

@@ -1,9 +1,6 @@
-import traceback
-
 import ujson as json
 
 from core.builtins import Bot, Image, Plain
-from core.logger import Logger
 from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
 
@@ -23,7 +20,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t('cytoid.message.user_not_found'))
         else:
-            Logger.error(traceback.format_exc())
+            raise e
     uid = profile['user']['uid']
     nick = profile['user']['name']
     avatar = profile['user']['avatar']['large']
