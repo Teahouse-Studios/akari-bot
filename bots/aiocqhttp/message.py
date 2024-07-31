@@ -223,8 +223,18 @@ class MessageSession(MessageSessionT):
                 if s.startswith('[CQ:image'):
                     sspl = s.split(',')
                     for ss in sspl:
-                        if ss.startswith('url='):
-                            lst.append(Image(ss[4:-1]))
+                        if qq_frame_type() == 'lagrange':
+                            if ss.startswith('file='):
+                                ss = ss[5:]
+                                if ss.endswith(']'):
+                                    ss = ss[:-1]
+                                lst.append(Image(ss))
+                        else:
+                            if ss.startswith('url='):
+                                ss = ss[4:]
+                                if ss.endswith(']'):
+                                    ss = ss[:-1]
+                                lst.append(Image(ss))
             else:
                 lst.append(Plain(s))
 
