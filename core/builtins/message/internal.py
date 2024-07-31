@@ -14,7 +14,7 @@ from tenacity import retry, stop_after_attempt
 
 from config import Config
 from core.builtins.utils import shuffle_joke
-from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT, 
+from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.types.message import MessageSession
@@ -92,12 +92,16 @@ class FormattedTime(FormattedTimeT):
                     ftime_template.append("(UTC)")
                 else:
                     ftime_template.append(f"(UTC{msg._tz_offset})")
+
+            return (
+                datetime.fromtimestamp(
+                    self.timestamp,
+                    tz=timezone.utc) +
+                msg.timezone_offset).strftime(
+                ' '.join(ftime_template))
         else:
             ftime_template.append('%Y-%m-%d %H:%M:%S')
-        if not msg:
             return datetime.fromtimestamp(self.timestamp).strftime(' '.join(ftime_template))
-        else:
-            return (datetime.fromtimestamp(self.timestamp, tz=timezone.utc) + msg.timezone_offset).strftime(' '.join(ftime_template))
 
     def __str__(self):
         return self.to_str()
