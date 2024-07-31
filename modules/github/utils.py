@@ -21,7 +21,7 @@ def darkCheck(message: str):
     ]
     if Config('enable_dirty_check', False):
         for i in blacklist:
-            if message.find(i) > -1:
+            if message.find(i) != -1:
                 return True
         return False
     else:
@@ -62,6 +62,6 @@ async def dirty_check(text: str, *allowlist_check):
     if allowlist_check in allowlist:
         return False
     check = await dirty.check_bool(text)
-    if not check:
+    if check:
         return True
     return False
