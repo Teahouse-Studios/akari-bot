@@ -187,7 +187,6 @@ async def download(url: str, filename=None, path=None, status_code: int = False,
             private_ip_check(url)
 
         data = None
-
         if method.upper() == 'GET':
             data = await get_url(url, status_code=status_code, headers=headers, fmt='read', timeout=timeout, attempt=1,
                                  request_private_ip=request_private_ip, logging_err_resp=logging_err_resp)

@@ -1,3 +1,5 @@
+import uuid
+
 from core.builtins import Bot, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
@@ -55,8 +57,11 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         else:
             await msg.send_message([Plain(message)])
 
+        hash = str(uuid.uuid4())
         download_pic = await download(
-            f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
+            url=f'https://opengraph.githubassets.com/{hash}/{result["full_name"]}', 
+            filename=f'{hash}.png'
+            )
         if download_pic:
             await msg.finish([Image(download_pic)], quote=False)
 
