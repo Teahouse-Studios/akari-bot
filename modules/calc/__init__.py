@@ -15,8 +15,8 @@ c = module('calc', developers=['Dianliang233'])
 
 
 @c.command('<math_expression> {calc.help}')
-async def _(msg: Bot.MessageSession):
-    expr = msg.as_display().split(' ', 1)[1]
+async def _(msg: Bot.MessageSession, math_expression: str):
+    expr = math_expression.replace("\\", "")
     start = time.perf_counter_ns()
     res = await spawn_subprocess('/calc.py', expr, msg)
     Logger.warning(res)
