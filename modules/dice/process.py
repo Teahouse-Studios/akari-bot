@@ -187,8 +187,6 @@ def generate_dice_message(msg: Bot.MessageSession, expr: str, dice_expr_list: li
         dice_detail_list = insert_multiply(dice_detail_list, use_markdown)
         dice_res_list = insert_multiply(dice_res_list)
         output_line += ''.join(dice_detail_list)
-        Logger.debug(dice_detail_list)
-        Logger.debug(dice_res_list)
         try:
             if dice_res_list:
                 dice_res = ''.join(dice_res_list)

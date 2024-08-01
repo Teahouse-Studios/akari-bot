@@ -22,9 +22,8 @@ async def _(msg: Bot.MessageSession, math_expression: str, use_markdown=False):
     res = await spawn_subprocess('/calc.py', expr, msg)
     if res[:6] == 'Result':
         if use_markdown:
-            m = f'`{expr}` = {res[7:]}'
-        else:
-            m = f'{expr} = {res[7:]}'
+            expr = expr.replace('*', '\\*')
+        m = f'{expr} = {res[7:]}'
         await msg.finish(m)
     else:
         await msg.finish(msg.locale.t("calc.message.invalid", expr=res[7:]))

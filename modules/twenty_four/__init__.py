@@ -132,7 +132,6 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
         play_state.disable()
         if expr.lower() in no_solution_lst:
             if solution:
-                solution = f'`{solution}`' if use_markdown else solution
                 send = msg.locale.t('twenty_four.message.incorrect.have_solution', solution=solution)
                 if g_msg := (g_msg := await lost_petal(msg, 1)):
                     send += '\n' + g_msg
