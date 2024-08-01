@@ -15,20 +15,16 @@ c = module('calc', developers=['Dianliang233'])
 
 
 @c.command('<math_expression> {calc.help}')
-async def _(msg: Bot.MessageSession, math_expression: str):
+async def _(msg: Bot.MessageSession, math_expression: str, use_markdown=False):
+    if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
+        use_markdown = True
     expr = math_expression.replace("\\", "")
-    start = time.perf_counter_ns()
     res = await spawn_subprocess('/calc.py', expr, msg)
-    Logger.warning(res)
-    stop = time.perf_counter_ns()
-    delta = (stop - start) / 1000000
     if res[:6] == 'Result':
-        if msg.target.sender_from == "Discord|Client":
+        if use_markdown:
             m = f'`{expr}` = {res[7:]}'
         else:
             m = f'{expr} = {res[7:]}'
-        if msg.check_super_user():
-            m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
         await msg.finish(m)
     else:
         await msg.finish(msg.locale.t("calc.message.invalid", expr=res[7:]))

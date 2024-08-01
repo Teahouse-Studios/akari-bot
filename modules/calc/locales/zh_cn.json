@@ -1,6 +1,5 @@
 {
     "calc.help": "安全地计算 Python ast 表达式。",
     "calc.message.invalid": "表达式无效：${expr}",
-    "calc.message.running_time": "计算花费时间：${time}ms / 10000ms。",
     "calc.message.time_out": "计算超时。"
 }
