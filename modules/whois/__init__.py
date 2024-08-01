@@ -80,7 +80,7 @@ async def get_whois(msg, domain):
     res.append(f"{msg.locale.t('whois.message.expiration_date')}{
                msg.ts2strftime(expiration_date.timestamp())}" if expiration_date else '')
     res.append(f"{msg.locale.t('whois.message.name_servers')}{format(name_servers)}" if name_servers else '')
-    res.append(f"{msg.locale.t('whois.message.emails')}{format(emails)}" if emails else '')
+    res.append(f"{msg.locale.t('whois.message.email')}{format(emails)}" if emails else '')
     res.append(f"{msg.locale.t('whois.message.dnssec')}{format(dnssec)}" if dnssec else '')
     res.append(f"{msg.locale.t('whois.message.name')}{format(name)}" if name else '')
     res.append(f"{msg.locale.t('whois.message.organization')}{format(org)}" if org else '')
