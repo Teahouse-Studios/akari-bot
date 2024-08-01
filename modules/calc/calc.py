@@ -76,7 +76,10 @@ s_eval = EvalWithCompoundTypes(
     }, )
 
 try:  # rina's rina lazy solution :rina:
-    sys.stdout.write('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
+    res = s_eval.eval(' '.join(sys.argv[1:]))
+    if abs(res) >= 10 ** 9 or abs(res) <= 10 ** -9:
+        res = "{:.10e}".format(res)
+    sys.stdout.write(f'Result {str(res)}')
 except Exception as e:
     sys.stdout.write(f'Failed {str(e)}')
 sys.exit()

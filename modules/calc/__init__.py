@@ -11,43 +11,19 @@ from core.logger import Logger
 
 calc_dir = os.path.dirname(os.path.abspath(__file__))
 
-c = module('calc', developers=[
-    'Dianliang233'], desc='{calc.help.desc}')
+c = module('calc', developers=['Dianliang233'])
 
 
-@c.command('<math_expression>', options_desc={'+': '{calc.help.option.plus}',
-                                              '-': '{calc.help.option.minus}',
-                                              '/': '{calc.help.option.multiply}',
-                                              '*': '{calc.help.option.divide}',
-                                              '**': '{calc.help.option.power}',
-                                              '%': '{calc.help.option.modulo}',
-                                              '==': '{calc.help.option.equal}',
-                                              '<=': '{calc.help.option.less_equal}',
-                                              '>=': '{calc.help.option.greater_equal}',
-                                              '>>': '{calc.help.option.move_right}',
-                                              '<<': '{calc.help.option.move_left}',
-                                              '^': '{calc.help.option.xor}',
-                                              'not': '{calc.help.option.not}',
-                                              'is': '{calc.help.option.is}',
-                                              'randint(x)': '{calc.help.option.randint}',
-                                              'rand()': '{calc.help.option.rand}',
-                                              'int()': '{calc.help.option.int}',
-                                              'float()': '{calc.help.option.float}',
-                                              'str()': '{calc.help.option.str}',
-                                              'complex()': '{calc.help.option.complex}',
-                                              'bool()': '{calc.help.option.bool}',
-                                              'bin()': '{calc.help.option.bin}',
-                                              'oct()': '{calc.help.option.oct}',
-                                              'hex()': '{calc.help.option.hex}',
-                                              '{calc.help.option.more}': 'https://bot.teahouse.team/-/340',
-                                              })
+@c.command('<math_expression> {calc.help}')
 async def _(msg: Bot.MessageSession):
     expr = msg.as_display().split(' ', 1)[1]
     start = time.perf_counter_ns()
     res = await spawn_subprocess('/calc.py', expr, msg)
+    Logger.warning(res)
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if res[:6] == 'Result':
+
         if msg.target.sender_from == "Discord|Client":
             m = f'`{expr}` = {res[7:]}'
         else:
@@ -56,7 +32,7 @@ async def _(msg: Bot.MessageSession):
             m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
         await msg.finish(m)
     else:
-        await msg.finish(msg.locale.t("calc.message.invalid", expr={res[7:]}))
+        await msg.finish(msg.locale.t("calc.message.invalid", expr=res[7:]))
 
 
 async def spawn_subprocess(file: str, arg: str, msg: Bot.MessageSession) -> str:
