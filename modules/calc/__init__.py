@@ -2,7 +2,6 @@ import asyncio
 import os
 import subprocess
 import sys
-import time
 
 from core.builtins import Bot
 from core.component import module

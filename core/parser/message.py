@@ -91,7 +91,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
                 raise AbuseWarning("{tos.message.reason.ignore}")
-            
+
 
 async def check_target_cooldown(msg: Bot.MessageSession):
     cooldown_time = int(msg.options.get('cooldown_time', 0))
@@ -117,35 +117,35 @@ def transform_alias_byregex(msg, command: str):
     for pattern, replacement in aliases.items():
         # 使用正则表达式匹配并分隔多个连在一起的占位符
         pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
-        
+
         # 匹配占位符
         pattern_placeholders = re.findall(r'\$\{([^{}$]+)\}', pattern)
         replacement_placeholders = re.findall(r'\$\{([^{}$]+)\}', replacement)
-        
+
         regex_pattern = re.escape(pattern)
         for placeholder in pattern_placeholders:
             regex_pattern = regex_pattern.replace(re.escape(f'${{{placeholder}}}'), r'(\S+)')  # 匹配非空格字符
-        
+
         match = re.match(regex_pattern, command)
-        
+
         if match:
             result = replacement
             groups = match.groups()
-            
+
             # 替换模板中的占位符
             for i, placeholder in enumerate(pattern_placeholders):
                 if i < len(groups):
                     result = result.replace(f'${{{placeholder}}}', groups[i])
                 else:
                     result = result.replace(f'${{{placeholder}}}', '')
-            
+
             # 检查未匹配的占位符并保留原始文本
             for placeholder in replacement_placeholders:
                 if placeholder not in pattern_placeholders:
                     result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
                 else:
                     result = result.replace(f'${{{placeholder}}}', '')
-            
+
             Logger.debug(msg.prefixes[0] + result)
             return msg.prefixes[0] + result
 
@@ -162,7 +162,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行
     :return: 无返回
     """
-    identify_str = f'[{msg.target.sender_id}{f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
+    identify_str = f'[{msg.target.sender_id}{
+        f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
@@ -185,7 +186,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         if msg.options.get('command_alias'):
             msg.trigger_msg = transform_alias_byregex(msg, msg.trigger_msg)  # 将自定义别名替换为命令
             #  旧语法兼容
-            get_custom_alias = {k: v for k, v in (msg.options.get('command_alias')).items() if not re.search(r'\${[^}]*}', k)}
+            get_custom_alias = {
+                k: v for k, v in (
+                    msg.options.get('command_alias')).items() if not re.search(
+                    r'\${[^}]*}', k)}
             command_split = msg.trigger_msg.split(' ')  # 切割消息
             if get_custom_alias:
                 get_display_alias = get_custom_alias.get(command_split[0])
@@ -416,6 +420,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         elif qq_frame_type() == 'mirai':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
                                                message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                        else:
+                            pass
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -444,7 +450,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
-                    if "timeout" in str(e).lower().replace(' ',''):
+                    if "timeout" in str(e).lower().replace(' ', ''):
                         timeout = True
                         errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
                     else:
@@ -566,7 +572,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
-                            if "timeout" in str(e).lower().replace(' ',''):
+                            if "timeout" in str(e).lower().replace(' ', ''):
                                 timeout = True
                                 errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
                             else:
@@ -577,7 +583,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
                                                               url=str(Url(Config('bug_report_url', cfg_type=str))))
                             await msg.send_message(errmsg)
-                    
+
                             if not timeout and report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
@@ -600,6 +606,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     elif qq_frame_type() == 'mirai':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
                                            message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                    else:
+                        pass
                 await msg.send_message((msg.locale.t("error.message.limited")))
                 continue
         return msg

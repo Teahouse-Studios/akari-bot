@@ -20,7 +20,6 @@ from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
 from core.logger import Logger
-from core.queue import JobQueue
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
@@ -272,6 +271,8 @@ class MessageSession(MessageSessionT):
                     elif qq_frame_type() == 'mirai':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:poke,qq={self.msg.session.sender}]')
+                    else:
+                        pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass

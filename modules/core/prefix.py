@@ -1,4 +1,5 @@
 from core.builtins import Bot
+from core.builtins.utils import command_prefix
 from core.component import module
 
 p = module('prefix', required_admin=True, base=True)
@@ -33,7 +34,9 @@ async def set_prefix(msg: Bot.MessageSession):
         msg.data.edit_option('command_prefix', [])
         await msg.finish(msg.locale.t("core.message.prefix.reset"))
     elif 'list' in msg.parsed_msg:
+        default_msg = msg.locale.t('core.message.prefix.list.default', prefixes=', '.join(command_prefix))
         if len(prefixes) == 0:
-            await msg.finish(msg.locale.t("core.message.prefix.list.none"))
+            custom_msg = msg.locale.t("core.message.prefix.list.custom.none")
         else:
-            await msg.finish(msg.locale.t('core.message.prefix.list', prefixes=', '.join(prefixes)))
+            custom_msg = msg.locale.t('core.message.prefix.list.custom', prefixes=', '.join(prefixes))
+        await msg.finish(f"{default_msg}\n{custom_msg}")
