@@ -357,6 +357,7 @@ async def bot_help(msg: Bot.MessageSession):
                 devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
                 devs_msg = ''
+            wiki_msg = ''
             if module_.doc:
                 if Config('help_page_url', cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
@@ -364,8 +365,6 @@ async def bot_help(msg: Bot.MessageSession):
                 elif Config('help_url', cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=(CFG.get_url('help_url') + help_name))
-                else:
-                    wiki_msg = ''
             if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
