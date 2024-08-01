@@ -23,7 +23,6 @@ async def _(msg: Bot.MessageSession):
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if res[:6] == 'Result':
-
         if msg.target.sender_from == "Discord|Client":
             m = f'`{expr}` = {res[7:]}'
         else:
