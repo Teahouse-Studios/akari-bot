@@ -7,7 +7,7 @@ from core.petal import gained_petal
 from core.utils.game import PlayState
 
 tic_tac_toe = module('tic_tac_toe',
-                     desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'],
+                     desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'], doc=True,
                      alias=['ttt', 'tictactoe'])
 
 

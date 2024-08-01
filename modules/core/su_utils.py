@@ -26,7 +26,7 @@ target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group",
 sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User", "TEST",]
 
 
-su = module('superuser', alias='su', required_superuser=True, base=True)
+su = module('superuser', alias='su', required_superuser=True, base=True, doc=True)
 
 
 @su.command('add <user>')
@@ -51,7 +51,7 @@ async def del_su(msg: Bot.MessageSession, user: str):
             await msg.finish(msg.locale.t("success"))
 
 
-purge = module('purge', required_superuser=True, base=True)
+purge = module('purge', required_superuser=True, base=True, doc=True)
 
 
 @purge.command()
@@ -69,7 +69,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
-set_ = module('set', required_superuser=True, base=True)
+set_ = module('set', required_superuser=True, base=True, doc=True)
 
 
 @set_.command('module enable <target> <modules> ...',
@@ -143,7 +143,7 @@ async def _(msg: Bot.MessageSession, target: str):
 
 
 if Bot.client_name == 'QQ':
-    post_whitelist = module('post_whitelist', required_superuser=True, base=True)
+    post_whitelist = module('post_whitelist', required_superuser=True, base=True, doc=True)
 
     @post_whitelist.command('<group_id>')
     async def _(msg: Bot.MessageSession, group_id: str):
@@ -156,7 +156,7 @@ if Bot.client_name == 'QQ':
         await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
-ae = module('abuse', alias='ae', required_superuser=True, base=True)
+ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True)
 
 
 @ae.command('check <user>')
@@ -240,7 +240,7 @@ if Bot.client_name == 'QQ':
             await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
 
 
-upd = module('update', required_superuser=True, base=True)
+upd = module('update', required_superuser=True, base=True, doc=True)
 
 
 def pull_repo():
@@ -273,7 +273,7 @@ async def update_bot(msg: Bot.MessageSession):
 
 
 if Info.subprocess:
-    rst = module('restart', required_superuser=True, base=True)
+    rst = module('restart', required_superuser=True, base=True, doc=True)
 
     def restart():
         sys.exit(233)
@@ -316,7 +316,7 @@ if Info.subprocess:
         else:
             await msg.finish()
 
-    upds = module('update&restart', required_superuser=True, alias='u&r', base=True)
+    upds = module('update&restart', required_superuser=True, alias='u&r', base=True, doc=True)
 
     @upds.command()
     async def update_and_restart_bot(msg: Bot.MessageSession):
@@ -338,7 +338,7 @@ if Info.subprocess:
             await msg.finish()
 
 
-exit_ = module('exit', required_superuser=True, base=True, available_for=['TEST|Console'])
+exit_ = module('exit', required_superuser=True, base=True, doc=True, available_for=['TEST|Console'])
 
 
 @exit_.command()
@@ -350,7 +350,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Bot.FetchTarget.name == 'QQ':
-    resume = module('resume', required_base_superuser=True, base=True)
+    resume = module('resume', required_base_superuser=True, base=True, doc=True)
 
     @resume.command()
     async def resume_sending_group_message(msg: Bot.MessageSession):
@@ -394,7 +394,7 @@ if Bot.FetchTarget.name == 'QQ':
         Temp.data['waiting_for_send_group_message'] = []
         await msg.finish(msg.locale.t("core.message.resume.clear"))
 
-    forward_msg = module('forward_msg', required_superuser=True, base=True)
+    forward_msg = module('forward_msg', required_superuser=True, base=True, doc=True)
 
     @forward_msg.command()
     async def _(msg: Bot.MessageSession):
@@ -409,7 +409,7 @@ if Bot.FetchTarget.name == 'QQ':
             await msg.finish(msg.locale.t('core.message.forward_msg.disable'))
 
 
-echo = module('echo', required_superuser=True, base=True)
+echo = module('echo', required_superuser=True, base=True, doc=True)
 
 
 @echo.command('<display_msg>')
@@ -417,7 +417,7 @@ async def _(msg: Bot.MessageSession, display_msg: str):
     await msg.finish(display_msg)
 
 
-say = module('say', required_superuser=True, base=True)
+say = module('say', required_superuser=True, base=True, doc=True)
 
 
 @say.command('<display_msg>')
@@ -425,7 +425,7 @@ async def _(msg: Bot.MessageSession, display_msg: str):
     await msg.finish(display_msg, quote=False)
 
 
-rse = module('raise', required_superuser=True, base=True)
+rse = module('raise', required_superuser=True, base=True, doc=True)
 
 
 @rse.command()
@@ -435,7 +435,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('enable_eval', False):
-    _eval = module('eval', required_superuser=True, base=True)
+    _eval = module('eval', required_superuser=True, base=True, doc=True)
 
     @_eval.command('<display_msg>')
     async def _(msg: Bot.MessageSession, display_msg: str):
@@ -445,7 +445,7 @@ if Config('enable_eval', False):
             raise NoReportException(e)
 
 
-cfg_ = module('config', required_superuser=True, alias='cfg', base=True)
+cfg_ = module('config', required_superuser=True, alias='cfg', base=True, doc=True)
 
 
 @cfg_.command('get <k>')
@@ -483,7 +483,7 @@ async def _(msg: Bot.MessageSession, k: str):
 
 
 if Config('enable_petal', False):
-    petal = module('petal', base=True, alias='petals')
+    petal = module('petal', alias='petals', base=True, doc=True)
 
     @petal.command()
     async def _(msg: Bot.MessageSession):

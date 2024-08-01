@@ -110,7 +110,7 @@ def contains_all_numbers(expr, numbers):
 
 
 tf = module('twenty_four', alias=['twentyfour', '24'],
-            desc='{twenty_four.help.desc}', developers=['DoroWolf'])
+            desc='{twenty_four.help.desc}', developers=['DoroWolf'], doc=True)
 
 
 @tf.command('{{twenty_four.help}}')

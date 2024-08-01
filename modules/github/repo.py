@@ -59,9 +59,9 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
         hash = str(uuid.uuid4())
         download_pic = await download(
-            url=f'https://opengraph.githubassets.com/{hash}/{result["full_name"]}', 
+            url=f'https://opengraph.githubassets.com/{hash}/{result["full_name"]}',
             filename=f'{hash}.png'
-            )
+        )
         if download_pic:
             await msg.finish([Image(download_pic)], quote=False)
 

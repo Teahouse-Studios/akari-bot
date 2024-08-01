@@ -10,6 +10,7 @@ api_key = Config('exchange_rate_api_key', cfg_type=str)
 
 excr = module('exchange_rate',
               desc='{exchange_rate.help.desc}',
+              doc=True,
               alias=['exchangerate', 'exchange', 'excr'],
               developers=['DoroWolf'])
 

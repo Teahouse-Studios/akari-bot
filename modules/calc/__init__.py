@@ -10,7 +10,7 @@ from core.logger import Logger
 
 calc_dir = os.path.dirname(os.path.abspath(__file__))
 
-c = module('calc', developers=['Dianliang233'])
+c = module('calc', developers=['Dianliang233'], doc=True)
 
 
 @c.command('<math_expression> {calc.help}')

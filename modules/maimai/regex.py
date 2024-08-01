@@ -12,6 +12,7 @@ total_list = TotalList()
 
 mai_regex = module('maimai_regex',
                    desc='{maimai.help.maimai_regex.desc}',
+                   doc=True,
                    recommend_modules=['maimai'],
                    alias='mai_regex',
                    developers=['DoroWolf'],

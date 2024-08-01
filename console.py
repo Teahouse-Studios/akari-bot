@@ -46,6 +46,7 @@ console_history_path = os.path.abspath(os.path.dirname(__file__) + '/.console_hi
 if os.path.exists(console_history_path):
     os.remove(console_history_path)
 
+
 async def console_scheduler():
     load_extra_schedulers()
     await init_async()

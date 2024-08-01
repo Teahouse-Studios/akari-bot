@@ -89,14 +89,19 @@ async def search_csr(id=None):
             'elements': elements}
 
 
-ccode = module('chemical_code', alias={'cc': 'chemical_code',
-                                       'cca': 'chemical_code captcha',
-                                       'chemicalcode': 'chemical_code',
-                                       'chemical_captcha': 'chemical_code captcha',
-                                       'chemicalcaptcha': 'chemical_code captcha',
-                                       'ccode': 'chemical_code',
-                                       'ccaptcha': 'chemical_code captcha'},
-               desc='{chemical_code.help.desc}', developers=['OasisAkari'])
+ccode = module(
+    'chemical_code',
+    developers=['OasisAkari'],
+    desc='{chemical_code.help.desc}',
+    doc=True,
+    alias={
+        'cc': 'chemical_code',
+        'cca': 'chemical_code captcha',
+        'chemicalcode': 'chemical_code',
+        'chemical_captcha': 'chemical_code captcha',
+        'chemicalcaptcha': 'chemical_code captcha',
+        'ccode': 'chemical_code',
+         'ccaptcha': 'chemical_code captcha'})
 
 
 @ccode.command('{{chemical_code.help}}')
@@ -245,7 +250,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     else:
         result = await msg.wait_next_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")),
                                               Image(newpath), I18NContext('chemical_code.message.captcha',
-                                                                                 times=set_timeout)], timeout=None, append_instruction=False)
+                                                                          times=set_timeout)], timeout=None, append_instruction=False)
         if play_state.check():
             play_state.disable()
             if result.as_display(text_only=True) == play_state.check("answer"):

@@ -7,7 +7,7 @@ from .user import get_user_info
 
 usr = module('user',
              developers=['OasisAkari'],
-             recommend_modules='wiki'
+             recommend_modules='wiki', doc=True
              )
 
 
@@ -20,7 +20,7 @@ async def user(msg: Bot.MessageSession, username: str):
         if match_interwiki:
             interwikis = target.get_interwikis()
             if match_interwiki.group(1) in interwikis:
-                await get_user_info(msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2), profile)
+                await get_user_info(msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2))
         await get_user_info(msg, get_url, username)
     else:
         await msg.finish(msg.locale.t('wiki.message.not_set'))

@@ -2,7 +2,7 @@ from core.builtins import Bot
 from core.builtins.utils import command_prefix
 from core.component import module
 
-p = module('prefix', required_admin=True, base=True)
+p = module('prefix', required_admin=True, base=True, doc=True)
 
 
 @p.command('add <prefix> {{core.help.prefix.add}}',

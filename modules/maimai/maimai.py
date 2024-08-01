@@ -21,7 +21,8 @@ mai = module('maimai',
              developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
              alias='mai',
              support_languages=['zh_cn'],
-             desc='{maimai.help.desc}')
+             desc='{maimai.help.desc}',
+             doc=True)
 
 
 @mai.command('base <constant> [<constant_max>] [-p <page>] {{maimai.help.base}}',
@@ -344,7 +345,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                         touch=chart['notes'][3],
                         brk=chart['notes'][4],
                         charter=chart['charter']))
-                
+
         await msg.finish(await get_info(music, Plain('\n'.join(res))))
     else:
         res = msg.locale.t(

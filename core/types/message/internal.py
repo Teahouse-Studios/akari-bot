@@ -31,7 +31,7 @@ class Url:
         :param disable_mm: 是否禁用跳转链接，覆盖全局设置
         """
         raise NotImplementedError
-    
+
 
 class FormattedTime:
     """
@@ -54,7 +54,7 @@ class FormattedTime:
         :param timezone: 是否显示时区
         """
         raise NotImplementedError
-    
+
 
 class I18NContext:
     """
@@ -74,7 +74,7 @@ class ErrorMessage:
     错误消息。
     """
 
-    def __init__(self, error_message: str, locale = None, enable_report: bool = True, **kwargs):
+    def __init__(self, error_message: str, locale=None, enable_report: bool = True, **kwargs):
         """
         :param error_message: 错误信息文本
         :param locale: 多语言

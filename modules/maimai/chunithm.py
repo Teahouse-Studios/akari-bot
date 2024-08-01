@@ -13,6 +13,7 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
 
 chu = module('chunithm',
              developers=['DoroWolf'],
+             doc=True,
              alias='chu',
              support_languages=['zh_cn'],
              desc='{chunithm.help.desc}')
@@ -196,11 +197,11 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     else:
         if len(music['ds']) == 6:
             res = msg.locale.t(
-            "chunithm.message.song.worlds_end",
-            artist=music['basic_info']['artist'],
-            genre=music['basic_info']['genre'],
-            bpm=music['basic_info']['bpm'],
-            version=music['basic_info']['from'])
+                "chunithm.message.song.worlds_end",
+                artist=music['basic_info']['artist'],
+                genre=music['basic_info']['genre'],
+                bpm=music['basic_info']['bpm'],
+                version=music['basic_info']['from'])
         else:
             res = msg.locale.t(
                 "chunithm.message.song",

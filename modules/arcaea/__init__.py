@@ -9,7 +9,7 @@ from core.utils.web_render import webrender
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
+arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}', doc=True,
              alias=['a', 'arc'])
 
 
@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
     resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
         await msg.finish(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
-                                             url=resp['value']['url']))
+                                      url=resp['value']['url']))
     else:
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 

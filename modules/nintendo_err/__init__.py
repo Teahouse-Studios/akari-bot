@@ -78,7 +78,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         return memes.get(err.casefold())
 
 
-e = module('err', developers=['OasisAkari', 'kurisu'])
+e = module('err', developers=['OasisAkari', 'kurisu'], doc=True)
 
 
 @e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')

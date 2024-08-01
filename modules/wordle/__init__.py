@@ -19,7 +19,7 @@ from core.utils.game import PlayState
 text_mode = Config('wordle_disable_image', False)
 
 wordle = module('wordle',
-                desc='{wordle.help.desc}', developers=['Dianliang233', 'DoroWolf']
+                desc='{wordle.help.desc}', doc=True, developers=['Dianliang233', 'DoroWolf']
                 )
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'), encoding='utf8') as handle:
     word_list = handle.read().splitlines()

@@ -4,7 +4,7 @@ from .dbutils import OsuBindInfoManager
 from .profile import osu_profile
 from .utils import get_profile_name
 
-osu = module('osu', developers=['DoroWolf'], desc='{osu.help.desc}')
+osu = module('osu', developers=['DoroWolf'], desc='{osu.help.desc}', doc=True)
 
 
 @osu.handle('profile [<username>] [-t <mode>] {{osu.help.profile}}',

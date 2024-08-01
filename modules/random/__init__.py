@@ -6,7 +6,7 @@ from core.builtins import Bot
 from core.component import module
 
 r = module('random', alias=['rand', 'rng'],
-           developers=['Dianliang233'], desc='{random.help.desc}', )
+           developers=['Dianliang233'], desc='{random.help.desc}', doc=True)
 
 
 @r.command('number <min> <max> {{random.help.number}}', )

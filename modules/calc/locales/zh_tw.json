@@ -1,5 +1,5 @@
 {
-    "calc.help.desc": "安全地計算 Python ast 運算式。",
+    "calc.help": "安全地計算 Python ast 運算式。",
     "calc.message.invalid": "運算式無效：${expr}",
     "calc.message.time_out": "計算逾時。"
 }

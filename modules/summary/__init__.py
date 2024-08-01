@@ -16,7 +16,7 @@ client = AsyncOpenAI(
 
 s = module('summary',
            developers=['Dianliang233', 'OasisAkari'],
-           desc='{summary.help.desc}',
+           desc='{summary.help.desc}', doc=True,
            available_for=['QQ|Private', 'QQ|Group'])
 
 

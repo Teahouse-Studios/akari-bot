@@ -68,8 +68,24 @@ class MessageSession:
     消息会话，囊括了处理一条消息所需要的东西。
     """
     __slots__ = (
-        "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
-        "enabled_modules", "muted", "name", "petal", "custom_admins", "data", "locale", "timestamp", "tmp", "timezone_offset",
+        "target",
+        "session",
+        "trigger_msg",
+        "parsed_msg",
+        "matched_msg",
+        "sent",
+        "prefixes",
+        "options",
+        "enabled_modules",
+        "muted",
+        "name",
+        "petal",
+        "custom_admins",
+        "data",
+        "locale",
+        "timestamp",
+        "tmp",
+        "timezone_offset",
         "_tz_offset")
 
     parsed_msg: Dict[str, Union[str, list]]

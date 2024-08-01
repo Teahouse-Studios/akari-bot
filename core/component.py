@@ -145,6 +145,7 @@ def module(
     developers: Union[str, list, tuple, None] = None,
     required_admin: bool = False,
     base: bool = False,
+    doc: bool = False,
     hidden: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
@@ -162,6 +163,7 @@ def module(
     :param developers: 模块作者。
     :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
+    :param doc: 此命令是否存在线上说明文件。
     :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
@@ -176,6 +178,7 @@ def module(
                     recommend_modules=recommend_modules,
                     developers=developers,
                     base=base,
+                    doc=doc,
                     hidden=hidden,
                     required_admin=required_admin,
                     required_superuser=required_superuser,

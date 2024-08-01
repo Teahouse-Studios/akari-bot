@@ -10,13 +10,13 @@ from .newbie import newbie
 from .rc import rc
 from .rc_qq import rc_qq
 
-rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
+rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
 
 
 @rc_.command()
 @rc_.command('[--legacy] {{wiki.help.rc}}',
-            options_desc={'--legacy': '{help.option.legacy}'},
-            available_for=['QQ|Group'])
+             options_desc={'--legacy': '{help.option.legacy}'},
+             available_for=['QQ|Group'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -53,13 +53,13 @@ async def rc_loader(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
-ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
+ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
 
 
 @ab_.command()
 @ab_.command('[--legacy] {{wiki.help.ab}}',
-            options_desc={'--legacy': '{help.option.legacy}'},
-            available_for=['QQ|Group'])
+             options_desc={'--legacy': '{help.option.legacy}'},
+             available_for=['QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -96,7 +96,7 @@ async def ab_loader(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
-new = module('newbie', developers=['OasisAkari'], recommend_modules='wiki')
+new = module('newbie', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
 
 
 @new.command('{{wiki.help.newbie}}')

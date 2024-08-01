@@ -6,7 +6,7 @@ from core.utils.text import isint
 
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
-                 desc='{ncmusic.help.desc}',
+                 desc='{ncmusic.help.desc}', doc=True,
                  support_languages=['zh_cn'])
 
 
@@ -127,7 +127,6 @@ async def info(msg: Bot.MessageSession, sid: str):
         info = result['songs'][0]
         artist = ' / '.join([ar['name'] for ar in info['ar']])
         song_url = f"https://music.163.com/#/song?id={info['id']}"
-
 
         await msg.finish([Image(info['al']['picUrl']), Url(song_url),
                           I18NContext('ncmusic.message.info',

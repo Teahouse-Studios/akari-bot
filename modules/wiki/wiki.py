@@ -26,7 +26,7 @@ wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
                      'interwiki': 'wiki iw'},
               recommend_modules='wiki_inline',
-              developers=['OasisAkari'])
+              developers=['OasisAkari'], doc=True)
 
 
 @wiki.command('<pagename> [-l <lang>] {{wiki.help}}',

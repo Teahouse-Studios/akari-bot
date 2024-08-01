@@ -8,7 +8,7 @@ from core.component import module
 cpi = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consumer_price_index.csv'))
 
 i = module('inflation',
-           developers=['Dianliang233'], desc='{inflation.help.desc}', )
+           developers=['Dianliang233'], desc='{inflation.help.desc}')
 
 
 @i.command('<price> <country_or_region_name_or_alpha_3_code> <from_year> [<to_year>] {{inflation.help.adjust}}', )

@@ -73,15 +73,23 @@ class CFG:
                 if isinstance(cfg_type, tuple):
                     cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
                     if value is not None and not isinstance(value, cfg_type):
-                        logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type_str}, got {type(value).__name__}.')
+                        logger.warning(f'[Config] Config {q} has a wrong type, expected {
+                                       cfg_type_str}, got {type(value).__name__}.')
                 else:
                     if value is not None and not isinstance(value, cfg_type):
-                        logger.warning(f'[Config] Config {q} has a wrong type, expected {cfg_type.__name__}, got {type(value).__name__}.')
+                        logger.warning(
+                            f'[Config] Config {q} has a wrong type, expected {
+                                cfg_type.__name__}, got {
+                                type(value).__name__}.')
             else:
-                logger.warning(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
+                logger.warning(f'[Config] Invalid cfg_type provided in config {
+                               q}. cfg_type should be a type or a tuple of types.')
         elif default:
             if not isinstance(value, type(default)):
-                logger.warning(f'[Config] Config {q} has a wrong type, expected {type(default).__name__}, got {type(value).__name__}.')
+                logger.warning(
+                    f'[Config] Config {q} has a wrong type, expected {
+                        type(default).__name__}, got {
+                        type(value).__name__}.')
                 return default
         return value
 

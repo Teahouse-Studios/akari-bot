@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 from core.builtins import Bot, Embed, EmbedField, Image as BImage
 from core.component import module
 
-c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}')
+c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}', doc=True)
 
 font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 40)
 

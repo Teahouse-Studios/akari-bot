@@ -136,7 +136,7 @@ class MusicList(List[Music]):
 class TotalList:
     def __init__(self):
         self.total_list = None
-        
+
     async def get(self):
         if not self.total_list:
             await self.update()
@@ -149,7 +149,7 @@ class TotalList:
             for __i in range(len(total_list)):
                 total_list[__i] = Music(total_list[__i])
                 for __j in range(len(total_list[__i].charts)):
-                        total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
+                    total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
             self.total_list = total_list
             return True
         except Exception:

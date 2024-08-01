@@ -367,7 +367,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     fs = entry["fs"]
                     level_index = entry["level_index"]
                     score_rank = next(
-                    # 根据成绩获得等级
+                        # 根据成绩获得等级
                         rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
                     )
                     combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
@@ -376,7 +376,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     dxscore_max = sum(music['charts'][level_index]['notes']) * 3
                     level_scores[level_index].append(
                         (diffs[level_index], achievements, score_rank, combo_rank, sync_rank, dxscore, dxscore_max)
-                        )
+                    )
     except Exception:
         res = await get_total_record(msg, payload, True, use_cache)
         records = res["verlist"]
@@ -416,7 +416,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     return '\n'.join(output_lines)
 
 
-async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, goal: str, 
+async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, goal: str,
                             use_cache: bool = True) -> tuple[str, bool]:
     song_played = []
     song_remain = []
@@ -490,7 +490,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     return output, get_img
 
 
-async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int, 
+async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int,
                          use_cache: bool = True) -> tuple[str, bool]:
     res = await get_total_record(msg, payload, use_cache=use_cache)
     records = res["verlist"]
@@ -717,7 +717,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
                 output += f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]
-                                                                                   } {s[3]} {self_record}".strip() + '\n'
+                                                                              } {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > SONGS_NEED_IMG:
                 get_img = True
         else:
@@ -743,7 +743,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
                 output += f"{m.id} - {m.title}{' (DX)' if m.type ==
-                                                    'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
+                                               'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
             if len(song_remain) > SONGS_NEED_IMG:
                 get_img = True
         else:

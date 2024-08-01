@@ -25,7 +25,7 @@ def get_first_record(msg: Bot.MessageSession):
     return msg.ts2strftime(first_record, iso=True, timezone=False)
 
 
-ana = module('analytics', alias='ana', required_superuser=True, base=True)
+ana = module('analytics', alias='ana', required_superuser=True, base=True, doc=True)
 
 
 @ana.command()
@@ -101,7 +101,8 @@ async def _(msg: Bot.MessageSession):
                 result = msg.locale.t("core.message.analytics.year", module=module_, first_record=first_record)
             data_ = {}
             for m in range(12):
-                new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - relativedelta(months=12 - m - 1)
+                new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + \
+                    relativedelta(months=1) - relativedelta(months=12 - m - 1)
                 old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - relativedelta(months=12 - m)
                 get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
                 data_[old.month] = get_

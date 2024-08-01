@@ -9,7 +9,7 @@ from core.component import module
 #                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
 ureg = UnitRegistry(non_int_type=Decimal)
 i = module('convert', alias=['conv', 'unit'], desc='{convert.help.desc}',
-           developers=['Dianliang233'], support_languages=['en_us'])
+           developers=['Dianliang233'], doc=True, support_languages=['en_us'])
 
 
 @i.command('<from_val> <to_unit> {{convert.help}}')

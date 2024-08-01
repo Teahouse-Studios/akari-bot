@@ -18,7 +18,7 @@ import subprocess
 
 jwt_secret = Config('jwt_secret', cfg_type=str)
 
-ver = module('version', base=True)
+ver = module('version', base=True, doc=True)
 
 
 @ver.command('{{core.help.version}}')
@@ -36,7 +36,7 @@ async def bot_version(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
 
-ping = module('ping', base=True)
+ping = module('ping', base=True, doc=True)
 
 started_time = datetime.now()
 
@@ -81,7 +81,8 @@ admin = module('admin',
                alias={'ban': 'admin ban',
                       'unban': 'admin unban',
                       'ban list': 'admin ban list'},
-               desc='{core.help.admin.desc}')
+               desc='{core.help.admin.desc}',
+               doc=True)
 
 
 @admin.command([
@@ -143,7 +144,7 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang')
+locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang', doc=True)
 
 
 @locale.command()
@@ -177,7 +178,7 @@ async def reload_locale(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
-whoami = module('whoami', base=True)
+whoami = module('whoami', base=True, doc=True)
 
 
 @whoami.command('{{core.help.whoami}}')
@@ -193,7 +194,7 @@ async def _(msg: Bot.MessageSession):
         msg.locale.t('core.message.whoami', sender=msg.target.sender_id, target=msg.target.target_id) + perm)
 
 
-setup = module('setup', base=True, desc='{core.help.setup.desc}', alias='toggle')
+setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alias='toggle')
 
 
 @setup.command('typing {{core.help.setup.typing}}')
@@ -249,7 +250,7 @@ async def _(msg: Bot.MessageSession, second: str):
         await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
 
 
-mute = module('mute', base=True, required_admin=True)
+mute = module('mute', base=True, doc=True, required_admin=True)
 
 
 @mute.command('{{core.help.mute}}')
@@ -261,7 +262,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
+leave = module('leave', base=True, doc=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
 
 
 @leave.command('{{core.help.leave}}')

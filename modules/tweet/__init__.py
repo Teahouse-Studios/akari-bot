@@ -13,7 +13,7 @@ from core.utils.web_render import webrender
 
 t = module('tweet',
            developers=['Dianliang233'],
-           desc='{tweet.help.desc}',
+           desc='{tweet.help.desc}', doc=True,
            alias=['x']
            )
 

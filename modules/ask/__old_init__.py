@@ -22,7 +22,7 @@ if Config('enable_langsmith'):
     from .agent import agent_executor  # noqa: E402
     from .formatting import generate_latex, generate_code_snippet  # noqa: E402
 
-    a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
+    a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}', doc=True)
 
     @a.command('[--verbose] <question> {{ask.help}}')
     @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')

@@ -6,7 +6,7 @@ from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 from modules.wiki.utils.wikilib import WikiLib
 
-wb = module('wiki_bot', required_superuser=True,
+wb = module('wiki_bot', required_superuser=True, doc=True,
             alias='wbot')
 
 

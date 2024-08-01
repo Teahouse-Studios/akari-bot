@@ -4,7 +4,7 @@ from core.component import module
 mcv_rss = module('mcv_rss',
                  developers=['OasisAkari', 'Dianliang233'],
                  recommend_modules=['mcv_jira_rss'],
-                 desc='{mcv_rss.help.mcv_rss.desc}',
+                 desc='{mcv_rss.help.mcv_rss.desc}', doc=True,
                  alias='mcvrss')
 
 
@@ -15,7 +15,7 @@ async def mcv_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 mcbv_rss = module('mcbv_rss', developers=['OasisAkari'],
                   recommend_modules=['mcbv_jira_rss'],
-                  desc='{mcv_rss.help.mcbv_rss.desc}',
+                  desc='{mcv_rss.help.mcbv_rss.desc}', doc=True,
                   alias='mcbvrss')
 
 
@@ -27,7 +27,7 @@ async def mcbv_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 mcv_jira_rss = module('mcv_jira_rss',
                       developers=['OasisAkari', 'Dianliang233'],
                       recommend_modules=['mcv_rss'],
-                      desc='{mcv_rss.help.mcv_jira_rss.desc}',
+                      desc='{mcv_rss.help.mcv_jira_rss.desc}', doc=True,
                       alias='mcvjirarss')
 
 
@@ -39,7 +39,7 @@ async def mcv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 mcbv_jira_rss = module('mcbv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        recommend_modules=['mcbv_rss'],
-                       desc='{mcv_rss.help.mcbv_jira_rss.desc}',
+                       desc='{mcv_rss.help.mcbv_jira_rss.desc}', doc=True,
                        alias='mcbvjirarss')
 
 
@@ -50,7 +50,7 @@ async def mcbv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 mcdv_jira_rss = module('mcdv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
-                       desc='{mcv_rss.help.mcdv_jira_rss.desc}',
+                       desc='{mcv_rss.help.mcdv_jira_rss.desc}', doc=True,
                        alias='mcdvjirarss',
                        hidden=True)
 
@@ -62,7 +62,7 @@ async def mcdv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 mclgv_jira_rss = module('mclgv_jira_rss',
                         developers=['OasisAkari', 'Dianliang233'],
-                        desc='{mcv_rss.help.mclgv_jira_rss.desc}',
+                        desc='{mcv_rss.help.mclgv_jira_rss.desc}', doc=True,
                         alias='mclgvjirarss',
                         hidden=True)
 

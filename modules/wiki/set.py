@@ -70,7 +70,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
 
 
 @wiki.command('iw list [--legacy] {{wiki.help.iw.list}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
+              options_desc={'--legacy': '{help.option.legacy}'})
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()

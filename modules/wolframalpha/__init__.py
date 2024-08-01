@@ -18,7 +18,7 @@ w = module(
     alias=['wolfram', 'wa'],
     developers=['DoroWolf'],
     desc='{wolframalpha.help.desc}',
-    support_languages=['en_us'])
+    support_languages=['en_us'], doc=True)
 
 
 @w.handle('<query> {{wolframalpha.help}}')

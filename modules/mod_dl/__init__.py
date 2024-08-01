@@ -9,7 +9,7 @@ from core.utils.text import isint
 
 mod_dl = module(
     bind_prefix='mod_dl',
-    desc='{mod_dl.help.desc}',
+    desc='{mod_dl.help.desc}', doc=True,
     developers=['HornCopper', 'OasisAkari', 'z0z0r4'],
     recommend_modules=['mcmod'],
     alias='moddl')

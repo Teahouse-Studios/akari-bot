@@ -5,6 +5,7 @@ from .mcmod import mcmod as m
 mcmod = module(
     bind_prefix='mcmod',
     desc='{mcmod.help.desc}',
+    doc=True,
     developers=['Dianliang233', 'HornCopper', 'DrLee_lihr'],
     alias={'moddetails': 'mcmod details'},
     support_languages=['zh_cn']

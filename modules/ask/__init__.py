@@ -49,7 +49,7 @@ if Config('openai_api_key', cfg_type=str):
 else:
     INSTRUCTIONS = ''
 
-a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
+a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}', doc=True)
 
 
 @a.command('[-4] <question> {{ask.help}}')

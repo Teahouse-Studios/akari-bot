@@ -5,6 +5,7 @@ from .mojang_api import *
 mcplayer = module(
     bind_prefix='mcplayer',
     desc='{mcplayer.help.desc}',
+    doc=True,
     developers=['Dianliang233'],
 )
 

@@ -174,7 +174,12 @@ class MessageSession(MessageSessionT):
                 ftime_template.append("(UTC)")
             else:
                 ftime_template.append(f"(UTC{self._tz_offset})")
-        return (datetime.fromtimestamp(timestamp, datetimezone.utc) + self.timezone_offset).strftime(' '.join(ftime_template))
+        return (
+            datetime.fromtimestamp(
+                timestamp,
+                datetimezone.utc) +
+            self.timezone_offset).strftime(
+            ' '.join(ftime_template))
 
 
 __all__ = ["MessageSession"]

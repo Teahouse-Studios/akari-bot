@@ -8,7 +8,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.http import get_url
 
-ip = module('ip', developers=['Dianliang233'])
+ip = module('ip', developers=['Dianliang233'], doc=True)
 
 
 @ip.handle('<ip_address> {{ip.help}}')
@@ -106,6 +106,7 @@ def parse_coordinate(axis: str, value: float):
 
 
 async def format_ip(msg, info: Dict[str, Any]):
+    res = []
     ip_property = {
         'global': msg.locale.t('ip.message.ip_property.global'),
         'private': msg.locale.t('ip.message.ip_property.private'),
@@ -121,13 +122,32 @@ async def format_ip(msg, info: Dict[str, Any]):
         'unknown': msg.locale.t('unknown')
     }
 
-    return f'''\
-{info['ip']}
-{msg.locale.t('ip.message.type')}IPv{info['version']} {ip_property[info['ip_property']]}{msg.locale.t('ip.message.ip_property')}{f"""
-{msg.locale.t('ip.message.real_ip')}{info['real_ip']}""" if info['real_ip'] else ''}{f"""
-{msg.locale.t('ip.message.location')}{f"{info['city']}, " if info['city'] else ''}{f"{info['region']}, " if info['region']  else ''}{info['country']}""" if info['country'] else ''}{f" ({parse_coordinate('longitude', info['longitude'])}, {parse_coordinate('latitude', info['latitude'])})" if info['longitude'] and info['latitude'] else ''}{f"""
-{msg.locale.t('ip.message.postal_code')}{info['postal_code']}""" if info['postal_code'] else ''}{f"""
-{msg.locale.t('ip.message.organization')}{info['organization']}""" if info['organization'] else ''}{f"""
-{msg.locale.t('ip.message.asn')}{info['asn']}""" if info['asn'] else ''}{f" ({info['asn_organization']}) " if info['asn_organization'] else ''}{f"""
-{msg.locale.t('ip.message.utc')}UTC{(info['offset'] / 3600):+g}""" if info['offset'] else ''}{f"""
-{msg.locale.t('ip.message.reverse')}{info['reverse']}""" if info['reverse'] and info['reverse'] != info['ip'] else ''}'''
+    res.append(info['ip'])
+    res.append(f"{msg.locale.t('ip.message.type')}IPv{info['version']} {
+               ip_property[info['ip_property']]}{msg.locale.t('ip.message.ip_property')}")
+    res.append(f"{msg.locale.t('ip.message.real_ip')}{info['real_ip']}" if info['real_ip'] else '')
+    res.append(
+        f"""{
+            f'''{
+                msg.locale.t('ip.message.location')}{
+                f"{
+                    info['city']}, " if info['city'] else ''}{
+                        f"{
+                            info['region']}, " if info['region'] else ''}{
+                                info['country']}''' if info['country'] else ''}{
+                                    f" ({
+                                        parse_coordinate(
+                                            'longitude',
+                                            info['longitude'])}, {
+                                                parse_coordinate(
+                                                    'latitude',
+                                                    info['latitude'])})" if info['longitude'] and info['latitude'] else ''}""")
+    res.append(f"{msg.locale.t('ip.message.postal_code')}{info['postal_code']}" if info['postal_code'] else '')
+    res.append(f"{msg.locale.t('ip.message.organization')}{info['organization']}" if info['organization'] else '')
+    res.append(f"""{f"{msg.locale.t('ip.message.asn')}{info['asn']}" if info['asn'] else ''}{
+               f" ({info['asn_organization']}) " if info['asn_organization'] else ''}""")
+    res.append(f"{msg.locale.t('ip.message.utc')}UTC{(info['offset'] / 3600):+g}" if info['offset'] else '')
+    res.append(f"{msg.locale.t('ip.message.reverse')}{
+               info['reverse']}" if info['reverse'] and info['reverse'] != info['ip'] else '')
+
+    return '\n'.join([x for x in res if x])

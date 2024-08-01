@@ -4,7 +4,7 @@ from core.builtins import Bot, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 
-ali = module('alias', required_admin=True, base=True)
+ali = module('alias', required_admin=True, base=True, doc=True)
 
 
 @ali.command('add <alias> <command> {{core.help.alias.add}}',
@@ -13,7 +13,7 @@ ali = module('alias', required_admin=True, base=True)
              'raise <alias> {{core.help.alias.raise}}',
              'lower <alias> {{core.help.alias.lower}}',
              'list [--legacy] {{core.help.alias.list}}',
-            options_desc={'--legacy': '{help.option.legacy}'})
+             options_desc={'--legacy': '{help.option.legacy}'})
 async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
     alias = msg.parsed_msg.get('<alias>', False)
@@ -26,17 +26,18 @@ async def set_alias(msg: Bot.MessageSession):
         alias = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', alias)
         command = re.sub(r'\$\{([^}]*)\}', lambda match: '${' + match.group(1).replace(' ', '_') + '}', command)
         # 检查占位符有效性
+
         def check_valid_placeholder(alias):
             alias_noph = alias
             phs = re.findall(r"\${(.*?)}", alias)
             for ph in phs:
                 if not ph or '$' in ph or '}' in ph or '{' in ph:
-                   return False
+                    return False
                 alias_noph = alias_noph.replace(f"${{{ph}}}", "")
             return alias_noph.strip()
 
         if not (check_valid_placeholder(alias) and check_valid_placeholder(command)):
-                await msg.finish(msg.locale.t("core.message.alias.add.invalid_placeholder"))
+            await msg.finish(msg.locale.t("core.message.alias.add.invalid_placeholder"))
         if alias not in aliases:
             has_prefix = False
             for prefixes in msg.prefixes:
@@ -99,7 +100,10 @@ async def set_alias(msg: Bot.MessageSession):
         if len(aliases) == 0:
             await msg.finish(msg.locale.t("core.message.alias.list.none"))
         elif not msg.parsed_msg.get('--legacy', False):
-            table = ImageTable([[str(aliases_count-i), k, msg.prefixes[0] + aliases[k]] for i, k in enumerate(aliases)],
+            table = ImageTable([[str(aliases_count - i),
+                                 k,
+                                 msg.prefixes[0] + aliases[k]] for i,
+                                k in enumerate(aliases)],
                                [msg.locale.t("core.message.alias.list.table.header.priority"),
                                 msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
@@ -112,4 +116,4 @@ async def set_alias(msg: Bot.MessageSession):
 
         if legacy:
             await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
-                             + '\n'.join([f'{aliases_count-i} - {k} -> {msg.prefixes[0]}{aliases[k]}' for i, k in enumerate(aliases)]))
+                             + '\n'.join([f'{aliases_count - i} - {k} -> {msg.prefixes[0]}{aliases[k]}' for i, k in enumerate(aliases)]))

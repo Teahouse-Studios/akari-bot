@@ -7,12 +7,12 @@ from langconv.language.zh import zh_tw
 
 msg_types = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
 
-hitokoto = module(
-    'hitokoto',
-    developers=['bugungu', 'DoroWolf'],
-    desc='{hitokoto.help.desc}',
-    alias=['htkt', 'yiyan'],
-    support_languages=['zh_cn', 'zh_tw'])
+hitokoto = module('hitokoto',
+                  developers=['bugungu', 'DoroWolf'],
+                  desc='{hitokoto.help.desc}',
+                  doc=True,
+                  alias=['htkt', 'yiyan'],
+                  support_languages=['zh_cn', 'zh_tw'])
 
 
 @hitokoto.handle()

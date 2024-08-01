@@ -78,7 +78,7 @@ async def get_weekly_img(with_img=False, zh_tw=False):
     return msg_
 
 
-wky = module('weekly', developers=['Dianliang233'], support_languages=['zh_cn', 'zh_tw'])
+wky = module('weekly', developers=['Dianliang233'], support_languages=['zh_cn', 'zh_tw'], doc=True)
 
 
 @wky.handle('{{weekly.help}}')

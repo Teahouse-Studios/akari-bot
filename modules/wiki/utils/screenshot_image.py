@@ -35,16 +35,16 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         Logger.info('[Webrender] Generating element screenshot...')
         try:
             img = await download(webrender('element_screenshot', use_local=use_local),
-                                          status_code=200,
-                                          headers={'Content-Type': 'application/json'},
-                                          method="POST",
-                                          post_data=json.dumps({
-                                              'url': page_link,
-                                              'element': elements_}),
-                                          attempt=1,
-                                          timeout=30,
-                                          request_private_ip=True
-                                          )
+                                 status_code=200,
+                                 headers={'Content-Type': 'application/json'},
+                                 method="POST",
+                                 post_data=json.dumps({
+                                     'url': page_link,
+                                     'element': elements_}),
+                                 attempt=1,
+                                 timeout=30,
+                                 request_private_ip=True
+                                 )
         except aiohttp.ClientConnectorError:
             if use_local:
                 return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode,
@@ -58,16 +58,16 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         Logger.info('[Webrender] Generating section screenshot...')
         try:
             img = await download(webrender('section_screenshot', use_local=use_local),
-                                          status_code=200,
-                                          headers={'Content-Type': 'application/json'},
-                                          method="POST",
-                                          post_data=json.dumps({
-                                              'url': page_link,
-                                              'section': section}),
-                                          attempt=1,
-                                          timeout=30,
-                                          request_private_ip=True
-                                          )
+                                 status_code=200,
+                                 headers={'Content-Type': 'application/json'},
+                                 method="POST",
+                                 post_data=json.dumps({
+                                     'url': page_link,
+                                     'section': section}),
+                                 attempt=1,
+                                 timeout=30,
+                                 request_private_ip=True
+                                 )
         except aiohttp.ClientConnectorError:
             if use_local:
                 return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode,

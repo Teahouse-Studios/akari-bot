@@ -14,7 +14,7 @@ audit_available_list = ["KOOK|Group", "QQ|Group", "QQ|Guild", "QQ|Private"]
 if Config('enable_urlmanager', False):
     aud = module('wiki_audit',
                  required_superuser=True,
-                 alias='wau',
+                 alias='wau', doc=True,
                  available_for=audit_available_list)
 
     @aud.command(['trust <apilink>',

@@ -13,7 +13,7 @@ from .genb19 import drawb19
 from .update import update_assets, p_headers
 
 phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
-             alias=['p', 'pgr', 'phi'])
+             alias=['p', 'pgr', 'phi'], doc=True)
 
 
 @phi.command('bind <sessiontoken> {{phigros.help.bind}}')
@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'QQ|Group',
         'QQ|Guild',
         'Telegram|Group',
-        'Telegram|Supergroup',]:
+            'Telegram|Supergroup',]:
         await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False)
         deleted = await msg.delete()
         if not deleted:
@@ -37,10 +37,9 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=sessiontoken, username=get_user_info['nickname'])
         if bind:
             await msg.send_message(msg.locale.t("phigros.message.bind.success",
-                                                                username=get_user_info['nickname']), quote=False)
+                                                username=get_user_info['nickname']), quote=False)
         else:
             await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
-            
 
 
 @phi.command('unbind {{phigros.help.unbind}}')

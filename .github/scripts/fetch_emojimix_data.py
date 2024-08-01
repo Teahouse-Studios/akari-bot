@@ -3,12 +3,14 @@ from collections import defaultdict
 
 import requests
 
+
 def get_data_from_api(api_url):
     response = requests.get(api_url)
     if response.status_code == 200:
         return response.json()
     else:
         raise ValueError(f"Failed to fetch data from API: {response.status_code}")
+
 
 def compress_json(input_data):
     data = input_data["data"]
@@ -50,10 +52,11 @@ def compress_json(input_data):
 
     return compressed_data
 
+
 if __name__ == "__main__":
     api_url = "https://raw.githubusercontent.com/xsalazar/emoji-kitchen-backend/main/app/metadata.json"
     input_data = get_data_from_api(api_url)
     compressed_data = compress_json(input_data)
-    
+
     with open('output.json', "w", encoding="utf-8") as f:
         json.dump(compressed_data, f, ensure_ascii=False, indent=2)

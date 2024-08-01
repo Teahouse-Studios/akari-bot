@@ -19,7 +19,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .wiki import query_pages, generate_screenshot_v2_blocklist
 
 wiki_inline = module('wiki_inline',
-                     desc='{wiki.help.wiki_inline.desc}', recommend_modules=['wiki'],
+                     desc='{wiki.help.wiki_inline.desc}', doc=True, recommend_modules=['wiki'],
                      alias='wiki_regex', developers=['OasisAkari'])
 
 

@@ -1,8 +1,15 @@
 from core.builtins import Bot
 from core.component import module
 
-mcr = module('mc_crowdin', developers=['OasisAkari'],
-             desc='', alias='mccrowdin', exclude_from=['QQ|Private', 'QQ|Group', 'QQ|Guild'], required_superuser=True)
+mcr = module(
+    'mc_crowdin',
+    developers=['OasisAkari'],
+    alias='mccrowdin',
+    exclude_from=[
+        'QQ|Private',
+        'QQ|Group',
+        'QQ|Guild'],
+    required_superuser=True)
 
 
 @mcr.hook()

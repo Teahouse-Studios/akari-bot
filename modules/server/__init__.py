@@ -6,7 +6,7 @@ from core.component import module
 from core.dirty_check import check
 from .server import server
 
-s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
+s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'], doc=True)
 
 
 @s.command('<address:port> [-r] [-p] {{server.help}}',

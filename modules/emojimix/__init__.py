@@ -21,7 +21,6 @@ class EmojimixGenerator:
         self.data: dict = data["data"]
         self.date_mapping: dict = {idx: date for idx, date in enumerate(data["date"])}
 
-
     @staticmethod
     def str2emoji(emoji_str):
         parts = emoji_str.split('-')
@@ -29,13 +28,11 @@ class EmojimixGenerator:
         emoji = ''.join(emoji_chars)
         return emoji
 
-
     @staticmethod
     def make_emoji_tuple(emoji1: str, emoji2: str) -> Tuple[str, str]:
         emoji_code1 = '-'.join(f'{ord(char):x}' for char in emoji1)
         emoji_code2 = '-'.join(f'{ord(char):x}' for char in emoji2)
         return (emoji_code1, emoji_code2)
-    
 
     def random_choice_emoji(self, emoji: Optional[str] = None) -> Optional[Tuple[str, str]]:
         if emoji:
@@ -50,7 +47,6 @@ class EmojimixGenerator:
         combo = tuple(i.strip() for i in combo[1:-1].split(","))
         return combo
 
-
     def check_supported(self, emoji_tuple: Tuple[str, str]) -> List[str]:
         unsupported_emojis: List[str] = []
         checked: set = set()
@@ -60,7 +56,6 @@ class EmojimixGenerator:
                 unsupported_emojis.append(emoji_symbol)
                 checked.add(emoji)
         return unsupported_emojis
-
 
     def mix_emoji(self, emoji_tuple: Tuple[str, str]) -> Optional[str]:
         str_tuple_1 = f"({emoji_tuple[0]}, {emoji_tuple[1]})"
@@ -78,12 +73,11 @@ class EmojimixGenerator:
             right_emoji = emoji_tuple[0]
         else:
             return None
-        
+
         left_code_point = '-'.join(f'u{segment}' for segment in left_emoji.split('-'))
         right_code_point = '-'.join(f'u{segment}' for segment in right_emoji.split('-'))
         url = f"{API}/{date}/{left_code_point}/{left_code_point}_{right_code_point}.png"
         return url
-
 
     def list_supported_emojis(self, emoji: Optional[str] = None) -> Optional[List[str]]:
         supported_combinations: List[str] = []
@@ -94,7 +88,7 @@ class EmojimixGenerator:
             emoji_code = '-'.join(f'{ord(char):x}' for char in emoji_symbol)
             if emoji_code not in self.known_supported_emoji:
                 return None
-            
+
             for key in self.data:
                 if emoji_code in key:
                     pair = key.replace('(', '').replace(')', '').split(', ')
@@ -112,10 +106,11 @@ class EmojimixGenerator:
 
         return sorted(supported_combinations, key=str)
 
+
 mixer = EmojimixGenerator()
 
 
-emojimix = module('emojimix', developers=['DoroWolf'])
+emojimix = module('emojimix', developers=['DoroWolf'], doc=True)
 
 
 @emojimix.handle()
@@ -152,6 +147,7 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
     else:
         await msg.finish(msg.locale.t("emojimix.message.not_found"))
 
+
 def check_valid_emoji(str):
     return emoji.is_emoji(str)
 
@@ -163,7 +159,8 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
         if supported_emojis:
             send_msgs = [I18NContext('emojimix.message.combine_supported', emoji=emoji)]
             if Bot.FetchTarget.name == 'Discord':
-                send_msgs.extend([Plain(''.join(supported_emojis[i:i+200])) for i in range(0, len(supported_emojis), 200)])
+                send_msgs.extend([Plain(''.join(supported_emojis[i:i + 200]))
+                                 for i in range(0, len(supported_emojis), 200)])
             else:
                 send_msgs.append(Plain(''.join(supported_emojis)))
             await msg.finish(send_msgs)
@@ -172,8 +169,8 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     else:
         send_msgs = [I18NContext('emojimix.message.all_supported')]
         if Bot.FetchTarget.name == 'Discord':
-            send_msgs.extend([Plain(''.join(supported_emojis[i:i+200])) for i in range(0, len(supported_emojis), 200)])
+            send_msgs.extend([Plain(''.join(supported_emojis[i:i + 200]))
+                             for i in range(0, len(supported_emojis), 200)])
         else:
             send_msgs.append(Plain(''.join(supported_emojis)))
         await msg.finish(send_msgs)
-

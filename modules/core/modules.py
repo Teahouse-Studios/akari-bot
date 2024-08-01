@@ -19,6 +19,7 @@ m = module('module',
                   'load': 'module load',
                   'reload': 'module reload',
                   'unload': 'module unload'},
+           doc=True,
            required_admin=True
            )
 
@@ -31,8 +32,8 @@ m = module('module',
             'load <module> ...',
             'unload <module> ...',
             'list [--legacy] {{core.help.module.list}}'],
-            options_desc={'--legacy': '{help.option.legacy}'},
-            exclude_from=['QQ|Guild'])
+           options_desc={'--legacy': '{help.option.legacy}'},
+           exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
@@ -50,8 +51,8 @@ async def _(msg: Bot.MessageSession):
             'load <module> ...',
             'unload <module> ...',
             'list [--legacy] {{core.help.module.list}}'],
-            options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
-            available_for=['QQ|Guild'])
+           options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
+           available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
@@ -299,11 +300,11 @@ async def config_modules(msg: Bot.MessageSession):
         return
 
 
-hlp = module('help', base=True)
+hlp = module('help', base=True, doc=True)
 
 
 @hlp.command('[--legacy] <module> {{core.help.help.detail}}',
-            options_desc={'--legacy': '{help.option.legacy}'})
+             options_desc={'--legacy': '{help.option.legacy}'})
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
@@ -312,7 +313,7 @@ async def bot_help(msg: Bot.MessageSession):
         msgs = []
         help_name = msg.parsed_msg['<module>']
         if help_name in alias:
-            help_name = alias[help_name]
+            help_name = alias[help_name].split()[0]
         if help_name in current_unloaded_modules:
             await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
@@ -356,15 +357,15 @@ async def bot_help(msg: Bot.MessageSession):
                 devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
                 devs_msg = ''
-            if Config('help_page_url', cfg_type=str):
-                wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                               url=Config('help_page_url', cfg_type=str).replace('${module}', help_name))
-
-            elif Config('help_url', cfg_type=str):
-                wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                               url=(CFG.get_url('help_url') + help_name))
-            else:
-                wiki_msg = ''
+            if module_.doc:
+                if Config('help_page_url', cfg_type=str):
+                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                                                   url=Config('help_page_url', cfg_type=str).replace('${module}', help_name))
+                elif Config('help_url', cfg_type=str):
+                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                                                   url=(CFG.get_url('help_url') + help_name))
+                else:
+                    wiki_msg = ''
             if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
@@ -390,7 +391,7 @@ async def bot_help(msg: Bot.MessageSession):
 
 @hlp.command()
 @hlp.command('[--legacy] {{core.help.help}}',
-            options_desc={'--legacy': '{help.option.legacy}'})
+             options_desc={'--legacy': '{help.option.legacy}'})
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)

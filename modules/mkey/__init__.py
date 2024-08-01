@@ -2,7 +2,7 @@ from core.component import module
 from core.builtins import Bot
 from .generator import get_mkey
 
-mk = module('mkey', desc='{mkey.help.desc}', developers=['OasisAkari', 'Kurisu'])
+mk = module('mkey', desc='{mkey.help.desc}', doc=True, developers=['OasisAkari', 'Kurisu'])
 
 
 @mk.command('<device> <month> <day> <inquiry_num> [<device_id>]')

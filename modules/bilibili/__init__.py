@@ -8,7 +8,7 @@ from core.component import module
 from .bili_api import get_video_info
 
 bili = module('bilibili', alias='bili', developers=['DoroWolf'],
-              desc='{bilibili.help.desc}', support_languages=['zh_cn'])
+              desc='{bilibili.help.desc}', doc=True, support_languages=['zh_cn'])
 
 
 @bili.command('<bid> [-i] {{bilibili.help}}',

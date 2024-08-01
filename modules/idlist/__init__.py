@@ -7,7 +7,7 @@ from core.utils.http import get_url
 
 api = 'https://ca.projectxero.top/idlist/search'
 
-i = module('idlist', support_languages=['zh_cn'])
+i = module('idlist', doc=True, support_languages=['zh_cn'])
 
 
 @i.command('<query> {{idlist.help}}')

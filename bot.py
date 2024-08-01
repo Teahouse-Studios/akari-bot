@@ -26,7 +26,7 @@ bots_required_configs = {
         'matrix_user',
         'matrix_device_id',
         'matrix_token']
-    }
+}
 
 
 class RestartBot(Exception):

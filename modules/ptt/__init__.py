@@ -11,7 +11,7 @@ from core.utils.image import get_fontsize
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-p = module('ptt', developers=['OasisAkari'])
+p = module('ptt', developers=['OasisAkari'], doc=True)
 
 
 @p.command('<ptt> {{ptt.help}}')
