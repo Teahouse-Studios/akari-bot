@@ -13,7 +13,7 @@ calc_dir = os.path.dirname(os.path.abspath(__file__))
 c = module('calc', developers=['Dianliang233'], doc=True)
 
 
-@c.command('<math_expression> {calc.help}')
+@c.command('<math_expression> {{calc.help}}')
 async def _(msg: Bot.MessageSession, math_expression: str, use_markdown=False):
     if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
         use_markdown = True
