@@ -143,10 +143,10 @@ class MessageSession(MessageSessionT):
         await asyncio.sleep(s)
 
     def check_super_user(self):
-        return True if self.target.sender_info.query.isSuperUser else False
+        return True if self.target.sender_info.is_super_user else False
 
     async def check_permission(self):
-        if self.target.sender_id in self.custom_admins or self.target.sender_info.query.isSuperUser:
+        if self.target.sender_id in self.custom_admins or self.target.sender_info.is_super_user:
             return True
         return await self.check_native_permission()
 

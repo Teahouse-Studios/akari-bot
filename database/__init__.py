@@ -228,21 +228,53 @@ class BotDBUtil:
             return True
 
     class SenderInfo:
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
         def __init__(self, sender_id):
             self.sender_id = sender_id
             self.query = self.query_SenderInfo
-            if not self.query:
-                session.add_all([SenderInfo(id=sender_id)])
-                session.commit()
-                self.query = session.query(SenderInfo).filter_by(id=sender_id).first()
 
         @property
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.sender_id).first()
+        
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def init(self):
+            if not self.query:
+                session.add_all([SenderInfo(id=self.sender_id)])
+                session.commit()
+                return self.query_SenderInfo
+            else:
+                return self.query
+
+        @property
+        def is_in_block_list(self):
+            if not self.query:
+                return False
+            return self.query.isInBlockList
+        
+        @property
+        def is_in_allow_list(self):
+            if not self.query:
+                return False
+            return self.query.isInAllowList
+        
+        @property
+        def is_super_user(self):
+            if not self.query:
+                return False
+            return self.query.isSuperUser
+        
+        @property
+        def warns(self):
+            if not self.query:
+                return 0
+            return self.query.warns
+        
+        @property
+        def disable_typing(self):
+            if not self.query:
+                return False
+            return self.query.disable_typing
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error

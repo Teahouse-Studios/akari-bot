@@ -107,14 +107,19 @@ async def get_target(target_id: str):
 @app.get('/sender/{sender_id}')
 async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
+    if not sender.query:
+        return JSONResponse(status_code=404, content={
+            'target_id': sender_id,
+            'notFound': True,
+        })
 
     return {
         'senderId': sender_id,
-        'isInBlockList': sender.query.isInBlockList,
-        'isInAllowList': sender.query.isInAllowList,
-        'isSuperUser': sender.query.isSuperUser,
-        'warns': sender.query.warns,
-        'disableTyping': sender.query.disable_typing
+        'isInBlockList': sender.is_in_block_list,
+        'isInAllowList': sender.is_in_allow_list,
+        'isSuperUser': sender.is_super_user,
+        'warns': sender.warns,
+        'disableTyping': sender.disable_typing
     }
 
 
