@@ -113,15 +113,17 @@ class BotDBUtil:
                 return {}
             return json.loads(self.query.options)
 
-        def get_option(self, k=None):
-            if not self.query and not k:
-                return {}
-            elif not self.query and k:
-                return None
-            if not k:
-                return self.options
+        def get_option(self, k=None, default=None):
+            if not self.query:
+                if not k:
+                    return {}
+                else:
+                    return default
             else:
-                return self.options.get(k)
+                if not k:
+                    return self.options
+                else:
+                    return self.options.get(k, default)
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error

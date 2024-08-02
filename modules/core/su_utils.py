@@ -162,7 +162,7 @@ ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True)
 @ae.command('check <user>')
 async def _(msg: Bot.MessageSession, user: str):
     stat = ''
-    if not user.startswith(f'{msg.target.sender_from}|'):
+    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     warns = BotDBUtil.SenderInfo(user).query.warns
     temp_banned_time = await check_temp_ban(user)
@@ -176,7 +176,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command('warn <user> [<count>]')
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
-    if not user.startswith(f'{msg.target.sender_from}|'):
+    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     warn_count = await warn_user(user, count)
     await msg.finish(msg.locale.t("core.message.abuse.warn.success", user=user, count=count, warn_count=warn_count))
