@@ -235,7 +235,7 @@ class BotDBUtil:
         @property
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.sender_id).first()
-        
+
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def init(self):
@@ -251,25 +251,25 @@ class BotDBUtil:
             if not self.query:
                 return False
             return self.query.isInBlockList
-        
+
         @property
         def is_in_allow_list(self):
             if not self.query:
                 return False
             return self.query.isInAllowList
-        
+
         @property
         def is_super_user(self):
             if not self.query:
                 return False
             return self.query.isSuperUser
-        
+
         @property
         def warns(self):
             if not self.query:
                 return 0
             return self.query.warns
-        
+
         @property
         def disable_typing(self):
             if not self.query:

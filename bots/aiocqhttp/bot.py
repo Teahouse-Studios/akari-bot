@@ -159,7 +159,7 @@ async def _(event: Event):
 async def _(event: Event):
     if event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
-                                             sender_id=event.operator_id)
+                                                         sender_id=event.operator_id)
         sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.operator_id))
         unfriendly_actions.add('mute', str(event.duration))
         result = unfriendly_actions.check_mute()

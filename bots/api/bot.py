@@ -67,7 +67,6 @@ async def get_target(target_id: str):
 
     dice_dc_reversed = target.get_option('dice_dc_reversed', False)
     dice_default_sides = target.get_option('dice_default_sides', 0)
-    
 
     wiki_target = WikiTargetInfo(target_id)
     wiki_headers = wiki_target.get_headers()
@@ -155,7 +154,7 @@ async def enable_modules(target_id: str, request: Request):
                 "detail": "Not Found"
             })
         target_from = '|'.join(target_id.split('|')[:-2])
-        
+
         body = await request.json()
         modules = body["modules"]
         modules = modules if isinstance(modules, list) else [modules]
@@ -167,7 +166,7 @@ async def enable_modules(target_id: str, request: Request):
             "detail": "Bad Request",
             "message": "error"
         })
-    
+
 
 @app.post('/modules/{target_id}/disable')
 async def enable_modules(target_id: str, request: Request):
@@ -178,7 +177,7 @@ async def enable_modules(target_id: str, request: Request):
                 "detail": "Not Found"
             })
         target_from = '|'.join(target_id.split('|')[:-2])
-        
+
         body = await request.json()
         modules = body["modules"]
         modules = modules if isinstance(modules, list) else [modules]
