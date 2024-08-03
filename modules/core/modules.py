@@ -311,7 +311,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
     alias = ModulesManager.modules_aliases
     if msg.parsed_msg:
         msgs = []
-        if help_name in alias:
+        if module in alias:
             help_name = alias[module].split()[0]
         else:
             help_name = module.split()[0]
