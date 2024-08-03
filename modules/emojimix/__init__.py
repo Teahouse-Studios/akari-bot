@@ -124,6 +124,10 @@ async def _(msg: Bot.MessageSession):
 
 @emojimix.handle('<emoji1> [<emoji2>] {{emojimix.help}}')
 async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
+    if '+' in emoji1:
+        emojis = emoji1.split('+', 1)
+        emoji1 = emojis[0]
+        emoji2 = emojis[1]
     if not check_valid_emoji(emoji1):
         await msg.finish(msg.locale.t("emojimix.message.invalid"))
     if emoji2:
