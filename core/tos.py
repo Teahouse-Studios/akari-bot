@@ -19,8 +19,12 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
             warn_template.append(
                 msg.locale.t(
                     'tos.message.warning.count',
-                    current_warns=current_warns,
-                    warn_counts=WARNING_COUNTS))
+                    current_warns=current_warns))
+            if not msg.target.sender_info.is_in_allow_list:
+                warn_template.append(
+                    msg.locale.t(
+                        'tos.message.warning.prompt',
+                        warn_counts=WARNING_COUNTS))
             if current_warns <= 2 and Config('issue_url', cfg_type=str):
                 warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
         elif current_warns == WARNING_COUNTS:
