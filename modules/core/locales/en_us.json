@@ -189,7 +189,6 @@
     "core.message.set.option.edit.success": "The following parameter was set for the conversation: ${k} -> ${v}",
     "core.message.setup.check.disable": "Check prompt disabled.",
     "core.message.setup.check.enable": "Check prompt enabled.",
-    "core.message.setup.cooldown.invalid": "Invalid command cooldown.",
     "core.message.setup.cooldown.success": "The command cooldown has been set to ${time} second(s).",
     "core.message.setup.timeoffset.invalid": "Invalid time offset.",
     "core.message.setup.timeoffset.success": "The time offset has been set to UTC${offset}.",
