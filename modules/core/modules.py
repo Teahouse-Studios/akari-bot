@@ -303,17 +303,18 @@ async def config_modules(msg: Bot.MessageSession):
 hlp = module('help', base=True, doc=True)
 
 
-@hlp.command('[--legacy] <module> {{core.help.help.detail}}',
+@hlp.command('<module> [--legacy] {{core.help.help.detail}}',
              options_desc={'--legacy': '{help.option.legacy}'})
-async def bot_help(msg: Bot.MessageSession):
+async def bot_help(msg: Bot.MessageSession, module: str):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     alias = ModulesManager.modules_aliases
     if msg.parsed_msg:
         msgs = []
-        help_name = msg.parsed_msg['<module>']
         if help_name in alias:
-            help_name = alias[help_name].split()[0]
+            help_name = alias[module].split()[0]
+        else:
+            help_name = module.split()[0]
         if help_name in current_unloaded_modules:
             await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
