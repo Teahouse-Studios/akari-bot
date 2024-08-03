@@ -46,7 +46,7 @@ async def remove_temp_ban(target):
 
 
 async def tos_abuse_warning(msg: Bot.MessageSession, e):
-    if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
+    if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user() and not msg.target.sender_info.is_in_allow_list:
         await warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
