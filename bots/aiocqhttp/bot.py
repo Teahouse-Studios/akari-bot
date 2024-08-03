@@ -6,14 +6,12 @@ import sys
 
 import ujson as json
 from aiocqhttp import Event
-from datetime import datetime
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from config import Config
-from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url, Temp
-from core.scheduler import Scheduler, IntervalTrigger
+from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
@@ -47,7 +45,7 @@ async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session', True):
-                return await bot.send(event, Locale(default_locale).t('qq.message.disable_temp_session'))
+                return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
 
@@ -131,53 +129,63 @@ async def _(event):
 
 @bot.on('request.friend')
 async def _(event: Event):
-    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
+    sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.user_id))
+    if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
     if not Config('qq_allow_approve_friend', False):
         await bot.send_private_msg(user_id=event.user_id,
-                                   message=Locale(default_locale).t('qq.message.disable_friend_request'))
+                                   message=Locale(default_locale).t('qq.prompt.disable_friend_request'))
     else:
-        if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlockList:
+        if sender_info.is_in_block_list:
             return {'approve': False}
         return {'approve': True}
 
 
 @bot.on('request.group.invite')
 async def _(event: Event):
-    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
+    sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.user_id))
+    if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
     if not Config('qq_allow_approve_group_invite', False):
         await bot.send_private_msg(user_id=event.user_id,
-                                   message=Locale(default_locale).t('qq.message.disable_group_invite'))
+                                   message=Locale(default_locale).t('qq.prompt.disable_group_invite'))
     else:
+        if BotDBUtil.GroupBlockList.check('QQ|Group|' + str(event.group_id)):
+            return {'approve': False}
         return {'approve': True}
 
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
     if event.user_id == int(qq_account):
-        result = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
-                                             sender_id=event.operator_id).add_and_check('mute', str(event.duration))
+        unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
+                                             sender_id=event.operator_id)
+        sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.operator_id))
+        unfriendly_actions.add('mute', str(event.duration))
+        result = unfriendly_actions.check_mute()
         if event.duration >= 259200:
             result = True
-        if result:
+        if result and not sender_info.is_super_user:
             reason = Locale(default_locale).t('tos.message.reason.mute')
             await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
             await bot.call_action('set_group_leave', group_id=event.group_id)
-            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
+            sender_info.edit('isInAllowList', False)
+            sender_info.edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 
 @bot.on_notice('group_decrease')
 async def _(event: Event):
     if event.sub_type == 'kick_me':
-        result = True
-        if result:
+        BotDBUtil.UnfriendlyActions(target_id=event.group_id, sender_id=event.operator_id).add('kick')
+        sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.operator_id))
+        if not sender_info.is_super_user:
             reason = Locale(default_locale).t('tos.message.reason.kick')
             await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
             BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
-            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
+            sender_info.edit('isInAllowList', False)
+            sender_info.edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 

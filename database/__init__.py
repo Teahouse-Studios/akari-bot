@@ -411,7 +411,7 @@ class BotDBUtil:
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def add_and_check(self, action='default', detail='') -> bool:
+        def add(self, action='default', detail=''):
             """
 
             :return: True = yes, False = no
@@ -419,7 +419,6 @@ class BotDBUtil:
             session.add_all([UnfriendlyActionsTable(targetId=self.target_id,
                                                     senderId=self.sender_id, action=action, detail=detail)])
             session.commit()
-            return self.check_mute()
 
     class JobQueue:
 

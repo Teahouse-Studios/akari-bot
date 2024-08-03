@@ -164,12 +164,16 @@ async def _(msg: Bot.MessageSession, user: str):
     stat = ''
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    warns = BotDBUtil.SenderInfo(user).query.warns
+    sender_info = BotDBUtil.SenderInfo(user)
+    warns = sender_info.query.warns
     temp_banned_time = await check_temp_ban(user)
-    is_banned = BotDBUtil.SenderInfo(user).query.isInBlockList
+    is_in_allow_list = sender_info.is_in_allow_list
+    is_in_block_list = sender_info.is_in_block_list
     if temp_banned_time:
         stat += '\n' + msg.locale.t("core.message.abuse.check.tempbanned", ban_time=temp_banned_time)
-    if is_banned:
+    if is_in_allow_list:
+        stat += '\n' + msg.locale.t("core.message.abuse.check.trusted")
+    if is_in_block_list and not is_in_allow_list:
         stat += '\n' + msg.locale.t("core.message.abuse.check.banned")
     await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns) + stat)
 
@@ -210,7 +214,8 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
+    sender_info = BotDBUtil.SenderInfo(user)
+    if sender_info.edit('isInBlockList', True) and sender_info.edit('isInAllowList', False):
         await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
 
 
@@ -218,8 +223,27 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
+    sender_info = BotDBUtil.SenderInfo(user)
+    if sender_info.edit('isInBlockList', False):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
+
+
+@ae.command('trust <user>')
+async def _(msg: Bot.MessageSession, user: str):
+    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
+    sender_info = BotDBUtil.SenderInfo(user)
+    if sender_info.edit('isInAllowList', True) and sender_info.edit('isInBlockList', False):
+        await msg.finish(msg.locale.t("core.message.abuse.trust.success", user=user))
+
+
+@ae.command('distrust <user>')
+async def _(msg: Bot.MessageSession, user: str):
+    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+        await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
+    sender_info = BotDBUtil.SenderInfo(user)
+    if sender_info.edit('isInAllowList', False):
+        await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
 
 if Bot.client_name == 'QQ':
