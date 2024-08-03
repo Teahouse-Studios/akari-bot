@@ -54,12 +54,15 @@ async def _(msg: Bot.MessageSession):
 
 
 async def parse_shorturl(shorturl):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(shorturl, allow_redirects=False) as response:
-            target_url = response.headers.get('Location')
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(shorturl, allow_redirects=False) as response:
+                target_url = response.headers.get('Location')
 
-    video = re.search(r'/video/([^/?]+)', target_url)
-    if video:
-        return f"?bvid={video.group(1)}"
-    else:
-        return False
+        video = re.search(r'/video/([^/?]+)', target_url)
+        if video:
+            return f"?bvid={video.group(1)}"
+        else:
+            return None
+    except Exception:
+        return None
