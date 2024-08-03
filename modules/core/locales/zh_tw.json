@@ -189,7 +189,6 @@
     "core.message.set.option.edit.failed": "失敗，請嘗試使用跳脫引號或校對輸入。",
     "core.message.setup.check.disable": "已停用指令錯誤檢查提醒。",
     "core.message.setup.check.enable": "已啟用指令錯誤檢查提醒。",
-    "core.message.setup.cooldown.invalid": "無效的指令冷卻時間。",
     "core.message.setup.cooldown.success": "已將指令冷卻時間設定為 ${time} 秒。",
     "core.message.setup.timeoffset.invalid": "無效的時間偏移量。",
     "core.message.setup.timeoffset.success": "已將時間偏移量設定為 UTC${offset}。",
