@@ -1,11 +1,10 @@
-
 import os
 import sys
 import time
 
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import uvicorn
-from fastapi import FastAPI
 import jwt
 
 from core.queue import JobQueue
@@ -35,11 +34,6 @@ async def startup_event():
     await JobQueue.secret_append_ip()
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
 @app.get('/auth/{token}')
 async def auth(token: str):
     try:
@@ -56,8 +50,7 @@ async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if not target.query:
         return JSONResponse(status_code=404, content={
-            'target_id': target_id,
-            'notFound': True,
+            "detail": "Not Found"
         })
     enabled_modules = target.enabled_modules
     is_muted = target.is_muted
@@ -65,20 +58,24 @@ async def get_target(target_id: str):
     locale = target.locale
     petal = target.petal
 
-    command_alias = target.get_option('command_alias')
-    command_prefix = target.get_option('command_prefix')
-    ban = target.get_option('ban')
-    typo_check = target.get_option('typo_check')
-    cooldown_time = target.get_option('cooldown_time')
-    dice_dc_reversed = target.get_option('dice_dc_reversed')
-    dice_default_sides = target.get_option('dice_default_sides')
-    wordle_dark_theme = target.get_option('wordle_dark_theme')
+    command_alias = target.get_option('command_alias', {})
+    command_prefix = target.get_option('command_prefix', [])
+    ban = target.get_option('ban', [])
+    typo_check = target.get_option('typo_check', False)
+    cooldown_time = target.get_option('cooldown_time', 0)
+    in_post_whitelist = target.get_option('in_post_whitelist', False)
+
+    dice_dc_reversed = target.get_option('dice_dc_reversed', False)
+    dice_default_sides = target.get_option('dice_default_sides', 0)
+    
 
     wiki_target = WikiTargetInfo(target_id)
     wiki_headers = wiki_target.get_headers()
     wiki_start_wiki = wiki_target.get_start_wiki()
     wiki_interwikis = wiki_target.get_interwikis()
-    wiki_redlink = target.get_option('wiki_redlink')
+    wiki_redlink = target.get_option('wiki_redlink', False)
+
+    wordle_dark_theme = target.get_option('wordle_dark_theme', False)
 
     return {
         'targetId': target_id,
@@ -92,14 +89,19 @@ async def get_target(target_id: str):
         'ban': ban,
         'typoCheck': typo_check,
         'cooldownTime': cooldown_time,
-        'diceDCReversed': dice_dc_reversed,
-        'diceDefaultFace': dice_default_sides,
-        'wordleDarkTheme': wordle_dark_theme,
-        'wikiRedlink': wiki_redlink,
+        'inPostWhitelist': in_post_whitelist,
+        'dice': {
+            'DCReversed': dice_dc_reversed,
+            'defaultFace': dice_default_sides,
+        },
         'wiki': {
             'headers': wiki_headers,
             'startWiki': wiki_start_wiki,
-            'interwikis': wiki_interwikis
+            'interwikis': wiki_interwikis,
+            'redlink': wiki_redlink
+        },
+        'wordle': {
+            'darkTheme': wordle_dark_theme,
         }
     }
 
@@ -109,8 +111,7 @@ async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
     if not sender.query:
         return JSONResponse(status_code=404, content={
-            'target_id': sender_id,
-            'notFound': True,
+            "detail": "Not Found"
         })
 
     return {
@@ -123,24 +124,77 @@ async def get_sender(sender_id: str):
     }
 
 
-@app.get('/module/{target_id}')
-async def get_module_list(target_id: str):
+@app.get('/modules')
+async def get_module_list():
+    return {'modules': ModulesManager.return_modules_list()}
+
+
+@app.get('/modules/{target_id}')
+async def get_target_modules(target_id: str):
+    target_data = BotDBUtil.TargetInfo(target_id)
+    if not target_data.query:
+        return JSONResponse(status_code=404, content={
+            "detail": "Not Found"
+        })
     target_from = '|'.join(target_id.split('|')[:-2])
-    return ModulesManager.return_modules_list(
+    modules = ModulesManager.return_modules_list(
         target_from=target_from)
+    enabled_modules = target_data.enabled_modules
+    return {
+        'targetId': target_id,
+        'modules': {k: v for k, v in modules.items() if k in enabled_modules}
+    }
 
 
-@app.post('/module/{target_id}/{module_name}')
-async def set_module(target_id: str, module_name: str, enable: bool):
-    target_from = '|'.join(target_id.split('|')[:-2])
-    return ModulesManager.set_module(
-        targetFrom=target_from,
-        moduleName=module_name,
-        enable=enable)
+@app.post('/modules/{target_id}/enable')
+async def enable_modules(target_id: str, request: Request):
+    try:
+        target_data = BotDBUtil.TargetInfo(target_id)
+        if not target_data.query:
+            return JSONResponse(status_code=404, content={
+                "detail": "Not Found"
+            })
+        target_from = '|'.join(target_id.split('|')[:-2])
+        
+        body = await request.json()
+        modules = body["modules"]
+        modules = modules if isinstance(modules, list) else [modules]
+        modules = [m for m in modules if m in ModulesManager.return_modules_list(target_from=target_from)]
+        target_data.enable(modules)
+        return {"message": "success"}
+    except Exception:
+        raise JSONResponse(status_code=400, content={
+            "detail": "Bad Request",
+            "message": "error"
+        })
+    
+
+@app.post('/modules/{target_id}/disable')
+async def enable_modules(target_id: str, request: Request):
+    try:
+        target_data = BotDBUtil.TargetInfo(target_id)
+        if not target_data.query:
+            return JSONResponse(status_code=404, content={
+                "detail": "Not Found"
+            })
+        target_from = '|'.join(target_id.split('|')[:-2])
+        
+        body = await request.json()
+        modules = body["modules"]
+        modules = modules if isinstance(modules, list) else [modules]
+        modules = [m for m in modules if m in ModulesManager.return_modules_list(target_from=target_from)]
+        target_data.disable(modules)
+        return {"message": "success"}
+    except Exception as e:
+        Logger.error(str(e))
+        return JSONResponse(status_code=400, content={
+            "detail": "Bad Request",
+            "message": "error"
+        })
 
 
 @app.get('/locale/{locale}/{string}')
-async def get_translation(locale: str, string: str):
+async def get_locale(locale: str, string: str):
     try:
         return {
             'locale': locale,
@@ -149,9 +203,7 @@ async def get_translation(locale: str, string: str):
         }
     except TypeError:
         return JSONResponse(status_code=404, content={
-            'locale': locale,
-            'string': string,
-            'notFound': True,
+            "detail": "Not Found"
         })
 
 if __name__ == "__main__":
