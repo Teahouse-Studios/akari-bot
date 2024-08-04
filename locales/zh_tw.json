@@ -66,9 +66,9 @@
     "petal.message.gained.success": "得到了 ${amount} 片花瓣。",
     "petal.message.lost.limit": "（本日失去花瓣已達到每日上限。）",
     "petal.message.lost.success": "失去了 ${amount} 片花瓣。",
-    "qq.message.disable_friend_request": "你好！本機器人不主動同意好友請求，請聯絡機器人擁有者添加好友。",
-    "qq.message.disable_group_invite": "你好！本機器人不主動同意入群請求，請聯絡機器人擁有者邀請加入群組。",
-    "qq.message.disable_temp_session": "請先添加好友後再進行命令交互。",
+    "qq.prompt.disable_friend_request": "你好！本機器人不主動同意好友請求，請聯絡機器人擁有者添加好友。",
+    "qq.prompt.disable_group_invite": "你好！本機器人不主動同意入群請求，請聯絡機器人擁有者邀請加入群組。",
+    "qq.prompt.disable_temp_session": "請先添加好友後再進行命令交互。",
     "success": "成功。",
     "time.date.format": "%Y 年 %m 月 %d 日",
     "time.date.iso.format": "%Y-%m-%d",
@@ -90,8 +90,9 @@
     "tos.message.tempbanned": "提示：\n由於你的行為觸發了警告，我們已對你暫時封鎖。\n距解除時間還有 ${ban_time} 秒。",
     "tos.message.tempbanned.warning": "提示：\n即使已被暫時封鎖，嘗試繼續濫用指令可能會導致你被再次警告。\n距解除時間還有 ${ban_time} 秒。",
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
-    "tos.message.warning.count": "這是第 ${current_warns} 次警告。如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
+    "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
     "unknown": "未知",
     "yes": "是"
 }
