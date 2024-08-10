@@ -27,7 +27,7 @@
     "error.prompt.address": "Report this issue: ${url}",
     "error.prompt.noreport": "An error occurred while executing the command:\n${detail}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "error.prompt.report": "An error occurred while executing the command:\n${detail}\nPlease report the following message to developers.",
-    "error.prompt.timeout": "An error occurred while executing the command:\n${detail}\nThis error may be caused by the bot not processing messages in time. Please report the following message to developers if the error occurs repeatedly.",
+    "error.prompt.timeout": "An error occurred while executing the command:\n${detail}\nThis error may be caused by the bot not processing messages in time. If the error occurs repeatedly, please report the following message to developers.",
     "example": "Hello world!",
     "failed": "Failed.",
     "game.help.stop": "Stop the current game.",
