@@ -439,6 +439,9 @@ class WikiLib:
         :param _search: 是否为搜索模式，仅用作内部递归调用判断
         :return:
         """
+        if m := re.match(r'w:c:.*?:(.*)', title) and self.wiki_info.api.find('fandom.com') != -1:
+            nq = WikiLib('https://community.fandom.com/wiki/' + title, self.headers)
+            return await nq.parse_page_info(m.group(1))
         try:
             await self.fixup_wiki_info()
         except InvalidWikiError as e:
