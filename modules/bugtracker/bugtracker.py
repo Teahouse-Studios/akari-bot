@@ -141,6 +141,5 @@ async def bugtracker_get(msg, mojira_id: str):
         if version := data.get("version", False):
             msglist.append(version)
         if (link := data.get("link", False)):
-            msglist.append(str(Url(link)))
             issue_link = link
     return '\n'.join(msglist), issue_link
