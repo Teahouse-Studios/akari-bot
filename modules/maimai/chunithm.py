@@ -3,7 +3,7 @@ from core.component import module
 from core.utils.image import msgchain2image
 from core.utils.text import isint
 from .dbutils import DivingProberBindInfoManager
-from .libraries.chunithm_apidata import get_info
+from .libraries.chunithm_apidata import get_info, get_record
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import generate_best30_text, get_diff, SONGS_PER_PAGE
 
@@ -248,6 +248,7 @@ async def _(msg: Bot.MessageSession):
 
 @chu.handle('bind <username> {{maimai.help.bind}}', exclude_from=['QQ', 'QQ|Group'])
 async def _(msg: Bot.MessageSession, username: str):
+    await get_record(msg, {'username': username}, use_cache=False)
     bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
     if bind:
         await msg.finish(msg.locale.t('maimai.message.bind.success') + username)

@@ -6,7 +6,7 @@ from core.logger import Logger
 from core.utils.text import isint
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
+from .libraries.maimaidx_apidata import get_alias, get_info, get_record, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
@@ -204,6 +204,7 @@ async def _(msg: Bot.MessageSession, grade: str):
 
 @mai.handle('bind <username> {{maimai.help.bind}}', exclude_from=['QQ', 'QQ|Group'])
 async def _(msg: Bot.MessageSession, username: str):
+    await get_record(msg, {'username': username}, use_cache=False)
     bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
     if bind:
         await msg.finish(msg.locale.t('maimai.message.bind.success') + username)
