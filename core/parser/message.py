@@ -152,7 +152,9 @@ def transform_alias(msg, command: str):
             Logger.debug(' '.join(command_split))
             return ' '.join(command_split)  # 重新连接消息
         else:
-            return command
+            pass
+
+    return command
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
