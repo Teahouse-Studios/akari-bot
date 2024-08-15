@@ -127,9 +127,11 @@ async def _(msg: Bot.MessageSession, target: str):
         if re.match(r'\[.*\]|\{.*\}', v):
             try:
                 v = v.replace(r'\'', r'\"')
+                v = v.replace(r'\"', r'\\\"')
                 v = json.loads(v)
-            except json.JSONDecodeError:
-                await msg.finish(msg.locale.t("core.message.config.write.failed"))
+            except json.JSONDecodeError as e:
+                Logger.error(str(e))
+                await msg.finish(msg.locale.t("failed"))
         elif v.lower() == 'true':
             v = True
         elif v.lower() == 'false':
@@ -490,10 +492,11 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
     elif re.match(r'\[.*\]', v):
         try:
             v = v.replace(r'\'', r'\"')
+            v = v.replace(r'\"', r'\\\"')
             v = json.loads(v)
-        except json.JSONDecodeError:
-            await msg.finish(msg.locale.t("core.message.config.write.failed"))
-
+        except json.JSONDecodeError as e:
+            Logger.error(str(e))
+            await msg.finish(msg.locale.t("failed"))
     CFG.write(k, v, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("success"))
 
