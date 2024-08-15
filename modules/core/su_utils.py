@@ -126,8 +126,7 @@ async def _(msg: Bot.MessageSession, target: str):
         v = msg.parsed_msg.get('<v>')
         if re.match(r'\[.*\]|\{.*\}', v):
             try:
-                v = v.replace(r'\'', r'\"')
-                v = v.replace(r'\"', r'\\\"')
+                v = v.replace(r'\'', r'\"').replace(r'\"', r'\\\"')
                 v = json.loads(v)
             except json.JSONDecodeError as e:
                 Logger.error(str(e))
@@ -466,6 +465,7 @@ if Config('enable_eval', False):
     @_eval.command('<display_msg>')
     async def _(msg: Bot.MessageSession, display_msg: str):
         try:
+            display_msg = display_msg.replace(r'\'', r'\"').replace(r'\"', r'\\\"')
             await msg.finish(str(eval(display_msg, {'msg': msg})))
         except Exception as e:
             raise NoReportException(e)
@@ -491,8 +491,7 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
         v = float(v)
     elif re.match(r'\[.*\]', v):
         try:
-            v = v.replace(r'\'', r'\"')
-            v = v.replace(r'\"', r'\\\"')
+            v = v.replace(r'\'', r'\"').replace(r'\"', r'\\\"')
             v = json.loads(v)
         except json.JSONDecodeError as e:
             Logger.error(str(e))
