@@ -539,7 +539,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     song_remain_difficult = []
 
     version_mapping = {'霸': '覇', '晓': '暁', '樱': '櫻', '堇': '菫', '辉': '輝', '华': '華', '雙': '双'}
-    goal_mapping = {'将': '將', '极': '極'}
+    goal_mapping = {'將': '将', '极': '極'}
 
     version = plate[0]
     goal = plate[1:]
@@ -563,18 +563,18 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     res = await get_plate(msg, payload, version, use_cache)
     verlist = res["verlist"]
 
-    if goal in ['將', '者']:
+    if goal in ['将', '者']:
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
-            if song['level_index'] == 0 and song['achievements'] < (100.0 if goal == '將' else 80.0):
+            if song['level_index'] == 0 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_basic.append([song['id'], song['level_index']])
-            if song['level_index'] == 1 and song['achievements'] < (100.0 if goal == '將' else 80.0):
+            if song['level_index'] == 1 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_advanced.append([song['id'], song['level_index']])
-            if song['level_index'] == 2 and song['achievements'] < (100.0 if goal == '將' else 80.0):
+            if song['level_index'] == 2 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_expert.append([song['id'], song['level_index']])
-            if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '將' else 80.0):
+            if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_master.append([song['id'], song['level_index']])
             if version in ['舞', '覇'] and song['level_index'] == 4 and song['achievements'] < (
-                    100.0 if goal == '將' else 80.0):
+                    100.0 if goal == '将' else 80.0):
                 song_remain_remaster.append([song['id'], song['level_index']])  # 霸者和舞牌需要Re:MASTER难度
             song_played.append([song['id'], song['level_index']])
     elif goal == '極':
