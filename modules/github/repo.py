@@ -3,7 +3,7 @@ import uuid
 from core.builtins import Bot, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
-from modules.github.utils import time_diff, dirty_check, darkCheck
+from modules.github.utils import time_diff, dirty_check, dark_check
 
 
 async def repo(msg: Bot.MessageSession, name: str):
@@ -48,7 +48,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         if parent:
             message += '\n' + parent
 
-        is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
+        is_dirty = await dirty_check(message, result['owner']['login']) or dark_check(message)
         if is_dirty:
             await msg.finish(rickroll(msg))
         else:

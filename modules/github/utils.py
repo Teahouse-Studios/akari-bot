@@ -1,10 +1,10 @@
 import datetime
 
-from config import Config
 from core import dirty_check as dirty
+from core.builtins import EnableDirtyWordCheck
 
 
-def darkCheck(message: str):
+def dark_check(message: str):
     blacklist = [
         'china-dictatorship'
         'cirosantilli',
@@ -19,7 +19,7 @@ def darkCheck(message: str):
         'zhao',
         'programthink'
     ]
-    if Config('enable_dirty_check', False):
+    if EnableDirtyWordCheck:
         for i in blacklist:
             if message.find(i) != -1:
                 return True

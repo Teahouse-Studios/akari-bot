@@ -20,7 +20,7 @@ from core.utils.text import isfloat, isint
 from database import BotDBUtil
 
 
-target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group",
+target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group", "KOOK|Person",
                "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
                "Telegram|Group", "Telegram|Private", "Telegram|Supergroup", "TEST|Console",]
 sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User", "TEST",]
