@@ -168,7 +168,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         ds = music['ds'][5]
         level = music['level'][5]
         res.append(msg.locale.t(
-            "chunithm.message.song.chart",
+            "chunithm.message.chart",
             diff='World\'s End',
             level=level,
             ds=ds,
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
             ds = music['ds'][diff]
             level = music['level'][diff]
             res.append(msg.locale.t(
-                "chunithm.message.song.chart",
+                "chunithm.message.chart",
                 diff=diff_list[diff],
                 level=level,
                 ds=ds,

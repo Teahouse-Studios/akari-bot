@@ -259,7 +259,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         level = music['level'][0]
         if len(chart['notes']) == 4:
             res.append(msg.locale.t(
-                "maimai.message.song.sd",
+                "maimai.message.chart.sd",
                 diff='Utage',
                 level=level,
                 ds=ds,
@@ -270,7 +270,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 charter=chart['charter']))
         else:
             res.append(msg.locale.t(
-                "maimai.message.song.dx",
+                "maimai.message.chart.dx",
                 diff='Utage',
                 level=level,
                 ds=ds,
@@ -287,7 +287,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         level = music['level'][0]
         if len(chartL['notes']) == 4:
             res.append(msg.locale.t(
-                "maimai.message.song.sd",
+                "maimai.message.chart.sd",
                 diff='Utage',
                 level=level,
                 ds=ds,
@@ -298,7 +298,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 charter=chartL['charter']))
         else:
             res.append(msg.locale.t(
-                "maimai.message.song.dx",
+                "maimai.message.chart.dx",
                 diff='Utage',
                 level=level,
                 ds=ds,
@@ -315,7 +315,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             level = music['level'][diff]
             if len(chart['notes']) == 4:
                 res.append(msg.locale.t(
-                    "maimai.message.song.sd",
+                    "maimai.message.chart.sd",
                     diff=diff_list[diff],
                     level=level,
                     ds=ds,
@@ -326,7 +326,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     charter=chart['charter']))
             else:
                 res.append(msg.locale.t(
-                    "maimai.message.song.dx",
+                    "maimai.message.chart.dx",
                     diff=diff_list[diff],
                     level=level,
                     ds=ds,
