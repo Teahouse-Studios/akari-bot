@@ -78,7 +78,7 @@ genre_i18n_mapping = {
     "其他游戏": "GAME & VARIETY",
     "舞萌": "maimai",
     "音击&中二节奏": "ONGEKI & CHUNITHM",
-    "宴会场": "宴会場"
+    "宴会場": "宴会場"
 }
 
 versions = ["maimai",
