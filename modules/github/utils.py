@@ -19,7 +19,7 @@ def dark_check(message: str):
         'zhao',
         'programthink'
     ]
-    if EnableDirtyWordCheck:
+    if EnableDirtyWordCheck.status:
         for i in blacklist:
             if message.find(i) != -1:
                 return True
