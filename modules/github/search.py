@@ -1,7 +1,7 @@
 from core.builtins import Bot, Url
 from core.dirty_check import rickroll
 from core.utils.http import get_url
-from modules.github.utils import dirty_check, darkCheck
+from modules.github.utils import dirty_check, dark_check
 
 
 async def search(msg: Bot.MessageSession, keyword: str):
@@ -21,7 +21,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
         if result['total_count'] > 5:
             message += '\n' + msg.locale.t("message.collapse", amount="5")
 
-    is_dirty = await dirty_check(message) or darkCheck(message)
+    is_dirty = await dirty_check(message) or dark_check(message)
     if is_dirty:
         await msg.finish(rickroll(msg))
 
