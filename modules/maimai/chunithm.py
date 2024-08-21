@@ -151,9 +151,46 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
-@chu.command('id <id> [-c] {{maimai.help.id}}',)
-@chu.command('song <song> [-c] {{maimai.help.song}}',
-             options_desc={'-c': '{maimai.help.option.c}'})
+@chu.command('chart <song> {{maimai.help.chart}}')
+async def _(msg: Bot.MessageSession, song: str, diff: str = None):
+    if song[:2].lower() == "id":
+        sid = song[2:]
+        music = (await total_list.get()).by_id(sid)
+    else:
+        music = (await total_list.get()).by_title(song)
+
+    if not music:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+
+    res = []
+    if len(music['ds']) == 6:
+        chart = music['charts'][5]
+        ds = music['ds'][5]
+        level = music['level'][5]
+        res.append(msg.locale.t(
+            "chunithm.message.song.chart",
+            diff='World\'s End',
+            level=level,
+            ds=ds,
+            combo=chart['combo'],
+            charter=chart['charter']))
+    else:
+        for diff in range(len(music['ds'])):
+            chart = music['charts'][diff]
+            ds = music['ds'][diff]
+            level = music['level'][diff]
+            res.append(msg.locale.t(
+                "chunithm.message.song.chart",
+                diff=diff_list[diff],
+                level=level,
+                ds=ds,
+                combo=chart['combo'],
+                charter=chart['charter']))
+    await msg.finish(await get_info(music, Plain('\n'.join(res))))
+
+
+@chu.command('id <id> {{maimai.help.id}}',)
+@chu.command('song <song> {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
@@ -167,49 +204,22 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if msg.parsed_msg.get('-c', False):
-        res = []
-        if len(music['ds']) == 6:
-            chart = music['charts'][5]
-            ds = music['ds'][5]
-            level = music['level'][5]
-            res.append(msg.locale.t(
-                "chunithm.message.song.chart",
-                diff='World\'s End',
-                level=level,
-                ds=ds,
-                combo=chart['combo'],
-                charter=chart['charter']))
-        else:
-            for diff in range(len(music['ds'])):
-                chart = music['charts'][diff]
-                ds = music['ds'][diff]
-                level = music['level'][diff]
-                res.append(msg.locale.t(
-                    "chunithm.message.song.chart",
-                    diff=diff_list[diff],
-                    level=level,
-                    ds=ds,
-                    combo=chart['combo'],
-                    charter=chart['charter']))
-        await msg.finish(await get_info(music, Plain('\n'.join(res))))
+    if len(music['ds']) == 6:
+        res = msg.locale.t(
+            "chunithm.message.song.worlds_end",
+            artist=music['basic_info']['artist'],
+            genre=music['basic_info']['genre'],
+            bpm=music['basic_info']['bpm'],
+            version=music['basic_info']['from'])
     else:
-        if len(music['ds']) == 6:
-            res = msg.locale.t(
-                "chunithm.message.song.worlds_end",
-                artist=music['basic_info']['artist'],
-                genre=music['basic_info']['genre'],
-                bpm=music['basic_info']['bpm'],
-                version=music['basic_info']['from'])
-        else:
-            res = msg.locale.t(
-                "chunithm.message.song",
-                artist=music['basic_info']['artist'],
-                genre=music['basic_info']['genre'],
-                bpm=music['basic_info']['bpm'],
-                version=music['basic_info']['from'],
-                level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(music, Plain(res)))
+        res = msg.locale.t(
+            "chunithm.message.song",
+            artist=music['basic_info']['artist'],
+            genre=music['basic_info']['genre'],
+            bpm=music['basic_info']['bpm'],
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
+    await msg.finish(await get_info(music, Plain(res)))
 
 
 @chu.command('random [<diff+level>] {{maimai.help.random}}')
