@@ -6,10 +6,10 @@ from datetime import datetime
 import ujson as json
 
 from core.builtins import Bot, MessageChain, Plain
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
+from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
 
 SONGS_PER_PAGE = 30
@@ -18,146 +18,18 @@ SONGS_NEED_IMG = 10
 assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
 
-sd_plate_conversion = {
-    '初': 'maimai',
-    '真': 'maimai PLUS',
-    '超': 'maimai GreeN',
-    '檄': 'maimai GreeN PLUS',
-    '橙': 'maimai ORANGE',
-    '暁': 'maimai ORANGE PLUS',
-    '桃': 'maimai PiNK',
-    '櫻': 'maimai PiNK PLUS',
-    '紫': 'maimai MURASAKi',
-    '菫': 'maimai MURASAKi PLUS',
-    '白': 'maimai MiLK',
-    '雪': 'MiLK PLUS',
-    '輝': 'maimai FiNALE',
-}
-
-dx_plate_conversion = {
-    '熊': 'maimai でらっくす',
-    '華': 'maimai でらっくす',
-    '爽': 'maimai でらっくす Splash',
-    '煌': 'maimai でらっくす Splash',
-    '宙': 'maimai でらっくす UNiVERSE',
-    '星': 'maimai でらっくす UNiVERSE',
-    '祭': 'maimai でらっくす FESTiVAL',
-    '祝': 'maimai でらっくす FESTiVAL',
-    '双': 'maimai でらっくす BUDDiES',
-}
-
-grade_conversion = {
-    '初段': 'grade1',
-    '二段': 'grade2',
-    '三段': 'grade3',
-    '四段': 'grade4',
-    '五段': 'grade5',
-    '六段': 'grade6',
-    '七段': 'grade7',
-    '八段': 'grade8',
-    '九段': 'grade9',
-    '十段': 'grade10',
-    '真初段': 'tgrade1',
-    '真二段': 'tgrade2',
-    '真三段': 'tgrade3',
-    '真四段': 'tgrade4',
-    '真五段': 'tgrade5',
-    '真六段': 'tgrade6',
-    '真七段': 'tgrade7',
-    '真八段': 'tgrade8',
-    '真九段': 'tgrade9',
-    '真十段': 'tgrade10',
-    '真皆伝': 'tgrade11',
-    '真皆传': 'tgrade11',
-    '真皆傳': 'tgrade11',
-    '裏皆伝': 'tgrade12',
-    '里皆传': 'tgrade12',
-    '裡皆傳': 'tgrade12',
-    '裏皆傳': 'tgrade12',
-    'EXPERT初級': 'expert1',
-    'EXPERT初级': 'expert1',
-    'EXPERT中級': 'expert2',
-    'EXPERT中级': 'expert2',
-    'EXPERT上級': 'expert3',
-    'EXPERT上级': 'expert3',
-    'EXPERT超上級': 'expert4',
-    'EXPERT超上级': 'expert4',
-    'MASTER初級': 'master1',
-    'MASTER初级': 'master1',
-    'MASTER中級': 'master2',
-    'MASTER中级': 'master2',
-    'MASTER上級': 'master3',
-    'MASTER上级': 'master3',
-    'MASTER超上級': 'master4',
-    'MASTER超上级': 'master4',
-}
-
-score_to_rank = {
-    (0.0, 50.0): "D",
-    (50.0, 60.0): "C",
-    (60.0, 70.0): "B",
-    (70.0, 75.0): "BB",
-    (75.0, 80.0): "BBB",
-    (80.0, 90.0): "A",
-    (90.0, 94.0): "AA",
-    (94.0, 97.0): "AAA",
-    (97.0, 98.0): "S",
-    (98.0, 99.0): "S+",
-    (99.0, 99.5): "SS",
-    (99.5, 100.0): "SS+",
-    (100.0, 100.5): "SSS",
-    (100.5, float('inf')): "SSS+",
-}
-
-combo_conversion = {
-    "fc": "FC",
-    "fcp": "FC+",
-    "ap": "AP",
-    "app": "AP+",
-}
-
-sync_conversion = {
-    "sync": "SYNC",
-    "fs": "FS",
-    "fsp": "FS+",
-    "fsd": "FDX",
-    "fsdp": "FDX+",
-}
-
-diffs = {
-    0: "Basic",
-    1: "Advanced",
-    2: "Expert",
-    3: "Master",
-    4: "Re:MASTER",
-}
-
-achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]  # 各个成绩对应的评级分界线（向上取）
-scoreRank = list(score_to_rank.values())  # Rank字典的值（文本显示）
-comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
-syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
-combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
-sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
-plate_conversion = sd_plate_conversion | dx_plate_conversion
-
-
 def get_diff(diff: str) -> int:
-    diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
-    diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
-    diff_label_zhs = ['绿', '黄', '红', '紫', '白']
-    diff_label_zht = ['綠', '黃', '紅']
-
     diff = diff.lower()
-    diff_label_lower = [label.lower() for label in diff_label]
+    diff_list_lower = [label.lower() for label in diff_list]
 
-    if diff in diff_label_zhs:
-        level = diff_label_zhs.index(diff)
-    elif diff in diff_label_zht:
-        level = diff_label_zht.index(diff)
-    elif diff in diff_label_abbr:
-        level = diff_label_abbr.index(diff)
-    elif diff in diff_label_lower:
-        level = diff_label_lower.index(diff)
+    if diff in diff_list_zhs:
+        level = diff_list_zhs.index(diff)
+    elif diff in diff_list_zht:
+        level = diff_list_zht.index(diff)
+    elif diff in diff_list_abbr:
+        level = diff_list_abbr.index(diff)
+    elif diff in diff_list_lower:
+        level = diff_list_lower.index(diff)
     else:
         level = None
     return level
@@ -246,7 +118,7 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
         dxstar = calc_dxstar(chart["dxScore"], dxscore_max)
         rank = next(
             # 根据成绩获得等级
-            rank for interval, rank in score_to_rank.items() if interval[0] <= chart["achievements"] < interval[1]
+            rank for interval, rank in score_to_rate.items() if interval[0] <= chart["achievements"] < interval[1]
         )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
@@ -256,8 +128,8 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
             level,
             chart["achievements"],
             rank,
-            combo_conversion.get(chart["fc"], ""),
-            sync_conversion.get(chart["fs"], ""),
+            combo_mapping.get(chart["fc"], ""),
+            sync_mapping.get(chart["fs"], ""),
             chart["ds"],
             chart["ra"],
             dxstar,
@@ -270,7 +142,7 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
         dxstar = calc_dxstar(chart["dxScore"], dxscore_max)
         rank = next(
             # 根据成绩获得等级
-            rank for interval, rank in score_to_rank.items() if interval[0] <= chart["achievements"] < interval[1]
+            rank for interval, rank in score_to_rate.items() if interval[0] <= chart["achievements"] < interval[1]
         )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
@@ -280,8 +152,8 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
             level,
             chart["achievements"],
             rank,
-            combo_conversion.get(chart["fc"], ""),
-            sync_conversion.get(chart["fs"], ""),
+            combo_mapping.get(chart["fc"], ""),
+            sync_mapping.get(chart["fs"], ""),
             chart["ds"],
             chart["ra"],
             dxstar,
@@ -368,10 +240,10 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     level_index = entry["level_index"]
                     score_rank = next(
                         # 根据成绩获得等级
-                        rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
+                        rank for interval, rank in score_to_rate.items() if interval[0] <= achievements < interval[1]
                     )
-                    combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
-                    sync_rank = sync_conversion.get(fs, "")  # Sync字典转换
+                    combo_rank = combo_mapping.get(fc, "")  # Combo字典转换
+                    sync_rank = sync_mapping.get(fs, "")  # Sync字典转换
                     dxscore = entry.get("dxScore", 0)
                     dxscore_max = sum(music['charts'][level_index]['notes']) * 3
                     level_scores[level_index].append(
@@ -389,10 +261,10 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                 level_index = entry["level_index"]
                 score_rank = next(
                     # 根据成绩获得等级
-                    rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
+                    rank for interval, rank in score_to_rate.items() if interval[0] <= achievements < interval[1]
                 )
-                combo_rank = combo_conversion.get(fc, "")  # Combo字典转换
-                sync_rank = sync_conversion.get(fs, "")  # Sync字典转换
+                combo_rank = combo_mapping.get(fc, "")  # Combo字典转换
+                sync_rank = sync_mapping.get(fs, "")  # Sync字典转换
                 level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
     output_lines = []
@@ -425,25 +297,25 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     verlist = res["verlist"]
 
     goal = goal.upper()  # 输入强制转换为大写以适配字典
-    if goal in scoreRank:
-        achievement = achievementList[scoreRank.index(goal) - 1]  # 根据列表将输入评级转换为成绩分界线
+    if goal in rate_list:
+        achievement = achievement_list[rate_list.index(goal) - 1]  # 根据列表将输入评级转换为成绩分界线
         for song in verlist:
             if song['level'] == level and song['achievements'] < achievement:  # 达成难度条件但未达成目标条件
                 song_remain.append([song['id'], song['level_index']])  # 将剩余歌曲ID和难度加入目标列表
             song_played.append([song['id'], song['level_index']])  # 将已游玩歌曲ID和难度加入列表
-    elif goal in comboRank:
-        combo_index = comboRank.index(goal)  # 根据API结果字典转换
+    elif goal in combo_list:
+        combo_index = combo_list.index(goal)  # 根据API结果字典转换
         for song in verlist:
             if song['level'] == level and (
-                (song['fc'] and combo_rank.index(
+                (song['fc'] and combo_list_raw.index(
                     song['fc']) < combo_index) or not song['fc']):  # 达成难度条件但未达成目标条件
                 song_remain.append([song['id'], song['level_index']])  # 将剩余歌曲ID和难度加入目标列表
             song_played.append([song['id'], song['level_index']])  # 将已游玩歌曲ID和难度加入列表
-    elif goal in syncRank:
-        sync_index = syncRank.index(goal)  # 根据API结果字典转换
+    elif goal in sync_list:
+        sync_index = sync_list.index(goal)  # 根据API结果字典转换
         for song in verlist:
             if song['level'] == level and (
-                (song['fs'] and sync_rank.index(
+                (song['fs'] and sync_list_raw.index(
                     song['fs']) < sync_index) or not song['fs']):  # 达成难度条件但未达成目标条件
                 song_remain.append([song['id'], song['level_index']])  # 将剩余歌曲ID和难度加入目标列表
             song_played.append([song['id'], song['level_index']])  # 将已游玩歌曲ID和难度加入列表
@@ -469,14 +341,14 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
             self_record = ''
             if [int(s[0]), s[-2]] in song_record:
                 record_index = song_record.index([int(s[0]), s[-2]])
-                if goal in scoreRank:
+                if goal in rate_list:
                     self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
-                elif goal in comboRank:
+                elif goal in combo_list:
                     if verlist[record_index]['fc']:
-                        self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
-                elif goal in syncRank:
+                        self_record = combo_list[combo_list_raw.index(verlist[record_index]['fc'])]
+                elif goal in sync_list:
                     if verlist[record_index]['fs']:
-                        self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+                        self_record = sync_list[sync_list_raw.index(verlist[record_index]['fs'])]
             output += f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
             if i == SONGS_PER_PAGE - 1:
                 break
@@ -511,9 +383,9 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
             output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {
                 music.ds[s['level_index']]} {s['achievements']:.4f}%"
             if s["fc"] and s["fs"]:
-                output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
+                output += f" {combo_mapping.get(s['fc'], '')} {sync_mapping.get(s['fs'], '')}"
             elif s["fc"] or s["fs"]:
-                output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
+                output += f" {combo_mapping.get(s['fc'], '')}{sync_mapping.get(s['fs'], '')}"
             output_lines.append(output)
 
     outputs = '\n'.join(output_lines)
@@ -554,9 +426,9 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
     elif version in ['覇', '舞']:  # 霸者和舞牌需要全版本
-        payload['version'] = list(set(ver for ver in list(sd_plate_conversion.values())))
-    elif version in plate_conversion and version != '初':  # “初”不是版本名称
-        payload['version'] = [plate_conversion[version]]
+        payload['version'] = list(set(ver for ver in list(sd_plate_mapping.values())))
+    elif version in plate_mapping and version != '初':  # “初”不是版本名称
+        payload['version'] = [plate_mapping[version]]
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
@@ -712,10 +584,10 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         self_record = f"{str('{:.4f}'.format(verlist[record_index]['achievements']))}%"
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
-                            self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
+                            self_record = combo_list[combo_list_raw.index(verlist[record_index]['fc'])]
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
-                            self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+                            self_record = sync_list[sync_list_raw.index(verlist[record_index]['fs'])]
                 output += f"{s[0]} - {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]
                                                                               } {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > SONGS_NEED_IMG:
@@ -738,10 +610,10 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
-                            self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
+                            self_record = combo_list[combo_list_raw.index(verlist[record_index]['fc'])]
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
-                            self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+                            self_record = sync_list[sync_list_raw.index(verlist[record_index]['fs'])]
                 output += f"{m.id} - {m.title}{' (DX)' if m.type ==
                                                'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
             if len(song_remain) > SONGS_NEED_IMG:
@@ -769,7 +641,7 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
             return None, input_key
 
     grade = grade.upper()  # 输入强制转换为大写以适配字典
-    grade_key, grade = key_process(grade, grade_conversion)
+    grade_key, grade = key_process(grade, grade_mapping)
 
     if not grade_key:
         await msg.finish(msg.locale.t('maimai.message.grade_invalid'))

@@ -1,26 +1,18 @@
-import math
 import os
-import traceback
 from typing import Optional, Dict, List, Tuple
-import ujson as json
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import Bot
 from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_apidata import get_record
+from .maimaidx_mapping import rate_mapping, combo_mapping, sync_mapping, diff_list
 from .maimaidx_utils import compute_rating, calc_dxstar
 
 total_list = TotalList()
 
-scoreRank = ['D', 'C', 'B', 'BB', 'BBB', 'A', 'AA', 'AAA', 'S', 'S+', 'SS', 'SS+', 'SSS', 'SSS+']
-combo = ['', 'FC', 'FC+', 'AP', 'AP+']
-sync = ['', 'SYNC', 'FS', 'FS+', 'FSD', 'FSD+']
-diffs = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
-
-
 class ChartInfo(object):
     def __init__(self, idNum: str, diff: int, tp: str, ra: int, achievement: float, dxScore: int, dxScoreMax: int,
-                 comboId: int, syncId: int, scoreId: int, title: str, ds: float, lv: str):
+                 combo: int, sync: int, rate: int, title: str, ds: float, lv: str):
         self.idNum = idNum
         self.diff = diff
         self.tp = tp
@@ -28,15 +20,15 @@ class ChartInfo(object):
         self.achievement = achievement
         self.dxScore = dxScore
         self.dxScoreMax = dxScoreMax
-        self.comboId = comboId
-        self.syncId = syncId
-        self.scoreId = scoreId
+        self.combo = combo
+        self.sync = sync
+        self.rate = rate
         self.title = title
         self.ds = ds
         self.lv = lv
 
     def __str__(self):
-        return '%-50s' % f'{self.title} [{self.tp}]' + f'{self.ds}\t{diffs[self.diff]}\t{self.ra}'
+        return '%-50s' % f'{self.title} [{self.tp}]' + f'{self.ds}\t{diff_list[self.diff]}\t{self.ra}'
 
     def __eq__(self, other):
         return self.ra == other.ra
@@ -46,12 +38,6 @@ class ChartInfo(object):
 
     @classmethod
     async def from_json(cls, data):
-        rate = ['d', 'c', 'b', 'bb', 'bbb', 'a', 'aa', 'aaa', 's', 'sp', 'ss', 'ssp', 'sss', 'sssp']
-        ri = rate.index(data["rate"])
-        fc = ['', 'fc', 'fcp', 'ap', 'app']
-        fi = fc.index(data["fc"])
-        fs = ['', 'sync', 'fs', 'fsp', 'fsd', 'fsdp']
-        si = fs.index(data["fs"])
         music = (await total_list.get()).by_id(str(data["song_id"]))
         dxscore_max = sum(music['charts'][data['level_index']]['notes']) * 3
         return cls(
@@ -62,9 +48,9 @@ class ChartInfo(object):
             ra=data["ra"],
             dxScore=data["dxScore"],
             dxScoreMax=dxscore_max,
-            comboId=fi,
-            syncId=si,
-            scoreId=ri,
+            combo=combo_mapping.get(data["fc"], ""),
+            sync=sync_mapping.get(data["fs"], ""),
+            rate=rate_mapping.get(data["rate"], ""),
             lv=data["level"],
             achievement=data["achievements"],
             tp=data["type"]
@@ -176,12 +162,12 @@ class DrawBest(object):
             font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
             font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
-            tempDraw.text((96, 42), scoreRank[chartInfo.scoreId], 'white', font)
+            tempDraw.text((96, 42), chartInfo.rate, 'white', font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
-            if chartInfo.comboId:
-                tempDraw.text((80, 27), combo[chartInfo.comboId], 'white', font)
-            if chartInfo.syncId:
-                tempDraw.text((110, 27), sync[chartInfo.syncId], 'white', font)
+            if chartInfo.combo:
+                tempDraw.text((80, 27), chartInfo.combo, 'white', font)
+            if chartInfo.sync:
+                tempDraw.text((110, 27), chartInfo.sync, 'white', font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                           font)
@@ -223,12 +209,12 @@ class DrawBest(object):
             font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
             font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
-            tempDraw.text((96, 42), scoreRank[chartInfo.scoreId], 'white', font)
+            tempDraw.text((96, 42), chartInfo.rate, 'white', font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
-            if chartInfo.comboId:
-                tempDraw.text((80, 27), combo[chartInfo.comboId], 'white', font)
-            if chartInfo.syncId:
-                tempDraw.text((110, 27), sync[chartInfo.syncId], 'white', font)
+            if chartInfo.combo:
+                tempDraw.text((80, 27), chartInfo.combo, 'white', font)
+            if chartInfo.sync:
+                tempDraw.text((110, 27), chartInfo.sync, 'white', font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                           font)

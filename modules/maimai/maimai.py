@@ -1,20 +1,15 @@
-import traceback
-
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
-from core.logger import Logger
 from core.utils.text import isint
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, get_record, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate
+from .libraries.maimaidx_mapping import diff_list, level_list, goal_list, genre_i18n_mapping
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()
-
-diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
-
 
 mai = module('maimai',
              recommend_modules='maimai_regex',
@@ -53,7 +48,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
             result_set.append((music['id'],
                                music['title'],
                                music['ds'][i],
-                               diff_label[i],
+                               diff_list[i],
                                music['level'][i],
                                music['type']))
 
@@ -90,7 +85,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
             result_set.append((music['id'],
                                music['title'],
                                music['ds'][i],
-                               diff_label[i],
+                               diff_list[i],
                                music['level'][i],
                                music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
@@ -326,7 +321,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 if len(chart['notes']) == 4:
                     res.append(msg.locale.t(
                         "maimai.message.song.sd",
-                        diff=diff_label[diff],
+                        diff=diff_list[diff],
                         level=level,
                         ds=ds,
                         tap=chart['notes'][0],
@@ -337,7 +332,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 else:
                     res.append(msg.locale.t(
                         "maimai.message.song.dx",
-                        diff=diff_label[diff],
+                        diff=diff_list[diff],
                         level=level,
                         ds=ds,
                         tap=chart['notes'][0],
@@ -349,10 +344,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
 
         await msg.finish(await get_info(music, Plain('\n'.join(res))))
     else:
+        genre = genre_i18n_mapping.get(music['basic_info']['genre'], '') if not msg.locale.locale == 'zh_cn' else music['basic_info']['genre']
         res = msg.locale.t(
             "maimai.message.song",
             artist=music['basic_info']['artist'],
-            genre=music['basic_info']['genre'],
+            genre=genre,
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
@@ -446,11 +442,6 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 
 
 async def query_process(msg, level, goal, username):
-    goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
-                 "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
-    level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
-                  '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
-
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}
@@ -606,7 +597,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
         b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)  # 一个 TAP GREAT 减少 100 分
         b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
-        await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
+        await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_list[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
               scoreline=score,
               tap_great=tap_great,

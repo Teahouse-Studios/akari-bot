@@ -12,6 +12,7 @@ from core.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.http import download, get_url, post_url
 from core.utils.text import isint
+from .maimaidx_mapping import versions
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
@@ -19,27 +20,6 @@ DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
 assets_dir = os.path.abspath('./assets/maimai/')
 total_list = TotalList()
-
-versions = ['maimai',
-            'maimai PLUS',
-            'maimai GreeN',
-            'maimai GreeN PLUS',
-            'maimai ORANGE',
-            'maimai ORANGE PLUS',
-            'maimai PiNK',
-            'maimai PiNK PLUS',
-            'maimai MURASAKi',
-            'maimai MURASAKi PLUS',
-            'maimai MiLK',
-            'MiLK PLUS',
-            'maimai FiNALE',
-            'maimai でらっくす',
-            'maimai でらっくす Splash',
-            'maimai でらっくす UNiVERSE',
-            'maimai でらっくす FESTiVAL',
-            'maimai でらっくす BUDDiES',
-            ]
-
 
 async def update_cover() -> bool:
     id_list = ['00000', '01000']

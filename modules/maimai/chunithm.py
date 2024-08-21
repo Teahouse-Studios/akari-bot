@@ -4,12 +4,11 @@ from core.utils.image import msgchain2image
 from core.utils.text import isint
 from .dbutils import DivingProberBindInfoManager
 from .libraries.chunithm_apidata import get_info, get_record
+from .libraries.chunithm_mapping import diff_list
 from .libraries.chunithm_music import TotalList
 from .libraries.chunithm_utils import generate_best30_text, get_diff, SONGS_PER_PAGE
 
 total_list = TotalList()
-diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
-
 
 chu = module('chunithm',
              developers=['DoroWolf'],
@@ -47,7 +46,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
             result_set.append((music['id'],
                                music['title'],
                                music['ds'][i],
-                               diff_label[i],
+                               diff_list[i],
                                music['level'][i]))
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
@@ -80,7 +79,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
             result_set.append((music['id'],
                                music['title'],
                                music['ds'][i],
-                               diff_label[i],
+                               diff_list[i],
                                music['level'][i]))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     page = max(min(int(page), total_pages), 1) if isint(page) else 1
@@ -188,7 +187,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
                 level = music['level'][diff]
                 res.append(msg.locale.t(
                     "chunithm.message.song.chart",
-                    diff=diff_label[diff],
+                    diff=diff_list[diff],
                     level=level,
                     ds=ds,
                     combo=chart['combo'],
