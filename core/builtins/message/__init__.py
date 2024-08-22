@@ -24,14 +24,14 @@ class MessageSession(MessageSessionT):
         self.sent: List[MessageChain] = []
         self.prefixes: List[str] = []
         self.data = BotDBUtil.TargetInfo(self.target.target_id)
+        self.info = BotDBUtil.SenderInfo(self.target.sender_id)
         self.muted = self.data.is_muted
         self.options = self.data.options
         self.custom_admins = self.data.custom_admins
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
         self.name = self.locale.t('bot_name')
-        self.petal = self.data.petal
-        self.timestamp = datetime.now()
+        self.petal = self.info.petal
         self.tmp = {}
         self._tz_offset = self.options.get(
             'timezone_offset', Config('timezone_offset', '+8'))
@@ -143,10 +143,10 @@ class MessageSession(MessageSessionT):
         await asyncio.sleep(s)
 
     def check_super_user(self):
-        return True if self.target.sender_info.is_super_user else False
+        return True if self.info.is_super_user else False
 
     async def check_permission(self):
-        if self.target.sender_id in self.custom_admins or self.target.sender_info.is_super_user:
+        if self.target.sender_id in self.custom_admins or self.info.is_super_user:
             return True
         return await self.check_native_permission()
 

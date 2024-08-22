@@ -56,25 +56,12 @@ async def get_target(target_id: str):
     is_muted = target.is_muted
     custom_admins = target.custom_admins
     locale = target.locale
-    petal = target.petal
-
-    command_alias = target.get_option('command_alias', {})
-    command_prefix = target.get_option('command_prefix', [])
-    ban = target.get_option('ban', [])
-    typo_check = target.get_option('typo_check', False)
-    cooldown_time = target.get_option('cooldown_time', 0)
-    in_post_whitelist = target.get_option('in_post_whitelist', False)
-
-    dice_dc_reversed = target.get_option('dice_dc_reversed', False)
-    dice_default_sides = target.get_option('dice_default_sides', 0)
+    options = target.get_option()
 
     wiki_target = WikiTargetInfo(target_id)
     wiki_headers = wiki_target.get_headers()
     wiki_start_wiki = wiki_target.get_start_wiki()
     wiki_interwikis = wiki_target.get_interwikis()
-    wiki_redlink = target.get_option('wiki_redlink', False)
-
-    wordle_dark_theme = target.get_option('wordle_dark_theme', False)
 
     return {
         'targetId': target_id,
@@ -82,25 +69,11 @@ async def get_target(target_id: str):
         'isMuted': is_muted,
         'customAdmins': custom_admins,
         'locale': locale,
-        'petal': petal,
-        'commandAlias': command_alias,
-        'commandPrefix': command_prefix,
-        'ban': ban,
-        'typoCheck': typo_check,
-        'cooldownTime': cooldown_time,
-        'inPostWhitelist': in_post_whitelist,
-        'dice': {
-            'DCReversed': dice_dc_reversed,
-            'defaultFace': dice_default_sides,
-        },
+        'options': options,
         'wiki': {
             'headers': wiki_headers,
             'startWiki': wiki_start_wiki,
-            'interwikis': wiki_interwikis,
-            'redlink': wiki_redlink
-        },
-        'wordle': {
-            'darkTheme': wordle_dark_theme,
+            'interwikis': wiki_interwikis
         }
     }
 
@@ -119,7 +92,8 @@ async def get_sender(sender_id: str):
         'isInAllowList': sender.is_in_allow_list,
         'isSuperUser': sender.is_super_user,
         'warns': sender.warns,
-        'disableTyping': sender.disable_typing
+        'disableTyping': sender.disable_typing,
+        'petal': sender.petal
     }
 
 

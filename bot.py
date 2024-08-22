@@ -49,6 +49,7 @@ def init_bot():
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
         for bu in base_superuser:
+            BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
 
 

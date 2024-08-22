@@ -9,8 +9,8 @@ from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.exceptions import ConfigValueError
-from core.petal import count_petal
 from core.utils.cooldown import CoolDown
+from .petal import count_petal
 
 os.environ['LANGCHAIN_TRACING_V2'] = str(Config('enable_langsmith'))
 if Config('enable_langsmith'):
@@ -73,9 +73,9 @@ if Config('enable_langsmith'):
                         chain.append(I18NContext('ask.message.text2img.error', text=content))
 
             if await check_bool(res):
-                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
+                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', amount=petal)}")
             if petal != 0:
-                chain.append(I18NContext('petal.message.cost', count=petal))
+                chain.append(I18NContext('petal.message.cost', amount=petal))
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()

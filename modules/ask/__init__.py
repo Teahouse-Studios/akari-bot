@@ -11,10 +11,9 @@ from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
-from core.petal import count_petal
 from core.utils.cooldown import CoolDown
-
-from .formatting import generate_latex, generate_code_snippet  # noqa: E402
+from .formatting import generate_latex, generate_code_snippet
+from .petal import count_petal
 
 if Config('openai_api_key', cfg_type=str):
     client = AsyncOpenAI(
@@ -135,7 +134,7 @@ async def _(msg: Bot.MessageSession):
                     chain.append(I18NContext('ask.message.text2img.error', text=content))
 
         if petal != 0:
-            chain.append(I18NContext('petal.message.cost', count=petal))
+            chain.append(I18NContext('petal.message.cost', amount=petal))
 
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()

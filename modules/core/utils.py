@@ -198,13 +198,11 @@ setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alia
 
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
-    target = BotDBUtil.SenderInfo(msg.target.sender_id)
-    state = target.query.disable_typing
-    if not state:
-        target.edit('disable_typing', True)
+    if not msg.info.disable_typing:
+        msg.info.edit('disable_typing', True)
         await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
     else:
-        target.edit('disable_typing', False)
+        msg.info.edit('disable_typing', False)
         await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
 
 '''

@@ -515,37 +515,35 @@ if Config('enable_petal', False):
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
-    @petal.command('[<target>] {{core.help.petal}}', required_superuser=True)
+    @petal.command('[<sender>] {{core.help.petal}}', required_superuser=True)
     async def _(msg: Bot.MessageSession):
-        target = msg.parsed_msg['<target>']
-        if not any(target.startswith(f'{target_from}|') for target_from in target_list):
-            await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-        target_info = BotDBUtil.TargetInfo(target)
-        await msg.finish(msg.locale.t('core.message.petal', target=target, petal=target_info.petal))
+        sender = msg.parsed_msg['<sender>']
+        if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
+            await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
+        sender_info = BotDBUtil.SenderInfo(sender)
+        await msg.finish(msg.locale.t('core.message.petal', sender=sender, petal=sender_info.petal))
 
-    @petal.command('modify <petal> [<target>]', required_superuser=True)
-    async def _(msg: Bot.MessageSession, petal: str):
-        if '<target>' in msg.parsed_msg:
-            target = msg.parsed_msg['<target>']
-            if not any(target.startswith(f'{target_from}|') for target_from in target_list):
-                await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-            target_info = BotDBUtil.TargetInfo(target)
-            target_info.modify_petal(int(petal))
+    @petal.command('modify <petal> [<sender>]', required_superuser=True)
+    async def _(msg: Bot.MessageSession, petal: str, sender: str = None):
+        if sender:
+            if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
+                await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
+            sender_info = BotDBUtil.SenderInfo(sender)
+            sender_info.modify_petal(int(petal))
             await msg.finish(
-                msg.locale.t('core.message.petal.modify', target=target, add_petal=petal, petal=target_info.petal))
+                msg.locale.t('core.message.petal.modify', sender=sender, add_petal=petal, petal=sender_info.petal))
         else:
-            msg.data.modify_petal(int(petal))
+            msg.info.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.petal))
 
     @petal.command('clear [<target>]', required_superuser=True)
-    async def _(msg: Bot.MessageSession):
-        if '<target>' in msg.parsed_msg:
-            target = msg.parsed_msg['<target>']
-            if not any(target.startswith(f'{target_from}|') for target_from in target_list):
-                await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-            target_info = BotDBUtil.TargetInfo(target)
-            target_info.clear_petal()
-            await msg.finish(msg.locale.t('core.message.petal.clear', target=target))
+    async def _(msg: Bot.MessageSession, sender: str = None):
+        if sender:
+            if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
+                await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
+            sender_info = BotDBUtil.SenderInfo(sender)
+            sender_info.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear', sender=sender))
         else:
-            msg.data.clear_petal()
+            msg.info.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))

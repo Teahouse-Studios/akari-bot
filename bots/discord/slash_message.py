@@ -84,8 +84,8 @@ class MessageSession(MessageSessionT):
     async def check_permission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
                 or isinstance(self.session.message.channel, discord.DMChannel) \
-                or self.target.sender_info.is_super_user \
-                or self.target.sender_info.check_TargetAdmin(self.target.target_id):
+                or self.info.is_super_user \
+                or self.info.check_TargetAdmin(self.target.target_id):
             return True
         return False
 
