@@ -20,7 +20,7 @@ from core.utils.text import isint, remove_prefix
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
-csr_link = 'https://www.chemspider.com'
+csr_link = 'https://legacy.chemspider.com'
 
 special_id_path = os.path.abspath(f'./assets/chemical_code/special_id')  # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [os.path.splitext(filename)[0] for filename in os.listdir(
@@ -68,7 +68,7 @@ async def search_csr(id=None):
         answer_id = random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
     Logger.info(f'ChemSpider ID: {answer_id}')
-    get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')
+    get = await get_url(f'{csr_link}/Search.aspx?q={answer_id}', 200, fmt='text')
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')
     name = soup.find(
@@ -83,7 +83,7 @@ async def search_csr(id=None):
         wh = 500
     return {'id': answer_id,
             'answer': name,
-            'image': f'https://legacy.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
+            'image': f'{csr_link}/ImagesHandler.ashx?id={answer_id}' +
             (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
             'length': value,
             'elements': elements}
