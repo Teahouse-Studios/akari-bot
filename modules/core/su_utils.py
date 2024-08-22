@@ -524,17 +524,17 @@ if Config('enable_petal', False):
         await msg.finish(msg.locale.t('core.message.petal', sender=sender, petal=sender_info.petal))
 
     @petal.command('modify <petal> [<sender>]', required_superuser=True)
-    async def _(msg: Bot.MessageSession, petal: str, sender: str = None):
+    async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
         if sender:
             if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
                 await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
             sender_info = BotDBUtil.SenderInfo(sender)
-            sender_info.modify_petal(int(petal))
+            sender_info.modify_petal(petal)
             await msg.finish(
                 msg.locale.t('core.message.petal.modify', sender=sender, add_petal=petal, petal=sender_info.petal))
         else:
-            sender_info = BotDBUtil.SenderInfo(msg.target.sender_from)
-            sender_info.modify_petal(int(petal))
+            sender_info = BotDBUtil.SenderInfo(msg.target.sender_id)
+            sender_info.modify_petal(petal)
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=sender_info.petal))
 
     @petal.command('clear [<sender>]', required_superuser=True)
