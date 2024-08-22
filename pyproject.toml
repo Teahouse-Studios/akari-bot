@@ -68,7 +68,7 @@ emoji = "^2.12.1"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
-pycodestyle = "2.10.0"
+pycodestyle = "2.12.1"
 
 [build-system]
 requires = ["poetry-core"]
