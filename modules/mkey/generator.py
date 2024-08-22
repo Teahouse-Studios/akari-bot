@@ -29,6 +29,8 @@ from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
+from core.utils.text import isint
+
 
 class MkeyGenerator:
     __props = {
@@ -414,12 +416,12 @@ class MkeyGenerator:
 
     def generate(self, inquiry, month=None, day=None, aux=None, device=None):
         inquiry = inquiry.replace(" ", "")
-        if not inquiry.isdigit():
+        if not isint(inquiry):
             raise ValueError("Inquiry string must represent a decimal number.")
 
-        if month is None:
+        if not month:
             month = datetime.date.today().month
-        if day is None:
+        if not day:
             day = datetime.date.today().day
 
         if month < 1 or month > 12:

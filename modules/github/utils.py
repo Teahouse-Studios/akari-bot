@@ -1,10 +1,10 @@
 import datetime
 
-from config import Config
 from core import dirty_check as dirty
+from core.builtins import EnableDirtyWordCheck
 
 
-def darkCheck(msg: str):
+def dark_check(message: str):
     blacklist = [
         'china-dictatorship'
         'cirosantilli',
@@ -19,9 +19,9 @@ def darkCheck(msg: str):
         'zhao',
         'programthink'
     ]
-    if Config('enable_dirty_check'):
+    if EnableDirtyWordCheck.status:
         for i in blacklist:
-            if msg.find(i) > -1:
+            if message.find(i) != -1:
                 return True
         return False
     else:
@@ -49,7 +49,7 @@ def time_diff(time: str):
     return diff
 
 
-async def dirty_check(text, *allowlist_check):
+async def dirty_check(text: str, *allowlist_check):
     allowlist = [
         'Teahouse-Studios',
         'Dianliang233',
@@ -61,8 +61,7 @@ async def dirty_check(text, *allowlist_check):
     ]
     if allowlist_check in allowlist:
         return False
-    check = await dirty.check(text)
-    for x in check:
-        if not x['status']:
-            return True
+    check = await dirty.check_bool(text)
+    if check:
+        return True
     return False

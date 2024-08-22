@@ -1,16 +1,16 @@
-from core.builtins import Bot
-from core.builtins import Plain, Image, Url
+from core.builtins import Bot, Plain, Image, Url
 from core.component import module
 from .mojang_api import *
 
 mcplayer = module(
     bind_prefix='mcplayer',
     desc='{mcplayer.help.desc}',
+    doc=True,
     developers=['Dianliang233'],
 )
 
 
-@mcplayer.handle('<username_or_uuid> {{mcplayer.help}}')
+@mcplayer.command('<username_or_uuid> {{mcplayer.help}}')
 async def main(msg: Bot.MessageSession, username_or_uuid: str):
     arg = username_or_uuid
     try:
@@ -23,14 +23,17 @@ async def main(msg: Bot.MessageSession, username_or_uuid: str):
         else:
             name = arg
             uuid = await name_to_uuid(arg)
-        sac = await uuid_to_skin_and_cape(uuid)
-        render = sac['render']
-        skin = sac['skin']
-        cape = sac['cape']
         namemc = 'https://namemc.com/profile/' + name
-        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(render), Image(skin)]
-        if cape:
-            chain.append(Image(cape))
+        sac = await uuid_to_skin_and_cape(uuid)
+        if sac:
+            render = sac['render']
+            skin = sac['skin']
+            cape = sac['cape']
+            chain = [Plain(f'{name} ({uuid})'), Url(namemc), Image(render), Image(skin)]
+            if cape:
+                chain.append(Image(cape))
+            await msg.finish(chain)
+        else:
+            await msg.finish([Plain(f'{name} ({uuid})'), Url(namemc)])
     except ValueError:
-        chain = [Plain(msg.locale.t('mcplayer.message.not_found', player=arg))]
-    await msg.finish(chain)
+        await msg.finish(msg.locale.t('mcplayer.message.not_found', player=arg))

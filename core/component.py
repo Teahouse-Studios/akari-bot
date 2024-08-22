@@ -15,7 +15,7 @@ from core.types.module.component_meta import *
 
 class Bind:
     class Module:
-        def __init__(self, bind_prefix):
+        def __init__(self, bind_prefix: str):
             self.bind_prefix = bind_prefix
 
         def command(self,
@@ -34,7 +34,7 @@ class Bind:
                     help_doc = [help_doc]
                 if help_docs:
                     help_doc += help_docs
-                if help_doc is None:
+                if not help_doc:
                     help_doc = []
 
                 ModulesManager.bind_to_module(
@@ -139,17 +139,19 @@ class Bind:
 
 def module(
     bind_prefix: str,
-    alias: Union[str, list, tuple, dict] = None,
-    desc: str = None,
-    recommend_modules: Union[str, list, tuple] = None,
-    developers: Union[str, list, tuple] = None,
+    alias: Union[str, list, tuple, dict, None] = None,
+    desc: str | None = None,
+    recommend_modules: Union[str, list, tuple, None] = None,
+    developers: Union[str, list, tuple, None] = None,
     required_admin: bool = False,
     base: bool = False,
+    doc: bool = False,
+    hidden: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
     available_for: Union[str, list, tuple] = '*',
     exclude_from: Union[str, list, tuple] = '',
-    support_languages: Union[str, list, tuple] = None
+    support_languages: Union[str, list, tuple, None] = None
 ):
     """
 
@@ -161,10 +163,13 @@ def module(
     :param developers: 模块作者。
     :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
+    :param doc: 此命令是否存在线上说明文件。
+    :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
     :param available_for: 此命令支持的平台列表。
     :param exclude_from: 此命令排除的平台列表。
+    :param support_languages: 此命令支持的语言列表。
     :return: 此类型的模块。
     """
     module = Module(alias=alias,
@@ -173,6 +178,8 @@ def module(
                     recommend_modules=recommend_modules,
                     developers=developers,
                     base=base,
+                    doc=doc,
+                    hidden=hidden,
                     required_admin=required_admin,
                     required_superuser=required_superuser,
                     required_base_superuser=required_base_superuser,

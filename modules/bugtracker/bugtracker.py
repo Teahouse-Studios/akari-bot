@@ -2,43 +2,37 @@ import os
 
 import aiohttp
 import ujson as json
-from PIL import ImageFont
 
-from config import Config
 from core.builtins import Url
 from core.logger import Logger
-from core.utils.http import download_to_cache
-from core.utils.http import get_url
+from core.utils.http import download, get_url
+from core.utils.web_render import WebRender, webrender
 
-web_render = Config('web_render')
-web_render_local = Config('web_render_local')
 elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
-font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
 spx_cache = {}
 
 
 async def make_screenshot(page_link, use_local=True):
     elements_ = elements.copy()
-    if not web_render_local:
-        if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
-            return False
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
-        img = await download_to_cache((web_render_local if use_local else web_render) + '/element_screenshot',
-                                      status_code=200,
-                                      headers={'Content-Type': 'application/json'},
-                                      method="POST",
-                                      post_data=json.dumps({
-                                          'url': page_link,
-                                          'element': elements_}),
-                                      attempt=1,
-                                      timeout=30,
-                                      request_private_ip=True
-                                      )
+        img = await download(webrender('element_screenshot', use_local=use_local),
+                             status_code=200,
+                             headers={'Content-Type': 'application/json'},
+                             method="POST",
+                             post_data=json.dumps({
+                                 'url': page_link,
+                                 'element': elements_}),
+                             attempt=1,
+                             timeout=30,
+                             request_private_ip=True
+                             )
         if img:
             return img
         else:
@@ -54,7 +48,7 @@ async def make_screenshot(page_link, use_local=True):
         return False
 
 
-async def bugtracker_get(session, mojira_id: str, nolink=False):
+async def bugtracker_get(msg, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
     try:
@@ -62,12 +56,14 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
         get_json = await get_url(json_url, 200)
     except ValueError as e:
         if str(e).startswith('401'):
-            await session.finish(session.locale.t("bugtracker.message.get_failed"))
+            return msg.locale.t("bugtracker.message.get_failed"), None
+        else:
+            raise e
     if mojira_id not in spx_cache:
-        get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
+        get_spx = await get_url('https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json', 200)
         if get_spx:
             spx_cache.update(json.loads(get_spx))
-    if id_ in spx_cache:
+    if id_ in spx_cache and msg.locale.locale == 'zh_cn':
         data["translation"] = spx_cache[id_]
     if get_json:
         load_json = json.loads(get_json)
@@ -92,7 +88,7 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
                     data["project"] = fields['project']['name']
                 if 'resolution' in fields:
                     data["resolution"] = fields['resolution']['name'] if fields[
-                        'resolution'] is not None else 'Unresolved'
+                        'resolution'] else 'Unresolved'
                 if 'versions' in load_json['fields']:
                     versions = fields['versions']
                     verlist = []
@@ -144,8 +140,6 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
             msglist.append("Fixed Version: " + fixversion)
         if version := data.get("version", False):
             msglist.append(version)
-        if (link := data.get("link", False)) and not nolink:
-            msglist.append(str(Url(link)))
+        if (link := data.get("link", False)):
             issue_link = link
-    msg = '\n'.join(msglist)
-    return msg, issue_link
+    return '\n'.join(msglist), issue_link

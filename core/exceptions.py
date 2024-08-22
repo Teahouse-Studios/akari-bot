@@ -6,6 +6,10 @@ class ConfigFileNotFound(Exception):
     pass
 
 
+class ConfigValueError(Exception):
+    pass
+
+
 class InvalidHelpDocTypeError(Exception):
     pass
 
@@ -31,4 +35,8 @@ class InvalidTemplatePattern(Exception):
 
 
 class NoReportException(Exception):
+    pass
+
+
+class TestException(Exception):
     pass

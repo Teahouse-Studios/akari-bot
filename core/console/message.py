@@ -1,11 +1,15 @@
+import asyncio
 from typing import List, Union
 
-from PIL import Image
+from inputimeout import inputimeout, TimeoutOccurred
+from PIL import Image as PImage
 
-from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
+from config import Config
+from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.exceptions import WaitCancelException
 from core.logger import Logger
 from core.types import Session, MsgInfo, FinishedSession as FinS
 
@@ -29,54 +33,81 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
-        msg_list = []
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
-                msg_list.append(x.text)
                 print(x.text)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
-            if isinstance(x, BImage):
+            elif isinstance(x, Image):
                 image_path = await x.get()
-                img = Image.open(image_path)
+                img = PImage.open(image_path)
                 img.show()
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {image_path}')
-        return FinishedSession(self, [0], ['There should be a callable here... hmm...'])
+        return FinishedSession(self, [0], ['Should be a callable here... hmm...'])
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True):
+    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
         send = None
-        if message_chain is not None:
+        if Config('no_confirm', False):
+            return True
+        if message_chain:
+            if append_instruction:
+                print(self.locale.t("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
-            print("（发送“是”或符合确认条件的词语来确认）")
-
-        c = input('Confirm: ')
-        print(c)
-        if message_chain is not None and delete:
+        try:
+            if timeout:
+                c = inputimeout('Confirm: ', timeout=timeout)
+            else:
+                c = input('Confirm: ')
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
+        if message_chain and delete:
             await send.delete()
         if c in confirm_command:
             return True
-
         return False
 
-    async def wait_anyone(self, message_chain=None, quote=True, delete=True):
+    async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
+                                append_instruction=True):
         send = None
-        if message_chain is not None:
+        if message_chain:
+            if append_instruction:
+                message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
-        c = input('Confirm: ')
-        print(c)
-        if message_chain is not None and delete:
+        try:
+            if timeout:
+                c = inputimeout('Confirm: ', timeout=timeout)
+            else:
+                c = input('Confirm: ')
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
+        if message_chain and delete:
             await send.delete()
         self.session.message = c
         return self
 
-    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True):
+    async def wait_reply(self, message_chain, quote=True, delete=False, timeout=120,
+                         all_=False, append_instruction=True):
         message_chain = MessageChain(message_chain)
         if append_instruction:
-            message_chain.append(Plain(self.locale.t("message.reply.prompt")))
-        send = await self.send_message(message_chain, quote)
-        c = input('Reply: ')
+            message_chain.append(I18NContext("message.reply.prompt"))
+        send = await self.send_message(message_chain)
+        try:
+            if timeout:
+                c = inputimeout('Reply: ', timeout=timeout)
+            else:
+                c = input('Reply: ')
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
+        if message_chain and delete:
+            await send.delete()
         return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
                                              sender_id='TEST|0',
                                              sender_name='',
@@ -84,6 +115,24 @@ class MessageSession(MessageSessionT):
                                              sender_from='TEST', client_name='TEST', message_id=0,
                                              reply_id=None),
                               session=Session(message=c, target='TEST|Console|0', sender='TEST|0'))
+
+    async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
+        send = None
+        if message_chain:
+            send = await self.send_message(message_chain)
+        try:
+            if timeout:
+                c = inputimeout('Confirm: ', timeout=timeout)
+            else:
+                c = input('Confirm: ')
+        except TimeoutOccurred:
+            if message_chain and delete:
+                await send.delete()
+            raise WaitCancelException
+        if message_chain and delete:
+            await send.delete()
+        self.session.message = c
+        return self
 
     def as_display(self, text_only=False):
         return self.session.message
@@ -109,10 +158,11 @@ class MessageSession(MessageSessionT):
         return True
 
     async def sleep(self, s):
-        print("(Tried to sleep for %d seconds, skip.)" % s)
+        await asyncio.sleep(s)
 
     sendMessage = send_message
     waitConfirm = wait_confirm
+    waitNextMessage = wait_next_message
     waitReply = wait_reply
     waitAnyone = wait_anyone
     asDisplay = as_display

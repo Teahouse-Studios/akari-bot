@@ -7,7 +7,7 @@ from loguru import logger
 
 from config import Config
 
-debug = Config('debug')
+debug = Config('debug', False)
 
 logpath = os.path.abspath('./logs')
 if not os.path.exists(logpath):
@@ -28,7 +28,7 @@ class Logginglogger:
         self.info = self.log.info
         self.error = self.log.error
         self.debug = self.log.debug
-        self.warn = self.log.warning
+        self.warning = self.log.warning
         self.exception = self.log.exception
         if debug:
             self.log.warning("Debug mode is enabled.")

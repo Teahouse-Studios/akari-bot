@@ -1,6 +1,6 @@
 '''利用阿里云API检查字符串是否合规。
 
-在使用前，应该在配置中填写"check_accessKeyId"和"check_accessKeySecret"以便进行鉴权。
+在使用前，应该在配置中填写"check_access_key_id"和"check_access_key_secret"以便进行鉴权。
 '''
 import base64
 import datetime
@@ -14,8 +14,7 @@ import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
-from core.builtins import EnableDirtyWordCheck
-from core.exceptions import NoReportException
+from core.builtins import Bot, EnableDirtyWordCheck
 from core.logger import Logger
 from database.local import DirtyWordCache
 
@@ -52,16 +51,18 @@ async def check(*text) -> list:
     '''检查字符串是否合规
 
     :param text: 字符串（List/Union）。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'，结构为[{'审核后的字符串': 处理结果（True/False，默认为True）}]
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
     '''
-    access_key_id = Config("check_accessKeyId")
-    access_key_secret = Config("check_accessKeySecret")
+    access_key_id = Config("check_access_key_id", cfg_type=str)
+    access_key_secret = Config("check_access_key_secret", cfg_type=str)
     text = list(text)
+    text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
-        Logger.warn('Dirty words filter was disabled, skip.')
+        Logger.warning('Dirty words filter was disabled, skip.')
         query_list = []
         for t in text:
             query_list.append({'content': t, 'status': True, 'original': t})
+        Logger.debug(query_list)
         return query_list
     if not text:
         return []
@@ -103,7 +104,7 @@ async def check(*text) -> list:
         url = '/green/text/scan?{}'.format(client_info)
 
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
-        date = datetime.datetime.utcnow().strftime(gmt_format)
+        date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
         content_md5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
         headers = {
@@ -130,7 +131,7 @@ async def check(*text) -> list:
             date=headers['Date'], step1=step1, step2=step2)
         sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
         headers['Authorization'] = sign
-        # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
+        # 'Authorization': "acs {}:{}".format(access_key_id, sign)
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
                 if resp.status == 200:
@@ -159,8 +160,8 @@ async def check_bool(*text):
     return False
 
 
-def rickroll(msg):
-    if Config("enable_rickroll"):
-        raise NoReportException(Config("rickroll_url"))
+def rickroll(msg: Bot.MessageSession):
+    if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
+        return msg.locale.tl_str(Config("rickroll_msg", cfg_type=str))
     else:
-        raise NoReportException(msg.locale.t("error.message.chain.unsafe"))
+        return msg.locale.t("error.message.chain.unsafe")

@@ -3,7 +3,7 @@ import os
 import time
 import traceback
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from os.path import abspath
 
 import aiohttp
@@ -17,9 +17,12 @@ from config import Config
 from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.html2text import html2text
+from core.utils.text import parse_time_string
+from core.utils.image import get_fontsize
 
 
-async def get_rating(uid, query_type, msg: Bot.MessageSession):
+async def get_rating(msg: Bot.MessageSession, uid, query_type):
     try:
         if query_type == 'b30':
             query_type = 'bestRecords'
@@ -35,7 +38,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         profile_level = profile_json['exp']['currentLevel']
         profile_uid = profile_json['user']['uid']
         nick = profile_json['user']['name']
-        if nick is None:
+        if not nick:
             nick = profile_uid
         if 'avatar' in profile_json['user']:
             avatar_img = profile_json['user']['avatar']['medium']
@@ -80,14 +83,14 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         """)
 
         result = await client.execute_async(query)
-        workdir = os.path.abspath(Config("cache_path") + str(uuid.uuid4()))
+        workdir = os.path.abspath(Config("cache_path", "./cache/") + str(uuid.uuid4()))
         os.mkdir(workdir)
         best_records = result['profile'][query_type]
         rank = 0
         resources = []
         songcards = []
 
-        async def mkresources(x, rank):
+        async def mkresources(msg: Bot.MessageSession, x, rank):
             thumbpath = await download_cover_thumb(x['chart']['level']['uid'])
             chart_type = x['chart']['type']
             difficulty = x['chart']['difficulty']
@@ -97,7 +100,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
             rt = x['rating']
             details = x['details']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            local_time = _date + timedelta(hours=8)
+            local_time = _date + parse_time_string(msg.options.get('timezone_offset', Config('timezone_offset', '+8')))
             playtime = local_time.timestamp()
             nowtime = time.time()
             playtime = playtime - nowtime
@@ -124,7 +127,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
 
         for x in best_records:
             rank += 1
-            resources.append(mkresources(x, rank))
+            resources.append(mkresources(msg, x, rank))
 
         await asyncio.gather(*resources)
         cards_ = await asyncio.gather(*songcards)
@@ -145,25 +148,26 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
                 mask = Image.new('L', bigsize, 0)
                 draw = ImageDraw.Draw(mask)
                 draw.ellipse((0, 0) + bigsize, fill=255)
-                mask = mask.resize(im.size, Image.ANTIALIAS)
+                mask = mask.resize(im.size, Image.Resampling.LANCZOS)
                 im.putalpha(mask)
                 output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
                 output.putalpha(mask)
                 output.convert('RGBA')
                 b30img.alpha_composite(output, (1825, 22))
             except BaseException:
-                traceback.print_exc()
+                Logger.error(traceback.format_exc())
 
         font4 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Regular.ttf'), 35)
         drawtext = ImageDraw.Draw(b30img)
-        get_name_width = font4.getsize(nick)[0]
+        get_name_width = get_fontsize(font4, nick)[0]
         get_img_width = b30img.width
         drawtext.text((get_img_width - get_name_width - 150, 30), nick, '#ffffff', font=font4)
 
         font5 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
-        level_text = f'等级 {profile_level}'
-        level_text_width = font5.getsize(level_text)[0]
-        level_text_height = font5.getsize(level_text)[1]
+        level_text = f'{msg.locale.t("cytoid.message.b30.level")} {profile_level}'
+        level_text_size = get_fontsize(font5, level_text)
+        level_text_width = level_text_size[0]
+        level_text_height = level_text_size[1]
         img_level = Image.new("RGBA", (level_text_width + 20, 40), '#050a1a')
         drawtext_level = ImageDraw.Draw(img_level)
         drawtext_level.text(((img_level.width - level_text_width) / 2, (img_level.height - level_text_height) / 2),
@@ -171,8 +175,9 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         b30img.alpha_composite(img_level, (1825 - img_level.width - 20, 85))
         font6 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Light.ttf'), 20)
         rating_text = f'Rating {str(round(float(profile_rating), 2))}'
-        rating_text_width = font6.getsize(rating_text)[0]
-        rating_text_height = font6.getsize(rating_text)[1]
+        rating_text_size = get_fontsize(font6, rating_text)
+        rating_text_width = rating_text_size[0]
+        rating_text_height = rating_text_size[1]
         img_rating = Image.new("RGBA", (rating_text_width + 20, 40), '#050a1a')
         drawtext_level = ImageDraw.Draw(img_rating)
         drawtext_level.text(((img_rating.width - rating_text_width) / 2, (img_rating.height - rating_text_height) / 2),
@@ -199,19 +204,19 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
                 fname += 1
                 s += 1
             except Exception:
-                traceback.print_exc()
+                Logger.error(traceback.format_exc())
                 break
         if __name__ == '__main__':
             b30img.show()
         else:
-            savefilename = os.path.abspath(f'{Config("cache_path")}{str(uuid.uuid4())}.jpg')
+            savefilename = os.path.abspath(f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.jpg')
             b30img.convert("RGB").save(savefilename)
             # shutil.rmtree(workdir)
             return {'status': True, 'path': savefilename}
     except Exception as e:
-        if str(e).startswith('404'):
+        if e.args == (404,):
             await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return {'status': False, 'text': msg.locale.t("error") + str(e)}
 
 
@@ -235,7 +240,7 @@ async def download_cover_thumb(uid):
         else:
             return path
     except BaseException:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False
 
 
@@ -256,7 +261,7 @@ async def download_avatar_thumb(link, id):
                     await jpg.write(await resp.read())
                     return path
     except BaseException:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False
 
 
@@ -301,19 +306,19 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     font3 = ImageFont.truetype(os.path.abspath(font_path), 20)
     drawtext = ImageDraw.Draw(img)
     drawtext.text((20, 130), score, '#ffffff', font=font3)
-    drawtext.text((20, 155), chart_name, '#ffffff', font=font)
+    drawtext.text((20, 155), html2text(chart_name), '#ffffff', font=font)
     drawtext.text(
         (20, 185),
         f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
         f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
-    playtime_width = font3.getsize(playtime)[0]
+    playtime_width = get_fontsize(font3, playtime)[0]
     songimg_width = 384
     drawtext.text((songimg_width - playtime_width - 15, 205), playtime, '#ffffff', font=font3)
     type_ = str(difficulty)
     type_text = Image.new('RGBA', (32, 32))
     draw_typetext = ImageDraw.Draw(type_text)
-    draw_typetext.text(((32 - font3.getsize(type_)[0] - font.getoffset(type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
+    draw_typetext.text(((32 - get_fontsize(font3, type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
     img.alpha_composite(type_text, (23, 29))
     Logger.debug('Image generated: ' + str(rank))
     return {int(rank): img}

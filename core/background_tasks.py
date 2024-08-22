@@ -8,7 +8,7 @@ async def bg():
     await MessageTaskManager.bg_check()
 
 
-@Scheduler.scheduled_job(IntervalTrigger(seconds=1))
+@Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)
 async def job():
     await check_job_queue()
 

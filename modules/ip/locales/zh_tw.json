@@ -1,6 +1,6 @@
 {
     "ip.message.asn": "ASN：",
-    "ip.message.error.unknown": "發生錯誤：無效的 IP 位址，請校對輸入。",
+    "ip.message.invalid": "無效的 IP 位址，請校對輸入。",
     "ip.message.ip_property": "位址",
     "ip.message.ip_property.global": "全域",
     "ip.message.ip_property.ipv4_mapped": "IPv4 對映",
@@ -21,5 +21,5 @@
     "ip.message.reverse": "反向解析：",
     "ip.message.type": "類型：",
     "ip.message.utc": "時區：",
-    "ip.help": "查詢 IP 訊息。"
+    "ip.help": "查詢 IP 資訊。"
 }

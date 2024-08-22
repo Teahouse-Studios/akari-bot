@@ -1,9 +1,9 @@
 {
     "exchange_rate.help": "依據當日匯率轉換貨幣價格。",
     "exchange_rate.help.desc": "匯率轉換工具。",
-    "exchange_rate.help.regex.desc": "[<acount>] <base>(兌|換)<target>",
+    "exchange_rate.help.regex.desc": "[<acount>] <base>(兌|換)<target> 轉換貨幣價格。",
     "exchange_rate.message": "${amount} ${base} = ${exchange_rate} ${target}\n（${time}，仅供參考）",
-    "exchange_rate.message.error.invalid": "發生錯誤：無效的貨幣單位：",
-    "exchange_rate.message.error.non_digital": "發生錯誤：無效的金額，必須為數字。",
-    "exchange_rate.message.error.non_positive": "發生錯誤：金額必須為正數。"
+    "exchange_rate.message.invalid.unit": "無效的貨幣單位：",
+    "exchange_rate.message.invalid.non_digital": "無效的金額，必須為數字。",
+    "exchange_rate.message.invalid.non_positive": "金額必須為正數。"
 }

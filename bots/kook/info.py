@@ -1,1 +1,1 @@
-client_name = 'Kook'
+client_name = 'KOOK'

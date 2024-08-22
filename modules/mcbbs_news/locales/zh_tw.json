@@ -1,5 +1,0 @@
-{
-    "mcbbs_news.help": "取得 MCBBS 夜魅塊訊板最新新聞。（未被板主高亮的新聞將被忽略）",
-    "mcbbs_news.message.more": "更多資訊詳見：",
-    "mcbbs_news.message.not_found": "沒有找到任何新聞。"
-}

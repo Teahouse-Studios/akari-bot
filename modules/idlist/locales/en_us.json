@@ -1,5 +1,5 @@
 {
     "idlist.help": "Query ID table of Minecraft: Bedrock Edition, supported only in Chinese.",
-    "idlist.message.collapse": "...show only the first 5 results, see more: ",
+    "idlist.message.collapse": "See more: ",
     "idlist.message.none": "No results found."
 }

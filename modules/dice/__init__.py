@@ -1,42 +1,33 @@
 from core.builtins import Bot
 from core.component import module
-from .dice import GenerateMessage
+from .process import process_expression
 
-dice = module('dice', alias='rd', developers=['Light-Beacon'], desc='{dice.help.desc}', )
-
-
-@dice.command('<dices> [<dc>] {{dice.help}}',
-              options_desc={
-                  '{dice.help.option.polynomial.title}': '{dice.help.option.polynomial}',
-                  'n': '{dice.help.option.n}',
-                  'm': '{dice.help.option.m}',
-                  'kx': '{dice.help.option.kx}',
-                  'klx': '{dice.help.option.klx}',
-                  'y': '{dice.help.option.y}',
-                  'N': '{dice.help.option.N}',
-                  'dc': '{dice.help.option.dc}'
-              })
-async def _(msg: Bot.MessageSession, dices, dc='0'):
-    times = '1'
-    if '#' in dices:
-        times = dices.partition('#')[0]
-        dices = dices.partition('#')[2]
-    if not times.isdigit():
-        await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
-    if not dc.isdigit():
-        await msg.finish(msg.locale.t('dice.message.error.dc.invalid') + dc)
-    await msg.finish(await GenerateMessage(msg, dices, int(times), int(dc)))
+dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon', 'DoroWolf'], desc='{dice.help.desc}', doc=True)
 
 
-@dice.regex(r"[扔投掷擲丢]([0-9]*)?[个個]([0-9]*面)?骰子?([0-9]*次)?", desc="{dice.help.regex.desc}")
-async def _(message: Bot.MessageSession):
-    groups = message.matched_msg.groups()
-    dice_type = groups[1][:-1] if groups[1] else '6'
-    roll_time = groups[2][:-1] if groups[2] else '1'
-    await message.finish(await GenerateMessage(message, f'{groups[0]}D{dice_type}', int(roll_time), 0))
+@dice.command()
+async def _(msg: Bot.MessageSession):
+    await msg.finish(await process_expression(msg, 'D', None))
 
 
-@dice.handle('rule {{dice.help.rule}}', required_admin=True)
+@dice.command('<dices> [<dc>] {{dice.help}}')
+async def _(msg: Bot.MessageSession, dices: str, dc: int = None):
+    await msg.finish(await process_expression(msg, dices, dc))
+
+
+@dice.command('set <sides> {{dice.help.set}}', required_admin=True)
+async def _(msg: Bot.MessageSession, sides: int):
+    if sides > 1:
+        msg.data.edit_option('dice_default_sides', sides)
+        await msg.finish(msg.locale.t("dice.message.set.success", sides=sides))
+    elif sides == 0:
+        msg.data.edit_option('dice_default_sides', None)
+        await msg.finish(msg.locale.t("dice.message.set.clear"))
+    else:
+        await msg.finish(msg.locale.t("dice.message.error.value.sides.invalid"))
+
+
+@dice.command('rule {{dice.help.rule}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     dc_rule = msg.data.options.get('dice_dc_reversed')
 

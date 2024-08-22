@@ -366,7 +366,7 @@ nex = Module('nex (game servers)', {
         'The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained.'),
     309: ResultInfo('Data encryption failed.'),
     310: ResultInfo('The operation specifies or accesses an invalid PrincipalID.'),
-    311: ResultInfo('Maximum connnection number is reached.'),
+    311: ResultInfo('Maximum connection number is reached.'),
     312: ResultInfo('Invalid GID.'),
     313: ResultInfo('Invalid Control script ID.'),
     314: ResultInfo('Invalid operation in live/production environment.'),
@@ -503,7 +503,7 @@ def construct_support(ret, mod, desc):
     if summary:
         ret.add_field(ConsoleErrorField('Summary', message_str=summary))
     description = category.get_error(desc)
-    if description is not None and description.description:
+    if description and description.description:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description))
         if description.support_url:
             ret.add_field(ConsoleErrorField('Further information', message_str=description.support_url))

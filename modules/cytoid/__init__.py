@@ -1,5 +1,4 @@
-from core.builtins import Bot
-from core.builtins import Image
+from core.builtins import Bot, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
 from .dbutils import CytoidBindInfoManager
@@ -7,30 +6,30 @@ from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name
 
-cytoid = module('cytoid',
-                developers=['OasisAkari'], alias='ctd')
+ctd = module('cytoid', desc='{cytoid.help.desc}', doc=True,
+             developers=['OasisAkari'], alias='ctd')
 
 
-@cytoid.handle('profile [<UserID>] {{cytoid.help.profile}}')
+@ctd.handle('profile [<username>] {{cytoid.help.profile}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)
 
 
-@cytoid.handle('(b30|r30) [<UserID>] {{cytoid.help.b30}}')
-async def _(msg: Bot.MessageSession):
+@ctd.handle('b30 [<username>] {{cytoid.help.b30}}',
+            'r30 [<username>] {{cytoid.help.r30}}')
+async def _(msg: Bot.MessageSession, username: str = None):
     if 'b30' in msg.parsed_msg:
         query = 'b30'
     elif 'r30' in msg.parsed_msg:
         query = 'r30'
     else:
-        raise
-    pat = msg.parsed_msg.get('<UserID>', False)
-    if pat:
-        query_id = pat
+        return
+    if username:
+        query_id = username
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
-        if query_id is None:
+        if not query_id:
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     if query:
         if msg.target.target_from == 'TEST|Console':
@@ -39,21 +38,23 @@ async def _(msg: Bot.MessageSession):
             qc = CoolDown('cytoid_rank', msg)
             c = qc.check(150)
         if c == 0:
-            img = await get_rating(query_id, query, msg)
-            if 'path' in img:
-                await msg.send_message([Image(path=img['path'])], allow_split_image=False)
-            if 'text' in img:
-                await msg.send_message(img['text'])
+            img = await get_rating(msg, query_id, query)
             if msg.target.target_from != 'TEST|Console':
                 if img['status']:
                     qc.reset()
+            if 'path' in img:
+                await msg.finish([Image(path=img['path'])], allow_split_image=False)
+            elif 'text' in img:
+                await msg.finish(img['text'])
         else:
-            await msg.finish(msg.locale.t('cytoid.message.b30.cooldown', time=int(c)))
+            res = msg.locale.t('message.cooldown', time=int(150 - c)) + \
+                msg.locale.t('cytoid.message.b30.cooldown')
+            await msg.finish(res)
 
 
-@cytoid.handle('bind <username> {{cytoid.help.bind}}')
-async def _(msg: Bot.MessageSession):
-    code: str = msg.parsed_msg['<username>'].lower()
+@ctd.handle('bind <username> {{cytoid.help.bind}}')
+async def _(msg: Bot.MessageSession, username: str):
+    code: str = username.lower()
     getcode = await get_profile_name(code)
     if getcode:
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])
@@ -67,7 +68,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('cytoid.message.bind.failed'))
 
 
-@cytoid.handle('unbind {{cytoid.help.unbind}}')
+@ctd.handle('unbind {{cytoid.help.unbind}}')
 async def _(msg: Bot.MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:

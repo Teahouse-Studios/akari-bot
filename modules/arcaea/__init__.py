@@ -1,71 +1,53 @@
 import os
-import urllib.parse
 
-from config import CFG
-from core.builtins import Bot
-from core.builtins import Plain, Image
+from core.builtins import Bot, Image as BImage, Plain
 from core.component import module
 from core.utils.http import get_url
+from core.utils.web_render import webrender
 
-arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
-             alias=['a', 'arc'])
-webrender = CFG.get_url('web_render')
+
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-class WithErrCode(Exception):
-    pass
-
-
-@arc.command('<sb616>')
-async def _(msg: Bot.MessageSession):
-    await msg.send_message([Plain(msg.locale.t("arcaea.message.sb616")),
-                            Image(os.path.abspath('./assets/noc.jpg'))])
+arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}', doc=True,
+             alias=['a', 'arc'])
 
 
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
-    if not webrender:
-        await msg.finish([msg.locale.t("error.webrender.unconfigured")])
-    resp = await get_url(webrender + 'source?url=' +
-                         urllib.parse.quote('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'), 200,
-                         fmt='json')
+    url = 'https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'
+    resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
-        await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
-                                             url=resp['value']['url']))])
+        await msg.finish(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
+                                      url=resp['value']['url']))
     else:
-        msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
 @arc.command('random {{arcaea.help.random}}')
 async def _(msg: Bot.MessageSession):
-    if not webrender:
-        await msg.finish(msg.locale.t("error.webrender.unconfigured"))
-    resp = await get_url(webrender + 'source?url=' +
-                         urllib.parse.quote('https://webapi.lowiro.com/webapi/song/showcase/'),
-                         200, fmt='json')
+    url = 'https://webapi.lowiro.com/webapi/song/showcase/'
+    resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
         value = resp["value"][0]
         image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
         result = [Plain(value["title"]["en"])]
         if os.path.exists(image):
-            result.append(Image(path=image))
+            result.append(BImage(path=image))
         await msg.finish(result)
     else:
-        msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
-@arc.command('rank free {{arcaea.help.rank.free}}', 'rank paid {{arcaea.help.rank.paid}}')
+@arc.command('rank free {{arcaea.help.rank.free}}',
+             'rank paid {{arcaea.help.rank.paid}}')
 async def _(msg: Bot.MessageSession):
-    if not webrender:
-        await msg.finish(msg.locale.t("error.webrender.unconfigured"))
     if msg.parsed_msg.get('free', False):
-        resp = await get_url(webrender + 'source?url=' +
-                             urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/free/'),
-                             200, fmt='json')
+        url = 'https://webapi.lowiro.com/webapi/song/rank/free/'
+        resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     else:
-        resp = await get_url(webrender + 'source?url=' +
-                             urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/paid/'), 200, fmt='json')
+        url = 'https://webapi.lowiro.com/webapi/song/rank/paid/'
+        resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
         r = []
         rank = 0
@@ -74,4 +56,15 @@ async def _(msg: Bot.MessageSession):
             r.append(f'{rank}. {x["title"]["en"]} ({x["status"]})')
         await msg.finish('\n'.join(r))
     else:
-        msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
+
+
+@arc.command('calc <score> <rating> {{arcaea.help.calc}}')
+async def _(msg: Bot.MessageSession, score: int, rating: float):
+    if score >= 10000000:
+        ptt = rating + 2
+    elif score >= 9800000:
+        ptt = rating + 1 + (score - 9800000) / 200000
+    else:
+        ptt = rating + (score - 9500000) / 300000
+    await msg.finish([Plain(round(max(0, ptt), 2))])

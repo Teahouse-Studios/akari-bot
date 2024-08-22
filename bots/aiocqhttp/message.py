@@ -13,9 +13,9 @@ from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
+from bots.aiocqhttp.utils import qq_frame_type
 from config import Config
-from core.builtins import Bot, ErrorMessage, base_superuser_list
-from core.builtins import Plain, Image, Voice, Temp, command_prefix
+from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
@@ -25,7 +25,7 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
-enable_analytics = Config('enable_analytics')
+enable_analytics = Config('enable_analytics', False)
 
 
 class FinishedSession(FinS):
@@ -33,7 +33,7 @@ class FinishedSession(FinS):
         """
         用于删除这条消息。
         """
-        if self.session.target.target_from in ['QQ|Group', 'QQ']:
+        if self.session.target.target_from in ['QQ|Group', 'QQ|Private']:
             try:
                 for x in self.message_id:
                     if x != 0:
@@ -45,6 +45,7 @@ class FinishedSession(FinS):
 last_send_typing_time = {}
 Temp.data['is_group_message_blocked'] = False
 Temp.data['waiting_for_send_group_message'] = []
+group_info = {}
 
 
 async def resending_group_message():
@@ -87,31 +88,40 @@ class MessageSession(MessageSessionT):
         quote = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True,
+                           callback=None) -> FinishedSession:
+
+        message_chain = MessageChain(message_chain)
+        message_chain_assendable = message_chain.as_sendable(self, embed=False)
+
         msg = MessageSegment.text('')
         if quote and self.target.target_from == 'QQ|Group' and self.session.message:
             msg = MessageSegment.reply(self.session.message.message_id)
-        message_chain = MessageChain(message_chain)
+
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         count = 0
-        for x in message_chain.as_sendable(locale=self.locale.locale, embed=False):
+        for x in message_chain_assendable:
             if isinstance(x, Plain):
                 msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
-                msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
+                msg = msg + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
                 if self.target.target_from != 'QQ|Guild':
                     msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
-        Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
+        Logger.info(f'[Bot] -> [{self.target.target_id}]: {message_chain_assendable}')
         if self.target.target_from == 'QQ|Group':
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+            except aiocqhttp.exceptions.NetworkError:
+                send = await bot.send_group_msg(group_id=self.session.target, message=MessageSegment.text(
+                    self.locale.t("error.message.timeout")))
             except aiocqhttp.exceptions.ActionFailed:
-                message_chain.insert(0, Plain('消息被风控，尝试使用图片发送。'))
-                msg2img = MessageSegment.image(Path(await msgchain2image(message_chain)).as_uri())
+                img_chain = message_chain.copy()
+                img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain, self)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:
@@ -132,10 +142,12 @@ class MessageSession(MessageSessionT):
                     return FinishedSession(self, 0, [{}])
                 else:
                     raise e
+        if callback:
+            MessageTaskManager.add_callback(send['message_id'], callback)
         return FinishedSession(self, send['message_id'], [send])
 
     async def check_native_permission(self):
-        if self.target.target_from == 'QQ':
+        if self.target.target_from == 'QQ|Private':
             return True
         elif self.target.target_from == 'QQ|Group':
             get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
@@ -157,6 +169,7 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         m = html.unescape(self.session.message.message)
+        m = m.replace('\\', '\\\\')
         if text_only:
             return ''.join(
                 re.split(r'\[CQ:.*?]', m)).strip()
@@ -170,20 +183,22 @@ class MessageSession(MessageSessionT):
         if self.target.target_from == 'QQ|Group':
             get_ = get_stored_list(Bot.FetchTarget, 'forward_msg')
             if not get_['status']:
-                await self.send_message('转发消息已禁用。')
+                await self.send_message(self.locale.t("core.message.forward_msg.disabled"))
                 raise
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def delete(self):
-        if self.target.target_from in ['QQ', 'QQ|Group']:
+        if self.target.target_from in ['QQ|Private', 'QQ|Group']:
             try:
                 if isinstance(self.session.message, list):
                     for x in self.session.message:
                         await bot.call_action('delete_msg', message_id=x['message_id'])
                 else:
                     await bot.call_action('delete_msg', message_id=self.session.message['message_id'])
+                return True
             except Exception:
                 Logger.error(traceback.format_exc())
+                return False
 
     async def get_text_channel_list(self):
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)
@@ -208,8 +223,18 @@ class MessageSession(MessageSessionT):
                 if s.startswith('[CQ:image'):
                     sspl = s.split(',')
                     for ss in sspl:
-                        if ss.startswith('url='):
-                            lst.append(Image(ss[4:-1]))
+                        if qq_frame_type() == 'lagrange':
+                            if ss.startswith('file='):
+                                ss = ss[5:]
+                                if ss.endswith(']'):
+                                    ss = ss[:-1]
+                                lst.append(Image(ss))
+                        else:
+                            if ss.startswith('url='):
+                                ss = ss[4:]
+                                if ss.endswith(']'):
+                                    ss = ss[:-1]
+                                lst.append(Image(ss))
             else:
                 lst.append(Plain(s))
 
@@ -228,13 +253,27 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.target.target_from == 'QQ|Group':
-                if self.msg.session.sender in last_send_typing_time:
-                    if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
-                        return
-                last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
-                await bot.send_group_msg(group_id=self.msg.session.target,
-                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')
+            if self.msg.target.target_from == 'QQ|Group':  # wtf onebot 11
+                if qq_frame_type() == 'ntqq':
+                    await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
+                                          emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
+                else:
+                    if self.msg.session.sender in last_send_typing_time:
+                        if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
+                            return
+                    last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
+
+                    if qq_frame_type() == 'lagrange':
+                        await bot.call_action('group_poke', group_id=self.msg.session.target,
+                                              user_id=self.msg.session.sender)
+                    elif qq_frame_type() == 'shamrock':
+                        await bot.send_group_msg(group_id=self.msg.session.target,
+                                                 message=f'[CQ:touch,id={self.msg.session.sender}]')
+                    elif qq_frame_type() == 'mirai':
+                        await bot.send_group_msg(group_id=self.msg.session.target,
+                                                 message=f'[CQ:poke,qq={self.msg.session.sender}]')
+                    else:
+                        pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
@@ -245,7 +284,7 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        match_target = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', target_id)
+        match_target = re.match(r'^(QQ\|Group|QQ\|Guild|QQ\|Private)\|(.*)', target_id)
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
@@ -283,7 +322,7 @@ class FetchTarget(FetchTargetT):
                 if fet.target.target_from == 'QQ|Group':
                     if fet.session.target not in group_list:
                         continue
-                if fet.target.target_from == 'QQ':
+                if fet.target.target_from == 'QQ|Private':
                     if fet.session.target not in friend_list:
                         continue
                 if fet.target.target_from == 'QQ|Guild':
@@ -305,11 +344,20 @@ class FetchTarget(FetchTargetT):
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
                                                                         'i18n': i18n, 'kwargs': kwargs})
                 else:
-                    if i18n:
-                        await fetch_.send_direct_message(fetch_.parent.locale.t(message, **kwargs))
-
-                    else:
-                        await fetch_.send_direct_message(message)
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain([Plain(fetch_.parent.locale.t(message, **kwargs))])
+                        else:
+                            msgchain = MessageChain([Plain(message)])
+                    msgchain = MessageChain(msgchain)
+                    new_msgchain = []
+                    for v in msgchain.value:
+                        if isinstance(v, Image):
+                            new_msgchain.append(await v.add_random_noise())
+                        else:
+                            new_msgchain.append(v)
+                    await fetch_.send_direct_message(new_msgchain)
                     if _tsk:
                         _tsk = []
                 if enable_analytics:
@@ -338,7 +386,7 @@ class FetchTarget(FetchTargetT):
             except Exception:
                 Logger.error(traceback.format_exc())
 
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 await post_(x)
         else:
@@ -347,18 +395,20 @@ class FetchTarget(FetchTargetT):
             group_list = [g['group_id'] for g in group_list_raw]
             friend_list_raw = await bot.call_action('get_friend_list')
             friend_list = [f['user_id'] for f in friend_list_raw]
-            guild_list_raw = await bot.call_action('get_guild_list')
+
             guild_list = []
-            for g in guild_list_raw:
-                try:
-                    get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
-                                                             no_cache=True)
-                    for channel in get_channel_list:
-                        if channel['channel_type'] == 1:
-                            guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
-                except Exception:
-                    traceback.print_exc()
-                    continue
+            if qq_frame_type() == 'mirai':
+                guild_list_raw = await bot.call_action('get_guild_list')
+                for g in guild_list_raw:
+                    try:
+                        get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
+                                                                 no_cache=True)
+                        for channel in get_channel_list:
+                            if channel['channel_type'] == 1:
+                                guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
+                    except Exception:
+                        traceback.print_exc()
+                        continue
 
             in_whitelist = []
             else_ = []
@@ -369,14 +419,14 @@ class FetchTarget(FetchTargetT):
                     if fetch.target.target_from == 'QQ|Group':
                         if int(fetch.session.target) not in group_list:
                             continue
-                    if fetch.target.target_from == 'QQ':
+                    if fetch.target.target_from == 'QQ|Private':
                         if int(fetch.session.target) not in friend_list:
                             continue
                     if fetch.target.target_from == 'QQ|Guild':
                         if fetch.session.target not in guild_list:
                             continue
 
-                    if fetch.target.target_from in ['QQ', 'QQ|Guild']:
+                    if fetch.target.target_from in ['QQ|Private', 'QQ|Guild']:
                         in_whitelist.append(post_(fetch))
                     else:
                         load_options: dict = json.loads(x.options)

@@ -1,6 +1,6 @@
 {
     "ip.message.asn": "ASN：",
-    "ip.message.error.unknown": "发生错误：无效的 IP 地址，请检查输入。",
+    "ip.message.invalid": "无效的 IP 地址，请检查输入。",
     "ip.message.ip_property": "地址",
     "ip.message.ip_property.global": "全局",
     "ip.message.ip_property.ipv4_mapped": "IPv4 映射",

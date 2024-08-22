@@ -19,17 +19,19 @@ def convert2lst(elements: Union[str, list, tuple]) -> list:
 class Module:
     def __init__(self,
                  bind_prefix: str,
-                 alias: Union[str, list, tuple, dict] = None,
+                 alias: Union[str, list, tuple, dict, None] = None,
                  desc: str = None,
-                 recommend_modules: Union[str, list, tuple] = None,
-                 developers: Union[str, list, tuple] = None,
+                 recommend_modules: Union[str, list, tuple, None] = None,
+                 developers: Union[str, list, tuple, None] = None,
                  required_admin: bool = False,
                  base: bool = False,
+                 doc: bool = False,
+                 hidden: bool = False,
                  required_superuser: bool = False,
                  required_base_superuser: bool = False,
-                 available_for: Union[str, list, tuple] = '*',
-                 exclude_from: Union[str, list, tuple] = '',
-                 support_languages: Union[str, list, tuple] = None):
+                 available_for: Union[str, list, tuple, None] = '*',
+                 exclude_from: Union[str, list, tuple, None] = '',
+                 support_languages: Union[str, list, tuple, None] = None):
         self.bind_prefix: str = bind_prefix
         if isinstance(alias, str):
             alias = {alias: bind_prefix}
@@ -41,6 +43,8 @@ class Module:
         self.developers: List[str] = convert2lst(developers)
         self.required_admin: bool = required_admin
         self.base: bool = base
+        self.doc: bool = doc
+        self.hidden: bool = hidden
         self.required_superuser: bool = required_superuser
         self.required_base_superuser: bool = required_base_superuser
         self.available_for: List[str] = convert2lst(available_for)

@@ -1,9 +1,9 @@
 {
     "exchange_rate.help": "根据当日汇率转换货币价格。",
     "exchange_rate.help.desc": "汇率转换工具。",
-    "exchange_rate.help.regex.desc": "[<acount>] <base>(兑|换)<target>",
+    "exchange_rate.help.regex.desc": "[<acount>] <base>(兑|换)<target> 转换货币价格。",
     "exchange_rate.message": "${amount} ${base} = ${exchange_rate} ${target}\n（${time}，仅供参考）",
-    "exchange_rate.message.error.invalid": "发生错误：无效的货币单位：",
-    "exchange_rate.message.error.non_digital": "发生错误：无效的金额，必须为数字。",
-    "exchange_rate.message.error.non_positive": "发生错误：金额必须为正数。"
+    "exchange_rate.message.invalid.unit": "无效的货币单位：",
+    "exchange_rate.message.invalid.non_digital": "无效的金额，必须为数字。",
+    "exchange_rate.message.invalid.non_positive": "金额必须为正数。"
 }

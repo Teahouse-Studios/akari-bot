@@ -21,17 +21,17 @@ class CommandParser:
         self.origin_template = args
         self.msg: Union[MessageSession, None] = msg
         self.options_desc = []
-        self.lang = self.msg.locale if self.msg is not None else Locale(default_locale)
+        self.lang = self.msg.locale if self.msg else Locale(default_locale)
         help_docs = {}
         for match in (
-            args.command_list.set if self.msg is None else args.command_list.get(
+            args.command_list.set if not self.msg else args.command_list.get(
                 self.msg.target.target_from)):
             if match.help_doc:
                 for m in match.help_doc:
                     help_docs[m] = {'priority': match.priority, 'meta': match}
             else:
                 help_docs[''] = {'priority': match.priority, 'meta': match}
-            if match.options_desc is not None:
+            if match.options_desc:
                 for m in match.options_desc:
                     desc = match.options_desc[m]
                     if locale_str := re.findall(r'\{(.*)}', desc):
@@ -60,13 +60,16 @@ class CommandParser:
                     for l in locale_str:
                         x = x.replace(f'{{{l}}}', self.lang.t(l, fallback_failed_prompt=False))
                 options_desc_localed.append(x)
+            options_desc_localed = list(set(options_desc_localed))  # 移除重复内容
             args += f'\n{self.lang.t("core.help.options")}\n' + '\n'.join(options_desc_localed)
         return args
 
     def parse(self, command):
-        if self.args is None:
+        if not self.args:
             return None
         command = re.sub(r'[“”]', '"', command)
+        command = command.replace('"', '\\"')
+        command = command.replace("'", "\\'")
         try:
             split_command = shlex.split(command)
         except ValueError:

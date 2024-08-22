@@ -1,6 +1,6 @@
 {
     "wolframalpha.help": "输入问题或公式以搜索 WolframAlpha。",
     "wolframalpha.help.ask": "通过 WolframAlpha 回答问题。",
-    "wolframalpha.help.desc": "WolframAlpha 相关工具。",
+    "wolframalpha.help.desc": "使用 WolframAlpha。",
     "wolframalpha.message.incomprehensible": "WolframAlpha 无法理解你的问题，请尝试使用英语提问。"
 }

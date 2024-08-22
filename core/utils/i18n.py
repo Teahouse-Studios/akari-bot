@@ -10,15 +10,13 @@ from config import Config
 from .text import remove_suffix
 
 
-default_locale = Config('locale')
-if not default_locale:
-    default_locale = 'zh_cn'
-
+default_locale = Config('locale', 'zh_cn')
 
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
 # locale files get too large
+
 
 class LocaleNode:
     """本地化树节点"""
@@ -107,7 +105,7 @@ def load_locale_file():
 class Locale:
     def __init__(self, locale: str, fallback_lng=None):
         """创建一个本地化对象"""
-        if fallback_lng is None:
+        if not fallback_lng:
             fallback_lng = ['zh_cn', 'zh_tw', 'en_us']
         self.locale = locale
         self.data: LocaleNode = locale_root.query_node(locale)
@@ -122,13 +120,12 @@ class Locale:
     def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
         """获取本地化字符串"""
         if isinstance(key, dict):
-            if (ft := key.get(self.locale)) is not None:
+            if ft := key.get(self.locale):
                 return ft
             elif 'fallback' in key:
                 return key['fallback']
             else:
-                return str(key) + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
-                                         fallback=self.locale)
+                return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(*args, **kwargs)
 
@@ -138,18 +135,17 @@ class Locale:
 
     def get_string_with_fallback(self, key: str, fallback_failed_prompt) -> str:
         node = self.data.query_node(key)
-        if node is not None:
+        if node:
             return node.value  # 1. 如果本地化字符串存在，直接返回
         fallback_lng = list(self.fallback_lng)
         fallback_lng.insert(0, self.locale)
         for lng in fallback_lng:
             if lng in locale_root.children:
                 node = locale_root.query_node(lng).query_node(key)
-                if node is not None:
+                if node:
                     return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
-                                         fallback_failed_prompt=False)
+            return f'{{{key}}}' + self.t("error.i18n.fallback", fallback_failed_prompt=False)
         else:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key

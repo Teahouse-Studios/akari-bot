@@ -1,10 +1,11 @@
+import asyncio
 import os
 import sys
 
-from aiogram import types, executor
+from aiogram import types
 from aiogram.types import ContentType
 
-from bots.aiogram.client import dp
+from bots.aiogram.client import dp, bot
 from bots.aiogram.info import client_name
 from bots.aiogram.message import MessageSession, FetchTarget
 from core.builtins import PrivateAssets, Url
@@ -17,15 +18,15 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 Url.disable_mm = True
 
 
-@dp.message_handler(content_types=[ContentType.TEXT, ContentType.PHOTO, ContentType.AUDIO])
+@dp.message()
 async def msg_handler(message: types.Message):
-    target_id = f'Telegram|{message.chat.type}|{message.chat.id}'
+    target_id = f'Telegram|{message.chat.type.title()}|{message.chat.id}'
     reply_id = None
-    if message.reply_to_message is not None:
+    if message.reply_to_message:
         reply_id = message.reply_to_message.message_id
     msg = MessageSession(MsgInfo(target_id=target_id,
                                  sender_id=f'Telegram|User|{message.from_user.id}',
-                                 target_from=f'Telegram|{message.chat.type}',
+                                 target_from=f'Telegram|{message.chat.type.title()}',
                                  sender_from='Telegram|User', sender_name=message.from_user.username,
                                  client_name=client_name,
                                  message_id=message.message_id,
@@ -42,4 +43,6 @@ async def on_startup(dispatcher):
 if 'subprocess' in sys.argv:
     Info.subprocess = True
 
-executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+dp.startup.register(on_startup)
+
+asyncio.run(dp.start_polling(bot))

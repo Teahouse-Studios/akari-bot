@@ -1,3 +1,4 @@
+from sqlalchemy import text
 import ujson as json
 
 from database import BotDBUtil
@@ -13,25 +14,25 @@ def update_database():
     if value < 2:
         TargetInfo.__table__.drop(engine)
         TargetInfo.__table__.create(engine)
-        q = session.execute("SELECT * FROM enabledModules")
+        q = session.execute(text("SELECT * FROM enabledModules"))
         for v in q.fetchall():
             data = BotDBUtil.TargetInfo(v[0]).init()
             data.enabledModules = v[1]
             session.commit()
 
-        q = session.execute("SELECT * FROM targetOptions")
+        q = session.execute(text("SELECT * FROM targetOptions"))
         for v in q.fetchall():
             data = BotDBUtil.TargetInfo(v[0]).init()
             data.options = v[1]
             session.commit()
 
-        q = session.execute("SELECT * FROM mutelist")
+        q = session.execute(text("SELECT * FROM mutelist"))
         for v in q.fetchall():
             data = BotDBUtil.TargetInfo(v[0]).init()
             data.muted = True
             session.commit()
 
-        q = session.execute("SELECT * FROM targetadmin")
+        q = session.execute(text("SELECT * FROM targetadmin"))
         for v in q.fetchall():
             data = BotDBUtil.TargetInfo(v[2]).init()
             custom_admins = json.loads(data.custom_admins)
@@ -39,12 +40,20 @@ def update_database():
             data.custom_admins = json.dumps(custom_admins)
             session.commit()
 
-        session.execute("DROP TABLE IF EXISTS enabledModules, targetOptions, mutelist, targetadmin")
+        session.execute(text("DROP TABLE IF EXISTS enabledModules, targetOptions, mutelist, targetadmin"))
 
         version.value = '2'
         session.commit()
     if value < 3:
-        session.execute("ALTER TABLE TargetInfo ADD column petal INTEGER DEFAULT 0")
+        session.execute(text("ALTER TABLE TargetInfo ADD column petal INTEGER DEFAULT 0"))
 
         version.value = '3'
+        session.commit()
+    if value < 4:
+        session.execute(text("ALTER TABLE TargetInfo DROP COLUMN petal"))
+        session.execute(text("ALTER TABLE SenderInfo ADD column petal INTEGER DEFAULT 0"))
+        session.execute(text("ALTER TABLE TargetInfo RENAME COLUMN custom_admins TO customAdmins"))
+        session.execute(text("ALTER TABLE SenderInfo RENAME COLUMN disable_typing TO disableTyping"))
+
+        version.value = '4'
         session.commit()

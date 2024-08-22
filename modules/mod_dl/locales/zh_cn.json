@@ -11,7 +11,6 @@
     "mod_dl.message.modrinth.result": "Modrinth 结果：",
     "mod_dl.message.not_found": "未找到结果。",
     "mod_dl.message.prompt": "请回复编号来选择 Mod。",
-    "mod_dl.message.unsupport": "不支持中文搜索，请检查输入。",
     "mod_dl.message.version": "此 Mod 拥有以下版本：",
     "mod_dl.message.version.not_found": "未找到指定版本。",
     "mod_dl.message.version.prompt": "请回复版本号来选择版本。"

@@ -1,6 +1,5 @@
 {
     "bugtracker.help": "查詢 Mojira 上的錯誤編號內容。",
-    "bugtracker.help.regex.desc": "直接傳送 Mojira 的漏洞編號以查詢漏洞內容。",
-    "bugtracker.help.regex.url": "傳送 Mojira 的 URL 以查詢漏洞內容。",
+    "bugtracker.help.regex.desc": "傳送 Mojira 的漏洞編號以查詢漏洞內容。",
     "bugtracker.message.get_failed": "取得內容失敗，錯誤可能不存在或被設定為隱私。"
 }

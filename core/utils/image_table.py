@@ -6,13 +6,11 @@ import aiohttp
 import ujson as json
 from tabulate import tabulate
 
-from config import CFG
+from core.builtins.utils import shuffle_joke
 from core.logger import Logger
 from .cache import random_cache_path
-from .http import download_to_cache
-
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
+from .http import download
+from .web_render import WebRender, webrender
 
 
 class ImageTable:
@@ -22,10 +20,9 @@ class ImageTable:
 
 
 async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
-    if not web_render_local:
-        if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
-            return False
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
     pic = False
 
@@ -39,12 +36,14 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             for row in tbl.data:
                 cs = []
                 for c in row:
+                    c = shuffle_joke(c)
                     cs.append(re.sub(r'\n', '<br>', escape(c)))
                 d.append(cs)
-            w = len(tbl.headers) * 500
+            headers = [shuffle_joke(header) for header in tbl.headers]
+            w = len(headers) * 500
             if w > max_width:
                 max_width = w
-            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, tbl.headers, tablefmt='unsafehtml')))
+            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, headers, tablefmt='unsafehtml')))
         tblst = '<table>' + '\n'.join(tblst) + '</table>'
         css = """
         <style>table {
@@ -66,8 +65,8 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                 fi.write(tblst + css)
 
         try:
-            pic = await download_to_cache(
-                web_render_local if use_local else web_render,
+            pic = await download(
+                webrender(use_local=use_local),
                 method='POST',
                 post_data=json.dumps(html),
                 request_private_ip=True,
@@ -77,8 +76,8 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             )
         except aiohttp.ClientConnectorError:
             if use_local:
-                pic = await download_to_cache(
-                    web_render,
+                pic = await download(
+                    webrender(use_local=False),
                     method='POST',
                     post_data=json.dumps(html),
                     request_private_ip=True,
@@ -87,7 +86,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                     }
                 )
     except Exception:
-        Logger.exception("error at image_table_render")
+        Logger.exception("Error at image_table_render.")
 
     return pic
 

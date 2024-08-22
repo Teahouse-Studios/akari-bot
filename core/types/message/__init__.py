@@ -1,8 +1,10 @@
+from __future__ import annotations
 import asyncio
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Coroutine, Awaitable, Any
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
+from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 
 
 class MsgInfo:
@@ -29,8 +31,8 @@ class MsgInfo:
 
     def __repr__(self):
         return f'MsgInfo(target_id={self.target_id}, sender_id={self.sender_id}, sender_name={self.sender_name},' \
-               f' target_from={self.target_from}, sender_from={self.sender_from}, client_name={self.client_name}, ' \
-               f'message_id={self.message_id}, reply_id={self.reply_id})'
+            f' target_from={self.target_from}, sender_from={self.sender_from}, client_name={self.client_name}, ' \
+            f'message_id={self.message_id}, reply_id={self.reply_id})'
 
 
 class Session:
@@ -66,10 +68,26 @@ class MessageSession:
     消息会话，囊括了处理一条消息所需要的东西。
     """
     __slots__ = (
-        "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
-        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp")
+        "target",
+        "session",
+        "trigger_msg",
+        "parsed_msg",
+        "matched_msg",
+        "sent",
+        "prefixes",
+        "options",
+        "enabled_modules",
+        "muted",
+        "name",
+        "petal",
+        "custom_admins",
+        "data",
+        "locale",
+        "tmp",
+        "timezone_offset",
+        "_tz_offset")
 
-    parsed_msg: Dict[str, str]
+    parsed_msg: Dict[str, Union[str, list]]
 
     def __init__(self,
                  target: MsgInfo,
@@ -81,89 +99,104 @@ class MessageSession:
         self.options: dict = {}
         self.enabled_modules: List[str] = []
         self.muted: bool = False
-        self.timestamp: float = 0
+        self.petal: int = 0
+        self.tmp = {}
 
     async def send_message(self,
-                           message_chain,
+                           message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
                            quote=True,
                            disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True,
+                           callback: Coroutine[Any] = None) -> FinishedSession:
         """
-        用于向消息发送者回复消息。
+        用于向消息发送者返回消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param quote: 是否引用传入dict中的消息（默认为True）
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
+        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
         :return: 被发送的消息链
         """
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain=None,
-                     quote=True,
-                     disable_secret_check=False,
-                     allow_split_image=True):
+                     message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage] = None,
+                     quote: bool = True,
+                     disable_secret_check: bool = False,
+                     allow_split_image: bool = True,
+                     callback: Union[Awaitable, None] = None):
         """
-        用于向消息发送者回复消息并终结会话（模块后续代码不再执行）。
+        用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param quote: 是否引用传入dict中的消息（默认为True）
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
+        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
         :return: 被发送的消息链
         """
         ...
         f = None
-        if message_chain is not None:
+        if message_chain:
             f = await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=quote,
-                                        allow_split_image=allow_split_image)
+                                        allow_split_image=allow_split_image, callback=callback)
         raise FinishedException(f)
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
+    async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True,
+                                  callback: Coroutine = None):
         """
         用于向消息发送者直接发送消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
-        :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
+        :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅Telegram平台使用了切割）
+        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
         :return: 被发送的消息链
         """
         await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False,
-                                allow_split_image=allow_split_image)
+                                allow_split_image=allow_split_image, callback=callback)
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True):
+    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
         """
         一次性模板，用于等待触发对象确认。
         :param message_chain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
-        :param delete: 是否在触发后删除消息
+        :param delete: 是否在触发后删除消息（默认为True）
+        :param timeout: 超时时间
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         raise NotImplementedError
 
-    async def wait_next_message(self, message_chain=None, quote=True, delete=False, append_instruction=True):
+    async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
+                                append_instruction=True):
         """
         一次性模板，用于等待对象的下一条消息。
         :param message_chain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
-        :param delete: 是否在触发后删除消息
+        :param delete: 是否在触发后删除消息（默认为False）
+        :param timeout: 超时时间
         :return: 下一条消息的MessageChain对象
         """
         raise NotImplementedError
 
-    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True):
+    async def wait_reply(self, message_chain, quote=True, delete=False, timeout=120, all_=False,
+                         append_instruction=True):
         """
         一次性模板，用于等待触发对象回复消息。
         :param message_chain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
+        :param delete: 是否在触发后删除消息（默认为False）
+        :param timeout: 超时时间
         :param all_: 是否设置触发对象为对象内的所有人（默认为False）
         :return: 回复消息的MessageChain对象
         """
         raise NotImplementedError
 
-    async def wait_anyone(self, message_chain=None, delete=False):
+    async def wait_anyone(self, message_chain=None, quote=False, delete=False, timeout=120):
         """
-        一次性模板，用于等待触发发送者所属对象内所有成员确认。
+        一次性模板，用于等待触发对象所属对话内任意成员确认。
         :param message_chain: 需要发送的确认消息，可不填
-        :param delete: 是否在触发后删除消息
+        :param quote: 是否引用传入dict中的消息（默认为False）
+        :param delete: 是否在触发后删除消息（默认为False）
+        :param timeout: 超时时间
         :return: 任意人的MessageChain对象
         """
         raise NotImplementedError
@@ -189,7 +222,7 @@ class MessageSession:
 
     async def check_permission(self):
         """
-        用于检查消息发送者在对象内的权限。
+        用于检查消息发送者在对话内的权限。
         """
         raise NotImplementedError
 
@@ -208,6 +241,18 @@ class MessageSession:
     async def get_text_channel_list(self):
         """
         用于获取子文字频道列表（QQ）。
+        """
+        raise NotImplementedError
+
+    def ts2strftime(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
+        """
+        用于将时间戳转换为可读的时间格式。
+        :param timestamp: 时间戳（UTC时间）
+        :param date: 是否显示日期
+        :param iso: 是否以ISO格式显示
+        :param time: 是否显示时间
+        :param seconds: 是否显示秒
+        :param timezone: 是否显示时区
         """
         raise NotImplementedError
 
@@ -266,9 +311,9 @@ class MessageSession:
 
 class FetchedSession:
     def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
-        if sender_from is None:
+        if not sender_from:
             sender_from = target_from
-        if sender_id is None:
+        if not sender_id:
             sender_id = target_id
         self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
                               sender_id=f'{target_from}|{sender_id}',

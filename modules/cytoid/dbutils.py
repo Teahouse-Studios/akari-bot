@@ -13,7 +13,7 @@ class CytoidBindInfoManager:
     def __init__(self, msg: Bot.MessageSession):
         self.target_id = msg.target.sender_id
         self.query = session.query(CytoidBindInfo).filter_by(targetId=self.target_id).first()
-        if self.query is None:
+        if not self.query:
             session.add_all([CytoidBindInfo(targetId=self.target_id, username='')])
             session.commit()
             self.query = session.query(CytoidBindInfo).filter_by(targetId=self.target_id).first()

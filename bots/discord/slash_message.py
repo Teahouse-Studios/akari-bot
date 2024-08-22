@@ -2,15 +2,15 @@ import traceback
 
 import discord
 
-from bots.discord.message import convert_embed
+from bots.discord.message import convert_embed, MessageSession as MessageSessionT
 from config import Config
-from core.builtins import Plain, Image, MessageSession as MessageSessionT
+from core.builtins import Plain, Image, MessageTaskManager
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed, ErrorMessage
+from core.builtins.message.internal import Embed, I18NContext
 from core.logger import Logger
 from core.types import FinishedSession as FinS
 
-enable_analytics = Config('enable_analytics')
+enable_analytics = Config('enable_analytics', False)
 
 
 class FinishedSession(FinS):
@@ -37,16 +37,17 @@ class MessageSession(MessageSessionT):
         quote = False
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True,
+                           callback=None
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         count = 0
         send = []
         first_send = True
-        for x in message_chain.as_sendable():
+        for x in message_chain.as_sendable(self):
             if isinstance(x, Plain):
                 if first_send:
                     send_ = await self.session.message.respond(x.text)
@@ -67,7 +68,7 @@ class MessageSession(MessageSessionT):
                     send_ = await self.session.message.send(embed=embeds)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}')
             else:
-                send_ = False
+                send_ = None
             if send_:
                 send.append(send_)
             count += 1
@@ -75,14 +76,16 @@ class MessageSession(MessageSessionT):
         msg_ids = []
         for x in send:
             msg_ids.append(x.id)
+            if callback:
+                MessageTaskManager.add_callback(x.id, callback)
 
         return FinishedSession(self, msg_ids, send)
 
     async def check_permission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
                 or isinstance(self.session.message.channel, discord.DMChannel) \
-                or self.target.sender_info.query.isSuperUser \
-                or self.target.sender_info.check_TargetAdmin(self.target.target_id):
+                or self.info.is_super_user \
+                or self.info.check_TargetAdmin(self.target.target_id):
             return True
         return False
 
@@ -102,5 +105,7 @@ class MessageSession(MessageSessionT):
     async def delete(self):
         try:
             await self.session.message.delete()
+            return True
         except Exception:
             Logger.error(traceback.format_exc())
+            return False

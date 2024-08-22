@@ -15,8 +15,9 @@ class SenderInfo(Base):
     isInBlockList = Column(Boolean, default=False)
     isInAllowList = Column(Boolean, default=False)
     isSuperUser = Column(Boolean, default=False)
-    warns = Column(Integer, default='0')
-    disable_typing = Column(Boolean, default=False)
+    warns = Column(Integer, default=0)
+    disableTyping = Column(Boolean, default=False)
+    petal = Column(Integer, default=0)
 
 
 class TargetInfo(Base):
@@ -24,10 +25,9 @@ class TargetInfo(Base):
     targetId = Column(String(512), primary_key=True)
     enabledModules = Column(LONGTEXT if is_mysql else Text, default='[]')
     options = Column(LONGTEXT if is_mysql else Text, default='{}')
-    custom_admins = Column(LONGTEXT if is_mysql else Text, default='[]')
+    customAdmins = Column(LONGTEXT if is_mysql else Text, default='[]')
     muted = Column(Boolean, default=False)
     locale = Column(String(512), default=default_locale)
-    petal = Column(Integer, default=0)
 
 
 class StoredData(Base):
@@ -45,8 +45,8 @@ class CommandTriggerTime(Base):
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
-class GroupAllowList(Base):
-    __tablename__ = "GroupAllowList"
+class GroupBlockList(Base):
+    __tablename__ = "GroupBlockList"
     targetId = Column(String(512), primary_key=True)
 
 
@@ -93,5 +93,5 @@ class JobQueueTable(Base):
 
 
 Session.create()
-__all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupAllowList",
+__all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupBlockList",
            "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable"]

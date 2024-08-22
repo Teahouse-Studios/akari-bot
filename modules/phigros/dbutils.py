@@ -11,7 +11,7 @@ class PgrBindInfoManager:
     def __init__(self, msg: Bot.MessageSession):
         self.target_id = msg.target.sender_id
         self.query = session.query(PgrBindInfo).filter_by(targetId=self.target_id).first()
-        if self.query is None:
+        if not self.query:
             session.add_all([PgrBindInfo(targetId=self.target_id, sessiontoken='', username='Guest')])
             session.commit()
             self.query = session.query(PgrBindInfo).filter_by(targetId=self.target_id).first()

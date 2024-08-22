@@ -6,15 +6,21 @@ import ujson as json
 
 from config import CFG
 from core.background_tasks import init_background_task
+from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger, bot_name
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.types import PrivateAssets, Secret
 from core.utils.info import Info
+from core.utils.web_render import check_web_render
 
 
 async def init_async(start_scheduler=True) -> None:
+    try:
+        Info.version = os.popen('git rev-parse HEAD', 'r').read()
+    except Exception:
+        Logger.warning(f'Failed to get Git commit hash, is it a Git repository?')
     load_modules()
     gather_list = []
     modules = ModulesManager.return_modules_list()
@@ -27,16 +33,12 @@ async def init_async(start_scheduler=True) -> None:
     init_background_task()
     if start_scheduler:
         if not Info.subprocess:
-            from core.extra.scheduler import load_extra_schedulers
             load_extra_schedulers()
-            await JobQueue.secret_append_ip()
+        await JobQueue.secret_append_ip()
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
-    try:
-        Info.version = os.popen('git rev-parse HEAD', 'r').read()[0:6]
-    except Exception as e:
-        Logger.warn(f'Failed to get git commit hash, is it a git repository?')
+    asyncio.create_task(check_web_render())
     Logger.info(f'Hello, {bot_name}!')
 
 
@@ -44,7 +46,7 @@ async def load_secret():
     for x in CFG.value:
         if x == 'secret':
             for y in CFG().value[x]:
-                if CFG().value[x][y] is not None:
+                if CFG().value[x][y]:
                     Secret.add(str(CFG().value[x][y]).upper())
 
 
@@ -58,9 +60,9 @@ async def load_prompt(bot) -> None:
         m = await bot.fetch_target(author)
         if m:
             if (read := open_loader_cache.read()) != '':
-                await m.send_direct_message(m.parent.locale.t('error.loader.load.failed', err_msg=read))
+                await m.send_direct_message(m.parent.locale.t('loader.load.failed', detail=read))
             else:
-                await m.send_direct_message(m.parent.locale.t('error.loader.load.success'))
+                await m.send_direct_message(m.parent.locale.t('loader.load.success'))
             open_loader_cache.close()
             open_author_cache.close()
             os.remove(author_cache)

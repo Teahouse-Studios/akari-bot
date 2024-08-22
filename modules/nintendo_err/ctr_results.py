@@ -337,9 +337,9 @@ def construct_result(ret, mod, summary, level, desc):
     ret.add_field(ConsoleErrorField('Summary', message_str=summaries.get(summary, ''), supplementary_value=summary))
     ret.add_field(ConsoleErrorField('Level', message_str=levels.get(level, ''), supplementary_value=level))
     description = module.get_error(desc)
-    if description is None:
+    if not description:
         description = common.get_error(desc)
-        if description is None:
+        if not description:
             ret.add_field(ConsoleErrorField('Description', supplementary_value=desc))
         else:
             ret.add_field(

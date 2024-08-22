@@ -272,9 +272,9 @@ def construct_result(ret, mod, desc):
     module = ctr_results_modules.get(mod, Module(''))
     ret.add_field(ConsoleErrorField('模组', message_str=module.name, supplementary_value=mod))
     description = module.get_error(desc)
-    if description is None or not description.description:
+    if not description or not description.description:
         description = ctr_results_modules[0].get_error(desc)
-        if description is None or not description.description:
+        if not description or not description.description:
             ret.add_field(ConsoleErrorField('描述', supplementary_value=desc))
         else:
             ret.add_field(ConsoleErrorField('描述', message_str=description.description, supplementary_value=desc))
@@ -294,9 +294,9 @@ def construct_result_range(ret, mod, range_desc):
             continue
 
         description = module.get_error(desc)
-        if description is None or not description.description:
+        if not description or not description.description:
             description = ctr_results_modules[0].get_error(desc)
-            if description is None or not description.description:
+            if not description or not description.description:
                 unknown_descs.append(str(desc))
             else:
                 found_descs.append(
@@ -320,7 +320,7 @@ def construct_support(ret, mod, desc):
     else:
         ret.add_field(ConsoleErrorField('分类', supplementary_value=mod))
     description = category.get_error(desc)
-    if description is not None and description.description:
+    if description and description.description:
         ret.add_field(ConsoleErrorField('描述', message_str=description.description))
         if description.support_url:
             ret.add_field(ConsoleErrorField('更多描述', message_str=description.support_url))
@@ -349,7 +349,7 @@ def nim_handler(ret, description):
     # If we have a specific description for it in our knowledgebase,
     # show it instead of doing the rest of the processing.
     error = nim.get_error(description)
-    if error is not None and error.description:
+    if error and error.description:
         return construct_support(ret, 5, description)
 
     elif 2000 <= description < 3024:

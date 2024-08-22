@@ -18,7 +18,7 @@ err_modules = []
 
 
 def load_modules():
-    unloaded_modules = Config('unloaded_modules')
+    unloaded_modules = Config('unloaded_modules', [])
     if not unloaded_modules:
         unloaded_modules = []
     err_prompt = []
@@ -32,6 +32,8 @@ def load_modules():
 
     for file_name in dir_list:
         try:
+            if file_name == 'secret' and not Config('enable_secret_module', False):
+                continue
             file_path = os.path.join(load_dir_path, file_name)
             fun_file = None
             if os.path.isdir(file_path):
@@ -40,16 +42,16 @@ def load_modules():
             elif os.path.isfile(file_path):
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
-            if fun_file is not None:
+            if fun_file:
                 Logger.debug(f'Loading modules.{fun_file}...')
                 all_modules.append(fun_file)
                 if fun_file in unloaded_modules:
-                    Logger.warn(f'Skipped modules.{fun_file}!')
+                    Logger.warning(f'Skipped modules.{fun_file}!')
                     current_unloaded_modules.append(fun_file)
                     continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
-                Logger.debug(f'Succeeded loaded modules.{fun_file}!')
+                Logger.debug(f'Successfully loaded modules.{fun_file}!')
         except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
@@ -87,11 +89,11 @@ class ModulesManager:
     def remove_modules(cls, modules):
         for module in modules:
             if module in cls.modules:
-                Logger.info(f'Removing...{module}')
+                Logger.info(f'Removing... {module}')
                 cls.modules.pop(module)
                 cls.modules_origin.pop(module)
             else:
-                raise ValueError(f'Module "{module}" is not exist')
+                raise ValueError(f'Module "{module}" is not exist.')
 
     @classmethod
     def refresh_modules_aliases(cls):
@@ -155,25 +157,26 @@ class ModulesManager:
     @classmethod
     def return_modules_list(cls, target_from: str = None) -> \
             Dict[str, Module]:
-        if target_from is not None:
+        modules = {bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)}
+        if target_from:
             if target_from in cls._return_cache:
                 return cls._return_cache[target_from]
             returns = {}
-            for m in cls.modules:
-                if isinstance(cls.modules[m], Module):
-                    if target_from in cls.modules[m].exclude_from:
+            for m in modules:
+                if isinstance(modules[m], Module):
+                    if target_from in modules[m].exclude_from:
                         continue
-                    available = cls.modules[m].available_for
+                    available = modules[m].available_for
                     if target_from in available or '*' in available:
-                        returns.update({m: cls.modules[m]})
+                        returns.update({m: modules[m]})
             cls._return_cache.update({target_from: returns})
             return returns
-        return cls.modules
+        return modules
 
     @classmethod
     def reload_module(cls, module_name: str):
         """
-        重载该小可模块（以及该模块所在文件的其它模块）
+        重载该机器人模块（以及该模块所在文件的其它模块）
         """
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
@@ -184,7 +187,7 @@ class ModulesManager:
     @classmethod
     def load_module(cls, module_name: str):
         """
-        加载该小可模块（以及该模块所在文件的其它模块）
+        加载该机器人模块（以及该模块所在文件的其它模块）
         """
         if module_name not in current_unloaded_modules:
             return False
@@ -212,7 +215,7 @@ class ModulesManager:
     @classmethod
     def unload_module(cls, module_name: str):
         """
-        卸载该小可模块（以及该模块所在文件的其它模块）
+        卸载该机器人模块（以及该模块所在文件的其它模块）
         """
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
@@ -223,7 +226,7 @@ class ModulesManager:
     @classmethod
     def reload_py_module(cls, module_name: str):
         """
-        重载该py模块
+        重载该Python模块
         """
         try:
             Logger.info(f'Reloading {module_name} ...')
@@ -234,7 +237,7 @@ class ModulesManager:
                 if mod.startswith(f'{module_name}.'):
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)
-            Logger.info(f'Succeeded reloaded {module_name}')
+            Logger.info(f'Successfully reloaded {module_name}.')
             if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) in err_modules:
                 err_modules.remove(m.group(1))
             return cnt + 1

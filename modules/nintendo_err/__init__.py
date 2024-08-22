@@ -78,7 +78,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         return memes.get(err.casefold())
 
 
-e = module('err', developers=['OasisAkari', 'kurisu'])
+e = module('err', developers=['OasisAkari', 'kurisu'], doc=True)
 
 
 @e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')
@@ -98,7 +98,7 @@ async def result(msg: Bot.MessageSession):
     results = Results()
     err = msg.parsed_msg['<errcode>']
     err = results.fixup_input(err)
-    if (meme := results.check_meme(err)) is not None:
+    if meme := results.check_meme(err):
         await msg.finish(meme)
     try:
         ret = results.fetch(err)

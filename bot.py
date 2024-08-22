@@ -14,8 +14,19 @@ from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
-bots_required_configs = {'aiocqhttp': ['qq_host', 'qq_account'], 'discord': ['dc_token'], 'aiogram': ['tg_token'],
-                         'kook': ['kook_token'], 'matrix': ['matrix_homeserver', 'matrix_user', 'matrix_token'], }
+bots_required_configs = {
+    'aiocqhttp': [
+        'qq_host',
+        'qq_account'],
+    'discord': ['discord_token'],
+    'aiogram': ['telegram_token'],
+    'kook': ['kook_token'],
+    'matrix': [
+        'matrix_homeserver',
+        'matrix_user',
+        'matrix_device_id',
+        'matrix_token']
+}
 
 
 class RestartBot(Exception):
@@ -33,27 +44,25 @@ def enqueue_output(out, queue):
 
 
 def init_bot():
-    base_superuser = Config('base_superuser')
-    if base_superuser is not None:
+    base_superuser = Config('base_superuser', cfg_type=(str, list))
+    if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
         for bu in base_superuser:
+            BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
 
 
 pidlst = []
 
-if not (disabled_bots := Config('disabled_bots')):
-    disabled_bots = []
+disabled_bots = Config('disabled_bots', [])
 
 
 def run_bot():
-    cache_path = os.path.abspath(Config('cache_path'))
+    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
+    os.mkdir(cache_path)
 
     pid_cache = os.path.abspath('.pid_last')
     if os.path.exists(pid_cache):
@@ -135,7 +144,7 @@ def run_bot():
                 raise RestartBot
 
         # break when all processes are done.
-        if all(p.poll() is not None for p in runlst):
+        if all(p.poll() for p in runlst):
             break
 
         sleep(0.0001)
@@ -146,7 +155,7 @@ if __name__ == '__main__':
     logger.remove()
     logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).first()
-    if query_dbver is None:
+    if not query_dbver:
         session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
@@ -160,7 +169,7 @@ if __name__ == '__main__':
         while True:
             try:
                 run_bot()  # Process will block here so
-                logger.error('All bots exited unexpectedly, please check the output')
+                logger.critical('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:
                 for x in pidlst:

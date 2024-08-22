@@ -484,7 +484,7 @@ fs = Module('fs', {
     7909: ResultInfo('DBM file entry is full.'),
     7910: ResultInfo('RomFs directory has no more child directories/files when iterating.'),
     7911: ResultInfo('DBM FindKey finished.'),
-    7912: ResultInfo('DBM iteration finshed.'),
+    7912: ResultInfo('DBM iteration finished.'),
     7914: ResultInfo('Invalid DBM operation.'),
     7915: ResultInfo('Invalid DBM path format.'),
     7916: ResultInfo('DBM directory name is too long.'),
@@ -807,7 +807,7 @@ spl = Module('spl', {
     102: ResultInfo('Decryption failed.'),
     104: ResultInfo('Out of keyslots.'),
     105: ResultInfo('Invalid keyslot.'),
-    106: ResultInfo('Boot reason was aleady set.'),
+    106: ResultInfo('Boot reason was already set.'),
     107: ResultInfo('Boot reason was not set.'),
     108: ResultInfo('Invalid argument.')
 }, {
@@ -1783,7 +1783,7 @@ def get(error):
     if summary:
         ret.add_field(ConsoleErrorField('Summary', message_str=summary))
     description = module.get_error(code)
-    if description is None or not description.description:
+    if not description or not description.description:
         ret.add_field(ConsoleErrorField('Description', supplementary_value=code))
     else:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=code))

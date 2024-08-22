@@ -1,0 +1,179 @@
+achievement_list = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]
+rate_list = ["D", "C", "B", "BB", "BBB", "A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+"]
+rate_list_raw = ["d", "c", "b", "bb", "bbb", "a", "aa", "aaa", "s", "sp", "ss", "ssp", "sss", "sssp"]
+score_to_rate = {
+    (0.0, 50.0): "D",
+    (50.0, 60.0): "C",
+    (60.0, 70.0): "B",
+    (70.0, 75.0): "BB",
+    (75.0, 80.0): "BBB",
+    (80.0, 90.0): "A",
+    (90.0, 94.0): "AA",
+    (94.0, 97.0): "AAA",
+    (97.0, 98.0): "S",
+    (98.0, 99.0): "S+",
+    (99.0, 99.5): "SS",
+    (99.5, 100.0): "SS+",
+    (100.0, 100.5): "SSS",
+    (100.5, float("inf")): "SSS+",
+}
+
+rate_mapping = {
+    "d": "D",
+    "c": "C",
+    "b": "B",
+    "bb": "BB",
+    "bbb": "BBB",
+    "a": "A",
+    "aa": "AA",
+    "aaa": "AAA",
+    "s": "S",
+    "sp": "S+",
+    "ss": "SS",
+    "ssp": "SS+",
+    "sss": "SSS",
+    "sssp": "SSS+",
+}
+
+combo_list = ["FC", "FC+", "AP", "AP+"]
+combo_list_raw = ["fc", "fcp", "ap", "app"]
+combo_mapping = {
+    "fc": "FC",
+    "fcp": "FC+",
+    "ap": "AP",
+    "app": "AP+",
+}
+
+sync_list = ["SYNC", "FS", "FS+", "FSD", "FSD+"]
+sync_list_raw = ["sync", "fs", "fsp", "fsd", "fsdp"]
+sync_mapping = {
+    "sync": "SYNC",
+    "fs": "FS",
+    "fsp": "FS+",
+    "fsd": "FDX",
+    "fsdp": "FDX+",
+}
+
+diff_list = ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"]
+diff_list_abbr = ["bas", "adv", "exp", "mas", "rem"]
+diff_list_zhs = ["绿", "黄", "红", "紫", "白"]
+diff_list_zht = ["綠", "黃", "紅", "紫", "白"]
+diffs = {
+    0: "Basic",
+    1: "Advanced",
+    2: "Expert",
+    3: "Master",
+    4: "Re:MASTER",
+}
+
+level_list = ["1", "2", "3", "4", "5", "6", "7", "7+", "8", "8+", "9", "9+",
+                  "10", "10+", "11", "11+", "12", "12+", "13", "13+", "14", "14+", "15"]
+goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
+                 "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
+
+genre_i18n_mapping = {
+    "流行&动漫": "POPS & ANIME",
+    "niconico & VOCALOID": "niconico & VOCALOID",
+    "东方Project": "東方Project",
+    "其他游戏": "GAME & VARIETY",
+    "舞萌": "maimai",
+    "音击&中二节奏": "ONGEKI & CHUNITHM",
+    "宴会場": "宴会場"
+}
+
+versions = ["maimai",
+            "maimai PLUS",
+            "maimai GreeN",
+            "maimai GreeN PLUS",
+            "maimai ORANGE",
+            "maimai ORANGE PLUS",
+            "maimai PiNK",
+            "maimai PiNK PLUS",
+            "maimai MURASAKi",
+            "maimai MURASAKi PLUS",
+            "maimai MiLK",
+            "MiLK PLUS",
+            "maimai FiNALE",
+            "maimai でらっくす",
+            "maimai でらっくす Splash",
+            "maimai でらっくす UNiVERSE",
+            "maimai でらっくす FESTiVAL",
+            "maimai でらっくす BUDDiES",
+            ]
+
+sd_plate_mapping = {
+    "初": "maimai",
+    "真": "maimai PLUS",
+    "超": "maimai GreeN",
+    "檄": "maimai GreeN PLUS",
+    "橙": "maimai ORANGE",
+    "暁": "maimai ORANGE PLUS",
+    "桃": "maimai PiNK",
+    "櫻": "maimai PiNK PLUS",
+    "紫": "maimai MURASAKi",
+    "菫": "maimai MURASAKi PLUS",
+    "白": "maimai MiLK",
+    "雪": "MiLK PLUS",
+    "輝": "maimai FiNALE",
+}
+
+dx_plate_mapping = {
+    "熊": "maimai でらっくす",
+    "華": "maimai でらっくす",
+    "爽": "maimai でらっくす Splash",
+    "煌": "maimai でらっくす Splash",
+    "宙": "maimai でらっくす UNiVERSE",
+    "星": "maimai でらっくす UNiVERSE",
+    "祭": "maimai でらっくす FESTiVAL",
+    "祝": "maimai でらっくす FESTiVAL",
+    "双": "maimai でらっくす BUDDiES",
+}
+
+plate_mapping = sd_plate_mapping | dx_plate_mapping
+
+grade_mapping = {
+    "初段": "grade1",
+    "二段": "grade2",
+    "三段": "grade3",
+    "四段": "grade4",
+    "五段": "grade5",
+    "六段": "grade6",
+    "七段": "grade7",
+    "八段": "grade8",
+    "九段": "grade9",
+    "十段": "grade10",
+    "真初段": "tgrade1",
+    "真二段": "tgrade2",
+    "真三段": "tgrade3",
+    "真四段": "tgrade4",
+    "真五段": "tgrade5",
+    "真六段": "tgrade6",
+    "真七段": "tgrade7",
+    "真八段": "tgrade8",
+    "真九段": "tgrade9",
+    "真十段": "tgrade10",
+    "真皆伝": "tgrade11",
+    "真皆传": "tgrade11",
+    "真皆傳": "tgrade11",
+    "裏皆伝": "tgrade12",
+    "里皆传": "tgrade12",
+    "裡皆傳": "tgrade12",
+    "裏皆傳": "tgrade12",
+    "EXPERT初級": "expert1",
+    "EXPERT初级": "expert1",
+    "EXPERT中級": "expert2",
+    "EXPERT中级": "expert2",
+    "EXPERT上級": "expert3",
+    "EXPERT上级": "expert3",
+    "EXPERT超上級": "expert4",
+    "EXPERT超上级": "expert4",
+    "MASTER初級": "master1",
+    "MASTER初级": "master1",
+    "MASTER中級": "master2",
+    "MASTER中级": "master2",
+    "MASTER上級": "master3",
+    "MASTER上级": "master3",
+    "MASTER超上級": "master4",
+    "MASTER超上级": "master4",
+}
+
