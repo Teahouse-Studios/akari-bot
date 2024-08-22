@@ -533,10 +533,11 @@ if Config('enable_petal', False):
             await msg.finish(
                 msg.locale.t('core.message.petal.modify', sender=sender, add_petal=petal, petal=sender_info.petal))
         else:
-            msg.info.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.petal))
+            sender_info = BotDBUtil.SenderInfo(msg.target.sender_from)
+            sender_info.modify_petal(int(petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=sender_info.petal))
 
-    @petal.command('clear [<target>]', required_superuser=True)
+    @petal.command('clear [<sender>]', required_superuser=True)
     async def _(msg: Bot.MessageSession, sender: str = None):
         if sender:
             if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
