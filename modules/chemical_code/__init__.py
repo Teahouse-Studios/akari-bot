@@ -83,7 +83,7 @@ async def search_csr(id=None):
         wh = 500
     return {'id': answer_id,
             'answer': name,
-            'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
+            'image': f'https://legacy.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
             (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
             'length': value,
             'elements': elements}
