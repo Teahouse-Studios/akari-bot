@@ -19,7 +19,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
         if not p:
             p = [{}]
         p = p[0]
-        now = datetime.now(timezone.utc) + msg.timezone_offset
+        now = datetime.now()
         tomorrow = (now + timedelta(days=1)).date()
         expired = datetime.combine(tomorrow, datetime.min.time())
         if msg.target.sender_id not in p:
@@ -61,7 +61,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int):
         if not p:
             p = [{}]
         p = p[0]
-        now = datetime.now(timezone.utc) + msg.timezone_offset
+        now = datetime.now()
         tomorrow = (now + timedelta(days=1)).date()
         expired = datetime.combine(tomorrow, datetime.min.time())
         if msg.target.sender_id not in p:
