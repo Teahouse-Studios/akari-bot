@@ -6,6 +6,7 @@ import ujson as json
 from config import Config
 from core.builtins import Bot
 from core.exceptions import ConfigValueError
+from core.logger import Logger
 from core.utils.http import get_url
 
 
