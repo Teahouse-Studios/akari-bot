@@ -14,7 +14,7 @@ from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
-bots_required_configs = {
+bots_and_required_configs = {
     'aiocqhttp': [
         'qq_host',
         'qq_account'],
@@ -79,15 +79,14 @@ def run_bot():
     envs = os.environ.copy()
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
-    botdir = './bots/'
-    lst = os.listdir(botdir)
+    lst = bots_and_required_configs.keys()
     runlst = []
     for bl in lst:
         if bl in disabled_bots:
             continue
-        if bl in bots_required_configs:
+        if bl in bots_and_required_configs:
             abort = False
-            for c in bots_required_configs[bl]:
+            for c in bots_and_required_configs[bl]:
                 if not Config(c):
                     logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
@@ -95,13 +94,11 @@ def run_bot():
             if abort:
                 continue
 
-        bot = os.path.abspath(f'{botdir}{bl}/bot.py')
-        if os.path.exists(bot):
-            p = subprocess.Popen([sys.executable, bot, 'subprocess'], shell=False, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT,
-                                 cwd=os.path.abspath('.'), env=envs)
-            runlst.append(p)
-            pidlst.append(p.pid)
+        p = subprocess.Popen([sys.executable, 'launcher.py', 'subprocess', bl], shell=False, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             cwd=os.path.abspath('.'), env=envs)
+        runlst.append(p)
+        pidlst.append(p.pid)
 
     with open(pid_cache, 'w') as c:
         c.write('\n'.join(str(p) for p in pidlst))
