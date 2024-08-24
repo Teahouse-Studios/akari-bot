@@ -25,7 +25,8 @@ bots_and_required_configs = {
         'matrix_homeserver',
         'matrix_user',
         'matrix_device_id',
-        'matrix_token']
+        'matrix_token'],
+    'api': []
 }
 
 

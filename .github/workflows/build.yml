@@ -1,3 +1,8 @@
+name: "Build x64 Executables"
+
+on:
+  push:
+    branches: [ dev/build ]
 jobs:
   build:
     strategy:
@@ -29,6 +34,7 @@ jobs:
           nuitka-version: main
           script-name: launcher.py
           onefile: true
+          include-plugin-directory: modules
 
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@main
@@ -42,4 +48,6 @@ jobs:
         with:
           name: ${{ runner.os }} Build
           path: |
+            assets/**,
+            config/**
             build/*.exe
