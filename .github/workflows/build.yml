@@ -34,7 +34,9 @@ jobs:
           nuitka-version: main
           script-name: launcher.py
           onefile: true
-          include-plugin-directory: modules
+          include-plugin-directory: |
+            modules
+            bots
 
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@main
@@ -43,11 +45,18 @@ jobs:
           script-name: bot.py
           onefile: true
 
+      - name: Copy Assets
+        run: |
+          mkdir -p build/assets
+          mkdir -p build/config
+          mkdir -p build/locales
+          cp -r assets/* build/assets
+          cp config/config.toml build/config
+          cp config/config.toml.example build/config
+          cp -r locales/* build/locales
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ runner.os }} Build
           path: |
-            assets/**,
-            config/**
-            build/*.exe
+            build/**
