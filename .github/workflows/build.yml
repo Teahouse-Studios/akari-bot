@@ -1,4 +1,4 @@
-name: "Build x64 Executables"
+name: "Build Executables"
 
 on:
   push:
@@ -8,14 +8,16 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
+        arch: [X64, ARM64]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }} - ${{ matrix.arch }}
 
     steps:
       - name: Check-out repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Setup Python X64
+        if: matrix.arch == 'X64'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12' # Version range or exact version of a Python version to use, using SemVer's version range syntax
@@ -23,6 +25,12 @@ jobs:
           cache: 'pip'
           cache-dependency-path: |
             **/requirements*.txt
+
+      - name: Setup Python ARM64
+        if: matrix.arch == 'ARM64'
+        uses: deadsnakes/action@v2.1.1
+        with:
+          python-version: '3.12' # Version range or exact version of a Python version to use, using SemVer's version range syntax
 
       - name: Install Dependencies
         run: |
