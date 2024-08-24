@@ -94,7 +94,11 @@ def run_bot():
             if abort:
                 continue
 
-        p = subprocess.Popen([sys.executable, 'launcher.py', 'subprocess', bl], shell=False, stdout=subprocess.PIPE,
+        launch_args = [sys.executable, 'launcher.py', 'subprocess', bl]
+        if 'launcher.exe' in os.listdir('.'):
+            launch_args = ['launcher.exe', 'subprocess', bl]
+
+        p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              cwd=os.path.abspath('.'), env=envs)
         runlst.append(p)
