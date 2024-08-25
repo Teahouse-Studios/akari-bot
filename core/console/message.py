@@ -135,7 +135,9 @@ class MessageSession(MessageSessionT):
         return self
 
     def as_display(self, text_only=False):
-        return self.session.message
+        m = self.session.message
+        m = m.replace('\\', '\\\\')
+        return m
 
     async def to_message_chain(self):
         return MessageChain(Plain(self.session.message))

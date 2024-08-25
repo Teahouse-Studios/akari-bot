@@ -6,7 +6,7 @@ from core.builtins import Bot, Image
 from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.http import get_url
+from core.utils.http import get_url, download
 from .dbutils import PgrBindInfoManager
 from .game_record import parse_game_record
 from .genb19 import drawb19
@@ -60,9 +60,9 @@ async def _(msg: Bot.MessageSession):
                                          headers=headers,
                                          fmt='json')
             save_url = get_save_url['results'][0]['gameFile']['url']
-            download = await download(save_url)
+            dl = await download(save_url)
             rd_path = random_cache_path()
-            shutil.unpack_archive(download, rd_path)
+            shutil.unpack_archive(dl, rd_path)
             game_records = parse_game_record(os.path.join(rd_path, 'gameRecord'))
             sort_by_rks = sorted({f'{level}.{song}':
                                   game_records[song][level] for song in game_records for level in

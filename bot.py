@@ -151,7 +151,6 @@ def run_bot():
 
 
 if __name__ == '__main__':
-    init_bot()
     logger.remove()
     logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).first()
@@ -165,6 +164,7 @@ if __name__ == '__main__':
 
         update_database()
         logger.info('Database updated successfully!')
+    init_bot()
     try:
         while True:
             try:

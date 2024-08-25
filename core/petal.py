@@ -22,15 +22,21 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
         now = datetime.now(timezone.utc) + msg.timezone_offset
         tomorrow = (now + timedelta(days=1)).date()
         expired = datetime.combine(tomorrow, datetime.min.time())
-        if msg.target.sender_id not in p:
-            p[msg.target.sender_id] = {'time': now.timestamp(), 'amount': amount}
+        if msg.target.sender_id not in p or not p[msg.target.sender_id].get('expired'):
+            p[msg.target.sender_id] = {'time': now.timestamp(),
+                                       'expired': expired.timestamp(),
+                                       'amount': amount
+                                       }
             p = [p]
             msg.info.modify_petal(amount)
             update_stored_list(msg.target.client_name, 'gainedpetal', p)
             return msg.locale.t('petal.message.gained.success', amount=amount)
         else:
-            if p[msg.target.sender_id]['time'] > expired.timestamp():
-                p[msg.target.sender_id] = {'time': now.timestamp(), 'amount': amount}
+            if p[msg.target.sender_id]['time'] > p[msg.target.sender_id]['expired']:
+                p[msg.target.sender_id] = {'time': now.timestamp(),
+                                           'expired': expired.timestamp(),
+                                           'amount': amount
+                                           }
                 p = [p]
                 msg.info.modify_petal(amount)
                 update_stored_list(msg.target.client_name, 'gainedpetal', p)
@@ -64,15 +70,22 @@ async def lost_petal(msg: Bot.MessageSession, amount: int):
         now = datetime.now(timezone.utc) + msg.timezone_offset
         tomorrow = (now + timedelta(days=1)).date()
         expired = datetime.combine(tomorrow, datetime.min.time())
-        if msg.target.sender_id not in p:
-            p[msg.target.sender_id] = {'time': now.timestamp(), 'amount': amount}
+        if msg.target.sender_id not in p or not p[msg.target.sender_id].get('expired'):
+            p[msg.target.sender_id] = {'time': now.timestamp(),
+                                       'expired': expired.timestamp(),
+                                       'amount': amount
+                                       }
             p = [p]
             msg.info.modify_petal(-amount)
             update_stored_list(msg.target.client_name, 'lostpetal', p)
             return msg.locale.t('petal.message.lost.success', amount=amount)
         else:
-            if p[msg.target.sender_id]['time'] > expired.timestamp():
-                p[msg.target.sender_id] = {'time': now.timestamp(), 'amount': amount}
+            if p[msg.target.sender_id]['time'] > p[msg.target.sender_id]['expired']:
+                p[msg.target.sender_id] = {
+                    'time': now.timestamp(),
+                    'expired': expired.timestamp(),
+                    'amount': amount
+                }
                 p = [p]
                 msg.info.modify_petal(-amount)
                 update_stored_list(msg.target.client_name, 'lostpetal', p)
