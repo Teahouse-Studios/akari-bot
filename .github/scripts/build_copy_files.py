@@ -29,7 +29,7 @@ if __name__ == "__main__":
             for file in files:
                 if file.endswith('.exe'):
                     shutil.copyfile(os.path.join(root, file), os.path.join('output', file))
-                elif file.endswith('launcher.bin'):
+                elif file.endswith('.bin'):
                     shutil.copyfile(os.path.join(root, file), os.path.join('output', file))
                 elif file.endswith('.app'):
                     shutil.copytree(os.path.join(root, file), os.path.join('output', file))
