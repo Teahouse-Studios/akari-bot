@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # copy builds from build folder
 
-    if os.path.exists('launcher-build'):
+    if os.path.exists('build'):
         for root, dirs, files in os.walk('build'):
             for file in files:
                 if file.endswith('.exe'):
