@@ -129,9 +129,6 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         if self.session.message.content:
             m = re.sub(r'\[.*]\((.*)\)', '\\1', self.session.message.content)
-            m = m.replace('\\\\', '​u005c​')
-            m = m.replace('\\', '')
-            m = m.replace('​u005c​', '\\')
             return m
         return ''
 
