@@ -20,31 +20,12 @@ if __name__ == "__main__":
             for dir in dirs:
                 if dir == '__pycache__':
                     shutil.rmtree(os.path.join(root, dir))
+
     remove_py_files('output/modules')
 
-    # make zip file
-
-    if os.path.exists('build'):
-        shutil.copytree('build', 'output/build')
-        shutil.make_archive('output/build', 'zip', 'output/build')
-        shutil.rmtree('output/build')
-
-    # if os.path.exists('build'):
-    #     for root, dirs, files in os.walk('build'):
-    #         for file in files:
-    #             if file.endswith('.exe'):
-    #                 shutil.copyfile(os.path.join(root, file), os.path.join('output', file))
-    #             elif file.endswith('.bin'):
-    #                 shutil.copyfile(os.path.join(root, file), os.path.join('output', file))
-    #             elif file.endswith('.app'):
-    #                 shutil.copytree(os.path.join(root, file), os.path.join('output', file))
-
-    # if os.path.exists('wrapper-build'):
-    #     for root, dirs, files in os.walk('wrapper-build'):
-    #         for file in files:
-    #             if file.endswith('.exe'):
-    #                 shutil.copyfile(os.path.join(root, file), os.path.join('output', file))
-    #             elif file.endswith('bot.bin'):
-    #                 shutil.copyfile(os.path.join(root, file), os.path.join('output', file))
-    #             elif file.endswith('bot.app'):
-    #                 shutil.copytree(os.path.join(root, file), os.path.join('output', file))
+    build_paths = ['launcher-build', 'wrapper-build']
+    for build_path in build_paths:
+        if os.path.exists(build_path):
+            for file in os.listdir(build_path):
+                if file.endswith('.exe') or file.endswith('.bin') or file.endswith('.app'):
+                    shutil.copyfile(os.path.join(build_path, file), os.path.join('output', file))

@@ -25,17 +25,17 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-#      - name: Build Launcher Executable
-#        uses: Nuitka/Nuitka-Action@main
-#        with:
-#          nuitka-version: main
-#          script-name: launcher.py
-#          onefile: true
-#          standalone: true
-#          output-dir: launcher-build
-#          include-plugin-directory: |
-#            modules
-#            bots
+      - name: Build Launcher Executable
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: launcher.py
+          onefile: true
+          standalone: true
+          output-dir: launcher-build
+          include-plugin-directory: |
+            modules
+            bots
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
@@ -44,7 +44,7 @@ jobs:
           script-name: bot.py
           onefile: true
           standalone: true
-          disable-cache: true
+          output-dir: wrapper-build
 
       - name: Copy Assets
         run: |
