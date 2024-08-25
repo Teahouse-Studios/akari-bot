@@ -45,7 +45,6 @@ jobs:
         with:
           nuitka-version: main
           script-name: bot.py
-          output-dir: wrapper-build
           onefile: true
           standalone: true
 
