@@ -34,6 +34,7 @@ jobs:
           nuitka-version: main
           script-name: launcher.py
           onefile: true
+          standalone: true
           output-dir: launcher-build
           include-plugin-directory: |
             modules
@@ -46,6 +47,7 @@ jobs:
           script-name: bot.py
           output-dir: wrapper-build
           onefile: true
+          standalone: true
 
       - name: Copy Assets
         run: |
