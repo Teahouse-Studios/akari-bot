@@ -1681,9 +1681,9 @@ python-dateutil==2.9.0.post0 ; python_full_version >= "3.12.0" and python_full_v
 python-dotenv==1.0.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca \
     --hash=sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a
-python-socks[asyncio]==2.5.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:68b34379faac94bba3f9959f45cb9ed0b9a0dc65b509eb0799d9c47fb5a9af98 \
-    --hash=sha256:cc4ad990d67bd238e496afefe436af0247793bbe01d1d4a0d37a3b124ff0baa3
+python-socks[asyncio]==2.5.1; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:00e9a0c3a208e14429d42c820ddbe0755e17596f639fd558f3e8d925fb34bcec \
+    --hash=sha256:7ed6559864d28858fbb7a85c6d96bb280e95af814d1d5d6dc50f92e35bfa340e
 python-whois==0.8.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:dd336d3517eace2a7689406db7bb96ada3c5e74327423151aeee3e64225f6220
 pytz==2024.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
