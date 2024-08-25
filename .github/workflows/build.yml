@@ -43,6 +43,7 @@ jobs:
           nuitka-version: main
           script-name: bot.py
           onefile: true
+          standalone: true
           disable-cache: true
 
       - name: Copy Assets
