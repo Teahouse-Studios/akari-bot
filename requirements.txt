@@ -500,9 +500,9 @@ duckduckgo-search==3.9.11 ; python_full_version >= "3.12.0" and python_full_vers
 emoji==2.12.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:4aa0488817691aa58d83764b6c209f8a27c0b3ab3f89d1b8dceca1a62e4973eb \
     --hash=sha256:a00d62173bdadc2510967a381810101624a2f0986145b8da0cffa42e29430235
-fastapi==0.109.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:2c9bab24667293b501cad8dd388c05240c850b58ec5876ee3283c47d6e1e3a4d \
-    --hash=sha256:f3817eac96fe4f65a2ebb4baa000f394e55f5fccdaf7f75250804bc58f354f73
+fastapi==0.112.2; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:3d4729c038414d5193840706907a41839d839523da6ed0c2811f1168cac1798c \
+    --hash=sha256:db84b470bd0e2b1075942231e90e3577e12a903c4dc8696f0d206a7904a7af1c
 feedparser==6.0.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:0be7ee7b395572b19ebeb1d6aafb0028dee11169f1c934e0ed67d54992f4ad45 \
     --hash=sha256:c9d0407b64c6f2a065d0ebb292c2b35c01050cc0dc33757461aaabdc4c4184d5
