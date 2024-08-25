@@ -51,7 +51,6 @@ jobs:
           mkdir -p build/config
           mkdir -p build/locales
           cp -r assets/* build/assets
-          cp config/config.toml build/config
           cp config/config.toml.example build/config
           cp -r locales/* build/locales
       - name: Upload Artifacts
