@@ -97,10 +97,10 @@ def run_bot():
 
         launch_args = [sys.executable, 'launcher.py', 'subprocess', bl]
 
-        if sys.platform == 'win32' and 'launcher.exe' in os.listdir('.'):
+        if sys.platform == 'win32' and 'launcher.exe' in os.listdir('.') and not sys.argv[0].endswith('.py'):
             launch_args = ['launcher.exe', 'subprocess', bl]
 
-        elif 'launcher.app' in os.listdir('.'):
+        elif 'launcher.app' in os.listdir('.') and not sys.argv[0].endswith('.py'):
             launch_args = ['launcher.bin', 'subprocess', bl]
 
         p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
