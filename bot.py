@@ -63,20 +63,7 @@ def run_bot():
     cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-    os.mkdir(cache_path)
-
-    pid_cache = os.path.abspath('.pid_last')
-    if os.path.exists(pid_cache):
-        with open(pid_cache, 'r') as f:
-            pid_last = f.read().split('\n')
-            running_pids = get_pid('python')
-            for pid in pid_last:
-                if int(pid) in running_pids:
-                    try:
-                        os.kill(int(pid), 9)
-                    except (PermissionError, ProcessLookupError):
-                        pass
-        os.remove(pid_cache)
+    os.makedirs(cache_path, exist_ok=True)
     envs = os.environ.copy()
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
@@ -108,9 +95,6 @@ def run_bot():
                              cwd=os.path.abspath('.'), env=envs)
         runlst.append(p)
         pidlst.append(p.pid)
-
-    with open(pid_cache, 'w') as c:
-        c.write('\n'.join(str(p) for p in pidlst))
 
     q = Queue()
     threads = []
@@ -186,6 +170,10 @@ if __name__ == '__main__':
                 pidlst.clear()
                 sleep(5)
                 continue
+            except Exception as e:
+                logger.critical('An error occurred, please check the output.')
+                logger.error(e)
+                break
     except KeyboardInterrupt:
         for x in pidlst:
             try:
