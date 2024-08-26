@@ -16,7 +16,7 @@ if not os.path.exists(logpath):
 bot_name = re.split(r'[/\\]', sys.path[0])[-1].title()
 
 args = sys.argv
-if 'launcher.py' in args:
+if not sys.argv[0].endswith('.py') or args[0].lower() == 'launcher.py':
     bot_name = args[-1].title()
 
 basic_logger_format = "<cyan>[" + bot_name + \

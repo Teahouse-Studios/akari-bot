@@ -41,9 +41,10 @@ slash_load_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__
 
 def load_slashcommands():
     fun_file = None
-    dir_list = os.listdir(slash_load_dir)
+    if not Info.build_mode:
+        dir_list = os.listdir(slash_load_dir)
 
-    if Info.build_mode:
+    else:
         try:
             Logger.warning('Build mode detected, trying to load pre-built slash list...')
             js = 'assets/discord_slash_list.json'
@@ -52,6 +53,7 @@ def load_slashcommands():
                     dir_list = json.load(f)
         except Exception:
             Logger.error('Failed to load pre-built slash list, using default list.')
+            dir_list = os.listdir(slash_load_dir)
     for file_name in dir_list:
         try:
             file_path = os.path.join(slash_load_dir, file_name)

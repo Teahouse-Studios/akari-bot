@@ -44,6 +44,11 @@ jobs:
           include-plugin-directory: |
             modules
             bots
+            schedulers
+          include-package-data: |
+            oss2
+            langconv
+            
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
