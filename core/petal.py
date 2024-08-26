@@ -21,14 +21,14 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
         p = p[0]
         now = datetime.now(timezone.utc) + msg.timezone_offset
         expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
-        if msg.target.sender_id not in p or not p[msg.target.sender_id].get('expired') \
-                or now.timestamp() > p[msg.target.sender_id]['expired']:
+        if msg.target.sender_id not in p or not p[msg.target.sender_id].get(
+                'expired') or now.timestamp() > p[msg.target.sender_id]['expired']:
             p[msg.target.sender_id] = {'time': now.timestamp(),
                                        'expired': expired.timestamp(),
                                        'amount': amount
                                        }
             p = [p]
-            msg.info.modify_petal(-amount)
+            msg.info.modify_petal(amount)
             update_stored_list(msg.target.client_name, 'gainedpetal', p)
             return msg.locale.t('petal.message.gained.success', amount=amount)
         else:
@@ -39,7 +39,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
                     amount = limit - p[msg.target.sender_id]['amount']
             p[msg.target.sender_id]['amount'] += amount
             p = [p]
-            msg.info.modify_petal(-amount)
+            msg.info.modify_petal(amount)
             update_stored_list(msg.target.client_name, 'gainedpetal', p)
         return msg.locale.t('petal.message.gained.success', amount=amount)
 
@@ -60,8 +60,8 @@ async def lost_petal(msg: Bot.MessageSession, amount: int):
         p = p[0]
         now = datetime.now(timezone.utc) + msg.timezone_offset
         expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
-        if msg.target.sender_id not in p or not p[msg.target.sender_id].get('expired') \
-                or now.timestamp() > p[msg.target.sender_id]['expired']:
+        if msg.target.sender_id not in p or not p[msg.target.sender_id].get(
+                'expired') or now.timestamp() > p[msg.target.sender_id]['expired']:
             p[msg.target.sender_id] = {'time': now.timestamp(),
                                        'expired': expired.timestamp(),
                                        'amount': amount
