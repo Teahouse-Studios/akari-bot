@@ -92,7 +92,7 @@ def run_bot():
         else:
             logger.critical('No launcher found, abort.')
             sys.exit(0)
-        
+
         p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              cwd=os.path.abspath('.'), env=envs)
