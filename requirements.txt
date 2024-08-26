@@ -1015,9 +1015,7 @@ langchain-text-splitters==0.2.2 ; python_full_version >= "3.12.0" and python_ver
 langchain==0.2.14 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:dc2aa5a58882054fb5d043c39ab8332ebd055f88f17839da68e1c7fd0a4fefe2 \
     --hash=sha256:eed76194ee7d9c081037a3df7868d4de90e0410b51fc1ca933a8379e464bf40c
-langconv==0.2.0 ; python_full_version >= "3.12.0" and python_version < "4.0" \
-    --hash=sha256:8d6e86f88de3e08d4c5341eb45d3c1df359169a101f680c68a22f4f4f86bd7f5 \
-    --hash=sha256:aa4dce595a8933ba5ff53e3e71df62775eb4a5f96f022af8fef61005c25ea572
+langconv @ git+https://github.com/OasisAkari/langconv.py.git@7960b33d96f75d90e55f5844b977b718f43953b1 ; python_full_version >= "3.12.0" and python_version < "4.0"
 langsmith==0.1.104 ; python_full_version >= "3.12.0" and python_version < "4.0" \
     --hash=sha256:049cd312952a0db9f5edeed3b9a8616e66ef86e5490c835c8bb054569203b0d0 \
     --hash=sha256:7892dfe452d143fba573d7eb28dbff3202d2f2daacab8c7276ffe4a850179d4d
