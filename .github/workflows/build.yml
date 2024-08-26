@@ -27,6 +27,10 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
+
+      - name: Prepare Build
+        run: |
+          python .github/scripts/pre_build.py
         
 
       - name: Build Launcher Executable

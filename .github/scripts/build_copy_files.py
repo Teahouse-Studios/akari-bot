@@ -10,11 +10,14 @@ if __name__ == "__main__":
     shutil.copytree('modules', 'output/modules')
 
     def remove_py_files(path):
+        blacklist_dir = ['clac']
+
         for root, dirs, files in os.walk(path):
-            for file in files:
-                if (file.endswith('.py') or file.endswith('.pyc') or file.endswith('.pyo') or file.endswith('.pyd') or
-                        file.endswith('.pyw')):
-                    os.remove(os.path.join(root, file))
+            if os.path.basename(root) not in blacklist_dir:
+                for file in files:
+                    if (file.endswith('.py') or file.endswith('.pyc') or file.endswith('.pyo') or file.endswith('.pyd') or
+                            file.endswith('.pyw')):
+                        os.remove(os.path.join(root, file))
 
         for root, dirs, files in os.walk(path):
             for dir in dirs:

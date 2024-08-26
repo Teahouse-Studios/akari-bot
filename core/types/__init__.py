@@ -5,13 +5,12 @@ from .module import *
 
 
 class PrivateAssets:
-    path = os.path.abspath('.')
+    path = os.path.abspath('assets/private/default')
 
     @classmethod
     def set(cls, path):
         path = os.path.abspath(path)
-        if not os.path.exists(path):
-            os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
         cls.path = path
 
 
