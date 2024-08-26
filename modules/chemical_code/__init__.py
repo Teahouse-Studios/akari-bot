@@ -16,7 +16,7 @@ from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 
-csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
+csr_link = 'https://legacy.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
               "4514330", "4514408", "4514534", "4514586", "4514603", "4515054", "4573995", "4574465", "4575369",
               "4575370",
@@ -46,7 +46,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     if wh < 500:
         wh = 500
     return {'id': answer_id, 'name': name,
-            'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
+            'image': f'https://legacy.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
                      (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
 
 
