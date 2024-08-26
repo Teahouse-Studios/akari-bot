@@ -19,12 +19,12 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
         if not p:
             p = [{}]
         p = p[0]
-        now = datetime.now(timezone.utc) + msg.timezone_offset
-        expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+        now = (datetime.now(timezone.utc) + msg.timezone_offset).timestamp()
+        expired = (datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())).timestamp()
         if msg.target.sender_id not in p or not p[msg.target.sender_id].get(
-                'expired') or now.timestamp() > p[msg.target.sender_id]['expired']:
-            p[msg.target.sender_id] = {'time': now.timestamp(),
-                                       'expired': expired.timestamp(),
+                'expired') or now > p[msg.target.sender_id]['expired']:
+            p[msg.target.sender_id] = {'time': now,
+                                       'expired': expired,
                                        'amount': amount
                                        }
             p = [p]
@@ -58,12 +58,12 @@ async def lost_petal(msg: Bot.MessageSession, amount: int):
         if not p:
             p = [{}]
         p = p[0]
-        now = datetime.now(timezone.utc) + msg.timezone_offset
-        expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+        now = (datetime.now(timezone.utc) + msg.timezone_offset).timestamp()
+        expired = (datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())).timestamp()
         if msg.target.sender_id not in p or not p[msg.target.sender_id].get(
-                'expired') or now.timestamp() > p[msg.target.sender_id]['expired']:
-            p[msg.target.sender_id] = {'time': now.timestamp(),
-                                       'expired': expired.timestamp(),
+                'expired') or now > p[msg.target.sender_id]['expired']:
+            p[msg.target.sender_id] = {'time': now,
+                                       'expired': expired,
                                        'amount': amount
                                        }
             p = [p]
