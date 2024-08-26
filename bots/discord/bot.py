@@ -48,9 +48,8 @@ def load_slashcommands():
         try:
             Logger.warning('Build mode detected, trying to load pre-built slash list...')
             js = 'assets/discord_slash_list.json'
-            if os.path.exists(js):
-                with open(js, 'r', encoding='utf-8') as f:
-                    dir_list = json.load(f)
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.load(f)
         except Exception:
             Logger.error('Failed to load pre-built slash list, using default list.')
             dir_list = os.listdir(slash_load_dir)

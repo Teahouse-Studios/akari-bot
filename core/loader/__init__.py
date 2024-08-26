@@ -29,16 +29,17 @@ def load_modules():
         locale_err.append('i18n:')
         err_prompt.append('\n'.join(locale_err))
     fun_file = None
-    dir_list = os.listdir(load_dir_path)
-    if Info.build_mode:
+    if not Info.build_mode:
+        dir_list = os.listdir(load_dir_path)
+    else:
         try:
             Logger.warning('Build mode detected, trying to load pre-built modules list...')
             js = 'assets/modules_list.json'
-            if os.path.exists(js):
-                with open(js, 'r', encoding='utf-8') as f:
-                    dir_list = json.load(f)
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.load(f)
         except Exception:
             Logger.error('Failed to load pre-built modules list, using default list.')
+            dir_list = os.listdir(load_dir_path)
 
     Logger.info('Attempting to load modules...')
 
