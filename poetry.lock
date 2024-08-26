@@ -1946,18 +1946,22 @@ langchain-core = ">=0.2.10,<0.3.0"
 
 [[package]]
 name = "langconv"
-version = "0.2.0"
-description = ""
+version = "0.3.0"
+description = "A Python library for conversion between Traditional and Simplified Chinese, inspired by MediaWiki's LanguageConverter."
 optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "langconv-0.2.0-py3-none-any.whl", hash = "sha256:aa4dce595a8933ba5ff53e3e71df62775eb4a5f96f022af8fef61005c25ea572"},
-    {file = "langconv-0.2.0.tar.gz", hash = "sha256:8d6e86f88de3e08d4c5341eb45d3c1df359169a101f680c68a22f4f4f86bd7f5"},
-]
+python-versions = "^3.9"
+files = []
+develop = false
 
 [package.dependencies]
-attrs = ">=23.1.0,<24.0.0"
-iso639-lang = ">=2.1.0,<3.0.0"
+attrs = "^23.2.0"
+iso639-lang = "^2.2.3"
+
+[package.source]
+type = "git"
+url = "https://github.com/OasisAkari/langconv.py.git"
+reference = "HEAD"
+resolved_reference = "7960b33d96f75d90e55f5844b977b718f43953b1"
 
 [[package]]
 name = "langsmith"
@@ -4541,4 +4545,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "96befa907ff23cd1a2118f5370c4c58143cce62e53597a1f781ebc59433f0c1b"
+content-hash = "8615d88211957be018fbd11f69e7305aa5a81f13d205ea7deed8daaa8720ce7f"
