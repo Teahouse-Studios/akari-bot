@@ -15,7 +15,6 @@ if Info.build_mode:
 cpi = pd.read_csv(csv_file)
 
 
-
 i = module('inflation',
            developers=['Dianliang233'], desc='{inflation.help.desc}')
 

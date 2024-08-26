@@ -15,8 +15,8 @@ if __name__ == "__main__":
         for root, dirs, files in os.walk(path):
             if os.path.basename(root) not in blacklist_dir:
                 for file in files:
-                    if (file.endswith('.py') or file.endswith('.pyc') or file.endswith('.pyo') or file.endswith('.pyd') or
-                            file.endswith('.pyw')):
+                    if (file.endswith('.py') or file.endswith('.pyc') or file.endswith(
+                            '.pyo') or file.endswith('.pyd') or file.endswith('.pyw')):
                         os.remove(os.path.join(root, file))
 
         for root, dirs, files in os.walk(path):
