@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import sys
+import traceback
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
@@ -88,10 +89,7 @@ def run_bot():
             launch_args = ['launcher.exe', 'subprocess', bl]
 
         elif 'launcher.bin' in os.listdir('.') and not sys.argv[0].endswith('.py'):
-            launch_args = ['launcher.bin', 'subprocess', bl]
-        else:
-            logger.critical('No launcher found, abort.')
-            sys.exit(0)
+            launch_args = ['./launcher.bin', 'subprocess', bl]
 
         p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
@@ -175,7 +173,7 @@ if __name__ == '__main__':
                 continue
             except Exception as e:
                 logger.critical('An error occurred, please check the output.')
-                logger.error(e)
+                traceback.print_exc()
                 break
     except KeyboardInterrupt:
         for x in pidlst:
