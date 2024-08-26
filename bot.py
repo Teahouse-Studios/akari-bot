@@ -87,9 +87,12 @@ def run_bot():
         if sys.platform == 'win32' and 'launcher.exe' in os.listdir('.') and not sys.argv[0].endswith('.py'):
             launch_args = ['launcher.exe', 'subprocess', bl]
 
-        elif 'launcher.app' in os.listdir('.') and not sys.argv[0].endswith('.py'):
+        elif 'launcher.bin' in os.listdir('.') and not sys.argv[0].endswith('.py'):
             launch_args = ['launcher.bin', 'subprocess', bl]
-
+        else:
+            logger.critical('No launcher found, abort.')
+            sys.exit(0)
+        
         p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT,
                              cwd=os.path.abspath('.'), env=envs)
