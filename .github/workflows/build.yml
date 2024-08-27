@@ -1,8 +1,8 @@
 name: "Build x64 Executables"
 
 on:
-  push:
-    branches: [ master ]
+  schedule:
+    - cron: '0 08 * * *'
 jobs:
   build:
     strategy:
