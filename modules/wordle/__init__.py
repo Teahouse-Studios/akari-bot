@@ -15,15 +15,22 @@ from core.logger import Logger
 from core.petal import gained_petal
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
+from core.utils.info import Info
 
 text_mode = Config('wordle_disable_image', False)
 
 wordle = module('wordle',
                 desc='{wordle.help.desc}', doc=True, developers=['Dianliang233', 'DoroWolf']
                 )
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'), encoding='utf8') as handle:
+
+words_txt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt')
+answers_txt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt')
+if Info.binary_mode:
+    words_txt = './modules/wordle/words.txt'
+    answers_txt = './modules/wordle/answers.txt'
+with open(words_txt, encoding='utf8') as handle:
     word_list = handle.read().splitlines()
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt'), encoding='utf8') as handle:
+with open(answers_txt, encoding='utf8') as handle:
     answers_list = handle.read().splitlines()
 
 

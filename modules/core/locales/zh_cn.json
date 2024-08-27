@@ -196,6 +196,7 @@
     "core.message.setup.typing.disable": "已关闭输入提示。",
     "core.message.setup.typing.enable": "已开启输入提示。",
     "core.message.update.failed": "尝试从 GitHub 获取更新失败。",
+    "core.message.update.binary_mode": "机器人正在使用二进制部署，无法更新。请手动下载最新版本的二进制文件进行替换。",
     "core.message.version": "当前机器人版本号：${commit}",
     "core.message.version.unknown": "无法获取版本号。此实例可能没有使用 Git 进行部署。",
     "core.message.whoami": "你的 ID 是：${sender}\n本对话的 ID 是：${target}",

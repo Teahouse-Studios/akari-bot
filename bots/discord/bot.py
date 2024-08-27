@@ -1,4 +1,5 @@
 import importlib
+import json
 import os
 import re
 import sys
@@ -17,7 +18,7 @@ from core.types import MsgInfo, Session
 from core.utils.bot import init_async, load_prompt
 from core.utils.info import Info
 
-PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+PrivateAssets.set('assets/private/discord')
 Url.disable_mm = True
 
 count = 0
@@ -40,15 +41,32 @@ slash_load_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__
 
 def load_slashcommands():
     fun_file = None
-    dir_list = os.listdir(slash_load_dir)
+    if not Info.binary_mode:
+        dir_list = os.listdir(slash_load_dir)
+
+    else:
+        try:
+            Logger.warning('Binary mode detected, trying to load pre-built slash list...')
+            js = 'assets/discord_slash_list.json'
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.load(f)
+        except Exception:
+            Logger.error('Failed to load pre-built slash list, using default list.')
+            dir_list = os.listdir(slash_load_dir)
     for file_name in dir_list:
         try:
             file_path = os.path.join(slash_load_dir, file_name)
             fun_file = None
-            if os.path.isdir(file_path):
+            if not Info.binary_mode:
+                if os.path.isdir(file_path):
+                    if file_name[0] != '_':
+                        fun_file = file_name
+                elif os.path.isfile(file_path):
+                    if file_name[0] != '_' and file_name.endswith('.py'):
+                        fun_file = file_name[:-3]
+            else:
                 if file_name[0] != '_':
                     fun_file = file_name
-            elif os.path.isfile(file_path):
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
             if fun_file:

@@ -4,8 +4,16 @@ import pandas as pd
 
 from core.builtins import Bot
 from core.component import module
+from core.utils.info import Info
 
-cpi = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consumer_price_index.csv'))
+
+csv_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consumer_price_index.csv')
+
+if Info.binary_mode:
+    csv_file = './modules/inflation/consumer_price_index.csv'
+
+cpi = pd.read_csv(csv_file)
+
 
 i = module('inflation',
            developers=['Dianliang233'], desc='{inflation.help.desc}')

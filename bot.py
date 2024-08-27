@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import sys
+import traceback
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
@@ -14,7 +15,7 @@ from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
-bots_required_configs = {
+bots_and_required_configs = {
     'aiocqhttp': [
         'qq_host',
         'qq_account'],
@@ -25,7 +26,8 @@ bots_required_configs = {
         'matrix_homeserver',
         'matrix_user',
         'matrix_device_id',
-        'matrix_token']
+        'matrix_token'],
+    'api': []
 }
 
 
@@ -62,32 +64,18 @@ def run_bot():
     cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-    os.mkdir(cache_path)
-
-    pid_cache = os.path.abspath('.pid_last')
-    if os.path.exists(pid_cache):
-        with open(pid_cache, 'r') as f:
-            pid_last = f.read().split('\n')
-            running_pids = get_pid('python')
-            for pid in pid_last:
-                if int(pid) in running_pids:
-                    try:
-                        os.kill(int(pid), 9)
-                    except (PermissionError, ProcessLookupError):
-                        pass
-        os.remove(pid_cache)
+    os.makedirs(cache_path, exist_ok=True)
     envs = os.environ.copy()
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
-    botdir = './bots/'
-    lst = os.listdir(botdir)
+    lst = bots_and_required_configs.keys()
     runlst = []
     for bl in lst:
         if bl in disabled_bots:
             continue
-        if bl in bots_required_configs:
+        if bl in bots_and_required_configs:
             abort = False
-            for c in bots_required_configs[bl]:
+            for c in bots_and_required_configs[bl]:
                 if not Config(c):
                     logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
@@ -95,16 +83,19 @@ def run_bot():
             if abort:
                 continue
 
-        bot = os.path.abspath(f'{botdir}{bl}/bot.py')
-        if os.path.exists(bot):
-            p = subprocess.Popen([sys.executable, bot, 'subprocess'], shell=False, stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT,
-                                 cwd=os.path.abspath('.'), env=envs)
-            runlst.append(p)
-            pidlst.append(p.pid)
+        launch_args = [sys.executable, 'launcher.py', 'subprocess', bl]
 
-    with open(pid_cache, 'w') as c:
-        c.write('\n'.join(str(p) for p in pidlst))
+        if sys.platform == 'win32' and 'launcher.exe' in os.listdir('.') and not sys.argv[0].endswith('.py'):
+            launch_args = ['launcher.exe', 'subprocess', bl]
+
+        elif 'launcher.bin' in os.listdir('.') and not sys.argv[0].endswith('.py'):
+            launch_args = ['./launcher.bin', 'subprocess', bl]
+
+        p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             cwd=os.path.abspath('.'), env=envs)
+        runlst.append(p)
+        pidlst.append(p.pid)
 
     q = Queue()
     threads = []
@@ -180,7 +171,11 @@ if __name__ == '__main__':
                 pidlst.clear()
                 sleep(5)
                 continue
-    except KeyboardInterrupt:
+            except Exception as e:
+                logger.critical('An error occurred, please check the output.')
+                traceback.print_exc()
+                break
+    except (KeyboardInterrupt, SystemExit):
         for x in pidlst:
             try:
                 os.kill(x, 9)
