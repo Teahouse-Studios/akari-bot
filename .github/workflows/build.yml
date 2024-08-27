@@ -2,7 +2,8 @@ name: "Build Nightly x64 Executables (2:00, UTC+8)"
 
 on:
   schedule:
-    - cron: '0 18 * * *'
+    - cron: "06 18 * * *"
+  workflow_dispatch:
 jobs:
   build:
     strategy:
