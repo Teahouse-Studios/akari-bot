@@ -1,8 +1,10 @@
 name: "Build Nightly x64 Executables (2:00, UTC+8)"
 
 on:
-  schedule:
-    - cron: '0 18 * * *'
+  push:
+    branches: [ master ]
+#  schedule:
+#    - cron: '0 18 * * *'
 jobs:
   build:
     strategy:
