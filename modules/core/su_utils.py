@@ -285,14 +285,17 @@ def update_dependencies():
 
 @upd.command()
 async def update_bot(msg: Bot.MessageSession):
-    if Info.version:
-        pull_repo_result = pull_repo()
-        if pull_repo_result:
-            await msg.send_message(pull_repo_result)
-        else:
-            Logger.warning(f'Failed to get Git repository result.')
-            await msg.send_message(msg.locale.t("core.message.update.failed"))
-    await msg.finish(update_dependencies())
+    if not Info.binary_mode:
+        if Info.version:
+            pull_repo_result = pull_repo()
+            if pull_repo_result:
+                await msg.send_message(pull_repo_result)
+            else:
+                Logger.warning(f'Failed to get Git repository result.')
+                await msg.send_message(msg.locale.t("core.message.update.failed"))
+        await msg.finish(update_dependencies())
+    else:
+        await msg.finish(msg.locale.t("core.message.update.binary_mode"))
 
 
 if Info.subprocess:
@@ -343,22 +346,25 @@ if Info.subprocess:
 
     @upds.command()
     async def update_and_restart_bot(msg: Bot.MessageSession):
-        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
-        if confirm:
-            restart_time.append(datetime.now().timestamp())
-            await wait_for_restart(msg)
-            write_version_cache(msg)
-            if Info.version:
-                pull_repo_result = pull_repo()
-                if pull_repo_result != '':
-                    await msg.send_message(pull_repo_result)
-                else:
-                    Logger.warning(f'Failed to get Git repository result.')
-                    await msg.send_message(msg.locale.t("core.message.update.failed"))
-            await msg.send_message(update_dependencies())
-            restart()
+        if not Info.binary_mode:
+            confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+            if confirm:
+                restart_time.append(datetime.now().timestamp())
+                await wait_for_restart(msg)
+                write_version_cache(msg)
+                if Info.version:
+                    pull_repo_result = pull_repo()
+                    if pull_repo_result != '':
+                        await msg.send_message(pull_repo_result)
+                    else:
+                        Logger.warning(f'Failed to get Git repository result.')
+                        await msg.send_message(msg.locale.t("core.message.update.failed"))
+                await msg.send_message(update_dependencies())
+                restart()
+            else:
+                await msg.finish()
         else:
-            await msg.finish()
+            await msg.finish(msg.locale.t("core.message.update.binary_mode"))
 
 
 exit_ = module('exit', required_superuser=True, base=True, doc=True, available_for=['TEST|Console'])
