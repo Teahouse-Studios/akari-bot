@@ -2,7 +2,7 @@ name: "Build x64 Executables"
 
 on:
   push:
-    branches: [ dev/build ]
+    branches: [ master ]
 jobs:
   build:
     strategy:

@@ -175,7 +175,7 @@ if __name__ == '__main__':
                 logger.critical('An error occurred, please check the output.')
                 traceback.print_exc()
                 break
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         for x in pidlst:
             try:
                 os.kill(x, 9)
