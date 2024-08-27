@@ -1,8 +1,8 @@
-name: "Build Nightly x64 Executables (UTC+8)"
+name: "Build Nightly x64 Executables (2:00, UTC+8)"
 
 on:
   schedule:
-    - cron: '0 16 * * *'
+    - cron: '0 18 * * *'
 jobs:
   build:
     strategy:
