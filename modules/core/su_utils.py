@@ -168,13 +168,11 @@ async def _(msg: Bot.MessageSession, user: str):
     sender_info = BotDBUtil.SenderInfo(user)
     warns = sender_info.query.warns
     temp_banned_time = await check_temp_ban(user)
-    is_in_allow_list = sender_info.is_in_allow_list
-    is_in_block_list = sender_info.is_in_block_list
     if temp_banned_time:
         stat += '\n' + msg.locale.t("core.message.abuse.check.tempbanned", ban_time=temp_banned_time)
-    if is_in_allow_list:
+    if sender_info.is_in_allow_list:
         stat += '\n' + msg.locale.t("core.message.abuse.check.trusted")
-    if is_in_block_list and not is_in_allow_list:
+    elif sender_info.is_in_block_list:
         stat += '\n' + msg.locale.t("core.message.abuse.check.banned")
     await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns) + stat)
 
