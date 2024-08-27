@@ -49,9 +49,6 @@ jobs:
             oss2
             langconv
             aliyunsdkcore
-            apscheduler
-          include-package: |
-            apscheduler
             
 
       - name: Build Wrapper Executable
