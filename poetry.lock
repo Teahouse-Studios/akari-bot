@@ -356,17 +356,17 @@ tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "p
 
 [[package]]
 name = "autopep8"
-version = "2.0.4"
+version = "2.3.1"
 description = "A tool that automatically formats Python code to conform to the PEP 8 style guide"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "autopep8-2.0.4-py2.py3-none-any.whl", hash = "sha256:067959ca4a07b24dbd5345efa8325f5f58da4298dab0dde0443d5ed765de80cb"},
-    {file = "autopep8-2.0.4.tar.gz", hash = "sha256:2913064abd97b3419d1cc83ea71f042cb821f87e45b9c88cad5ad3c4ea87fe0c"},
+    {file = "autopep8-2.3.1-py2.py3-none-any.whl", hash = "sha256:a203fe0fcad7939987422140ab17a930f684763bf7335bdb6709991dd7ef6c2d"},
+    {file = "autopep8-2.3.1.tar.gz", hash = "sha256:8d6c87eba648fdcfc83e29b788910b8643171c395d9c4bcf115ece035b9c9dda"},
 ]
 
 [package.dependencies]
-pycodestyle = ">=2.10.0"
+pycodestyle = ">=2.12.0"
 
 [[package]]
 name = "backoff"
@@ -1608,13 +1608,13 @@ files = [
 
 [[package]]
 name = "iso639-lang"
-version = "2.2.3"
-description = "A lightweight library for the ISO 639 standard."
+version = "2.3.0"
+description = "A simple, yet powerful ISO 639 library."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "iso639-lang-2.2.3.tar.gz", hash = "sha256:ebbfd1a9ebcbfd7c327523017ad0dde0ba5faeb84110378569d74aee14530ac3"},
-    {file = "iso639_lang-2.2.3-py3-none-any.whl", hash = "sha256:472290a2dfccfddc7eb1bd2d1ca6b174e988093c2ccb8b74743fe190625a9c61"},
+    {file = "iso639_lang-2.3.0-py3-none-any.whl", hash = "sha256:df53b9f4c6dbf7201c3f6d03cd636ee42437ef1f796b98568551148a3f3056ef"},
+    {file = "iso639_lang-2.3.0.tar.gz", hash = "sha256:42a84816e4c4d457451befb87882d0ccf3db1c192ace58e87841eb4c3adfddd3"},
 ]
 
 [[package]]
@@ -4594,4 +4594,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "8615d88211957be018fbd11f69e7305aa5a81f13d205ea7deed8daaa8720ce7f"
+content-hash = "7508a84887c67c319781cde11070c4b272cc1e141dac9ca5f7d4b9dc30d490fb"
