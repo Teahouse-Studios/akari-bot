@@ -32,7 +32,6 @@ else:
         else:
             await msg.finish(msg.locale.t("calc.message.invalid", expr=res[7:]))
 
-
     async def spawn_subprocess(file: str, arg: str, msg: Bot.MessageSession) -> str:
         envs = os.environ.copy()
         if sys.platform == 'win32' and sys.version_info.minor < 10:
