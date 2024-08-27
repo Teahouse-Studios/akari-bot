@@ -196,6 +196,7 @@
     "core.message.setup.typing.disable": "Input prompt disabled.",
     "core.message.setup.typing.enable": "Input prompt enabled.",
     "core.message.update.failed": "Failed to fetch update from GitHub.",
+    "core.message.update.binary_mode": "机器人正在使用二进制部署，无法更新。请手动下载最新版本的二进制文件进行替换。",
     "core.message.version": "Current bot version: ${commit}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
     "core.message.whoami": "Your ID: ${sender}\nConversation ID: ${target}",
