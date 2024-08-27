@@ -11,7 +11,7 @@ from core.utils.info import Info
 
 calc_dir = os.path.dirname(os.path.abspath(__file__))
 
-if Info.build_mode:
+if Info.binary_mode:
     calc_dir = './modules/calc/'
 
 

@@ -9,7 +9,7 @@ from core.utils.info import Info
 
 csv_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consumer_price_index.csv')
 
-if Info.build_mode:
+if Info.binary_mode:
     csv_file = './modules/inflation/consumer_price_index.csv'
 
 cpi = pd.read_csv(csv_file)

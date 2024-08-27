@@ -18,7 +18,7 @@ font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 40)
 
 color_json = os.path.dirname(os.path.abspath(__file__)) + '/material_colors.json'
 
-if Info.build_mode:
+if Info.binary_mode:
     color_json = './modules/color/material_colors.json'
 
 with open(color_json, 'r', encoding='utf-8') as f:

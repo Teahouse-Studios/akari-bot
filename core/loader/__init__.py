@@ -29,11 +29,11 @@ def load_modules():
         locale_err.append('i18n:')
         err_prompt.append('\n'.join(locale_err))
     fun_file = None
-    if not Info.build_mode:
+    if not Info.binary_mode:
         dir_list = os.listdir(load_dir_path)
     else:
         try:
-            Logger.warning('Build mode detected, trying to load pre-built modules list...')
+            Logger.warning('Binary mode detected, trying to load pre-built modules list...')
             js = 'assets/modules_list.json'
             with open(js, 'r', encoding='utf-8') as f:
                 dir_list = json.load(f)
@@ -49,7 +49,7 @@ def load_modules():
                 continue
             file_path = os.path.join(load_dir_path, file_name)
             fun_file = None
-            if not Info.build_mode:
+            if not Info.binary_mode:
                 if os.path.isdir(file_path):
                     if file_name[0] != '_':
                         fun_file = file_name

@@ -25,7 +25,7 @@ wordle = module('wordle',
 
 words_txt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt')
 answers_txt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt')
-if Info.build_mode:
+if Info.binary_mode:
     words_txt = './modules/wordle/words.txt'
     answers_txt = './modules/wordle/answers.txt'
 with open(words_txt, encoding='utf8') as handle:

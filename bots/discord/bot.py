@@ -41,12 +41,12 @@ slash_load_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__
 
 def load_slashcommands():
     fun_file = None
-    if not Info.build_mode:
+    if not Info.binary_mode:
         dir_list = os.listdir(slash_load_dir)
 
     else:
         try:
-            Logger.warning('Build mode detected, trying to load pre-built slash list...')
+            Logger.warning('Binary mode detected, trying to load pre-built slash list...')
             js = 'assets/discord_slash_list.json'
             with open(js, 'r', encoding='utf-8') as f:
                 dir_list = json.load(f)
@@ -57,7 +57,7 @@ def load_slashcommands():
         try:
             file_path = os.path.join(slash_load_dir, file_name)
             fun_file = None
-            if not Info.build_mode:
+            if not Info.binary_mode:
                 if os.path.isdir(file_path):
                     if file_name[0] != '_':
                         fun_file = file_name
