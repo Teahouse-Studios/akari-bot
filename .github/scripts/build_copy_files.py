@@ -2,22 +2,20 @@ import shutil
 import os
 
 if __name__ == "__main__":
-    os.mkdir('output')
+    os.makedirs('output', exist_ok=True)
     shutil.copytree('assets', 'output/assets')
-    os.mkdir('output/config')
+    os.makedirs('output/config', exist_ok=True)
     shutil.copyfile('config/config.toml.example', 'output/config/config.toml.example')
     shutil.copytree('locales', 'output/locales')
     shutil.copytree('modules', 'output/modules')
 
     def remove_py_files(path):
-        blacklist_dir = ['clac']
 
         for root, dirs, files in os.walk(path):
-            if os.path.basename(root) not in blacklist_dir:
-                for file in files:
-                    if (file.endswith('.py') or file.endswith('.pyc') or file.endswith(
-                            '.pyo') or file.endswith('.pyd') or file.endswith('.pyw')):
-                        os.remove(os.path.join(root, file))
+            for file in files:
+                if (file.endswith('.py') or file.endswith('.pyc') or file.endswith(
+                        '.pyo') or file.endswith('.pyd') or file.endswith('.pyw')):
+                    os.remove(os.path.join(root, file))
 
         for root, dirs, files in os.walk(path):
             for dir in dirs:
