@@ -2,10 +2,10 @@ from aiogram import Bot, Dispatcher
 
 from config import Config
 
-token = Config('tg_token')
+token = Config('telegram_token', cfg_type=str)
 
-bot = Bot(token=token)
-if bot and token:
-    dp = Dispatcher(bot)
+if token:
+    bot = Bot(token=token)
+    dp = Dispatcher()
 else:
-    dp = False
+    bot = dp = False

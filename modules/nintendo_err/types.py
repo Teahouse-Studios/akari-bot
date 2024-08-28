@@ -17,7 +17,7 @@ class Module:
 
     def get_error(self, error: int):
         value = self.data.get(error, None)
-        if value is not None:
+        if value:
             return value
         for key, value in self.data.items():
             if isinstance(key, tuple) and key[0] <= error <= key[1]:
@@ -28,7 +28,7 @@ class Module:
     # If your modules require specific extra info for error ranges, add it here
     def get_summary(self, summary: int):
         value = self.summaries.get(summary, None)
-        if value is not None:
+        if value:
             return value
         for key, value in self.summaries.items():
             if isinstance(key, tuple) and key[0] <= summary <= key[1]:

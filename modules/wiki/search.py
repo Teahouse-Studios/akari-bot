@@ -4,33 +4,30 @@ from typing import Union
 
 from core.builtins import Bot, Plain
 from core.logger import Logger
+from core.utils.text import isint
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 
 
-@wiki.handle('search <PageName> {搜索一个Wiki页面。}')
-async def _(msg: Bot.MessageSession):
-    await search_pages(msg, msg.parsed_msg['<PageName>'])
+@wiki.command('search <pagename> {{wiki.help.search}}')
+async def _(msg: Bot.MessageSession, pagename: str):
+    await search_pages(msg, pagename)
 
 
-async def search_pages(session: Bot.MessageSession, title: Union[str, list, tuple], use_prefix=True):
-    target = WikiTargetInfo(session)
+async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix=True):
+    target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()
     headers = target.get_headers()
     prefix = target.get_prefix()
-    enabled_fandom_addon = session.options.get('wiki_fandom_addon')
-    if start_wiki is None:
-        await session.sendMessage(
-            f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
-            f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
-        start_wiki = 'https://minecraft.fandom.com/zh/api.php'
+    if not start_wiki:
+        await msg.finish(msg.locale.t('wiki.message.set.not_set', prefix=msg.prefixes[0]))
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
     for t in title:
-        if prefix is not None and use_prefix:
+        if prefix and use_prefix:
             t = prefix + t
         if t[0] == ':':
             if len(t) > 1:
@@ -48,26 +45,6 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
                             'query': [], 'iw_prefix': g1}
                     query_task[interwiki_url]['query'].append(g2)
                     matched = True
-                elif g1 == 'w' and enabled_fandom_addon:
-                    if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                        if match_interwiki.group(1) == 'c':
-                            if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                                interwiki_split = match_interwiki.group(
-                                    1).split('.')
-                                if len(interwiki_split) == 2:
-                                    get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                                    find = interwiki_split[0] + \
-                                           ':' + match_interwiki.group(2)
-                                    iw = 'w:c:' + interwiki_split[0]
-                                else:
-                                    get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
-                                    find = match_interwiki.group(2)
-                                    iw = 'w:c:' + match_interwiki.group(1)
-                                if get_link not in query_task:
-                                    query_task[get_link] = {
-                                        'query': [], 'iw_prefix': iw}
-                                query_task[get_link]['query'].append(find)
-                                matched = True
             if not matched:
                 query_task[start_wiki]['query'].append(t)
     Logger.debug(query_task)
@@ -87,14 +64,18 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
             for r in result:
                 wait_msg_list.append(iw_prefix + r)
     if len(wait_msg_list) != 0:
-        msg_list.append('查询到以下结果：')
+        msg_list.append(msg.locale.t('wiki.message.search'))
         i = 0
         for w in wait_msg_list:
             i += 1
             w = f'{i}. {w}'
             msg_list.append(w)
-        msg_list.append('回复编号以查询对应的页面。')
-    reply = await session.waitReply(Plain('\n'.join(msg_list)))
-    if reply.asDisplay().isdigit():
-        reply_number = int(reply.asDisplay()) - 1
+        msg_list.append(msg.locale.t('wiki.message.search.prompt'))
+    else:
+        await msg.finish(msg.locale.t('wiki.message.search.not_found'))
+    reply = await msg.wait_reply(Plain('\n'.join(msg_list)))
+    if isint(reply.as_display(text_only=True)):
+        reply_number = max(0, int(reply.as_display(text_only=True)) - 1)
         await query_pages(reply, wait_msg_list[reply_number])
+    else:
+        await msg.finish()

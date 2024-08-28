@@ -1,19 +1,70 @@
+import os
+
+import aiohttp
 import ujson as json
 
-from core.builtins import Url, ErrorMessage
-from core.utils.http import get_url
+from core.builtins import Url
+from core.logger import Logger
+from core.utils.http import download, get_url
+from core.utils.web_render import WebRender, webrender
+
+elements = ['div#descriptionmodule']
+assets_path = os.path.abspath('./assets/')
+
+spx_cache = {}
 
 
-async def bugtracker_get(mojiraId: str, nolink=False):
+async def make_screenshot(page_link, use_local=True):
+    elements_ = elements.copy()
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
+        use_local = False
+    Logger.info('[Webrender] Generating element screenshot...')
+    try:
+        img = await download(webrender('element_screenshot', use_local=use_local),
+                             status_code=200,
+                             headers={'Content-Type': 'application/json'},
+                             method="POST",
+                             post_data=json.dumps({
+                                 'url': page_link,
+                                 'element': elements_}),
+                             attempt=1,
+                             timeout=30,
+                             request_private_ip=True
+                             )
+        if img:
+            return img
+        else:
+            Logger.info('[Webrender] Generation Failed.')
+            return False
+    except aiohttp.ClientConnectorError:
+        if use_local:
+            return await make_screenshot(page_link, use_local=False)
+        else:
+            return False
+    except ValueError:
+        Logger.info('[Webrender] Generation Failed.')
+        return False
+
+
+async def bugtracker_get(msg, mojira_id: str):
     data = {}
-    id_ = mojiraId.upper()
-    json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
-    get_json = await get_url(json_url, 200)
-    get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
-    if get_spx:
-        spx = json.loads(get_spx)
-        if id_ in spx:
-            data["translation"] = spx[id_]
+    id_ = mojira_id.upper()
+    try:
+        json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
+        get_json = await get_url(json_url, 200)
+    except ValueError as e:
+        if str(e).startswith('401'):
+            return msg.locale.t("bugtracker.message.get_failed"), None
+        else:
+            raise e
+    if mojira_id not in spx_cache:
+        get_spx = await get_url('https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json', 200)
+        if get_spx:
+            spx_cache.update(json.loads(get_spx))
+    if id_ in spx_cache and msg.locale.locale == 'zh_cn':
+        data["translation"] = spx_cache[id_]
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''
@@ -27,8 +78,8 @@ async def bugtracker_get(mojiraId: str, nolink=False):
                 fields = load_json['fields']
                 if 'summary' in fields:
                     data["title"] = data["title"] + \
-                                    fields['summary'] + (
-                                        f' ({data["translation"]})' if data.get("translation", False) else '')
+                        fields['summary'] + (
+                        f' (spx: {data["translation"]})' if data.get("translation", False) else '')
                 if 'issuetype' in fields:
                     data["type"] = fields['issuetype']['name']
                 if 'status' in fields:
@@ -37,11 +88,11 @@ async def bugtracker_get(mojiraId: str, nolink=False):
                     data["project"] = fields['project']['name']
                 if 'resolution' in fields:
                     data["resolution"] = fields['resolution']['name'] if fields[
-                                                                             'resolution'] is not None else 'Unresolved'
+                        'resolution'] else 'Unresolved'
                 if 'versions' in load_json['fields']:
-                    Versions = fields['versions']
+                    versions = fields['versions']
                     verlist = []
-                    for item in Versions[:]:
+                    for item in versions[:]:
                         verlist.append(item['name'])
                     if verlist[0] == verlist[-1]:
                         data['version'] = "Version: " + verlist[0]
@@ -60,8 +111,7 @@ async def bugtracker_get(mojiraId: str, nolink=False):
                     if data["status"] == 'Resolved':
                         if fields['fixVersions']:
                             data["fixversion"] = fields['fixVersions'][0]['name']
-    else:
-        return ErrorMessage('获取Json失败。')
+    issue_link = None
     msglist = []
     if errmsg != '':
         msglist.append(errmsg)
@@ -72,7 +122,7 @@ async def bugtracker_get(mojiraId: str, nolink=False):
             type_ = 'Type: ' + type_
             if status_ := data.get("status", False):
                 if status_ in ['Open', 'Resolved']:
-                    Type = f'{type_} | Status: {status_}'
+                    type_ = f'{type_} | Status: {status_}'
             msglist.append(type_)
         if project := data.get("project", False):
             project = 'Project: ' + project
@@ -90,7 +140,6 @@ async def bugtracker_get(mojiraId: str, nolink=False):
             msglist.append("Fixed Version: " + fixversion)
         if version := data.get("version", False):
             msglist.append(version)
-        if (link := data.get("link", False)) and not nolink:
-            msglist.append(str(Url(link)))
-    msg = '\n'.join(msglist)
-    return msg
+        if (link := data.get("link", False)):
+            issue_link = link
+    return '\n'.join(msglist), issue_link

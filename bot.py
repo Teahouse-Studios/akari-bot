@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import sys
+import traceback
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
@@ -13,6 +14,21 @@ from config import Config
 from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
+
+bots_and_required_configs = {
+    'aiocqhttp': [
+        'qq_host',
+        'qq_account'],
+    'discord': ['discord_token'],
+    'aiogram': ['telegram_token'],
+    'kook': ['kook_token'],
+    'matrix': [
+        'matrix_homeserver',
+        'matrix_user',
+        'matrix_device_id',
+        'matrix_token'],
+    'api': []
+}
 
 
 class RestartBot(Exception):
@@ -30,50 +46,56 @@ def enqueue_output(out, queue):
 
 
 def init_bot():
-    base_superuser = Config('base_superuser')
+    base_superuser = Config('base_superuser', cfg_type=(str, list))
     if base_superuser:
-        BotDBUtil.SenderInfo(base_superuser).edit('isSuperUser', True)
+        if isinstance(base_superuser, str):
+            base_superuser = [base_superuser]
+        for bu in base_superuser:
+            BotDBUtil.SenderInfo(bu).init()
+            BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
 
 
 pidlst = []
 
+disabled_bots = Config('disabled_bots', [])
+
 
 def run_bot():
-    cache_path = os.path.abspath(Config('cache_path'))
+    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
-
-    pid_cache = os.path.abspath('.pid_last')
-    if os.path.exists(pid_cache):
-        with open(pid_cache, 'r') as f:
-            pid_last = f.read().split('\n')
-            running_pids = get_pid('python')
-            for pid in pid_last:
-                if int(pid) in running_pids:
-                    try:
-                        os.kill(int(pid), 9)
-                    except (PermissionError, ProcessLookupError):
-                        pass
-        os.remove(pid_cache)
+    os.makedirs(cache_path, exist_ok=True)
     envs = os.environ.copy()
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
-    botdir = './bots/'
-    lst = os.listdir(botdir)
+    lst = bots_and_required_configs.keys()
     runlst = []
-    for x in lst:
-        bot = os.path.abspath(f'{botdir}{x}/bot.py')
-        if os.path.exists(bot):
-            p = subprocess.Popen(['python', bot], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 cwd=os.path.abspath('.'), env=envs)
-            runlst.append(p)
-            pidlst.append(p.pid)
+    for bl in lst:
+        if bl in disabled_bots:
+            continue
+        if bl in bots_and_required_configs:
+            abort = False
+            for c in bots_and_required_configs[bl]:
+                if not Config(c):
+                    logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
+                    abort = True
+                    break
+            if abort:
+                continue
 
-    with open(pid_cache, 'w') as c:
-        c.write('\n'.join(str(p) for p in pidlst))
+        launch_args = [sys.executable, 'launcher.py', 'subprocess', bl]
+
+        if sys.platform == 'win32' and 'launcher.exe' in os.listdir('.') and not sys.argv[0].endswith('.py'):
+            launch_args = ['launcher.exe', 'subprocess', bl]
+
+        elif 'launcher.bin' in os.listdir('.') and not sys.argv[0].endswith('.py'):
+            launch_args = ['./launcher.bin', 'subprocess', bl]
+
+        p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             cwd=os.path.abspath('.'), env=envs)
+        runlst.append(p)
+        pidlst.append(p.pid)
 
     q = Queue()
     threads = []
@@ -88,7 +110,7 @@ def run_bot():
         try:
             line = q.get_nowait()
         except Empty:
-            pass
+            sleep(1)
         else:
             try:
                 logger.info(line.decode(encode)[:-1])
@@ -106,25 +128,25 @@ def run_bot():
                         else:
                             logger.error(f'Cannot decode string from {e}, no more attempts.')
 
-        # break when all processes are done.
-        if all(p.poll() is not None for p in runlst):
-            break
-
         for p in runlst:
             if p.poll() == 233:
                 logger.warning(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
-        sleep(0.001)
+
+        # break when all processes are done.
+        if all(p.poll() for p in runlst):
+            break
+
+        sleep(0.0001)
 
 
 if __name__ == '__main__':
-    init_bot()
     logger.remove()
     logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).first()
-    if query_dbver is None:
-        session.add_all([DBVersion(value='2')])
+    if not query_dbver:
+        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
@@ -133,11 +155,12 @@ if __name__ == '__main__':
 
         update_database()
         logger.info('Database updated successfully!')
+    init_bot()
     try:
         while True:
             try:
                 run_bot()  # Process will block here so
-                logger.error('All bots exited unexpectedly, please check the output')
+                logger.critical('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:
                 for x in pidlst:
@@ -148,7 +171,11 @@ if __name__ == '__main__':
                 pidlst.clear()
                 sleep(5)
                 continue
-    except KeyboardInterrupt:
+            except Exception as e:
+                logger.critical('An error occurred, please check the output.')
+                traceback.print_exc()
+                break
+    except (KeyboardInterrupt, SystemExit):
         for x in pidlst:
             try:
                 os.kill(x, 9)

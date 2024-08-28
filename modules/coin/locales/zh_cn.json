@@ -1,0 +1,20 @@
+{
+    "coin.help": "抛任意枚硬币。",
+    "coin.help.desc": "抛硬币。",
+    "coin.message.all.head": "…全是正面！",
+    "coin.message.all.prompt": "你抛了 ${count} 枚硬币…",
+    "coin.message.all.stand": "…全都立起来了？！",
+    "coin.message.all.tail": "…全是反面！",
+    "coin.message.invalid.amount": "无效的硬币数量。",
+    "coin.message.invalid.out_of_range": "你最多只能抛 ${max} 枚硬币。",
+    "coin.message.mix.head": "…有 ${head} 枚是正面",
+    "coin.message.mix.head_and_tail": "…有 ${head} 枚是正面，${tail} 枚是反面",
+    "coin.message.mix.prompt": "你抛了 ${count} 枚硬币，其中…",
+    "coin.message.mix.stand": "……还有 ${stand} 枚立起来了！",
+    "coin.message.mix.tail": "…有 ${tail} 枚是反面",
+    "coin.message.nocoin": "你抛了个空气，什么也没发生……",
+    "coin.message.single.head": "…是正面！",
+    "coin.message.single.prompt": "你抛了 1 枚硬币…",
+    "coin.message.single.stand": "…它立起来了！",
+    "coin.message.single.tail": "…是反面！"
+}

@@ -1,68 +1,132 @@
+import re
 import traceback
 
-from core.builtins.message import MessageSession
-from core.component import on_command
-from modules.wiki.utils.dbutils import WikiTargetInfo, Audit
-from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
+from core.builtins import Bot
+from core.component import module
+from core.logger import Logger
+from modules.wiki.utils.dbutils import WikiTargetInfo
 from .ab import ab
 from .ab_qq import ab_qq
 from .newbie import newbie
 from .rc import rc
 from .rc_qq import rc_qq
+from .user import get_user_info
 
-rc_ = on_command('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])
+rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
 
 
-@rc_.handle()
-async def rc_loader(msg: MessageSession):
+@rc_.command()
+@rc_.command('[--legacy] {{wiki.help.rc}}',
+             options_desc={'--legacy': '{help.option.legacy}'},
+             available_for=['QQ|Group'])
+async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
-    if start_wiki is None:
-        return await msg.finish('未设置起始wiki。')
+    if not start_wiki:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
+    if not msg.parsed_msg and msg.Feature.forward:
         try:
-            nodelist = await rc_qq(start_wiki)
+            nodelist = await rc_qq(msg, start_wiki)
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
-            traceback.print_exc()
-            await msg.finish('无法发送转发消息，已自动回滚至传统样式。')
-            legacy = True
+            Logger.error(traceback.format_exc())
+            await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
-        res = await rc(start_wiki)
-        await msg.finish(res)
-
-
-a = on_command('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
-
-
-@a.handle()
-async def ab_loader(msg: MessageSession):
-    start_wiki = WikiTargetInfo(msg).get_start_wiki()
-    if start_wiki is None:
-        return await msg.finish('未设置起始wiki。')
-    legacy = True
-    if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
         try:
-            nodelist = await ab_qq(start_wiki)
+            res = await rc(msg, start_wiki)
+            await msg.finish(res)
+        except Exception:
+            Logger.error(traceback.format_exc())
+            await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
+
+
+@rc_.command('{{wiki.help.rc}}',
+             exclude_from=['QQ|Group'])
+async def rc_loader(msg: Bot.MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    if not start_wiki:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))
+    try:
+        res = await rc(msg, start_wiki)
+        await msg.finish(res)
+    except Exception:
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
+
+
+ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
+
+
+@ab_.command()
+@ab_.command('[--legacy] {{wiki.help.ab}}',
+             options_desc={'--legacy': '{help.option.legacy}'},
+             available_for=['QQ|Group'])
+async def ab_loader(msg: Bot.MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    if not start_wiki:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))
+    legacy = True
+    if not msg.parsed_msg and msg.Feature.forward:
+        try:
+            nodelist = await ab_qq(msg, start_wiki)
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
-            traceback.print_exc()
-            await msg.finish('无法发送转发消息，已自动回滚至传统样式。')
-            legacy = True
+            Logger.error(traceback.format_exc())
+            await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
-        res = await ab(start_wiki)
-        await msg.finish(res)
+        try:
+            res = await ab(msg, start_wiki)
+            await msg.finish(res)
+        except Exception:
+            Logger.error(traceback.format_exc())
+            await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
-n = on_command('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
-
-
-@n.handle()
-async def newbie_loader(msg: MessageSession):
+@ab_.command('{{wiki.help.ab}}',
+             exclude_from=['QQ|Group'])
+async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
-    if start_wiki is None:
-        return await msg.finish('未设置起始wiki。')
-    res = await newbie(start_wiki)
-    await msg.finish(res)
+    if not start_wiki:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))
+    try:
+        res = await ab(msg, start_wiki)
+        await msg.finish(res)
+    except Exception:
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
+
+
+new = module('newbie', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
+
+
+@new.command('{{wiki.help.newbie}}')
+async def newbie_loader(msg: Bot.MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    if not start_wiki:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))
+    try:
+        res = await newbie(msg, start_wiki)
+        await msg.finish(res)
+    except Exception:
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
+
+
+usr = module('user', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
+
+
+@usr.command('<username> {{wiki.help.user}}')
+async def user(msg: Bot.MessageSession, username: str):
+    target = WikiTargetInfo(msg)
+    start_wiki = target.get_start_wiki()
+    if start_wiki:
+        match_interwiki = re.match(r'(.*?):(.*)', username)
+        if match_interwiki:
+            interwikis = target.get_interwikis()
+            if match_interwiki.group(1) in interwikis:
+                await get_user_info(msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2))
+        await get_user_info(msg, start_wiki, username)
+    else:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))

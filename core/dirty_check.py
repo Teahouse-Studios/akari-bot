@@ -1,19 +1,20 @@
 '''利用阿里云API检查字符串是否合规。
 
-在使用前，应该在配置中填写"Check_accessKeyId"和"Check_accessKeySecret"以便进行鉴权。
+在使用前，应该在配置中填写"check_access_key_id"和"check_access_key_secret"以便进行鉴权。
 '''
 import base64
 import datetime
 import hashlib
 import hmac
-import ujson as json
+import json
+import re
 import time
 
 import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
-from core.builtins import EnableDirtyWordCheck
+from core.builtins import Bot, EnableDirtyWordCheck
 from core.logger import Logger
 from database.local import DirtyWordCache
 
@@ -37,7 +38,7 @@ def parse_data(result: dict):
             for itemDetail in itemResult['details']:
                 if 'contexts' in itemDetail:
                     for itemContext in itemDetail["contexts"]:
-                        content = content.replace(itemContext['context'], '<吃掉了>')
+                        content = re.sub(itemContext['context'], "<吃掉了>", content, flags=re.I)
                         status = False
                 else:
                     content = "<全部吃掉了>"
@@ -48,18 +49,20 @@ def parse_data(result: dict):
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(*text) -> list:
     '''检查字符串是否合规
-    
+
     :param text: 字符串（List/Union）。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'，结构为[{'审核后的字符串': 处理结果（True/False，默认为True）}]
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
     '''
-    accessKeyId = Config("Check_accessKeyId")
-    accessKeySecret = Config("Check_accessKeySecret")
+    access_key_id = Config("check_access_key_id", cfg_type=str)
+    access_key_secret = Config("check_access_key_secret", cfg_type=str)
     text = list(text)
-    if not accessKeyId or not accessKeySecret or not EnableDirtyWordCheck.status:
-        Logger.warn('Dirty words filter was disabled, skip.')
+    text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
+    if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
+        Logger.warning('Dirty words filter was disabled, skip.')
         query_list = []
         for t in text:
             query_list.append({'content': t, 'status': True, 'original': t})
+        Logger.debug(query_list)
         return query_list
     if not text:
         return []
@@ -96,18 +99,18 @@ async def check(*text) -> list:
                 "content": x
             }, call_api_list_))
         }
-        clientInfo = '{}'
+        client_info = '{}'
         root = 'https://green.cn-shanghai.aliyuncs.com'
-        url = '/green/text/scan?{}'.format(clientInfo)
+        url = '/green/text/scan?{}'.format(client_info)
 
-        GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
-        date = datetime.datetime.utcnow().strftime(GMT_FORMAT)
+        gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
+        date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
-        contentMd5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
+        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Content-MD5': contentMd5,
+            'Content-MD5': content_md5,
             'Date': date,
             'x-acs-version': '2018-05-09',
             'x-acs-signature-nonce': nonce,
@@ -124,11 +127,11 @@ async def check(*text) -> list:
         step1 = '\n'.join(list(map(lambda x: "{}:{}".format(x, sorted_header[x]), list(sorted_header.keys()))))
         step2 = url
         step3 = "POST\napplication/json\n{contentMd5}\napplication/json\n{date}\n{step1}\n{step2}".format(
-            contentMd5=contentMd5,
+            contentMd5=content_md5,
             date=headers['Date'], step1=step1, step2=step2)
-        sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, hashlib.sha1))
+        sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
         headers['Authorization'] = sign
-        # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
+        # 'Authorization': "acs {}:{}".format(access_key_id, sign)
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
                 if resp.status == 200:
@@ -147,3 +150,18 @@ async def check(*text) -> list:
         for y in query_list[x]:
             results.append(query_list[x][y])
     return results
+
+
+async def check_bool(*text):
+    chk = await check(*text)
+    for x in chk:
+        if not x['status']:
+            return True
+    return False
+
+
+def rickroll(msg: Bot.MessageSession):
+    if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
+        return msg.locale.tl_str(Config("rickroll_msg", cfg_type=str))
+    else:
+        return msg.locale.t("error.message.chain.unsafe")

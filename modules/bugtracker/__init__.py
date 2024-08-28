@@ -1,40 +1,38 @@
-import asyncio
 import re
 
-from core.builtins import Bot
-from core.component import on_command, on_regex
-from .bugtracker import bugtracker_get
+from core.builtins import Bot, Image, Plain, Url
+from core.component import module
+from .bugtracker import bugtracker_get, make_screenshot
 
-bug = on_command('bug', alias='b', developers=['OasisAkari'])
+bug = module('bugtracker', alias='bug', developers=['OasisAkari'], doc=True)
 
 
-@bug.handle('<MojiraID> {查询Mojira上的漏洞编号内容}')
-async def bugtracker(msg: Bot.MessageSession):
-    mojira_id = msg.parsed_msg['<MojiraID>']
-    if mojira_id:
-        q = re.match(r'(.*-.*)', mojira_id)
+async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
+    result = await bugtracker_get(msg, mojiraid)
+    msg_list = [Plain(result[0])]
+    if result[1]:
+        msg_list.append(Url(result[1]))
+    await msg.send_message(msg_list)
+    if result[1]:
+        screenshot = await make_screenshot(result[1])
+        if screenshot:
+            await msg.send_message(Image(screenshot))
+
+
+@bug.command('<mojiraid> {{bugtracker.help}}')
+async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
+    if mojiraid:
+        q = re.match(r'(.*-\d*)', mojiraid)
         if q:
-            result = await bugtracker_get(q.group(1))
-            await msg.finish(result)
+            await query_bugtracker(msg, mojiraid)
+        else:
+            await msg.finish(msg.locale.t('bugtracker.message.invalid_mojira_id'))
 
 
-rbug = on_regex('bug_regex',
-                desc='开启后发送 !<mojiraid> 将会查询Mojira并发送该bug的梗概内容。',
-                developers=['OasisAkari'])
-
-
-@rbug.handle(pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M')
+@bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)', mode='A', flags=re.I,
+           desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
-    matched_msg = msg.matched_msg
-    if len(matched_msg.group(1)) < 10 and len(matched_msg.group(2)) < 10:
-        result = await bugtracker_get(matched_msg.group(1) + '-' + matched_msg.group(2))
-        await msg.finish(result)
-
-
-@rbug.handle(re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)'), mode='A')
-async def _(msg: Bot.MessageSession):
-    async def bgtask(msg: Bot.MessageSession):
-        for title in msg.matched_msg:
-            await msg.sendMessage(await bugtracker_get(title, nolink=True))
-
-    asyncio.create_task(bgtask(msg))
+    titles = list(set(msg.matched_msg))
+    for title in titles:
+        if title != '':
+            await query_bugtracker(msg, title)

@@ -2,8 +2,8 @@
 import discord
 
 from core.builtins import Bot
-from core.component import on_command
-from core.utils.message import convertDiscordEmbed
+from core.component import module
+from core.utils.message import convert_discord_embed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
@@ -78,7 +78,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         return memes.get(err.casefold())
 
 
-e = on_command('err', developers=['OasisAkari', 'kurisu'])
+e = module('err', developers=['OasisAkari', 'kurisu'], doc=True)
 
 
 @e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')
@@ -98,7 +98,7 @@ async def result(msg: Bot.MessageSession):
     results = Results()
     err = msg.parsed_msg['<errcode>']
     err = results.fixup_input(err)
-    if (meme := results.check_meme(err)) is not None:
+    if meme := results.check_meme(err):
         await msg.finish(meme)
     try:
         ret = results.fetch(err)
@@ -111,6 +111,6 @@ async def result(msg: Bot.MessageSession):
             embed.description = ret.extra_description
         for field in ret:
             embed.add_field(name=field.field_name, value=field.message, inline=False)
-        await msg.finish(convertDiscordEmbed(embed))
+        await msg.finish(convert_discord_embed(embed))
     else:
         await msg.finish(f'你输入的代码是无效的，或者此功能不支持你使用的主机。')

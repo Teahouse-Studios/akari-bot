@@ -1,18 +1,18 @@
-from core.builtins import Bot
-from core.builtins import Plain, Image, Url
-from core.component import on_command
+from core.builtins import Bot, Plain, Image, Url
+from core.component import module
 from .mojang_api import *
 
-mcplayer = on_command(
+mcplayer = module(
     bind_prefix='mcplayer',
-    desc='从 Mojang API 获取 Minecraft Java 版玩家信息',
+    desc='{mcplayer.help.desc}',
+    doc=True,
     developers=['Dianliang233'],
 )
 
 
-@mcplayer.handle('<username_or_uuid> {通过玩家名或玩家 UUID 获取玩家信息。}')
-async def main(msg: Bot.MessageSession):
-    arg = msg.parsed_msg['<username_or_uuid>']
+@mcplayer.command('<username_or_uuid> {{mcplayer.help}}')
+async def main(msg: Bot.MessageSession, username_or_uuid: str):
+    arg = username_or_uuid
     try:
         if len(arg) == 32:
             name = await uuid_to_name(arg)
@@ -23,14 +23,17 @@ async def main(msg: Bot.MessageSession):
         else:
             name = arg
             uuid = await name_to_uuid(arg)
-        sac = await uuid_to_skin_and_cape(uuid)
-        render = sac['render']
-        skin = sac['skin']
-        cape = sac['cape']
         namemc = 'https://namemc.com/profile/' + name
-        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(render), Image(skin)]
-        if cape:
-            chain.append(Image(cape))
+        sac = await uuid_to_skin_and_cape(uuid)
+        if sac:
+            render = sac['render']
+            skin = sac['skin']
+            cape = sac['cape']
+            chain = [Plain(f'{name} ({uuid})'), Url(namemc), Image(render), Image(skin)]
+            if cape:
+                chain.append(Image(cape))
+            await msg.finish(chain)
+        else:
+            await msg.finish([Plain(f'{name} ({uuid})'), Url(namemc)])
     except ValueError:
-        chain = [Plain(f'未找到 {arg} 的信息。')]
-    await msg.finish(chain)
+        await msg.finish(msg.locale.t('mcplayer.message.not_found', player=arg))

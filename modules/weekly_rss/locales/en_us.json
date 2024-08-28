@@ -1,0 +1,6 @@
+{
+    "weekly_rss.help.desc": "When enabled, you will subscribe to the weekly page of Chinese Minecraft Wiki. (updates every Monday at 9:00)",
+    "weekly_rss.help.teahouse_weekly_rss.desc": "When enabled, you will subscribe to the weekly page of Teahouse Weekly. (updates every Monday at 9:30)",
+    "weekly_rss.message": "Use \"${prefix}weekly\" to get the text version and link of the weekly page.",
+    "weekly_rss.message.teahouse_weekly_rss": "Use \"${prefix}weekly teahouse\" to get the text version and link of the weekly page."
+}

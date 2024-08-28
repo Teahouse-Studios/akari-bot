@@ -1,6 +1,4 @@
-import os
 import re
-import traceback
 from html import escape
 from typing import List, Union
 
@@ -8,14 +6,11 @@ import aiohttp
 import ujson as json
 from tabulate import tabulate
 
-from config import Config
+from core.builtins.utils import shuffle_joke
 from core.logger import Logger
-from .http import download_to_cache, get_url, post_url
 from .cache import random_cache_path
-
-
-web_render = Config('web_render')
-web_render_local = Config('web_render_local')
+from .http import download
+from .web_render import WebRender, webrender
 
 
 class ImageTable:
@@ -25,11 +20,12 @@ class ImageTable:
 
 
 async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
-    if not web_render_local:
-        if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
-            return False
+    if not WebRender.status:
+        return False
+    elif not WebRender.local:
         use_local = False
+    pic = False
+
     try:
         tblst = []
         if isinstance(table, ImageTable):
@@ -40,12 +36,14 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             for row in tbl.data:
                 cs = []
                 for c in row:
+                    c = shuffle_joke(c)
                     cs.append(re.sub(r'\n', '<br>', escape(c)))
                 d.append(cs)
-            w = len(tbl.headers) * 500
+            headers = [shuffle_joke(header) for header in tbl.headers]
+            w = len(headers) * 500
             if w > max_width:
                 max_width = w
-            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, tbl.headers, tablefmt='unsafehtml')))
+            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, headers, tablefmt='unsafehtml')))
         tblst = '<table>' + '\n'.join(tblst) + '</table>'
         css = """
         <style>table {
@@ -63,23 +61,34 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
         html = {'content': tblst + css, 'width': w, 'mw': False}
         if save_source:
             fname = random_cache_path() + '.html'
-            with open(fname, 'w') as fi:
+            with open(fname, 'w', encoding='utf-8') as fi:
                 fi.write(tblst + css)
 
-        pic = False
-
         try:
-            pic = await download_to_cache(web_render_local if use_local else web_render, method='POST', headers={
+            pic = await download(
+                webrender(use_local=use_local),
+                method='POST',
+                post_data=json.dumps(html),
+                request_private_ip=True,
+                headers={
                     'Content-Type': 'application/json',
-                }, post_data=json.dumps(html), request_private_ip=True)
+                }
+            )
         except aiohttp.ClientConnectorError:
-            pic = await download_to_cache(web_render, method='POST', headers={
-                    'Content-Type': 'application/json',
-                }, post_data=json.dumps(html), request_private_ip=True)
-        return pic
+            if use_local:
+                pic = await download(
+                    webrender(use_local=False),
+                    method='POST',
+                    post_data=json.dumps(html),
+                    request_private_ip=True,
+                    headers={
+                        'Content-Type': 'application/json',
+                    }
+                )
     except Exception:
-        Logger.error(traceback.format_exc())
-        return False
+        Logger.exception("Error at image_table_render.")
+
+    return pic
 
 
 __all__ = ['ImageTable', 'image_table_render']

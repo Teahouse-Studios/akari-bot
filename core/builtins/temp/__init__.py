@@ -10,19 +10,19 @@ class ExecutionLockList:
 
     @staticmethod
     def add(msg: MessageSession):
-        targetId = msg.target.senderId
-        ExecutionLockList._list.add(targetId)
+        target_id = msg.target.sender_id
+        ExecutionLockList._list.add(target_id)
 
     @staticmethod
     def remove(msg: MessageSession):
-        targetId = msg.target.senderId
-        if targetId in ExecutionLockList._list:
-            ExecutionLockList._list.remove(targetId)
+        target_id = msg.target.sender_id
+        if target_id in ExecutionLockList._list:
+            ExecutionLockList._list.remove(target_id)
 
     @staticmethod
     def check(msg: MessageSession):
-        targetId = msg.target.senderId
-        return True if targetId in ExecutionLockList._list else False
+        target_id = msg.target.sender_id
+        return True if target_id in ExecutionLockList._list else False
 
     @staticmethod
     def get():

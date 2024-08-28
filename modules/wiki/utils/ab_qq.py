@@ -1,24 +1,24 @@
 from config import Config
+from core.builtins import MessageSession
 from core.dirty_check import check
 from core.logger import Logger
-from modules.wiki.utils.UTC8 import UTC8
+from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 
 
-async def ab_qq(wiki_url):
+async def ab_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = Config("qq_account")
+    qq_account = int(Config("qq_account", cfg_type=(str, int)))
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp',
-                                afllimit=99)
+                                afllimit=99, _no_login=not msg.options.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", 'Special:AbuseLog')
     nodelist = [{
         "type": "node",
         "data": {
-            "name": f"滥用过滤器日志地址",
+            "name": msg.locale.t('wiki.message.ab.qq.link.title'),
             "uin": qq_account,
             "content": [
-                {"type": "text", "data": {"text": pageurl + ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
-                                                             if wiki.wiki_info.in_allowlist else '')}}]
+                {"type": "text", "data": {"text": pageurl}}]
         }
     }]
     ablist = []
@@ -31,29 +31,38 @@ async def ab_qq(wiki_url):
     checked_userlist = await check(*userlist)
     user_checked_map = {}
     for u in checked_userlist:
-        user_checked_map[u['original']] = u['content']
+        user_checked = u['content']
+        if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
+            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+        user_checked_map[u['original']] = user_checked
     checked_titlelist = await check(*titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
-        title_checked_map[t['original']] = t['content']
+        title_checked = t['content']
+        if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
+            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+        title_checked_map[t['original']] = title_checked
     for x in query["query"]["abuselog"]:
-        t = []
-        t.append(f"用户：{user_checked_map[x['user']]}")
-        t.append(f"页面标题：{title_checked_map[x['title']]}")
-        t.append(f"过滤器名：{x['filter']}")
-        t.append(f"操作：{x['action']}")
-        result = x['result']
-        if result == '':
-            result = 'pass'
-        t.append(f"处理结果：{result}")
-        t.append(UTC8(x['timestamp'], 'full'))
-        ablist.append('\n'.join(t))
+        if 'title' in x:
+            t = []
+            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
+            t.append(time)
+            result = 'pass' if not x['result'] else x['result']
+            t.append(msg.locale.t("wiki.message.ab.qq.slice",
+                                  title=title_checked_map[x['title']],
+                                  user=user_checked_map[x['user']],
+                                  action=x['action'],
+                                  filter_name=x['filter'],
+                                  result=result))
+            ablist.append('\n'.join(t))
     for x in ablist:
         nodelist.append(
             {
                 "type": "node",
                 "data": {
-                    "name": f"滥用过滤器日志",
+                    "name": msg.locale.t('wiki.message.ab.qq.title'),
                     "uin": qq_account,
                     "content": [{"type": "text", "data": {"text": x}}],
                 }

@@ -1,15 +1,17 @@
 import random
+import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
+from core.logger import Logger
 from core.utils.http import get_url
 
 
-def get_cover_len4_id(mid) -> str:
+def get_cover_len5_id(mid) -> str:
     mid = int(mid)
-    if 10001 <= mid:
+    if mid > 10000 and mid <= 11000:
         mid -= 10000
-    return f'{mid:04d}'
+    return f'{mid:05d}'
 
 
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
@@ -61,6 +63,7 @@ class Chart(Dict):
     touch: Optional[int] = None
     brk: Optional[int] = None
     charter: Optional[int] = None
+    dxscore: Optional[int] = None
 
     def __getattribute__(self, item):
         if item == 'tap':
@@ -73,6 +76,8 @@ class Chart(Dict):
             return self['notes'][3] if len(self['notes']) == 5 else 0
         elif item == 'brk':
             return self['notes'][-1]
+        elif item == 'dxscore':
+            return sum(self['charter']) * 3
         elif item == 'charter':
             return self['charter']
         return super().__getattribute__(item)
@@ -90,11 +95,11 @@ class Music(Dict):
     charts: Optional[Chart] = None
     release_date: Optional[str] = None
     artist: Optional[str] = None
-
+    is_new: Optional[bool] = False
     diff: List[int] = []
 
     def __getattribute__(self, item):
-        if item in {'genre', 'artist', 'release_date', 'bpm', 'version'}:
+        if item in {'genre', 'artist', 'release_date', 'bpm', 'version', 'is_new'}:
             if item == 'version':
                 return self['basic_info']['from']
             return self['basic_info'][item]
@@ -112,9 +117,18 @@ class MusicList(List[Music]):
 
     def by_title(self, music_title: str) -> Optional[Music]:
         for music in self:
-            if music.title == music_title:
+            if music.title.lower() == music_title.lower():
                 return music
         return None
+
+    def new(self):
+        new_list = MusicList()
+        for music in self:
+            music = deepcopy(music)
+            if not music.is_new:
+                continue
+            new_list.append(music)
+        return new_list
 
     def random(self):
         return random.choice(self)
@@ -123,6 +137,7 @@ class MusicList(List[Music]):
                *,
                level: Optional[Union[str, List[str]]] = ...,
                ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+               title: Optional[str] = ...,
                title_search: Optional[str] = ...,
                genre: Optional[Union[str, List[str]]] = ...,
                bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
@@ -145,6 +160,8 @@ class MusicList(List[Music]):
                 continue
             if not in_or_equal(music.bpm, bpm):
                 continue
+            if title is not Ellipsis and not in_or_equal(music.title.lower(), title.lower()):
+                continue
             if title_search is not Ellipsis and title_search.lower() not in music.title.lower():
                 continue
             music.diff = diff2
@@ -157,7 +174,12 @@ class TotalList:
         self.total_list = None
 
     async def get(self):
-        if self.total_list is None:
+        if not self.total_list:
+            await self.update()
+        return self.total_list
+
+    async def update(self):
+        try:
             obj = await get_url('https://www.diving-fish.com/api/maimaidxprober/music_data', 200, fmt='json')
             total_list: MusicList = MusicList(obj)
             for __i in range(len(total_list)):
@@ -165,4 +187,7 @@ class TotalList:
                 for __j in range(len(total_list[__i].charts)):
                     total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
             self.total_list = total_list
-        return self.total_list
+            return True
+        except Exception:
+            Logger.error(traceback.format_exc())
+            return False

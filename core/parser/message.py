@@ -1,80 +1,163 @@
-import copy
-import difflib
+import asyncio
+import inspect
 import re
 import traceback
 from datetime import datetime
-from typing import List, Dict
 
-from aiocqhttp.exceptions import ActionFailed
-
+from bots.aiocqhttp.utils import qq_frame_type
 from config import Config
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
+    base_superuser_list
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
-    WaitCancelException, NoReportException
-from core.loader import ModulesManager
+    WaitCancelException, NoReportException, SendMessageFailed
+from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
-from core.parser.args import Template, ArgumentPattern, templates_to_str
 from core.parser.command import CommandParser
 from core.tos import warn_target
-from core.types import Command, RegexCommand
-from core.types.module.component_meta import CommandMeta
-from core.utils.message import removeIneffectiveText, removeDuplicateSpace
+from core.types import Module
+from core.utils.i18n import Locale, default_locale
+from core.utils.message import remove_duplicate_space
 from database import BotDBUtil
 
-enable_tos = Config('enable_tos')
-enable_analytics = Config('enable_analytics')
+enable_tos = Config('enable_tos', True)
+enable_analytics = Config('enable_analytics', False)
+report_targets = Config('report_targets', [])
+TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300) if Config('tos_temp_ban_time', 300) > 0 else 300
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
 
-temp_ban_counter = {}  # 临时限制计数
+temp_ban_counter = {}  # 临时封禁计数
+cooldown_counter = {}  # 冷却计数
 
 
-async def remove_temp_ban(msg: MessageSession):
-    is_temp_banned = temp_ban_counter.get(msg.target.senderId)
-    if is_temp_banned is not None:
-        del temp_ban_counter[msg.target.senderId]
+async def check_temp_ban(target):
+    is_temp_banned = temp_ban_counter.get(target)
+    if is_temp_banned:
+        ban_time = datetime.now().timestamp() - is_temp_banned['ts']
+        return int(TOS_TEMPBAN_TIME - ban_time)
+    else:
+        return False
 
 
-async def msg_counter(msg: MessageSession, command: str):
-    same = counter_same.get(msg.target.senderId)
-    if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
-        # 检查是否滥用（重复使用同一命令）
-        counter_same[msg.target.senderId] = {'command': command, 'count': 1,
-                                             'ts': datetime.now().timestamp()}
+async def remove_temp_ban(target):
+    if await check_temp_ban(target):
+        del temp_ban_counter[target]
+
+
+async def tos_abuse_warning(msg: Bot.MessageSession, e):
+    if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
+        await warn_target(msg, str(e))
+        temp_ban_counter[msg.target.sender_id] = {'count': 1,
+                                                  'ts': datetime.now().timestamp()}
+    else:
+        reason = msg.locale.tl_str(str(e))
+        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=reason))
+
+
+async def tos_msg_counter(msg: Bot.MessageSession, command: str):
+    same = counter_same.get(msg.target.sender_id)
+    if not same or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
+        # 检查是否滥用（5分钟内重复使用同一命令10条）
+        counter_same[msg.target.sender_id] = {'command': command, 'count': 1,
+                                              'ts': datetime.now().timestamp()}
     else:
         same['count'] += 1
         if same['count'] > 10:
-            raise AbuseWarning('一段时间内使用相同命令的次数过多')
-    all_ = counter_all.get(msg.target.senderId)
-    if all_ is None or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（重复使用同一命令）
-        counter_all[msg.target.senderId] = {'count': 1,
-                                            'ts': datetime.now().timestamp()}
+            raise AbuseWarning("{tos.message.reason.cooldown}")
+    all_ = counter_all.get(msg.target.sender_id)
+    if not all_ or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
+        counter_all[msg.target.sender_id] = {'count': 1,
+                                             'ts': datetime.now().timestamp()}
     else:
         all_['count'] += 1
         if all_['count'] > 20:
-            raise AbuseWarning('一段时间内使用命令的次数过多')
+            raise AbuseWarning("{tos.message.reason.abuse}")
 
 
-async def temp_ban_check(msg: MessageSession):
-    is_temp_banned = temp_ban_counter.get(msg.target.senderId)
-    if is_temp_banned is not None:
+async def temp_ban_check(msg: Bot.MessageSession):
+    is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
+    if is_temp_banned:
+        if msg.check_super_user():
+            await remove_temp_ban(msg.target.sender_id)
+            return None
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
-        if ban_time < 300:
+        if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
-                return await msg.finish('提示：\n'
-                                        '由于你的行为触发了警告，我们已对你进行临时限制。\n'
-                                        f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+                await msg.finish(msg.locale.t("tos.message.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
-                return await msg.finish('即使是触发了临时限制，继续使用命令还是可能会导致你被再次警告。\n'
-                                        f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+                await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning('无视临时限制警告')
+                raise AbuseWarning("{tos.message.reason.ignore}")
 
 
-async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
+async def check_target_cooldown(msg: Bot.MessageSession):
+    cooldown_time = int(msg.options.get('cooldown_time', 0))
+    if await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user():
+        neutralized = True
+    else:
+        neutralized = False
+
+    if cooldown_time and not neutralized:
+        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
+            time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
+            if time > cooldown_time:
+                cooldown_counter[msg.target.target_id].update(
+                    {msg.target.sender_id: {'ts': datetime.now().timestamp()}})
+            else:
+                await msg.finish(msg.locale.t('message.cooldown.manual', time=cooldown_time - time))
+        else:
+            cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
+
+
+def transform_alias(msg, command: str):
+    aliases = {k: v for k, v in msg.options.get('command_alias').items()}
+    command_split = msg.trigger_msg.split(' ')  # 切割消息
+    for pattern, replacement in aliases.items():
+        if re.search(r'\${[^}]*}', pattern):
+            # 使用正则表达式匹配并分隔多个连在一起的占位符
+            pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
+            # 匹配占位符
+            pattern_placeholders = re.findall(r'\$\{([^{}$]+)\}', pattern)
+            replacement_placeholders = re.findall(r'\$\{([^{}$]+)\}', replacement)
+
+            regex_pattern = re.escape(pattern)
+            for placeholder in pattern_placeholders:
+                regex_pattern = regex_pattern.replace(re.escape(f'${{{placeholder}}}'), r'(\S+)')  # 匹配非空格字符
+
+            match = re.match(regex_pattern, command)
+            if match:
+                result = replacement
+                groups = match.groups()
+                # 替换模板中的占位符
+                for i, placeholder in enumerate(pattern_placeholders):
+                    if i < len(groups):
+                        result = result.replace(f'${{{placeholder}}}', groups[i])
+                    else:
+                        result = result.replace(f'${{{placeholder}}}', '')
+                # 检查未匹配的占位符并保留原始文本
+                for placeholder in replacement_placeholders:
+                    if placeholder not in pattern_placeholders:
+                        result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
+                    else:
+                        result = result.replace(f'${{{placeholder}}}', '')
+
+                Logger.debug(msg.prefixes[0] + result)
+                return msg.prefixes[0] + result
+        elif command_split[0] == pattern:
+            # 旧语法兼容
+            command_split[0] = msg.prefixes[0] + replacement  # 将自定义别名替换为命令
+            Logger.debug(' '.join(command_split))
+            return ' '.join(command_split)  # 重新连接消息
+        else:
+            pass
+
+    return command
+
+
+async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
     接收消息必经的预处理器
@@ -84,35 +167,31 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行
     :return: 无返回
     """
-    identify_str = f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}]'
+    identify_str = f'[{msg.target.sender_id}{
+        f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
-        MessageTaskManager.check(msg)
-        modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
-        modulesAliases = ModulesManager.return_modules_alias_map()
-        modulesRegex: Dict[str, RegexCommand] = ModulesManager.return_specified_type_modules(RegexCommand,
-                                                                                             targetFrom=msg.target.targetFrom)
+        asyncio.create_task(MessageTaskManager.check(msg))
+        modules = ModulesManager.return_modules_list(msg.target.target_from)
 
-        display = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
-        if len(display) == 0:
+        msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
+        if len(msg.trigger_msg) == 0:
             return
-        msg.trigger_msg = display
-        msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
-        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
-            or msg.target.senderId in msg.options.get('ban', []):
-            return ExecutionLockList.remove(msg)
+        if msg.info.is_in_block_list and not msg.info.is_in_allow_list and not msg.info.is_super_user \
+                or msg.target.sender_id in msg.options.get('ban', []):
+            return
+
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
-        get_custom_alias = msg.options.get('command_alias')
-        if get_custom_alias is not None:
-            get_display_alias = get_custom_alias.get(msg.trigger_msg)
-            if get_display_alias is not None:
-                msg.trigger_msg = display = get_display_alias
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
-        if get_custom_prefix is not None:
+        if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
+        msg.prefixes = [i for i in set(msg.prefixes) if i.strip()]  # 过滤重复与空白前缀
+
+        if msg.options.get('command_alias'):
+            msg.trigger_msg = transform_alias(msg, msg.trigger_msg)  # 将自定义别名替换为命令
 
         disable_prefix = False
-        if prefix is not None:  # 如果上游指定了命令前缀，则使用指定的命令前缀
+        if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
             if '' in prefix:
                 disable_prefix = True
             msg.prefixes.clear()
@@ -120,249 +199,336 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         display_prefix = ''
         in_prefix_list = False
         for cp in msg.prefixes:  # 判断是否在命令前缀列表中
-            if display.startswith(cp):
+            if msg.trigger_msg.startswith(cp):
                 display_prefix = cp
                 in_prefix_list = True
                 break
 
         if in_prefix_list or disable_prefix:  # 检查消息前缀
-            if len(display) <= 1 or display[:2] == '~~':  # 排除 ~~xxx~~ 的情况
+            if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == '~~':  # 排除 ~~xxx~~ 的情况
                 return
+            if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
+                msg.prefixes.remove(display_prefix)
+                msg.prefixes.insert(0, display_prefix)
 
             Logger.info(
-                f'{identify_str} -> [Bot]: {display}')
+                f'{identify_str} -> [Bot]: {msg.trigger_msg}')
 
             if disable_prefix and not in_prefix_list:
-                command = display
+                command = msg.trigger_msg
             else:
-                command = display[len(display_prefix):]
-
-            command_list = removeIneffectiveText(display_prefix, command.split('&&'))  # 并行命令处理
-
-            if len(command_list) > 5 and not senderInfo.query.isSuperUser:
-                return await msg.sendMessage('你不是本机器人的超级管理员，最多只能并排执行5个命令。')
+                command = msg.trigger_msg[len(display_prefix):]
 
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)
             else:
-                return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
-            for command in command_list:
-                no_alias = False
-                for moduleName in modules:
-                    if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
-                        no_alias = True
-                if not no_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
-                    alias_list = []
-                    for alias in modulesAliases:
-                        if command.startswith(alias) and not command.startswith(modulesAliases[alias]):
-                            alias_list.append(alias)
-                    if alias_list:
-                        max_ = max(alias_list, key=len)
-                        command = command.replace(max_, modulesAliases[max_], 1)
-                command_split: list = command.split(' ')  # 切割消息
-                msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
-                command_first_word = command_split[0].lower()
+            not_alias = False
+            for moduleName in modules:
+                if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
+                    not_alias = True
+            if not not_alias:
+                for um in current_unloaded_modules:
+                    if command.startswith(um):
+                        not_alias = True
+            if not not_alias:
+                for em in err_modules:
+                    if command.startswith(em):
+                        not_alias = True
+            if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
+                alias_list = []
+                for alias in ModulesManager.modules_aliases:
+                    if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
+                        alias_list.append(alias)
+                if alias_list:
+                    max_ = max(alias_list, key=len)
+                    command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+            command_split: list = command.split(' ')  # 切割消息
+            msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
+            command_first_word = command_split[0].lower()
 
-                if command_first_word not in modules:
-                    """if msg.options.get('typo_check', True):  # 判断是否开启错字检查  todo: alias检查
-                        nmsg, command_first_word, command_split = await typo_check(msg, display_prefix, modules,
-                                                                                   command_first_word, command_split)
-                        if nmsg is None:
-                            return ExecutionLockList.remove(msg)
-                        msg = nmsg"""
+            mute = True if command_first_word == 'mute' else False
 
-                sudo = False
-                mute = False
-                if command_first_word == 'mute':
-                    mute = True
-                if command_first_word == 'sudo':
-                    if not msg.checkSuperUser():
-                        return await msg.sendMessage('你不是本机器人的超级管理员，无法使用sudo命令。')
-                    sudo = True
-                    del command_split[0]
-                    command_first_word = command_split[0].lower()
-                    msg.trigger_msg = ' '.join(command_split)
+            in_mute = msg.muted
+            if in_mute and not mute:
+                return
 
-                in_mute = msg.muted
-                if in_mute and not mute:
-                    return ExecutionLockList.remove(msg)
+            if command_first_word in modules:  # 检查触发命令是否在模块列表中
+                time_start = datetime.now()
+                try:
+                    await check_target_cooldown(msg)
+                    if enable_tos:
+                        await temp_ban_check(msg)
 
-                if command_first_word in modules:  # 检查触发命令是否在模块列表中
-                    time_start = datetime.now()
-                    try:
-                        if enable_tos:
-                            await temp_ban_check(msg)
+                    module: Module = modules[command_first_word]
+                    if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
+                        if module.desc:
+                            desc = msg.locale.t("parser.module.desc", desc=msg.locale.tl_str(module.desc))
 
-                        module = modules[command_first_word]
-                        if not isinstance(module, Command):  # 如果不是Command类，则展示模块简介
-                            if module.desc is not None:
-                                desc = f'介绍：\n{module.desc}'
-                                if command_first_word not in msg.enabled_modules:
-                                    desc += f'\n{command_first_word}模块未启用，请发送{msg.prefixes[0]}enable {command_first_word}启用本模块。'
-                                await msg.sendMessage(desc)
-                            continue
-
-                        if module.required_superuser:
-                            if not msg.checkSuperUser():
-                                await msg.sendMessage('你没有使用该命令的权限。')
-                                continue
-                        elif not module.base:
-                            if command_first_word not in msg.enabled_modules and not sudo and require_enable_modules:  # 若未开启
-                                await msg.sendMessage(
-                                    f'{command_first_word}模块未启用，请发送{msg.prefixes[0]}enable {command_first_word}启用本模块。')
-                                continue
-                        elif module.required_admin:
-                            if not await msg.checkPermission():
-                                await msg.sendMessage(
-                                    f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
-                                continue
-
-                        if not module.match_list.set:
-                            await msg.sendMessage(ErrorMessage(f'{command_first_word}未绑定任何命令，请联系开发者处理。'))
-                            continue
-
-                        none_doc = True  # 检查模块绑定的命令是否有文档
-                        for func in module.match_list.get(msg.target.targetFrom):
-                            if func.help_doc:
-                                none_doc = False
-                        if not none_doc:  # 如果有，送入命令解析
-                            async def execute_submodule(msg: MessageSession, command_first_word, command_split):
-                                try:
-                                    command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
-                                                                   command_prefixes=msg.prefixes)
-                                    try:
-                                        parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
-                                        submodule = parsed_msg[0]
-                                        msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
-                                        Logger.debug(msg.parsed_msg)
-
-                                        if submodule.required_superuser:
-                                            if not msg.checkSuperUser():
-                                                await msg.sendMessage('你没有使用该命令的权限。')
-                                                return
-                                        elif submodule.required_admin:
-                                            if not await msg.checkPermission():
-                                                await msg.sendMessage(
-                                                    f'此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
-                                                return
-
-                                        if not senderInfo.query.disable_typing:
-                                            async with msg.Typing(msg):
-                                                await parsed_msg[0].function(msg)  # 将msg传入下游模块
-                                        else:
-                                            await parsed_msg[0].function(msg)
-                                        raise FinishedException(msg.sent)  # if not using msg.finish
-                                    except InvalidCommandFormatError:
-                                        await msg.sendMessage(f'语法错误。\n使用~help {command_first_word}查看帮助。')
-                                        """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
-                                            nmsg, command_first_word, command_split = await typo_check(msg,
-                                                                                                       display_prefix,
-                                                                                                       modules,
-                                                                                                       command_first_word,
-                                                                                                       command_split)
-                                            if nmsg is None:
-                                                return ExecutionLockList.remove(msg)
-                                            msg = nmsg
-                                            await execute_submodule(msg, command_first_word, command_split)"""
-                                        return
-                                except InvalidHelpDocTypeError:
-                                    Logger.error(traceback.format_exc())
-                                    await msg.sendMessage(
-                                        ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
-                                    return
-
-                            await execute_submodule(msg, command_first_word, command_split)
-                        else:  # 如果没有，直接传入下游模块
-                            msg.parsed_msg = None
-                            for func in module.match_list.set:
-                                if not func.help_doc:
-                                    if not senderInfo.query.disable_typing:
-                                        async with msg.Typing(msg):
-                                            await func.function(msg)  # 将msg传入下游模块
-                                    else:
-                                        await func.function(msg)
-                                    raise FinishedException(msg.sent)  # if not using msg.finish
-                    except ActionFailed:
-                        ExecutionLockList.remove(msg)
-                        await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
-                        continue
-
-                    except FinishedException as e:
-                        time_used = datetime.now() - time_start
-                        Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
-                                    f'Times take up: {str(time_used)}')
-                        if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
-                            await msg_counter(msg, msg.trigger_msg)
+                            if command_first_word not in msg.enabled_modules:
+                                desc += '\n' + msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
+                                                            prefix=msg.prefixes[0])
+                            await msg.send_message(desc)
                         else:
-                            Logger.debug(f'Tos is disabled, check the configuration is correct.')
-                        ExecutionLockList.remove(msg)
-                        if enable_analytics:
-                            BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
-                        continue
+                            await msg.send_message(ErrorMessage("{error.module.unbound}", module=command_first_word))
+                        return
 
-                    except NoReportException as e:
-                        Logger.error(traceback.format_exc())
-                        ExecutionLockList.remove(msg)
-                        await msg.sendMessage('执行命令时发生错误：\n' + str(e) + '\n此问题并非机器人程序错误（API请求出错等），'
-                                                                                 '请勿将此消息报告给机器人开发者。')
-                        continue
+                    if module.required_base_superuser:
+                        if msg.target.sender_id not in base_superuser_list:
+                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                            return
+                    elif module.required_superuser:
+                        if not msg.check_super_user():
+                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                            return
+                    elif not module.base:
+                        if command_first_word not in msg.enabled_modules and require_enable_modules:  # 若未开启
+                            await msg.send_message(
+                                msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
+                                             prefix=msg.prefixes[0]))
+                            return
+                    elif module.required_admin:
+                        if not await msg.check_permission():
+                            await msg.send_message(msg.locale.t("parser.admin.module.permission.denied",
+                                                                module=command_first_word))
+                            return
 
-                    except Exception as e:
-                        Logger.error(traceback.format_exc())
-                        ExecutionLockList.remove(msg)
-                        await msg.sendMessage(ErrorMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e)))
-                        continue
-            ExecutionLockList.remove(msg)
+                    none_doc = True  # 检查模块绑定的命令是否有文档
+                    for func in module.command_list.get(msg.target.target_from):
+                        if func.help_doc:
+                            none_doc = False
+                    if not none_doc:  # 如果有，送入命令解析
+                        async def execute_submodule(msg: Bot.MessageSession, command_first_word, command_split):
+                            try:
+                                command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
+                                                               command_prefixes=msg.prefixes)
+                                try:
+                                    parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
+                                    submodule = parsed_msg[0]
+                                    msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
+                                    Logger.debug(msg.parsed_msg)
+
+                                    if submodule.required_base_superuser:
+                                        if msg.target.sender_id not in base_superuser_list:
+                                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                                            return
+                                    elif submodule.required_superuser:
+                                        if not msg.check_super_user():
+                                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                                            return
+                                    elif submodule.required_admin:
+                                        if not await msg.check_permission():
+                                            await msg.send_message(
+                                                msg.locale.t("parser.admin.submodule.permission.denied"))
+                                            return
+
+                                    if msg.target.target_from in submodule.exclude_from or \
+                                        ('*' not in submodule.available_for and
+                                         msg.target.target_from not in submodule.available_for):
+                                        raise InvalidCommandFormatError
+
+                                    kwargs = {}
+                                    func_params = inspect.signature(submodule.function).parameters
+                                    if len(func_params) > 1 and msg.parsed_msg:
+                                        parsed_msg_ = msg.parsed_msg.copy()
+                                        for param_name, param_obj in func_params.items():
+                                            if param_obj.annotation == Bot.MessageSession:
+                                                kwargs[param_name] = msg
+                                            param_name_ = param_name
+                                            if (param_name__ := f'<{param_name}>') in parsed_msg_:
+                                                param_name_ = param_name__
+
+                                            if param_name_ in parsed_msg_:
+                                                kwargs[param_name] = parsed_msg_[param_name_]
+                                                try:
+                                                    if param_obj.annotation == int:
+                                                        kwargs[param_name] = int(parsed_msg_[param_name_])
+                                                    elif param_obj.annotation == float:
+                                                        kwargs[param_name] = float(parsed_msg_[param_name_])
+                                                    elif param_obj.annotation == bool:
+                                                        kwargs[param_name] = bool(parsed_msg_[param_name_])
+                                                    del parsed_msg_[param_name_]
+                                                except (KeyError, ValueError):
+                                                    raise InvalidCommandFormatError
+                                            else:
+                                                if param_name_ not in kwargs:
+                                                    if param_obj.default is not inspect.Parameter.empty:
+                                                        kwargs[param_name_] = param_obj.default
+                                                    else:
+                                                        kwargs[param_name_] = None
+
+                                    else:
+                                        kwargs[func_params[list(func_params.keys())[0]].name] = msg
+
+                                    if not msg.info.disable_typing:
+                                        async with msg.Typing(msg):
+                                            await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
+                                    else:
+                                        await parsed_msg[0].function(**kwargs)
+                                    raise FinishedException(msg.sent)  # if not using msg.finish
+                                except InvalidCommandFormatError:
+                                    await msg.send_message(msg.locale.t("parser.command.format.invalid",
+                                                                        module=command_first_word,
+                                                                        prefix=msg.prefixes[0]))
+                                    """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
+                                        nmsg, command_first_word, command_split = await typo_check(msg,
+                                                                                                   display_prefix,
+                                                                                                   modules,
+                                                                                                   command_first_word,
+                                                                                                   command_split)
+                                        if nmsg is None:
+                                            return ExecutionLockList.remove(msg)
+                                        msg = nmsg
+                                        await execute_submodule(msg, command_first_word, command_split)"""
+                                    return
+                            except InvalidHelpDocTypeError:
+                                Logger.error(traceback.format_exc())
+                                await msg.send_message(
+                                    ErrorMessage("{error.module.helpdoc.invalid}", module=command_first_word))
+                                return
+
+                        await execute_submodule(msg, command_first_word, command_split)
+                    else:  # 如果没有，直接传入下游模块
+                        msg.parsed_msg = None
+                        for func in module.command_list.set:
+                            if not func.help_doc:
+                                if not msg.info.disable_typing:
+                                    async with msg.Typing(msg):
+                                        await func.function(msg)  # 将msg传入下游模块
+                                else:
+                                    await func.function(msg)
+                                raise FinishedException(msg.sent)  # if not using msg.finish
+                except SendMessageFailed:
+                    if msg.target.target_from == 'QQ|Group':  # wtf onebot 11
+                        if qq_frame_type() == 'ntqq':
+                            await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                                               emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
+                        elif qq_frame_type() == 'lagrange':
+                            await msg.call_api('group_poke', group_id=msg.session.target,
+                                               user_id=int(Config("qq_account", cfg_type=(int, str))))
+                        elif qq_frame_type() == 'shamrock':
+                            await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                               message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                        elif qq_frame_type() == 'mirai':
+                            await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                               message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                        else:
+                            pass
+                    await msg.send_message(msg.locale.t("error.message.limited"))
+
+                except FinishedException as e:
+                    time_used = datetime.now() - time_start
+                    Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
+                                f'Times take up: {str(time_used)}')
+                    if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module'):
+                        if enable_tos:
+                            try:
+                                await tos_msg_counter(msg, msg.trigger_msg)
+                            except AbuseWarning as e:
+                                await tos_abuse_warning(msg, str(e))
+                        else:
+                            Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
+                    if enable_analytics:
+                        BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
+
+                except AbuseWarning as e:
+                    await tos_abuse_warning(msg, str(e))
+
+                except NoReportException as e:
+                    Logger.error(traceback.format_exc())
+                    err_msg = msg.locale.tl_str(str(e))
+                    await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
+
+                except Exception as e:
+                    tb = traceback.format_exc()
+                    Logger.error(tb)
+                    if "timeout" in str(e).lower().replace(' ', ''):
+                        timeout = True
+                        errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
+                    else:
+                        timeout = False
+                        errmsg = msg.locale.t('error.prompt.report', detail=str(e))
+
+                    if Config('bug_report_url', cfg_type=str):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
+                    await msg.send_message(errmsg)
+
+                    if not timeout and report_targets:
+                        for target in report_targets:
+                            if f := await Bot.FetchTarget.fetch_target(target):
+                                await f.send_direct_message(
+                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), disable_secret_check=True)
+            if command_first_word in current_unloaded_modules:
+                await msg.send_message(
+                    msg.locale.t('parser.module.unloaded', module=command_first_word))
+            elif command_first_word in err_modules:
+                await msg.send_message(msg.locale.t('error.module.unloaded', module=command_first_word))
+
             return msg
+        if msg.muted:
+            return
         if running_mention:
-            if display.find('小可') != -1:
+            if msg.trigger_msg.lower().find(msg.name.lower()) != -1:
                 if ExecutionLockList.check(msg):
-                    return await msg.sendMessage('您先前的命令正在执行中。')
+                    return await msg.send_message(msg.locale.t('parser.command.running.prompt2'))
 
-        for regex in modulesRegex:  # 遍历正则模块列表
+        for m in modules:  # 遍历模块
             try:
-                if regex in msg.enabled_modules:  # 如果模块已启用
-                    regex_module = modulesRegex[regex]
+                if m in msg.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
+                    regex_module = modules[m]
 
-                    if regex_module.required_superuser:
-                        if not msg.checkSuperUser():
+                    if regex_module.required_base_superuser:
+                        if msg.target.sender_id not in base_superuser_list:
+                            continue
+                    elif regex_module.required_superuser:
+                        if not msg.check_super_user():
                             continue
                     elif regex_module.required_admin:
-                        if not await msg.checkPermission():
+                        if not await msg.check_permission():
                             continue
 
-                    for rfunc in regex_module.match_list.set:  # 遍历正则模块的表达式
+                    if msg.target.target_from in regex_module.exclude_from or \
+                        ('*' not in regex_module.available_for and
+                         msg.target.target_from not in regex_module.available_for):
+                        continue
+
+                    for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
                         time_start = datetime.now()
                         try:
                             msg.matched_msg = False
                             matched = False
                             if rfunc.mode.upper() in ['M', 'MATCH']:
-                                msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
-                                if msg.matched_msg is not None:
+                                msg.matched_msg = re.match(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                if msg.matched_msg:
                                     matched = True
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
-                                msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
-                                if msg.matched_msg and msg.matched_msg is not None:
+                                msg.matched_msg = re.findall(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                if msg.matched_msg:
                                     matched = True
 
-                            if matched:  # 如果匹配成功
+                            if matched and not (msg.target.target_from in regex_module.exclude_from or
+                                                ('*' not in regex_module.available_for and
+                                                 msg.target.target_from not in regex_module.available_for)):  # 如果匹配成功
                                 if rfunc.logging:
                                     Logger.info(
-                                        f'{identify_str} -> [Bot]: {display}')
+                                        f'{identify_str} -> [Bot]: {msg.trigger_msg}')
                                 if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
-                                if regex_module.required_superuser:
-                                    if not msg.checkSuperUser():
+                                if rfunc.show_typing:
+                                    await check_target_cooldown(msg)
+                                if rfunc.required_superuser:
+                                    if not msg.check_super_user():
                                         continue
-                                elif regex_module.required_admin:
-                                    if not await msg.checkPermission():
+                                elif rfunc.required_admin:
+                                    if not await msg.check_permission():
                                         continue
                                 if not ExecutionLockList.check(msg):
                                     ExecutionLockList.add(msg)
                                 else:
-                                    return await msg.sendMessage('您有命令正在执行，请稍后再试。')
-                                if rfunc.show_typing and not senderInfo.query.disable_typing:
+                                    return await msg.send_message(msg.locale.t("parser.command.running.prompt"))
+                                if rfunc.show_typing and not msg.info.disable_typing:
                                     async with msg.Typing(msg):
                                         await rfunc.function(msg)  # 将msg传入下游模块
                                 else:
@@ -374,41 +540,81 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 Logger.info(
                                     f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                     f'Times take up: {time_used}')
-                            ExecutionLockList.remove(msg)
 
                             if enable_analytics and rfunc.show_typing:
-                                BotDBUtil.Analytics(msg).add(msg.trigger_msg, regex, 'regex')
+                                BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, 'regex')
 
                             if enable_tos and rfunc.show_typing:
-                                await msg_counter(msg, msg.trigger_msg)
+                                try:
+                                    await tos_msg_counter(msg, msg.trigger_msg)
+                                except AbuseWarning as e:
+                                    await tos_abuse_warning(msg, str(e))
                             else:
-                                Logger.debug(f'Tos is disabled.')
+                                Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
                             continue
 
-            except ActionFailed:
-                ExecutionLockList.remove(msg)
-                await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
-                continue
+                        except NoReportException as e:
+                            Logger.error(traceback.format_exc())
+                            err_msg = msg.locale.tl_str(str(e))
+                            await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
-            ExecutionLockList.remove(msg)
+                        except AbuseWarning as e:
+                            await tos_abuse_warning(msg, str(e))
+
+                        except Exception as e:
+                            tb = traceback.format_exc()
+                            Logger.error(tb)
+                            if "timeout" in str(e).lower().replace(' ', ''):
+                                timeout = True
+                                errmsg = msg.locale.t('error.prompt.timeout', detail=str(e))
+                            else:
+                                timeout = False
+                                errmsg = msg.locale.t('error.prompt.report', detail=str(e))
+
+                            if Config('bug_report_url', cfg_type=str):
+                                errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                              url=str(Url(Config('bug_report_url', cfg_type=str))))
+                            await msg.send_message(errmsg)
+
+                            if not timeout and report_targets:
+                                for target in report_targets:
+                                    if f := await Bot.FetchTarget.fetch_target(target):
+                                        await f.send_direct_message(
+                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), disable_secret_check=True)
+                        finally:
+                            ExecutionLockList.remove(msg)
+
+            except SendMessageFailed:
+                if msg.target.target_from == 'QQ|Group':  # wtf onebot 11
+                    if qq_frame_type() == 'ntqq':
+                        await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                                           emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
+                    elif qq_frame_type() == 'lagrange':
+                        await msg.call_api('group_poke', group_id=msg.session.target,
+                                           user_id=int(Config("qq_account", cfg_type=(int, str))))
+                    elif qq_frame_type() == 'shamrock':
+                        await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                           message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                    elif qq_frame_type() == 'mirai':
+                        await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                           message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                    else:
+                        pass
+                await msg.send_message((msg.locale.t("error.message.limited")))
+                continue
         return msg
-    except AbuseWarning as e:
-        if enable_tos:
-            await warn_target(msg, str(e))
-            temp_ban_counter[msg.target.senderId] = {'count': 1,
-                                                     'ts': datetime.now().timestamp()}
-            return
 
     except WaitCancelException:  # 出现于等待被取消的情况
-        Logger.warn('Waiting task cancelled by user.')
+        Logger.warning('Waiting task cancelled by user.')
 
     except Exception:
         Logger.error(traceback.format_exc())
-    ExecutionLockList.remove(msg)
+    finally:
+        ExecutionLockList.remove(msg)
 
 
-async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
+"""async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
     enabled_modules = []
     for m in msg.enabled_modules:
         if m in modules and isinstance(modules[m], Command):
@@ -445,7 +651,7 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
                                                                   1, 0.3)  # 进一步匹配命令
             if match_close_command:
                 match_split = match_close_command[0]
-                m_split_options = filter(None, re.split(r'(\[.*?])', match_split))  # 切割可选参数
+                m_split_options = filter(None, re.split(r'(\\[.*?])', match_split))  # 切割可选参数
                 old_command_split = command_split.copy()
                 del old_command_split[0]
                 new_command_split = [match_close_module[0]]
@@ -487,7 +693,7 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
                 new_command_display = " ".join(new_command_split)
                 if new_command_display != msg.trigger_msg:
                     wait_confirm = await msg.waitConfirm(
-                        f'您是否想要输入{display_prefix}{new_command_display}？')
+                        f'你是否想要输入{display_prefix}{new_command_display}？')
                     if wait_confirm:
                         command_split = new_command_split
                         command_first_word = new_command_split[0]
@@ -498,7 +704,7 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
                     new_command_display = f'{match_close_module[0]} {" ".join(command_split[1:])}'
                     if new_command_display != msg.trigger_msg:
                         wait_confirm = await msg.waitConfirm(
-                            f'您是否想要输入{display_prefix}{new_command_display}？')
+                            f'你是否想要输入{display_prefix}{new_command_display}？')
                         if wait_confirm:
                             command_split = [match_close_module[0]] + command_split[1:]
                             command_first_word = match_close_module[0]
@@ -509,10 +715,11 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
             new_command_display = f'{match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}'
             if new_command_display != msg.trigger_msg:
                 wait_confirm = await msg.waitConfirm(
-                    f'您是否想要输入{display_prefix}{new_command_display}？')
+                    f'你是否想要输入{display_prefix}{new_command_display}？')
                 if wait_confirm:
                     command_split = [match_close_module[0]]
                     command_first_word = match_close_module[0]
                     msg.trigger_msg = ' '.join(command_split)
                     return msg, command_first_word, command_split
     return None, None, None
+"""

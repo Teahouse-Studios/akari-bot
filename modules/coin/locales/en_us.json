@@ -1,0 +1,20 @@
+{
+    "coin.help": "Toss any number of coins.",
+    "coin.help.desc": "Toss coin.",
+    "coin.message.all.head": "They are all heads!",
+    "coin.message.all.prompt": "You toss ${count} coins...",
+    "coin.message.all.stand": "ALL STANDING UP?!",
+    "coin.message.all.tail": "They are all tails!",
+    "coin.message.invalid.amount": "Invalid number of coins.",
+    "coin.message.invalid.out_of_range": "You can only toss up to ${max} coins.",
+    "coin.message.mix.head": "${head} are heads",
+    "coin.message.mix.head_and_tail": "${head} are heads, ${tail} are tails",
+    "coin.message.mix.prompt": "You toss ${count} coins...",
+    "coin.message.mix.stand": "... and ${stand} are standing up!",
+    "coin.message.mix.tail": "${tail} are tails",
+    "coin.message.nocoin": "You toss no coin and nothing happened.",
+    "coin.message.single.head": "It is heads!",
+    "coin.message.single.prompt": "You toss a coin...",
+    "coin.message.single.stand": "It is standing up!",
+    "coin.message.single.tail": "It is tails!"
+}

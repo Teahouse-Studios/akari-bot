@@ -1,32 +1,42 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.builtins.utils import command_prefix
+from core.component import module
 
-p = on_command('prefix', required_admin=True, base=True)
+p = module('prefix', required_admin=True, base=True, doc=True)
 
 
-@p.handle('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}',
-          'reset {重置自定义机器人命令前缀}')
+@p.command('add <prefix> {{core.help.prefix.add}}',
+           'remove <prefix> {{core.help.prefix.remove}}',
+           'reset {{core.help.prefix.reset}}',
+           'list {{core.help.prefix.list}}')
 async def set_prefix(msg: Bot.MessageSession):
     prefixes = msg.options.get('command_prefix')
-    arg1 = msg.parsed_msg.get('<prefix>', False)
-    if prefixes is None:
+    prefix = msg.parsed_msg.get('<prefix>', False)
+    if not prefixes:
         prefixes = []
     if 'add' in msg.parsed_msg:
-        if arg1:
-            if arg1 not in prefixes:
-                prefixes.append(arg1)
+        if prefix:
+            if prefix not in prefixes:
+                prefixes.append(prefix)
                 msg.data.edit_option('command_prefix', prefixes)
-                await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
+                await msg.finish(msg.locale.t("core.message.prefix.add.success", prefix=prefix))
             else:
-                await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
+                await msg.finish(msg.locale.t("core.message.prefix.add.already"))
     elif 'remove' in msg.parsed_msg:
-        if arg1:
-            if arg1 in prefixes:
-                prefixes.remove(arg1)
+        if prefix:
+            if prefix in prefixes:
+                prefixes.remove(prefix)
                 msg.data.edit_option('command_prefix', prefixes)
-                await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
+                await msg.finish(msg.locale.t("core.message.prefix.remove.success", prefix=prefix))
             else:
-                await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
+                await msg.finish(msg.locale.t("core.message.prefix.remove.not_found"))
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_prefix', [])
-        await msg.sendMessage('已重置自定义命令前缀列表。')
+        await msg.finish(msg.locale.t("core.message.prefix.reset"))
+    elif 'list' in msg.parsed_msg:
+        default_msg = msg.locale.t('core.message.prefix.list.default', prefixes=', '.join(command_prefix))
+        if len(prefixes) == 0:
+            custom_msg = msg.locale.t("core.message.prefix.list.custom.none")
+        else:
+            custom_msg = msg.locale.t('core.message.prefix.list.custom', prefixes=', '.join(prefixes))
+        await msg.finish(f"{default_msg}\n{custom_msg}")

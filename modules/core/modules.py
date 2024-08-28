@@ -1,55 +1,71 @@
+import re
 import traceback
 
-from core.builtins import Image, Plain, Bot
-from core.component import on_command
+from config import Config, CFG
+from core.builtins import Bot, I18NContext, Image, Plain
+from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
-from core.extra import pir
-from core.loader import ModulesManager
+from core.loader import ModulesManager, current_unloaded_modules, err_modules
+from core.logger import Logger
 from core.parser.command import CommandParser
-from core.types import Command
+from core.utils.i18n import load_locale_file
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
-from textwrap import fill
 
-module = on_command('module',
-                    base=True,
-                    alias={'enable': 'module enable',
-                           'disable': 'module disable',
-                           'reload': 'module reload'},
-                    developers=['OasisAkari', 'Light-Beacon'],
-                    required_admin=True
-                    )
+m = module('module',
+           base=True,
+           alias={'enable': 'module enable',
+                  'disable': 'module disable',
+                  'load': 'module load',
+                  'reload': 'module reload',
+                  'unload': 'module unload'},
+           doc=True,
+           required_admin=True
+           )
 
 
-@module.handle(['enable <module>... {开启一个/多个模块}',
-                'enable all {开启所有模块}',
-                'disable <module>... {关闭一个/多个模块}',
-                'disable all {关闭所有模块。}',
-                'reload <module> ... {重载一个/多个模块。}',
-                'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
+@m.command(['enable <module>... {{core.help.module.enable}}',
+            'enable all {{core.help.module.enable_all}}',
+            'disable <module>... {{core.help.module.disable}}',
+            'disable all {{core.help.module.disable_all}}',
+            'reload <module> ...',
+            'load <module> ...',
+            'unload <module> ...',
+            'list [--legacy] {{core.help.module.list}}'],
+           options_desc={'--legacy': '{help.option.legacy}'},
+           exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
-        await modules_help(msg)
+        legacy = False
+        if msg.parsed_msg.get('--legacy', False):
+            legacy = True
+        await modules_help(msg, legacy)
     await config_modules(msg)
 
 
-@module.handle(['enable [-g] <module>... {开启一个/多个模块}',
-                'enable all [-g] {开启所有模块}',
-                'disable [-g] <module>... {关闭一个/多个模块}',
-                'disable all [-g] {关闭所有模块。}',
-                'reload <module> [-f] {重载一个模块。}',
-                'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
-               available_for=['QQ|Guild'])
+@m.command(['enable [-g] <module> ... {{core.help.module.enable}}',
+            'enable all [-g] {{core.help.module.enable_all}}',
+            'disable [-g]  <module> ... {{core.help.module.disable}}',
+            'disable all [-g] {{core.help.module.disable_all}}',
+            'reload <module> ...',
+            'load <module> ...',
+            'unload <module> ...',
+            'list [--legacy] {{core.help.module.list}}'],
+           options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
+           available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
-        await modules_help(msg)
+        legacy = False
+        if msg.parsed_msg.get('--legacy', False):
+            legacy = True
+        await modules_help(msg, legacy)
     await config_modules(msg)
 
 
 async def config_modules(msg: Bot.MessageSession):
-    alias = ModulesManager.return_modules_alias_map()
-    modules_ = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
+    alias = ModulesManager.modules_aliases
+    modules_ = ModulesManager.return_modules_list(
+        target_from=msg.target.target_from)
     enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
     wait_config = [msg.parsed_msg.get(
         '<module>')] + msg.parsed_msg.get('...', [])
@@ -69,52 +85,55 @@ async def config_modules(msg: Bot.MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if isinstance(modules_[function], Command) and (
-                    modules_[function].base or modules_[function].required_superuser):
+                if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
                     continue
                 enable_list.append(function)
         else:
             for module_ in wait_config_list:
                 if module_ not in modules_:
-                    msglist.append(f'失败：“{module_}”模块不存在')
+                    msglist.append(msg.locale.t("core.message.module.enable.not_found", module=module_))
                 else:
-                    if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(f'失败：你没有打开“{module_}”的权限。')
-                    elif isinstance(modules_[module_], Command) and modules_[module_].base:
-                        msglist.append(f'失败：“{module_}”为基础模块。')
+                    if modules_[module_].required_superuser and not msg.check_super_user():
+                        msglist.append(msg.locale.t("cparser.superuser.permission.denied"))
+                    elif modules_[module_].base:
+                        msglist.append(msg.locale.t("core.message.module.enable.already", module=module_))
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
-                        if recommend is not None:
+                        if recommend:
                             for r in recommend:
                                 if r not in enable_list and r not in enabled_modules_list:
                                     recommend_modules_list.append(r)
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
+                query = BotDBUtil.TargetInfo(f'{msg.target.target_from}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
-                msglist.append(f'成功：为所有文字频道打开“{x}”模块')
+                msglist.append(msg.locale.t("core.message.module.enable.qqchannel_global.success", module=x))
         else:
             if msg.data.enable(enable_list):
                 for x in enable_list:
                     if x in enabled_modules_list:
-                        msglist.append(f'失败：“{x}”模块已经开启')
+                        msglist.append(msg.locale.t("core.message.module.enable.already", module=x))
                     else:
-                        msglist.append(f'成功：打开模块“{x}”')
+                        msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
+                        support_lang = modules_[x].support_languages
+                        if support_lang:
+                            if msg.locale.locale not in support_lang:
+                                msglist.append(msg.locale.t("core.message.module.unsupported_language",
+                                                            module=x))
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
+                    recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.recommends.help", module=m
+                                                                        ))
 
-                    if modules_[m].desc is not None:
-                        recommend_modules_help_doc_list.append(
-                            modules_[m].desc)
-                    if isinstance(modules_[m], Command):
-                        hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
-                                             command_prefixes=msg.prefixes).return_formatted_help_doc()
-                        recommend_modules_help_doc_list.append(hdoc)
+                    if modules_[m].desc:
+                        recommend_modules_help_doc_list.append(msg.locale.tl_str(modules_[m].desc))
+                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
+                                         command_prefixes=msg.prefixes).return_formatted_help_doc()
+                    recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
     elif msg.parsed_msg.get('disable', False):
@@ -123,136 +142,262 @@ async def config_modules(msg: Bot.MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if isinstance(modules_[function], Command) and (
-                    modules_[function].base or modules_[function].required_superuser):
+                if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
                     continue
                 disable_list.append(function)
         else:
             for module_ in wait_config_list:
                 if module_ not in modules_:
-                    msglist.append(f'失败：“{module_}”模块不存在')
+                    msglist.append(msg.locale.t("core.message.module.disable.not_found", module=module_))
                 else:
-                    if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(f'失败：你没有关闭“{module_}”的权限。')
-                    elif isinstance(modules_[module_], Command) and modules_[module_].base:
-                        msglist.append(f'失败：“{module_}”为基础模块，无法关闭。')
+                    if modules_[module_].required_superuser and not msg.check_super_user():
+                        msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+                    elif modules_[module_].base:
+                        msglist.append(msg.locale.t("core.message.module.disable.base", module=module_))
                     else:
                         disable_list.append(module_)
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
+                query = BotDBUtil.TargetInfo(f'{msg.target.target_from}|{x}')
                 query.disable(disable_list)
             for x in disable_list:
-                msglist.append(f'成功：为所有文字频道关闭“{x}”模块')
+                msglist.append(msg.locale.t("core.message.module.disable.qqchannel_global.success", module=x))
         else:
             if msg.data.disable(disable_list):
                 for x in disable_list:
                     if x not in enabled_modules_list:
-                        msglist.append(f'失败：“{x}”模块已经关闭')
+                        msglist.append(msg.locale.t("core.message.module.disable.already", module=x))
                     else:
-                        msglist.append(f'成功：关闭模块“{x}”')
+                        msglist.append(msg.locale.t("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get('reload', False):
-        if msg.checkSuperUser():
-            if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
-                msglist.append(module_reload(module_))
-            elif module_ not in modules_:
-                msglist.append(f'失败：“{module_}”模块尚未绑定')
-            else:
-                if isinstance(modules_[module_], Command) and modules_[module_].base:
-                    msglist.append(f'失败：“{module_}”为基础模块，无法重载。')
+        if msg.check_super_user():
+            def module_reload(module, extra_modules, base_module=False):
+                reload_count = ModulesManager.reload_module(module)
+                if base_module and reload_count >= 1:
+                    return msg.locale.t("core.message.module.reload.base.success")
+                elif reload_count > 1:
+                    return msg.locale.t('core.message.module.reload.success', module=module) + \
+                        ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + \
+                        '\n' + msg.locale.t('core.message.module.reload.with', reload_count=reload_count - 1)
+                elif reload_count == 1:
+                    return msg.locale.t('core.message.module.reload.success', module=module) + \
+                        ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + \
+                        '\n' + msg.locale.t('core.message.module.reload.no_more')
+                else:
+                    return msg.locale.t("core.message.module.reload.failed")
+
+            for module_ in wait_config_list:
+                base_module = False
+                if module_ not in modules_:
+                    msglist.append(msg.locale.t("core.message.module.reload.not_found", module=module_))
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
-                    if len(extra_reload_modules):
-                        confirm = await msg.waitConfirm('该操作将额外同时重载以下模块：\n' +
-                                                        '\n'.join(extra_reload_modules) +
-                                                        '\n是否继续?')
+                    if modules_[module_].base:
+                        if Config('allow_reload_base', False):
+                            confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
+                                                             append_instruction=False)
+                            if confirm:
+                                base_module = True
+                            else:
+                                await msg.finish()
+                        else:
+                            await msg.finish(msg.locale.t("core.message.module.reload.base.failed", module=module_))
+
+                    elif len(extra_reload_modules):
+                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
+                                                                      modules='\n'.join(extra_reload_modules)), append_instruction=False)
                         if not confirm:
                             await msg.finish()
-                            return
-                    msglist.append(module_reload(module_, extra_reload_modules))
+                    unloaded_list = Config('unloaded_modules', [])
+                    if unloaded_list and module_ in unloaded_list:
+                        unloaded_list.remove(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                    msglist.append(module_reload(module_, extra_reload_modules, base_module))
+
+            locale_err = load_locale_file()
+            if len(locale_err) != 0:
+                msglist.append(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
         else:
-            msglist.append(f'失败：你没有重载模块的权限。')
-    if msglist is not None:
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+    elif msg.parsed_msg.get('load', False):
+        if msg.check_super_user():
+
+            for module_ in wait_config_list:
+                if module_ not in current_unloaded_modules:
+                    msglist.append(msg.locale.t("core.message.module.load.not_found"))
+                    continue
+                if ModulesManager.load_module(module_):
+                    msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
+                    unloaded_list = Config('unloaded_modules', [])
+                    if unloaded_list and module_ in unloaded_list:
+                        unloaded_list.remove(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                else:
+                    msglist.append(msg.locale.t("core.message.module.load.failed"))
+
+        else:
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+
+    elif msg.parsed_msg.get('unload', False):
+        if msg.check_super_user():
+
+            for module_ in wait_config_list:
+                if module_ not in modules_:
+                    if module_ in err_modules:
+                        if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm"), append_instruction=False):
+                            unloaded_list = Config('unloaded_modules', [])
+                            if not unloaded_list:
+                                unloaded_list = []
+                            if module_ not in unloaded_list:
+                                unloaded_list.append(module_)
+                                CFG.write('unloaded_modules', unloaded_list)
+                            msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                            err_modules.remove(module_)
+                            current_unloaded_modules.append(module_)
+                        else:
+                            await msg.finish()
+                    else:
+                        msglist.append(msg.locale.t("core.message.module.unload.not_found"))
+                    continue
+                if modules_[module_].base:
+                    msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
+                    continue
+                if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm"), append_instruction=False):
+                    if ModulesManager.unload_module(module_):
+                        msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                        unloaded_list = Config('unloaded_modules', [])
+                        if not unloaded_list:
+                            unloaded_list = []
+                        unloaded_list.append(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                else:
+                    await msg.finish()
+
+        else:
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+
+    if msglist:
         if not recommend_modules_help_doc_list:
             await msg.finish('\n'.join(msglist))
         else:
-            await msg.sendMessage('\n'.join(msglist))
+            await msg.send_message('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
-        confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
-                                        '\n'.join(recommend_modules_list) + '\n\n' +
-                                        '\n'.join(recommend_modules_help_doc_list) +
-                                        '\n是否一并打开？')
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
+                                                      modules='\n'.join(recommend_modules_list) + '\n\n' +
+                                                      '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):
                 msglist = []
                 for x in recommend_modules_list:
-                    msglist.append(f'成功：打开模块“{x}”')
+                    msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
                 await msg.finish('\n'.join(msglist))
-    else:
-        await msg.finish()
-
-
-hlp = on_command('help',
-                 base=True,
-                 developers=['OasisAkari', 'Dianliang233'],
-                 )
-
-
-@hlp.handle('<module> {查看一个模块的详细信息}')
-async def bot_help(msg: Bot.MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
-    developers = ModulesManager.return_modules_developers_map()
-    alias = ModulesManager.return_modules_alias_map()
-    if msg.parsed_msg is not None:
-        msgs = []
-        help_name = msg.parsed_msg['<module>']
-        if help_name in alias:
-            help_name = alias[help_name]
-        if help_name in module_list:
-            module_ = module_list[help_name]
-            if module_.desc is not None:
-                msgs.append(module_.desc)
-            if isinstance(module_, Command):
-                help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
-                                      command_prefixes=msg.prefixes)
-                if help_.args is not None:
-                    msgs.append(help_.return_formatted_help_doc())
-        if msgs:
-            doc = '\n'.join(msgs)
-            module_alias = ModulesManager.return_module_alias(help_name)
-            malias = []
-            for a in module_alias:
-                malias.append(f'{a} -> {module_alias[a]}')
-            if malias:
-                doc += '\n命令别名：\n' + '\n'.join(malias)
-            if help_name in developers:
-                dev_list = developers[help_name]
-                if isinstance(dev_list, (list, tuple)):
-                    devs = '、'.join(
-                        developers[help_name]) if developers[help_name] is not None else ''
-                elif isinstance(dev_list, str):
-                    devs = dev_list
-                else:
-                    devs = '<数据类型错误，请联系开发者解决>'
-            else:
-                devs = ''
-            devs_msg = '\n模块作者：' + devs if devs != '' else ''
-            wiki_msg = f'\n模块文档：https://bot.teahouse.team/wiki/' + help_name
-            await msg.finish(Image(pir(doc + devs_msg, word_wrap=False)))
         else:
-            await msg.finish('此模块可能不存在，请检查输入。')
+            await msg.finish()
+    else:
+        return
 
 
-@hlp.handle('{查看帮助列表}')
+hlp = module('help', base=True, doc=True)
+
+
+@hlp.command('<module> [--legacy] {{core.help.help.detail}}',
+             options_desc={'--legacy': '{help.option.legacy}'})
+async def bot_help(msg: Bot.MessageSession, module: str):
+    module_list = ModulesManager.return_modules_list(
+        target_from=msg.target.target_from)
+    alias = ModulesManager.modules_aliases
+    if msg.parsed_msg:
+        msgs = []
+        if module in alias:
+            help_name = alias[module].split()[0]
+        else:
+            help_name = module.split()[0]
+        if help_name in current_unloaded_modules:
+            await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
+        elif help_name in err_modules:
+            await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
+        elif help_name in module_list:
+            module_ = module_list[help_name]
+            if module_.desc:
+                desc = module_.desc
+                if locale_str := re.match(r'\{(.*)}', desc):
+                    if locale_str:
+                        desc = msg.locale.t(locale_str.group(1))
+                msgs.append(desc)
+            help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
+                                  command_prefixes=msg.prefixes)
+            if help_.args:
+                msgs.append(help_.return_formatted_help_doc())
+
+            doc = '\n'.join(msgs)
+            if module_.regex_list.set:
+                doc += '\n' + msg.locale.t("core.message.help.support_regex")
+                for regex in module_.regex_list.set:
+                    pattern = None
+                    if isinstance(regex.pattern, str):
+                        pattern = regex.pattern
+                    elif isinstance(regex.pattern, re.Pattern):
+                        pattern = regex.pattern.pattern
+                    if pattern:
+                        desc = regex.desc
+                        if desc:
+                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
+                                                                  msg=msg.locale.tl_str(desc))
+                        else:
+                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
+            module_alias = module_.alias
+            malias = []
+            if module_alias:
+                for a in module_alias:
+                    malias.append(f'{a} -> {module_alias[a]}')
+            if module_.developers:
+                devs = msg.locale.t('message.delimiter').join(module_.developers)
+                devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
+            else:
+                devs_msg = ''
+            wiki_msg = ''
+            if module_.doc:
+                if Config('help_page_url', cfg_type=str):
+                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                                                   url=Config('help_page_url', cfg_type=str).replace('${module}', help_name))
+                elif Config('help_url', cfg_type=str):
+                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                                                   url=(CFG.get_url('help_url') + help_name))
+            if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
+                try:
+                    tables = [ImageTable([[doc, '\n'.join(malias), devs]],
+                                         [msg.locale.t("core.message.help.table.header.help"),
+                                          msg.locale.t("core.message.help.table.header.alias"),
+                                          msg.locale.t("core.message.help.author.type2")])]
+                    render = await image_table_render(tables)
+                    if render:
+                        await msg.finish([Image(render),
+                                          Plain(wiki_msg)])
+                except Exception:
+                    Logger.error(traceback.format_exc())
+            if malias:
+                doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
+            doc_msg = (doc + devs_msg + wiki_msg).lstrip()
+            if doc_msg != '':
+                await msg.finish(doc_msg)
+            else:
+                await msg.finish(msg.locale.t("core.help.none"))
+        else:
+            await msg.finish(msg.locale.t("core.message.help.not_found"))
+
+
+@hlp.command()
+@hlp.command('[--legacy] {{core.help.help}}',
+             options_desc={'--legacy': '{help.option.legacy}'})
 async def _(msg: Bot.MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
+    module_list = ModulesManager.return_modules_list(
+        target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
-    developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
-    if msg.Feature.image:
+    if not msg.parsed_msg and msg.Feature.image:
         try:
             tables = []
             essential = []
@@ -261,77 +406,113 @@ async def _(msg: Bot.MessageSession):
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
                 doc_ = []
-                if isinstance(module_, Command):
-                    help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
-                                          command_prefixes=msg.prefixes)
+                help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
+                                      command_prefixes=msg.prefixes)
 
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
-                    if help_.args is not None:
-                        doc_.append(help_.return_formatted_help_doc())
-                else:
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
+                if module_.desc:
+                    doc_.append(msg.locale.tl_str(module_.desc))
+                if help_.args:
+                    doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
+                if module_.regex_list.set:
+                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
+                    for regex in module_.regex_list.set:
+                        pattern = None
+                        if isinstance(regex.pattern, str):
+                            pattern = regex.pattern
+                        elif isinstance(regex.pattern, re.Pattern):
+                            pattern = regex.pattern.pattern
+                        if pattern:
+                            desc = regex.desc
+                            if desc:
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
+                                                                      msg=msg.locale.tl_str(desc))
+                            else:
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
                 appends.append(doc)
-                module_alias = ModulesManager.return_module_alias(
-                    module_.bind_prefix)
+                module_alias = module_.alias
                 malias = []
-                for a in module_alias:
-                    malias.append(f'{a} -> {module_alias[a]}')
+                if module_alias:
+                    for a in module_alias:
+                        malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
-                appends.append('、'.join(developers[x]) if developers.get(
-                    x) is not None else '')
-                if isinstance(module_, Command) and module_.base:
+                if module_.developers:
+                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
+                if module_.base and not (
+                        module_.hidden or module_.required_superuser or module_.required_base_superuser):
                     essential.append(appends)
-                if x in target_enabled_list:
+                if x in target_enabled_list and not (
+                        module_.hidden or module_.required_superuser or module_.required_base_superuser):
                     m.append(appends)
             if essential:
                 tables.append(ImageTable(
-                    essential, ['基础模块列表', '帮助信息', '命令别名', '作者']))
+                    essential, [msg.locale.t("core.message.help.table.header.base"),
+                                msg.locale.t("core.message.help.table.header.help"),
+                                msg.locale.t("core.message.help.table.header.alias"),
+                                msg.locale.t("core.message.help.author.type2")]))
             if m:
-                tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
+                tables.append(ImageTable(m, [msg.locale.t("core.message.help.table.header.external"),
+                                             msg.locale.t("core.message.help.table.header.help"),
+                                             msg.locale.t("core.message.help.table.header.alias"),
+                                             msg.locale.t("core.message.help.author.type2")]))
             if tables:
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    await msg.finish([Image(render),
-                                      Plain(
-                                          f'此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用{msg.prefixes[0]}module list命令。'
-                                          '\n你也可以通过查阅文档获取帮助：'
-                                          '\nhttps://bot.teahouse.team/wiki/'
-                                          '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
-                                          '\nhttps://afdian.net/@teahouse')])
+                    help_msg_list = [Image(render), I18NContext("core.message.help.more_information",
+                                                                prefix=msg.prefixes[0])]
+                    if Config('help_url', cfg_type=str):
+                        help_msg_list.append(I18NContext("core.message.help.more_information.document",
+                                                         url=Config('help_url', cfg_type=str)))
+                    if Config('donate_url', cfg_type=str):
+                        help_msg_list.append(I18NContext("core.message.help.more_information.donate",
+                                                         url=Config('donate_url', cfg_type=str)))
+                    await msg.finish(help_msg_list)
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
     if legacy_help:
-        help_msg = ['基础命令：']
+        help_msg = [msg.locale.t("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
-            if isinstance(module_list[x], Command) and module_list[x].base:
+            if module_list[x].base and not (
+                    module_list[x].hidden or module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(fill(' | '.join(essential), 28 * 2))
-        help_msg.append('模块扩展命令：')
+        help_msg.append(' | '.join(essential))
         module_ = []
         for x in module_list:
-            if x in target_enabled_list:
+            if x in target_enabled_list and not (
+                    module_list[x].hidden or module_list[x].required_superuser or module_list[x].required_base_superuser):
                 module_.append(x)
-        help_msg.append(fill(' | '.join(module_), 28 * 2))
-        help_msg_t = f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n' \
-                     f'你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
-        if msg.Feature.delete:
-            help_msg_t += '\n[本消息将在一分钟后撤回]'
-        send = await msg.sendMessage([Image(pir('\n'.join(help_msg))), Plain(help_msg_t)])
-        await msg.sleep(60)
-        await send.delete()
+        if module_:
+            help_msg.append(msg.locale.t("core.message.help.legacy.external"))
+            help_msg.append(' | '.join(module_))
+        help_msg.append(
+            msg.locale.t(
+                "core.message.help.legacy.more_information",
+                prefix=msg.prefixes[0]))
+        if Config('help_url', cfg_type=str):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.document",
+                    url=Config('help_url', cfg_type=str)))
+        if Config('donate_url', cfg_type=str):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.donate",
+                    url=Config('donate_url', cfg_type=str)))
+        await msg.finish('\n'.join(help_msg))
 
 
-async def modules_help(msg: Bot.MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
-    developers = ModulesManager.return_modules_developers_map()
+async def modules_help(msg: Bot.MessageSession, legacy):
+    module_list = ModulesManager.return_modules_list(
+        target_from=msg.target.target_from)
     legacy_help = True
-    if msg.Feature.image:
+    help_msg = [msg.locale.t("core.message.module.list.prompt", prefix=msg.prefixes[0])]
+    if Config('help_url', cfg_type=str):
+        help_msg.append(msg.locale.t(
+            "core.message.help.more_information.document",
+                        url=Config('help_url', cfg_type=str)))
+    if msg.Feature.image and not legacy:
         try:
             tables = []
             m = []
@@ -339,63 +520,75 @@ async def modules_help(msg: Bot.MessageSession):
                 module_ = module_list[x]
                 if x[0] == '_':
                     continue
-                if isinstance(module_, Command) and (module_.base or module_.required_superuser):
+                if module_.base or module_.hidden or module_.required_superuser or module_.required_base_superuser:
                     continue
                 appends = [module_.bind_prefix]
                 doc_ = []
-                if isinstance(module_, Command):
-                    help_ = CommandParser(
-                        module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
-                    if help_.args is not None:
-                        doc_.append(help_.return_formatted_help_doc())
-                else:
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
+                help_ = CommandParser(
+                    module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes, msg=msg)
+                if module_.desc:
+                    doc_.append(msg.locale.tl_str(module_.desc))
+                if help_.args:
+                    doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
+                if module_.regex_list.set:
+                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
+                    for regex in module_.regex_list.set:
+                        pattern = None
+                        if isinstance(regex.pattern, str):
+                            pattern = regex.pattern
+                        elif isinstance(regex.pattern, re.Pattern):
+                            pattern = regex.pattern.pattern
+                        if pattern:
+                            desc = regex.desc
+                            if desc:
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
+                                                                      msg=msg.locale.tl_str(desc))
+                            else:
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
                 appends.append(doc)
-                module_alias = ModulesManager.return_module_alias(
-                    module_.bind_prefix)
+                module_alias = module_.alias
                 malias = []
-                for a in module_alias:
-                    malias.append(f'{a} -> {module_alias[a]}')
+                if module_alias:
+                    for a in module_alias:
+                        malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
-                appends.append('、'.join(developers[x]) if developers.get(
-                    x) is not None else '')
+                if module_.developers:
+                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 m.append(appends)
             if m:
-                tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
+                tables.append(ImageTable(m, [msg.locale.t("core.message.help.table.header.external"),
+                                             msg.locale.t("core.message.help.table.header.help"),
+                                             msg.locale.t("core.message.help.table.header.alias"),
+                                             msg.locale.t("core.message.help.author.type2")]))
             if tables:
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    await msg.finish([Image(render)])
+                    await msg.finish([Image(render), Plain('\n'.join(help_msg))])
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
     if legacy_help:
-        help_msg = ['当前可用的模块有：']
         module_ = []
         for x in module_list:
             if x[0] == '_':
                 continue
-            if isinstance(module_list[x], Command) and (module_list[x].base or module_list[x].required_superuser):
+            if module_list[x].base or module_list[x].hidden or \
+                    module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(module_))
-        help_msg_t = '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
-        if msg.Feature.delete:
-            help_msg_t += '\n[本消息将在一分钟后撤回]'
-        send = await msg.sendMessage([Image(pir('\n'.join(help_msg), word_wrap=True)), Plain(help_msg_t)])
-        await msg.sleep(60)
-        await send.delete()
-
-
-def module_reload(module_, extra_modules):
-    reloadCnt = ModulesManager.reload_module(module_)
-    if reloadCnt > 1:
-        return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + f' ，以及该模块下的{reloadCnt - 1}个文件。'
-    elif reloadCnt == 1:
-        return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + ' ，未发现已加载的其余文件'
-    else:
-        return f'重载模块失败。'
+        if module_:
+            help_msg = [msg.locale.t("core.message.help.legacy.availables")]
+            help_msg.append(' | '.join(module_))
+        else:
+            help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
+        help_msg.append(
+            msg.locale.t(
+                "core.message.module.list.prompt",
+                prefix=msg.prefixes[0]))
+        if Config('help_url', cfg_type=str):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.document",
+                    url=Config('help_url', cfg_type=str)))
+        await msg.finish('\n'.join(help_msg))

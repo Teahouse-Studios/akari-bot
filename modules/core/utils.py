@@ -1,215 +1,283 @@
-import os
 import platform
-import time
-from datetime import datetime
+from datetime import datetime, timedelta, UTC
 
+import jwt
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.builtins import Bot, PrivateAssets
-from core.component import on_command
-from core.utils.i18n import get_available_locales, get_target_locale
+from config import Config
+from core.builtins import Bot, I18NContext, Url
+from core.component import module
+from core.utils.i18n import get_available_locales, Locale, load_locale_file
+from core.utils.info import Info
+from core.utils.web_render import WebRender
 from database import BotDBUtil
 
-version = on_command('version',
-                     base=True,
-                     desc='查看机器人的版本号',
-                     developers=['OasisAkari', 'Dianliang233']
-                     )
+import subprocess
+
+jwt_secret = Config('jwt_secret', cfg_type=str)
+
+ver = module('version', base=True, doc=True)
 
 
-@version.handle()
+@ver.command('{{core.help.version}}')
 async def bot_version(msg: Bot.MessageSession):
-    ver = os.path.abspath(PrivateAssets.path + '/version')
-    tag = os.path.abspath(PrivateAssets.path + '/version_tag')
-    open_version = open(ver, 'r')
-    open_tag = open(tag, 'r')
-    msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）\n（https://github.com/cloudw233/akari-haoye-bot）'
-    open_version.close()
-    await msg.finish(msgs, msgs)
+    if Info.version:
+        commit = Info.version[0:6]
+        send_msgs = [I18NContext('core.message.version', commit=commit)]
+        if Config('enable_commit_url', True):
+            repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
+            repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
+            commit_url = f"{repo_url}/commit/{commit}"
+            send_msgs.append(Url(commit_url))
+        await msg.finish(send_msgs)
+    else:
+        await msg.finish(msg.locale.t('core.message.version.unknown'))
 
 
-ping = on_command('ping',
-                  base=True,
-                  desc='获取机器人状态',
-                  developers=['OasisAkari']
-                  )
+ping = module('ping', base=True, doc=True)
 
 started_time = datetime.now()
 
 
-@ping.handle()
+@ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
-    checkpermisson = msg.checkSuperUser()
     result = "Pong!"
-    if checkpermisson:
-        timediff = str(datetime.now() - started_time)
-        Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
-        Cpu_usage = psutil.cpu_percent()
-        RAM = int(psutil.virtual_memory().total / (1024 * 1024))
-        RAM_percent = psutil.virtual_memory().percent
-        Swap = int(psutil.swap_memory().total / (1024 * 1024))
-        Swap_percent = psutil.swap_memory().percent
-        Disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
-        DiskTotal = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
-        """
-        try:
-            GroupList = len(await app.groupList())
-        except Exception:
-            GroupList = '无法获取'
-        try:
-            FriendList = len(await app.friendList())
-        except Exception:
-            FriendList = '无法获取'
-        """
-        BFH = r'%'
-        result += (f"\n系统运行时间：{Boot_Start}"
-                   + f"\n机器人已运行：{timediff}"
-                   + f"\nPython版本：{platform.python_version()}"
-                   + f"\n处理器型号：{get_cpu_info()['brand_raw']}"
-                   + f"\n当前处理器使用率：{Cpu_usage}{BFH}"
-                   + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
-                   + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
-                   + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
-                   # + f"\n已加入QQ群聊：{GroupList}"
-                   # + f" | 已添加QQ好友：{FriendList}" """
-                   )
+    timediff = str(datetime.now() - started_time).split('.')[0]
+    if msg.check_super_user():
+        boot_start = msg.ts2strftime(psutil.boot_time())
+        web_render_status = str(WebRender.status)
+        cpu_usage = psutil.cpu_percent()
+        ram = int(psutil.virtual_memory().total / (1024 * 1024))
+        ram_percent = psutil.virtual_memory().percent
+        swap = int(psutil.swap_memory().total / (1024 * 1024))
+        swap_percent = psutil.swap_memory().percent
+        disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
+        disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
+        result += '\n' + msg.locale.t("core.message.ping.detail",
+                                      system_boot_time=boot_start,
+                                      bot_running_time=timediff,
+                                      python_version=platform.python_version(),
+                                      web_render_status=web_render_status,
+                                      cpu_brand=get_cpu_info()['brand_raw'],
+                                      cpu_usage=cpu_usage,
+                                      ram=ram,
+                                      ram_percent=ram_percent,
+                                      swap=swap,
+                                      swap_percent=swap_percent,
+                                      disk_space=disk,
+                                      disk_space_total=disk_total)
+    else:
+        disk_percent = psutil.disk_usage('/').percent
+        result += '\n' + msg.locale.t("core.message.ping.simple",
+                                      bot_running_time=timediff,
+                                      disk_percent=disk_percent)
     await msg.finish(result)
 
+admin = module('admin',
+               base=True,
+               required_admin=True,
+               alias={'ban': 'admin ban',
+                      'unban': 'admin unban',
+                      'ban list': 'admin ban list'},
+               desc='{core.help.admin.desc}',
+               doc=True)
 
-admin = on_command('admin',
-                   base=True,
-                   required_admin=True,
-                   developers=['OasisAkari'],
-                   desc='一些群聊管理员可使用的命令。'
-                   )
 
-
-@admin.handle([
-                  'add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
-                  'del <UserID> {取消成员的机器人管理员}',
-                  'list {列出所有机器人管理员}'])
+@admin.command([
+    'add <user> {{core.help.admin.add}}',
+    'remove <user> {{core.help.admin.remove}}',
+    'list {{core.help.admin.list}}'])
 async def config_gu(msg: Bot.MessageSession):
     if 'list' in msg.parsed_msg:
         if msg.custom_admins:
-            await msg.finish(f"当前机器人群内手动设置的管理员：\n" + '\n'.join(msg.custom_admins))
+            await msg.finish(msg.locale.t("core.message.admin.list") + '\n'.join(msg.custom_admins))
         else:
-            await msg.finish("当前没有手动设置的机器人管理员。")
-    user = msg.parsed_msg['<UserID>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
+            await msg.finish(msg.locale.t("core.message.admin.list.none"))
+    user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t('core.message.admin.invalid', sender=msg.target.sender_from, prefix=msg.prefixes[0]))
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
-                await msg.finish("成功")
+                await msg.finish(msg.locale.t("core.message.admin.add.success", user=user))
         else:
-            await msg.finish("此成员已经是机器人管理员。")
-    if 'del' in msg.parsed_msg:
+            await msg.finish(msg.locale.t("core.message.admin.already"))
+    if 'remove' in msg.parsed_msg:
+        if user == msg.target.sender_id:
+            confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"))
+            if not confirm:
+                await msg.finish()
         if user:
             if msg.data.remove_custom_admin(user):
-                await msg.finish("成功")
+                await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
-@admin.handle('ban <UserID> {限制某人在本群使用机器人}', 'unban <UserID> {解除对某人在本群使用机器人的限制}')
+@admin.command('ban <user> {{core.help.admin.ban}}',
+               'unban <user> {{core.help.admin.unban}}',
+               'ban list {{core.help.admin.ban.list}}')
 async def config_ban(msg: Bot.MessageSession):
-    user = msg.parsed_msg['<UserID>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误，格式应为“{msg.target.senderFrom}|<用户ID>”')
-    if user == msg.target.senderId:
-        await msg.finish("你不可以对自己进行此操作！")
-    if 'ban' in msg.parsed_msg:
-        if user not in msg.options.get('ban', []):
-            msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
-            await msg.finish("成功")
+    admin_ban_list = msg.options.get('ban', [])
+    if 'list' in msg.parsed_msg:
+        if admin_ban_list:
+            await msg.finish(msg.locale.t("core.message.admin.ban.list") + '\n'.join(admin_ban_list))
         else:
-            await msg.finish("此成员已经被设置禁止使用机器人了。")
+            await msg.finish(msg.locale.t("core.message.admin.ban.list.none"))
+    user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t('core.message.admin.invalid', sender=msg.target.sender_from, prefix=msg.prefixes[0]))
+    if user == msg.target.sender_id:
+        await msg.finish(msg.locale.t("core.message.admin.ban.self"))
+    if 'ban' in msg.parsed_msg:
+        if user not in admin_ban_list:
+            msg.data.edit_option('ban', admin_ban_list + [user])
+            await msg.finish(msg.locale.t('success'))
+        else:
+            await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if 'unban' in msg.parsed_msg:
-        if user in (banlist := msg.options.get('ban', [])):
+        if user in (banlist := admin_ban_list):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
-            await msg.finish("成功")
+            await msg.finish(msg.locale.t('success'))
         else:
-            await msg.finish("此成员没有被设置禁止使用机器人。")
+            await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = on_command('locale',
-                    base=True,
-                    required_admin=True,
-                    developers=['Dianliang233'],
-                    desc='用于设置机器人运行语言。'
-                    )
+locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang', doc=True)
 
 
-@locale.handle(['<lang> {设置机器人运行语言}'])
-async def config_gu(msg: Bot.MessageSession):
-    t = get_target_locale(msg)
-    lang = msg.parsed_msg['<lang>']
-    if lang in ['zh_cn', 'en_us']:
-        if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
-            t = get_target_locale(msg)
-            await msg.finish(t.t('success'))
-    else:
-        await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
-
-
-whoami = on_command('whoami', developers=['Dianliang233'], base=True)
-
-
-@whoami.handle('{获取发送命令的账号在机器人内部的 ID}')
+@locale.command()
 async def _(msg: Bot.MessageSession):
-    rights = ''
-    if await msg.checkNativePermission():
-        rights += '\n（你拥有本对话的管理员权限）'
-    elif await msg.checkPermission():
-        rights += '\n（你拥有本对话的机器人管理员权限）'
-    if msg.checkSuperUser():
-        rights += '\n（你拥有本机器人的超级用户权限）'
-    await msg.finish(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
-                     disable_secret_check=True)
+    avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
+    res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
+        msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
+        msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
+    if Config('locale_url', cfg_type=str):
+        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', cfg_type=str))
+    await msg.finish(res)
 
 
-tog = on_command('toggle', developers=['OasisAkari'], base=True, required_admin=True)
-
-
-@tog.handle('typing {切换是否展示输入提示}')
-async def _(msg: Bot.MessageSession):
-    target = BotDBUtil.SenderInfo(msg.target.senderId)
-    state = target.query.disable_typing
-    if not state:
-        target.edit('disable_typing', True)
-        await msg.finish('成功关闭输入提示。')
+@locale.command('[<lang>] {{core.help.locale.set}}', required_admin=True)
+async def config_gu(msg: Bot.MessageSession, lang: str):
+    if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
+        await msg.finish(Locale(lang).t("success"))
     else:
-        target.edit('disable_typing', False)
-        await msg.finish('成功打开输入提示。')
+        avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
+        res = msg.locale.t("core.message.locale.set.invalid") + '\n' + \
+            msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
+        await msg.finish(res)
 
 
-@tog.handle('check {切换是否展示命令错字检查提示}')
+@locale.command('reload', required_superuser=True)
+async def reload_locale(msg: Bot.MessageSession):
+    err = load_locale_file()
+    if len(err) == 0:
+        await msg.finish(msg.locale.t("success"))
+    else:
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
+
+
+whoami = module('whoami', base=True, doc=True)
+
+
+@whoami.command('{{core.help.whoami}}')
+async def _(msg: Bot.MessageSession):
+    perm = ''
+    if await msg.check_native_permission():
+        perm += '\n' + msg.locale.t("core.message.whoami.admin")
+    elif await msg.check_permission():
+        perm += '\n' + msg.locale.t("core.message.whoami.botadmin")
+    if msg.check_super_user():
+        perm += '\n' + msg.locale.t("core.message.whoami.superuser")
+    await msg.finish(
+        msg.locale.t('core.message.whoami', sender=msg.target.sender_id, target=msg.target.target_id) + perm)
+
+
+setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alias='toggle')
+
+
+@setup.command('typing {{core.help.setup.typing}}')
+async def _(msg: Bot.MessageSession):
+    if not msg.info.disable_typing:
+        msg.info.edit('disable_typing', True)
+        await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
+    else:
+        msg.info.edit('disable_typing', False)
+        await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
+
+'''
+@setup.command('check {{core.help.setup.check}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
-    if state is None:
-        state = False
+    if state:
+        msg.data.edit_option('typo_check', False)
+        await msg.finish(msg.locale.t('core.message.setup.check.enable'))
     else:
-        state = not state
-    msg.data.edit_option('typo_check', state)
-    await msg.finish(f'成功{"打开" if state else "关闭"}错字检查提示。')
+        msg.data.edit_option('typo_check', True)
+        await msg.finish(msg.locale.t('core.message.setup.check.disable'))
+'''
 
 
-mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True,
-                  desc='使机器人停止发言。')
+@setup.command('timeoffset <offset> {{core.help.setup.timeoffset}}', required_admin=True)
+async def _(msg: Bot.MessageSession, offset: str):
+    try:
+        tstr_split = [int(part) for part in offset.split(':')]
+        hour = tstr_split[0]
+        minute = tstr_split[1] if len(tstr_split) > 1 else 0
+        if minute == 0:
+            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
+        else:
+            symbol = offset[0] if offset.startswith(("+", "-")) else "+"
+            offset = f"{symbol}{abs(hour)}:{abs(minute):02d}"
+        if hour > 12 or minute >= 60:
+            raise ValueError
+    except ValueError:
+        await msg.finish(msg.locale.t('core.message.setup.timeoffset.invalid'))
+    msg.data.edit_option('timezone_offset', offset)
+    await msg.finish(msg.locale.t('core.message.setup.timeoffset.success',
+                                  offset='' if offset == '+0' else offset))
 
 
-@mute.handle()
+@setup.command('cooldown <second> {{core.help.setup.cooldown}}', required_admin=True)
+async def _(msg: Bot.MessageSession, second: int):
+    second = 0 if second < 0 else second
+    msg.data.edit_option('cooldown_time', second)
+    await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
+
+
+mute = module('mute', base=True, doc=True, required_admin=True)
+
+
+@mute.command('{{core.help.mute}}')
 async def _(msg: Bot.MessageSession):
-    await msg.finish('成功禁言。' if msg.data.switch_mute() else '成功取消禁言。')
+    state = msg.data.switch_mute()
+    if state:
+        await msg.finish(msg.locale.t('core.message.mute.enable'))
+    else:
+        await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
-                   desc='使机器人离开群聊。')
+leave = module('leave', base=True, doc=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
 
 
-@leave.handle()
+@leave.command('{{core.help.leave}}')
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.waitConfirm('你确定吗？此操作不可逆。')
+    confirm = await msg.wait_confirm(msg.locale.t('core.message.leave.confirm'))
     if confirm:
-        await msg.sendMessage('已执行。')
+        await msg.send_message(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
+    else:
+        await msg.finish()
+
+
+token = module('token', base=True, hidden=True)
+
+
+@token.command('<code> {{core.help.token}}')
+async def _(msg: Bot.MessageSession, code: str):
+    await msg.finish(jwt.encode({
+        'exp': datetime.now(UTC) + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days
+        'iat': datetime.now(UTC),
+        'senderId': msg.target.sender_id,
+        'code': code
+    }, bytes(jwt_secret, 'utf-8'), algorithm='HS256'))

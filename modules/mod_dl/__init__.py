@@ -1,117 +1,192 @@
+import asyncio
 import re
-import urllib.parse
 
-from bs4 import BeautifulSoup
-
+from config import Config
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.utils.http import get_url
+from core.utils.text import isint
 
-mod_dl = on_command(
+mod_dl = module(
     bind_prefix='mod_dl',
-    desc='下载CurseForge上的Mod。',
-    developers=['HornCopper', 'OasisAkari'],
+    desc='{mod_dl.help.desc}', doc=True,
+    developers=['HornCopper', 'OasisAkari', 'z0z0r4'],
     recommend_modules=['mcmod'],
     alias='moddl')
 
-
-def cn_chk(string: str):
-    for word in string:
-        if u'\u4e00' <= word <= u'\u9fff':
-            return True
-    return False
-
-
-source_url = 'https://files.xmdhs.com/curseforge/'
+x_api_key = Config("curseforge_api_key", cfg_type=str)
+if not x_api_key:
+    # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
+    enable_mirror = True
+else:
+    enable_mirror = False
 
 
-@mod_dl.handle('<mod_name> [<version>] {通过模组名获取模组下载链接，CloudFlare CDN支持。}')
-async def main(msg: Bot.MessageSession):
-    mod_name = msg.parsed_msg['<mod_name>']
-    ver = msg.parsed_msg.get('<version>', False)
-    if ver:
-        match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', ver)
-        if match_ver is None:
-            mod_name += ' ' + ver
+@mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
+async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
+    ver = version
+    if version:
+        match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', version)
+        if not match_ver:
+            mod_name += ' ' + version
             ver = False
-    if cn_chk(mod_name):
-        return {'msg': 'CurseForge暂不支持中文搜索。', 'success': False}
-    full_url = f'{source_url}s?q={urllib.parse.quote(mod_name)}&type=1'
-    try:
-        html = await get_url(full_url, status_code=200)
-        bs = BeautifulSoup(html, 'html.parser')
-        information = bs.body.div.div
-        infos = {}
-        for x in information.find_all('a'):
-            infos[x.find('h3').text] = x.get('href')
-        if len(infos) > 1:
-            reply_text = []
-            i = 0
-            for info in infos:
-                i += 1
-                reply_text.append(f'{i}. {info}')
-            reply = await msg.waitReply('搜索结果如下：\n' + '\n'.join(reply_text) + '\n请回复编号来选择mod。')
-            replied = reply.asDisplay()
-            if replied.isdigit():
-                replied = int(replied)
-                if replied > len(infos):
-                    return await msg.finish('编号超出范围。')
-                else:
-                    mod_url = infos[list(infos.keys())[replied - 1]]
-            else:
-                return await msg.finish('无效的编号，必须为纯数字。')
-        else:
-            mod_url = infos[list(infos.keys())[0]]
-        html_2 = await get_url(f'{source_url}{mod_url[1:]}', status_code=200)
-        bs_2 = BeautifulSoup(html_2, 'html.parser')
-        information_2 = bs_2.body.div.div
-        infos_2 = {}
-        for x in information_2.find_all('a'):
-            infos_2[x.find('h3').text] = x.get('href')
-        if ver:
-            if ver in infos_2:
-                mod_url_2 = infos_2[ver]
-            else:
-                return await msg.finish('没有找到指定版本的模组。')
-        else:
-            reply_text = []
-            for info2 in infos_2:
-                reply_text.append(f'{info2}')
-            reply2 = await msg.waitReply('此mod拥有如下版本：\n' + '\n'.join(reply_text) + '\n请回复版本号来选择版本。')
-            replied2 = reply2.asDisplay()
-            if replied2 in infos_2:
-                mod_url_2 = infos_2[replied2]
-                ver = replied2
-            else:
-                return await msg.finish('无效的版本号。')
-        url_3 = source_url + mod_url_2[1:]
-        html_3 = await get_url(url_3, status_code=200)
-        bs_3 = BeautifulSoup(html_3, 'html.parser')
-        infos = {'normal': {}, 'fabric': {}, 'forge': {}}
-        information_3 = bs_3.find_all('tr')
-        for x in information_3[1:]:
-            tbs = x.find_all('td')
-            mod = tbs[0].find('a')
-            status = tbs[1].text
-            name = mod.text
-            depends = tbs[3].find_all('a')
-            mod_type = 'normal'
-            if name.lower().find('fabric') != -1:
-                mod_type = 'fabric'
-            elif name.lower().find('forge') != -1:
-                mod_type = 'forge'
-            if status not in infos[mod_type]:
-                infos[mod_type][status] = {'url': mod.get('href'), 'depends': len(depends), 'name': name}
-        send_ = []
-        for x in infos:
-            for y in infos[x]:
-                send_.append((f'{x.title()} ({y})：\n' if x != 'normal' else f'{y}：\n') +
-                             f'下载链接：{infos[x][y]["url"]}\n'
-                             f'文件名：{infos[x][y]["name"]}\n' +
-                             (f'此mod共有{str(infos[x][y]["depends"])}个依赖，请确认是否已经下载：\n{url_3}' if
-                              infos[x][y][
-                                  "depends"] > 0 else ''))
-        await msg.finish('\n'.join(send_))
 
-    except ValueError:  # 404 ...
-        await msg.finish('未找到该Mod。')
+    async def search_modrinth(name: str, ver: str):
+        url = f'https://api.modrinth.com/v2/search?query={name}&limit=10'
+        if ver:
+            url += f'&facets=[["versions:{ver}"],["project_type:mod"]]'
+        else:
+            url += f'&facets=[["project_type:mod"]]'
+        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3)
+        if resp:
+            results = []
+            if len(resp["hits"]) == 0:
+                return None
+            for project in resp['hits']:
+                results.append(("modrinth", project["title"], project["project_id"], project["versions"]))
+            return results
+
+    async def search_curseforge(name: str, ver: str):
+        if enable_mirror:
+            # https://mcim.z0z0r4.top/docs#/Curseforge/curseforge_search_curseforge_search_get
+            url = f'https://mcim.z0z0r4.top/curseforge/search?gameId=432&searchFilter={
+                name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+            headers = None
+        else:
+            headers = {
+                'Accept': 'application/json',
+                'x-api-key': x_api_key
+            }
+            url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={
+                name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+
+        if ver:
+            url += f'&gameVersion={ver}'
+        results = []
+        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+        if resp:
+            if not enable_mirror:  # 没提供 pagination
+                if resp["pagination"]["resultCount"] == 0:
+                    return None
+            for mod in resp["data"]:
+                results.append(("curseforge", mod["name"], mod["id"], None))
+        return results
+
+    async def get_modrinth_project_version(project_id: str, ver: str):
+        url = f'https://api.modrinth.com/v2/project/{project_id}/version?game_versions=["{ver}"]&featured=true'
+        resp = (await get_url(url, 200, fmt="json", timeout=5, attempt=3))[0]
+        if resp:
+            return resp
+
+    async def get_curseforge_mod_version_index(modid: str):
+        if enable_mirror:
+            # https://mcim.z0z0r4.top/docs#/Curseforge/get_mod_curseforge_mod__modid_slug__get
+            url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}'
+            headers = None
+        else:
+            headers = {
+                'Accept': 'application/json',
+                'x-api-key': x_api_key
+            }
+            url = f'https://api.curseforge.com/v1/mods/{modid}'
+        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+        if resp:
+            return resp["data"]['latestFilesIndexes']
+
+    async def get_curseforge_mod_file(modid: str, ver: str):
+        if enable_mirror:
+            url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}/files?gameVersion={ver}'
+            headers = None
+        else:
+            headers = {
+                'Accept': 'application/json',
+                'x-api-key': x_api_key
+            }
+            url = f'https://api.curseforge.com/v1/mods/{modid}/files?gameVersion={ver}'
+
+        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+        if resp:
+            return resp["data"][0]
+
+    # 搜索 Mod
+    result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
+    cache_result = []
+    if not result[0] and not result[1]:
+        await msg.finish(msg.locale.t("mod_dl.message.not_found"))
+    else:
+        # 合并搜索结果
+        reply_text, count = [], 0
+
+        # 先显示 CurseForge 的结果
+        if not result[1]:
+            reply_text.append(msg.locale.t("mod_dl.message.curseforge.not_found"))
+        else:
+            reply_text.append(msg.locale.t("mod_dl.message.curseforge.result"))
+            for mod in result[1]:
+                count += 1
+                reply_text.append(f"{count}. {mod[1]}")
+                cache_result.append(mod)
+
+        if not result[0]:
+            reply_text.append(msg.locale.t("mod_dl.message.modrinth.not_found"))
+        reply_text.append(msg.locale.t("mod_dl.message.modrinth.result"))
+        for mod in result[0]:
+            count += 1
+            reply_text.append(f"{count}. {mod[1]}")
+            cache_result.append(mod)
+
+        reply = await msg.wait_reply('\n'.join(reply_text) + '\n' + msg.locale.t("mod_dl.message.prompt"), delete=True)
+        replied = reply.as_display(text_only=True)
+
+        # 查找 Mod
+        if isint(replied):
+            replied = int(replied)
+            if not replied or replied > len(cache_result):
+                await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
+            else:
+                mod_info = cache_result[replied - 1]
+        else:
+            await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
+
+        if mod_info[0] == "modrinth":  # modrinth mod
+            if not ver:
+                reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n'
+                                              + "\n".join(mod_info[3])
+                                              + f'\n{msg.locale.t("mod_dl.message.version.prompt")}', delete=True)
+                replied2 = reply2.as_display(text_only=True)
+                if replied2 in mod_info[3]:
+                    version_info = await get_modrinth_project_version(mod_info[2], replied2)
+                    if version_info:
+                        await msg.finish(
+                            f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                else:
+                    await msg.finish()
+            elif ver not in mod_info[3]:
+                await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
+            elif ver in mod_info[3]:
+                version_info = await get_modrinth_project_version(mod_info[2], ver)
+                if version_info:
+                    await msg.finish(
+                        f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+        else:  # curseforge mod
+            version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
+            for version in version_index:
+                if version["gameVersion"] not in ver_list:
+                    ver_list.append(version["gameVersion"])
+            if version_index:
+                if not ver:
+                    reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +
+                                                  '\n'.join(ver_list) +
+                                                  f'\n{msg.locale.t("mod_dl.message.version.prompt")}', delete=True)
+                    ver = reply2.as_display(text_only=True)
+                elif ver not in ver_list:
+                    await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
+
+                if ver in ver_list:
+                    file_info = await get_curseforge_mod_file(mod_info[2], ver)
+                    if file_info:
+                        await msg.finish(f'{" ".join(file_info["gameVersions"])} \
+                                         \n{msg.locale.t("mod_dl.message.download_url")}{file_info["downloadUrl"]} \
+                                         \n{msg.locale.t("mod_dl.message.filename")}{file_info["fileName"]}')
+                else:
+                    await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))

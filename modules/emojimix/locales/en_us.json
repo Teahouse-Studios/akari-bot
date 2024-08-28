@@ -1,0 +1,9 @@
+{
+    "emojimix.help": "Combine two Emojis into an image. Leave blank to use a random combination.",
+    "emojimix.help.list": "List all supported Emojis.",
+    "emojimix.message.all_supported": "All supported Emojis: ",
+    "emojimix.message.combine_supported": "Emoji combinations that support “${emoji}”: ",
+    "emojimix.message.invalid": "Invalid Emoji.",
+    "emojimix.message.not_found": "This Emoji combination is not supported.",
+    "emojimix.message.unsupported": "Unsupported Emoji(s): "
+}

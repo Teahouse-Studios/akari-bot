@@ -1,5 +1,5 @@
 name: 功能建议
-description: 提出新的建议
+description: 提出新的建议。
 title: "[FEATURE]: "
 labels: ["enhancement"]
 assignees:
@@ -9,19 +9,21 @@ body:
     attributes:
       value: |
         想要让小可做更多事情？欢迎提出建议！
+
+        另外，此处不接受关于多语言的问题和建议，如有需要请移步 [Crowdin](https://crowdin.com/project/akari-bot/discussions)。
   - type: checkboxes
     id: preflight
     attributes:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的建议，确定没有人提出过此建议
+        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/bot/issues) 中搜索过我的建议，确定没有人提出过此建议。
           required: true
   - type: textarea
     id: description
     attributes:
       label: 建议描述
-      description: 请描述你的建议
+      description: 请描述你的建议。
       placeholder: 建议给小可添加 GitHub 搜索功能。
     validations:
       required: true
@@ -45,7 +47,7 @@ body:
     id: other
     attributes:
       label: 备注
-      description: 你还想告诉我们什么？
+      description: 还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false

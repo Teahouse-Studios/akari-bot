@@ -1,0 +1,12 @@
+{
+    "osu.help.bind": "绑定 osu! 用户。",
+    "osu.help.desc": "查询 osu! 相关内容。",
+    "osu.help.option.t": "修改查询模式，0 为 osu!，1 为 Taiko, 2 为 CtB, 3 为 osu!mania。",
+    "osu.help.profile": "查询一个用户的基本信息。",
+    "osu.help.unbind": "解绑用户。",
+    "osu.message.bind.failed": "绑定失败，请检查输入。",
+    "osu.message.bind.success": "绑定成功：",
+    "osu.message.unbind.success": "解绑成功。",
+    "osu.message.not_found": "获取内容失败。",
+    "osu.message.user_unbound": "未绑定用户，请使用“${prefix}osu bind”绑定一个用户。"
+}

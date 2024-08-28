@@ -9,155 +9,255 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt
 
-from core.builtins import Bot
-from core.builtins import Image, Plain
-from core.component import on_command
+from core.builtins import Bot, Image, I18NContext
+from core.component import module
 from core.logger import Logger
+from core.petal import gained_petal
 from core.utils.cache import random_cache_path
-from core.utils.http import get_url, download_to_cache
+from core.utils.game import PlayState
+from core.utils.http import get_url, download
+from core.utils.text import isint, remove_prefix
 
-csr_link = 'https://legacy.chemspider.com'  # ChemSpider 的链接
-special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
-              "4514330", "4514408", "4514534", "4514586", "4514603", "4515054", "4573995", "4574465", "4575369",
-              "4575370",
-              "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276",
-              "21865280"]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
+
+csr_link = 'https://legacy.chemspider.com'
+
+special_id_path = os.path.abspath(f'./assets/chemical_code/special_id')  # 去掉文件扩展名并存储在 special_id 列表中
+special_id = [os.path.splitext(filename)[0] for filename in os.listdir(
+    special_id_path)]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+
+element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
+                 'Ar', 'Ca', 'Sc', 'Ti', 'Cr', 'Mn', 'Fe', 'Co', 'Ni',
+                 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb',
+                 'Sr', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag',
+                 'Cd', 'In', 'Sn', 'Sb', 'Te', 'Xe', 'Cs', 'Ba', 'La',
+                 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy',
+                 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'Re', 'Os',
+                 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At',
+                 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'Np', 'Pu', 'Am',
+                 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf',
+                 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'Nh',
+                 'Fl', 'Mc', 'Lv', 'Ts', 'Og', 'C', 'H', 'B', 'K', 'N',
+                 'O', 'F', 'P', 'S', 'V', 'I', 'U', 'Y', 'W']  # 元素列表，用于解析化学式（请不要手动修改当前的排序）
+
+
+def parse_elements(formula: str) -> dict:
+    elements = {}
+    while True:
+        if not formula:
+            break
+        for element in element_lists:
+            if formula.startswith(element):
+                formula = remove_prefix(formula, element)
+                if count := re.match('^([0-9]+).*$', formula):
+                    elements[element] = int(count.group(1))
+                    formula = remove_prefix(formula, count.group(1))
+                else:
+                    elements[element] = 1
+                break
+        else:
+            raise ValueError('Unknown element: ' + formula)
+    return elements
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
-async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的链接，留空（将会使用缺省值 None）则随机查询
-    if id is not None:  # 如果传入了 ID，则使用 ID 查询
+async def search_csr(id=None):
+    if id:
         answer_id = id
     else:
-        answer_id = random.randint(1, 116000000)  # 否则随机查询一个题目
+        answer_id = random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
-    Logger.info("ChemSpider ID: " + answer_id)
-    get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
+    Logger.info(f'ChemSpider ID: {answer_id}')
+    get = await get_url(f'{csr_link}/Search.aspx?q={answer_id}', 200, fmt='text')
     # Logger.info(get)
-    soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
-    name = soup.find('span',
-                     id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-    values_ = re.split(r'[A-Za-z]+', name)  # 去除化学式名称中的字母
-    value = 0  # 起始元素记数，忽略单个元素（有无意义不大）
-    for v in values_:  # 遍历剔除字母后的数字
-        if v.isdigit():
-            value += int(v)  # 加一起
+    soup = BeautifulSoup(get, 'html.parser')
+    name = soup.find(
+        'span',
+        id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
+    elements = parse_elements(name)
+    value = 0
+    for element in elements:
+        value += elements[element]
     wh = 500 * value // 100
     if wh < 500:
         wh = 500
-    return {'id': answer_id, 'name': name,
-            'image': f'https://legacy.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
-                     (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
+    return {'id': answer_id,
+            'answer': name,
+            'image': f'{csr_link}/ImagesHandler.ashx?id={answer_id}' +
+            (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
+            'length': value,
+            'elements': elements}
 
 
-cc = on_command('chemical_code', alias={'cc': 'chemical_code',
-                                        'chemicalcode': 'chemical_code',
-                                        'captcha': 'chemical_code captcha'},
-                desc='化学式回答小游戏', developers=['OasisAkari'])
-play_state = {}  # 创建一个空字典用于存放游戏状态
+ccode = module(
+    'chemical_code',
+    developers=['OasisAkari'],
+    desc='{chemical_code.help.desc}',
+    doc=True,
+    alias={
+        'cc': 'chemical_code',
+        'cca': 'chemical_code captcha',
+        'chemicalcode': 'chemical_code',
+        'chemical_captcha': 'chemical_code captcha',
+        'chemicalcaptcha': 'chemical_code captcha',
+        'ccode': 'chemical_code',
+         'ccaptcha': 'chemical_code captcha'})
 
 
-@cc.handle('{普通样式（时间限制，多人）}')  # 直接使用 cc 命令将触发此装饰器
+@ccode.command('{{chemical_code.help}}')
 async def chemical_code_by_random(msg: Bot.MessageSession):
-    await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
+    await chemical_code(msg)
 
 
-@cc.handle('captcha {验证码样式（不支持指定ID，只限一次，单人）}')
+@ccode.command('captcha {{chemical_code.help.captcha}}')
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@cc.handle('stop {停止当前的游戏。}')
+@ccode.command('stop {{game.help.stop}}')
 async def s(msg: Bot.MessageSession):
-    state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
-    if state:  # 若有
-        if state['active']:  # 检查是否为活跃状态
-            play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-            await msg.sendMessage(f'已停止，正确答案是 {state["answer"]}', quote=False)  # 发送存储于 play_state 中的答案
-        else:
-            await msg.sendMessage('当前无活跃状态的游戏。')
+    play_state = PlayState('chemical_code', msg)
+    if play_state.check():
+        play_state.disable()
+        await msg.finish(
+            msg.locale.t('chemical_code.stop.message', answer=play_state.check("answer")),
+            quote=False)
     else:
-        await msg.sendMessage('当前无活跃状态的游戏。')
+        await msg.finish(msg.locale.t('game.message.stop.none'))
 
 
-@cc.handle('<csid> {根据 ChemSpider ID 出题}')
+@ccode.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
-    id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
-    if (id.isdigit() and int(id) > 0):  # 如果 ID 为纯数字
-        await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
+    id = msg.parsed_msg['<csid>']
+    if isint(id):
+        if int(id) == 0:  # 若 id 为 0，则随机
+            await chemical_code(msg)
+        else:
+            await chemical_code(msg, id, random_mode=False)
     else:
-        await msg.finish('发生错误：请输入正确的 ID！')
+        await msg.finish(msg.locale.t('chemical_code.message.csid.invalid'))
 
 
-async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
-    # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
-    if msg.target.targetId in play_state and play_state[msg.target.targetId][
-        'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
-        await msg.finish('当前有一局游戏正在进行中。')
-    play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
+async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, captcha_mode=False):
+    play_state = PlayState('chemical_code', msg)
+    if play_state.check():
+        await msg.finish(msg.locale.t('game.message.running'))
+    else:
+        play_state.enable()
     try:
-        csr = await search_csr(id)  # 尝试获取 ChemSpider ID 对应的化学式列表
-    except Exception as e:  # 意外情况
-        traceback.print_exc()  # 打印错误信息
-        play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
-        return await msg.finish('发生错误：拉取题目失败，可能是因为请求超时或 ID 无效，请重新发起游戏。')
+        csr = await search_csr(id)
+    except Exception as e:
+        Logger.error(traceback.format_exc())
+        play_state.disable()
+        return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
-    play_state[msg.target.targetId]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
-    Logger.info(f'Answer: {csr["name"]}')  # 在日志中输出正确答案
-    Logger.info(f'Image: {csr["image"]}')  # 在日志中输出图片链接
-    download = False
-    if csr["id"] in special_id:  # 如果正确答案在 special_id 中
-        file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
-        Logger.info(f'File path: {file_path}')  # 在日志中输出文件路径
-        exists_file = os.path.exists(file_path)  # 尝试获取图片文件是否存在
+    play_state.update(**csr)  # 储存并获取不同用户所需的信息
+    Logger.info(f'Answer: {play_state.check("answer")}')
+    dl_image = False
+    if play_state.check("id") in special_id:  # 如果正确答案在 special_id 中
+        file_path = os.path.abspath(f'./assets/chemical_code/special_id/{play_state.check("id")}.png')
+        exists_file = os.path.exists(file_path)
         if exists_file:
-            download = file_path
-    if not download:
-        download = await download_to_cache(csr['image'])  # 从结果中获取链接并下载图片
+            dl_image = file_path
+    if not dl_image:
+        dl_image = await download(play_state.check('image'))
 
-    with PILImage.open(download) as im:  # 打开下载的图片
-        im = im.convert("RGBA")  # 转换为 RGBA 格式
-        image = PILImage.new("RGBA", im.size, 'white')  # 创建新图片
-        image.alpha_composite(im, (0, 0))  # 将图片合并到新图片中
-        newpath = random_cache_path() + '.png'  # 创建新文件名
-        image.save(newpath)  # 保存新图片
+    with PILImage.open(dl_image) as im:
+        im = im.convert("RGBA")
+        image = PILImage.new("RGBA", im.size, 'white')
+        image.alpha_composite(im, (0, 0))
+        newpath = random_cache_path() + '.png'
+        image.save(newpath)
 
-    set_timeout = csr['length'] // 30
+    set_timeout = play_state.check('length') // 30
     if set_timeout < 2:
         set_timeout = 2
 
-    async def ans(msg: Bot.MessageSession, answer):  # 定义回答函数的功能
-        wait = await msg.waitAnyone()  # 等待对象内的任意人回答
-        if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if wait.asDisplay() != answer:  # 如果回答不正确
-                Logger.info(f'{wait.asDisplay()} != {answer}')  # 输出日志
-                return await ans(wait, answer)  # 进行下一轮检查
-            else:
-                await wait.sendMessage('回答正确。')
-                play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
+    async def ans(msg: Bot.MessageSession, random_mode):
+        wait = await msg.wait_next_message(timeout=None)
+        if play_state.check():
+            if (wait_text := wait.as_display(text_only=True)) != play_state.check("answer"):
+                if re.match(r'^[A-Za-z0-9]+$', wait_text):
+                    try:
+                        parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
+                        value = 0
+                        for i in parse_:
+                            value += parse_[i]
+                        v_ = play_state.check('length') - value
+                        if v_ < 0:
+                            v_ = -v_
+                        if v_ > 6:
+                            await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind1'))
+                        else:
+                            if play_state.check('elements') == parse_:
+                                await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind5'))
+                            elif v_ <= 2:
+                                missing_something = False
+                                for i in play_state.check('elements'):
+                                    if i not in parse_:
+                                        await wait.send_message(
+                                            wait.locale.t('chemical_code.message.incorrect.remind4'))
+                                        missing_something = True
+                                        break
+                                if not missing_something:
+                                    await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind3'))
+                            else:
+                                incorrect_list = []
+                                for i in play_state.check('elements'):
+                                    if i in parse_:
+                                        if parse_[i] != play_state.check('elements')[i]:
+                                            incorrect_list.append(i)
+                                    else:
+                                        await wait.send_message(
+                                            wait.locale.t('chemical_code.message.incorrect.remind4'))
+                                        incorrect_list = []
+                                        break
 
-    async def timer(start):  # 计时器函数
-        if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if datetime.now().timestamp() - start > 60 * set_timeout:  # 如果超过2分钟
-                await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}', quote=False)
-                play_state[msg.target.targetId]['active'] = False
-            else:  # 如果未超时
-                await asyncio.sleep(1)  # 等待1秒
-                await timer(start)  # 重新调用计时器函数
+                                if incorrect_list:
+                                    incorrect_elements = wait.locale.t('message.delimiter').join(incorrect_list)
+                                    await wait.send_message(wait.locale.t('chemical_code.message.incorrect.remind2',
+                                                                          elements=incorrect_elements))
+                    except ValueError:
+                        Logger.error(traceback.format_exc())
+
+                Logger.info(f'{wait_text} != {play_state.check("answer")}')
+                return await ans(wait, random_mode)
+            else:
+                send_ = wait.locale.t('chemical_code.message.correct')
+                if random_mode:
+                    if (g_msg := await gained_petal(wait, 1)):
+                        send_ += '\n' + g_msg
+                play_state.disable()
+                await wait.finish(send_)
+
+    async def timer(start):
+        if play_state.check():
+            if datetime.now().timestamp() - start > 60 * set_timeout:
+                play_state.disable()
+                await msg.finish(
+                    msg.locale.t('chemical_code.message.timeup', answer=play_state.check("answer")))
+
+            else:
+                await msg.sleep(1)  # 防冲突
+                await timer(start)
 
     if not captcha_mode:
-        await msg.sendMessage([Image(newpath),
-                               Plain(
-                                   f'请在 {set_timeout} 分钟内发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
-        time_start = datetime.now().timestamp()  # 记录开始时间
+        await msg.send_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")), Image(newpath),
+                                I18NContext('chemical_code.message', times=set_timeout)])
+        time_start = datetime.now().timestamp()
 
-        await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
+        await asyncio.gather(ans(msg, random_mode), timer(time_start))
     else:
-        result = await msg.waitNextMessage(
-            [Image(newpath), Plain('请发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
-        if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if result.asDisplay() == csr['name']:
-                await result.sendMessage('回答正确。')
+        result = await msg.wait_next_message([I18NContext('chemical_code.message.showid', id=play_state.check("id")),
+                                              Image(newpath), I18NContext('chemical_code.message.captcha',
+                                                                          times=set_timeout)], timeout=None, append_instruction=False)
+        if play_state.check():
+            play_state.disable()
+            if result.as_display(text_only=True) == play_state.check("answer"):
+                send_ = msg.locale.t('chemical_code.message.correct')
+                if (g_msg := await gained_petal(msg, 2)):
+                    send_ += '\n' + g_msg
+                await result.finish(send_)
             else:
-                await result.sendMessage('回答错误，正确答案是 ' + csr['name'])
-            play_state[msg.target.targetId]['active'] = False
+                await result.finish(
+                    msg.locale.t('chemical_code.message.incorrect', answer=play_state.check("answer")))

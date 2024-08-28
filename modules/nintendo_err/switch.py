@@ -484,67 +484,67 @@ fs = Module('fs', {
     7909: ResultInfo('DBM file entry is full.'),
     7910: ResultInfo('RomFs directory has no more child directories/files when iterating.'),
     7911: ResultInfo('DBM FindKey finished.'),
-    7912: ResultInfo('DBM iteration finshed.'),
+    7912: ResultInfo('DBM iteration finished.'),
     7914: ResultInfo('Invalid DBM operation.'),
     7915: ResultInfo('Invalid DBM path format.'),
     7916: ResultInfo('DBM directory name is too long.'),
     7917: ResultInfo('DBM filename is too long.')
 }, {
-                (30, 33): 'Not enough free space.',
-                (34, 38): 'Not enough BIS free space.',
-                (39, 45): 'Not enough free space.',
-                (2000, 2499): 'Failed to access SD card.',
-                (2500, 2999): 'Failed to access Game Card.',
-                (3200, 3499): 'Allocation failed.',
-                (3500, 3999): 'Failed to access eMMC.',
-                # (4001, 4200): 'ROM is corrupted.',
-                (4001, 4010): 'ROM is corrupted.',
-                (4011, 4019): 'AES-CTR CounterExtendedStorage is corrupted.',
-                (4021, 4029): 'Indirect storage is corrupted.',
-                (4031, 4039): 'Bucket tree is corrupted.',
-                (4041, 4050): 'ROM NCA is corrupted.',
-                (4051, 4069): 'ROM NCA filesystem is corrupted.',
-                (4071, 4079): 'ROM NCA hierarchical SHA256 storage is corrupted.',
-                (4141, 4150): 'ROM integrity verification storage is corrupted.',
-                (4151, 4159): 'ROM real data verification failed.',
-                (4160, 4079): 'ROM integrity verification storage is corrupted.',
-                (4181, 4199): 'ROM partition filesystem is corrupted.',
-                (4201, 4219): 'ROM built-in storage is corrupted.',
-                (4241, 4259): 'ROM host filesystem is corrupted.',
-                (4261, 4279): 'ROM database is corrupted.',
-                (4280, 4299): 'ROM is corrupted.',
-                (4301, 4499): 'Savedata is corrupted.',
-                (4501, 4510): 'NCA is corrupted.',
-                (4511, 4529): 'NCA filesystem is corrupted.',
-                (4531, 4539): 'NCA hierarchical SHA256 storage is corrupted.',
-                (4540, 4599): 'NCA is corrupted.',
-                (4601, 4610): 'Integrity verification storage is corrupted.',
-                (4611, 4619): 'Real data verification failed.',
-                (4620, 4639): 'Integrity verification storage is corrupted.',
-                (4641, 4659): 'Partition filesystem is corrupted.',
-                (4661, 4679): 'Built-in storage is corrupted.',
-                (4681, 4699): 'FAT filesystem is corrupted.',
-                (4701, 4719): 'Host filesystem is corrupted.',
-                (4721, 4739): 'Database is corrupted.',
-                (4741, 4759): 'AEX-XTS filesystem is corrupted.',
-                (4761, 4769): 'Savedata transfer data is corrupted.',
-                (4771, 4779): 'Signed system partition data is corrupted.',
-                (4800, 4999): 'The data is corrupted.',
-                (5000, 5999): 'Unexpected.',
-                (6002, 6029): 'Invalid path.',
-                (6030, 6059): 'Invalid path for operation.',
-                (6080, 6099): 'Invalid enum value.',
-                (6100, 6199): 'Invalid argument.',
-                (6200, 6299): 'Invalid operation for open mode.',
-                (6300, 6399): 'Unsupported operation.',
-                (6400, 6449): 'Permission denied.',
-                (6600, 6699): 'Not found.',
-                (6700, 6799): 'Out of resources.',
-                (6800, 6899): 'Mapping failed.',
-                (6900, 6999): 'Bad state.',
-                (7901, 7904): 'DBM not found.',
-                (7910, 7912): 'DBM find finished.',
-            })
+    (30, 33): 'Not enough free space.',
+    (34, 38): 'Not enough BIS free space.',
+    (39, 45): 'Not enough free space.',
+    (2000, 2499): 'Failed to access SD card.',
+    (2500, 2999): 'Failed to access Game Card.',
+    (3200, 3499): 'Allocation failed.',
+    (3500, 3999): 'Failed to access eMMC.',
+    # (4001, 4200): 'ROM is corrupted.',
+    (4001, 4010): 'ROM is corrupted.',
+    (4011, 4019): 'AES-CTR CounterExtendedStorage is corrupted.',
+    (4021, 4029): 'Indirect storage is corrupted.',
+    (4031, 4039): 'Bucket tree is corrupted.',
+    (4041, 4050): 'ROM NCA is corrupted.',
+    (4051, 4069): 'ROM NCA filesystem is corrupted.',
+    (4071, 4079): 'ROM NCA hierarchical SHA256 storage is corrupted.',
+    (4141, 4150): 'ROM integrity verification storage is corrupted.',
+    (4151, 4159): 'ROM real data verification failed.',
+    (4160, 4079): 'ROM integrity verification storage is corrupted.',
+    (4181, 4199): 'ROM partition filesystem is corrupted.',
+    (4201, 4219): 'ROM built-in storage is corrupted.',
+    (4241, 4259): 'ROM host filesystem is corrupted.',
+    (4261, 4279): 'ROM database is corrupted.',
+    (4280, 4299): 'ROM is corrupted.',
+    (4301, 4499): 'Savedata is corrupted.',
+    (4501, 4510): 'NCA is corrupted.',
+    (4511, 4529): 'NCA filesystem is corrupted.',
+    (4531, 4539): 'NCA hierarchical SHA256 storage is corrupted.',
+    (4540, 4599): 'NCA is corrupted.',
+    (4601, 4610): 'Integrity verification storage is corrupted.',
+    (4611, 4619): 'Real data verification failed.',
+    (4620, 4639): 'Integrity verification storage is corrupted.',
+    (4641, 4659): 'Partition filesystem is corrupted.',
+    (4661, 4679): 'Built-in storage is corrupted.',
+    (4681, 4699): 'FAT filesystem is corrupted.',
+    (4701, 4719): 'Host filesystem is corrupted.',
+    (4721, 4739): 'Database is corrupted.',
+    (4741, 4759): 'AEX-XTS filesystem is corrupted.',
+    (4761, 4769): 'Savedata transfer data is corrupted.',
+    (4771, 4779): 'Signed system partition data is corrupted.',
+    (4800, 4999): 'The data is corrupted.',
+    (5000, 5999): 'Unexpected.',
+    (6002, 6029): 'Invalid path.',
+    (6030, 6059): 'Invalid path for operation.',
+    (6080, 6099): 'Invalid enum value.',
+    (6100, 6199): 'Invalid argument.',
+    (6200, 6299): 'Invalid operation for open mode.',
+    (6300, 6399): 'Unsupported operation.',
+    (6400, 6449): 'Permission denied.',
+    (6600, 6699): 'Not found.',
+    (6700, 6799): 'Out of resources.',
+    (6800, 6899): 'Mapping failed.',
+    (6900, 6999): 'Bad state.',
+    (7901, 7904): 'DBM not found.',
+    (7910, 7912): 'DBM find finished.',
+})
 
 os = Module('os', {
     4: ResultInfo('Busy.'),
@@ -604,11 +604,11 @@ ncm = Module('ncm', {
     380: ResultInfo('Invalid firmware variation.'),
     8182: ResultInfo('Invalid offset.')
 }, {
-                 (250, 258): 'Content storage is not active.',
-                 (260, 268): 'Content meta database is not active.',
-                 (290, 299): 'Install task was cancelled.',
-                 (8181, 8191): 'Invalid argument.'
-             })
+    (250, 258): 'Content storage is not active.',
+    (260, 268): 'Content meta database is not active.',
+    (290, 299): 'Install task was cancelled.',
+    (8181, 8191): 'Invalid argument.'
+})
 
 lr = Module('lr', {
     2: ResultInfo('Program not found.'),
@@ -679,10 +679,10 @@ sf = Module('sf', {
     802: ResultInfo('Request invalidated by user.'),
     812: ResultInfo('Request deferred by user.'),
 }, {
-                (800, 809): 'Request invalidated.',
+    (800, 809): 'Request invalidated.',
                 (810, 819): 'Request deferred.',
                 (820, 899): 'Request context changed.'
-            })
+})
 
 hipc = Module('hipc', {
     1: ResultInfo('Unsupported operation.'),
@@ -697,8 +697,8 @@ hipc = Module('hipc', {
     491: ResultInfo('Target is not a domain.'),
     492: ResultInfo('Domain object was not found.')
 }, {
-                  (100, 299): 'Out of resources.'
-              })
+    (100, 299): 'Out of resources.'
+})
 
 dmnt = Module('dmnt', {
     1: ResultInfo('Unknown error.'),
@@ -718,9 +718,9 @@ dmnt = Module('dmnt', {
     6603: ResultInfo('Address is out of resources.'),
     6700: ResultInfo('Virtual machine condition depth is invalid.')
 }, {
-                  (6500, 6599): 'Cheat engine error.',
+    (6500, 6599): 'Cheat engine error.',
                   (6600, 6699): 'Frozen address error.'
-              })
+})
 
 pm = Module('pm', {
     1: ResultInfo('Process not found.'),
@@ -773,8 +773,8 @@ sm = Module('sm', {
     1000: ResultInfo('Should forward to session.'),
     1100: ResultInfo('Process is not associated.')
 }, {
-                (1000, 2000): 'Atmosphere man-in-the-middle (MITM) extension result.'
-            })
+    (1000, 2000): 'Atmosphere man-in-the-middle (MITM) extension result.'
+})
 
 ro = Module('ro', {
     2: ResultInfo('Out of address space.'),
@@ -807,12 +807,12 @@ spl = Module('spl', {
     102: ResultInfo('Decryption failed.'),
     104: ResultInfo('Out of keyslots.'),
     105: ResultInfo('Invalid keyslot.'),
-    106: ResultInfo('Boot reason was aleady set.'),
+    106: ResultInfo('Boot reason was already set.'),
     107: ResultInfo('Boot reason was not set.'),
     108: ResultInfo('Invalid argument.')
 }, {
-                 (0, 99): 'Secure monitor error.'
-             })
+    (0, 99): 'Secure monitor error.'
+})
 
 i2c = Module('i2c', {
     1: ResultInfo('No ACK.'),
@@ -940,15 +940,16 @@ settings = Module('settings', {
     1275: ResultInfo('Amiibo ECQV BLS certificate.'),
     1276: ResultInfo('Amiibo ECQV BLS root certificate.')
 }, {
-                      (100, 149): 'Internal error.',
-                      (200, 399): 'Invalid argument.',
-                      (621, 1276): 'Setting buffer is null.',
-                  })
-
-nifm = Module('nifm', {
-    3400: ResultInfo(
-        'The internet connection you are using requires authentication or a user agreement.' 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22569/kw/2110-3400'),
+    (100, 149): 'Internal error.',
+    (200, 399): 'Invalid argument.',
+    (621, 1276): 'Setting buffer is null.',
 })
+
+nifm = Module(
+    'nifm', {
+        3400: ResultInfo(
+            'The internet connection you are using requires authentication or a user agreement.'
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22569/kw/2110-3400'), })
 
 vi = Module('vi', {
     1: ResultInfo('Operation failed.'),
@@ -977,8 +978,8 @@ time = Module('time', {
     989: ResultInfo('TimeZone location name not found.'),
     990: ResultInfo('Unimplemented.')
 }, {
-                  (900, 919): 'Invalid argument.'
-              })
+    (900, 919): 'Invalid argument.'
+})
 
 friends = Module('friends', {
     6: ResultInfo('IsAnyInternetRequestAccepted with the output from GetClientId returned false.'),
@@ -1080,26 +1081,40 @@ ssl = Module('ssl', {
     5007: ResultInfo('Out-of-bounds error during error conversion.')
 })
 
-account = Module('account', {
-    59: ResultInfo('IsAnyInternetRequestAccepted with the output from GetClientId returned false.'),
-    3000: ResultInfo('System update is required.',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/27166/'),
-    4007: ResultInfo('Console is permanently banned.',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/', is_ban=True),
-    4025: ResultInfo(
-        'Game Card is banned. If you have a legitimate cartridge and this happened to you, contact Nintendo.',
-        is_ban=True),
-    4027: ResultInfo('Console (and Nintendo Account) are temporarily banned from a game.', is_ban=True),
-    4508: ResultInfo('Console is permanently banned.',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/', is_ban=True),
-    4517: ResultInfo('Console is permanently banned.',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/43652/', is_ban=True),
-    4609: ResultInfo('The online service is no longer available.',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/46482/'),
-    4621: ResultInfo(
-        'Tencent-Nintendo (Chinese) consoles cannot use online features in foreign games.' 'https://nintendoswitch.com.cn/support/'),
-    5111: ResultInfo('Complete account ban.', is_ban=True)
-})
+account = Module(
+    'account',
+    {
+        59: ResultInfo('IsAnyInternetRequestAccepted with the output from GetClientId returned false.'),
+        3000: ResultInfo(
+            'System update is required.',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/27166/'),
+        4007: ResultInfo(
+            'Console is permanently banned.',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/',
+            is_ban=True),
+        4025: ResultInfo(
+            'Game Card is banned. If you have a legitimate cartridge and this happened to you, contact Nintendo.',
+            is_ban=True),
+        4027: ResultInfo(
+            'Console (and Nintendo Account) are temporarily banned from a game.',
+            is_ban=True),
+        4508: ResultInfo(
+            'Console is permanently banned.',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/',
+            is_ban=True),
+        4517: ResultInfo(
+            'Console is permanently banned.',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/43652/',
+            is_ban=True),
+        4609: ResultInfo(
+            'The online service is no longer available.',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/46482/'),
+        4621: ResultInfo(
+            'Tencent-Nintendo (Chinese) consoles cannot use online features in foreign games.'
+            'https://nintendoswitch.com.cn/support/'),
+        5111: ResultInfo(
+            'Complete account ban.',
+            is_ban=True)})
 
 mii = Module('mii', {
     1: ResultInfo('Invalid argument.'),
@@ -1153,9 +1168,9 @@ prepo = Module('prepo', {
     2503: ResultInfo('Status 503.'),
     2504: ResultInfo('Status 504.'),
 }, {
-                   (1005, 1060): 'HTTP error.',
-                   (2400, 2504): 'Server error.'
-               })
+    (1005, 1060): 'HTTP error.',
+    (2400, 2504): 'Server error.'
+})
 
 pcv = Module('pcv', {
     2: ResultInfo('Invalid DVFS table ID.'),
@@ -1367,18 +1382,18 @@ capsrv = Module('capsrv (capture)', {
     1907: ResultInfo('Error when reading the file.'),
     1908: ResultInfo('Error when writing the file.')
 }, {
-                    (10, 19): 'Album: invalid file ID.',
-                    (90, 99): 'Album: filesystem error.',
-                    (800, 899): 'Control error.',
-                    # (1024, 2047): 'Internal error.',
-                    (1200, 1299): 'Internal JPEG encoder error.',
-                    (1300, 1399): 'Internal file data verification error.',
-                    (1400, 1499): 'Internal album limitation error.',
-                    (1500, 1599): 'Internal signature error.',
-                    (1700, 1799): 'Internal album session error.',
-                    (1900, 1999): 'Internal album temporary file error.'
+    (10, 19): 'Album: invalid file ID.',
+    (90, 99): 'Album: filesystem error.',
+    (800, 899): 'Control error.',
+    # (1024, 2047): 'Internal error.',
+    (1200, 1299): 'Internal JPEG encoder error.',
+    (1300, 1399): 'Internal file data verification error.',
+    (1400, 1499): 'Internal album limitation error.',
+    (1500, 1599): 'Internal signature error.',
+    (1700, 1799): 'Internal album session error.',
+    (1900, 1999): 'Internal album temporary file error.'
 
-                })
+})
 
 pgl = Module('pgl', {
     2: ResultInfo('Not available.'),
@@ -1768,7 +1783,7 @@ def get(error):
     if summary:
         ret.add_field(ConsoleErrorField('Summary', message_str=summary))
     description = module.get_error(code)
-    if description is None or not description.description:
+    if not description or not description.description:
         ret.add_field(ConsoleErrorField('Description', supplementary_value=code))
     else:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=code))

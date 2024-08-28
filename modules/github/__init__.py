@@ -1,28 +1,28 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from modules.github import repo, user, search
 
-github = on_command('github', alias=['gh'], developers=['Dianliang233'])
+github = module('github', alias='gh', developers=['Dianliang233'], desc='{github.help.desc}', doc=True)
 
 
-@github.handle('<name> {尝试自动识别并区分 repo/user}')
-async def _(msg: Bot.MessageSession):
-    if '/' in msg.parsed_msg['<name>']:
-        await repo.repo(msg)
+@github.command('<name> {{github.help}}')
+async def _(msg: Bot.MessageSession, name: str):
+    if '/' in name:
+        await repo.repo(msg, name)
     else:
-        await user.user(msg)
+        await user.user(msg, name)
 
 
-@github.handle('repo <name> {获取 GitHub 仓库信息}')
-async def _(msg: Bot.MessageSession):
-    await repo.repo(msg)
+@github.command('repo <name> {{github.help.repo}}')
+async def _(msg: Bot.MessageSession, name: str):
+    await repo.repo(msg, name)
 
 
-@github.handle(['user <name> {获取 GitHub 用户或组织信息}', 'org <name> {~github user 的别名}'])
-async def _(msg: Bot.MessageSession):
-    await user.user(msg)
+@github.command('user <name> {{github.help.user}}')
+async def _(msg: Bot.MessageSession, name: str):
+    await user.user(msg, name)
 
 
-@github.handle('search <query> {搜索 GitHub 上的仓库}')
-async def _(msg: Bot.MessageSession):
-    await search.search(msg)
+@github.command('search <keyword> {{github.help.search}}')
+async def _(msg: Bot.MessageSession, keyword: str):
+    await search.search(msg, keyword)

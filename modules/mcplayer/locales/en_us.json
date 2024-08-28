@@ -1,0 +1,5 @@
+{
+    "mcplayer.help": "Get player information from player name or UUID.",
+    "mcplayer.help.desc": "Get player information about Minecraft: Java Edition from Mojang API.",
+    "mcplayer.message.not_found": "${player}'s information not found."
+}

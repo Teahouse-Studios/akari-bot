@@ -63,32 +63,32 @@
 #### PREFIXES ####
 
 # decimal prefixes
-quecto- = 1e-30 = q- # zh-CN SI name not decided yet
-ronto- = 1e-27 = r- # zh-CN SI name not decided yet
-yocto- = 1e-24 = y- = 幺科托- = 幺-
-zepto- = 1e-21 = z- = 仄普托- = 仄-
+quecto- = 1e-30 = q- = 亏可托- = 亏-
+ronto- = 1e-27 = r- = 柔托- = 柔-
+yocto- = 1e-24 = y- = 幺科托- = 幺- = 攸-
+zepto- = 1e-21 = z- = 仄普托- = 仄- = 介-
 atto- =  1e-18 = a- = 阿托- = 阿-
-femto- = 1e-15 = f- = 飞母托- = 飞-
+femto- = 1e-15 = f- = 飞母托- = 飞- = 飛-
 pico- =  1e-12 = p- = 皮可- = 皮-
-nano- =  1e-9  = n- = 纳诺- = 纳-
+nano- =  1e-9  = n- = 纳诺- = 纳- = 奈-
 # The micro (U+00B5) and Greek mu (U+03BC) are both valid prefixes,
 # and they often use the same glyph.
 micro- = 1e-6  = µ- = μ- = u- = 微-
 milli- = 1e-3  = m- = 毫-
-centi- = 1e-2  = c- = 厘-
+centi- = 1e-2  = c- = 厘- = 釐-
 deci- =  1e-1  = d- = 分-
 deca- =  1e+1  = da- = deka- = 十-
 hecto- = 1e2   = h- = 百-
 kilo- =  1e3   = k- = 千-
-mega- =  1e6   = M- = 兆-
+mega- =  1e6   = M- = 兆- = 百萬-
 giga- =  1e9   = G- = 吉咖- = 吉-
 tera- =  1e12  = T- = 太拉- = 太-
 peta- =  1e15  = P- = 拍它- = 拍-
 exa- =   1e18  = E- = 艾可萨- = 艾-
-zetta- = 1e21  = Z- = 泽它- = 泽-
-yotta- = 1e24  = Y- = 尧它- = 尧-
-ronna- = 1e27 = R- # zh-CN SI name not decided yet
-quetta- = 1e30 = Q- # zh-CN SI name not decided yet
+zetta- = 1e21  = Z- = 泽它- = 泽- = 皆=
+yotta- = 1e24  = Y- = 尧它- = 尧- = 佑-
+ronna- = 1e27 = R- = 容那- = 容-
+quetta- = 1e30 = Q- = 昆它- = 昆-
 
 # binary_prefixes
 kibi- = 2**10 = Ki-
@@ -107,11 +107,11 @@ sesqui- = 1.5
 
 #### BASE UNITS ####
 
-meter = [length] = m = metre = 米
+meter = [length] = m = metre = 米 = 公尺
 second = [time] = s = sec = 秒
 ampere = [current] = A = amp = 安培 = 安
 candela = [luminosity] = cd = candle = 坎德拉 = 坎
-gram = [mass] = g = 克
+gram = [mass] = g = 克 = 公克
 mole = [substance] = mol = 摩尔 = 摩
 kelvin = [temperature]; offset: 0 = K = degK = °K = degree_Kelvin = degreeK = 开尔文 = 开 # older names supported for compatibility
 radian = [] = rad = 弧度
@@ -154,27 +154,39 @@ ppm = 1e-6 = 分比
 
 # Length
 angstrom = 1e-10 * meter = Å = ångström = Å = 埃格斯特朗 = 埃
+centimeter = cm = 厘米 = 釐米 = 公分
+millimeter = mm = 毫米 = 公厘 = 公釐
+decimeter = dm = 分米 = 公寸
+dekameter = dam = 十米 = 公丈
+hectometer = hm = 百米 = 公引
+kilometer = km = 千米 = 公里
 micron = micrometer = µm = μ = 微米
 fermi = femtometer = fm = 费米
 light_year = speed_of_light * julian_year = ly = lightyear = 光年
-astronomical_unit = 149597870700 * meter = au = 天文单位 # since Aug 2012
+astronomical_unit = 149597870700 * meter = au = 天文单位 = 天文單位# since Aug 2012
 parsec = 1 / tansec * astronomical_unit = pc = 秒差距
 nautical_mile = 1852 * meter = nmi = 海里 = 浬
-bohr = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = 玻尔半径 = 原子单位长度
+bohr = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = 玻尔半径 = 原子单位长度 = 波耳半徑
 x_unit_Cu = K_alpha_Cu_d_220 * d_220 / 1537.4 = Xu_Cu = 铜的X单位 = 铜的X射线波长
 x_unit_Mo = K_alpha_Mo_d_220 * d_220 / 707.831 = Xu_Mo = 钼的X单位 = 钼的X射线波长
 angstrom_star = K_alpha_W_d_220 * d_220 / 0.2090100 = Å_star = 埃星
-planck_length = (hbar * gravitational_constant / c ** 3) ** 0.5 = 普朗克长度
+planck_length = (hbar * gravitational_constant / c ** 3) ** 0.5 = 普朗克长度 = 普朗克長度
 
 
 # Mass
-metric_ton = 1e3 * kilogram = t = tonne = 吨 = 公吨
-unified_atomic_mass_unit = atomic_mass_constant = u = amu = 原子质量单位
+metric_ton = 1e3 * kilogram = t = tonne = 吨 = 公吨 = 噸 = 公噸
+centigram = cg = 厘克 = 公毫
+milligram = mg = 毫克 = 公絲
+decigram = dg = 分克 = 公銖
+dekagram = dag = 十克 = 公錢
+hectogram = hg = 百克 = 公兩
+kilogram = kg = 千克 = 公斤
+unified_atomic_mass_unit = atomic_mass_constant = u = amu = 原子质量单位 = 原子質量單位
 dalton = atomic_mass_constant = Da = 道尔顿
-grain = 64.79891 * milligram = gr = 格令
-gamma_mass = microgram = 伽玛质量
+grain = 64.79891 * milligram = gr = 格令 = 格林
+gamma_mass = microgram = 微克 = 伽玛质量
 carat = 200 * milligram = ct = karat = 克拉
-planck_mass = (hbar * c / gravitational_constant) ** 0.5 = 普朗克质量
+planck_mass = (hbar * c / gravitational_constant) ** 0.5 = 普朗克质量 = 普朗克質量
 
 # Time
 minute = 60 * second = min = 分钟 = 分

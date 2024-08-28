@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import ujson as json
 from sqlalchemy import create_engine, Column, Text, TIMESTAMP, text
@@ -6,7 +7,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt
 
+import hashlib
+
 Base = declarative_base()
+
+os.makedirs("database", exist_ok=True)
 
 DB_LINK = 'sqlite:///database/local.db'
 
@@ -16,6 +21,11 @@ class DirtyFilterTable(Base):
     desc = Column(Text, primary_key=True)
     result = Column(Text)
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+
+
+class CrowdinActivityRecordsTable(Base):
+    __tablename__ = "crowdin_activity_records"
+    hash_id = Column(Text, primary_key=True)
 
 
 class LocalDBSession:
@@ -51,9 +61,9 @@ class DirtyWordCache:
         self.query_word = query_word
         self.query = session.query(DirtyFilterTable).filter_by(desc=self.query_word).first()
         self.need_insert = False
-        if self.query is None:
+        if not self.query:
             self.need_insert = True
-        if self.query is not None and datetime.datetime.now().timestamp() - self.query.timestamp.timestamp() > 86400:
+        if self.query and datetime.datetime.now().timestamp() - self.query.timestamp.timestamp() > 86400:
             session.delete(self.query)
             session.commit()
             self.need_insert = True
@@ -69,3 +79,19 @@ class DirtyWordCache:
             return json.loads(self.query.result)
         else:
             return False
+
+
+class CrowdinActivityRecords:
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def check(txt: str):
+        query_hash = hashlib.md5(txt.encode(encoding='UTF-8')).hexdigest()
+        query = session.query(CrowdinActivityRecordsTable).filter_by(hash_id=query_hash).first()
+        if not query:
+            session.add_all([CrowdinActivityRecordsTable(hash_id=query_hash)])
+            session.commit()
+            return False
+        else:
+            return True

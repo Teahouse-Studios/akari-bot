@@ -1,28 +1,39 @@
-from core.builtins.message import MessageSession
-from core.component import on_command, on_regex
-from .dice import GenerateMessage
+from core.builtins import Bot
+from core.component import module
+from .process import process_expression
 
-dice = on_command('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
-                  'd8': 'dice d8', 'd10': 'dice d10', 'd12': 'dice d12', 'd20': 'dice d20', 'd100': 'dice d100'}, developers=['Light-Beacon'], desc='随机骰子',)
+dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon', 'DoroWolf'], desc='{dice.help.desc}', doc=True)
 
 
-@dice.handle('<dices> [<times>] [<dc>] {投掷指定骰子,可指定投骰次数与 dc 判断判定。}',)
-async def _(msg: MessageSession):
-    dice = msg.parsed_msg['<dices>']
-    times = msg.parsed_msg.get('<times>', '1')
-    dc = msg.parsed_msg.get('<dc>', '0')
-    if not times.isdigit():
-        await msg.finish('发生错误：无效的投骰次数：' + dc)
-    if not dc.isdigit():
-        await msg.finish('发生错误：无效的 dc：' + dc)
-    await msg.finish(await GenerateMessage(dice, int(times), int(dc)))
+@dice.command()
+async def _(msg: Bot.MessageSession):
+    await msg.finish(await process_expression(msg, 'D', None))
 
-dicergex = on_regex('dice_regex',
-                  desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                       '[扔投骰丢](N)个(n面)骰(子)', developers=['Light-Beacon'])
 
-@dicergex.handle(r"[扔|投|骰|丢]([0-9]*)?个([0-9]*面)?骰子?")
-async def _(message: MessageSession):
-    groups = message.matched_msg.groups()
-    diceType = groups[1][:-1] if groups[1] else '6'
-    await message.finish(await GenerateMessage(f'{groups[0]}D{diceType}',1,0))
+@dice.command('<dices> [<dc>] {{dice.help}}')
+async def _(msg: Bot.MessageSession, dices: str, dc: int = None):
+    await msg.finish(await process_expression(msg, dices, dc))
+
+
+@dice.command('set <sides> {{dice.help.set}}', required_admin=True)
+async def _(msg: Bot.MessageSession, sides: int):
+    if sides > 1:
+        msg.data.edit_option('dice_default_sides', sides)
+        await msg.finish(msg.locale.t("dice.message.set.success", sides=sides))
+    elif sides == 0:
+        msg.data.edit_option('dice_default_sides', None)
+        await msg.finish(msg.locale.t("dice.message.set.clear"))
+    else:
+        await msg.finish(msg.locale.t("dice.message.error.value.sides.invalid"))
+
+
+@dice.command('rule {{dice.help.rule}}', required_admin=True)
+async def _(msg: Bot.MessageSession):
+    dc_rule = msg.data.options.get('dice_dc_reversed')
+
+    if dc_rule:
+        msg.data.edit_option('dice_dc_reversed', False)
+        await msg.finish(msg.locale.t("dice.message.rule.disable"))
+    else:
+        msg.data.edit_option('dice_dc_reversed', True)
+        await msg.finish(msg.locale.t("dice.message.rule.enable"))

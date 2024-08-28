@@ -125,31 +125,42 @@ matchmaking = Module('matchmaking', {
 })
 
 # 007: errors related to (presumably) the eShop API
-eshop_mint = Module('eshop (mint/api?)', {
-    200: ResultInfo('无法访问SD卡。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4234'),
-    1221: ResultInfo('你输入的下载码只能用来在对应程序兑换。它不能在eShop兑换。',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14600'),
-    2001: ResultInfo('当你改区后访问eShop就会发生此错误，目前解决它的唯一办法就是改回去。'),
-    2100: ResultInfo('连接eShop超时。此错误代码通常出现于网络连接质量较差或受到了某网络组织的干扰。',
-                     '参见支持页面：https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432\n或任天堂网络状态：https://support.nintendo.com/networkstatus'),
-    2670: ResultInfo('尝试连接时发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4383'),
-    2720: ResultInfo('eShop SSL证书错误。'),
-    2913: ResultInfo('服务器可能离线，稍后再试。',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
-    2916: ResultInfo('常见于从eShop下载软件时错误。',
-                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
-    2920: ResultInfo(
-        '这个错误通常会在eShop下载错误时发生，或是应用使用了非法的ticket。使用FBI删除这个应用和它的ticket，然后从合法途径重新下载游戏；若是卡带导出的游戏，则建议删除后只使用卡带玩游戏。',
-        'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
-    2924: ResultInfo('出现于使用无效的语言设置打开eShop。'),
-    3049: ResultInfo('eShop已停服维护。', 'https://support.nintendo.com/networkstatus/'),
-    6106: ResultInfo('常见于从eShop重新下载带有非法或无效ticket的软件时。')
-
-})
+eshop_mint = Module(
+    'eshop (mint/api?)',
+    {
+        200: ResultInfo(
+            '无法访问SD卡。',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4234'),
+        1221: ResultInfo(
+            '你输入的下载码只能用来在对应程序兑换。它不能在eShop兑换。',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14600'),
+        2001: ResultInfo('当你改区后访问eShop就会发生此错误，目前解决它的唯一办法就是改回去。'),
+        2100: ResultInfo(
+            '连接eShop超时。此错误代码通常出现于网络连接质量较差或受到了某网络组织的干扰。',
+            '参见支持页面：https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432\n或任天堂网络状态：https://support.nintendo.com/networkstatus'),
+        2670: ResultInfo(
+            '尝试连接时发生错误。',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4383'),
+        2720: ResultInfo('eShop SSL证书错误。'),
+        2913: ResultInfo(
+            '服务器可能离线，稍后再试。',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
+        2916: ResultInfo(
+            '常见于从eShop下载软件时错误。',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
+        2920: ResultInfo(
+            '这个错误通常会在eShop下载错误时发生，或是应用使用了非法的ticket。使用FBI删除这个应用和它的ticket，然后从合法途径重新下载游戏；若是卡带导出的游戏，则建议删除后只使用卡带玩游戏。',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
+        2924: ResultInfo('出现于使用无效的语言设置打开eShop。'),
+        3049: ResultInfo(
+            'eShop已停服维护。',
+            'https://support.nintendo.com/networkstatus/'),
+        6106: ResultInfo('常见于从eShop重新下载带有非法或无效ticket的软件时。')})
 
 # 009: errors related to (presumably) the eShop application itself
 eshop_app = Module('eshop (app?)', {
-    # 1001: ResultInfo('The eShop is down for maintenance.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399'),
+    # 1001: ResultInfo('The eShop is down for maintenance.',
+    # 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399'),
     1000: ResultInfo('需要系统更新（好友模块？）。'),
     1001: eshop_mint.data[3049],
     2705: ResultInfo('此错误经常于eShop网络连接超时或丢失时出现。',
@@ -261,9 +272,9 @@ def construct_result(ret, mod, desc):
     module = ctr_results_modules.get(mod, Module(''))
     ret.add_field(ConsoleErrorField('模组', message_str=module.name, supplementary_value=mod))
     description = module.get_error(desc)
-    if description is None or not description.description:
+    if not description or not description.description:
         description = ctr_results_modules[0].get_error(desc)
-        if description is None or not description.description:
+        if not description or not description.description:
             ret.add_field(ConsoleErrorField('描述', supplementary_value=desc))
         else:
             ret.add_field(ConsoleErrorField('描述', message_str=description.description, supplementary_value=desc))
@@ -283,9 +294,9 @@ def construct_result_range(ret, mod, range_desc):
             continue
 
         description = module.get_error(desc)
-        if description is None or not description.description:
+        if not description or not description.description:
             description = ctr_results_modules[0].get_error(desc)
-            if description is None or not description.description:
+            if not description or not description.description:
                 unknown_descs.append(str(desc))
             else:
                 found_descs.append(
@@ -309,7 +320,7 @@ def construct_support(ret, mod, desc):
     else:
         ret.add_field(ConsoleErrorField('分类', supplementary_value=mod))
     description = category.get_error(desc)
-    if description is not None and description.description:
+    if description and description.description:
         ret.add_field(ConsoleErrorField('描述', message_str=description.description))
         if description.support_url:
             ret.add_field(ConsoleErrorField('更多描述', message_str=description.support_url))
@@ -338,7 +349,7 @@ def nim_handler(ret, description):
     # If we have a specific description for it in our knowledgebase,
     # show it instead of doing the rest of the processing.
     error = nim.get_error(description)
-    if error is not None and error.description:
+    if error and error.description:
         return construct_support(ret, 5, description)
 
     elif 2000 <= description < 3024:

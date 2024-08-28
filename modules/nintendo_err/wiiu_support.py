@@ -187,7 +187,7 @@ fp = Module('fp (friends)', {
     812: ResultInfo('Unsupported version.'),
     813: ResultInfo('Unknown error.')
 }, {
-                (100, 199): 'Core',
+    (100, 199): 'Core',
                 (200, 299): 'DDL',
                 (300, 399): 'Rendezvous',
                 (400, 499): 'Python Core',
@@ -201,7 +201,7 @@ fp = Module('fp (friends)', {
                 (1800, 1899): 'Matchmaking Referee',
                 (1900, 1999): 'Subscriber',
                 (2000, 2099): 'Ranking2',
-            })
+})
 
 act = Module('act (accounts)', {
     0: ResultInfo('Success.'),
@@ -313,24 +313,24 @@ act = Module('act (accounts)', {
     2999: ResultInfo('Unknown authentication failure.'),
 
 }, {
-                 (0, 499): 'Internal',
-                 (500, 599): 'Status changed',
-                 (600, 699): 'Invalid argument',
-                 (700, 709): 'Internal error',
-                 (710, 729): 'File error',
-                 (730, 799): 'Out of resources',
-                 (800, 809): 'UC',
-                 (810, 819): 'MCP',
-                 (820, 849): 'ISO',
-                 (850, 899): 'MXML',
-                 (900, 999): 'IOS',
-                 (1000, 1099): 'Account',
-                 (2100, 2199): 'HTTP',
-                 (2500, 2599): 'Account',
-                 (2670, 2699): 'Credit Card',
-                 (2800, 2835): 'Banned',
-                 (2880, 2899): 'Not available',  # not provided/under maintenance/no longer in service
-             })
+    (0, 499): 'Internal',
+    (500, 599): 'Status changed',
+    (600, 699): 'Invalid argument',
+    (700, 709): 'Internal error',
+    (710, 729): 'File error',
+    (730, 799): 'Out of resources',
+    (800, 809): 'UC',
+    (810, 819): 'MCP',
+    (820, 849): 'ISO',
+    (850, 899): 'MXML',
+    (900, 999): 'IOS',
+    (1000, 1099): 'Account',
+    (2100, 2199): 'HTTP',
+    (2500, 2599): 'Account',
+    (2670, 2699): 'Credit Card',
+    (2800, 2835): 'Banned',
+    (2880, 2899): 'Not available',  # not provided/under maintenance/no longer in service
+})
 
 nex = Module('nex (game servers)', {
     102: ResultInfo('The reason for the error is unknown.'),
@@ -366,7 +366,7 @@ nex = Module('nex (game servers)', {
         'The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained.'),
     309: ResultInfo('Data encryption failed.'),
     310: ResultInfo('The operation specifies or accesses an invalid PrincipalID.'),
-    311: ResultInfo('Maximum connnection number is reached.'),
+    311: ResultInfo('Maximum connection number is reached.'),
     312: ResultInfo('Invalid GID.'),
     313: ResultInfo('Invalid Control script ID.'),
     314: ResultInfo('Invalid operation in live/production environment.'),
@@ -387,21 +387,21 @@ nex = Module('nex (game servers)', {
     511: ResultInfo(
         '3rd-party server or device answered with an error code according to protocol used e.g. HTTP error code.'),
 }, {
-                 (100, 199): 'Core',
-                 (200, 299): 'DDL',
-                 (300, 399): 'Rendezvous',
-                 (400, 499): 'Python Core',
-                 (500, 599): 'Transport',
-                 (600, 699): 'DO Core',
-                 (700, 799): 'FPD',
-                 (800, 899): 'Authentication',
-                 (1100, 1199): 'Ranking',
-                 (1200, 1299): 'Data Store',
-                 (1500, 1599): 'Service Item',
-                 (1800, 1899): 'Matchmaking Referee',
-                 (1900, 1999): 'Subscriber',
-                 (2000, 2099): 'Ranking2',
-             })
+    (100, 199): 'Core',
+    (200, 299): 'DDL',
+    (300, 399): 'Rendezvous',
+    (400, 499): 'Python Core',
+    (500, 599): 'Transport',
+    (600, 699): 'DO Core',
+    (700, 799): 'FPD',
+    (800, 899): 'Authentication',
+    (1100, 1199): 'Ranking',
+    (1200, 1299): 'Data Store',
+    (1500, 1599): 'Service Item',
+    (1800, 1899): 'Matchmaking Referee',
+    (1900, 1999): 'Subscriber',
+    (2000, 2099): 'Ranking2',
+})
 
 eshop_api = Module('eshop(api)', {
     3190: ResultInfo('Wishlist is full.')
@@ -503,7 +503,7 @@ def construct_support(ret, mod, desc):
     if summary:
         ret.add_field(ConsoleErrorField('Summary', message_str=summary))
     description = category.get_error(desc)
-    if description is not None and description.description:
+    if description and description.description:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description))
         if description.support_url:
             ret.add_field(ConsoleErrorField('Further information', message_str=description.support_url))

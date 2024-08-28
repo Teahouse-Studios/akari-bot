@@ -8,13 +8,12 @@ class Plain:
     文本消息。
     """
 
-    def __init__(self, text, *texts):
+    def __init__(self, text, *texts, disable_joke: bool = False):
         """
         :param text: 文本内容
+        :param disable_joke: 是否禁用愚人节功能
         """
-        self.text = str(text)
-        for t in texts:
-            self.text += str(t)
+        raise NotImplementedError
 
 
 class Url:
@@ -31,9 +30,43 @@ class Url:
         :param use_mm: 是否使用跳转链接，覆盖全局设置
         :param disable_mm: 是否禁用跳转链接，覆盖全局设置
         """
-        self.url = url
-        self.mm = use_mm
-        self.disable_mm = disable_mm
+        raise NotImplementedError
+
+
+class FormattedTime:
+    """
+    格式化的时间消息。
+    """
+
+    def __init__(self,
+                 timestamp: float,
+                 date: bool = True,
+                 iso: bool = False,
+                 time: bool = True,
+                 seconds: bool = True,
+                 timezone: bool = True):
+        """
+        :param timestamp: 时间戳（UTC时间）
+        :param date: 是否显示日期
+        :param iso: 是否以ISO格式显示
+        :param time: 是否显示时间
+        :param seconds: 是否显示秒
+        :param timezone: 是否显示时区
+        """
+        raise NotImplementedError
+
+
+class I18NContext:
+    """
+    带有多语言的消息。
+    """
+
+    def __init__(self, key: str, **kwargs):
+        """
+        :param key: 多语言的键名
+        :param kwargs: 多语言中的变量
+        """
+        raise NotImplementedError
 
 
 class ErrorMessage:
@@ -41,11 +74,14 @@ class ErrorMessage:
     错误消息。
     """
 
-    def __init__(self, error_message):
+    def __init__(self, error_message: str, locale=None, enable_report: bool = True, **kwargs):
         """
         :param error_message: 错误信息文本
+        :param locale: 多语言
+        :param enable_report: 是否添加错误汇报部分
+        :param kwargs: 多语言中的变量
         """
-        self.error_message = error_message
+        raise NotImplementedError
 
 
 class Image:
@@ -59,19 +95,19 @@ class Image:
         :param path: 图片路径或PIL.Image对象
         :param headers: 获取图片时的请求头
         """
-        self.need_get = False
-        self.path = path
-        self.headers = headers
+        raise NotImplementedError
 
     async def get(self):
         """
         获取图片。
         """
+        raise NotImplementedError
 
     async def get_image(self):
         """
         从网络下载图片。
         """
+        raise NotImplementedError
 
 
 class Voice:
@@ -84,7 +120,7 @@ class Voice:
         """
         :param path: 语音文件路径。
         """
-        self.path = path
+        raise NotImplementedError
 
 
 class EmbedField:
@@ -101,9 +137,7 @@ class EmbedField:
         :param value: 字段值
         :param inline: 是否为行内字段
         """
-        self.name = name
-        self.value = value
-        self.inline = inline
+        raise NotImplementedError
 
 
 class Embed:
@@ -134,21 +168,13 @@ class Embed:
         :param footer: 页脚
         :param fields: 字段
         """
-        self.title = title
-        self.description = description
-        self.url = url
-        self.timestamp = timestamp
-        self.color = color
-        self.image = image
-        self.thumbnail = thumbnail
-        self.author = author
-        self.footer = footer
-        self.fields = fields
+        raise NotImplementedError
 
-    def to_msgchain(self):
+    def to_message_chain(self, msg):
         """
         将Embed转换为消息链。
         """
+        raise NotImplementedError
 
 
 __all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage"]

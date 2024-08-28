@@ -252,5 +252,7 @@
   "bluegrey-600": "#546e7a",
   "bluegrey-700": "#455a64",
   "bluegrey-800": "#37474f",
-  "bluegrey-900": "#263238"
+  "bluegrey-900": "#263238",
+  "black": "#000000",
+  "white": "#ffffff"
 }

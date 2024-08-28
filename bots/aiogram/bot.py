@@ -1,40 +1,48 @@
+import asyncio
 import os
+import sys
 
-from aiogram import types, executor
+from aiogram import types
+from aiogram.types import ContentType
 
-from bots.aiogram.client import dp
+from bots.aiogram.client import dp, bot
+from bots.aiogram.info import client_name
 from bots.aiogram.message import MessageSession, FetchTarget
 from core.builtins import PrivateAssets, Url
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import init, load_prompt, init_async
+from core.utils.bot import load_prompt, init_async
+from core.utils.info import Info
 
-PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-init()
+PrivateAssets.set('assets/private/aiogram')
 Url.disable_mm = True
 
 
-@dp.message_handler()
+@dp.message()
 async def msg_handler(message: types.Message):
-    targetId = f'Telegram|{message.chat.type}|{message.chat.id}'
-    replyId = None
-    if message.reply_to_message is not None:
-        replyId = message.reply_to_message.message_id
-    msg = MessageSession(MsgInfo(targetId=targetId,
-                                 senderId=f'Telegram|User|{message.from_user.id}',
-                                 targetFrom=f'Telegram|{message.chat.type}',
-                                 senderFrom='Telegram|User', senderName=message.from_user.username,
-                                 clientName='Telegram',
-                                 messageId=message.message_id,
-                                 replyId=replyId),
+    target_id = f'Telegram|{message.chat.type.title()}|{message.chat.id}'
+    reply_id = None
+    if message.reply_to_message:
+        reply_id = message.reply_to_message.message_id
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=f'Telegram|User|{message.from_user.id}',
+                                 target_from=f'Telegram|{message.chat.type.title()}',
+                                 sender_from='Telegram|User', sender_name=message.from_user.username,
+                                 client_name=client_name,
+                                 message_id=message.message_id,
+                                 reply_id=reply_id),
                          Session(message=message, target=message.chat.id, sender=message.from_user.id))
     await parser(msg)
 
 
 async def on_startup(dispatcher):
-    await init_async(FetchTarget)
+    await init_async()
     await load_prompt(FetchTarget)
 
 
-if dp:
-    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+if 'subprocess' in sys.argv:
+    Info.subprocess = True
+
+dp.startup.register(on_startup)
+
+asyncio.run(dp.start_polling(bot))

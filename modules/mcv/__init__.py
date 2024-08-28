@@ -1,44 +1,52 @@
 from core.builtins import Bot
-from core.component import on_command
-from .mcv import mcv, mcbv, mcdv, mcev
+from core.component import module
+from .mcv import mcv, mcbv, mcdv, mcev, mclgv
 
-m = on_command(
-    bind_prefix='mcv',
-    alias='m',
-    developers=['OasisAkari', 'Dianliang233'],
-    recommend_modules=['mcbv', 'mcdv'])
+m = module('mcv',
+           developers=['OasisAkari', 'Dianliang233'],
+           recommend_modules=['mcbv'], doc=True)
 
 
-@m.handle('{查询当前Minecraft Java版启动器内最新版本。}')
+@m.command('{{mcv.help.mcv}}')
 async def mcv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcv())
+    await msg.finish(await mcv(msg))
 
 
-mb = on_command(
-    bind_prefix='mcbv',
-    developers=['OasisAkari', 'Dianliang233'])
+mb = module('mcbv',
+            developers=['OasisAkari', 'Dianliang233'],
+            recommend_modules=['mcv'], doc=True)
 
 
-@mb.handle('{查询当前Minecraft 基岩版Jira内记录的最新版本。}')
+@mb.command('{{mcv.help.mcbv}}')
 async def mcbv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcbv())
+    await msg.finish(await mcbv(msg))
 
 
-md = on_command(
-    bind_prefix='mcdv',
-    developers=['OasisAkari', 'Dianliang233'])
+md = module('mcdv',
+            developers=['OasisAkari', 'Dianliang233'],
+            hidden=True, doc=True)
 
 
-@md.handle('{查询当前Minecraft Dungeons Jira内记录的最新版本。}')
+@md.command('{{mcv.help.mcdv}}')
 async def mcdv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcdv())
+    await msg.finish(await mcdv(msg))
 
 
-me = on_command(
-    bind_prefix='mcev',
-    developers=['OasisAkari', 'Dianliang233'])
+me = module('mcev',
+            developers=['OasisAkari', 'Dianliang233'],
+            hidden=True, doc=True)
 
 
-@me.handle('{查询当前Minecraft教育版Windows版记录的最新版本。}')
+@me.command('{{mcv.help.mcev}}')
 async def mcev_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcev())
+    await msg.finish(await mcev(msg))
+
+
+mlg = module('mclgv',
+             developers=['OasisAkari', 'Dianliang233'],
+             hidden=True, doc=True)
+
+
+@mlg.command('{{mcv.help.mclgv}}')
+async def mclgv_loader(msg: Bot.MessageSession):
+    await msg.finish(await mclgv(msg))
