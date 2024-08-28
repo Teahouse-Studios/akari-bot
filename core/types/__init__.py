@@ -6,6 +6,8 @@ from .module import *
 
 class PrivateAssets:
     path = os.path.abspath('assets/private/default')
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     @classmethod
     def set(cls, path):
