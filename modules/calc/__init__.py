@@ -2,6 +2,9 @@ import asyncio
 import os
 import subprocess
 import sys
+import re
+import traceback
+import numpy
 
 from core.builtins import Bot
 from core.component import module
