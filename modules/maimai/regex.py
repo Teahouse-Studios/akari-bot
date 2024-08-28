@@ -41,10 +41,9 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    genre = genre_i18n_mapping.get(music['basic_info']['genre'], '') if not msg.locale.locale == 'zh_cn' else music['basic_info']['genre']
     await msg.finish(await get_info(music, I18NContext("maimai.message.song",
                                                        artist=music['basic_info']['artist'],
-                                                       genre=genre,
+                                                       genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
                                                        bpm=music['basic_info']['bpm'],
                                                        version=music['basic_info']['from'],
                                                        level='/'.join((str(ds) for ds in music['ds'])))))

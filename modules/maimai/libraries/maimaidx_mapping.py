@@ -67,18 +67,20 @@ diffs = {
 }
 
 level_list = ["1", "2", "3", "4", "5", "6", "7", "7+", "8", "8+", "9", "9+",
-                  "10", "10+", "11", "11+", "12", "12+", "13", "13+", "14", "14+", "15"]
+              "10", "10+", "11", "11+", "12", "12+", "13", "13+", "14", "14+", "15"]
 goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
-                 "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
+             "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
 
 genre_i18n_mapping = {
     "流行&动漫": "POPS & ANIME",
+    "POPSアニメ": "POPS & ANIME",
     "niconico & VOCALOID": "niconico & VOCALOID",
-    "东方Project": "東方Project",
+    "niconicoボーカロイド": "東方Project",
     "其他游戏": "GAME & VARIETY",
+    "ゲームバラエティ": "GAME & VARIETY",
     "舞萌": "maimai",
     "音击&中二节奏": "ONGEKI & CHUNITHM",
-    "宴会場": "宴会場"
+    "オンゲキCHUNITHM": "ONGEKI & CHUNITHM",
 }
 
 versions = ["maimai",
@@ -176,4 +178,3 @@ grade_mapping = {
     "MASTER超上級": "master4",
     "MASTER超上级": "master4",
 }
-
