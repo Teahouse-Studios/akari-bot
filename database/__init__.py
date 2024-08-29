@@ -324,7 +324,7 @@ class BotDBUtil:
         def write(self,id_group: str, data: dict):
             json_data = json.dumps(data)
             if self.exist(id_group):
-                session.query(InfoServers).filter_by(from_target=id_group).update(json_data)
+                session.query(InfoServers).filter_by(from_target=id_group).first().servers = json_data
             else:
                 session.add(InfoServers(from_target=id_group,servers=json_data))
             session.commit()
