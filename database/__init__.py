@@ -331,6 +331,7 @@ class BotDBUtil:
             return json.loads(data.servers)
 
         def exist(self,id_group: str):
+            session.expire_all()
             query_exist = session.query(InfoServers).filter_by(from_target=id_group).first()
             if query_exist:
                 return True
@@ -346,7 +347,7 @@ class BotDBUtil:
             dicts = self.read(id_group)
             if name in dicts:
                 del dicts[name]
-                write(id_group, dicts)
+                self.write(id_group, dicts)
                 return True
             else:
                 return False
