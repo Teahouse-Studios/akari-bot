@@ -10,7 +10,6 @@ from core.types.message import MessageSession, FetchTarget, FetchedSession
 from core.utils.text import isint
 from database.orm import Session
 from database.tables import *
-from modules.info import write
 
 session = Session.session
 
