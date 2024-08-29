@@ -320,7 +320,7 @@ class BotDBUtil:
     class InfoServers:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        
+
         def write(self,id_group: str, data: dict):
             json_data = json.dumps(data)
             if self.exist(id_group):
@@ -330,7 +330,7 @@ class BotDBUtil:
             session.commit()
 
         def read(self,id_group: str):
-            data = session.query(InfoServers).filter_by(from_target=id_group).one()
+            data = session.query(InfoServers).filter_by(from_target=id_group).first()
             return json.loads(data.servers)
 
         def exist(self,id_group: str):
