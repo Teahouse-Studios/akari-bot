@@ -343,7 +343,7 @@ class BotDBUtil:
 
         def reset(self,id_group: str):
             if self.exist(id_group=id_group):
-                entry = session.query(InfoServers).filter_by(from_target=id_group)
+                entry = session.query(InfoServers).filter_by(from_target=id_group).first()
                 session.delete(entry)
 
         def delete(self,id_group: str, name: str):
