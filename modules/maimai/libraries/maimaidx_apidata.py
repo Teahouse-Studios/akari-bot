@@ -21,6 +21,7 @@ cache_dir = os.path.abspath(Config('cache_path', './cache/'))
 assets_dir = os.path.abspath('./assets/maimai/')
 total_list = TotalList()
 
+
 async def update_cover() -> bool:
     id_list = ['00000', '01000']
     for song in (await total_list.get()):
@@ -161,8 +162,6 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
         cache_path = os.path.join(cache_dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
         url = f"https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
-            if 'username' in payload:
-                await get_record(msg, payload, use_cache=False)
             payload.update({'music_id': sid})
             data = await post_url(url,
                                   data=json.dumps(payload),
