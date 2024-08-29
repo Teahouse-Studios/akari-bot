@@ -10,6 +10,7 @@ from core.types.message import MessageSession, FetchTarget, FetchedSession
 from core.utils.text import isint
 from database.orm import Session
 from database.tables import *
+from modules.info import write
 
 session = Session.session
 
@@ -313,6 +314,40 @@ class BotDBUtil:
             if entry:
                 session.delete(entry)
                 session.commit()
+                return True
+            else:
+                return False
+
+    class InfoServers:
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def write(id_group: str, data: dict):
+            json_data = json.dumps(data)
+            session.add(InfoServers(from_target=id_group,servers=json_data))
+            session.commit()
+
+        def read(self,id_group: str):
+            data = session.query(InfoServers).filter_by(from_target=id_group).one()
+            return json.loads(data.servers)
+
+        def exist(self,id_group: str):
+            query_exist = session.query(InfoServers).filter_by(from_target=id_group).first()
+            if query_exist:
+                return True
+            else:
+                return False
+
+        def reset(self,id_group: str):
+            if self.exist(id_group=id_group):
+                entry = session.query(InfoServers).filter_by(from_target=id_group)
+                session.delete(entry)
+
+        def delete(self,id_group: str, name: str):
+            dicts = self.read(id_group)
+            if name in dicts:
+                del dicts[name]
+                write(id_group, dicts)
                 return True
             else:
                 return False

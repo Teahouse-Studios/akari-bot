@@ -91,7 +91,13 @@ class JobQueueTable(Base):
 
     __table_args__ = {'mysql_charset': 'utf8mb4'}
 
+class InfoServers(Base):
+    __tablename__ = "info_servers"
+    from_target = Column(String(512))
+    servers = Column(String(1024))
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
+
 
 Session.create()
 __all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupBlockList",
-           "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable"]
+           "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable", "InfoServers"]
