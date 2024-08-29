@@ -4,7 +4,7 @@ from ast import literal_eval
 
 from core.builtins import Bot
 from core.component import module
-from database import BotDBUtil
+from database import InfoServers
 from .server import server
 
 inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
@@ -47,7 +47,7 @@ inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='
 #         return False
 #     return True
 
-info_ = BotDBUtil.InfoServers
+info_ = InfoServers
 
 
 @inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
     group_id = msg.target.target_id
     name = msg.parsed_msg['<name>']
     serip = msg.parsed_msg['<ServerUrl>']
-    if not BotDBUtil.InfoServers.exist(group_id):
+    if not info_.exist(group_id):
         info_.write(group_id, {name: serip})
     else:
         dicts = info_.read(group_id)
