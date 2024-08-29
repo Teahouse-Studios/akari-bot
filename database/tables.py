@@ -93,7 +93,7 @@ class JobQueueTable(Base):
 
 class InfoServers(Base):
     __tablename__ = "info_servers"
-    from_target = Column(String(512))
+    from_target = Column(String(512), primary_key=True)
     servers = Column(String(1024))
     __table_args__ = {'mysql_charset': 'utf8mb4'}
 
