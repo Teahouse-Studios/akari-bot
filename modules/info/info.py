@@ -46,7 +46,7 @@ inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='
 #         return False
 #     return True
 
-info_ = BotDBUtil.InfoServers
+info_ = BotDBUtil().InfoServers()
 
 
 @inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
