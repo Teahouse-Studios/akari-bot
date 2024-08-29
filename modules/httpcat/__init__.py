@@ -1,8 +1,8 @@
 from core.builtins import Image, Bot
-from core.component import on_command
+from core.component import module
 import ujson as json
 
-httpcat = on_command('httpcat', alias={'htpc': 'httpcat'}, desc='可爱的http猫猫', developers='haoye_qwq')
+httpcat = module('httpcat', alias={'htpc': 'httpcat'}, desc='可爱的http猫猫', developers='haoye_qwq')
 
 
 def init():

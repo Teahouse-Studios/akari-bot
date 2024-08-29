@@ -1,9 +1,9 @@
 from core.builtins import Bot, Image
-from core.component import on_command
+from core.component import module
 from core.extra import pir
 import requests
 
-w = on_command('whois', desc='查询 IP Whois 信息',
+w = module('whois', desc='查询 IP Whois 信息',
                developers=['haoye_qwq'])
 
 

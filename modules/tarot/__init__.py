@@ -2,10 +2,10 @@ import ujson as json
 import random
 import time
 from core.builtins import Bot, Plain, Image
-from core.component import on_command
+from core.component import module
 from core.extra import reverse_img
 
-tarot = on_command('tarot', desc='塔罗牌模块(移植自https://github.com/LaoLittle/SimpleTarot)',
+tarot = module('tarot', desc='塔罗牌模块(移植自https://github.com/LaoLittle/SimpleTarot)',
                    developers=['haoye_qwq'], alias=['塔罗牌', '今日塔罗'])
 
 

@@ -1,7 +1,7 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 
-brc = on_command('broadcast', required_superuser=True, developers='haoye_qwq')
+brc = module('broadcast', required_superuser=True, developers='haoye_qwq')
 
 @brc.handle('<text> {向所有群广播消息}')
 async def broadcast(msg: Bot.MessageSession):

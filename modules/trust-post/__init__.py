@@ -1,8 +1,8 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 import ujson as json
 
-tp = on_command('trust-post', desc='向可信好友推送消息', alias='tp', required_superuser=True)
+tp = module('trust-post', desc='向可信好友推送消息', alias='tp', required_superuser=True)
 
 
 @tp.handle('<message> {?}')

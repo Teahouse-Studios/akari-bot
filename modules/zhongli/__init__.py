@@ -1,7 +1,7 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 
-zl = on_command('zhongli', alias={'zl': 'zhongli', 'zinfo': 'zhongli info',
+zl = module('zhongli', alias={'zl': 'zhongli', 'zinfo': 'zhongli info',
                                   'stats': 'zhongli stats', 'bind': 'zhongli bind', 'check-in': 'zhongli check-in'
                                   }, desc='对接钟离（ 万 物 互 联 ）', developers=['haoye_qwq', 'xiaozhu_zhizui'],
                 available_for=['QQ|Group', 'QQ', 'TEST|Console'])

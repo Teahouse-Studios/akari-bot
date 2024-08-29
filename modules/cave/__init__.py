@@ -1,5 +1,5 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from config import Config
 import requests
 import ujson as json
@@ -40,7 +40,7 @@ def hitokoto_():
         return '请求失败'
 
 
-cave = on_command('cave', alias={'hitokoto': 'cave hitokoto',
+cave = module('cave', alias={'hitokoto': 'cave hitokoto',
                                  'cow': 'cave cowsay'
                                  },
                   desc='回声洞', developers=['haoye_qwq'])

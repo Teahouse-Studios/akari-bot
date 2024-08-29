@@ -1,8 +1,8 @@
-from core.component import on_regex
+from core.component import module
 from core.builtins import Bot
 from ast import literal_eval
 
-zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_superuser=True)
+zlp = module('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_superuser=True)
 
 
 @zlp.handle(pattern=r'\{(?<=\{)[^}]*(?=\})\}',

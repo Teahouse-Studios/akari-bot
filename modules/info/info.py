@@ -1,5 +1,5 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from config import Config
 from .server import server
 from ast import literal_eval
@@ -8,7 +8,7 @@ import ujson as json
 import itertools
 import re
 
-inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
+inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
                  desc='Minecraft服务器信息模块')
 redis_ = Config('redis').split(':')
 db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True)

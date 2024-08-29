@@ -1,8 +1,8 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from .server import server
 
-ntc = on_command('invite', alias='invi', developers='haoye_qwq')
+ntc = module('invite', alias='invi', developers='haoye_qwq')
 
 
 @ntc.handle('<ServerIP> {向启用invite模块的群广播游戏邀请}')

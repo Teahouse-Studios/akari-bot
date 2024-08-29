@@ -2,10 +2,10 @@ import ujson as json
 import traceback
 
 from core.builtins import Bot
-from core.component import on_command, on_schedule
+from core.component import module
 from core.scheduler import CronTrigger
 
-rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
+rp = module('report', developers='haoye_qwq', desc='汇报bug', base=True)
 
 
 def read():

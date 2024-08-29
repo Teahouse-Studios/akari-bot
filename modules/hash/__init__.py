@@ -1,8 +1,8 @@
-from core.component import on_command
+from core.component import module
 from core.builtins import Bot
 import hashlib
 
-hsh = on_command('hash', desc='生成对应字符串的哈希值', developers='haoye_qwq')
+hsh = module('hash', desc='生成对应字符串的哈希值', developers='haoye_qwq')
 
 
 @hsh.handle('<algorithm> <string>')

@@ -1,9 +1,9 @@
 import random
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 
-tarot = on_command('crazywords', desc='发电模块',
+tarot = module('crazywords', desc='发电模块',
                    developers=['haoye_qwq'], alias='fadian')
 @tarot.handle("<object> {发电}")
 async def _(send: Bot.MessageSession):
