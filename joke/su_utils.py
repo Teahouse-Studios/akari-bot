@@ -94,7 +94,7 @@ set_ = on_command('set', required_superuser=True)
 @set_.handle('modules <targetId> <modules> ...')
 async def _(msg: Bot.MessageSession):
     target = msg.parsed_msg['<targetId>']
-    if not target.startswith(f'{msg.target.targetFrom}|'):
+    if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(f'ID格式错误。')
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession):
         if not wait_confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)]
+               if m in ModulesManager.return_modules_list_as_dict(msg.target.target_from)]
     target_data.enable(modules)
     await msg.finish(f'成功为对象配置了以下模块：{", ".join(modules)}')
 
@@ -112,7 +112,7 @@ async def _(msg: Bot.MessageSession):
     target = msg.parsed_msg['<targetId>']
     k = msg.parsed_msg['<k>']
     v = msg.parsed_msg['<v>']
-    if not target.startswith(f'{msg.target.targetFrom}|'):
+    if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(f'ID格式错误。')
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
@@ -135,7 +135,7 @@ ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_sup
 @ae.handle('check <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     warns = BotDBUtil.SenderInfo(user).query.warns
     await msg.finish(f'{user} 已被警告 {warns} 次。')
@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
     await msg.finish(f'成功警告 {user} {count} 次。此用户已被警告 {warn_count} 次。')
@@ -155,7 +155,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
     await msg.finish(f'成功移除警告 {user} 的 {abs(count)} 次警告。此用户已被警告 {warn_count} 次。')
@@ -164,7 +164,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('clear <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     await pardon_user(user)
     await msg.finish(f'成功清除 {user} 的警告。')
@@ -173,7 +173,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('untempban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     await remove_temp_ban(user)
     await msg.finish(f'成功解除 {user} 的临时限制。')
@@ -182,7 +182,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('ban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
         await msg.finish(f'成功封禁 {user}。')
@@ -191,7 +191,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('unban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
         await msg.finish(f'成功解除 {user} 的封禁。')
@@ -207,7 +207,7 @@ def restart():
 def write_version_cache(msg: Bot.MessageSession):
     update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
     write_version = open(update, 'w')
-    write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
+    write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
     write_version.close()
 
 

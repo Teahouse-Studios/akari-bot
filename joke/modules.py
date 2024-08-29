@@ -48,7 +48,7 @@ async def _(msg: Bot.MessageSession):
 async def config_modules(msg: Bot.MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
+        targetFrom=msg.target.target_from)
     enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
     wait_config = [msg.parsed_msg.get(
         '<module>')] + msg.parsed_msg.get('...', [])
@@ -91,7 +91,7 @@ async def config_modules(msg: Bot.MessageSession):
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
+                query = BotDBUtil.TargetInfo(f'{msg.target.target_from}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
                 msglist.append(f'成功：为所有文字频道打开“{x}”模块')
@@ -140,7 +140,7 @@ async def config_modules(msg: Bot.MessageSession):
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
+                query = BotDBUtil.TargetInfo(f'{msg.target.target_from}|{x}')
                 query.disable(disable_list)
             for x in disable_list:
                 msglist.append(f'成功：为所有文字频道关闭“{x}”模块')
@@ -201,7 +201,7 @@ hlp = on_command('help',
 @hlp.handle('<module> {查看一个模块的详细信息}')
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
+        targetFrom=msg.target.target_from)
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
     if msg.parsed_msg is not None:
@@ -247,7 +247,7 @@ async def bot_help(msg: Bot.MessageSession):
 @hlp.handle('{查看帮助列表}')
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
+        targetFrom=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
@@ -327,7 +327,7 @@ async def _(msg: Bot.MessageSession):
 
 async def modules_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
-        targetFrom=msg.target.targetFrom)
+        targetFrom=msg.target.target_from)
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if msg.Feature.image:

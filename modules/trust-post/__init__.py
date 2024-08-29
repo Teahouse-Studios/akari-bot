@@ -7,7 +7,7 @@ tp = module('trust-post', desc='向可信好友推送消息', alias='tp', requir
 
 @tp.handle('<message> {?}')
 async def _(msg: Bot.MessageSession):
-    if msg.target.senderId == 'QQ|2031611695':
+    if msg.target.sender_id == 'QQ|2031611695':
         for i in json.load(open('./modules/trust-post/trust.json')):
             f = await Bot.FetchTarget.fetch_target(i)
             await f.sendDirectMessage(msg.parsed_msg['<message>'])

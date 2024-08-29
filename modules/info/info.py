@@ -53,7 +53,7 @@ def delete(id_group: str, name: str):
 
 @inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
 async def _(msg: Bot.MessageSession):
-    group_id = msg.target.targetId
+    group_id = msg.target.target_id
     name = msg.parsed_msg['<name>']
     serip = msg.parsed_msg['<ServerUrl>']
     if not exist(group_id):
@@ -67,7 +67,7 @@ async def _(msg: Bot.MessageSession):
 
 @inf.handle('reset {重置已绑定服务器列表}', required_admin=True)
 async def _____(msg: Bot.MessageSession):
-    group_id = msg.target.targetId
+    group_id = msg.target.target_id
     confirm = await msg.waitConfirm('你确定要删除它们吗?很久才能找回来!(真的很久!)')
     if confirm:
         reset(group_id)
@@ -78,7 +78,7 @@ async def _____(msg: Bot.MessageSession):
 
 @inf.handle('list {查看已绑定服务器列表}')
 async def __(msg: Bot.MessageSession):
-    group_id = msg.target.targetId
+    group_id = msg.target.target_id
     if exist(group_id):
         list_ = re.sub(r'[{}]', '', str(read(group_id))).replace('\'', '').replace(', ', ',\n').replace(': ', ' —> ')
         await msg.sendMessage('服务器列表:\n' + list_)
@@ -97,7 +97,7 @@ async def ___(msg: Bot.MessageSession):
 @inf.handle('<name> {查询已绑定的服务器信息}')
 async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
-    group_id = msg.target.targetId
+    group_id = msg.target.target_id
     if exist(group_id) and name in read(group_id):
         info = await server(read(group_id)[name])
         send = await msg.sendMessage(info + '\n[90秒后撤回]')
@@ -112,7 +112,7 @@ async def ____(msg: Bot.MessageSession):
 @inf.handle('unbind <name> {取消绑定服务器}', required_admin=True)
 async def ______(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
-    group_id = msg.target.targetId
+    group_id = msg.target.target_id
     unbind = delete(group_id, name)
     if unbind:
         await msg.sendMessage('已删除')
@@ -122,7 +122,7 @@ async def ______(msg: Bot.MessageSession):
 
 @inf.handle('multi_bind <dict> {绑定多个服务器}', required_superuser=True)
 async def _______(msg: Bot.MessageSession):
-    group_id = msg.target.targetId
+    group_id = msg.target.target_id
     fetched = literal_eval(str(msg.parsed_msg['<dict>']).replace('\n', ''))
     if exist(group_id):
         write(group_id, dict(itertools.chain(

@@ -33,8 +33,8 @@ async def opn(msg: Bot.MessageSession):
         serial = 1
     else:
         serial = len(read()) + 1
-    write(f"{msg.parsed_msg['<bug>']}\n——{msg.target.senderName}({msg.target.senderId})",
-          msg.target.targetId, serial)
+    write(f"{msg.parsed_msg['<bug>']}\n——{msg.target.sender_name}({msg.target.sender_id})",
+          msg.target.target_id, serial)
     await msg.sendMessage('已添加: #' + str(serial))
 
 
