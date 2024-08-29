@@ -321,9 +321,12 @@ class BotDBUtil:
         @staticmethod
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def write(id_group: str, data: dict):
+        def write(self,id_group: str, data: dict):
             json_data = json.dumps(data)
-            session.add(InfoServers(from_target=id_group,servers=json_data))
+            if self.exist(id_group):
+                session.query(InfoServers).filter_by(from_target=id_group).update(json_data)
+            else:
+                session.add(InfoServers(from_target=id_group,servers=json_data))
             session.commit()
 
         def read(self,id_group: str):
