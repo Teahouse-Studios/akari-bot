@@ -2,9 +2,8 @@ import itertools
 import re
 from ast import literal_eval
 
-from core.builtins import Bot
+from core.builtins import Bot, BotDBUtil
 from core.component import module
-from database import InfoServers
 from .server import server
 
 inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
@@ -47,7 +46,7 @@ inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='
 #         return False
 #     return True
 
-info_ = InfoServers
+info_ = BotDBUtil.InfoServers
 
 
 @inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
