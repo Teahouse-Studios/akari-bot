@@ -318,9 +318,9 @@ class BotDBUtil:
                 return False
 
     class InfoServers:
-        @staticmethod
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
+        
         def write(self,id_group: str, data: dict):
             json_data = json.dumps(data)
             if self.exist(id_group):
