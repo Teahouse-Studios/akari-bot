@@ -243,7 +243,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                if s:
+                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             res += msg.locale.t("maimai.message.chart.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:
@@ -355,7 +356,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                if s:
+                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:
@@ -394,7 +396,8 @@ async def query_song_info(msg, query, username):
             res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                if s:
+                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             res += msg.locale.t("maimai.message.info.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:

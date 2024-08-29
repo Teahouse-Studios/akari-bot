@@ -33,7 +33,8 @@ async def _(msg: Bot.MessageSession):
             res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                if s:
+                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
