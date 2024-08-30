@@ -64,8 +64,11 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
         data['blocked_time'] = msg.ts2strftime(strptime2ts(data['blocked_time'])) \
             if data['blocked_time'] else msg.locale.t('unknown')
         data['blocked_expires'] = base_user_info.get('blockexpiry', None)
-        data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires'])) \
-            if data['blocked_expires'] else msg.locale.t('unknown')
+        if data['blocked_expires']:
+            if data['blocked_expires'] != "infinite":
+                data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires']))
+        else:
+            data['blocked_expires'] = msg.locale.t('unknown')
         data['blocked_reason'] = base_user_info['blockreason']
         data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] else msg.locale.t(
             'unknown')
