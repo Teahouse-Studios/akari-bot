@@ -127,7 +127,8 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
     solution = await find_solution(numbers)
 
     answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=None, append_instruction=False)
-    expr = answer.as_display(text_only=True)
+    expr = answer.as_display(text_only=True).replace('÷', '/').replace('×', '*')\
+            .replace('（', '(').replace('）', ')').replace('。', '.').replace(' ', '') #shitcode D:
     if play_state.check():
         play_state.disable()
         if expr.lower() in no_solution_lst:
