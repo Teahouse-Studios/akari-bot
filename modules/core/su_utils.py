@@ -2,13 +2,12 @@ import os
 import re
 import shutil
 import sys
-import configparser
 from datetime import datetime
 
 import ujson as json
 
-from config import Config, CFG
 from bots.aiocqhttp.client import bot
+from config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
@@ -20,7 +19,6 @@ from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint
 from database import BotDBUtil
-
 
 target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group", "KOOK|Person",
                "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
@@ -555,7 +553,7 @@ if Config('enable_petal', False):
             msg.info.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
 
-ckframe = module("check_frame", alias='ckf', base=True, required_base_superuser=True)
+ckframe = module("check_frame", alias=['ckf','chkf'], base=True, required_base_superuser=True)
 
 @ckframe.command('{检测并更换机器人框架}')
 async def ckframe_(msg: Bot.MessageSession):
@@ -579,4 +577,12 @@ async def ckframe_(msg: Bot.MessageSession):
             unsupported_.append(frame)
     support_frame = list(set(all_frames_) - set(unsupported_))
     CFG.write('qq_frame_type',support_frame[0])
-    msg.sendMessage(f"已自动设置框架为：{support_frame[0]}")
+    await msg.sendMessage(f"已自动设置框架为：{support_frame[0]}")
+    # confirm = await msg.wait_confirm('要重启吗?(yes?)', append_instruction=False)
+    # if confirm:
+    #     restart_time.append(datetime.now().timestamp())
+    #     await wait_for_restart(msg)
+    #     write_version_cache(msg)
+    #     restart()
+    # else:
+    #     await msg.finish()
