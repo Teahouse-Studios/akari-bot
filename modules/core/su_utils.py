@@ -2,11 +2,13 @@ import os
 import re
 import shutil
 import sys
+import configparser
 from datetime import datetime
 
 import ujson as json
 
 from config import Config, CFG
+from bots.aiocqhttp.client import bot
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
@@ -552,3 +554,29 @@ if Config('enable_petal', False):
         else:
             msg.info.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
+
+ckframe = module("check_frame", alias='ckf', base=True, required_base_superuser=True)
+
+@ckframe.command('{检测并更换机器人框架}')
+async def ckframe_(msg: Bot.MessageSession):
+    unsupported_ = []
+    all_frames_ = ['ntqq', 'lagrange', 'mirai', 'shamrock']
+    for frame in all_frames_:
+        try:
+            if frame == 'lagrange':
+                await bot.call_action('group_poke', group_id=msg.session.target,
+                                      user_id=msg.session.sender)
+            elif frame == 'shamrock':
+                await bot.send_group_msg(group_id=msg.session.target,
+                                         message=f'[CQ:touch,id={msg.session.sender}]')
+            elif frame == 'mirai':
+                await bot.send_group_msg(group_id=msg.session.target,
+                                         message=f'[CQ:poke,qq={msg.session.sender}]')
+            if frame == 'ntqq':
+                await bot.call_action('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                                      emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
+        except Exception:
+            unsupported_.append(frame)
+    support_frame = list(set(all_frames_) - set(unsupported_))
+    CFG.write('qq_frame_type',support_frame[0])
+    msg.sendMessage(f"已自动设置框架为：{support_frame[0]}")
