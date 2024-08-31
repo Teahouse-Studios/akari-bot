@@ -558,7 +558,7 @@ ckframe = module("check_frame", alias=['ckf','chkf'], base=True, required_base_s
 @ckframe.command('{检测并更换机器人框架}')
 async def ckframe_(msg: Bot.MessageSession):
     unsupported_ = []
-    all_frames_ = ['ntqq', 'lagrange', 'mirai', 'shamrock']
+    all_frames_ = ['ntqq', 'shamrock', 'lagrange', 'mirai']
     for frame in all_frames_:
         try:
             if frame == 'lagrange':
