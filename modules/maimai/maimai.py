@@ -299,9 +299,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     slide=chart['notes'][2],
                     brk=chart['notes'][3]))
                 if diff >= 3:
-                    res.append(msg.locale.t(
-                        "maimai.message.chart.charter",
-                        charter=chart['charter']))
+                    res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])
             else:
                 res.append(msg.locale.t(
                     "maimai.message.chart.dx",
@@ -314,9 +312,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     touch=chart['notes'][3],
                     brk=chart['notes'][4]))
                 if diff >= 3:
-                    res.append(msg.locale.t(
-                        "maimai.message.chart.charter",
-                        charter=chart['charter']))
+                    res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])
 
     await msg.finish(await get_info(music, Plain('\n'.join(res))))
 
