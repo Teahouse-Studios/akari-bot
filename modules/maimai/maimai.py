@@ -3,7 +3,7 @@ from core.component import module
 from core.utils.text import isint
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, get_info, get_utage_info, get_record, search_by_alias, update_alias, update_cover
+from .libraries.maimaidx_apidata import get_alias, get_info, get_record, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_mapping import diff_list, level_list, goal_list, genre_i18n_mapping
 from .libraries.maimaidx_music import TotalList
