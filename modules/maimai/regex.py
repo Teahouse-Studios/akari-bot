@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
             artist=utage_data[sid]['artist'],
             bpm=utage_data[sid]['bpm'],
             version=music['basic_info']['from'],
-            level=utage_data[sid]['level'][0]
+            level=utage_data[sid]['level'][0])
     else:
         res = msg.locale.t(
             "maimai.message.song",
