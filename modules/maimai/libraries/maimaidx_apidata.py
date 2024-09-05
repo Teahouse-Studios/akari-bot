@@ -71,23 +71,6 @@ async def get_info(music: Music, *details) -> MessageChain:
     return info
 
 
-async def get_utage_info(music: Music, *details) -> MessageChain:
-    with open(utage_info_path, 'r') as file:
-        utage_data = json.load(file)
-
-    info = [Plain(f"{music.id} - {music.title}{' (DX)' if utage_data[music.id]['type'] == 'DX' else ''}")]
-    cover_path = os.path.join(cover_dir, f'{get_cover_len5_id(music.id)}.png')
-    if os.path.exists(cover_path):
-        info.append(Image(cover_path))
-    else:
-        cover_path = os.path.join(cover_dir, '00000.png')
-        if os.path.exists(cover_path):
-            info.append(Image(cover_path))
-    if details:
-        info.extend(details)
-    return info
-
-
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not os.path.exists(song_alias_path):
         await msg.finish(msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0]))
