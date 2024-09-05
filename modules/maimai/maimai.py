@@ -76,8 +76,9 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
             await msg.finish(s)
 
 
-@mai.command('level <level> [<page>] {{maimai.help.level}}')
-async def _(msg: Bot.MessageSession, level: str, page: str = None):
+@mai.command('level <level> [-p <page>] {{maimai.help.level}}',
+             options_desc={'-p': '{maimai.help.option.p}'})
+async def _(msg: Bot.MessageSession, level: str):
     result_set = []
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i['id'])):
@@ -89,7 +90,8 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
                                music['level'][i],
                                music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if isint(page) else 1
+    get_page = msg.parsed_msg.get('-p', False)
+    page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -110,8 +112,9 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
             await msg.finish(s)
 
 
-@mai.command('new [<page>] {{maimai.help.new}}')
-async def _(msg: Bot.MessageSession, page: str = None):
+@mai.command('new [-p <page>] {{maimai.help.new}}',
+             options_desc={'-p': '{maimai.help.option.p}'})
+async def _(msg: Bot.MessageSession):
     result_set = []
     data = (await total_list.get()).new()
 
@@ -120,7 +123,8 @@ async def _(msg: Bot.MessageSession, page: str = None):
                            music['title'],
                            music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if isint(page) else 1
+    get_page = msg.parsed_msg.get('-p', False)
+    page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -141,8 +145,9 @@ async def _(msg: Bot.MessageSession, page: str = None):
             await msg.finish(s)
 
 
-@mai.command('search <keyword> [<page>] {{maimai.help.search}}')
-async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
+@mai.command('search <keyword> [-p <page>] {{maimai.help.search}}',
+             options_desc={'-p': '{maimai.help.option.p}'})
+async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
     result_set = []
     data = (await total_list.get()).filter(title_search=name)
@@ -152,7 +157,8 @@ async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
     for music in sorted(data, key=lambda i: int(i['id'])):
         result_set.append((music['id'], music['title'], music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if isint(page) else 1
+    get_page = msg.parsed_msg.get('-p', False)
+    page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -260,13 +266,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
         res.append(f"「{utage_data[sid]['comment']}」")
         if utage_data[sid]['referrals_num']['mode'] == 'normal':
-            chart = music['charts'][0]
-            ds = music['ds'][0]
-            level = music['level'][0]
+            chart = utage_data[sid]['charts'][0]
             res.append(msg.locale.t(
                 "maimai.message.chart.utage",
-                level=level,
-                ds=ds,
+                level=utage_data[sid]['level'][0],
+                ds=music['ds'][0],
                 player=utage_data[sid]['referrals_num']['player'][0],
                 tap=chart['notes'][0],
                 hold=chart['notes'][1],
@@ -274,32 +278,29 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4]))
         else:
-            chartL = music['charts'][0]
-            chartR = music['charts'][1]
-            buddy_players = utage_data[sid]['referrals_num']['player']
-            ds = music['ds'][0]
-            level = music['level'][0]
+            chartL = utage_data[sid]['charts'][0]
+            chartR = utage_data[sid]['charts'][1]
+            players = utage_data[sid]['referrals_num']['player']
             res.append(msg.locale.t(
-                "maimai.message.chart.utage",
-                level=level,
-                ds=ds,
-                player=f"{buddy_players[0]} | {buddy_players[1]}",
-                tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
-                hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
-                slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
-                touch=f"{chartL['notes'][3]}+{chartR['notes'][3]}",
-                brk=f"{chartL['notes'][4]}+{chartR['notes'][4]}"))
+                "maimai.message.chart.utage.buddy",
+                level=utage_data[sid]['level'][0],
+                ds=music['ds'][0],
+                playerL=players[0],
+                playerR=players[1],
+                tapL=chartL['notes'][0], tapR=chartR['notes'][0],
+                holdL=chartL['notes'][1], holdR=chartR['notes'][1],
+                slideL=chartL['notes'][2], slideR=chartR['notes'][2],
+                toucL=chartL['notes'][3], toucR=chartR['notes'][3],
+                brkL=chartL['notes'][4], brkR=chartR['notes'][4]))
     else:
         for diff in range(len(music['ds'])):
             chart = music['charts'][diff]
-            ds = music['ds'][diff]
-            level = music['level'][diff]
             if len(chart['notes']) == 4:
                 res.append(msg.locale.t(
                     "maimai.message.chart.sd",
                     diff=diff_list[diff],
-                    level=level,
-                    ds=ds,
+                    level=music['level'][diff],
+                    ds=music['ds'][diff],
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
@@ -310,8 +311,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 res.append(msg.locale.t(
                     "maimai.message.chart.dx",
                     diff=diff_list[diff],
-                    level=level,
-                    ds=ds,
+                    level=music['level'][diff],
+                    ds=music['ds'][diff],
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],

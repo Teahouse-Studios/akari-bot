@@ -70,8 +70,9 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
             await msg.finish(s)
 
 
-@chu.command('level <level> [<page>] {{maimai.help.level}}')
-async def _(msg: Bot.MessageSession, level: str, page: str = None):
+@chu.command('level <level> [-p <page>] {{maimai.help.level}}',
+             options_desc={'-p': '{maimai.help.option.p}'})
+async def _(msg: Bot.MessageSession, level: str):
     result_set = []
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i['id'])):
@@ -82,7 +83,8 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
                                diff_list[i],
                                music['level'][i]))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if isint(page) else 1
+    get_page = msg.parsed_msg.get('-p', False)
+    page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -103,8 +105,8 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
             await msg.finish(s)
 
 
-@chu.command('search <keyword> [<page>] {{maimai.help.search}}')
-async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
+@chu.command('search <keyword> [-p <page>] {{maimai.help.search}}')
+async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
     result_set = []
     data = (await total_list.get()).filter(title_search=name)
@@ -114,7 +116,8 @@ async def _(msg: Bot.MessageSession, keyword: str, page: str = None):
         for music in sorted(data, key=lambda i: int(i['id'])):
             result_set.append((music['id'], music['title']))
         total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-        page = max(min(int(page), total_pages), 1) if isint(page) else 1
+        get_page = msg.parsed_msg.get('-p', False)
+        page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
         start_index = (page - 1) * SONGS_PER_PAGE
         end_index = page * SONGS_PER_PAGE
 
