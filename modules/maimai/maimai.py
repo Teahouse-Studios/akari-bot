@@ -260,15 +260,15 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             utage_data = json.load(file)
 
         res.append(f"「{utage_data[sid]['comment']}」")
-        if utage_data[sid]['referrals_num'] == 'normal':
+        if utage_data[sid]['referrals_num']['mode'] == 'normal':
             chart = music['charts'][0]
             ds = music['ds'][0]
             level = music['level'][0]
             res.append(msg.locale.t(
-                "maimai.message.chart.dx",
-                diff='Utage',
+                "maimai.message.chart.utage",
                 level=level,
                 ds=ds,
+                player=utage_data[sid]['referrals_num']['player']
                 tap=chart['notes'][0],
                 hold=chart['notes'][1],
                 slide=chart['notes'][2],
@@ -277,13 +277,14 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         else:
             chartL = music['charts'][0]
             chartR = music['charts'][1]
+            buddy_players = utage_data[sid]['referrals_num']['player']
             ds = music['ds'][0]
             level = music['level'][0]
             res.append(msg.locale.t(
-                "maimai.message.chart.dx",
-                diff='Utage',
+                "maimai.message.chart.utage",
                 level=level,
                 ds=ds,
+                player=f"{buddy_players[0]}|{buddy_players[1]}",
                 tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
                 hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
                 slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
