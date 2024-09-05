@@ -258,57 +258,31 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         chart = music['charts'][0]
         ds = music['ds'][0]
         level = music['level'][0]
-        if len(chart['notes']) == 4:
-            res.append(msg.locale.t(
-                "maimai.message.chart.sd",
-                diff='Utage',
-                level=level,
-                ds=ds,
-                tap=chart['notes'][0],
-                hold=chart['notes'][1],
-                slide=chart['notes'][2],
-                brk=chart['notes'][3],
-                charter=chart['charter']))
-        else:
-            res.append(msg.locale.t(
-                "maimai.message.chart.dx",
-                diff='Utage',
-                level=level,
-                ds=ds,
-                tap=chart['notes'][0],
-                hold=chart['notes'][1],
-                slide=chart['notes'][2],
-                touch=chart['notes'][3],
-                brk=chart['notes'][4],
-                charter=chart['charter']))
+        res.append(msg.locale.t(
+            "maimai.message.chart.dx",
+            diff='Utage',
+            level=level,
+            ds=ds,
+            tap=chart['notes'][0],
+            hold=chart['notes'][1],
+            slide=chart['notes'][2],
+            touch=chart['notes'][3],
+            brk=chart['notes'][4]))
     elif len(music['ds']) == 2:
         chartL = music['charts'][0]
         chartR = music['charts'][1]
         ds = music['ds'][0]
         level = music['level'][0]
-        if len(chartL['notes']) == 4:
-            res.append(msg.locale.t(
-                "maimai.message.chart.sd",
-                diff='Utage',
-                level=level,
-                ds=ds,
-                tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
-                hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
-                slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
-                brk=f"{chartL['notes'][3]}+{chartR['notes'][3]}",
-                charter=chartL['charter']))
-        else:
-            res.append(msg.locale.t(
-                "maimai.message.chart.dx",
-                diff='Utage',
-                level=level,
-                ds=ds,
-                tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
-                hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
-                slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
-                touch=f"{chartL['notes'][3]}+{chartR['notes'][3]}",
-                brk=f"{chartL['notes'][4]}+{chartR['notes'][4]}",
-                charter=chartL['charter']))
+        res.append(msg.locale.t(
+            "maimai.message.chart.dx",
+            diff='Utage',
+            level=level,
+            ds=ds,
+            tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
+            hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
+            slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
+            touch=f"{chartL['notes'][3]}+{chartR['notes'][3]}",
+            brk=f"{chartL['notes'][4]}+{chartR['notes'][4]}"))
     else:
         for diff in range(len(music['ds'])):
             chart = music['charts'][diff]
@@ -323,8 +297,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
-                    brk=chart['notes'][3],
-                    charter=chart['charter']))
+                    brk=chart['notes'][3]))
+                if diff >= 3:
+                    res.append(msg.locale.t(
+                        "maimai.message.chart.charter",
+                        charter=chart['charter']))
             else:
                 res.append(msg.locale.t(
                     "maimai.message.chart.dx",
@@ -335,8 +312,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
                     touch=chart['notes'][3],
-                    brk=chart['notes'][4],
-                    charter=chart['charter']))
+                    brk=chart['notes'][4]))
+                if diff >= 3:
+                    res.append(msg.locale.t(
+                        "maimai.message.chart.charter",
+                        charter=chart['charter']))
 
     await msg.finish(await get_info(music, Plain('\n'.join(res))))
 
