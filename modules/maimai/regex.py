@@ -7,7 +7,7 @@ from core.component import module
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_music import TotalList
-from .libraries.maimaidx_utils import get_diff, get_grade_info, get_utage_info
+from .libraries.maimaidx_utils import get_diff, get_grade_info
 from .maimai import query_plate, query_song_info, query_process
 
 total_list = TotalList()
@@ -55,8 +55,6 @@ async def _(msg: Bot.MessageSession):
             bpm=utage_data[sid]['bpm'],
             version=music['basic_info']['from'],
             level=utage_data[sid]['level'][0]
-
-        await msg.finish(await get_utage_info(sid, Plain(res)))
     else:
         res = msg.locale.t(
             "maimai.message.song",
@@ -66,7 +64,7 @@ async def _(msg: Bot.MessageSession):
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
         
-        await msg.finish(await get_info(music, Plain(res)))
+    await msg.finish(await get_info(music, Plain(res)))
 
 
 @mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
