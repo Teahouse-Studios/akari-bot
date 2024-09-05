@@ -254,35 +254,41 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     res = []
-    if len(music['ds']) == 1:
-        chart = music['charts'][0]
-        ds = music['ds'][0]
-        level = music['level'][0]
-        res.append(msg.locale.t(
-            "maimai.message.chart.dx",
-            diff='Utage',
-            level=level,
-            ds=ds,
-            tap=chart['notes'][0],
-            hold=chart['notes'][1],
-            slide=chart['notes'][2],
-            touch=chart['notes'][3],
-            brk=chart['notes'][4]))
-    elif len(music['ds']) == 2:
-        chartL = music['charts'][0]
-        chartR = music['charts'][1]
-        ds = music['ds'][0]
-        level = music['level'][0]
-        res.append(msg.locale.t(
-            "maimai.message.chart.dx",
-            diff='Utage',
-            level=level,
-            ds=ds,
-            tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
-            hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
-            slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
-            touch=f"{chartL['notes'][3]}+{chartR['notes'][3]}",
-            brk=f"{chartL['notes'][4]}+{chartR['notes'][4]}"))
+    if int(sid) > 100000:
+        file_path = os.path.join(assets_path, "mai_utage_song_info.json")
+        with open(file_path, 'r') as file:
+            utage_data = json.load(file)
+
+        res.append(f"「{utage_data[sid]['comment']}」")
+        if utage_data[sid]['referrals_num'] == 'normal':
+            chart = music['charts'][0]
+            ds = music['ds'][0]
+            level = music['level'][0]
+            res.append(msg.locale.t(
+                "maimai.message.chart.dx",
+                diff='Utage',
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                touch=chart['notes'][3],
+                brk=chart['notes'][4]))
+        else:
+            chartL = music['charts'][0]
+            chartR = music['charts'][1]
+            ds = music['ds'][0]
+            level = music['level'][0]
+            res.append(msg.locale.t(
+                "maimai.message.chart.dx",
+                diff='Utage',
+                level=level,
+                ds=ds,
+                tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
+                hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
+                slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
+                touch=f"{chartL['notes'][3]}+{chartR['notes'][3]}",
+                brk=f"{chartL['notes'][4]}+{chartR['notes'][4]}"))
     else:
         for diff in range(len(music['ds'])):
             chart = music['charts'][diff]
