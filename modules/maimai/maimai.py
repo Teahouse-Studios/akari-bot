@@ -356,7 +356,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             'maimai.message.song.utage',
             comment=utage_data[sid]['comment'],
             artist=music['basic_info']['artist'],
-            genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))}"
@@ -364,6 +363,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         res = msg.locale.t(
             "maimai.message.song",
             artist=music['basic_info']['artist'],
+            genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
