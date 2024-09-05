@@ -352,8 +352,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         with open(utage_info_path, 'r') as file:
             utage_data = json.load(file)
 
-        res = f"\n{msg.locale.t(
-            'maimai.message.song',
+        res = f"{msg.locale.t(
+            'maimai.message.song.utage',
+            comment=utage_data[sid]['comment'],
             artist=music['basic_info']['artist'],
             genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
             bpm=music['basic_info']['bpm'],
@@ -361,13 +362,12 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             level='/'.join((str(ds) for ds in music['ds'])))}"
     else:
         res = msg.locale.t(
-            "maimai.message.song.utage",
-            comment=utage_data[sid]['comment'],
+            "maimai.message.song",
             artist=music['basic_info']['artist'],
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-    await msg.finish(await get_utage_info(music, Plain(res)))
+    await msg.finish(await get_info(music, Plain(res)))
 
 
 @mai.command('info <id_or_alias> [-u <username>] {{maimai.help.info}}',
