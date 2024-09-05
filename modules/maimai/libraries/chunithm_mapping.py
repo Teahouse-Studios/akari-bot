@@ -5,6 +5,7 @@ SONGS_PER_PAGE = 30
 
 assets_path = os.path.abspath('./assets/maimai/')
 cover_dir = os.path.join(assets_path, "static", "chu", "cover")
+song_info_path = os.path.join(assets_path, "chu_song_info.json")
 
 score_to_rate = {
     (0, 499999): "D",

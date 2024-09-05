@@ -290,7 +290,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 tapL=chartL['notes'][0], tapR=chartR['notes'][0],
                 holdL=chartL['notes'][1], holdR=chartR['notes'][1],
                 slideL=chartL['notes'][2], slideR=chartR['notes'][2],
-                toucL=chartL['notes'][3], toucR=chartR['notes'][3],
+                touchL=chartL['notes'][3], touchR=chartR['notes'][3],
                 brkL=chartL['notes'][4], brkR=chartR['notes'][4]))
     else:
         for diff in range(len(music['ds'])):
