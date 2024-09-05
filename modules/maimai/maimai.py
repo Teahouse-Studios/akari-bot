@@ -295,7 +295,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 touchR=chartR['notes'][3],
                 brkL=chartL['notes'][4],
                 brkR=chartR['notes'][4]))
-        await msg.finish(await get_utage_info(sid, Plain('\n'.join(res))))
     else:
         for diff in range(len(music['ds'])):
             chart = music['charts'][diff]
@@ -323,9 +322,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     touch=chart['notes'][3],
                     brk=chart['notes'][4]))
                 if diff >= 2:
-                    res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])
+                    res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])  
 
-        await msg.finish(await get_info(music, Plain('\n'.join(res))))
+    await msg.finish(await get_info(music, Plain('\n'.join(res))))
 
 
 @mai.command('id <id> {{maimai.help.id}}')
