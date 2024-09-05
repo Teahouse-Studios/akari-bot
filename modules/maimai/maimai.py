@@ -268,7 +268,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 "maimai.message.chart.utage",
                 level=level,
                 ds=ds,
-                player=utage_data[sid]['referrals_num']['player']
+                player=utage_data[sid]['referrals_num']['player'],
                 tap=chart['notes'][0],
                 hold=chart['notes'][1],
                 slide=chart['notes'][2],
@@ -349,13 +349,27 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    res = msg.locale.t(
-        "maimai.message.song",
-        artist=music['basic_info']['artist'],
-        genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
-        bpm=music['basic_info']['bpm'],
-        version=music['basic_info']['from'],
-        level='/'.join((str(ds) for ds in music['ds'])))
+    if int(sid) > 100000:
+        file_path = os.path.join(assets_path, "mai_utage_song_info.json")
+        with open(file_path, 'r') as file:
+            utage_data = json.load(file)
+
+        res = f"「{utage_data[sid]['comment']}」\n"
+        res += msg.locale.t(
+            "maimai.message.song",
+            artist=music['basic_info']['artist'],
+            genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
+            bpm=music['basic_info']['bpm'],
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
+    else:
+        res = msg.locale.t(
+            "maimai.message.song",
+            artist=music['basic_info']['artist'],
+            genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
+            bpm=music['basic_info']['bpm'],
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
     await msg.finish(await get_info(music, Plain(res)))
 
 
