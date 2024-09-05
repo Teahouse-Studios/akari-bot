@@ -270,7 +270,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             res.append(msg.locale.t(
                 "maimai.message.chart.utage",
                 level=utage_data[sid]['level'][0],
-                ds=music['ds'][0],
                 player=utage_data[sid]['referrals_num']['player'][0],
                 tap=chart['notes'][0],
                 hold=chart['notes'][1],
@@ -284,14 +283,19 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             res.append(msg.locale.t(
                 "maimai.message.chart.utage.buddy",
                 level=utage_data[sid]['level'][0],
-                ds=music['ds'][0],
                 playerL=players[0],
                 playerR=players[1],
-                tapL=chartL['notes'][0], tapR=chartR['notes'][0],
-                holdL=chartL['notes'][1], holdR=chartR['notes'][1],
-                slideL=chartL['notes'][2], slideR=chartR['notes'][2],
-                touchL=chartL['notes'][3], touchR=chartR['notes'][3],
-                brkL=chartL['notes'][4], brkR=chartR['notes'][4]))
+                tapL=chartL['notes'][0],
+                tapR=chartR['notes'][0],
+                holdL=chartL['notes'][1],
+                holdR=chartR['notes'][1],
+                slideL=chartL['notes'][2],
+                slideR=chartR['notes'][2],
+                touchL=chartL['notes'][3],
+                touchR=chartR['notes'][3],
+                brkL=chartL['notes'][4],
+                brkR=chartR['notes'][4]))
+        await msg.finish(await get_utage_info(sid, Plain('\n'.join(res))))
     else:
         for diff in range(len(music['ds'])):
             chart = music['charts'][diff]
@@ -321,7 +325,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 if diff >= 2:
                     res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])
 
-    await msg.finish(await get_info(music, Plain('\n'.join(res))))
+        await msg.finish(await get_info(music, Plain('\n'.join(res))))
 
 
 @mai.command('id <id> {{maimai.help.id}}')
@@ -353,13 +357,14 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         with open(utage_info_path, 'r') as file:
             utage_data = json.load(file)
 
-        res = f"{msg.locale.t(
+        res = msg.locale.t(
             'maimai.message.song.utage',
             comment=utage_data[sid]['comment'],
-            artist=music['basic_info']['artist'],
-            bpm=music['basic_info']['bpm'],
+            artist=utage_data[sid]['artist'],
+            bpm=utage_data[sid]['bpm'],
             version=music['basic_info']['from'],
-            level='/'.join((str(ds) for ds in music['ds'])))}"
+            level=utage_data[sid]['level'][0])
+        await msg.finish(await get_utage_info(sid, Plain(res)))
     else:
         res = msg.locale.t(
             "maimai.message.song",
@@ -368,7 +373,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-    await msg.finish(await get_info(music, Plain(res)))
+        await msg.finish(await get_info(music, Plain(res)))
 
 
 @mai.command('info <id_or_alias> [-u <username>] {{maimai.help.info}}',
