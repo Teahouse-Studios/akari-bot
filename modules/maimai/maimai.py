@@ -363,7 +363,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             bpm=utage_data[sid]['bpm'],
             version=music['basic_info']['from'],
             level=utage_data[sid]['level'][0])
-        await msg.finish(await get_utage_info(sid, Plain(res)))
     else:
         res = msg.locale.t(
             "maimai.message.song",
@@ -372,7 +371,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(music, Plain(res)))
+    await msg.finish(await get_info(music, Plain(res)))
 
 
 @mai.command('info <id_or_alias> [-u <username>] {{maimai.help.info}}',
