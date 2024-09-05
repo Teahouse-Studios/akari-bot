@@ -49,6 +49,7 @@
     "maimai.message.chart.dx": "${diff} ${level} (${ds})\nTAP：${tap}/HOLD：${hold}/SLIDE：${slide}/TOUCH：${touch}/BREAK：${brk}",
     "maimai.message.chart.prompt": "请使用“${prefix}maimai chart <ID>”查询对应结果。",
     "maimai.message.chart.sd": "${diff} ${level} (${ds})\nTAP：${tap}/HOLD：${hold}/SLIDE：${slide}/BREAK：${brk}",
+    "maimai.message.chart.utage": "${diff} ${level} (${ds})\n推荐玩家数量：${player}\nTAP：${tap}/HOLD：${hold}/SLIDE：${slide}/TOUCH：${touch}/BREAK：${brk}",
     "maimai.message.chart_not_found": "未找到符合要求的谱面。",
     "maimai.message.disambiguation": "以下是可能的结果：",
     "maimai.message.forbidden": "此用户禁止了其他人获取数据。",
