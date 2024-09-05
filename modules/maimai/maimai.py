@@ -3,7 +3,7 @@ from core.component import module
 from core.utils.text import isint
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, get_info, get_record, search_by_alias, update_alias, update_cover
+from .libraries.maimaidx_apidata import get_alias, get_info, get_utage_info, get_record, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_mapping import diff_list, level_list, goal_list, genre_i18n_mapping
 from .libraries.maimaidx_music import TotalList
@@ -255,8 +255,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     res = []
     if int(sid) > 100000:
-        file_path = os.path.join(assets_path, "mai_utage_song_info.json")
-        with open(file_path, 'r') as file:
+        with open(utage_info_path, 'r') as file:
             utage_data = json.load(file)
 
         res.append(f"「{utage_data[sid]['comment']}」")
@@ -268,7 +267,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 "maimai.message.chart.utage",
                 level=level,
                 ds=ds,
-                player=utage_data[sid]['referrals_num']['player'],
+                player=utage_data[sid]['referrals_num']['player'][0],
                 tap=chart['notes'][0],
                 hold=chart['notes'][1],
                 slide=chart['notes'][2],
@@ -284,7 +283,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 "maimai.message.chart.utage",
                 level=level,
                 ds=ds,
-                player=f"{buddy_players[0]}|{buddy_players[1]}",
+                player=f"{buddy_players[0]} | {buddy_players[1]}",
                 tap=f"{chartL['notes'][0]}+{chartR['notes'][0]}",
                 hold=f"{chartL['notes'][1]}+{chartR['notes'][1]}",
                 slide=f"{chartL['notes'][2]}+{chartR['notes'][2]}",
@@ -350,27 +349,25 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if int(sid) > 100000:
-        file_path = os.path.join(assets_path, "mai_utage_song_info.json")
-        with open(file_path, 'r') as file:
+        with open(utage_info_path, 'r') as file:
             utage_data = json.load(file)
 
-        res = f"「{utage_data[sid]['comment']}」\n"
-        res += msg.locale.t(
-            "maimai.message.song",
+        res = f"\n{msg.locale.t(
+            'maimai.message.song',
             artist=music['basic_info']['artist'],
             genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
-            level='/'.join((str(ds) for ds in music['ds'])))
+            level='/'.join((str(ds) for ds in music['ds'])))}"
     else:
         res = msg.locale.t(
-            "maimai.message.song",
+            "maimai.message.song.utage",
+            comment=utage_data[sid]['comment'],
             artist=music['basic_info']['artist'],
-            genre=genre_i18n_mapping.get(music['basic_info']['genre'], music['basic_info']['genre']),
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-    await msg.finish(await get_info(music, Plain(res)))
+    await msg.finish(await get_utage_info(music, Plain(res)))
 
 
 @mai.command('info <id_or_alias> [-u <username>] {{maimai.help.info}}',

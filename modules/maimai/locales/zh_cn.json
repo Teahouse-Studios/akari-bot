@@ -88,6 +88,7 @@
     "maimai.message.scorelist": "以下为 ${user} 的 ${level} 级成绩列表：",
     "maimai.message.search": "“${keyword}”的搜索结果：",
     "maimai.message.song": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}\n难度：${level}",
+    "maimai.message.song.utage": "「${comment}」\n艺术家：${artist}\n分类：宴会場\nBPM：${bpm}\n版本：${version}\n难度：${level}",
     "maimai.message.song.prompt": "请使用“${prefix}maimai song <ID>”查询对应结果。",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
     "maimai.message.unbind.success": "解绑成功。",
