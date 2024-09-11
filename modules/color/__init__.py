@@ -16,7 +16,7 @@ assets_path = os.path.abspath('./assets/color')
 c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}', doc=True)
 
 font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
-md_color_path = os.path.join(assets_path, '/material_colors.json')
+md_color_path = os.path.join(assets_path, 'material_colors.json')
 
 font = ImageFont.truetype(font_path, 40)
 with open(md_color_path, 'r', encoding='utf-8') as f:
