@@ -15,7 +15,6 @@ from core.utils.web_render import WebRender, webrender
 
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
-assets_path = os.path.abspath('./assets/')
 
 
 async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True,

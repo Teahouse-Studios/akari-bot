@@ -171,7 +171,7 @@ if __name__ == '__main__':
                 pidlst.clear()
                 sleep(5)
                 continue
-            except Exception as e:
+            except Exception:
                 logger.critical('An error occurred, please check the output.')
                 traceback.print_exc()
                 break
