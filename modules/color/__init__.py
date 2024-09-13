@@ -10,18 +10,16 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins import Bot, Embed, EmbedField, Image as BImage
 from core.component import module
-from core.utils.info import Info
+
+assets_path = os.path.abspath('./assets/color')
 
 c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}', doc=True)
 
-font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 40)
+font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
+md_color_path = os.path.join(assets_path, 'material_colors.json')
 
-color_json = os.path.dirname(os.path.abspath(__file__)) + '/material_colors.json'
-
-if Info.binary_mode:
-    color_json = './modules/color/material_colors.json'
-
-with open(color_json, 'r', encoding='utf-8') as f:
+font = ImageFont.truetype(font_path, 40)
+with open(md_color_path, 'r', encoding='utf-8') as f:
     material_colors = material_colors_names_to_hex = json.load(f)
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 

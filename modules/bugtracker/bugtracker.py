@@ -1,15 +1,11 @@
-import os
-
 import aiohttp
 import ujson as json
 
-from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download, get_url
 from core.utils.web_render import WebRender, webrender
 
 elements = ['div#descriptionmodule']
-assets_path = os.path.abspath('./assets/')
 
 spx_cache = {}
 

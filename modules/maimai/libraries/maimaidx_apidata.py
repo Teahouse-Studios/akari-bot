@@ -12,13 +12,11 @@ from core.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.http import download, get_url, post_url
 from core.utils.text import isint
-from .maimaidx_mapping import versions
+from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
-DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
 
 cache_dir = os.path.abspath(Config('cache_path', './cache/'))
-assets_dir = os.path.abspath('./assets/maimai/')
 total_list = TotalList()
 
 
@@ -26,7 +24,7 @@ async def update_cover() -> bool:
     id_list = ['00000', '01000']
     for song in (await total_list.get()):
         id_list.append(song['id'])
-    cover_dir = os.path.join(assets_dir, "static", "mai", "cover")
+    cover_dir = os.path.join(assets_path, "static", "mai", "cover")
     if not os.path.exists(cover_dir):
         os.makedirs(cover_dir)
     for id in id_list:
@@ -51,8 +49,7 @@ async def update_alias() -> bool:
         url = "https://download.fanyu.site/maimai/alias.json"
         data = await get_url(url, 200, fmt='json')
 
-        file_path = os.path.join(assets_dir, "mai_alias.json")
-        with open(file_path, 'w') as file:
+        with open(song_alias_path, 'w') as file:
             json.dump(data, file)
     except Exception:
         Logger.error(traceback.format_exc())
@@ -62,7 +59,6 @@ async def update_alias() -> bool:
 
 async def get_info(music: Music, *details) -> MessageChain:
     info = [Plain(f"{music.id} - {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
-    cover_dir = os.path.join(assets_dir, "static", "mai", "cover")
     cover_path = os.path.join(cover_dir, f'{get_cover_len5_id(music.id)}.png')
     if os.path.exists(cover_path):
         info.append(Image(cover_path))
@@ -76,11 +72,9 @@ async def get_info(music: Music, *details) -> MessageChain:
 
 
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
-    file_path = os.path.join(assets_dir, "mai_alias.json")
-
-    if not os.path.exists(file_path):
+    if not os.path.exists(song_alias_path):
         await msg.finish(msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0]))
-    with open(file_path, 'r') as file:
+    with open(song_alias_path, 'r') as file:
         data = json.load(file)
 
     result = []
@@ -101,12 +95,10 @@ async def search_by_alias(input_: str) -> list:
         if music:
             result.append(input_)
 
-    file_path = os.path.join(assets_dir, "mai_alias.json")
-
-    if not os.path.exists(file_path):
+    if not os.path.exists(song_alias_path):
         return list(set(result))
 
-    with open(file_path, 'r') as file:
+    with open(song_alias_path, 'r') as file:
         data = json.load(file)
 
     for sid, aliases in data.items():
