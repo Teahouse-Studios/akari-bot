@@ -18,7 +18,7 @@ elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 
 
-async def generate_screenshot_v2(page_link: str, section: str=None, allow_special_page=False, content_mode=False, use_local=True,
+async def generate_screenshot_v2(page_link: str, section: str = None, allow_special_page=False, content_mode=False, use_local=True,
                                  element=None):
     elements_ = elements.copy()
     if element and isinstance(element, List):

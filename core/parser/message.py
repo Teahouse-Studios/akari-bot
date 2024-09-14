@@ -225,7 +225,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
             alias_list = []
-            for alias in ModulesManager.modules_aliases: # 检查别名列表
+            for alias in ModulesManager.modules_aliases:  # 检查别名列表
                 if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
                     alias_list.append(alias)
             if alias_list:
