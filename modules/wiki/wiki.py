@@ -224,7 +224,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.prompt'
                                                                         if r.invalid_section and r.info.in_allowlist
-                                                                        else 'wiki.message.talk_page.prompt' )))
+                                                                        else 'wiki.message.talk_page.prompt')))
                                 i_msg_lst.append(Image(await
                                                        image_table_render(
                                                            ImageTable(session_data,
@@ -254,13 +254,14 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     if x == '#':
                                         img_table_headers += forum_data[x]['data']
                                     else:
-                                        img_table_data.append( [x] + forum_data[x]['data'])
+                                        img_table_data.append([x] + forum_data[x]['data'])
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.forum')))
                                 i_msg_lst.append(Image(await image_table_render(img_table)))
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
+
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
                                     if isint(display):
@@ -268,7 +269,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)
 
                                 await session.send_message(i_msg_lst, callback=_callback)
-
 
                 else:
                     plain_slice = []

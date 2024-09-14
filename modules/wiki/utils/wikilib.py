@@ -32,7 +32,7 @@ request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
 ]
 
 special_talk_page_class = {
-    'https://zh.minecraft.wiki/api.php' : [
+    'https://zh.minecraft.wiki/api.php': [
         'page-Minecraft_Wiki_社区专页',
         'page-Minecraft_Wiki_管理员告示板',
 
@@ -471,8 +471,8 @@ class WikiLib:
 
     async def get_forums_data(self, page_name):
         parse = BeautifulSoup((await self.get_json(action='parse',
-                                        page=page_name,
-                                        prop='text'))['parse']['text']['*'], 'html.parser')
+                                                   page=page_name,
+                                                   prop='text'))['parse']['text']['*'], 'html.parser')
         parse_table = parse.find_all('table', class_='wikitable')[0]
         parsed_data = {}
         label_ = 0
