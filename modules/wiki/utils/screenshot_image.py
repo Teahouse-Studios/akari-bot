@@ -1,6 +1,7 @@
 import os
 import re
 import traceback
+import urllib.parse
 import uuid
 from typing import Union, List
 from urllib.parse import urljoin
@@ -17,7 +18,7 @@ elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 
 
-async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True,
+async def generate_screenshot_v2(page_link: str, section: str=None, allow_special_page=False, content_mode=False, use_local=True,
                                  element=None):
     elements_ = elements.copy()
     if element and isinstance(element, List):
@@ -56,6 +57,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
     else:
         Logger.info('[Webrender] Generating section screenshot...')
         try:
+            section = section.replace(" ", '_')
             img = await download(webrender('section_screenshot', use_local=use_local),
                                  status_code=200,
                                  headers={'Content-Type': 'application/json'},

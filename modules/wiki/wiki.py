@@ -24,7 +24,10 @@ random_title = ['random', '随机页面', '隨機頁面']
 
 wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
-                     'interwiki': 'wiki iw'},
+                     'interwiki': 'wiki iw',
+                     'wiki iw set': 'wiki iw add',
+                     'wiki iw del': 'wiki iw remove',
+                     'wiki iw delete': 'wiki iw remove'},
               recommend_modules='wiki_inline',
               developers=['OasisAkari'], doc=True)
 
@@ -59,10 +62,13 @@ async def _(msg: Bot.MessageSession, pageid: str):
 
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
-                      template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
+                      template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None,
+                      start_wiki_api=None):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
+        if start_wiki_api:
+            start_wiki = start_wiki_api
         interwiki_list = target.get_interwikis()
         headers = target.get_headers()
         prefix = target.get_prefix()
@@ -231,7 +237,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         display = int(display)
                                         if display <= len(r.sections):
                                             r.selected_section = display - 1
-                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1])
+                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1], start_wiki_api=r.info.api)
 
                                 await session.send_message(i_msg_lst, callback=_callback)
                             else:

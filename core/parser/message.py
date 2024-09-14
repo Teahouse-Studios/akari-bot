@@ -224,26 +224,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             else:
                 await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
-            not_alias = False
-            for moduleName in modules:
-                if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
-                    not_alias = True
-            if not not_alias:
-                for um in current_unloaded_modules:
-                    if command.startswith(um):
-                        not_alias = True
-            if not not_alias:
-                for em in err_modules:
-                    if command.startswith(em):
-                        not_alias = True
-            if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
-                alias_list = []
-                for alias in ModulesManager.modules_aliases:
-                    if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
-                        alias_list.append(alias)
-                if alias_list:
-                    max_ = max(alias_list, key=len)
-                    command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+            alias_list = []
+            for alias in ModulesManager.modules_aliases: # 检查别名列表
+                if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
+                    alias_list.append(alias)
+            if alias_list:
+                max_ = max(alias_list, key=len)  # 匹配符合条件最高的那个别名
+                command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+
             command_split: list = command.split(' ')  # 切割消息
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()
