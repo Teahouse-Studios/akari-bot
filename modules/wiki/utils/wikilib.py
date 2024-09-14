@@ -492,7 +492,7 @@ class WikiLib:
                 else:
                     title += _arg
             if len(section_list) > 1:
-                selected_section = ''.join(section_list)[1:]
+                selected_section = ''.join(section_list)[1:].replace(' ', '_')
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.selected_section = selected_section
             if not selected_section and used_quote:
