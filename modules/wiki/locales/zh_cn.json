@@ -48,6 +48,8 @@
     "wiki.message.invalid_section": "（此章节不存在）",
     "wiki.message.invalid_section.prompt": "此章节不存在，以下是可能的章节：",
     "wiki.message.invalid_section.select": "回复编号以选中对应的章节。",
+    "wiki.message.talk_page.prompt": "此页面为讨论页，以下是所有的章节：",
+    "wiki.message.forum": "此页面为论坛页，以下是当前活跃的帖子：",
     "wiki.message.iw.add.success": "已添加自定义 Interwiki：\n${iw} -> ${name}",
     "wiki.message.iw.get.not_found": "未找到 Interwiki：${iw}",
     "wiki.message.iw.list": "使用“${prefix}wiki iw get <Interwiki>”可以获取 Interwiki 对应的链接。",

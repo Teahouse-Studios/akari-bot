@@ -245,10 +245,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         break
             alias_list = []
             for alias in ModulesManager.modules_aliases:
-                if not not_alias: # 如果没有匹配到模块，则判断是否匹配命令别名
+                if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                     if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
                         alias_list.append(alias)
-                else: # 如果是模块，则判断是否有基于此模块前缀的别名
+                else:  # 如果是模块，则判断是否有基于此模块前缀的别名
                     if alias.startswith(cm) and command.startswith(alias):
                         alias_list.append(alias)
             if alias_list:
