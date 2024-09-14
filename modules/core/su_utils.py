@@ -557,6 +557,7 @@ if Config('enable_petal', False):
 
 jobqueue = module('jobqueue', required_superuser=True, base=True)
 
+
 @jobqueue.command('clear')
 async def stop_playing_maimai(msg: Bot.MessageSession):
     BotDBUtil.JobQueue.clear(0)
