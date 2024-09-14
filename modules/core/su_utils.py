@@ -13,6 +13,7 @@ from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
+from core.queue import JobQueue
 from core.tos import pardon_user, warn_user
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
@@ -552,3 +553,11 @@ if Config('enable_petal', False):
         else:
             msg.info.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
+
+
+jobqueue = module('jobqueue', required_superuser=True, base=True)
+
+@jobqueue.command('clear')
+async def stop_playing_maimai(msg: Bot.MessageSession):
+    BotDBUtil.JobQueue.clear(0)
+    await msg.finish(msg.locale.t("success"))
