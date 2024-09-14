@@ -59,7 +59,7 @@ async def start_check_news():
                 link = baseurl + o_article['article_url']
                 if title not in alist:
                     await JobQueue.trigger_hook_all('minecraft_news', message=[I18NContext('minecraft_news.message.minecraft_news',
-                                                                                               title=title, desc=desc, link=link).to_dict()])
+                                                                                           title=title, desc=desc, link=link).to_dict()])
                     alist.append(title)
                     update_stored_list('scheduler', 'mcnews', alist)
     except Exception:
