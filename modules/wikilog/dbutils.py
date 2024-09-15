@@ -10,6 +10,7 @@ from core.builtins import MessageSession
 from database import session, auto_rollback_error
 from modules.wikilog.orm import WikiLogTargetSetInfo
 
+
 class WikiLogUtil:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -27,7 +28,6 @@ class WikiLogUtil:
             session.commit()
             self.query = session.query(WikiLogTargetSetInfo).filter_by(targetId=target_id).first()
 
-
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def conf_wiki(self, apilink: dict, add=False, reset=False):
@@ -35,7 +35,7 @@ class WikiLogUtil:
         if add or reset:
             if apilink not in infos or reset:
                 infos[apilink] = {'AbuseLog': {'enable': False,
-                                               'filters': ['*'] },
+                                               'filters': ['*']},
                                   'LogEvents': {'enable': False,
                                                 'filters': ['*'],
                                                 'letypes': []},
@@ -67,7 +67,6 @@ class WikiLogUtil:
             session.expire_all()
             return True
         return False
-
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -148,7 +147,6 @@ class WikiLogUtil:
         if apilink in infos:
             return infos[apilink]['use_bot']
         return False
-
 
     @staticmethod
     def return_all_data():

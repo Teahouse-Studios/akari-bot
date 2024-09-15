@@ -6,16 +6,54 @@ from .dbutils import WikiLogUtil
 from modules.wiki.utils.wikilib import WikiLib
 
 type_map = {'abuselog': 'AbuseLog', 'logevents': 'LogEvents', 'recentchanges': 'RecentChanges',
-                'AbuseLog': 'AbuseLog', 'LogEvents': 'LogEvents', 'RecentChanges': 'RecentChanges',
-                'ab': 'AbuseLog', 'le': 'LogEvents', 'rc': 'RecentChanges'}
+            'AbuseLog': 'AbuseLog', 'LogEvents': 'LogEvents', 'RecentChanges': 'RecentChanges',
+            'ab': 'AbuseLog', 'le': 'LogEvents', 'rc': 'RecentChanges'}
 
-letypes = ['abusefilter', 'abusefilterblockeddomainhit', 'abusefilterprivatedetails', 'block', 'checkuser-temporary-account',
-           'contentmodel', 'create', 'delete', 'gblblock', 'gblrights', 'gloopcontrol', 'import', 'managetags', 'merge',
-           'move', 'newusers', 'oath', 'patrol', 'protect', 'renameuser', 'rights', 'smw', 'spamblacklist', 'suppress',
-           'tag', 'thanks', 'timedmediahandler', 'titleblacklist', 'upload']
+letypes = [
+    'abusefilter',
+    'abusefilterblockeddomainhit',
+    'abusefilterprivatedetails',
+    'block',
+    'checkuser-temporary-account',
+    'contentmodel',
+    'create',
+    'delete',
+    'gblblock',
+    'gblrights',
+    'gloopcontrol',
+    'import',
+    'managetags',
+    'merge',
+    'move',
+    'newusers',
+    'oath',
+    'patrol',
+    'protect',
+    'renameuser',
+    'rights',
+    'smw',
+    'spamblacklist',
+    'suppress',
+    'tag',
+    'thanks',
+    'timedmediahandler',
+    'titleblacklist',
+    'upload']
 
-rcshows = ['!anon', '!autopatrolled', '!bot', '!minor', '!patrolled', '!redirect', 'anon', 'autopatrolled', 'bot', 'minor',
-           'patrolled', 'redirect', 'unpatrolled']
+rcshows = [
+    '!anon',
+    '!autopatrolled',
+    '!bot',
+    '!minor',
+    '!patrolled',
+    '!redirect',
+    'anon',
+    'autopatrolled',
+    'bot',
+    'minor',
+    'patrolled',
+    'redirect',
+    'unpatrolled']
 
 wikilog = module('wikilog', developers=['OasisAkari'], required_superuser=True)
 
@@ -57,7 +95,6 @@ async def _(msg: MessageSession, filter: str, text):
         await msg.finish(msg.locale.t('wikilog.message.filter_test.success'))
     else:
         await msg.finish(msg.locale.t('wikilog.message.filter_test.failed'))
-
 
 
 @wikilog.handle('filter set <apilink> <logtype> ...')
