@@ -36,8 +36,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
     commentlist = []
     for x in query["query"]["recentchanges"]:
         if 'title' in x:
-            userlist.append(x['user'])
-            titlelist.append(x['title'])
+            userlist.append(x.get('user', ''))
+            titlelist.append(x.get('title', ''))
             commentlist.append(x.get('comment', ''))
     checked_userlist = await check(*userlist)
     user_checked_map = {}

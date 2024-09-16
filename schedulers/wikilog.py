@@ -13,7 +13,7 @@ fetch_cache = {}
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
-async def _():
+async def wiki_log():
     fetches = WikiLogUtil.return_all_data()
     matched_logs = {}
     Logger.debug(fetches)
@@ -37,9 +37,9 @@ async def _():
             Logger.debug(query_wiki.wiki_info.api)
             if fetches[id_][wiki]['AbuseLog']['enable']:
                 query = await query_wiki.get_json(action='query', list='abuselog',
-                                            aflprop='user|title|action|result|filter|timestamp',
-                                            _no_login=not use_bot,
-                                            afllimit=30)
+                                                  aflprop='user|title|action|result|filter|timestamp',
+                                                  _no_login=not use_bot,
+                                                  afllimit=30)
                 if 'error' not in query:
                     for y in query["query"]["abuselog"]:
                         identify = ''
@@ -55,7 +55,7 @@ async def _():
                             identify += y['action']
                         if 'result' in y:
                             identify += y['result']
-                        if identify not in fetch_cache[id_]:
+                        if identify not in fetch_cache[id_][wiki]:
                             fetch_cache[id_][wiki].append(identify)
                             if not first_fetch:
                                 matched_f = False
@@ -72,10 +72,10 @@ async def _():
 
             if fetches[id_][wiki]['RecentChanges']['enable']:
                 query = await query_wiki.get_json(action='query', list='recentchanges',
-                                            rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
-                                            _no_login=not use_bot,
-                                            rclimit=100,
-                                            rcshow = '|'.join(fetches[id_][wiki]['RecentChanges']['rcshow']))
+                                                  rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
+                                                  _no_login=not use_bot,
+                                                  rclimit=100,
+                                                  rcshow='|'.join(fetches[id_][wiki]['RecentChanges']['rcshow']))
                 if 'error' not in query:
                     for y in query["query"]["recentchanges"]:
                         if 'actionhidden' in y:
@@ -89,7 +89,7 @@ async def _():
                             identify += y['timestamp']
                         if 'comment' in y:
                             identify += y['comment']
-                        if identify not in fetch_cache[id_]:
+                        if identify not in fetch_cache[id_][wiki]:
                             fetch_cache[id_][wiki].append(identify)
                             if not first_fetch:
                                 matched_f = False
@@ -104,8 +104,3 @@ async def _():
                                 if matched_f:
                                     matched_logs[id_][wiki]['RecentChanges'].append(y)
     await JobQueue.trigger_hook_all('wikilog.matched', matched_logs=matched_logs)
-
-
-
-
-

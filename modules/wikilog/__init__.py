@@ -1,9 +1,10 @@
 import re
+import traceback
 import urllib.parse
 
 from core.component import module
 from core.builtins import Bot, FormattedTime
-from core.dirty_check import check
+from core.dirty_check import check as dirty_check
 from core.logger import Logger
 from .dbutils import WikiLogUtil
 from modules.wiki.utils.wikilib import WikiLib, WikiInfo
@@ -104,6 +105,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     else:
         await msg.finish(msg.locale.t('wikilog.message.use_bot.invalid_apilink'))
 
+
 @wikilog.handle('rcshow set <apilink> ...')
 async def _(msg: Bot.MessageSession, apilink: str):
     rcshows = msg.parsed_msg.get('...')
@@ -152,10 +154,14 @@ async def convert_rc(rc: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
     commentlist = []
     for x in rc:
         if 'title' in x:
-            userlist.append(x['user'])
-            titlelist.append(x['title'])
+            userlist.append(x.get('user', ''))
+            titlelist.append(x.get('title'))
             commentlist.append(x.get('comment', ''))
-    checked_userlist = await check(*userlist)
+    Logger.debug(userlist)
+    userlist = list(set(userlist))
+    titlelist = list(set(titlelist))
+    commentlist = list(set(commentlist))
+    checked_userlist = await dirty_check(*userlist)
     user_checked_map = {}
     for u in checked_userlist:
         user_checked = u['content']
@@ -163,7 +169,7 @@ async def convert_rc(rc: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
             user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
             user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         user_checked_map[u['original']] = user_checked
-    checked_titlelist = await check(*titlelist)
+    checked_titlelist = await dirty_check(*titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']
@@ -171,7 +177,7 @@ async def convert_rc(rc: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
             title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
             title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         title_checked_map[t['original']] = title_checked
-    checked_commentlist = await check(*commentlist)
+    checked_commentlist = await dirty_check(*commentlist)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c['content']
@@ -249,14 +255,14 @@ async def convert_rc(rc: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
     return rclist
 
 
-
-
 @wikilog.hook('matched')
 async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     matched = ctx.args['matched_logs']
     Logger.debug('Received matched_logs hook: ' + str(matched))
     for id_ in matched:
+        Logger.debug(id_)
         ft = await fetch.fetch_target(id_)
+        Logger.debug(ft)
         if ft:
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
@@ -273,7 +279,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
                             result = 'pass'
                         s += '处理结果：' + result
 
-                        chk = await check(s)
+                        chk = await dirty_check(s)
                         for z in chk:
                             sz = z['content']
                             send_msg.append(sz)
@@ -286,6 +292,3 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
                     rc = await convert_rc(matched[id_][wiki]['RecentChanges'], wiki_info, ft.parent)
                     for x in rc:
                         await ft.send_direct_message(x)
-
-
-
