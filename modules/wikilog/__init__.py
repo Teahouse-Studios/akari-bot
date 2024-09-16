@@ -4,6 +4,7 @@ from core.component import module
 from core.builtins import MessageSession
 from .dbutils import WikiLogUtil
 from modules.wiki.utils.wikilib import WikiLib
+import ujson as json
 
 type_map = {'abuselog': 'AbuseLog', 'logevents': 'LogEvents', 'recentchanges': 'RecentChanges',
             'AbuseLog': 'AbuseLog', 'LogEvents': 'LogEvents', 'RecentChanges': 'RecentChanges',
@@ -71,12 +72,6 @@ async def _(msg: MessageSession, apilink: str):
         await msg.finish(msg.locale.t('wikilog.message.add_wiki.failed'))
 
 
-@wikilog.handle('list')
-async def list_wiki_link(msg: MessageSession):
-    infos = WikiLogUtil(msg).query.infos
-    # todo 图形化输出
-
-
 @wikilog.handle('enable <logtype>',
                 'disable <logtype>',)
 async def _(msg: MessageSession, logtype: str):
@@ -104,7 +99,7 @@ async def _(msg: MessageSession, apilink: str, logtype: str):
         logtype = type_map.get(logtype, None)
         if logtype:
             t = WikiLogUtil(msg)
-            infos = t.query.infos
+            infos = json.loads(t.query.infos)
             if apilink in infos:
                 t.set_filters(apilink, logtype, filters)
                 await msg.finish(msg.locale.t('wikilog.message.filter_set.success'))
@@ -120,7 +115,7 @@ async def _(msg: MessageSession, apilink: str, logtype: str):
 @wikilog.handle('disable bot <apilink>')
 async def _(msg: MessageSession, apilink: str):
     t = WikiLogUtil(msg)
-    infos = t.query.infos
+    infos = json.loads(t.query.infos)
     if apilink in infos:
         t.set_use_bot(apilink, 'enable' in msg.parsed_msg)
     else:
@@ -132,7 +127,7 @@ async def _(msg: MessageSession, apilink: str):
     letypes = msg.parsed_msg.get('...')
     if letypes:
         t = WikiLogUtil(msg)
-        infos = t.query.infos
+        infos = json.loads(t.query.infos)
         if apilink in infos:
             t.set_letypes(apilink, letypes)
             await msg.finish(msg.locale.t('wikilog.message.letype_set.success'))
@@ -147,11 +142,33 @@ async def _(msg: MessageSession, apilink: str):
     rcshows = msg.parsed_msg.get('...')
     if rcshows:
         t = WikiLogUtil(msg)
-        infos = t.query.infos
+        infos = json.loads(t.query.infos)
         if apilink in infos:
-            t.set_rcshows(apilink, rcshows)
+            t.set_rcshow(apilink, rcshows)
             await msg.finish(msg.locale.t('wikilog.message.rcshow_set.success'))
         else:
             await msg.finish(msg.locale.t('wikilog.message.rcshow_set.invalid_apilink'))
     else:
         await msg.finish(msg.locale.t('wikilog.message.rcshow_set.no_rcshow'))
+
+
+@wikilog.handle('list')
+async def list_wiki_link(msg: MessageSession):
+    t = WikiLogUtil(msg)
+    infos = json.loads(t.query.infos)
+    text = ''
+    for apilink in infos:
+        text += f'{apilink}: \n'
+        text += 'AbuseLog: ' + ('Enabled' if infos[apilink]['AbuseLog']['enable'] else 'Disabled') + '\n'
+        text += 'Filters: ' + '"' + '" "'.join(infos[apilink]['AbuseLog']['filters']) + '"' + '\n'
+        text += 'LogEvents: ' + ('Enabled' if infos[apilink]['LogEvents']['enable'] else 'Disabled') + '\n'
+        text += 'Filters: ' + '"' + '" "'.join(infos[apilink]['LogEvents']['filters']) + '"' + '\n'
+        text += 'Letypes: ' + '"' + '" "'.join(infos[apilink]['LogEvents']['letypes']) + '"' + '\n'
+        text += 'RecentChanges: ' + ('Enabled' if infos[apilink]['RecentChanges']['enable'] else 'Disabled') + '\n'
+        text += 'Filters: ' + '"' + '" "'.join(infos[apilink]['RecentChanges']['filters']) + '"' + '\n'
+        text += 'RCShow: ' + '"' + '" "'.join(infos[apilink]['RecentChanges']['rcshow']) + '"' + '\n'
+        text += 'UseBot: ' + ('Enabled' if infos[apilink]['use_bot'] else 'Disabled') + '\n'
+    await msg.finish(text)
+
+
+
