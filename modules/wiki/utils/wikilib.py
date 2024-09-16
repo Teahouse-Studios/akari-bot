@@ -701,26 +701,30 @@ class WikiLib:
                                 page_info.possible_research_title = searched_result
                 else:
                     page_info.status = True
-                    page_info.body_class = await self.get_page_body_class(page_info.title)
-                    if 'ns-talk' in page_info.body_class:
-                        page_info.is_talk_page = True
-                    stp = special_talk_page_class.get(page_info.info.api, [])
-                    for sc in stp:
-                        if sc in page_info.body_class:
+                    try:
+                        page_info.body_class = await self.get_page_body_class(page_info.title)
+                        if 'ns-talk' in page_info.body_class:
                             page_info.is_talk_page = True
-                            break
-                    sfp = forum_class.get(page_info.info.api, [])
-                    for fc in sfp:
-                        if fc in page_info.body_class:
-                            page_info.is_forum = True
-                            page_info.forum_data = await self.get_forums_data(page_info.title)
-                            break
-                    if not page_info.is_forum:
-                        for bc in page_info.body_class:
-                            for fc in sfp:
-                                if bc.startswith(fc):
-                                    page_info.is_forum_topic = True
-                                    break
+                        stp = special_talk_page_class.get(page_info.info.api, [])
+                        for sc in stp:
+                            if sc in page_info.body_class:
+                                page_info.is_talk_page = True
+                                break
+                        sfp = forum_class.get(page_info.info.api, [])
+                        for fc in sfp:
+                            if fc in page_info.body_class:
+                                page_info.is_forum = True
+                                page_info.forum_data = await self.get_forums_data(page_info.title)
+                                break
+                        if not page_info.is_forum:
+                            for bc in page_info.body_class:
+                                for fc in sfp:
+                                    if bc.startswith(fc):
+                                        page_info.is_forum_topic = True
+                                        break
+                    except Exception:
+                        Logger.error(traceback.format_exc())
+
                     templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
                     if selected_section or page_info.invalid_section or page_info.is_talk_page:
                         parse_section_string = {'action': 'parse', 'page': page_info.title, 'prop': 'sections'}
