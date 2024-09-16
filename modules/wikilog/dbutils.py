@@ -6,7 +6,8 @@ from urllib.parse import urlparse
 import ujson as json
 from tenacity import retry, stop_after_attempt
 
-from core.builtins import MessageSession
+from core.builtins import Bot
+from core.logger import Logger
 from database import session, auto_rollback_error
 from modules.wikilog.orm import WikiLogTargetSetInfo
 
@@ -14,8 +15,8 @@ from modules.wikilog.orm import WikiLogTargetSetInfo
 class WikiLogUtil:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def __init__(self, msg: [MessageSession, str]):
-        if isinstance(msg, MessageSession):
+    def __init__(self, msg: [Bot.MessageSession, str]):
+        if isinstance(msg, Bot.MessageSession):
             if msg.target.target_from != 'QQ|Guild':
                 target_id = msg.target.target_id
             else:
@@ -36,9 +37,6 @@ class WikiLogUtil:
             if apilink not in infos or reset:
                 infos[apilink] = {'AbuseLog': {'enable': False,
                                                'filters': ['*']},
-                                  'LogEvents': {'enable': False,
-                                                'filters': ['*'],
-                                                'letypes': []},
                                   'RecentChanges': {'enable': False,
                                                     'filters': ['*'],
                                                     'rcshow': []},
@@ -86,26 +84,6 @@ class WikiLogUtil:
         infos = json.loads(self.query.infos)
         if apilink in infos:
             return infos[apilink][logname]['filters']
-        return False
-
-    @retry(stop=stop_after_attempt(3), reraise=True)
-    @auto_rollback_error
-    def set_letypes(self, apilink: str, letypes: list):
-        infos = json.loads(self.query.infos)
-        if apilink in infos:
-            infos[apilink]['LogEvents']['letypes'] = letypes
-            self.query.infos = json.dumps(infos)
-            session.commit()
-            session.expire_all()
-            return True
-        return False
-
-    @retry(stop=stop_after_attempt(3), reraise=True)
-    @auto_rollback_error
-    def get_letypes(self, apilink: str):
-        infos = json.loads(self.query.infos)
-        if apilink in infos:
-            return infos[apilink]['LogEvents']['letypes']
         return False
 
     @retry(stop=stop_after_attempt(3), reraise=True)
