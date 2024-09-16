@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     for music in sorted(data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            if music['id'] < 100000:  # 过滤宴谱
+            if int(music['id']) < 100000:  # 过滤宴谱
                 result_set.append((music['id'],
                                    music['title'],
                                    music['ds'][i],
@@ -84,7 +84,7 @@ async def _(msg: Bot.MessageSession, level: str):
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            if music['id'] < 100000:  # 过滤宴谱
+            if int(music['id']) < 100000:  # 过滤宴谱
                 result_set.append((music['id'],
                                    music['title'],
                                    music['ds'][i],
