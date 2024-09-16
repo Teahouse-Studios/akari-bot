@@ -96,7 +96,7 @@ genre_i18n_mapping = {
     "ゲームバラエティ": "GAME & VARIETY",
     "舞萌": "maimai",
     "音击&中二节奏": "ONGEKI & CHUNITHM",
-    "オンゲキCHUNITHM": "ONGEKI & CHUNITHM",
+    "オンゲキCHUNITHM": "ONGEKI & CHUNITHM"
 }
 
 versions = ["maimai",
@@ -132,7 +132,7 @@ sd_plate_mapping = {
     "菫": "maimai MURASAKi PLUS",
     "白": "maimai MiLK",
     "雪": "MiLK PLUS",
-    "輝": "maimai FiNALE",
+    "輝": "maimai FiNALE"
 }
 
 dx_plate_mapping = {
@@ -145,6 +145,7 @@ dx_plate_mapping = {
     "祭": "maimai でらっくす FESTiVAL",
     "祝": "maimai でらっくす FESTiVAL",
     "双": "maimai でらっくす BUDDiES",
+    "宴": "maimai でらっくす BUDDiES",
 }
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping

@@ -45,12 +45,13 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
     for music in sorted(data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            result_set.append((music['id'],
-                               music['title'],
-                               music['ds'][i],
-                               diff_list[i],
-                               music['level'][i],
-                               music['type']))
+            if music['id'] < 100000:  # 过滤宴谱
+                result_set.append((music['id'],
+                                   music['title'],
+                                   music['ds'][i],
+                                   diff_list[i],
+                                   music['level'][i],
+                                   music['type']))
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get('-p', False)
@@ -83,12 +84,13 @@ async def _(msg: Bot.MessageSession, level: str):
     data = (await total_list.get()).filter(level=level)
     for music in sorted(data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            result_set.append((music['id'],
-                               music['title'],
-                               music['ds'][i],
-                               diff_list[i],
-                               music['level'][i],
-                               music['type']))
+            if music['id'] < 100000:  # 过滤宴谱
+                result_set.append((music['id'],
+                                   music['title'],
+                                   music['ds'][i],
+                                   diff_list[i],
+                                   music['level'][i],
+                                   music['type']))
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     get_page = msg.parsed_msg.get('-p', False)
     page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
@@ -322,7 +324,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     touch=chart['notes'][3],
                     brk=chart['notes'][4]))
                 if diff >= 2:
-                    res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])  
+                    res.append(msg.locale.t("maimai.message.chart.charter") + chart['charter'])
 
     await msg.finish(await get_info(music, Plain('\n'.join(res))))
 
