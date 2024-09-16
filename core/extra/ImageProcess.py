@@ -17,8 +17,10 @@ def pir(text: str, line_length: int = 28, word_wrap=False):
         text = fill(text, line_length * 2)
     else:
         text = text
-    image_size = draw.textsize(text, font=font)
-    image = Image.new("RGB", image_size, 'white')
+    image_size = draw.textbbox((0,0),text, font=font)
+    text_width = image_size[2] - image_size[0]
+    text_height = image_size[3] - image_size[1]
+    image = Image.new("RGB", (text_width,text_height), 'white')
     draw = ImageDraw.Draw(image)
     draw.text((0, 0), text, font=font, fill="black")
     return image
