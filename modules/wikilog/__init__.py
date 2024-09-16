@@ -140,7 +140,6 @@ async def list_wiki_link(msg: Bot.MessageSession):
     await msg.finish(text)
 
 
-
 @wikilog.hook('matched')
 async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     matched = ctx.args['matched_logs']
