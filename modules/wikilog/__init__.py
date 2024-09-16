@@ -169,6 +169,3 @@ async def list_wiki_link(msg: MessageSession):
         text += 'RCShow: ' + '"' + '" "'.join(infos[apilink]['RecentChanges']['rcshow']) + '"' + '\n'
         text += 'UseBot: ' + ('Enabled' if infos[apilink]['use_bot'] else 'Disabled') + '\n'
     await msg.finish(text)
-
-
-

@@ -15,6 +15,3 @@ async def _():
     fetches = WikiLogUtil.return_all_data()
     for id_ in fetches:
         Logger.debug(f'Checking fetch {id_}...')
-
-
-
