@@ -68,12 +68,12 @@ def random_string(length: int) -> str:
 def decrypt_string(text):
     key = Config('ff3_key', random_string(32))
     tweak = Config('ff3_tweak', random_string(14))
-    c = FF3Cipher.withCustomAlphabet(key, tweak,
-                                     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+    c = FF3Cipher.withCustomAlphabet(
+        key, tweak, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
     d = []
     for i in range(0, len(text), 28):
-        d.append(text[i:i+28])
+        d.append(text[i:i + 28])
     dec_text = ''.join([c.decrypt(i) for i in d])
-    if m :=re.match(r'^t:(.*?):e.*?$', dec_text):
+    if m := re.match(r'^t:(.*?):e.*?$', dec_text):
         return m.group(1)
     return False

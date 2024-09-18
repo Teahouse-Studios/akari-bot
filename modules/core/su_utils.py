@@ -566,6 +566,7 @@ async def stop_playing_maimai(msg: Bot.MessageSession):
 
 decry = module('decrypt', required_superuser=True, base=True, doc=True)
 
+
 @decry.command('<display_msg>')
 async def _(msg: Bot.MessageSession):
     dec = decrypt_string(msg.as_display().split(' ', 1)[1])
