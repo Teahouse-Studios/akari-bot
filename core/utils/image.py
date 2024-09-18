@@ -105,7 +105,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                     ftt = ft.match(data)
                     lst.append(f'<img src="data:{ftt.mime};base64,{
                         (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
-                except TypeError:
+                except Exception:
                     Logger.error(traceback.format_exc())
         if isinstance(m, Voice):
             lst.append('<div>[Voice]</div>')

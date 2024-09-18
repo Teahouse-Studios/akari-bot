@@ -15,7 +15,7 @@ from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.web_render import webrender
 
 
-class Article:
+"""class Article:
     count = 10
     tags = ['minecraft:article/news', 'minecraft:article/insider', 'minecraft:article/culture',
             'minecraft:article/merch', 'minecraft:stockholm/news', 'minecraft:stockholm/guides',
@@ -38,35 +38,28 @@ class Article:
 
         for _ in range(m):
             random_choice()
-        return random_tags
+        return random_tags"""
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule', False) else 180))
 async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
-        f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={
-            ",".join(
-                Article.random_tags())}&offset=0&pageSize={
-            Article.count}')
+        f'https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json')
     try:
         getpage = await get_url(webrender('source', url), 200, attempt=1, request_private_ip=True, logging_err_resp=False)
         if getpage:
             alist = get_stored_list('scheduler', 'mcnews')
             o_json = json.loads(getpage)
             o_nws = o_json['article_grid']
-            Article.count = o_json['article_count']
             for o_article in o_nws:
                 default_tile = o_article['default_tile']
                 title = default_tile['title']
                 desc = default_tile['sub_header']
                 link = baseurl + o_article['article_url']
                 if title not in alist:
-                    publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
-                    now = datetime.now()
-                    if now - publish_date < timedelta(days=2):
-                        await JobQueue.trigger_hook_all('minecraft_news', message=[I18NContext('minecraft_news.message.minecraft_news',
-                                                                                               title=title, desc=desc, link=link).to_dict()])
+                    await JobQueue.trigger_hook_all('minecraft_news', message=[I18NContext('minecraft_news.message.minecraft_news',
+                                                                                           title=title, desc=desc, link=link).to_dict()])
                     alist.append(title)
                     update_stored_list('scheduler', 'mcnews', alist)
     except Exception:

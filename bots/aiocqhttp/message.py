@@ -171,8 +171,7 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         if string_post:
             m = html.unescape(self.session.message.message)
-            m = m.replace('\\', '\\\\')
-            if text_only:
+                if text_only:
                 return ''.join(
                     re.split(r'\[CQ:.*?]', m)).strip()
             m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)

@@ -177,8 +177,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        msg.target.sender_info = BotDBUtil.SenderInfo(msg.target.sender_id)
-        if msg.target.sender_info.is_in_block_list and not msg.target.sender_info.is_in_allow_list and not msg.target.sender_info.is_super_user \
+        if msg.info.is_in_block_list and not msg.info.is_in_allow_list and not msg.info.is_super_user \
                 or msg.target.sender_id in msg.options.get('ban', []):
             return
 
@@ -226,25 +225,36 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
             not_alias = False
+            cm = ''
             for moduleName in modules:
                 if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
                     not_alias = True
+                    cm = moduleName
+                    break
             if not not_alias:
                 for um in current_unloaded_modules:
                     if command.startswith(um):
                         not_alias = True
+                        cm = um
+                        break
             if not not_alias:
                 for em in err_modules:
                     if command.startswith(em):
                         not_alias = True
-            if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
-                alias_list = []
-                for alias in ModulesManager.modules_aliases:
+                        cm = em
+                        break
+            alias_list = []
+            for alias in ModulesManager.modules_aliases:
+                if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                     if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
                         alias_list.append(alias)
-                if alias_list:
-                    max_ = max(alias_list, key=len)
-                    command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+                else:  # 如果是模块，则判断是否有基于此模块前缀的别名
+                    if alias.startswith(cm) and command.startswith(alias):
+                        alias_list.append(alias)
+            if alias_list:
+                max_ = max(alias_list, key=len)
+                command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+
             command_split: list = command.split(' ')  # 切割消息
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()
@@ -362,7 +372,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-                                    if not msg.target.sender_info.disable_typing:
+                                    if not msg.info.disable_typing:
                                         async with msg.Typing(msg):
                                             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:
@@ -394,7 +404,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         msg.parsed_msg = None
                         for func in module.command_list.set:
                             if not func.help_doc:
-                                if not msg.target.sender_info.disable_typing:
+                                if not msg.info.disable_typing:
                                     async with msg.Typing(msg):
                                         await func.function(msg)  # 将msg传入下游模块
                                 else:
@@ -529,7 +539,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     ExecutionLockList.add(msg)
                                 else:
                                     return await msg.send_message(msg.locale.t("parser.command.running.prompt"))
-                                if rfunc.show_typing and not msg.target.sender_info.disable_typing:
+                                if rfunc.show_typing and not msg.info.disable_typing:
                                     async with msg.Typing(msg):
                                         await rfunc.function(msg)  # 将msg传入下游模块
                                 else:

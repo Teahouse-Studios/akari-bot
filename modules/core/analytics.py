@@ -14,11 +14,11 @@ from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.cache import random_cache_path
 from database import session, BotDBUtil
-from database.tables import AnalyticsData
+from database.tables import AnalyticsData, is_mysql
 
 
 def get_first_record(msg: Bot.MessageSession):
-    if Config('db_path', cfg_type=str).startswith('mysql'):
+    if is_mysql:
         first_record = BotDBUtil.Analytics.get_first().timestamp.timestamp()
     else:
         first_record = BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp()

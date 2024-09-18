@@ -37,7 +37,7 @@ async def ping(ctx: discord.ApplicationContext):
 
 
 if Config('enable_petal', False):
-    @client.slash_command(name="petal", description="Get the number of petals in the current channel.")
+    @client.slash_command(name="petal", description="Get the number of petals.")
     async def petal(ctx: discord.ApplicationContext):
         await slash_parser(ctx, "")
 

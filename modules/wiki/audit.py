@@ -5,6 +5,7 @@ from config import Config
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
+from database.tables import is_mysql
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
@@ -84,7 +85,7 @@ if Config('enable_urlmanager', False):
         legacy = True
         if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
             send_msgs = []
-            if Config('db_path', cfg_type=str).startswith('mysql'):
+            if is_mysql:
                 allow_columns = [[x[0], msg.ts2strftime(
                     x[1].timestamp(), iso=True, timezone=False)] for x in allow_list]
             else:
@@ -101,7 +102,7 @@ if Config('enable_urlmanager', False):
                     if allow_image:
                         send_msgs.append(I18NContext('wiki.message.wiki_audit.list.allowlist'))
                         send_msgs.append(Image(allow_image))
-            if Config('db_path', cfg_type=str).startswith('mysql'):
+            if is_mysql:
                 block_columns = [[x[0], msg.ts2strftime(
                     x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
             else:

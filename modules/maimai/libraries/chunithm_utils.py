@@ -5,8 +5,6 @@ from core.utils.image import msgchain2image
 from .chunithm_apidata import get_record
 from .chunithm_mapping import *
 
-SONGS_PER_PAGE = 30
-
 
 def get_diff(diff):
     diff = diff.lower()

@@ -83,7 +83,6 @@ class MessageSession:
         "custom_admins",
         "data",
         "locale",
-        "timestamp",
         "tmp",
         "timezone_offset",
         "_tz_offset")
@@ -101,7 +100,6 @@ class MessageSession:
         self.enabled_modules: List[str] = []
         self.muted: bool = False
         self.petal: int = 0
-        self.timestamp: float = 0
         self.tmp = {}
 
     async def send_message(self,

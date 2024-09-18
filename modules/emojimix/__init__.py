@@ -9,7 +9,8 @@ from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
 from core.logger import Logger
 
-data_path = os.path.abspath('./assets/emojimix/emoji_data.json')
+assets_path = os.path.abspath('./assets/emojimix')
+data_path = os.path.join(assets_path, 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 
 

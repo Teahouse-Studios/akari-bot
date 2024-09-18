@@ -14,7 +14,7 @@ from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
-PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+PrivateAssets.set('assets/private/aiogram')
 Url.disable_mm = True
 
 

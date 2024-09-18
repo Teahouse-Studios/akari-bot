@@ -10,3 +10,4 @@ def get_all_clients_name():
 class Info:
     version = None
     subprocess = False
+    binary_mode = False

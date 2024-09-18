@@ -36,20 +36,19 @@ aiofile = "^3.8.1"
 loguru = "^0.7.0"
 numpy = "^1.24.1"
 matplotlib = "^3.6.3"
-pint = "^0.23"
+pint = "^0.24.0"
 simpleeval = "^0.9.12"
 pywin32 = { version = "^306", platform = "win32" }
 tenacity = "^8.1.0"
 openai = "^1.6.1"
-cryptography = "^41.0.2"
+cryptography = "^43.0.0"
 pre-commit = "^3.0.4"
 webcolors = "^1.12"
-langchain = "^0.0.276"
+langchain = "^0.2.3"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^3.0.0"
 tiktoken = "^0.6.0"
 pycryptodome = "^3.18.0"
-langconv = "^0.2.0"
 toml = "^0.10.2"
 khl-py = "^0.3.16"
 matrix-nio = "^0.24.0"
@@ -59,16 +58,17 @@ pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 python-whois = "^0.8.0"
 pandas = "^2.2.0"
 future = "^1.0.0"
-fastapi = "^0.109.2"
+fastapi = "^0.112.0"
 oss2 = "^2.18.4"
 inputimeout = "^1.0.4"
 prompt-toolkit = "^3.0.47"
 emoji = "^2.12.1"
+langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
 
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
-pycodestyle = "2.10.0"
+pycodestyle = "2.12.1"
 
 [build-system]
 requires = ["poetry-core"]

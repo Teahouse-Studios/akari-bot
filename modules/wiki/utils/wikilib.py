@@ -5,6 +5,8 @@ import traceback
 import urllib.parse
 from typing import Union, Dict, List
 
+from bs4 import BeautifulSoup
+
 import ujson as json
 
 import core.utils.html2text as html2text
@@ -28,6 +30,34 @@ redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.c
 request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
     # re.compile(r'.*runescape\.wiki'),
 ]
+
+special_talk_page_class = {
+    'https://zh.minecraft.wiki/api.php': [
+        'page-Minecraft_Wiki_社区专页',
+        'page-Minecraft_Wiki_管理员告示板',
+
+    ],
+    'https://minecraft.wiki/api.php': [
+        'page-Minecraft_Wiki_Admin_noticeboard'
+    ],
+}
+
+forum_class = {
+    'https://zh.minecraft.wiki/api.php': [
+        'page-Minecraft_Wiki_论坛',
+
+    ],
+    'https://minecraft.wiki/api.php': [
+        'page-Minecraft_Wiki_Forum'
+    ],
+    'https://pt.minecraft.wiki/api.php': [
+        'page-Minecraft_Wiki_Fórum'
+    ],
+    'https://es.minecraft.wiki/api.php': [
+        'page-Minecraft_Wiki_Foro'
+    ]
+
+}
 
 
 class InvalidPageIDError(Exception):
@@ -124,6 +154,7 @@ class PageInfo:
                  has_template_doc: bool = False,
                  invalid_namespace: Union[str, bool] = False,
                  possible_research_title: List[str] = None,
+                 body_class: List[str] = None
                  ):
         self.info = info
         self.id = id
@@ -145,6 +176,11 @@ class PageInfo:
         self.invalid_namespace = invalid_namespace
         self.possible_research_title = possible_research_title
         self.invalid_section = False
+        self.body_class = body_class
+        self.is_talk_page = False
+        self.is_forum = False
+        self.forum_data = {}
+        self.is_forum_topic = False
 
 
 class WikiLib:
@@ -425,6 +461,47 @@ class WikiLib:
             invalid_namespace = title_split[0]
         return new_page_name, invalid_namespace
 
+    async def get_page_body_class(self, page_name):
+        await self.fixup_wiki_info()
+        get_parse = await self.get_json(action='parse',
+                                        page=page_name,
+                                        prop='headhtml')
+        parse_head_html = BeautifulSoup(get_parse['parse']['headhtml']["*"], 'html.parser')
+        return parse_head_html.body['class']
+
+    async def get_forums_data(self, page_name):
+        parse = BeautifulSoup((await self.get_json(action='parse',
+                                                   page=page_name,
+                                                   prop='text'))['parse']['text']['*'], 'html.parser')
+        parse_table = parse.find_all('table', class_='wikitable')[0]
+        parsed_data = {}
+        label_ = 0
+        for tr in parse_table.find_all('tr'):
+            if label_ == 0:
+                label = '#'
+            else:
+                label = str(label_)
+            parsed_data[label] = {'data': []}
+            tdi = 0
+
+            if label_ == 0:
+                for th in tr.find_all('th'):
+                    parsed_data[label]['data'].append(th.text)
+            else:
+                for td in tr.find_all('td'):
+                    if tdi == 0:
+                        if td.find('a'):
+                            parsed_data[label]['data'].append(td.find('a').text)
+                            parsed_data[label]['text'] = page_name + '/' + td.find('a').text
+                        else:
+                            parsed_data[label]['data'].append(td.text)
+                    else:
+                        parsed_data[label]['data'].append(td.text)
+                    tdi += 1
+            label_ += 1
+
+        return parsed_data
+
     async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, lang=None, _doc=False,
                               _tried=0, _prefix='', _iw=False, _search=False) -> PageInfo:
         """
@@ -439,9 +516,10 @@ class WikiLib:
         :param _search: 是否为搜索模式，仅用作内部递归调用判断
         :return:
         """
-        if m := re.match(r'w:c:.*?:(.*)', title) and self.wiki_info.api.find('fandom.com') != -1:
-            nq = WikiLib('https://community.fandom.com/wiki/' + title, self.headers)
-            return await nq.parse_page_info(m.group(1))
+        if title:
+            if m := re.match(r'w:c:.*?:(.*)', title) and self.wiki_info.api.find('fandom.com') != -1:
+                nq = WikiLib('https://community.fandom.com/wiki/' + title, self.headers)
+                return await nq.parse_page_info(m.group(1))
         try:
             await self.fixup_wiki_info()
         except InvalidWikiError as e:
@@ -492,7 +570,7 @@ class WikiLib:
                 else:
                     title += _arg
             if len(section_list) > 1:
-                selected_section = ''.join(section_list)[1:]
+                selected_section = ''.join(section_list)[1:].replace(' ', '_')
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.selected_section = selected_section
             if not selected_section and used_quote:
@@ -533,7 +611,6 @@ class WikiLib:
                     page_info.before_title = n['from']
                     page_info.title = n['to']
         pages: Dict[str, dict] = query.get('pages')
-        # print(pages)
         if pages:
             for page_id in pages:
                 page_info.status = False
@@ -624,9 +701,33 @@ class WikiLib:
                                 page_info.possible_research_title = searched_result
                 else:
                     page_info.status = True
+                    try:
+                        page_info.body_class = await self.get_page_body_class(page_info.title)
+                        if 'ns-talk' in page_info.body_class:
+                            page_info.is_talk_page = True
+                        stp = special_talk_page_class.get(page_info.info.api, [])
+                        for sc in stp:
+                            if sc in page_info.body_class:
+                                page_info.is_talk_page = True
+                                break
+                        sfp = forum_class.get(page_info.info.api, [])
+                        for fc in sfp:
+                            if fc in page_info.body_class:
+                                page_info.is_forum = True
+                                page_info.forum_data = await self.get_forums_data(page_info.title)
+                                break
+                        if not page_info.is_forum:
+                            for bc in page_info.body_class:
+                                for fc in sfp:
+                                    if bc.startswith(fc):
+                                        page_info.is_forum_topic = True
+                                        break
+                    except Exception:
+                        Logger.error(traceback.format_exc())
+
                     templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
-                    if selected_section or page_info.invalid_section:
-                        parse_section_string = {'action': 'parse', 'page': title, 'prop': 'sections'}
+                    if selected_section or page_info.invalid_section or page_info.is_talk_page:
+                        parse_section_string = {'action': 'parse', 'page': page_info.title, 'prop': 'sections'}
                         parse_section = await self.get_json(**parse_section_string)
                         section_list = []
                         if 'parse' in parse_section:

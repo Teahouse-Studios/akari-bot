@@ -12,11 +12,9 @@ from .maimaidx_apidata import get_record, get_song_record, get_total_record, get
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
 
-SONGS_PER_PAGE = 30
-SONGS_NEED_IMG = 10
 
-assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
+
 
 def get_diff(diff: str) -> int:
     diff = diff.lower()
@@ -627,8 +625,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
 
 
 async def get_grade_info(msg: Bot.MessageSession, grade: str):
-    file_path = os.path.join(assets_path, "mai_grade_info.json")
-    with open(file_path, 'r') as file:
+    with open(grade_info_path, 'r') as file:
         data = json.load(file)
 
     def key_process(input_key, conv_dict):

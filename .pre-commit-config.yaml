@@ -3,7 +3,7 @@ repos:
       rev: "1.6.1"
       hooks:
           - id: poetry-export
-            args: ["-f", "requirements.txt", "-o", "requirements.txt"]
+            args: ["--without-hashes", "-f", "requirements.txt", "-o", "requirements.txt"]
             verbose: true
     - repo: https://github.com/pre-commit/mirrors-autopep8
       rev: "v2.0.4"

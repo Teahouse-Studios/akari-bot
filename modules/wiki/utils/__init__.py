@@ -1,3 +1,4 @@
+import re
 import traceback
 
 from core.builtins import Bot
@@ -9,6 +10,7 @@ from .ab_qq import ab_qq
 from .newbie import newbie
 from .rc import rc
 from .rc_qq import rc_qq
+from .user import get_user_info
 
 rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
 
@@ -110,3 +112,21 @@ async def newbie_loader(msg: Bot.MessageSession):
     except Exception:
         Logger.error(traceback.format_exc())
         await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
+
+
+usr = module('user', developers=['OasisAkari'], recommend_modules='wiki', doc=True)
+
+
+@usr.command('<username> {{wiki.help.user}}')
+async def user(msg: Bot.MessageSession, username: str):
+    target = WikiTargetInfo(msg)
+    start_wiki = target.get_start_wiki()
+    if start_wiki:
+        match_interwiki = re.match(r'(.*?):(.*)', username)
+        if match_interwiki:
+            interwikis = target.get_interwikis()
+            if match_interwiki.group(1) in interwikis:
+                await get_user_info(msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2))
+        await get_user_info(msg, start_wiki, username)
+    else:
+        await msg.finish(msg.locale.t('wiki.message.not_set'))

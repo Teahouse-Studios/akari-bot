@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal, ROUND_HALF_UP
 import uuid
 from typing import Union, List
 
@@ -6,6 +7,7 @@ import ujson as json
 from tenacity import retry, stop_after_attempt
 
 from core.types.message import MessageSession, FetchTarget, FetchedSession
+from core.utils.text import isint
 from database.orm import Session
 from database.tables import *
 
@@ -24,7 +26,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 3
+    database_version = 4
 
     class TargetInfo:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
@@ -161,7 +163,7 @@ class BotDBUtil:
         def custom_admins(self):
             if not self.query:
                 return []
-            return json.loads(self.query.custom_admins)
+            return json.loads(self.query.customAdmins)
 
         def check_custom_target_admin(self, sender_id) -> bool:
             return sender_id in self.custom_admins
@@ -174,7 +176,7 @@ class BotDBUtil:
             custom_admins = self.custom_admins.copy()
             if sender_id not in custom_admins:
                 custom_admins.append(sender_id)
-            self.query.custom_admins = json.dumps(custom_admins)
+            self.query.customAdmins = json.dumps(custom_admins)
             session.commit()
             return True
 
@@ -185,7 +187,7 @@ class BotDBUtil:
                 custom_admins = self.custom_admins.copy()
                 if sender_id in custom_admins:
                     custom_admins.remove(sender_id)
-                self.query.custom_admins = json.dumps(custom_admins)
+                self.query.customAdmins = json.dumps(custom_admins)
             return True
 
         @property
@@ -200,32 +202,6 @@ class BotDBUtil:
             if id_prefix:
                 filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
             return session.query(TargetInfo).filter(*filter_).all()
-
-        @property
-        def petal(self):
-            if not self.query:
-                return 0
-            return self.query.petal
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def modify_petal(self, amount: int) -> bool:
-            if not self.query:
-                self.query = self.init()
-            petal = self.petal
-            new_petal = petal + amount
-            self.query.petal = new_petal
-            session.commit()
-            return True
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def clear_petal(self) -> bool:
-            if not self.query:
-                self.query = self.init()
-            self.query.petal = 0
-            session.commit()
-            return True
 
     class SenderInfo:
         def __init__(self, sender_id):
@@ -274,7 +250,38 @@ class BotDBUtil:
         def disable_typing(self):
             if not self.query:
                 return False
-            return self.query.disable_typing
+            return self.query.disableTyping
+
+        @property
+        def petal(self):
+            if not self.query:
+                return 0
+            if self.query.petal < 0:
+                self.query.petal = 0
+            return self.query.petal
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def modify_petal(self, amount: int) -> bool:
+            if not self.query:
+                self.query = self.init()
+            petal = self.petal
+            if not isint(amount):
+                amount = Decimal(amount).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+            new_petal = petal + int(amount)
+            new_petal = 0 if new_petal < 0 else new_petal
+            self.query.petal = new_petal
+            session.commit()
+            return True
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def clear_petal(self) -> bool:
+            if not self.query:
+                self.query = self.init()
+            self.query.petal = 0
+            session.commit()
+            return True
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -296,11 +303,17 @@ class BotDBUtil:
                 return True
             return False
 
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def add(target_id):
             session.add(GroupBlockList(targetId=target_id))
             session.commit()
             return True
 
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def remove(target_id):
             entry = session.query(GroupBlockList).filter_by(targetId=target_id).first()
             if entry:

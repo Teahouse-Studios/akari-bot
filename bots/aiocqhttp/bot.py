@@ -20,7 +20,7 @@ from core.utils.info import Info
 from core.utils.i18n import Locale, default_locale
 from database import BotDBUtil
 
-PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+PrivateAssets.set('assets/private/aiocqhttp')
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
 qq_account = str(Config("qq_account", cfg_type=(int, str)))

@@ -24,7 +24,10 @@ random_title = ['random', '随机页面', '隨機頁面']
 
 wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
-                     'interwiki': 'wiki iw'},
+                     'interwiki': 'wiki iw',
+                     'wiki iw set': 'wiki iw add',
+                     'wiki iw del': 'wiki iw remove',
+                     'wiki iw delete': 'wiki iw remove'},
               recommend_modules='wiki_inline',
               developers=['OasisAkari'], doc=True)
 
@@ -59,10 +62,13 @@ async def _(msg: Bot.MessageSession, pageid: str):
 
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
-                      template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
+                      template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None,
+                      start_wiki_api=None):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
+        if start_wiki_api:
+            start_wiki = start_wiki_api
         interwiki_list = target.get_interwikis()
         headers = target.get_headers()
         prefix = target.get_prefix()
@@ -208,15 +214,17 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
                                           (r.templates and
                                            ('Template:Disambiguation' in r.templates or
-                                            'Template:Version disambiguation' in r.templates))}})
+                                            'Template:Version disambiguation' in r.templates)) or r.is_forum_topic}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if WebRender.status:
-                        if r.invalid_section and r.info.in_allowlist:
+                        if (r.invalid_section and r.info.in_allowlist) or (r.is_talk_page and not r.selected_section):
                             if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
                                 i_msg_lst = []
                                 session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
-                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.prompt'
+                                                                        if r.invalid_section and r.info.in_allowlist
+                                                                        else 'wiki.message.talk_page.prompt')))
                                 i_msg_lst.append(Image(await
                                                        image_table_render(
                                                            ImageTable(session_data,
@@ -231,11 +239,37 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         display = int(display)
                                         if display <= len(r.sections):
                                             r.selected_section = display - 1
-                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1])
+                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1], start_wiki_api=r.info.api)
 
                                 await session.send_message(i_msg_lst, callback=_callback)
                             else:
-                                msg_list.append(Plain(session.locale.t('wiki.message.invalid_section')))
+                                if r.invalid_section and r.info.in_allowlist:
+                                    msg_list.append(Plain(session.locale.t('wiki.message.invalid_section')))
+                        if r.is_forum:
+                            if isinstance(session, Bot.MessageSession) and session.Feature.image:
+                                forum_data = r.forum_data
+                                img_table_data = []
+                                img_table_headers = ['#']
+                                for x in forum_data:
+                                    if x == '#':
+                                        img_table_headers += forum_data[x]['data']
+                                    else:
+                                        img_table_data.append([x] + forum_data[x]['data'])
+                                img_table = ImageTable(img_table_data, img_table_headers)
+                                i_msg_lst = []
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.forum')))
+                                i_msg_lst.append(Image(await image_table_render(img_table)))
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
+                                i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
+
+                                async def _callback(msg: Bot.MessageSession):
+                                    display = msg.as_display(text_only=True)
+                                    if isint(display):
+                                        if int(display) <= len(forum_data) - 1:
+                                            await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)
+
+                                await session.send_message(i_msg_lst, callback=_callback)
+
                 else:
                     plain_slice = []
                     wait_plain_slice = []

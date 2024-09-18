@@ -61,7 +61,7 @@
     "parser.module.disabled.prompt": "「${module}」模組未啟用，請使用「${prefix}enable ${module}」啟用此模組。",
     "parser.module.unloaded": "「${module}」模組目前未載入，請聯絡開發人員處理。",
     "parser.superuser.permission.denied": "你沒有使用此指令的權限。",
-    "petal.message.cost": "（使用了 ${count} 片花瓣）",
+    "petal.message.cost": "（使用了 ${amount} 片花瓣）",
     "petal.message.gained.limit": "但是，今日取得花瓣已達到每日上限，請明日再試。",
     "petal.message.gained.success": "得到了 ${amount} 片花瓣。",
     "petal.message.lost.limit": "（本日失去花瓣已達到每日上限。）",

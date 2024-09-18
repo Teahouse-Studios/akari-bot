@@ -41,8 +41,8 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
 
 EnableDirtyWordCheck.status = True
 Url.disable_mm = True
-PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-console_history_path = os.path.abspath(os.path.dirname(__file__) + '/.console_history')
+PrivateAssets.set('assets/private/console')
+console_history_path = os.path.abspath('assets/private/console/.console_history')
 if os.path.exists(console_history_path):
     os.remove(console_history_path)
 

@@ -5,7 +5,7 @@ from core.builtins.message.internal import FormattedTime
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
-from core.scheduler import Scheduler, DateTrigger
+from core.scheduler import Scheduler, DateTrigger, IntervalTrigger
 from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.time import strptime2ts
 
@@ -26,7 +26,7 @@ async def _():
         abuses.append(
             f'{x["user"]}{x["title"]}{x["timestamp"]}{x["filter"]}{x["action"]}{x["result"]}')
 
-    @Scheduler.scheduled_job('interval', seconds=60)
+    @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
     async def check_abuse():
         query2 = await wiki.get_json(action='query', list='abuselog',
                                      aflprop='user|title|action|result|filter|timestamp',
@@ -71,7 +71,7 @@ async def newbie():
         if 'title' in x:
             qq.append(x['title'])
 
-    @Scheduler.scheduled_job('interval', seconds=60)
+    @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
     async def check_newbie():
 
         qqqq = await wiki.get_json(action='query', list='logevents', letype='newusers')
