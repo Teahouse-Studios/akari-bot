@@ -25,6 +25,7 @@ EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else F
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
+string_post = Config("qq_enable_listening_self_message", False)
 
 
 @bot.on_startup
@@ -48,7 +49,7 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
-
+'''
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
     if filter_msg:
         match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
@@ -60,18 +61,31 @@ async def message_handler(event: Event):
                 return
         else:
             return
+'''
     reply_id = None
-    match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
-    if match_reply:
-        reply_id = int(match_reply.group(1))
-
+    if string_post:
+        match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
+        if match_reply:
+            reply_id = int(match_reply.group(1))
+    else:
+        if event.message[0]["type"] == "reply":
+            reply_id = int(event.message[0]["data"]["id"])
+    
     prefix = None
-    if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
-        if match_at.group(1) == qq_account:
-            event.message = match_at.group(2)
-            if event.message in ['', ' ']:
-                event.message = 'help'
-            prefix = ['']
+    if string_post:
+        if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
+            if match_at.group(1) == qq_account:
+                event.message = match_at.group(2)
+                if event.message in ['', ' ']:
+                    event.message = 'help'
+                prefix = ['']
+    else:
+        if event.message[0]["type"] == "at":
+            if event.message[0]["data"]["qq"] == qq_account:
+                event.message = event.message[1:]
+                if not event.message:
+                    event.message = [{"type": "text", "data": {"text": "help"}}]
+                prefix = ['']    
 
     target_id = f'Group|{str(event.group_id)}' if event.detail_type == 'group' else f'Private|{str(event.user_id)}'
 
