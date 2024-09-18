@@ -1022,6 +1022,20 @@ files = [
 sgmllib3k = "*"
 
 [[package]]
+name = "ff3"
+version = "1.0.2"
+description = "Format Preserving Encryption (FPE) with FF3"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "ff3-1.0.2-py3-none-any.whl", hash = "sha256:d289644085037c1357497bae0bace18e31e13b25f60e1eadffa71b9eeed4779d"},
+    {file = "ff3-1.0.2.tar.gz", hash = "sha256:ff892c7472509c17f68cb4907f8af7fc91835cb68c260e2ab7597b57ad44bc7a"},
+]
+
+[package.dependencies]
+pycryptodome = "*"
+
+[[package]]
 name = "ffmpy"
 version = "0.3.3"
 description = "A simple Python wrapper for ffmpeg"
@@ -4589,4 +4603,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "712667ea460dcf0b839545e4ecdfde0756c84ca4d83075b0d4c1acec7800216c"
+content-hash = "56692c1eee88aa6c27e9195f5821dc56ed0f446208dffc9ed705f835c8d2bc8c"

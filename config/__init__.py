@@ -6,13 +6,28 @@ from loguru import logger
 import toml
 
 from core.exceptions import ConfigFileNotFound, ConfigValueError
-from core.utils.text import isfloat, isint
 
 
 config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)
 
 old_cfg_file_path = abspath('./config/config.cfg')
+
+
+def isfloat(num_str: str) -> bool:
+    try:
+        float(num_str)
+        return True
+    except Exception:
+        return False
+
+
+def isint(num_str: str) -> bool:
+    try:
+        int(num_str)
+        return True
+    except Exception:
+        return False
 
 
 def convert_cfg_to_toml():

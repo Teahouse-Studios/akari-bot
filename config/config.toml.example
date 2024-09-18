@@ -22,7 +22,8 @@ openai_api_key =
 osu_api_key =
 wolfram_alpha_appid =
 jwt_secret =
-
+ff3_key = 0AF6C4788B86F4E2FB97215E6E4A5EB0
+ff3_tweak = 6520BD033E2928
 [cfg]
 api_port = 5000
 base_superuser = ["QQ|2596322644",]

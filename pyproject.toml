@@ -64,6 +64,7 @@ inputimeout = "^1.0.4"
 prompt-toolkit = "^3.0.47"
 emoji = "^2.12.1"
 langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
+ff3 = "^1.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
