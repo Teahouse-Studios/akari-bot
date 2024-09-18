@@ -74,6 +74,6 @@ def decrypt_string(text):
     for i in range(0, len(text), 28):
         d.append(text[i:i + 28])
     dec_text = ''.join([c.decrypt(i) for i in d])
-    if m := re.match(r'^t:(.*?):e.*?$', dec_text):
+    if m := re.match(r'^.{2}:(.*?):.{2}$', dec_text):
         return m.group(1)
     return False
