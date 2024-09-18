@@ -26,7 +26,6 @@ from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
-string_post = Config("qq_string_post", False)
 
 
 class FinishedSession(FinS):
@@ -169,31 +168,16 @@ class MessageSession(MessageSessionT):
         return False
 
     def as_display(self, text_only=False):
-        if string_post:
-            m = html.unescape(self.session.message.message)
-                if text_only:
-                return ''.join(
-                    re.split(r'\[CQ:.*?]', m)).strip()
-            m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-            m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
-
+        m = html.unescape(self.session.message.message)
+        m = m.replace('\\', '\\\\')
+        if text_only:
             return ''.join(
                 re.split(r'\[CQ:.*?]', m)).strip()
-        else:
-            m = []
-            for item in self.session.message.message:
-                if text_only:
-                    if item["type"] == "text":
-                        m.append(item["data"]["text"])
-                else:
-                    if item["type"] == "at":
-                        m.append(f'QQ|{item["data"]["qq"]}')
-                    elif item["type"] == "reply":
-                        m.append(f'[Ke:forward,id={item["data"]["id"]}]')
-                    elif item["type"] == "text":
-                        m.append(item["data"]["text"])
+        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
 
-            return ''.join(m).strip()  
+        return ''.join(
+            re.split(r'\[CQ:.*?]', m)).strip()
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == 'QQ|Group':
@@ -227,43 +211,32 @@ class MessageSession(MessageSessionT):
         return lst
 
     async def to_message_chain(self):
+        m = html.unescape(self.session.message.message)
+        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+        spl = re.split(r'(\[CQ:.*?])', m)
         lst = []
-        if string_post:
-            m = html.unescape(self.session.message.message)
-            m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-            m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
-            spl = re.split(r'(\[CQ:.*?])', m)
-            for s in spl:
-                if s == '':
-                    continue
-                if s.startswith('[CQ:'):
-                    if s.startswith('[CQ:image'):
-                        sspl = s.split(',')
-                        for ss in sspl:
-                            if qq_frame_type() == 'lagrange':
-                                if ss.startswith('file='):
-                                    ss = ss[5:]
-                                    if ss.endswith(']'):
-                                        ss = ss[:-1]
-                                    lst.append(Image(ss))
-                            else:
-                                if ss.startswith('url='):
-                                    ss = ss[4:]
-                                    if ss.endswith(']'):
-                                        ss = ss[:-1]
-                                    lst.append(Image(ss))
-                else:
-                    lst.append(Plain(s))
-        else:
-            for item in self.session.message.message:
-                if item["type"] == "at":
-                    lst.append(Plain(f"QQ|{item['data']['qq']}"))
-                elif item["type"] == "reply":
-                    lst.append(Plain(f"[Ke:forward,id={item['data']['id']}]"))
-                elif item["type"] == "text":
-                    lst.append(Plain(item["data"]["text"]))
-                elif item["type"] == "image":
-                    lst.append(Image(item["data"]["file"]))
+        for s in spl:
+            if s == '':
+                continue
+            if s.startswith('[CQ:'):
+                if s.startswith('[CQ:image'):
+                    sspl = s.split(',')
+                    for ss in sspl:
+                        if qq_frame_type() == 'lagrange':
+                            if ss.startswith('file='):
+                                ss = ss[5:]
+                                if ss.endswith(']'):
+                                    ss = ss[:-1]
+                                lst.append(Image(ss))
+                        else:
+                            if ss.startswith('url='):
+                                ss = ss[4:]
+                                if ss.endswith(']'):
+                                    ss = ss[:-1]
+                                lst.append(Image(ss))
+            else:
+                lst.append(Plain(s))
 
         return MessageChain(lst)
 
