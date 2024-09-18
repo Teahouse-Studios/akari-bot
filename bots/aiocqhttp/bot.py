@@ -49,19 +49,34 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
-'''
-    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
-    if filter_msg:
-        match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
-        if match_json:
-            load_json = json.loads(html.unescape(match_json.group(1)))
-            if load_json['app'] == 'com.tencent.multimsg':
-                event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
+    
+    if string_post:
+        filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
+        if filter_msg:
+            match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
+            if match_json:
+                load_json = json.loads(html.unescape(match_json.group(1)))
+                if load_json['app'] == 'com.tencent.multimsg':
+                    event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
+                else:
+                    return
             else:
                 return
-        else:
-            return
-'''
+    else:
+        for item in event.message:
+            if re.match(r'.*?<\?xml.*?>.*?', item["data"].get("text"), re.MULTILINE | re.DOTALL):
+                filter_msg = True
+        if event.message[0]["type"] in ["json", "xml"] or filter_msg:
+            match_json = event.message[0]["type"] == "json"
+            if match_json:
+                load_json = json.loads(html.unescape(event.message[0]["data"]["data"]))
+                if load_json['app'] == 'com.tencent.multimsg':
+                    event.message = [{"type": "forward","data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
+                else:
+                    return
+            else:
+                return
+        
     reply_id = None
     if string_post:
         match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
