@@ -173,7 +173,6 @@ class MessageSession(MessageSessionT):
             return False
         return await _check()
 
-
     def as_display(self, text_only=False):
         if string_post:
             m = html.unescape(self.session.message.message)
@@ -199,7 +198,7 @@ class MessageSession(MessageSessionT):
                     elif item["type"] == "text":
                         m.append(item["data"]["text"])
 
-            return ''.join(m).strip()  
+            return ''.join(m).strip()
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == 'QQ|Group':
