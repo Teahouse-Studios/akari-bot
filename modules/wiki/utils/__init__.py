@@ -25,13 +25,24 @@ async def rc_loader(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward:
-        try:
-            nodelist = await rc_qq(msg, start_wiki)
-            await msg.fake_forward_msg(nodelist)
+        from bots.aiocqhttp.utils import qq_frame_type
+        if qq_frame_type() == 'ntqq':
+            try:
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.1'))
+                nodelist = await rc_qq(msg, start_wiki)
+                await msg.fake_forward_msg(nodelist)
+            except Exception:
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.2'))
             legacy = False
-        except Exception:
-            Logger.error(traceback.format_exc())
-            await msg.send_message(msg.locale.t('wiki.message.rollback'))
+        else:
+
+            try:
+                nodelist = await rc_qq(msg, start_wiki)
+                await msg.fake_forward_msg(nodelist)
+                legacy = False
+            except Exception:
+                Logger.error(traceback.format_exc())
+                await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
         try:
             res = await rc(msg, start_wiki)
@@ -68,13 +79,23 @@ async def ab_loader(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward:
-        try:
-            nodelist = await ab_qq(msg, start_wiki)
-            await msg.fake_forward_msg(nodelist)
+        from bots.aiocqhttp.utils import qq_frame_type
+        if qq_frame_type() == 'ntqq':
+            try:
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.1'))
+                nodelist = await ab_qq(msg, start_wiki)
+                await msg.fake_forward_msg(nodelist)
+            except Exception:
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.2'))
             legacy = False
-        except Exception:
-            Logger.error(traceback.format_exc())
-            await msg.send_message(msg.locale.t('wiki.message.rollback'))
+        else:
+            try:
+                nodelist = await ab_qq(msg, start_wiki)
+                await msg.fake_forward_msg(nodelist)
+                legacy = False
+            except Exception:
+                Logger.error(traceback.format_exc())
+                await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
         try:
             res = await ab(msg, start_wiki)
