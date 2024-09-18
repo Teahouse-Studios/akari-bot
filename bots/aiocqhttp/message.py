@@ -25,6 +25,8 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
+from tenacity import retry, wait_fixed, stop_after_attempt
+
 enable_analytics = Config('enable_analytics', False)
 string_post = Config("qq_string_post", False)
 
@@ -148,25 +150,29 @@ class MessageSession(MessageSessionT):
         return FinishedSession(self, send['message_id'], [send])
 
     async def check_native_permission(self):
-        if self.target.target_from == 'QQ|Private':
-            return True
-        elif self.target.target_from == 'QQ|Group':
-            get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
-                                                    user_id=self.session.sender)
-            if get_member_info['role'] in ['owner', 'admin']:
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+        async def _check():
+            if self.target.target_from == 'QQ|Private':
                 return True
-        elif self.target.target_from == 'QQ|Guild':
-            match_guild = re.match(r'(.*)\|(.*)', self.session.target)
-            get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
-                                                    user_id=self.session.sender)
-            for m in get_member_info['roles']:
-                if m['role_id'] == "2":
+            elif self.target.target_from == 'QQ|Group':
+                get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
+                                                        user_id=self.session.sender)
+                if get_member_info['role'] in ['owner', 'admin']:
                     return True
-            get_guild_info = await bot.call_action('get_guild_meta_by_guest', guild_id=match_guild.group(1))
-            if get_guild_info['owner_id'] == self.session.sender:
-                return True
+            elif self.target.target_from == 'QQ|Guild':
+                match_guild = re.match(r'(.*)\|(.*)', self.session.target)
+                get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
+                                                        user_id=self.session.sender)
+                for m in get_member_info['roles']:
+                    if m['role_id'] == "2":
+                        return True
+                get_guild_info = await bot.call_action('get_guild_meta_by_guest', guild_id=match_guild.group(1))
+                if get_guild_info['owner_id'] == self.session.sender:
+                    return True
+                return False
             return False
-        return False
+        return await _check()
+
 
     def as_display(self, text_only=False):
         if string_post:
