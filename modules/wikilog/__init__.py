@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
 @wikilog.handle('filter test <filter> <example> {{wikilog.help.filter.test}}')
 async def _(msg: Bot.MessageSession, filter: str, example: str):
     f = re.compile(filter)
-    if m :=f.search(example):
+    if m := f.search(example):
         await msg.finish(msg.locale.t('wikilog.message.filter.test.success', start=m.start(), end=m.end(),
                                       string=example[m.start():m.end()]))
     else:
@@ -97,13 +97,13 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
         if status.value.api in infos:
             if logtype == "RecentChanges":
                 await msg.finish(await wiki_info.return_api(action='query', list='recentchanges',
-                                      rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
-                                      rclimit=100,
-                                      rcshow='|'.join(infos[status.value.api]['RecentChanges']['rcshow'])))
+                                                            rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
+                                                            rclimit=100,
+                                                            rcshow='|'.join(infos[status.value.api]['RecentChanges']['rcshow'])))
             if logtype == "AbuseLog":
                 await msg.finish(await wiki_info.return_api(action='query', list='abuselog',
-                                                  aflprop='user|title|action|result|filter|timestamp',
-                                                  afllimit=30))
+                                                            aflprop='user|title|action|result|filter|timestamp',
+                                                            afllimit=30))
         else:
             await msg.finish(msg.locale.t('wikilog.message.filter.set.failed'))
     else:
@@ -188,12 +188,18 @@ async def list_wiki_link(msg: Bot.MessageSession):
     text = ''
     for apilink in infos:
         text += f'{apilink}: \n'
-        text += msg.locale.t("wikilog.message.list.abuselog") + (msg.locale.t("wikilog.message.enabled") if infos[apilink]['AbuseLog']['enable'] else msg.locale.t("wikilog.message.disabled")) + '\n'
-        text += msg.locale.t("wikilog.message.filters") + '\n"' + '" "'.join(infos[apilink]['AbuseLog']['filters']) + '"' + '\n'
-        text += msg.locale.t("wikilog.message.recentchanges") + (msg.locale.t("wikilog.message.enabled") if infos[apilink]['RecentChanges']['enable'] else msg.locale.t("wikilog.message.disabled")) + '\n'
-        text += msg.locale.t("wikilog.message.filters") + '\n"' + '" "'.join(infos[apilink]['RecentChanges']['filters']) + '"' + '\n'
-        text += msg.locale.t("wikilog.message.rcshow")  + '\n"' + '" "'.join(infos[apilink]['RecentChanges']['rcshow']) + '"' + '\n'
-        text += msg.locale.t("wikilog.message.usebot") + (msg.locale.t("wikilog.message.enabled") if infos[apilink]['use_bot'] else msg.locale.t("wikilog.message.disabled")) + '\n'
+        text += msg.locale.t("wikilog.message.list.abuselog") + (msg.locale.t("wikilog.message.enabled")
+                                                                 if infos[apilink]['AbuseLog']['enable'] else msg.locale.t("wikilog.message.disabled")) + '\n'
+        text += msg.locale.t("wikilog.message.filters") + '\n"' + \
+            '" "'.join(infos[apilink]['AbuseLog']['filters']) + '"' + '\n'
+        text += msg.locale.t("wikilog.message.recentchanges") + (msg.locale.t("wikilog.message.enabled")
+                                                                 if infos[apilink]['RecentChanges']['enable'] else msg.locale.t("wikilog.message.disabled")) + '\n'
+        text += msg.locale.t("wikilog.message.filters") + '\n"' + \
+            '" "'.join(infos[apilink]['RecentChanges']['filters']) + '"' + '\n'
+        text += msg.locale.t("wikilog.message.rcshow") + '\n"' + \
+            '" "'.join(infos[apilink]['RecentChanges']['rcshow']) + '"' + '\n'
+        text += msg.locale.t("wikilog.message.usebot") + (msg.locale.t("wikilog.message.enabled")
+                                                          if infos[apilink]['use_bot'] else msg.locale.t("wikilog.message.disabled")) + '\n'
     await msg.finish(text)
 
 

@@ -44,16 +44,20 @@ async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot
     for u in checked_userlist:
         user_checked = u['content']
         if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
-            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
-            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
+            user_checked = user_checked.replace("<吃掉了>", msg.locale.t(
+                "check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
+            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t(
+                "check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
         user_checked_map[u['original']] = user_checked
     checked_titlelist = await check(*titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']
         if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
-            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
-            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
+            title_checked = title_checked.replace("<吃掉了>", msg.locale.t(
+                "check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
+            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t(
+                "check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:AbuseLog")
         title_checked_map[t['original']] = title_checked
     for x in abl:
         if 'title' in x:
