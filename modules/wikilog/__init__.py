@@ -40,6 +40,7 @@ wikilog = module('wikilog', developers=['OasisAkari'], required_superuser=True, 
 async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
+    # todo 黑白名单处理
     if status.available:
         WikiLogUtil(msg).conf_wiki(status.value.api, add='add' in msg.parsed_msg, reset='reset' in msg.parsed_msg)
         await msg.finish(msg.locale.t("wikilog.message.config.wiki.success", wiki=status.value.name))
