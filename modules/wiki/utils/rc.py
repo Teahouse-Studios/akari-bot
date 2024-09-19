@@ -131,7 +131,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
 
             time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
             t.append(time)
-            if x['type'] == 'edit':
+            if x['type'] in ['edit', 'categorize']:
                 count = x['newlen'] - x['oldlen']
                 if count > 0:
                     count = f'+{str(count)}'

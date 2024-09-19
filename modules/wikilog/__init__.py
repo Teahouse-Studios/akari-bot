@@ -13,6 +13,8 @@ import ujson as json
 from ..wiki.utils.rc import convert_rc_to_detailed_format
 from ..wiki.utils.time import strptime2ts
 
+from .utils import convert_data_to_text
+
 type_map = {'abuselog': 'AbuseLog', 'recentchanges': 'RecentChanges',
             'AbuseLog': 'AbuseLog', 'RecentChanges': 'RecentChanges',
             'ab': 'AbuseLog', 'rc': 'RecentChanges'}
@@ -37,14 +39,14 @@ wikilog = module('wikilog', developers=['OasisAkari'], required_superuser=True)
 
 
 @wikilog.handle('add wiki <apilink>',
-                'reset wiki <apiink>',
-                'remove wiki <apiink>')
+                'reset wiki <apilink>',
+                'remove wiki <apilink>')
 async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     if status.available:
         WikiLogUtil(msg).conf_wiki(status.value.api, add='add' in msg.parsed_msg, reset='reset' in msg.parsed_msg)
-        await msg.finish(msg.locale.t('wikilog.message.add_wiki.success'))
+        await msg.finish(msg.locale.t('wikilog.message.add_wiki.success', wikiname=status.value.name))
     else:
         await msg.finish(msg.locale.t('wikilog.message.add_wiki.failed'))
 
@@ -64,14 +66,24 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         await msg.finish(msg.locale.t('wikilog.message.enable_log.invalid_logtype'))
 
 
-@wikilog.handle('filter test <filter> <text>')
-async def _(msg: Bot.MessageSession, filter: str, text):
+@wikilog.handle('filter test <filter> <example>')
+async def _(msg: Bot.MessageSession, filter: str, example: str):
     f = re.compile(filter)
-    if f.search(text):
-        await msg.finish(msg.locale.t('wikilog.message.filter_test.success'))
+    if f.search(example):
+        await msg.finish(msg.locale.t('wikilog.message.filter.test.success'))
     else:
-        await msg.finish(msg.locale.t('wikilog.message.filter_test.failed'))
+        await msg.finish(msg.locale.t('wikilog.message.filter.test.failed'))
 
+
+@wikilog.handle('filter example <example>')
+async def _(msg: Bot.MessageSession):
+    try:
+        example = msg.trigger_msg.replace('wikilog filter example ', '', 1)
+        Logger.debug(example)
+        load = json.loads(example)
+        await msg.send_message(convert_data_to_text(load))
+    except Exception:
+        await msg.send_message(msg.locale.t('wikilog.message.filter.example.invalid'))
 
 @wikilog.handle('filter set <apilink> <logtype> ...')
 async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
@@ -155,6 +167,8 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
                 if matched[id_][wiki]['AbuseLog']:
                     for log in matched[id_][wiki]['AbuseLog']:
                         send_msg = []
+                        if len(matched[id_]) > 1:
+                            send_msg.append(wiki_info.name)
                         s = f'用户：{log["user"]}\n' \
                             f'页面标题：{log["title"]}\n' \
                             f'过滤器名：{log["filter"]}\n' \
@@ -172,8 +186,9 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
                             if not z['status']:
                                 send_msg.append('\n检测到特定文字被屏蔽，请前往日志查看所有消息。\n' +
                                                 wiki_info.articlepath.replace('$1', 'Special:AbuseLog'))
-                            await ft.send_direct_message(send_msg)
+                        await ft.send_direct_message(send_msg)
                 if matched[id_][wiki]['RecentChanges']:
                     rc = await convert_rc_to_detailed_format(matched[id_][wiki]['RecentChanges'], wiki_info, ft.parent)
+
                     for x in rc:
-                        await ft.send_direct_message(x)
+                        await ft.send_direct_message(f'{wiki_info.name}\n{x}' if len(matched[id_]) > 1 else x)
