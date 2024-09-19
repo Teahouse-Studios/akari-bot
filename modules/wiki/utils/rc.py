@@ -103,24 +103,24 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
     for u in checked_userlist:
         user_checked = u['content']
         if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
-            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")
+            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")
         user_checked_map[u['original']] = user_checked
     checked_titlelist = await check(*titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']
         if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
-            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")
+            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")
         title_checked_map[t['original']] = title_checked
     checked_commentlist = await check(*commentlist)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c['content']
         if comment_checked.find("<吃掉了>") != -1 or comment_checked.find("<全部吃掉了>") != -1:
-            comment_checked = comment_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            comment_checked = comment_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+            comment_checked = comment_checked.replace("<吃掉了>", msg.locale.t("check.redacted")) + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")
+            comment_checked = comment_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all")) + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")
         comment_checked_map[c['original']] = comment_checked
     for x in rc:
         if 'title' in x:

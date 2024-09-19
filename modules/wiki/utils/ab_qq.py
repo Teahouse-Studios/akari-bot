@@ -4,6 +4,7 @@ from core.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
+from .ab import convert_ab_to_detailed_format
 
 
 async def ab_qq(msg: MessageSession, wiki_url):
@@ -21,42 +22,8 @@ async def ab_qq(msg: MessageSession, wiki_url):
                 {"type": "text", "data": {"text": pageurl}}]
         }
     }]
-    ablist = []
-    userlist = []
-    titlelist = []
-    for x in query["query"]["abuselog"]:
-        if 'title' in x:
-            userlist.append(x['user'])
-            titlelist.append(x['title'])
-    checked_userlist = await check(*userlist)
-    user_checked_map = {}
-    for u in checked_userlist:
-        user_checked = u['content']
-        if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
-            user_checked = user_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        user_checked_map[u['original']] = user_checked
-    checked_titlelist = await check(*titlelist)
-    title_checked_map = {}
-    for t in checked_titlelist:
-        title_checked = t['content']
-        if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
-            title_checked = title_checked.replace("<吃掉了>", msg.locale.t("check.redacted"))
-            title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        title_checked_map[t['original']] = title_checked
-    for x in query["query"]["abuselog"]:
-        if 'title' in x:
-            t = []
-            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
-            t.append(time)
-            result = 'pass' if not x['result'] else x['result']
-            t.append(msg.locale.t("wiki.message.ab.qq.slice",
-                                  title=title_checked_map[x['title']],
-                                  user=user_checked_map[x['user']],
-                                  action=x['action'],
-                                  filter_name=x['filter'],
-                                  result=result))
-            ablist.append('\n'.join(t))
+
+    ablist = await convert_ab_to_detailed_format(query["query"]["abuselog"], wiki.wiki_info, msg)
     for x in ablist:
         nodelist.append(
             {
