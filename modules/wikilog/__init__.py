@@ -85,6 +85,7 @@ async def _(msg: Bot.MessageSession):
     except Exception:
         await msg.send_message(msg.locale.t('wikilog.message.filter.example.invalid'))
 
+
 @wikilog.handle('filter set <apilink> <logtype> ...')
 async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     filters = msg.parsed_msg.get('...')
