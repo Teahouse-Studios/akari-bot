@@ -72,4 +72,4 @@ async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot
                                   filter_name=x['filter'],
                                   result=result))
             ablist.append('\n'.join(t))
-    return abl
+    return ablist
