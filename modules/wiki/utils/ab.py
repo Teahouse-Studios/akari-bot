@@ -62,8 +62,6 @@ async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot
     for x in abl:
         if 'title' in x:
             t = []
-            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
-            t.append(time)
             result = 'pass' if not x['result'] else x['result']
             t.append(msg.locale.t("wiki.message.ab.qq.slice",
                                   title=title_checked_map[x['title']],
@@ -71,5 +69,7 @@ async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot
                                   action=x['action'],
                                   filter_name=x['filter'],
                                   result=result))
+            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
+            t.append(time)
             ablist.append('\n'.join(t))
     return ablist

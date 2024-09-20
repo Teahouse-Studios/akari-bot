@@ -135,8 +135,6 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             title = title_checked_map[x['title']]
             comment = comment_checked_map[x['comment']] if x.get('comment') else None
 
-            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
-            t.append(time)
             if x['type'] in ['edit', 'categorize']:
                 count = x['newlen'] - x['oldlen']
                 if count > 0:
@@ -194,5 +192,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
                 if x['revid'] != 0:
                     t.append(wiki_info.articlepath.replace(
                         "$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))
+            time = msg.ts2strftime(strptime2ts(x['timestamp']), iso=True)
+            t.append(time)
             rclist.append('\n'.join(t))
     return rclist
