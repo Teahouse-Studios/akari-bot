@@ -146,7 +146,7 @@
     "wiki.message.user.username": "使用者：",
     "wiki.message.user.users_groups": "使用者群組：",
     "wiki.message.user.wiki_unavailable": "${wikiurl} 不可用。",
-    "wiki.message.utils.redacted": "檢測到外來訊息介入，請前往過濾器日誌查看所有訊息。",
+    "wiki.message.utils.redacted": "检测到特定文字被屏蔽，请前往日志查看所有消息。",
     "wiki.message.utils.wikilib.error.empty": "發生錯誤：API 未返回任何內容，請聯絡此網站管理員取得原因。",
     "wiki.message.utils.wikilib.error.text_too_long": "發生錯誤：請求的頁面段落文本過長，無法正常顯示。",
     "wiki.message.utils.wikilib.get_failed.api": "從 API 取得資訊時出錯：",
