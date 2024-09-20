@@ -343,9 +343,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     func_params = inspect.signature(submodule.function).parameters
                                     if len(func_params) > 1 and msg.parsed_msg:
                                         parsed_msg_ = msg.parsed_msg.copy()
+                                        no_message_session = True
                                         for param_name, param_obj in func_params.items():
                                             if param_obj.annotation == Bot.MessageSession:
                                                 kwargs[param_name] = msg
+                                                no_message_session = False
                                             param_name_ = param_name
                                             if (param_name__ := f'<{param_name}>') in parsed_msg_:
                                                 param_name_ = param_name__
@@ -368,7 +370,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                         kwargs[param_name_] = param_obj.default
                                                     else:
                                                         kwargs[param_name_] = None
-
+                                        if no_message_session:
+                                            Logger.warning(f'{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n'
+                                                           'Remember: MessageSession IS NOT Bot.MessageSession')
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 

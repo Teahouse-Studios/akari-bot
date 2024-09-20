@@ -354,6 +354,18 @@ class WikiLib:
         api = self.wiki_info.api
         return await self.get_json_from_api(api, _no_login=_no_login, **kwargs)
 
+    async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> dict:
+        await self.fixup_wiki_info()
+        api = self.wiki_info.api
+        if api in redirect_list:
+            api = redirect_list[api]
+        if kwargs:
+            api = api + '?' + urllib.parse.urlencode(kwargs) + ('&format=json' if not _no_format else '')
+            Logger.debug(api)
+        else:
+            raise ValueError('kwargs is None')
+        return api
+
     @staticmethod
     def parse_text(text):
         try:
