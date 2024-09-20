@@ -63,9 +63,12 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         await msg.finish(s.strip())
     else:
         s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
-        img = await msgchain2image([Plain(s)])
-        if img:
-            await msg.finish([BImage(img)])
+        imgs = await msgchain2image([Plain(s)])
+        if imgs:
+            imgchain = []
+            for img in imgs:
+                imgchain.append(BImage(img))
+            await msg.finish(imgchain)
         else:
             await msg.finish(s)
 
@@ -98,9 +101,12 @@ async def _(msg: Bot.MessageSession, level: str):
         await msg.finish(s.strip())
     else:
         s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
-        img = await msgchain2image([Plain(s)])
-        if img:
-            await msg.finish([BImage(img)])
+        imgs = await msgchain2image([Plain(s)])
+        if imgs:
+            imgchain = []
+            for img in imgs:
+                imgchain.append(BImage(img))
+            await msg.finish(imgchain)
         else:
             await msg.finish(s)
 
@@ -128,11 +134,12 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish(s.strip())
         else:
             s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
-            img = await msgchain2image([Plain(s)])
-            if img:
-                await msg.finish([BImage(img)])
-            else:
-                await msg.finish(s)
+            imgs = await msgchain2image([Plain(s)])
+            if imgs:
+                imgchain = []
+                for img in imgs:
+                    imgchain.append(BImage(img))
+                await msg.finish(imgchain)
 
 
 @chu.command('b30 [<username>] {{chunithm.help.b30}}')
@@ -150,8 +157,11 @@ async def _(msg: Bot.MessageSession, username: str = None):
         payload = {'username': username}
         use_cache = False
 
-    img = await generate_best30_text(msg, payload, use_cache)
-    await msg.finish([BImage(img)])
+    imgs = await generate_best30_text(msg, payload, use_cache)
+    imgchain = []
+    for img in imgs:
+        imgchain.append(BImage(img))
+    await msg.finish(imgchain)
 
 
 @chu.command('chart <song> {{maimai.help.chart}}')

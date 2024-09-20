@@ -1,4 +1,6 @@
+import base64
 import re
+from io import BytesIO
 
 import ujson as json
 
@@ -9,6 +11,7 @@ from core.dirty_check import check_bool, rickroll
 from core.utils.http import download, get_url
 from core.utils.text import isint
 from core.utils.web_render import webrender
+from PIL import Image as PImage
 
 
 t = module('tweet',
@@ -89,5 +92,13 @@ async def _(msg: Bot.MessageSession, tweet: str):
         }, post_data=json.dumps(
             {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,
              'element': 'article'}), request_private_ip=True)
-        await msg.finish(
-            [Image(pic), Url(f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}")])
+        read = open(pic)
+        load_img = json.loads(read.read())
+        img_lst = []
+        for x in load_img:
+            b = base64.b64decode(x)
+            bio = BytesIO(b)
+            bimg = PImage.open(bio)
+            img_lst.append(bimg)
+        img_lst.append(Url(f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
+        await msg.finish(img_lst)

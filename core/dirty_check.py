@@ -9,7 +9,7 @@ import hmac
 import json
 import re
 import time
-from typing import Union, List
+from typing import Union, List, Dict
 
 import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
@@ -48,7 +48,7 @@ def parse_data(result: dict):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(*text: Union[str, List[str]]) -> List[str]:
+async def check(*text: Union[str, List[str]]) -> List[Dict]:
     '''检查字符串是否合规
 
     :param text: 字符串（List/Union）。

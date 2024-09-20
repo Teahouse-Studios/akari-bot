@@ -64,7 +64,8 @@ async def get_weekly_img(with_img=False, zh_tw=False):
                                        element=['div#fp-section-weekly'])
     msg_ = []
     if img:
-        msg_.append(Image(path=img))
+        for i in img:
+            msg_.append(Image(i))
     if with_img:
         """result = json.loads(await get_url(
             'https://zh.minecraft.wiki/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
@@ -103,4 +104,7 @@ async def _(msg: Bot.MessageSession):
 @wky.handle('teahouse image {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
-    await msg.finish(Image(await msgchain2image([Plain(weekly)], msg)))
+    imgchain = []
+    for img in await msgchain2image([Plain(weekly)], msg):
+        imgchain.append(Image(img))
+    await msg.finish(imgchain)

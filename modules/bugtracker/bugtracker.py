@@ -1,5 +1,9 @@
+import base64
+from io import BytesIO
+
 import aiohttp
 import ujson as json
+from PIL import Image
 
 from core.logger import Logger
 from core.utils.http import download, get_url
@@ -30,7 +34,15 @@ async def make_screenshot(page_link, use_local=True):
                              request_private_ip=True
                              )
         if img:
-            return img
+            read = open(img)
+            load_img = json.loads(read.read())
+            img_lst = []
+            for x in load_img:
+                b = base64.b64decode(x)
+                bio = BytesIO(b)
+                bimg = Image.open(bio)
+                img_lst.append(bimg)
+            return img_lst
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False

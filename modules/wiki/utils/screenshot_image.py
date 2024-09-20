@@ -2,6 +2,9 @@ import os
 import re
 import traceback
 import urllib.parse
+import base64
+from io import BytesIO
+
 import uuid
 from typing import Union, List
 from urllib.parse import urljoin
@@ -14,12 +17,14 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
+from PIL import Image
+
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 
 
 async def generate_screenshot_v2(page_link: str, section: str = None, allow_special_page=False, content_mode=False, use_local=True,
-                                 element=None):
+                                 element=None) -> Union[List[Image], bool]:
     elements_ = elements.copy()
     if element and isinstance(element, List):
         elements_ += element
@@ -78,11 +83,18 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
         except ValueError:
             Logger.info('[Webrender] Generation Failed.')
             return False
+    read = open(img)
+    load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = Image.open(bio)
+        img_lst.append(bimg)
+    return img_lst
 
-    return img
 
-
-async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[str, bool]:
+async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[List[Image], bool]:
     if not WebRender.status:
         return False
     elif not WebRender.local:
@@ -333,9 +345,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
         read_file = open(url, 'r', encoding='utf-8')
         html = {'content': read_file.read(), 'width': w, 'mw': True}
         Logger.info('Start rendering...')
-        picname = os.path.abspath(f'./cache/{pagename}.jpg')
-        if os.path.exists(picname):
-            os.remove(picname)
+        img_lst = []
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(webrender(), headers={
@@ -344,8 +354,13 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                     if resp.status != 200:
                         Logger.info(f'Failed to render: {await resp.text()}')
                         return False
-                    with open(picname, 'wb+') as jpg:
-                        jpg.write(await resp.read())
+                    imgs_data = json.loads(resp.read())
+                    for img in imgs_data:
+                        b = base64.b64decode(img)
+                        bio = BytesIO(b)
+                        bimg = Image.open(bio)
+                        img_lst.append(bimg)
+
         except aiohttp.ClientConnectorError:
             if use_local:
                 async with aiohttp.ClientSession() as session:
@@ -355,9 +370,14 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                         if resp.status != 200:
                             Logger.info(f'Failed to render: {await resp.text()}')
                             return False
-                        with open(picname, 'wb+') as jpg:
-                            jpg.write(await resp.read())
-        return picname
+                        imgs_data = json.loads(resp.read())
+                        for img in imgs_data:
+                            b = base64.b64decode(img)
+                            bio = BytesIO(b)
+                            bimg = Image.open(bio)
+                            img_lst.append(bimg)
+
+        return img_lst
     except Exception:
         Logger.error(traceback.format_exc())
         return False
