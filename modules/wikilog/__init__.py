@@ -2,12 +2,14 @@ import re
 
 import ujson as json
 
+from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib
 from .dbutils import WikiLogUtil
 from .utils import convert_data_to_text
+from ..wiki import audit_available_list
 from ..wiki.utils.ab import convert_ab_to_detailed_format
 from ..wiki.utils.rc import convert_rc_to_detailed_format
 
@@ -31,7 +33,7 @@ rcshows = [
     'redirect',
     'unpatrolled']
 
-wikilog = module('wikilog', developers=['OasisAkari'], required_superuser=True, doc=True)
+wikilog = module('wikilog', developers=['OasisAkari'], required_admin=True, doc=True)
 
 
 @wikilog.handle('add wiki <apilink> {{wikilog.help.add.wiki}}',
@@ -40,7 +42,19 @@ wikilog = module('wikilog', developers=['OasisAkari'], required_superuser=True, 
 async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
-    # todo 黑白名单处理
+    in_allowlist = True
+    if msg.target.target_from in audit_available_list:
+        in_allowlist = status.value.in_allowlist
+        if status.value.in_blocklist and not in_allowlist:
+            await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=status.value.name))
+            return
+    if not in_allowlist:
+        prompt = msg.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
+        if Config("wiki_whitelist_url", cfg_type=str):
+            prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
+                                          url=Config("wiki_whitelist_url", cfg_type=str))
+        await msg.finish(prompt)
+        return
     if status.available:
         WikiLogUtil(msg).conf_wiki(status.value.api, add='add' in msg.parsed_msg, reset='reset' in msg.parsed_msg)
         await msg.finish(msg.locale.t("wikilog.message.config.wiki.success", wiki=status.value.name))
@@ -97,12 +111,12 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
     if status.available:
         if status.value.api in infos:
             if logtype == "RecentChanges":
-                await msg.finish(await wiki_info.return_api(action='query', list='recentchanges',
+                await msg.finish(await wiki_info.return_api(_no_format=True, action='query', list='recentchanges',
                                                             rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                                             rclimit=100,
                                                             rcshow='|'.join(infos[status.value.api]['RecentChanges']['rcshow'])))
             if logtype == "AbuseLog":
-                await msg.finish(await wiki_info.return_api(action='query', list='abuselog',
+                await msg.finish(await wiki_info.return_api(_no_format=True, action='query', list='abuselog',
                                                             aflprop='user|title|action|result|filter|timestamp',
                                                             afllimit=30))
         else:

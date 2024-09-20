@@ -371,7 +371,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                     else:
                                                         kwargs[param_name_] = None
                                         if no_message_session:
-                                            Logger.warning(f'{submodule.function.__name__} has no Bot.MessageSession parameter, did you forget to add it?\n'
+                                            Logger.warning(f'{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n'
                                                            'Remember: MessageSession IS NOT Bot.MessageSession')
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg

@@ -1,4 +1,5 @@
 import re
+import traceback
 from datetime import datetime, timedelta
 
 from core.logger import Logger
@@ -35,57 +36,62 @@ async def wiki_log():
             await query_wiki.fixup_wiki_info()
             Logger.debug(query_wiki.wiki_info.api)
             if fetches[id_][wiki]['AbuseLog']['enable']:
-                query = await query_wiki.get_json(action='query', list='abuselog',
-                                                  aflprop='user|title|action|result|filter|timestamp',
-                                                  _no_login=not use_bot,
-                                                  afllimit=30)
-                if 'error' not in query:
-                    first_fetch = False
-                    if not fetch_cache[id_][wiki]['AbuseLog']:
-                        first_fetch = True
-                    for y in query["query"]["abuselog"]:
-                        identify = convert_data_to_text(y)
-                        if identify not in fetch_cache[id_][wiki]['AbuseLog']:
-                            fetch_cache[id_][wiki]['AbuseLog'].append(identify)
-                            if not first_fetch:
-                                matched_f = False
-                                if '*' in fetches[id_][wiki]['AbuseLog']['filters'] or not fetches[id_][wiki]['AbuseLog']['filters']:
-                                    matched_f = True
-                                else:
-                                    for f in fetches[id_][wiki]['AbuseLog']['filters']:
-                                        fc = re.compile(f)
-                                        if fc.search(identify):
-                                            matched_f = True
-                                            break
-                                if matched_f:
-                                    matched_logs[id_][wiki]['AbuseLog'].append(y)
-
+                try:
+                    query = await query_wiki.get_json(action='query', list='abuselog',
+                                                      aflprop='user|title|action|result|filter|timestamp',
+                                                      _no_login=not use_bot,
+                                                      afllimit=30)
+                    if 'error' not in query:
+                        first_fetch = False
+                        if not fetch_cache[id_][wiki]['AbuseLog']:
+                            first_fetch = True
+                        for y in query["query"]["abuselog"]:
+                            identify = convert_data_to_text(y)
+                            if identify not in fetch_cache[id_][wiki]['AbuseLog']:
+                                fetch_cache[id_][wiki]['AbuseLog'].append(identify)
+                                if not first_fetch:
+                                    matched_f = False
+                                    if '*' in fetches[id_][wiki]['AbuseLog']['filters'] or not fetches[id_][wiki]['AbuseLog']['filters']:
+                                        matched_f = True
+                                    else:
+                                        for f in fetches[id_][wiki]['AbuseLog']['filters']:
+                                            fc = re.compile(f)
+                                            if fc.search(identify):
+                                                matched_f = True
+                                                break
+                                    if matched_f:
+                                        matched_logs[id_][wiki]['AbuseLog'].append(y)
+                except Exception:
+                    Logger.error(traceback.format_exc())
             if fetches[id_][wiki]['RecentChanges']['enable']:
-                query = await query_wiki.get_json(action='query', list='recentchanges',
-                                                  rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
-                                                  _no_login=not use_bot,
-                                                  rclimit=100,
-                                                  rcshow='|'.join(fetches[id_][wiki]['RecentChanges']['rcshow']))
-                if 'error' not in query:
-                    first_fetch = False
-                    if not fetch_cache[id_][wiki]['RecentChanges']:
-                        first_fetch = True
-                    for y in query["query"]["recentchanges"]:
-                        if 'actionhidden' in y:
-                            continue
-                        identify = convert_data_to_text(y)
-                        if identify not in fetch_cache[id_][wiki]['RecentChanges']:
-                            fetch_cache[id_][wiki]['RecentChanges'].append(identify)
-                            if not first_fetch:
-                                matched_f = False
-                                if '*' in fetches[id_][wiki]['RecentChanges']['filters'] or not fetches[id_][wiki]['RecentChanges']['filters']:
-                                    matched_f = True
-                                else:
-                                    for f in fetches[id_][wiki]['RecentChanges']['filters']:
-                                        fc = re.compile(f)
-                                        if fc.search(identify):
-                                            matched_f = True
-                                            break
-                                if matched_f:
-                                    matched_logs[id_][wiki]['RecentChanges'].append(y)
+                try:
+                    query = await query_wiki.get_json(action='query', list='recentchanges',
+                                                      rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
+                                                      _no_login=not use_bot,
+                                                      rclimit=100,
+                                                      rcshow='|'.join(fetches[id_][wiki]['RecentChanges']['rcshow']))
+                    if 'error' not in query:
+                        first_fetch = False
+                        if not fetch_cache[id_][wiki]['RecentChanges']:
+                            first_fetch = True
+                        for y in query["query"]["recentchanges"]:
+                            if 'actionhidden' in y:
+                                continue
+                            identify = convert_data_to_text(y)
+                            if identify not in fetch_cache[id_][wiki]['RecentChanges']:
+                                fetch_cache[id_][wiki]['RecentChanges'].append(identify)
+                                if not first_fetch:
+                                    matched_f = False
+                                    if '*' in fetches[id_][wiki]['RecentChanges']['filters'] or not fetches[id_][wiki]['RecentChanges']['filters']:
+                                        matched_f = True
+                                    else:
+                                        for f in fetches[id_][wiki]['RecentChanges']['filters']:
+                                            fc = re.compile(f)
+                                            if fc.search(identify):
+                                                matched_f = True
+                                                break
+                                    if matched_f:
+                                        matched_logs[id_][wiki]['RecentChanges'].append(y)
+                except Exception:
+                    Logger.error(traceback.format_exc())
     await JobQueue.trigger_hook_all('wikilog.matched', matched_logs=matched_logs)

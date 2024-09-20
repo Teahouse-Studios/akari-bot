@@ -35,6 +35,6 @@
   "wikilog.help.rcshow.set": "为最近更改日志设置筛选条件。",
   "wikilog.help.rcshow.reset": "重置最近更改日志设置的筛选条件。",
   "wikilog.help.list": "列出所有已设置的内容。",
-  "wikilog.help.api.get": "获取指定 Wiki 的指定 API 数据链接。"
-
+  "wikilog.help.api.get": "获取指定 Wiki 的指定 API 数据链接。",
+  "wikilog.message.untrust.wiki": "失败：此 Wiki 当前没有加入机器人的白名单列表中。"
 }

@@ -39,7 +39,7 @@ class WikiLogUtil:
                                                'filters': ['*']},
                                   'RecentChanges': {'enable': False,
                                                     'filters': ['*'],
-                                                    'rcshow': []},
+                                                    'rcshow': ['!bot']},
                                   'use_bot': False}
                 self.query.infos = json.dumps(infos)
                 session.commit()
