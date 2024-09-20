@@ -162,7 +162,10 @@ async def _(msg: Bot.MessageSession, apilink: str):
     status = await wiki_info.check_wiki_available()
     if status.available:
         if status.value.api in infos:
-            t.set_use_bot(status.value.api, 'enable' in msg.parsed_msg)
+            if t.set_use_bot(status.value.api, 'enable' in msg.parsed_msg):
+                await msg.finish(msg.locale.t('wikilog.message.config.wiki.success', wiki=status.value.name))
+            else:
+                await msg.finish(msg.locale.t('wikilog.message.filter.set.failed'))
         else:
             await msg.finish(msg.locale.t('wikilog.message.filter.set.failed'))
     else:
