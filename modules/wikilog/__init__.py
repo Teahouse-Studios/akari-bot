@@ -153,8 +153,8 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
         await msg.finish(msg.locale.t('wikilog.message.filter.set.no_filter'))
 
 
-@wikilog.handle('enable bot <apilink> {{wikilog.help.bot.enable}}', required_superuser=True)
-@wikilog.handle('disable bot <apilink> {{wikilog.help.bot.disable}}', required_superuser=True)
+@wikilog.handle('bot enable <apilink> {{wikilog.help.bot.enable}}', required_superuser=True)
+@wikilog.handle('bot disable <apilink> {{wikilog.help.bot.disable}}', required_superuser=True)
 async def _(msg: Bot.MessageSession, apilink: str):
     t = WikiLogUtil(msg)
     infos = json.loads(t.query.infos)
