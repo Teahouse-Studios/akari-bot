@@ -225,11 +225,11 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.prompt'
                                                                         if r.invalid_section and r.info.in_allowlist
                                                                         else 'wiki.message.talk_page.prompt')))
-                                i_msg_lst.append(Image(ii) for ii in await
-                                                       image_table_render(
-                                                           ImageTable(session_data,
-                                                                      [session.locale.t('wiki.message.table.header.id'),
-                                                                       session.locale.t('wiki.message.table.header.section')])))
+                                i_msg_lst += [Image(ii) for ii in await
+                                                 image_table_render(
+                                    ImageTable(session_data,
+                                               [session.locale.t('wiki.message.table.header.id'),
+                                                session.locale.t('wiki.message.table.header.section')]))]
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
