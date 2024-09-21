@@ -1,5 +1,6 @@
 {
     "calc.help": "安全地計算 Python ast 運算式。",
     "calc.message.invalid": "運算式無效：${expr}",
-    "calc.message.time_out": "計算逾時。"
+    "calc.message.time_out": "計算逾時。",
+    "calc.message.binary_mode": "机器人正在使用二进制部署，此模块已被禁用。如需使用此模块，请使用源代码部署机器人。"
 }
