@@ -9,6 +9,7 @@ import jwt
 
 from core.queue import JobQueue
 from core.scheduler import Scheduler
+from core.utils.info import Info
 
 sys.path.append(os.getcwd())
 
@@ -179,9 +180,9 @@ async def get_locale(locale: str, string: str):
             "detail": "Not Found"
         })
 
-if __name__ == "__main__":
+if __name__ == "__main__" or Info.subprocess:
     while True:
-        uvicorn.run("bot:app", port=Config('api_port', 5000), log_level="info")
+        uvicorn.run(app, port=Config('api_port', 5000), log_level="info")
         Logger.error('API Server crashed, is the port occupied?')
         Logger.error('Retrying in 5 seconds...')
         time.sleep(5)

@@ -94,5 +94,7 @@ async def check_job_queue():
                     Logger.error(traceback.format_exc())
                     return_val(tsk, {'send': False})
 
-        except Exception as e:
-            return_val(tsk, {'traceback': traceback.format_exc()}, status=False)
+        except Exception:
+            f = traceback.format_exc()
+            Logger.error(f)
+            return_val(tsk, {'traceback': f}, status=False)

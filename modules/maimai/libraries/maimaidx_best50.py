@@ -5,10 +5,11 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from core.builtins import Bot
 from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_apidata import get_record
-from .maimaidx_mapping import rate_mapping, combo_mapping, sync_mapping, diff_list
+from .maimaidx_mapping import cover_dir, rate_mapping, combo_mapping, sync_mapping, diff_list
 from .maimaidx_utils import compute_rating, calc_dxstar
 
 total_list = TotalList()
+
 
 class ChartInfo(object):
     def __init__(self, idNum: str, diff: int, tp: str, ra: int, achievement: float, dxScore: int, dxScoreMax: int,
@@ -98,7 +99,6 @@ class DrawBest(object):
         for dx in dxBest:
             self.dxRating += compute_rating(dx.ds, dx.achievement)
         self.playerRating = self.sdRating + self.dxRating
-        self.cover_dir = os.path.abspath('./assets/maimai/static/mai/cover/')
         self.img = Image.new('RGBA', (860, 1300), color=(211, 211, 211, 255))  # 创建空白图像
         self.ROWS_IMG = []
         for i in range(7):
@@ -141,9 +141,9 @@ class DrawBest(object):
             i = num // 5
             j = num % 5
             chartInfo = sdBest[num]
-            pngPath = os.path.join(self.cover_dir, f'{get_cover_len5_id(chartInfo.idNum)}.png')
+            pngPath = os.path.join(cover_dir, f'{get_cover_len5_id(chartInfo.idNum)}.png')
             if not os.path.exists(pngPath):
-                pngPath = os.path.join(self.cover_dir, '01000.png')
+                pngPath = os.path.join(cover_dir, '01000.png')
             temp = Image.open(pngPath).convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
@@ -188,9 +188,9 @@ class DrawBest(object):
             i = num // 5
             j = num % 5
             chartInfo = dxBest[num]
-            pngPath = os.path.join(self.cover_dir, f'{get_cover_len5_id(chartInfo.idNum)}.png')
+            pngPath = os.path.join(cover_dir, f'{get_cover_len5_id(chartInfo.idNum)}.png')
             if not os.path.exists(pngPath):
-                pngPath = os.path.join(self.cover_dir, '01000.png')
+                pngPath = os.path.join(cover_dir, '01000.png')
             temp = Image.open(pngPath).convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))

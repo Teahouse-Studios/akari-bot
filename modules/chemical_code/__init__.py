@@ -21,8 +21,9 @@ from core.utils.text import isint, remove_prefix
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
 csr_link = 'https://legacy.chemspider.com'
+assets_path = os.path.abspath(f'./assets/chemical_code')
 
-special_id_path = os.path.abspath(f'./assets/chemical_code/special_id')  # 去掉文件扩展名并存储在 special_id 列表中
+special_id_path = os.path.join(assets_path, 'special_id')  # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [os.path.splitext(filename)[0] for filename in os.listdir(
     special_id_path)]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
@@ -155,7 +156,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     Logger.info(f'Answer: {play_state.check("answer")}')
     dl_image = False
     if play_state.check("id") in special_id:  # 如果正确答案在 special_id 中
-        file_path = os.path.abspath(f'./assets/chemical_code/special_id/{play_state.check("id")}.png')
+        file_path = os.path.join(special_id_path, f'{play_state.check("id")}.png')
         exists_file = os.path.exists(file_path)
         if exists_file:
             dl_image = file_path

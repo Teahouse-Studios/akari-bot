@@ -1,6 +1,12 @@
+import random
+import re
 import sys
 from datetime import timedelta
 from typing import TypeVar
+from ff3 import FF3Cipher
+
+from config import Config
+
 
 T = TypeVar("T", str, bytes, bytearray)
 
@@ -53,3 +59,21 @@ def parse_time_string(time_str: str) -> timedelta:
         return timedelta(hours=hour, minutes=minute)
     except Exception:
         return timedelta()
+
+
+def random_string(length: int) -> str:
+    return ''.join(random.choices("0123456789ABCDEF", k=length))
+
+
+def decrypt_string(text):
+    key = Config('ff3_key', random_string(32))
+    tweak = Config('ff3_tweak', random_string(14))
+    c = FF3Cipher.withCustomAlphabet(
+        key, tweak, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+    d = []
+    for i in range(0, len(text), 28):
+        d.append(text[i:i + 28])
+    dec_text = ''.join([c.decrypt(i) for i in d])
+    if m := re.match(r'^.{2}:(.*?):.{2}.*?$', dec_text):
+        return m.group(1)
+    return False

@@ -13,6 +13,7 @@ assets/arcaea
 assets/cytoid-avatar/
 assets/cytoid-cover/
 assets/maimai*
+!assets/maimai/mai_utage_info.json
 !assets/maimai/mai_grade_info.json
 assets/phigros*
 bots/**/assets
@@ -23,3 +24,6 @@ version*
 *.log
 matrix_store
 modules/ask/tools/self_knowledge
+output/*
+assets/modules_list.json
+assets/discord_slash_list.json

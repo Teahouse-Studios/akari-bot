@@ -1,4 +1,5 @@
 import importlib
+import json
 import os
 import re
 import sys
@@ -10,6 +11,7 @@ from core.logger import Logger
 from core.types import Module, PrivateAssets
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
 from core.utils.i18n import load_locale_file
+from core.utils.info import Info
 
 load_dir_path = os.path.abspath('./modules/')
 all_modules = []
@@ -27,7 +29,18 @@ def load_modules():
         locale_err.append('i18n:')
         err_prompt.append('\n'.join(locale_err))
     fun_file = None
-    dir_list = os.listdir(load_dir_path)
+    if not Info.binary_mode:
+        dir_list = os.listdir(load_dir_path)
+    else:
+        try:
+            Logger.warning('Binary mode detected, trying to load pre-built modules list...')
+            js = 'assets/modules_list.json'
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.load(f)
+        except Exception:
+            Logger.error('Failed to load pre-built modules list, using default list.')
+            dir_list = os.listdir(load_dir_path)
+
     Logger.info('Attempting to load modules...')
 
     for file_name in dir_list:
@@ -36,10 +49,16 @@ def load_modules():
                 continue
             file_path = os.path.join(load_dir_path, file_name)
             fun_file = None
-            if os.path.isdir(file_path):
+            if not Info.binary_mode:
+                if os.path.isdir(file_path):
+                    if file_name[0] != '_':
+                        fun_file = file_name
+                elif os.path.isfile(file_path):
+                    if file_name[0] != '_' and file_name.endswith('.py'):
+                        fun_file = file_name[:-3]
+            else:
                 if file_name[0] != '_':
                     fun_file = file_name
-            elif os.path.isfile(file_path):
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
             if fun_file:

@@ -20,11 +20,12 @@ from core.utils.info import Info
 from core.utils.i18n import Locale, default_locale
 from database import BotDBUtil
 
-PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+PrivateAssets.set('assets/private/aiocqhttp')
 EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
+string_post = Config("qq_string_post", False)
 
 
 @bot.on_startup
@@ -48,30 +49,59 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
-
-    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
-    if filter_msg:
-        match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
-        if match_json:
-            load_json = json.loads(html.unescape(match_json.group(1)))
-            if load_json['app'] == 'com.tencent.multimsg':
-                event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
+    
+    if string_post:
+        filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
+        if filter_msg:
+            match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
+            if match_json:
+                load_json = json.loads(html.unescape(match_json.group(1)))
+                if load_json['app'] == 'com.tencent.multimsg':
+                    event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
+                else:
+                    return
             else:
                 return
-        else:
-            return
+    else:
+        filter_msg = False
+        for item in event.message:
+            if re.match(r'.*?<\?xml.*?>.*?', item["data"].get("text", ""), re.MULTILINE | re.DOTALL):
+                filter_msg = True
+        if event.message[0]["type"] in ["json", "xml"] or filter_msg:
+            match_json = event.message[0]["type"] == "json"
+            if match_json:
+                load_json = json.loads(html.unescape(event.message[0]["data"]["data"]))
+                if load_json['app'] == 'com.tencent.multimsg':
+                    event.message = [{"type": "forward","data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
+                else:
+                    return
+            else:
+                return
+        
     reply_id = None
-    match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
-    if match_reply:
-        reply_id = int(match_reply.group(1))
-
+    if string_post:
+        match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
+        if match_reply:
+            reply_id = int(match_reply.group(1))
+    else:
+        if event.message[0]["type"] == "reply":
+            reply_id = int(event.message[0]["data"]["id"])
+    
     prefix = None
-    if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
-        if match_at.group(1) == qq_account:
-            event.message = match_at.group(2)
-            if event.message in ['', ' ']:
-                event.message = 'help'
-            prefix = ['']
+    if string_post:
+        if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
+            if match_at.group(1) == qq_account:
+                event.message = match_at.group(2)
+                if event.message in ['', ' ']:
+                    event.message = 'help'
+                prefix = ['']
+    else:
+        if event.message[0]["type"] == "at":
+            if event.message[0]["data"]["qq"] == qq_account:
+                event.message = event.message[1:]
+                if not event.message:
+                    event.message = [{"type": "text", "data": {"text": "help"}}]
+                prefix = ['']    
 
     target_id = f'Group|{str(event.group_id)}' if event.detail_type == 'group' else f'Private|{str(event.user_id)}'
 

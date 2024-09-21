@@ -146,7 +146,7 @@
     "wiki.message.user.username": "User: ",
     "wiki.message.user.users_groups": "User Group: ",
     "wiki.message.user.wiki_unavailable": "${wikiurl} is unavailable.",
-    "wiki.message.utils.redacted": "检测到特定文字被屏蔽，请前往日志查看所有消息。",
+    "wiki.message.utils.redacted": "External information intervention detected. Please go to the abuse log to view all messages.",
     "wiki.message.utils.wikilib.error.empty": "An error occurred: API returned no contents. Please contact the site administrator for reasons.",
     "wiki.message.utils.wikilib.error.text_too_long": "An error occurred: The requested page section text is too long to be displayed.",
     "wiki.message.utils.wikilib.get_failed.api": "An error occurred while getting information from API:",

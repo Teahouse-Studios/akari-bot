@@ -225,25 +225,36 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
             not_alias = False
+            cm = ''
             for moduleName in modules:
                 if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
                     not_alias = True
+                    cm = moduleName
+                    break
             if not not_alias:
                 for um in current_unloaded_modules:
                     if command.startswith(um):
                         not_alias = True
+                        cm = um
+                        break
             if not not_alias:
                 for em in err_modules:
                     if command.startswith(em):
                         not_alias = True
-            if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
-                alias_list = []
-                for alias in ModulesManager.modules_aliases:
+                        cm = em
+                        break
+            alias_list = []
+            for alias in ModulesManager.modules_aliases:
+                if not not_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                     if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
                         alias_list.append(alias)
-                if alias_list:
-                    max_ = max(alias_list, key=len)
-                    command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+                else:  # 如果是模块，则判断是否有基于此模块前缀的别名
+                    if alias.startswith(cm) and command.startswith(alias):
+                        alias_list.append(alias)
+            if alias_list:
+                max_ = max(alias_list, key=len)
+                command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+
             command_split: list = command.split(' ')  # 切割消息
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()
@@ -332,9 +343,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     func_params = inspect.signature(submodule.function).parameters
                                     if len(func_params) > 1 and msg.parsed_msg:
                                         parsed_msg_ = msg.parsed_msg.copy()
+                                        no_message_session = True
                                         for param_name, param_obj in func_params.items():
                                             if param_obj.annotation == Bot.MessageSession:
                                                 kwargs[param_name] = msg
+                                                no_message_session = False
                                             param_name_ = param_name
                                             if (param_name__ := f'<{param_name}>') in parsed_msg_:
                                                 param_name_ = param_name__
@@ -357,7 +370,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                         kwargs[param_name_] = param_obj.default
                                                     else:
                                                         kwargs[param_name_] = None
-
+                                        if no_message_session:
+                                            Logger.warning(f'{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n'
+                                                           'Remember: MessageSession IS NOT Bot.MessageSession')
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 

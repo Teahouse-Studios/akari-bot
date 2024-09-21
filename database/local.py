@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import ujson as json
 from sqlalchemy import create_engine, Column, Text, TIMESTAMP, text
@@ -9,6 +10,8 @@ from tenacity import retry, stop_after_attempt
 import hashlib
 
 Base = declarative_base()
+
+os.makedirs("database", exist_ok=True)
 
 DB_LINK = 'sqlite:///database/local.db'
 

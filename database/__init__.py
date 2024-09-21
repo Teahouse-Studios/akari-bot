@@ -303,11 +303,17 @@ class BotDBUtil:
                 return True
             return False
 
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def add(target_id):
             session.add(GroupBlockList(targetId=target_id))
             session.commit()
             return True
 
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def remove(target_id):
             entry = session.query(GroupBlockList).filter_by(targetId=target_id).first()
             if entry:

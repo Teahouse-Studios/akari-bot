@@ -128,12 +128,8 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         if self.session.message.content:
-            msg = re.sub(r'\[.*]\((.*)\)', '\\1', self.session.message.content)
-            msg = msg.replace('\\\\', '​u005c​')
-            msg = msg.replace('\\', '')
-            msg = msg.replace('​u005c​', '\\')
-
-            return msg
+            m = re.sub(r'\[.*]\((.*)\)', '\\1', self.session.message.content)
+            return m
         return ''
 
     async def to_message_chain(self):

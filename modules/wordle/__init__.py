@@ -16,14 +16,18 @@ from core.petal import gained_petal
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
 
+assets_path = os.path.abspath('./assets/wordle')
 text_mode = Config('wordle_disable_image', False)
 
 wordle = module('wordle',
                 desc='{wordle.help.desc}', doc=True, developers=['Dianliang233', 'DoroWolf']
                 )
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'), encoding='utf8') as handle:
+
+words_txt = os.path.join(assets_path, 'words.txt')
+answers_txt = os.path.join(assets_path, 'answers.txt')
+with open(words_txt, encoding='utf8') as handle:
     word_list = handle.read().splitlines()
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt'), encoding='utf8') as handle:
+with open(answers_txt, encoding='utf8') as handle:
     answers_list = handle.read().splitlines()
 
 
@@ -145,7 +149,7 @@ class WordleBoardImage:
     green_color = (107, 169, 100)
     yellow_color = (201, 180, 88)
     grey_color = (120, 124, 126)
-    font_path = 'assets/Noto Sans CJK Bold.otf'
+    font_path = os.path.abspath('./assets/Noto Sans CJK Bold.otf')
 
     def __init__(self, wordle_board: WordleBoard, dark_theme: bool):
         self.wordle_board = wordle_board

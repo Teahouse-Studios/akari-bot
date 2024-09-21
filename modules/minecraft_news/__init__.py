@@ -3,7 +3,7 @@ from core.component import module
 
 minecraft_news = module('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
                         recommend_modules=['feedback_news'],
-                        desc='{minecraft_news.help.minecraft_news}', doc=True, alias='minecraftnews')
+                        desc='{minecraft_news.help.minecraft_news}', doc=True, alias=['minecraftnews', 'mcnews'])
 
 
 @minecraft_news.hook()

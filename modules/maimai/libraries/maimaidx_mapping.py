@@ -1,3 +1,19 @@
+import os
+
+from config import Config
+
+
+DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
+SONGS_PER_PAGE = 30
+SONGS_NEED_IMG = 10
+
+assets_path = os.path.abspath('./assets/maimai/')
+cover_dir = os.path.join(assets_path, "static", "mai", "cover")
+grade_info_path = os.path.join(assets_path, "mai_grade_info.json")
+song_alias_path = os.path.join(assets_path, "mai_song_alias.json")
+song_info_path = os.path.join(assets_path, "mai_song_info.json")
+utage_info_path = os.path.join(assets_path, "mai_utage_info.json")
+
 achievement_list = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]
 rate_list = ["D", "C", "B", "BB", "BBB", "A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+"]
 rate_list_raw = ["d", "c", "b", "bb", "bbb", "a", "aa", "aaa", "s", "sp", "ss", "ssp", "sss", "sssp"]
@@ -67,18 +83,20 @@ diffs = {
 }
 
 level_list = ["1", "2", "3", "4", "5", "6", "7", "7+", "8", "8+", "9", "9+",
-                  "10", "10+", "11", "11+", "12", "12+", "13", "13+", "14", "14+", "15"]
+              "10", "10+", "11", "11+", "12", "12+", "13", "13+", "14", "14+", "15"]
 goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
-                 "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
+             "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
 
 genre_i18n_mapping = {
     "流行&动漫": "POPS & ANIME",
-    "niconico & VOCALOID": "niconico & VOCALOID",
+    "POPSアニメ": "POPS & ANIME",
+    "niconicoボーカロイド": "niconico & VOCALOID",
     "东方Project": "東方Project",
     "其他游戏": "GAME & VARIETY",
+    "ゲームバラエティ": "GAME & VARIETY",
     "舞萌": "maimai",
     "音击&中二节奏": "ONGEKI & CHUNITHM",
-    "宴会場": "宴会場"
+    "オンゲキCHUNITHM": "ONGEKI & CHUNITHM"
 }
 
 versions = ["maimai",
@@ -114,7 +132,7 @@ sd_plate_mapping = {
     "菫": "maimai MURASAKi PLUS",
     "白": "maimai MiLK",
     "雪": "MiLK PLUS",
-    "輝": "maimai FiNALE",
+    "輝": "maimai FiNALE"
 }
 
 dx_plate_mapping = {
@@ -127,6 +145,7 @@ dx_plate_mapping = {
     "祭": "maimai でらっくす FESTiVAL",
     "祝": "maimai でらっくす FESTiVAL",
     "双": "maimai でらっくす BUDDiES",
+    "宴": "maimai でらっくす BUDDiES",
 }
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping
@@ -176,4 +195,3 @@ grade_mapping = {
     "MASTER超上級": "master4",
     "MASTER超上级": "master4",
 }
-

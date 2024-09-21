@@ -68,8 +68,7 @@ class CommandParser:
         if not self.args:
             return None
         command = re.sub(r'[“”]', '"', command)
-        command = command.replace('"', '\\"')
-        command = command.replace("'", "\\'")
+        command = command.replace("'", "\'").replace('"', '\"')
         try:
             split_command = shlex.split(command)
         except ValueError:
