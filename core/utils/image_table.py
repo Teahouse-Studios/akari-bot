@@ -17,7 +17,6 @@ from .web_render import WebRender, webrender
 from PIL import Image as PImage
 
 
-
 class ImageTable:
     def __init__(self, data, headers):
         self.data = data

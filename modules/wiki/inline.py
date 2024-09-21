@@ -166,11 +166,11 @@ async def _(msg: Bot.MessageSession):
                                         I18NContext(
                                             'wiki.message.invalid_section.prompt' if (
             get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
-                                    i_msg_lst.append(Image(await
+                                    i_msg_lst.append(Image(ii) for ii in await
                                                            image_table_render(
                                                                ImageTable(session_data,
                                                                           [msg.locale.t('wiki.message.table.header.id'),
-                                                                           msg.locale.t('wiki.message.table.header.section')]))))
+                                                                           msg.locale.t('wiki.message.table.header.section')])))
                                     i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                     i_msg_lst.append(I18NContext('message.reply.prompt'))
 

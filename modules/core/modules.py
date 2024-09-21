@@ -465,7 +465,7 @@ async def _(msg: Bot.MessageSession):
                     for img in imgs:
                         img_list.append(Image(img))
                     help_msg_list = img_list + [I18NContext("core.message.help.more_information",
-                                                                prefix=msg.prefixes[0])]
+                                                            prefix=msg.prefixes[0])]
                     if Config('help_url', cfg_type=str):
                         help_msg_list.append(I18NContext("core.message.help.more_information.document",
                                                          url=Config('help_url', cfg_type=str)))
