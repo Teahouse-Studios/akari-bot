@@ -48,6 +48,8 @@
     "wiki.message.invalid_section": "(This section does not exist)",
     "wiki.message.invalid_section.prompt": "This section does not exist. The following is the possible section you want: ",
     "wiki.message.invalid_section.select": "Reply with the number to select the corresponding section.",
+    "wiki.message.talk_page.prompt": "此页面为讨论页，以下是所有的章节：",
+    "wiki.message.forum": "此页面为论坛页，以下是当前活跃的帖子：",
     "wiki.message.iw.add.success": "Custom Interwiki added:\n ${iw} -> ${name}",
     "wiki.message.iw.get.not_found": "Interwiki not found: ${iw}",
     "wiki.message.iw.list": "Use \"${prefix}wiki iw get <Interwiki>\" to get the corresponding link to Interwiki.",
@@ -182,5 +184,7 @@
     "wiki.message.wiki_bot.login.success": "Login success.",
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
     "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
-    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}"
+    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}",
+    "wiki.message.ntqq.forward.sending.1": "消息构造中，请耐心等待......",
+    "wiki.message.ntqq.forward.sending.2": "若长时间未发送，请使用--legacy参数获取。"
 }

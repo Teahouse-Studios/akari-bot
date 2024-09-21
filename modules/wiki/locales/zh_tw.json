@@ -48,6 +48,8 @@
     "wiki.message.invalid_section": "（此章節不存在）",
     "wiki.message.invalid_section.prompt": "此章節不存在，以下是可能的章節（回覆對應序號以選中）：",
     "wiki.message.invalid_section.select": "回覆編號以選中對應的章節。",
+    "wiki.message.talk_page.prompt": "此页面为讨论页，以下是所有的章节：",
+    "wiki.message.forum": "此页面为论坛页，以下是当前活跃的帖子：",
     "wiki.message.iw.add.success": "已新增自訂 Interwiki：\n${iw} -> ${name}",
     "wiki.message.iw.get.not_found": "未找到 Interwiki：${iw}",
     "wiki.message.iw.list": "使用 「${prefix}wiki iw get <Interwiki>」可以取得 Interwiki 對應的連結。",
@@ -144,7 +146,7 @@
     "wiki.message.user.username": "使用者：",
     "wiki.message.user.users_groups": "使用者群組：",
     "wiki.message.user.wiki_unavailable": "${wikiurl} 不可用。",
-    "wiki.message.utils.redacted": "檢測到外來訊息介入，請前往過濾器日誌查看所有訊息。",
+    "wiki.message.utils.redacted": "检测到特定文字被屏蔽，请前往日志查看所有消息。",
     "wiki.message.utils.wikilib.error.empty": "發生錯誤：API 未返回任何內容，請聯絡此網站管理員取得原因。",
     "wiki.message.utils.wikilib.error.text_too_long": "發生錯誤：請求的頁面段落文本過長，無法正常顯示。",
     "wiki.message.utils.wikilib.get_failed.api": "從 API 取得資訊時出錯：",
@@ -182,5 +184,7 @@
     "wiki.message.wiki_bot.login.success": "登入成功。",
     "wiki.message.wiki_bot.toggle.disable": "已禁用機器人帳戶。",
     "wiki.message.wiki_bot.toggle.enable": "已啟用機器人帳戶。",
-    "wiki.message.wiki_inline.flies": "此頁面含有以下檔案：\n${file}"
+    "wiki.message.wiki_inline.flies": "此頁面含有以下檔案：\n${file}",
+    "wiki.message.ntqq.forward.sending.1": "消息构造中，请耐心等待......",
+    "wiki.message.ntqq.forward.sending.2": "若长时间未发送，请使用--legacy参数获取。"
 }
