@@ -101,7 +101,8 @@ if Config('enable_urlmanager', False):
                     allow_image = await image_table_render(allow_table)
                     if allow_image:
                         send_msgs.append(I18NContext('wiki.message.wiki_audit.list.allowlist'))
-                        send_msgs.append(Image(allow_image))
+                        for im in allow_image:
+                            send_msgs.append(Image(im))
             if is_mysql:
                 block_columns = [[x[0], msg.ts2strftime(
                     x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
@@ -117,7 +118,8 @@ if Config('enable_urlmanager', False):
                     block_image = await image_table_render(block_table)
                     if block_image:
                         send_msgs.append(I18NContext('wiki.message.wiki_audit.list.blocklist'))
-                        send_msgs.append(Image(block_image))
+                        for im in block_image:
+                            send_msgs.append(Image(im))
             if send_msgs:
                 await msg.finish(send_msgs)
                 legacy = False

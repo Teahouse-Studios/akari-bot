@@ -84,14 +84,15 @@ async def _(msg: Bot.MessageSession):
     if query != {}:
         if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
-            img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
+            imgs = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:
-            img = None
-        if img:
+            imgs = None
+        if imgs:
+            img_list = [Image(ii) for ii in imgs]
             mt = msg.locale.t("wiki.message.iw.list", prefix=msg.prefixes[0])
             if base_interwiki_link:
                 mt += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
-            await msg.finish([Image(img), Plain(mt)])
+            await msg.finish(img_list + [Plain(mt)])
         else:
             result = msg.locale.t("wiki.message.iw.list.legacy") + '\n' + \
                 '\n'.join([f'{x}: {query[x]}' for x in query])

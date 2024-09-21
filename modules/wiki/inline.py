@@ -128,7 +128,7 @@ async def _(msg: Bot.MessageSession):
                                 rd = await svg_render(dl)
                                 if msg.Feature.image and rd:
                                     chain = [I18NContext('wiki.message.wiki_inline.flies', file=get_page.file),
-                                         ]
+                                             ]
                                     for r in rd:
                                         chain.append(Image(r))
                                     await msg.send_message(chain, quote=False)
@@ -164,7 +164,7 @@ async def _(msg: Bot.MessageSession):
                                                     range(len(get_page.sections))]
                                     i_msg_lst.append(
                                         I18NContext(
-        'wiki.message.invalid_section.prompt' if (
+                                            'wiki.message.invalid_section.prompt' if (
             get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
                                     i_msg_lst.append(Image(await
                                                            image_table_render(
@@ -199,7 +199,7 @@ async def _(msg: Bot.MessageSession):
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
                                 i_msg_lst.append(I18NContext('wiki.message.forum'))
-                                i_msg_lst.append(Image(await image_table_render(img_table)))
+                                i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                 i_msg_lst.append(I18NContext('message.reply.prompt'))
 

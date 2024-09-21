@@ -372,10 +372,12 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                                          [msg.locale.t("core.message.help.table.header.help"),
                                           msg.locale.t("core.message.help.table.header.alias"),
                                           msg.locale.t("core.message.help.author.type2")])]
-                    render = await image_table_render(tables)
-                    if render:
-                        await msg.finish([Image(render),
-                                          Plain(wiki_msg)])
+                    imgs = await image_table_render(tables)
+                    if imgs:
+                        img_list = []
+                        for img in imgs:
+                            img_list.append(Image(img))
+                        await msg.finish(img_list + [Plain(wiki_msg)])
                 except Exception:
                     Logger.error(traceback.format_exc())
             if malias:
@@ -456,10 +458,13 @@ async def _(msg: Bot.MessageSession):
                                              msg.locale.t("core.message.help.table.header.alias"),
                                              msg.locale.t("core.message.help.author.type2")]))
             if tables:
-                render = await image_table_render(tables)
-                if render:
+                imgs = await image_table_render(tables)
+                if imgs:
                     legacy_help = False
-                    help_msg_list = [Image(render), I18NContext("core.message.help.more_information",
+                    img_list = []
+                    for img in imgs:
+                        img_list.append(Image(img))
+                    help_msg_list = img_list + [I18NContext("core.message.help.more_information",
                                                                 prefix=msg.prefixes[0])]
                     if Config('help_url', cfg_type=str):
                         help_msg_list.append(I18NContext("core.message.help.more_information.document",
@@ -562,10 +567,14 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                                              msg.locale.t("core.message.help.table.header.alias"),
                                              msg.locale.t("core.message.help.author.type2")]))
             if tables:
-                render = await image_table_render(tables)
-                if render:
+                imgs = await image_table_render(tables)
+
+                if imgs:
+                    img_list = []
+                    for img in imgs:
+                        img_list.append(Image(img))
                     legacy_help = False
-                    await msg.finish([Image(render), Plain('\n'.join(help_msg))])
+                    await msg.finish(img_list + [Plain('\n'.join(help_msg))])
         except Exception:
             Logger.error(traceback.format_exc())
     if legacy_help:

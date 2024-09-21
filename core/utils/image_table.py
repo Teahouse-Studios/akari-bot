@@ -1,5 +1,7 @@
+import base64
 import re
 from html import escape
+from io import BytesIO
 from typing import List, Union
 
 import aiohttp
@@ -12,6 +14,9 @@ from .cache import random_cache_path
 from .http import download
 from .web_render import WebRender, webrender
 
+from PIL import Image as PImage
+
+
 
 class ImageTable:
     def __init__(self, data, headers):
@@ -19,7 +24,7 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True) -> Union[List[PImage], bool]:
     if not WebRender.status:
         return False
     elif not WebRender.local:
@@ -87,8 +92,15 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                 )
     except Exception:
         Logger.exception("Error at image_table_render.")
-
-    return pic
+    read = open(pic)
+    load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PImage.open(bio)
+        img_lst.append(bimg)
+    return img_lst
 
 
 __all__ = ['ImageTable', 'image_table_render']

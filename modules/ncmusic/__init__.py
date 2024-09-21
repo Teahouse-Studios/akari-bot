@@ -43,11 +43,11 @@ async def search(msg: Bot.MessageSession, keyword: str):
             'ID'
         ])
 
-        img = await image_table_render(tables)
-        if img:
+        imgs = await image_table_render(tables)
+        if imgs:
             legacy = False
-
-            send_msg.append(Image(img))
+            for img in imgs:
+                send_msg.append(Image(img))
             if song_count > 10:
                 song_count = 10
                 send_msg.append(I18NContext("message.collapse", amount="10"))

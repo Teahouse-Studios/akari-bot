@@ -156,7 +156,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
     return img_lst
 
 
-async def svg_render(file_path: str, use_local=True) ->Union[List[PImage], bool]:
+async def svg_render(file_path: str, use_local=True) -> Union[List[PImage], bool]:
     '''使用Webrender渲染svg文件。
 
     :param message_chain: svg文件路径。
