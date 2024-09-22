@@ -12,7 +12,6 @@ from core.component import module
 from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
 from core.utils.cooldown import CoolDown
-from core.utils.petal import cost_petal
 from .formatting import generate_latex, generate_code_snippet
 from .petal import count_petal
 

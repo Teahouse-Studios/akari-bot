@@ -8,10 +8,10 @@ from aiogram.types import ContentType
 from bots.aiogram.client import dp, bot
 from bots.aiogram.info import client_name
 from bots.aiogram.message import MessageSession, FetchTarget
+from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
 PrivateAssets.set('assets/private/aiogram')

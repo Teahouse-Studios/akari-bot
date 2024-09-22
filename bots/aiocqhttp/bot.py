@@ -11,11 +11,11 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from config import Config
+from core.bot import load_prompt, init_async
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 from core.utils.i18n import Locale, default_locale
 from database import BotDBUtil
@@ -49,7 +49,7 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
-    
+
     if string_post:
         filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
         if filter_msg:
@@ -72,12 +72,12 @@ async def message_handler(event: Event):
             if match_json:
                 load_json = json.loads(html.unescape(event.message[0]["data"]["data"]))
                 if load_json['app'] == 'com.tencent.multimsg':
-                    event.message = [{"type": "forward","data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
+                    event.message = [{"type": "forward", "data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
                 else:
                     return
             else:
                 return
-        
+
     reply_id = None
     if string_post:
         match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
@@ -86,7 +86,7 @@ async def message_handler(event: Event):
     else:
         if event.message[0]["type"] == "reply":
             reply_id = int(event.message[0]["data"]["id"])
-    
+
     prefix = None
     if string_post:
         if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
@@ -101,7 +101,7 @@ async def message_handler(event: Event):
                 event.message = event.message[1:]
                 if not event.message:
                     event.message = [{"type": "text", "data": {"text": "help"}}]
-                prefix = ['']    
+                prefix = ['']
 
     target_id = f'Group|{str(event.group_id)}' if event.detail_type == 'group' else f'Private|{str(event.user_id)}'
 

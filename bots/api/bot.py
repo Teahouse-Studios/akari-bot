@@ -13,9 +13,9 @@ from core.utils.info import Info
 
 sys.path.append(os.getcwd())
 
+from core.bot import init_async, load_prompt  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
-from core.utils.bot import init_async, load_prompt  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from config import Config  # noqa: E402
 from database import BotDBUtil  # noqa: E402

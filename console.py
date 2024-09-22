@@ -16,11 +16,11 @@ if not Config('db_path', cfg_type=str):
                          ' bot will automatically create a SQLite database in the "./database/save.db")')
 
 from bot import init_bot
+from core.bot import init_async
 from core.builtins import PrivateAssets, EnableDirtyWordCheck, Url
 from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
-from core.utils.bot import init_async
 from core.types import MsgInfo, Session
 from database import BotDBUtil, session
 from database.tables import DBVersion
