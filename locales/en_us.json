@@ -66,6 +66,7 @@
     "petal.message.gained.success": "You got ${amount} petal(s).",
     "petal.message.lost.limit": "(You can't lose more petals today.)",
     "petal.message.lost.success": "You lost ${amount} petal(s).",
+    "petal.message.cost.not_enough": "You don't have enough petals.",
     "qq.prompt.disable_friend_request": "Hi! The bot does not agree the friend requests. Please contact the bot owner to add friends.",
     "qq.prompt.disable_group_invite": "Hi! The bot does not agree the group invite requests. Please contact the bot owner to join the group.",
     "qq.prompt.disable_temp_session": "Please add friends before interacting with commands.",
