@@ -3,7 +3,7 @@ import random
 from typing import Awaitable, Callable, List, Tuple
 from core.builtins import Bot
 from core.component import module
-from core.petal import gained_petal
+from core.utils.petal import gained_petal
 from core.utils.game import PlayState
 
 tic_tac_toe = module('tic_tac_toe',

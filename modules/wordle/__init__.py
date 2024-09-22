@@ -12,7 +12,7 @@ from config import Config
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
-from core.petal import gained_petal
+from core.utils.petal import gained_petal
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
 

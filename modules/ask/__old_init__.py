@@ -31,7 +31,7 @@ if Config('enable_langsmith'):
         if not Config('openai_api_key'):
             raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
         if not is_superuser and msg.petal <= 0:  # refuse
-            await msg.finish(msg.locale.t('core.message.petal.no_petals'))
+            await msg.finish(msg.locale.t('petal.message.cost.not_enough'))
 
         qc = CoolDown('call_openai', msg)
         c = qc.check(60)

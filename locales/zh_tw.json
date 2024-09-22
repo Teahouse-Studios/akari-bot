@@ -66,6 +66,7 @@
     "petal.message.gained.success": "得到了 ${amount} 片花瓣。",
     "petal.message.lost.limit": "（本日失去花瓣已達到每日上限。）",
     "petal.message.lost.success": "失去了 ${amount} 片花瓣。",
+    "petal.message.cost.not_enough": "你的花瓣不足。",
     "qq.prompt.disable_friend_request": "你好！本機器人不主動同意好友請求，請聯絡機器人擁有者添加好友。",
     "qq.prompt.disable_group_invite": "你好！本機器人不主動同意入群請求，請聯絡機器人擁有者邀請加入群組。",
     "qq.prompt.disable_temp_session": "請添加好友後再進行指令交互。",

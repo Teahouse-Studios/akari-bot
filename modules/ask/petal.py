@@ -76,4 +76,4 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
         msg.data.modify_petal(-petal)
         return round(petal, 2)
     else:
-        return 0
+        return 0.00

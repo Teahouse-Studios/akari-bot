@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession):
     if not Config('openai_api_key', cfg_type=str):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     if Config('enable_petal', False) and not is_superuser and msg.petal <= 0:  # refuse
-        await msg.finish(msg.locale.t('core.message.petal.no_petals'))
+        await msg.finish(msg.locale.t('petal.message.cost.not_enough'))
 
     qc = CoolDown('call_openai', msg)
     c = qc.check(60)

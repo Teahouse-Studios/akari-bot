@@ -5,7 +5,7 @@ from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
-from core.petal import gained_petal, lost_petal
+from core.utils.petal import gained_petal, lost_petal
 from core.utils.game import PlayState
 from core.utils.text import isint
 
@@ -137,7 +137,7 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
                     send += '\n' + g_msg
             else:
                 send = msg.locale.t('twenty_four.message.correct')
-                if (g_msg := await gained_petal(msg, 2)):
+                if (g_msg := await gained_petal(msg, 1)):
                     send += '\n' + g_msg
             if use_markdown:
                 send.replace('*', '\\*')
@@ -149,7 +149,7 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
             elif (result == 24 or 0 < 24 - result < 1e-13) \
                     and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
-                if (g_msg := await gained_petal(msg, 2)):
+                if (g_msg := await gained_petal(msg, 1)):
                     send += '\n' + g_msg
                 await answer.finish(send)
             else:
