@@ -159,7 +159,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     return await _post()
 
 
-async def download(url: str, filename: str = None, path: str = None, status_code: int = False, method: str = "GET", post_data: dict = None,
+async def download(url: str, filename: str = None, path: str = None, status_code: int = False, method: str = "GET", post_data: any = None,
                    headers: dict = None, timeout: int = 20, attempt: int = 3, request_private_ip: bool = False,
                    logging_err_resp: bool = True) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到指定目录。
