@@ -156,7 +156,6 @@
     "core.message.petal.clear.self": "Successfully cleared all petals.",
     "core.message.petal.modify": "Successfully modified ${add_petal} petal(s) for user ${sender}. ${petal} petal(s) remain now.",
     "core.message.petal.modify.self": "Successfully modified ${add_petal} petal(s). ${petal} petal(s) remain now.",
-    "core.message.petal.no_petals": "You don't have enough petals.",
     "core.message.petal.self": "You have ${petal} petal(s).",
     "core.message.ping.detail": "System Startup Time: ${system_boot_time}\nBot Running Time: ${bot_running_time}\nPython Version: ${python_version}\nWebrender Status: ${web_render_status}\nCPU Model: ${cpu_brand}\nCurrent CPU Usage: ${cpu_usage}%\nPhysical Memory: ${ram}M Utilized: ${ram_percent}%\nSwap Memory: ${swap}M Utilized: ${swap_percent}%\nDisk Capacity: ${disk_space}G/${disk_space_total}G",
     "core.message.ping.simple": "Bot Running Time: ${bot_running_time}\nServer Disk Utilized: ${disk_percent}%",
