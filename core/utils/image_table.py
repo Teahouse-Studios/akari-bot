@@ -14,7 +14,7 @@ from .cache import random_cache_path
 from .http import download
 from .web_render import WebRender, webrender
 
-from PIL import Image as PImage
+from PIL import Image as PILImage
 
 
 class ImageTable:
@@ -23,7 +23,7 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True) -> Union[List[PImage], bool]:
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True) -> Union[List[PILImage], bool]:
     if not WebRender.status:
         return False
     elif not WebRender.local:
@@ -97,7 +97,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
     for x in load_img:
         b = base64.b64decode(x)
         bio = BytesIO(b)
-        bimg = PImage.open(bio)
+        bimg = PILImage.open(bio)
         img_lst.append(bimg)
     return img_lst
 

@@ -11,7 +11,7 @@ from core.dirty_check import check_bool, rickroll
 from core.utils.http import download, get_url
 from core.utils.text import isint
 from core.utils.web_render import webrender
-from PIL import Image as PImage
+from PIL import Image as PILImage
 
 
 t = module('tweet',
@@ -98,7 +98,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         for x in load_img:
             b = base64.b64decode(x)
             bio = BytesIO(b)
-            bimg = PImage.open(bio)
-            img_lst.append(bimg)
+            bimg = PILImage.open(bio)
+            img_lst.append(Image(bimg))
         img_lst.append(Url(f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
         await msg.finish(img_lst)

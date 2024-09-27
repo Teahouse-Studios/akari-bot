@@ -3,7 +3,7 @@ from io import BytesIO
 
 import aiohttp
 import ujson as json
-from PIL import Image
+from PIL import Image as PILImage
 
 from core.logger import Logger
 from core.utils.http import download, get_url
@@ -40,7 +40,7 @@ async def make_screenshot(page_link, use_local=True):
             for x in load_img:
                 b = base64.b64decode(x)
                 bio = BytesIO(b)
-                bimg = Image.open(bio)
+                bimg = PILImage.open(bio)
                 img_lst.append(bimg)
             return img_lst
         else:
