@@ -15,6 +15,7 @@ from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.queue import JobQueue
 from core.tos import pardon_user, warn_user
+from core.types import Param
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint, decrypt_string
@@ -443,8 +444,8 @@ echo = module('echo', required_superuser=True, base=True, doc=True)
 
 
 @echo.command('<display_msg>')
-async def _(msg: Bot.MessageSession, display_msg: str):
-    await msg.finish(display_msg)
+async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
+    await msg.finish(dis)
 
 
 say = module('say', required_superuser=True, base=True, doc=True)

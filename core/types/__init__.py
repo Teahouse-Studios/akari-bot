@@ -2,6 +2,7 @@ import os
 
 from .message import *
 from .module import *
+from .command import *
 
 
 class PrivateAssets:
