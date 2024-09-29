@@ -1,7 +1,8 @@
 from typing import Any
 
+
 class Param:
-    def __init__(self, name: str, type_: Any=None):
+    def __init__(self, name: str, type_: Any = None):
         self.name = name
         self.type = type_
 

@@ -350,15 +350,18 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                 no_message_session = False
                                             elif isinstance(param_obj.annotation, Param):
                                                 if param_obj.annotation.name in parsed_msg_:
-                                                    if isinstance(parsed_msg_[param_obj.annotation.name], param_obj.annotation.type):
+                                                    if isinstance(
+                                                            parsed_msg_[
+                                                                param_obj.annotation.name],
+                                                            param_obj.annotation.type):
                                                         kwargs[param_name] = parsed_msg_[param_obj.annotation.name]
                                                         del parsed_msg_[param_obj.annotation.name]
                                                     else:
-                                                        Logger.warning(f'{param_obj.annotation.name} is not a {param_obj.annotation.type}')
+                                                        Logger.warning(f'{param_obj.annotation.name} is not a {
+                                                                       param_obj.annotation.type}')
                                                 else:
                                                     Logger.warning(f'{param_obj.annotation.name} is not in parsed_msg')
                                             param_name_ = param_name
-
 
                                             if (param_name__ := f'<{param_name}>') in parsed_msg_:
                                                 param_name_ = param_name__
