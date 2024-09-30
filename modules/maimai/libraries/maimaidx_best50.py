@@ -168,12 +168,13 @@ class DrawBest(object):
                 tempDraw.text((80, 27), chartInfo.combo, 'white', font)
             if chartInfo.sync:
                 tempDraw.text((110, 27), chartInfo.sync, 'white', font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
-            tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
-                          font)
-            font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
-            tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
-                          font)
+            if chartInfo.dxScore:
+                font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+                tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
+                              font)
+                font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
+                tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
+                              font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 80), f'{chartInfo.ds} -> {compute_rating(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
@@ -215,12 +216,13 @@ class DrawBest(object):
                 tempDraw.text((80, 27), chartInfo.combo, 'white', font)
             if chartInfo.sync:
                 tempDraw.text((110, 27), chartInfo.sync, 'white', font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
-            tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
-                          font)
-            font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
-            tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
-                          font)
+            if chartInfo.dxScore:
+                font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+                tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
+                              font)
+                font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
+                tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
+                              font)
             font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
             tempDraw.text((7, 80), f'{chartInfo.ds} -> {compute_rating(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
