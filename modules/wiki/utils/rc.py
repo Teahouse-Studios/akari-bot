@@ -104,9 +104,9 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         user_checked = u['content']
         if user_checked.find("<吃掉了>") != -1 or user_checked.find("<全部吃掉了>") != -1:
             user_checked = user_checked.replace("<吃掉了>", msg.locale.t(
-                "check.redacted") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges"))
+                "check.redacted") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")) + '\n'
             user_checked = user_checked.replace("<全部吃掉了>", msg.locale.t(
-                "check.redacted.all") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges"))
+                "check.redacted.all") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")) + '\n'
         user_checked_map[u['original']] = user_checked
     checked_titlelist = await check(*titlelist)
     title_checked_map = {}
@@ -114,9 +114,9 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         title_checked = t['content']
         if title_checked.find("<吃掉了>") != -1 or title_checked.find("<全部吃掉了>") != -1:
             title_checked = title_checked.replace("<吃掉了>", msg.locale.t(
-                "check.redacted") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges"))
+                "check.redacted") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")) + '\n'
             title_checked = title_checked.replace("<全部吃掉了>", msg.locale.t(
-                "check.redacted.all") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges"))
+                "check.redacted.all") + '\n' + wiki_info.articlepath.replace('$1', "Special:RecentChanges")) + '\n'
         title_checked_map[t['original']] = title_checked
     checked_commentlist = await check(*commentlist)
     comment_checked_map = {}

@@ -354,7 +354,7 @@ class WikiLib:
         api = self.wiki_info.api
         return await self.get_json_from_api(api, _no_login=_no_login, **kwargs)
 
-    async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> dict:
+    async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
         await self.fixup_wiki_info()
         api = self.wiki_info.api
         if api in redirect_list:
