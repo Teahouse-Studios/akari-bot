@@ -6,7 +6,7 @@ from typing import List, Union
 import aiohttp
 import filetype as ft
 import ujson as json
-from PIL import Image as PImage
+from PIL import Image as PILImage
 from aiofile import async_open
 
 from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
@@ -17,7 +17,7 @@ from core.utils.web_render import WebRender, webrender
 
 
 async def image_split(i: Image) -> List[Image]:
-    i = PImage.open(await i.get())
+    i = PILImage.open(await i.get())
     iw, ih = i.size
     if ih <= 1500:
         return [Image(i)]
@@ -41,7 +41,7 @@ def get_fontsize(font, text):
 save_source = True
 
 
-async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True) -> Union[List[PImage], bool]:
+async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True) -> Union[List[PILImage], bool]:
     '''使用Webrender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
@@ -151,12 +151,12 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
     for x in load_img:
         b = base64.b64decode(x)
         bio = BytesIO(b)
-        bimg = PImage.open(bio)
+        bimg = PILImage.open(bio)
         img_lst.append(bimg)
     return img_lst
 
 
-async def svg_render(file_path: str, use_local=True) -> Union[List[PImage], bool]:
+async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bool]:
     '''使用Webrender渲染svg文件。
 
     :param message_chain: svg文件路径。
@@ -260,6 +260,6 @@ async def svg_render(file_path: str, use_local=True) -> Union[List[PImage], bool
     for x in load_img:
         b = base64.b64decode(x)
         bio = BytesIO(b)
-        bimg = PImage.open(bio)
+        bimg = PILImage.open(bio)
         img_lst.append(bimg)
     return img_lst

@@ -9,7 +9,7 @@ from urllib import parse
 
 import aiohttp
 import filetype
-from PIL import Image as PImage
+from PIL import Image as PILImage
 from tenacity import retry, stop_after_attempt
 
 from config import Config
@@ -166,7 +166,7 @@ class Image(ImageT):
         self.need_get = False
         self.path = path
         self.headers = headers
-        if isinstance(path, PImage.Image):
+        if isinstance(path, PILImage.Image):
             save = f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.png'
             path.convert('RGBA').save(save)
             self.path = save
@@ -205,10 +205,10 @@ class Image(ImageT):
         return {'type': 'image', 'data': {'path': self.path}}
 
     async def add_random_noise(self) -> Self:
-        image = PImage.open(await self.get())
+        image = PILImage.open(await self.get())
         image = image.convert('RGBA')
 
-        noise_image = PImage.new('RGBA', (50, 50))
+        noise_image = PILImage.new('RGBA', (50, 50))
         for i in range(50):
             for j in range(50):
                 noise_image.putpixel((i, j), (i, j, i, random.randint(0, 1)))

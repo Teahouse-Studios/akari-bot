@@ -97,9 +97,9 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         message_chain_assendable = message_chain.as_sendable(self, embed=False)
 
-        msg = MessageSegment.text('')
+        convert_msg_segments = MessageSegment.text('')
         if quote and self.target.target_from == 'QQ|Group' and self.session.message:
-            msg = MessageSegment.reply(self.session.message.message_id)
+            convert_msg_segments = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
@@ -107,17 +107,17 @@ class MessageSession(MessageSessionT):
         count = 0
         for x in message_chain_assendable:
             if isinstance(x, Plain):
-                msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
+                convert_msg_segments = convert_msg_segments + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
-                msg = msg + MessageSegment.image('base64://' + await x.get_base64())
+                convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
                 if self.target.target_from != 'QQ|Guild':
-                    msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
+                    convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
         Logger.info(f'[Bot] -> [{self.target.target_id}]: {message_chain_assendable}')
         if self.target.target_from == 'QQ|Group':
             try:
-                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+                send = await bot.send_group_msg(group_id=self.session.target, message=convert_msg_segments)
             except aiocqhttp.exceptions.NetworkError:
                 send = await bot.send_group_msg(group_id=self.session.target, message=MessageSegment.text(
                     self.locale.t("error.message.timeout")))
@@ -125,12 +125,12 @@ class MessageSession(MessageSessionT):
                 img_chain = message_chain.copy()
                 img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
                 imgs = await msgchain2image(img_chain, self)
-                msg2img = MessageSegment.text('')
+                msgsgm = MessageSegment.text('')
                 for img in imgs:
                     im = Image(img)
-                    msg2img += MessageSegment.image('base64://' + await im.get_base64())
+                    msgsgm = msgsgm + MessageSegment.image('base64://' + await im.get_base64())
                 try:
-                    send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
+                    send = await bot.send_group_msg(group_id=self.session.target, message=msgsgm)
                 except aiocqhttp.exceptions.ActionFailed as e:
                     raise SendMessageFailed(e.result['wording'])
 
@@ -140,10 +140,10 @@ class MessageSession(MessageSessionT):
         elif self.target.target_from == 'QQ|Guild':
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
-                                         channel_id=int(match_guild.group(2)), message=msg)
+                                         channel_id=int(match_guild.group(2)), message=convert_msg_segments)
         else:
             try:
-                send = await bot.send_private_msg(user_id=self.session.target, message=msg)
+                send = await bot.send_private_msg(user_id=self.session.target, message=convert_msg_segments)
             except aiocqhttp.exceptions.ActionFailed as e:
                 if self.session.message.detail_type == 'private' and self.session.message.sub_type == 'group':
                     return FinishedSession(self, 0, [{}])

@@ -17,14 +17,14 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
-from PIL import Image
+from PIL import Image as PILImage
 
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 
 
 async def generate_screenshot_v2(page_link: str, section: str = None, allow_special_page=False, content_mode=False, use_local=True,
-                                 element=None) -> Union[List[Image], bool]:
+                                 element=None) -> Union[List[PILImage], bool]:
     elements_ = elements.copy()
     if element and isinstance(element, List):
         elements_ += element
@@ -89,12 +89,12 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
     for x in load_img:
         b = base64.b64decode(x)
         bio = BytesIO(b)
-        bimg = Image.open(bio)
+        bimg = PILImage.open(bio)
         img_lst.append(bimg)
     return img_lst
 
 
-async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[List[Image], bool]:
+async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[List[PILImage], bool]:
     if not WebRender.status:
         return False
     elif not WebRender.local:
@@ -358,7 +358,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                     for img in imgs_data:
                         b = base64.b64decode(img)
                         bio = BytesIO(b)
-                        bimg = Image.open(bio)
+                        bimg = PILImage.open(bio)
                         img_lst.append(bimg)
 
         except aiohttp.ClientConnectorError:
@@ -374,7 +374,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                         for img in imgs_data:
                             b = base64.b64decode(img)
                             bio = BytesIO(b)
-                            bimg = Image.open(bio)
+                            bimg = PILImage.open(bio)
                             img_lst.append(bimg)
 
         return img_lst
