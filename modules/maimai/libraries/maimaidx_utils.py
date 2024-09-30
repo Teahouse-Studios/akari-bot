@@ -276,7 +276,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
                     entry_output += f" {combo_rank}{sync_rank}"
-                if dx:
+                if dx and dx[0]:
                     entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
                 output_lines.append(entry_output)
         else:
