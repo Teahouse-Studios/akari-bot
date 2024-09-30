@@ -1,1 +1,1 @@
-from .ImageProcess import *
+from .image_process import *

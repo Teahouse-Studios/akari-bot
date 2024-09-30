@@ -1,13 +1,13 @@
 from core.builtins import Bot
 from core.component import module
-from aiohttp import ClientSession as Session
+from aiohttp import ClientSession
 import asyncio
 import ujson as json
 
 
 async def hitokoto_():
     url = 'https://v1.hitokoto.cn/'
-    async with Session() as session:
+    async with ClientSession() as session:
         async with session.get(url) as response_:
             result = json.loads(await response_.text())
             if response_.status == 200:
