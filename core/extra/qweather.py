@@ -1,15 +1,14 @@
-# from config import Config
+from config import Config
 from aiohttp import ClientSession
 from retrying import retry
-# from core.exceptions import FaildToQueryWeather
+from core.exceptions import FaildToQueryWeather
+
 import asyncio
 import ujson as json
 
-# key = Config('qweather_api_key',cfg_type=str)
-key = "a5e3446eeec3419e91a08fdcfc19fb52"
+key = Config('qweather_api_key',cfg_type=str)
+# key = "a5e3446eeec3419e91a08fdcfc19fb52"
 
-class FaildToQueryWeather(Exception):
-    pass
 
 class QweatherApi():
     @staticmethod
