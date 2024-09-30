@@ -40,3 +40,6 @@ class NoReportException(Exception):
 
 class TestException(Exception):
     pass
+
+class FaildToQueryWeather(Exception):
+    pass

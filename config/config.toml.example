@@ -22,6 +22,7 @@ openai_api_key =
 osu_api_key =
 wolfram_alpha_appid =
 jwt_secret =
+qweather_api_key =
 
 [cfg]
 api_port = 5000
