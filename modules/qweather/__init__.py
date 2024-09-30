@@ -9,7 +9,7 @@ async def _now(msg: Bot.MessageSession):
     weat_now = await QweatherApi().weather_now(msg.parsed_msg['<location|city>'])
     weather_now = [Plain("检索到以下地区的结果：\n")]
     for detail in weat_now:
-        weather_now.append(Plain(f">>{detail['city']} 在 {detail['time']} 的天气: 气温 {detail['temp']}℃，体感温度 {detail['feelsLike']}℃；风向为 {detail['wind'][0]}，风力等级为 {detail['wind'][1]}级，风速为 {detail['wind'][2]}km/h；相对湿度为 {detail['others']['humidity']}%，过去一小时降水量为 {detail['others']['precip']}mm，大气压强为 {detail['others']['pressure']}hPa，能见度为 {detail['others']['vis']}km。\n"))
+        weather_now.append(Plain(f">>{detail['city']} 在 {detail['time']} 的天气: 气温 {detail['temp']}℃，体感温度 {detail['feelsLike']}℃；风向为 {detail['wind'][0]}，风力等级为 {detail['wind'][1]}级，风速为 {detail['wind'][2]}km/h；相对湿度为 {detail['others']['humidity']}%，过去一小时降水量为 {detail['others']['precip']}mm，大气压强为 {detail['others']['pressure']}hPa，能见度为 {detail['others']['vis']}km。"))
     send = await msg.send_message(weather_now.append(Plain("\n[90秒后撤回]")))
     await msg.sleep(90)
     await send.delete()
