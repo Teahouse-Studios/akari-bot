@@ -27,7 +27,7 @@ async def _7days(msg: Bot.MessageSession):
     __7days__ = f"{seven_days['city']} 最近七日的天气数据: \n"
     for detail in seven_days['7days']:
         __7days__ += (detail[
-                          'fxDate'] + f": 白天 {detail['textDay']}，夜晚 {detail['textNight']}；当日温度为{detail['tempMin'] + '℃~' + detail['tempMax']}℃；当日总降水量为{detail['precip']}\n")
+                          'fxDate'] + f": 白天 {detail['textDay']}，夜晚 {detail['textNight']}；当日温度为{detail['tempMin'] + '℃~' + detail['tempMax']}℃；当日总降水量为{detail['precip']}mm\n")
     __7days__ += '[90秒后撤回]'
     send = await msg.send_message(__7days__)
     await msg.sleep(90)
