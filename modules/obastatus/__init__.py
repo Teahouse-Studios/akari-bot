@@ -97,12 +97,12 @@ async def top(msg: Bot.MessageSession, rank: int = 10):
     for i in range(0, rank):
         cluster = rankList[i]
 
-        sponsor = cluster.get('sponsor', '未知')
+        sponsor = cluster.get('sponsor', msg.locale.t("obastatus.message.unknown"))
         
         try:
             sponsor_name = sponsor.get('name')
         except AttributeError:
-            sponsor_name = '未知'
+            sponsor_name = msg.locale.t("obastatus.message.unknown")
 
         try:
             message += '🟩 | ' if cluster.get('isEnabled') else '🟥 | '
@@ -132,12 +132,12 @@ async def search(msg: Bot.MessageSession, context: str):
     message = ''
 
     for rank, cluster in clusterList:
-        sponsor = cluster.get('sponsor', '未知')
+        sponsor = cluster.get('sponsor', msg.locale.t("obastatus.message.unknown"))
         
         try:
             sponsor_name = sponsor.get('name')
         except AttributeError:
-            sponsor_name = '未知'
+            sponsor_name = msg.locale.t("obastatus.message.unknown")
 
         try:
             message += '🟩 | ' if cluster.get('isEnabled') else '🟥 | '
