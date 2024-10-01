@@ -5,7 +5,7 @@ from ast import literal_eval
 zlp = module('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_superuser=True)
 
 
-@zlp.handle(pattern=r'\{(?<=\{)[^}]*(?=\})\}',
+@zlp.regex(pattern=r'\{(?<=\{)[^}]*(?=\})\}',
             mode='A',
             show_typing=False
             )
