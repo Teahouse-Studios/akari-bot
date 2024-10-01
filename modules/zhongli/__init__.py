@@ -49,7 +49,7 @@ async def zlchk(send: Bot.MessageSession):
 
 @zl.handle('send <msg> {以Admin发送命令}', required_superuser=True)
 async def send_m(msg: Bot.MessageSession):
-    sender = send.target.senderId
+    sender = msg.target.senderId
     cmd = msg.parsed_msg['<msg>']
-    return_to = send.target.targetId
+    return_to = msg.target.targetId
     await Bot.FetchTarget.post_message('zhongli-probe', f"-execute as {sender} return_to {return_to} run {cmd}")
