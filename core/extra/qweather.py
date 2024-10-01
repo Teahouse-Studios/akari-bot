@@ -63,13 +63,12 @@ class QweatherApi():
                             )
         return weathers
 
-    # async def weather_7d(self,city):
-    #     weathers_locate = (await self.get_lon_lat(city))[0]
-    #     seven_days = {}
-    #     url = f"https://api.qweather.com/v7/weather/7d?key={key}&lang=zh&location={str(weathers_locate[_city_]['lon'])+','+str(weathers_locate[_city_]['lat'])}"
-    #     _7days = (await self.query_url(url))['daily']
-    #     for weather in _7days:
-    #         url
+    async def weather_7d(self,city):
+        weathers_locate = list(await self.get_lon_lat(city))[0]
+        lonlat = (await self.get_lon_lat(city))[weathers_locate]
+        url = f"https://devapi.qweather.com/v7/weather/7d?key={key}&lang=zh&location={str(lonlat['lon'])+','+str(lonlat['lat'])}"
+        _7days = (await self.query_url(url))['daily']
+        return {'city': weathers_locate,'7days':_7days}
 
 if __name__ == '__main__':
     text = asyncio.run(QweatherApi().weather_now('beijing'))
