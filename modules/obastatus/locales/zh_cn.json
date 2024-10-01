@@ -1,5 +1,5 @@
 {
-    "obastatus.help.desc": "获取 OpenBMCLAPI 相关数据的 Akari-Bot 模块",
+    "obastatus.help.desc": "获取 OpenBMCLAPI 相关数据。",
     "obastatus.help.status": "获取 OpenBMCLAPI Dashboard 数据",
     "obastatus.help.rank": "获取指定排名的 OpenBMCLAPI 节点状态",
     "obastatus.help.top": "获取指定排名之前的 OpenBMCLAPI 节点状态",
@@ -11,5 +11,6 @@
     "obastatus.message.top": "${rank} | ${name} | ${id}\n${hits} | ${size}\n赞助商 ${sponsor_name}",
     "obastatus.message.version": "OpenBMCLAPI 最新版本: ${version}",
     "obastatus.message.queryTime": "请求时间: ${queryTime}",
-    "obastatus.message.unknown": "未知"
+    "obastatus.message.unknown": "未知",
+    "obastatus.message.sponsor.teahouse.warning": "请注意，此处的展示的为 OpenBMCLAPI 的节点赞助商，与 Teahouse Studio 无任何从属关系。"
 }
