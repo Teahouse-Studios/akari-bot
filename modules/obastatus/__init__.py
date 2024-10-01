@@ -174,7 +174,6 @@ async def search(msg: Bot.MessageSession, context: str):
         await msg.finish(Image(NOTFOUND_IMG))
 
 
-
 @obastatus.command('sponsor {{obastatus.help.sponsor}}')
 async def sponsor(msg: Bot.MessageSession):
     sponsor = await get_url(f'{API_URL}/sponsor',
