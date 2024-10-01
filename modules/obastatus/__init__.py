@@ -63,6 +63,9 @@ async def status(msg: Bot.MessageSession):
     await msg.finish(message)
 
 
+official_instance = Config('official_instance', False)
+
+
 @obastatus.command('rank [<rank>] {{obastatus.help.rank}}')
 async def rank(msg: Bot.MessageSession, rank: int = 1):
     rankList = await get_url(f'{API_URL}/metric/rank',
@@ -88,7 +91,10 @@ async def rank(msg: Bot.MessageSession, rank: int = 1):
                                url=sponsor.get('url'))
 
         try:
-            await msg.finish([Plain(message), Image(str(sponsor.get('banner')))])
+            send_msg = [Plain(message), Image(str(sponsor.get('banner')))]
+            if official_instance:
+                send_msg.append(Plain(msg.locale.t("obastatus.message.sponsor.teahouse.warning")))
+            await msg.finish(send_msg)
         except Exception:
             await msg.finish(message)
 
@@ -168,8 +174,6 @@ async def search(msg: Bot.MessageSession, context: str):
         await msg.finish(Image(NOTFOUND_IMG))
 
 
-official_instance = Config('official_instance', False)
-
 
 @obastatus.command('sponsor {{obastatus.help.sponsor}}')
 async def sponsor(msg: Bot.MessageSession):
@@ -184,7 +188,7 @@ async def sponsor(msg: Bot.MessageSession):
     try:
         send_message = [Plain(message), Image(str(cluster.get('banner')))]
         if official_instance:
-            send_message.append(Plain("obastatus.message.sponsor.teahouse.warning"))
+            send_message.append(Plain(msg.locale.t("obastatus.message.sponsor.teahouse.warning")))
         await msg.finish(send_message)
     except Exception:
         await msg.finish(message)
