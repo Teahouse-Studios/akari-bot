@@ -31,7 +31,7 @@ def computeMD5hash(my_string):
     return m.hexdigest()
 
 
-def parse_data(result: dict, msg: Bot.MessageSession=None, additional_text=None) -> Dict:
+def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=None) -> Dict:
     original_content = content = result['content']
     status = True
     for itemResult in result['results']:
@@ -47,7 +47,8 @@ def parse_data(result: dict, msg: Bot.MessageSession=None, additional_text=None)
                                     reason = f"<Redacted:{itemDetail['label']}>"
                                 else:
                                     reason = msg.locale.t("check.Redacted", reason=itemDetail['label'])
-                                content = content[:pos['startPos'] + _offset] + reason + content[pos['endPos'] + _offset:]
+                                content = content[:pos['startPos'] + _offset] + \
+                                    reason + content[pos['endPos'] + _offset:]
                                 if additional_text:
                                     content += '\n' + additional_text + '\n'
                                 _offset += len(reason) - filter_words_length
@@ -70,7 +71,7 @@ def parse_data(result: dict, msg: Bot.MessageSession=None, additional_text=None)
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(*text: Union[str, List[str]], msg: Bot.MessageSession=None, additional_text=None) -> List[Dict]:
+async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, additional_text=None) -> List[Dict]:
     '''检查字符串是否合规
 
     :param text: 字符串（List/Union）。
@@ -165,7 +166,8 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession=None, addi
                     for item in result['data']:
                         content = item['content']
                         for n in call_api_list[content]:
-                            query_list.update({n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
+                            query_list.update(
+                                {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
                         DirtyWordCache(content).update(item)
                 else:
                     raise ValueError(await resp.text())
