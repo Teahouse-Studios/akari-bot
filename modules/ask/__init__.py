@@ -107,18 +107,18 @@ async def _(msg: Bot.MessageSession):
         petal = await count_petal(msg, tokens)
         # petal = await count_petal(msg, tokens, gpt4)
 
-        res = await check(res)
+        res = await check(res, msg=msg)
+        resm = ''
         for m in res:
-            res = m['content']
-        res = res.replace("<吃掉了>", msg.locale.t("check.redacted"))
-        res = res.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        blocks = parse_markdown(res)
+            resm += m['content']
+        blocks = parse_markdown(resm)
 
         chain = []
         for block in blocks:
             if block['type'] == 'text':
                 chain.append(Plain(block['content']))
             elif block['type'] == 'latex':
+                content = ''
                 try:
                     content = await generate_latex(block['content'])
                     img = PILImage.open(io.BytesIO(content))
