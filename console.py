@@ -9,6 +9,8 @@ from core.logger import Logger
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
+from core.utils.info import Info
+
 if not Config('db_path', cfg_type=str):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
                          'Example: \ndb_path = "sqlite:///database/save.db"\n'
@@ -78,6 +80,7 @@ async def send_command(msg):
 
 if __name__ == '__main__':
     init_bot()
+    Info.client_name = 'Test'
     loop = asyncio.new_event_loop()
     loop.run_until_complete(console_scheduler())
     try:

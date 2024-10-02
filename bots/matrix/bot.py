@@ -222,6 +222,7 @@ async def start():
 
 
 if bot:
+    Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     asyncio.run(start())

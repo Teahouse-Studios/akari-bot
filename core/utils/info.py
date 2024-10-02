@@ -11,3 +11,5 @@ class Info:
     version = None
     subprocess = False
     binary_mode = False
+    command_parsed = 0
+    client_name = ''

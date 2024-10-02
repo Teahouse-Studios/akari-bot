@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 import jwt
 
+from bots.api.info import client_name
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
@@ -182,6 +183,7 @@ async def get_locale(locale: str, string: str):
 
 if __name__ == "__main__" or Info.subprocess:
     while True:
+        Info.client_name = client_name
         uvicorn.run(app, port=Config('api_port', 5000), log_level="info")
         Logger.error('API Server crashed, is the port occupied?')
         Logger.error('Retrying in 5 seconds...')

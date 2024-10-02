@@ -40,6 +40,8 @@ async def on_startup(dispatcher):
     await load_prompt(FetchTarget)
 
 
+
+Info.client_name = client_name
 if 'subprocess' in sys.argv:
     Info.subprocess = True
 

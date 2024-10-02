@@ -235,6 +235,7 @@ async def _(event: Event):
 qq_host = Config("qq_host", cfg_type=str)
 if qq_host:
     argv = sys.argv
+    Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     host, port = qq_host.split(':')

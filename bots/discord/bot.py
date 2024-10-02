@@ -118,6 +118,7 @@ async def on_message(message):
     await parser(msg, prefix=prefix)
 
 
+Info.client_name = client_name
 if 'subprocess' in sys.argv:
     Info.subprocess = True
 
