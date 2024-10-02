@@ -1,7 +1,7 @@
 {
     "bot_name": "小可",
-    "check.redacted": "<吃掉了>",
-    "check.redacted.all": "<全部吃掉了>",
+    "check.redacted": "<吃掉了:${reason}>",
+    "check.redacted.all": "<全部吃掉了:${reason}>",
     "core.help.alias": "命令别名：",
     "core.help.none": "（此模块没有帮助信息）",
     "core.help.options": "选项：",
