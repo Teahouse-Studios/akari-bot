@@ -33,12 +33,14 @@ async def latestVersion():
     return f'''{version.get('version')}@{version.get('_resolved').split('#')[1][:7]}'''
 
 
-async def searchCluster(clusterList: dict, key: str, value):
+async def searchCluster(clusterList: dict, key: str, value: str):
     result = []
     regex = re.compile(value, re.IGNORECASE)
 
     for (rank, cluster) in enumerate(clusterList, 1):
         if regex.search(cluster.get(key)):
+            result.append((rank, cluster))
+        elif 'sponsor' in cluster and regex.search(cluster.get('sponsor').get(key)):
             result.append((rank, cluster))
 
     return result
@@ -140,11 +142,11 @@ async def search(msg: Bot.MessageSession, context: str):
     rankList = await get_url(f'{API_URL}/metric/rank',
                              fmt='json')
 
-    clusterList = await searchCluster(rankList, 'name', context)
+    matchList = await searchCluster(rankList, 'name', context)
 
     message = ''
 
-    for rank, cluster in clusterList:
+    for rank, cluster in matchList:
         sponsor = cluster.get('sponsor', msg.locale.t("obastatus.message.unknown"))
 
         try:
