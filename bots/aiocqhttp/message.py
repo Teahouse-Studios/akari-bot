@@ -28,7 +28,6 @@ from database import BotDBUtil
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 enable_analytics = Config('enable_analytics', False)
-string_post = Config("qq_string_post", False)
 
 
 class FinishedSession(FinS):
@@ -178,7 +177,7 @@ class MessageSession(MessageSessionT):
         return await _check()
 
     def as_display(self, text_only=False):
-        if string_post:
+        if isinstance(self.session.message.message, str):
             m = html.unescape(self.session.message.message)
             if text_only:
                 return ''.join(

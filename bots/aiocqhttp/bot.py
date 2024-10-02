@@ -25,7 +25,6 @@ EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else F
 Url.disable_mm = False if Config('enable_urlmanager', False) else True
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
-string_post = Config("qq_string_post", False)
 
 
 @bot.on_startup
@@ -49,6 +48,9 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
+    string_post = False
+    if isinstance(event.message, str):
+        string_post = True
 
     if string_post:
         filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
