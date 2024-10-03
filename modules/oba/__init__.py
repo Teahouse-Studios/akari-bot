@@ -76,6 +76,8 @@ async def status(msg: Bot.MessageSession):
 
 @oba.command('node [<rank>] {{oba.help.rank}}')
 async def rank(msg: Bot.MessageSession, rank: int = 1):
+    if rank < 1:
+        await msg.finish('oba.message.node.invalid')
     rank_list = await get_url(f'{API}/metric/rank', fmt='json')
     node = rank_list[rank - 1]
     status = '🟩' if node.get('isEnabled') else '🟥'

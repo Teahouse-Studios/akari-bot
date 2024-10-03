@@ -5,6 +5,7 @@
     "oba.help.sponsor": "获取随机节点赞助商。",
     "oba.help.status": "获取 OpenBMCLAPI Dashboard 数据。",
     "oba.help.top": "获取 OpenBMCLAPI 节点排行榜。",
+    "oba.message.node.invalid": "无效的节点。",
     "oba.message.node": "节点名称：${name}\n节点 ID：${id}\n当日流量：${size} | 当日请求数：${hits}",
     "oba.message.query_time": "查询时间：${query_time}",
     "oba.message.search.not_found": "未找到结果。",
