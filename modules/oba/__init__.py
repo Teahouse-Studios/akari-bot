@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 
-from config import Config
 from core.builtins import Bot, Image, Plain
 from core.component import module
 from core.utils.http import get_url
@@ -77,7 +76,7 @@ async def status(msg: Bot.MessageSession):
 @oba.command('node [<rank>] {{oba.help.rank}}')
 async def rank(msg: Bot.MessageSession, rank: int = 1):
     if rank < 1:
-        await msg.finish('oba.message.node.invalid')
+        await msg.finish(msg.locale.t('oba.message.node.invalid'))
     rank_list = await get_url(f'{API}/metric/rank', fmt='json')
     node = rank_list[rank - 1]
     status = '🟩' if node.get('isEnabled') else '🟥'
