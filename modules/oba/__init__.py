@@ -28,6 +28,7 @@ async def latest_version():
     except Exception:
         return None
 
+
 def search_cluster(clusterList: dict, key: str, value: str):
     result = []
     regex = re.compile(value, re.IGNORECASE)
@@ -55,16 +56,21 @@ async def status(msg: Bot.MessageSession):
     version = await latest_version()
 
     msg_list = [msg.locale.t('oba.message.status.detail',
-                                current_nodes=current_nodes,
-                                load=load,
-                                bandwidth=bandwidth,
-                                current_bandwidth=current_bandwidth,
-                                hits=hits,
-                                size=size
-                                )]
+                             current_nodes=current_nodes,
+                             load=load,
+                             bandwidth=bandwidth,
+                             current_bandwidth=current_bandwidth,
+                             hits=hits,
+                             size=size
+                             )]
     if version:
         msg_list.append(msg.locale.t('oba.message.status.version', version=version))
-    msg_list.append(msg.locale.t('oba.message.query_time', query_time=msg.ts2strftime(datetime.now().timestamp(), timezone=False)))
+    msg_list.append(
+        msg.locale.t(
+            'oba.message.query_time',
+            query_time=msg.ts2strftime(
+                datetime.now().timestamp(),
+                timezone=False)))
     await msg.finish(msg_list)
 
 
@@ -79,7 +85,12 @@ async def rank(msg: Bot.MessageSession, rank: int = 1):
     size = size_convert(node.get('metric').get('bytes'))
 
     msg_list = [status, msg.locale.t('oba.message.node', name=name, id=_id, hits=hits, size=size)]
-    msg_list.append(msg.locale.t('oba.message.query_time', query_time=msg.ts2strftime(datetime.now().timestamp(), timezone=False)))
+    msg_list.append(
+        msg.locale.t(
+            'oba.message.query_time',
+            query_time=msg.ts2strftime(
+                datetime.now().timestamp(),
+                timezone=False)))
 
     if 'sponsor' not in node:
         await msg.finish(msg_list)
@@ -119,12 +130,12 @@ async def top(msg: Bot.MessageSession, rank: int = 1):
             hits = node.get('metric').get('hits')
             size = size_convert(node.get('metric').get('bytes'))
             node_list.append(f"{status} | {msg.locale.t('oba.message.top',
-                                    rank=i + 1,
-                                    name=name,
-                                    id=_id,
-                                    hits=hits,
-                                    size=size,
-                                    sponsor_name=sponsor_name)}")
+                                                        rank=i + 1,
+                                                        name=name,
+                                                        id=_id,
+                                                        hits=hits,
+                                                        size=size,
+                                                        sponsor_name=sponsor_name)}")
         except KeyError:
             break
 
@@ -153,12 +164,12 @@ async def search(msg: Bot.MessageSession, keyword: str):
             hits = node.get('metric').get('hits')
             size = size_convert(node.get('metric').get('bytes'))
             node_list.append(f"{status} | {msg.locale.t('oba.message.top',
-                                    rank=rank,
-                                    name=name,
-                                    id=_id,
-                                    hits=hits,
-                                    size=size,
-                                    sponsor_name=sponsor_name)}")
+                                                        rank=rank,
+                                                        name=name,
+                                                        id=_id,
+                                                        hits=hits,
+                                                        size=size,
+                                                        sponsor_name=sponsor_name)}")
         except KeyError:
             break
 

@@ -8,6 +8,7 @@ from modules.wiki.utils.wikilib import WikiLib, WikiInfo
 
 RC_LIMIT = 10
 
+
 async def rc(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     query = await wiki.get_json(action='query', list='recentchanges',

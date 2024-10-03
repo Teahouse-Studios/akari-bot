@@ -5,6 +5,7 @@ from modules.wiki.utils.wikilib import WikiLib, WikiInfo
 
 AB_LIMIT = 5
 
+
 async def ab(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp',

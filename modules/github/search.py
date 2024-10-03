@@ -5,6 +5,7 @@ from modules.github.utils import dirty_check, dark_check
 
 SEARCH_LIMIT = 5
 
+
 async def search(msg: Bot.MessageSession, keyword: str):
     result = await get_url('https://api.github.com/search/repositories?q=' + keyword, 200,
                            fmt='json')
