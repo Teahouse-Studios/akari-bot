@@ -70,7 +70,7 @@ if Config('enable_urlmanager', False):
                 msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.blocklist', api=apilink))
             if msg_list:
                 msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.conflict'))
-                await msg.finish('\n'.join(msg_list))
+                await msg.finish(msg_list)
             else:
                 await msg.finish(msg.locale.t('wiki.message.wiki_audit.query.none', api=apilink))
         else:
@@ -101,7 +101,8 @@ if Config('enable_urlmanager', False):
                     allow_image = await image_table_render(allow_table)
                     if allow_image:
                         send_msgs.append(I18NContext('wiki.message.wiki_audit.list.allowlist'))
-                        send_msgs.append(Image(allow_image))
+                        for im in allow_image:
+                            send_msgs.append(Image(im))
             if is_mysql:
                 block_columns = [[x[0], msg.ts2strftime(
                     x[1].timestamp(), iso=True, timezone=False)] for x in block_list]
@@ -117,7 +118,8 @@ if Config('enable_urlmanager', False):
                     block_image = await image_table_render(block_table)
                     if block_image:
                         send_msgs.append(I18NContext('wiki.message.wiki_audit.list.blocklist'))
-                        send_msgs.append(Image(block_image))
+                        for im in block_image:
+                            send_msgs.append(Image(im))
             if send_msgs:
                 await msg.finish(send_msgs)
                 legacy = False
@@ -132,6 +134,6 @@ if Config('enable_urlmanager', False):
                 for bl in block_list:
                     wikis.append(f'{bl[0]} ({bl[1]})')
             if wikis:
-                await msg.finish('\n'.join(wikis))
+                await msg.finish(wikis)
             else:
                 await msg.finish(msg.locale.t('wiki.message.wiki_audit.list.none'))

@@ -12,7 +12,7 @@ from tenacity import retry, stop_after_attempt
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
 from core.logger import Logger
-from core.petal import gained_petal
+from core.utils.petal import gained_petal
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
 from core.utils.http import get_url, download

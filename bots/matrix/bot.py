@@ -10,11 +10,11 @@ from bots.matrix import client
 from bots.matrix.client import bot
 from bots.matrix.info import client_name
 from bots.matrix.message import MessageSession, FetchTarget
+from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
 PrivateAssets.set('assets/private/matrix')
@@ -222,6 +222,7 @@ async def start():
 
 
 if bot:
+    Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     asyncio.run(start())

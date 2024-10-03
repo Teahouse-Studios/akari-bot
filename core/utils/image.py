@@ -1,11 +1,12 @@
 import base64
 import traceback
+from io import BytesIO
 from typing import List, Union
 
 import aiohttp
 import filetype as ft
 import ujson as json
-from PIL import Image as PImage
+from PIL import Image as PILImage
 from aiofile import async_open
 
 from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
@@ -16,7 +17,7 @@ from core.utils.web_render import WebRender, webrender
 
 
 async def image_split(i: Image) -> List[Image]:
-    i = PImage.open(await i.get())
+    i = PILImage.open(await i.get())
     iw, ih = i.size
     if ih <= 1500:
         return [Image(i)]
@@ -40,12 +41,12 @@ def get_fontsize(font, text):
 save_source = True
 
 
-async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True):
+async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True) -> Union[List[PILImage], bool]:
     '''使用Webrender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
     :param use_local: 是否使用本地Webrender渲染。
-    :return: 图片的相对路径，若渲染失败则返回False。
+    :return: 图片的PIL对象
     '''
     if not WebRender.status:
         return False
@@ -144,15 +145,23 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False
-    return pic
+    read = open(pic)
+    load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        img_lst.append(bimg)
+    return img_lst
 
 
-async def svg_render(file_path: str, use_local=True):
+async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bool]:
     '''使用Webrender渲染svg文件。
 
     :param message_chain: svg文件路径。
     :param use_local: 是否使用本地Webrender渲染。
-    :return: 图片的相对路径，若渲染失败则返回False。
+    :return: 图片的PIL对象
     '''
     if not WebRender.status:
         return False
@@ -245,4 +254,12 @@ async def svg_render(file_path: str, use_local=True):
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False
-    return pic
+    read = open(pic)
+    load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        img_lst.append(bimg)
+    return img_lst

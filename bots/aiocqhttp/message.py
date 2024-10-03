@@ -25,6 +25,8 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
+from tenacity import retry, wait_fixed, stop_after_attempt
+
 enable_analytics = Config('enable_analytics', False)
 
 
@@ -94,36 +96,40 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         message_chain_assendable = message_chain.as_sendable(self, embed=False)
 
-        msg = MessageSegment.text('')
+        convert_msg_segments = MessageSegment.text('')
         if quote and self.target.target_from == 'QQ|Group' and self.session.message:
-            msg = MessageSegment.reply(self.session.message.message_id)
+            convert_msg_segments = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(I18NContext("error.message.chain.unsafe"))
+            return await self.send_message([I18NContext("error.message.chain.unsafe")])
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:
             if isinstance(x, Plain):
-                msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
+                convert_msg_segments = convert_msg_segments + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
-                msg = msg + MessageSegment.image('base64://' + await x.get_base64())
+                convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
                 if self.target.target_from != 'QQ|Guild':
-                    msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
+                    convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
         Logger.info(f'[Bot] -> [{self.target.target_id}]: {message_chain_assendable}')
         if self.target.target_from == 'QQ|Group':
             try:
-                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+                send = await bot.send_group_msg(group_id=self.session.target, message=convert_msg_segments)
             except aiocqhttp.exceptions.NetworkError:
                 send = await bot.send_group_msg(group_id=self.session.target, message=MessageSegment.text(
                     self.locale.t("error.message.timeout")))
             except aiocqhttp.exceptions.ActionFailed:
                 img_chain = message_chain.copy()
                 img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain, self)).as_uri())
+                imgs = await msgchain2image(img_chain, self)
+                msgsgm = MessageSegment.text('')
+                for img in imgs:
+                    im = Image(img)
+                    msgsgm = msgsgm + MessageSegment.image('base64://' + await im.get_base64())
                 try:
-                    send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
+                    send = await bot.send_group_msg(group_id=self.session.target, message=msgsgm)
                 except aiocqhttp.exceptions.ActionFailed as e:
                     raise SendMessageFailed(e.result['wording'])
 
@@ -133,10 +139,10 @@ class MessageSession(MessageSessionT):
         elif self.target.target_from == 'QQ|Guild':
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
-                                         channel_id=int(match_guild.group(2)), message=msg)
+                                         channel_id=int(match_guild.group(2)), message=convert_msg_segments)
         else:
             try:
-                send = await bot.send_private_msg(user_id=self.session.target, message=msg)
+                send = await bot.send_private_msg(user_id=self.session.target, message=convert_msg_segments)
             except aiocqhttp.exceptions.ActionFailed as e:
                 if self.session.message.detail_type == 'private' and self.session.message.sub_type == 'group':
                     return FinishedSession(self, 0, [{}])
@@ -147,36 +153,55 @@ class MessageSession(MessageSessionT):
         return FinishedSession(self, send['message_id'], [send])
 
     async def check_native_permission(self):
-        if self.target.target_from == 'QQ|Private':
-            return True
-        elif self.target.target_from == 'QQ|Group':
-            get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
-                                                    user_id=self.session.sender)
-            if get_member_info['role'] in ['owner', 'admin']:
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+        async def _check():
+            if self.target.target_from == 'QQ|Private':
                 return True
-        elif self.target.target_from == 'QQ|Guild':
-            match_guild = re.match(r'(.*)\|(.*)', self.session.target)
-            get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
-                                                    user_id=self.session.sender)
-            for m in get_member_info['roles']:
-                if m['role_id'] == "2":
+            elif self.target.target_from == 'QQ|Group':
+                get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
+                                                        user_id=self.session.sender)
+                if get_member_info['role'] in ['owner', 'admin']:
                     return True
-            get_guild_info = await bot.call_action('get_guild_meta_by_guest', guild_id=match_guild.group(1))
-            if get_guild_info['owner_id'] == self.session.sender:
-                return True
+            elif self.target.target_from == 'QQ|Guild':
+                match_guild = re.match(r'(.*)\|(.*)', self.session.target)
+                get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
+                                                        user_id=self.session.sender)
+                for m in get_member_info['roles']:
+                    if m['role_id'] == "2":
+                        return True
+                get_guild_info = await bot.call_action('get_guild_meta_by_guest', guild_id=match_guild.group(1))
+                if get_guild_info['owner_id'] == self.session.sender:
+                    return True
+                return False
             return False
-        return False
+        return await _check()
 
     def as_display(self, text_only=False):
-        m = html.unescape(self.session.message.message)
-        if text_only:
+        if isinstance(self.session.message.message, str):
+            m = html.unescape(self.session.message.message)
+            if text_only:
+                return ''.join(
+                    re.split(r'\[CQ:.*?]', m)).strip()
+            m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+            m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+
             return ''.join(
                 re.split(r'\[CQ:.*?]', m)).strip()
-        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+        else:
+            m = []
+            for item in self.session.message.message:
+                if text_only:
+                    if item["type"] == "text":
+                        m.append(item["data"]["text"])
+                else:
+                    if item["type"] == "at":
+                        m.append(f'QQ|{item["data"]["qq"]}')
+                    elif item["type"] == "reply":
+                        m.append(f'[Ke:forward,id={item["data"]["id"]}]')
+                    elif item["type"] == "text":
+                        m.append(item["data"]["text"])
 
-        return ''.join(
-            re.split(r'\[CQ:.*?]', m)).strip()
+            return ''.join(m).strip()
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == 'QQ|Group':
@@ -210,32 +235,43 @@ class MessageSession(MessageSessionT):
         return lst
 
     async def to_message_chain(self):
-        m = html.unescape(self.session.message.message)
-        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
-        spl = re.split(r'(\[CQ:.*?])', m)
         lst = []
-        for s in spl:
-            if s == '':
-                continue
-            if s.startswith('[CQ:'):
-                if s.startswith('[CQ:image'):
-                    sspl = s.split(',')
-                    for ss in sspl:
-                        if qq_frame_type() == 'lagrange':
-                            if ss.startswith('file='):
-                                ss = ss[5:]
-                                if ss.endswith(']'):
-                                    ss = ss[:-1]
-                                lst.append(Image(ss))
-                        else:
-                            if ss.startswith('url='):
-                                ss = ss[4:]
-                                if ss.endswith(']'):
-                                    ss = ss[:-1]
-                                lst.append(Image(ss))
-            else:
-                lst.append(Plain(s))
+        if string_post:
+            m = html.unescape(self.session.message.message)
+            m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+            m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+            spl = re.split(r'(\[CQ:.*?])', m)
+            for s in spl:
+                if s == '':
+                    continue
+                if s.startswith('[CQ:'):
+                    if s.startswith('[CQ:image'):
+                        sspl = s.split(',')
+                        for ss in sspl:
+                            if qq_frame_type() == 'lagrange':
+                                if ss.startswith('file='):
+                                    ss = ss[5:]
+                                    if ss.endswith(']'):
+                                        ss = ss[:-1]
+                                    lst.append(Image(ss))
+                            else:
+                                if ss.startswith('url='):
+                                    ss = ss[4:]
+                                    if ss.endswith(']'):
+                                        ss = ss[:-1]
+                                    lst.append(Image(ss))
+                else:
+                    lst.append(Plain(s))
+        else:
+            for item in self.session.message.message:
+                if item["type"] == "at":
+                    lst.append(Plain(f"QQ|{item['data']['qq']}"))
+                elif item["type"] == "reply":
+                    lst.append(Plain(f"[Ke:forward,id={item['data']['id']}]"))
+                elif item["type"] == "text":
+                    lst.append(Plain(item["data"]["text"]))
+                elif item["type"] == "image":
+                    lst.append(Image(item["data"]["file"]))
 
         return MessageChain(lst)
 

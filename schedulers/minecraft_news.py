@@ -47,7 +47,11 @@ async def start_check_news():
     url = quote(
         f'https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json')
     try:
-        getpage = await get_url(webrender('source', url), 200, attempt=1, request_private_ip=True, logging_err_resp=False)
+        get_webrender = webrender('source', url)
+        if get_webrender == url:
+            Logger.debug('Webrender is not working, skip check minecraft news.')
+            return
+        getpage = await get_url(get_webrender, 200, attempt=1, request_private_ip=True, logging_err_resp=False)
         if getpage:
             alist = get_stored_list('scheduler', 'mcnews')
             o_json = json.loads(getpage)

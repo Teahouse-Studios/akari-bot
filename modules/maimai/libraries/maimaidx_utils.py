@@ -276,7 +276,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
                     entry_output += f" {combo_rank}{sync_rank}"
-                if dx:
+                if dx and dx[0]:
                     entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
                 output_lines.append(entry_output)
         else:
@@ -566,7 +566,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
         prompt.append(msg.locale.t('maimai.message.plate.remaster', song_remain=len(song_remain_remaster)))
 
     if song_remain:
-        await msg.send_message('\n'.join(prompt))
+        await msg.send_message(prompt)
 
     song_record = [[s['id'], s['level_index']] for s in verlist]
 

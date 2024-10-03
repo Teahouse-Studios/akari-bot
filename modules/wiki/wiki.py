@@ -225,11 +225,11 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.prompt'
                                                                         if r.invalid_section and r.info.in_allowlist
                                                                         else 'wiki.message.talk_page.prompt')))
-                                i_msg_lst.append(Image(await
-                                                       image_table_render(
-                                                           ImageTable(session_data,
-                                                                      [session.locale.t('wiki.message.table.header.id'),
-                                                                       session.locale.t('wiki.message.table.header.section')]))))
+                                i_msg_lst += [Image(ii) for ii in await
+                                              image_table_render(
+                                    ImageTable(session_data,
+                                               [session.locale.t('wiki.message.table.header.id'),
+                                                session.locale.t('wiki.message.table.header.section')]))]
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
@@ -258,7 +258,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.forum')))
-                                i_msg_lst.append(Image(await image_table_render(img_table)))
+                                i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
@@ -350,12 +350,14 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             get_infobox = await generate_screenshot_v2(ii, allow_special_page=i[ii]['in_allowlist'],
                                                                        content_mode=i[ii]['content_mode'])
                             if get_infobox:
-                                infobox_msg_list.append(Image(get_infobox))
+                                for img in get_infobox:
+                                    infobox_msg_list.append(Image(img))
                         else:
                             get_infobox = await generate_screenshot_v1(i[ii]['url'], ii, headers,
                                                                        allow_special_page=i[ii]['in_allowlist'])
                             if get_infobox:
-                                infobox_msg_list.append(Image(get_infobox))
+                                for img in get_infobox:
+                                    infobox_msg_list.append(Image(img))
                 if infobox_msg_list:
                     await session.send_message(infobox_msg_list, quote=False)
 
@@ -368,7 +370,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             if i[ii]['url'] not in generate_screenshot_v2_blocklist:
                                 get_section = await generate_screenshot_v2(ii, section=i[ii]['section'])
                                 if get_section:
-                                    section_msg_list.append(Image(get_section))
+                                    for img in get_section:
+                                        section_msg_list.append(Image(img))
                                 else:
                                     section_msg_list.append(Plain(
                                         session.locale.t("wiki.message.error.render_section")))
@@ -376,7 +379,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers,
                                                                            section=i[ii]['section'])
                                 if get_section:
-                                    section_msg_list.append(Image(get_section))
+                                    for img in get_section:
+                                        section_msg_list.append(Image(img))
                                 else:
                                     section_msg_list.append(Plain(
                                         session.locale.t("wiki.message.error.render_section")))
@@ -406,7 +410,10 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.Feature.image and rd:
-                            await session.send_message(Image(rd), quote=False)
+                            img_chain = []
+                            for rr in rd:
+                                img_chain.append(Image(rr))
+                            await session.send_message(img_chain, quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:

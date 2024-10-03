@@ -39,9 +39,9 @@ def private_ip_check(url: str):
             f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
 
-async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20,
-                  attempt=3,
-                  request_private_ip=False, logging_err_resp=True, cookies=None):
+async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt: str = None, timeout: int = 20,
+                  attempt: int = 3,
+                  request_private_ip: bool = False, logging_err_resp: bool = True, cookies: dict = None):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -100,8 +100,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     return await get_()
 
 
-async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt=None, timeout=20,
-                   attempt=3, request_private_ip=False, logging_err_resp=True, cookies=None):
+async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt: str = None, timeout: int = 20,
+                   attempt: int = 3, request_private_ip: bool = False, logging_err_resp: bool = True, cookies: dict = None):
     '''利用AioHttp发送POST请求。
 
     :param url: 需要发送的url。
@@ -159,9 +159,9 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     return await _post()
 
 
-async def download(url: str, filename=None, path=None, status_code: int = False, method="GET", post_data=None,
-                   headers: dict = None, timeout=20, attempt=3, request_private_ip=False,
-                   logging_err_resp=True) -> Union[str, bool]:
+async def download(url: str, filename: str = None, path: str = None, status_code: int = False, method: str = "GET", post_data: any = None,
+                   headers: dict = None, timeout: int = 20, attempt: int = 3, request_private_ip: bool = False,
+                   logging_err_resp: bool = True) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到指定目录。
 
     :param url: 需要获取的url。

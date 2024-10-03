@@ -354,6 +354,18 @@ class WikiLib:
         api = self.wiki_info.api
         return await self.get_json_from_api(api, _no_login=_no_login, **kwargs)
 
+    async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
+        await self.fixup_wiki_info()
+        api = self.wiki_info.api
+        if api in redirect_list:
+            api = redirect_list[api]
+        if kwargs:
+            api = api + '?' + urllib.parse.urlencode(kwargs) + ('&format=json' if not _no_format else '')
+            Logger.debug(api)
+        else:
+            raise ValueError('kwargs is None')
+        return api
+
     @staticmethod
     def parse_text(text):
         try:
@@ -829,7 +841,7 @@ class WikiLib:
                             page_info.link = full_url
                             page_info.file = file
                             page_info.desc = page_desc
-                            if not _iw and not page_info.args and page_info.id != -1:
+                            if not _iw and not page_info.args and page_info.id != -1 and page_info.id:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                         else:
                             page_info.title = query_langlinks.title
@@ -862,7 +874,7 @@ class WikiLib:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t:
-                            if before_page_info.args or page_info.id == -1:
+                            if before_page_info.args or page_info.id == -1 or not page_info.id:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link:

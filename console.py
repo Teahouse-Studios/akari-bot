@@ -9,6 +9,8 @@ from core.logger import Logger
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
+from core.utils.info import Info
+
 if not Config('db_path', cfg_type=str):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
                          'Example: \ndb_path = "sqlite:///database/save.db"\n'
@@ -16,11 +18,11 @@ if not Config('db_path', cfg_type=str):
                          ' bot will automatically create a SQLite database in the "./database/save.db")')
 
 from bot import init_bot
+from core.bot import init_async
 from core.builtins import PrivateAssets, EnableDirtyWordCheck, Url
 from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
-from core.utils.bot import init_async
 from core.types import MsgInfo, Session
 from database import BotDBUtil, session
 from database.tables import DBVersion
@@ -78,6 +80,7 @@ async def send_command(msg):
 
 if __name__ == '__main__':
     init_bot()
+    Info.client_name = 'Test'
     loop = asyncio.new_event_loop()
     loop.run_until_complete(console_scheduler())
     try:

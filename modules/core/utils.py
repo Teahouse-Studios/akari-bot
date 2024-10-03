@@ -66,7 +66,9 @@ async def _(msg: Bot.MessageSession):
                                       swap=swap,
                                       swap_percent=swap_percent,
                                       disk_space=disk,
-                                      disk_space_total=disk_total)
+                                      disk_space_total=disk_total,
+                                      client_name=Info.client_name,
+                                      command_parsed=Info.command_parsed)
     else:
         disk_percent = psutil.disk_usage('/').percent
         result += '\n' + msg.locale.t("core.message.ping.simple",

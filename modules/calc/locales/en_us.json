@@ -1,5 +1,6 @@
 {
     "calc.help": "Safely evaluate Python ast expressions.",
     "calc.message.invalid": "Invalid expression: ${expr}",
-    "calc.message.time_out": "Calculation timeout."
+    "calc.message.time_out": "Calculation timeout.",
+    "calc.message.binary_mode": "机器人正在使用二进制部署，此模块已被禁用。如需使用此模块，请使用源代码部署机器人。"
 }

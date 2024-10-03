@@ -1,9 +1,9 @@
 import traceback
+from typing import Union
 
 from config import CFG
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.ip import IP
 
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
@@ -14,7 +14,7 @@ class WebRender:
     local = False
 
 
-def webrender(method: str = '', url: str = '', use_local: bool = True):
+def webrender(method: str = '', url: str = '', use_local: bool = True) -> Union[str, None]:
     '''根据请求方法生成 Webrender URL。
 
     :param method: API 方法。

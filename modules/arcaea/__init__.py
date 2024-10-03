@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
         for x in resp['value']:
             rank += 1
             r.append(f'{rank}. {x["title"]["en"]} ({x["status"]})')
-        await msg.finish('\n'.join(r))
+        await msg.finish(r)
     else:
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 

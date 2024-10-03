@@ -15,9 +15,10 @@ from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.queue import JobQueue
 from core.tos import pardon_user, warn_user
+from core.types import Param
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.text import isfloat, isint
+from core.utils.text import isfloat, isint, decrypt_string
 from database import BotDBUtil
 
 
@@ -443,8 +444,8 @@ echo = module('echo', required_superuser=True, base=True, doc=True)
 
 
 @echo.command('<display_msg>')
-async def _(msg: Bot.MessageSession, display_msg: str):
-    await msg.finish(display_msg)
+async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
+    await msg.finish(dis)
 
 
 say = module('say', required_superuser=True, base=True, doc=True)
@@ -562,3 +563,15 @@ jobqueue = module('jobqueue', required_superuser=True, base=True)
 async def stop_playing_maimai(msg: Bot.MessageSession):
     BotDBUtil.JobQueue.clear(0)
     await msg.finish(msg.locale.t("success"))
+
+
+decry = module('decrypt', required_superuser=True, base=True, doc=True)
+
+
+@decry.command('<display_msg>')
+async def _(msg: Bot.MessageSession):
+    dec = decrypt_string(msg.as_display().split(' ', 1)[1])
+    if dec:
+        await msg.finish(dec)
+    else:
+        await msg.finish(msg.locale.t("failed"))

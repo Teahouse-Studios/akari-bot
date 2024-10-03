@@ -127,10 +127,11 @@ async def _(msg: Bot.MessageSession):
                             elif check_svg(dl):
                                 rd = await svg_render(dl)
                                 if msg.Feature.image and rd:
-                                    await msg.send_message(
-                                        [I18NContext('wiki.message.wiki_inline.flies', file=get_page.file),
-                                         Image(rd)],
-                                        quote=False)
+                                    chain = [I18NContext('wiki.message.wiki_inline.flies', file=get_page.file),
+                                             ]
+                                    for r in rd:
+                                        chain.append(Image(r))
+                                    await msg.send_message(chain, quote=False)
 
                         if msg.Feature.image:
                             if get_page.status and get_page.title and wiki_.wiki_info.in_allowlist:
@@ -144,11 +145,17 @@ async def _(msg: Bot.MessageSession):
                                                                                allow_special_page=q[qq].in_allowlist,
                                                                                content_mode=content_mode)
                                     if get_infobox:
-                                        await msg.send_message(Image(get_infobox), quote=False)
+                                        imgs = []
+                                        for img in get_infobox:
+                                            imgs.append(Image(img))
+                                        await msg.send_message(imgs, quote=False)
                                 else:
                                     get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
                                     if get_infobox:
-                                        await msg.send_message(Image(get_infobox), quote=False)
+                                        imgs = []
+                                        for img in get_infobox:
+                                            imgs.append(Image(img))
+                                        await msg.send_message(imgs, quote=False)
                             if ((get_page.invalid_section and wiki_.wiki_info.in_allowlist)
                                     or (get_page.is_talk_page and not get_page.selected_section) and WebRender.status):
                                 i_msg_lst = []
@@ -157,13 +164,13 @@ async def _(msg: Bot.MessageSession):
                                                     range(len(get_page.sections))]
                                     i_msg_lst.append(
                                         I18NContext(
-        'wiki.message.invalid_section.prompt' if (
+                                            'wiki.message.invalid_section.prompt' if (
             get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
-                                    i_msg_lst.append(Image(await
-                                                           image_table_render(
-                                                               ImageTable(session_data,
-                                                                          [msg.locale.t('wiki.message.table.header.id'),
-                                                                           msg.locale.t('wiki.message.table.header.section')]))))
+                                    i_msg_lst += [Image(ii) for ii in await
+                                                  image_table_render(
+                                        ImageTable(session_data,
+                                                   [msg.locale.t('wiki.message.table.header.id'),
+                                                    msg.locale.t('wiki.message.table.header.section')]))]
                                     i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                     i_msg_lst.append(I18NContext('message.reply.prompt'))
 
@@ -192,7 +199,7 @@ async def _(msg: Bot.MessageSession):
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
                                 i_msg_lst.append(I18NContext('wiki.message.forum'))
-                                i_msg_lst.append(Image(await image_table_render(img_table)))
+                                i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                 i_msg_lst.append(I18NContext('message.reply.prompt'))
 
@@ -226,7 +233,10 @@ async def _(msg: Bot.MessageSession):
                                 else:
                                     get_section = await generate_screenshot_v2(qq, section=s)
                                 if get_section:
-                                    await msg.send_message(Image(get_section))
+                                    imgs = []
+                                    for img in get_section:
+                                        imgs.append(Image(img))
+                                    await msg.send_message(imgs, quote=False)
 
     asyncio.create_task(bgtask())
     # await bgtask()

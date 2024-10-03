@@ -107,10 +107,13 @@ async def set_alias(msg: Bot.MessageSession):
                                [msg.locale.t("core.message.alias.list.table.header.priority"),
                                 msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
-            img = await image_table_render(table)
-            if img:
+            imgs = await image_table_render(table)
+            if imgs:
                 legacy = False
-                await msg.finish([msg.locale.t("core.message.alias.list"), Image(img)])
+                img_lst = []
+                for img in imgs:
+                    img_lst.append(Image(img))
+                await msg.finish([msg.locale.t("core.message.alias.list")] + img_lst)
             else:
                 pass
 

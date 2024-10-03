@@ -7,15 +7,16 @@ from fastapi.responses import JSONResponse
 import uvicorn
 import jwt
 
+from bots.api.info import client_name
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
 
 sys.path.append(os.getcwd())
 
+from core.bot import init_async, load_prompt  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
-from core.utils.bot import init_async, load_prompt  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from config import Config  # noqa: E402
 from database import BotDBUtil  # noqa: E402
@@ -182,6 +183,7 @@ async def get_locale(locale: str, string: str):
 
 if __name__ == "__main__" or Info.subprocess:
     while True:
+        Info.client_name = client_name
         uvicorn.run(app, port=Config('api_port', 5000), log_level="info")
         Logger.error('API Server crashed, is the port occupied?')
         Logger.error('Retrying in 5 seconds...')

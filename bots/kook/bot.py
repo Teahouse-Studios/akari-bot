@@ -7,10 +7,10 @@ from bots.kook.client import bot
 from bots.kook.info import client_name
 from bots.kook.message import MessageSession, FetchTarget
 from config import Config
+from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
 PrivateAssets.set('assets/private/kook')
@@ -46,6 +46,7 @@ async def _(b: bot):
     await load_prompt(FetchTarget)
 
 
+Info.client_name = client_name
 if 'subprocess' in sys.argv:
     Info.subprocess = True
 

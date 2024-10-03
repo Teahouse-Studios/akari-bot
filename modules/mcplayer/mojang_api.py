@@ -1,5 +1,5 @@
 import ujson as json
-from PIL import Image
+from PIL import Image as PILImage
 
 from core.logger import Logger
 from core.utils.http import get_url, download
@@ -28,7 +28,7 @@ async def uuid_to_skin_and_cape(uuid):
             is_cape = False
         path = None
         if is_cape:
-            cape = Image.open(await download(
+            cape = PILImage.open(await download(
                 'https://crafatar.com/capes/' + uuid))
             cape.crop((0, 0, 10, 16))
             path = 'cache/' + uuid + '_fixed.png'
