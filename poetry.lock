@@ -1044,13 +1044,13 @@ pycryptodome = "*"
 
 [[package]]
 name = "ffmpy"
-version = "0.3.3"
-description = "A simple Python wrapper for ffmpeg"
+version = "0.4.0"
+description = "A simple Python wrapper for FFmpeg"
 optional = false
-python-versions = ">=3.8.1,<4.0.0"
+python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "ffmpy-0.3.3-py3-none-any.whl", hash = "sha256:4ba083a0b92544dbc8ed5b3074c5ca26f812e618b72851467f4f2e9125e111d7"},
-    {file = "ffmpy-0.3.3.tar.gz", hash = "sha256:924cde7e0bb1b5eb58d21ada3b1622f95069c98769bbdf100ed381c7e750a55e"},
+    {file = "ffmpy-0.4.0-py3-none-any.whl", hash = "sha256:39c0f20c5b465e7f8d29a5191f3a7d7675a8c546d9d985de8921151cd9b59e14"},
+    {file = "ffmpy-0.4.0.tar.gz", hash = "sha256:131b57794e802ad555f579007497f7a3d0cab0583d37496c685b8acae4837b1d"},
 ]
 
 [[package]]
@@ -4680,4 +4680,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "9ad4a6971ea46201af76ccef67d4b588686c026a795035531f43e44a43f72183"
+content-hash = "2af7fcdf83e27fe06e98b484c05bff14a0698e1be1ca9a115fba1dff90e15a0e"
