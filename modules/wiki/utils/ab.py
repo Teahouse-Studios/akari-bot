@@ -3,6 +3,7 @@ from core.dirty_check import check
 from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib, WikiInfo
 
+AB_LIMIT = 5
 
 async def ab(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
@@ -10,7 +11,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
                                 _no_login=not msg.options.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:AbuseLog')
     d = []
-    for x in query['query']['abuselog'][:5]:
+    for x in query['query']['abuselog'][:AB_LIMIT]:
         result = 'pass' if not x['result'] else x['result']
         title = x.get('title', 'Unknown')
         user = x.get('user', 'Unknown')
@@ -29,10 +30,10 @@ async def ab(msg: Bot.MessageSession, wiki_url):
             st = False
             break
     if not st:
-        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount="5")}\n{
+        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}\n{
             msg.locale.t("wiki.message.utils.redacted")}'
     else:
-        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount="5")}'
+        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}'
 
 
 async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot.MessageSession):

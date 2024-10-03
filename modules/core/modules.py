@@ -281,9 +281,9 @@ async def config_modules(msg: Bot.MessageSession):
 
     if msglist:
         if not recommend_modules_help_doc_list:
-            await msg.finish('\n'.join(msglist))
+            await msg.finish(msglist)
         else:
-            await msg.send_message('\n'.join(msglist))
+            await msg.send_message(msglist)
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
                                                       modules='\n'.join(recommend_modules_list) + '\n\n' +
@@ -293,7 +293,7 @@ async def config_modules(msg: Bot.MessageSession):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
-                await msg.finish('\n'.join(msglist))
+                await msg.finish(msglist)
         else:
             await msg.finish()
     else:
@@ -505,7 +505,7 @@ async def _(msg: Bot.MessageSession):
                 msg.locale.t(
                     "core.message.help.more_information.donate",
                     url=Config('donate_url', cfg_type=str)))
-        await msg.finish('\n'.join(help_msg))
+        await msg.finish(help_msg)
 
 
 async def modules_help(msg: Bot.MessageSession, legacy):
@@ -600,4 +600,4 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                 msg.locale.t(
                     "core.message.help.more_information.document",
                     url=Config('help_url', cfg_type=str)))
-        await msg.finish('\n'.join(help_msg))
+        await msg.finish(help_msg)

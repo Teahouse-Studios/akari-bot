@@ -6,12 +6,13 @@ from core.logger import Logger
 from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib, WikiInfo
 
+RC_LIMIT = 10
 
 async def rc(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|sizes',
-                                rclimit=10,
+                                rclimit=RC_LIMIT,
                                 rctype='edit|new|log',
                                 _no_login=not msg.options.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
@@ -75,10 +76,10 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             st = False
             break
     if not st:
-        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount="10")}\n{
+        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}\n{
             msg.locale.t("wiki.message.utils.redacted")}'
     else:
-        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount="10")}'
+        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}'
 
 
 def compare_groups(old_groups, new_groups):

@@ -70,7 +70,7 @@ if Config('enable_urlmanager', False):
                 msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.blocklist', api=apilink))
             if msg_list:
                 msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.conflict'))
-                await msg.finish('\n'.join(msg_list))
+                await msg.finish(msg_list)
             else:
                 await msg.finish(msg.locale.t('wiki.message.wiki_audit.query.none', api=apilink))
         else:
@@ -134,6 +134,6 @@ if Config('enable_urlmanager', False):
                 for bl in block_list:
                     wikis.append(f'{bl[0]} ({bl[1]})')
             if wikis:
-                await msg.finish('\n'.join(wikis))
+                await msg.finish(wikis)
             else:
                 await msg.finish(msg.locale.t('wiki.message.wiki_audit.list.none'))

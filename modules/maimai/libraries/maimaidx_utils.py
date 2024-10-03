@@ -566,7 +566,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
         prompt.append(msg.locale.t('maimai.message.plate.remaster', song_remain=len(song_remain_remaster)))
 
     if song_remain:
-        await msg.send_message('\n'.join(prompt))
+        await msg.send_message(prompt)
 
     song_record = [[s['id'], s['level_index']] for s in verlist]
 

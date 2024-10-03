@@ -4,6 +4,8 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.utils.http import get_url
 from core.utils.text import isint
 
+SEARCH_LIMIT = 10
+
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
                  desc='{ncmusic.help.desc}', doc=True,
@@ -21,7 +23,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
     if song_count == 0:
         await msg.finish(msg.locale.t('ncmusic.message.search.not_found'))
 
-    songs = result['result']['songs'][:10]
+    songs = result['result']['songs'][:SEARCH_LIMIT]
 
     if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
 
@@ -48,9 +50,9 @@ async def search(msg: Bot.MessageSession, keyword: str):
             legacy = False
             for img in imgs:
                 send_msg.append(Image(img))
-            if song_count > 10:
-                song_count = 10
-                send_msg.append(I18NContext("message.collapse", amount="10"))
+            if song_count > SEARCH_LIMIT:
+                song_count = SEARCH_LIMIT
+                send_msg.append(I18NContext("message.collapse", amount=SEARCH_LIMIT))
 
         if song_count == 1:
             send_msg.append(I18NContext('ncmusic.message.search.confirm'))
@@ -90,9 +92,9 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 send_msg += f"（{' / '.join(song['album']['transNames'])}）"
             send_msg += f"（{song['id']}）\n"
 
-        if song_count > 10:
-            song_count = 10
-            send_msg += msg.locale.t("message.collapse", amount="10")
+        if song_count > SEARCH_LIMIT:
+            song_count = SEARCH_LIMIT
+            send_msg += msg.locale.t("message.collapse", amount=SEARCH_LIMIT)
 
         if song_count == 1:
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.confirm')
