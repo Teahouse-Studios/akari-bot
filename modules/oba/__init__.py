@@ -147,7 +147,7 @@ async def top(msg: Bot.MessageSession, rank: int = 1):
 async def search(msg: Bot.MessageSession, keyword: str):
     rank_list = await get_url(f'{API}/metric/rank', fmt='json')
 
-    match_list = await search_cluster(rank_list, 'name', keyword)
+    match_list = search_cluster(rank_list, 'name', keyword)
 
     node_list = []
     for rank, node in match_list:
