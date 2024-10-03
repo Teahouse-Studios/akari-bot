@@ -101,7 +101,7 @@ class MessageSession(MessageSessionT):
             convert_msg_segments = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message(I18NContext("error.message.chain.unsafe"))
+            return await self.send_message([I18NContext("error.message.chain.unsafe")])
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:

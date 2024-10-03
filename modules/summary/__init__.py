@@ -87,6 +87,6 @@ async def _(msg: Bot.MessageSession):
         o = ''
         for m in output:
             o += m['content']
-        await msg.finish(output)
+        await msg.finish(o)
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(60 - c)))

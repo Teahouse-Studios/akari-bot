@@ -64,6 +64,6 @@ async def get_info(msg: Bot.MessageSession, address, raw, showplayer, mode):
         t = ''
         for x in sendmsg:
             t += x['content']
-        await msg.finish(sendmsg)
+        await msg.finish(t)
     else:
         return sendmsg
