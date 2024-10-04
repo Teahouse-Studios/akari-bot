@@ -157,7 +157,7 @@
     "core.message.petal.modify": "Successfully modified ${add_petal} petal(s) for user ${sender}. ${petal} petal(s) remain now.",
     "core.message.petal.modify.self": "Successfully modified ${add_petal} petal(s). ${petal} petal(s) remain now.",
     "core.message.petal.self": "You have ${petal} petal(s).",
-    "core.message.ping.detail": "系统启动时间：${system_boot_time}\n机器人已运行：${bot_running_time}\nPython 版本：${python_version}\nWebrender 状态：${web_render_status}\n处理器型号：${cpu_brand}\n当前处理器使用率：${cpu_usage}%\n物理内存：${ram}M 使用率：${ram_percent}%\nSwap 内存：${swap}M 使用率：${swap_percent}%\n磁盘容量：${disk_space}G/${disk_space_total}G\n当前客户端名：${client_name}\n自启动以来已处理命令：${command_parsed}",
+    "core.message.ping.detail": "System Startup Time: ${system_boot_time}\nBot Running Time: ${bot_running_time}\nPython Version: ${python_version}\nWebrender Status: ${web_render_status}\nCPU Model: ${cpu_brand}\nCurrent CPU Usage: ${cpu_usage}%\nPhysical Memory: ${ram}M Utilized: ${ram_percent}%\nSwap Memory: ${swap}M Utilized: ${swap_percent}%\nDisk Capacity: ${disk_space}G/${disk_space_total}G",
     "core.message.ping.simple": "Bot Running Time: ${bot_running_time}\nServer Disk Utilized: ${disk_percent}%",
     "core.message.prefix.add.already": "This command prefix already exists in the custom prefix list.",
     "core.message.prefix.add.success": "Custom command prefix added: ${prefix}",
