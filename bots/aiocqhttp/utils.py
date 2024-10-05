@@ -2,10 +2,7 @@ import html
 import re
 
 import ujson as json
-from aiocqhttp import MessageSegment
-
 from config import Config
-from core.builtins import Plain
 
 
 def qq_frame_type() -> str:

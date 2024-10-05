@@ -115,7 +115,10 @@ class MessageSession(MessageSessionT):
                         else:
                             cq_code_data = CQCodeHandler.parse_cq(segment)
                             if cq_code_data:
-                                convert_msg_segments = convert_msg_segments + MessageSegment(cq_code_data)
+                                try:
+                                    convert_msg_segments = convert_msg_segments + MessageSegment(cq_code_data)
+                                except Exception:
+                                    convert_msg_segments = convert_msg_segments + MessageSegment.text(segment)
                 else:
                     convert_msg_segments = convert_msg_segments + \
                         MessageSegment.text(('\n' if count != 0 else '') + x.text)
