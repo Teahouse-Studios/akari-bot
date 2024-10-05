@@ -115,8 +115,8 @@ class MessageSession(MessageSessionT):
                             cq_code_data = CQCodeHandler.parse_cq(segment)
                             if cq_code_data:
                                 convert_msg_segments += MessageSegment(cq_code_data)
-            else:
-                convert_msg_segments += MessageSegment.text(('\n' if count != 0 else '') + x.text)
+                else:
+                    convert_msg_segments += MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
                 convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
