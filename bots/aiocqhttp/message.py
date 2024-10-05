@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import html
 import random
 import re
 import traceback
@@ -13,7 +12,7 @@ from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
-from bots.aiocqhttp.utils import qq_frame_type
+from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
 from config import Config
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
@@ -106,7 +105,20 @@ class MessageSession(MessageSessionT):
         count = 0
         for x in message_chain_assendable:
             if isinstance(x, Plain):
-                convert_msg_segments = convert_msg_segments + MessageSegment.text(('\n' if count != 0 else '') + x.text)
+                cq_codes = CQCodeHandler.pattern.findall(x.text)
+                if cq_codes:
+                    segments = CQCodeHandler.pattern.split(x.text)
+                    for segment in segments:
+                        if segment:
+                            convert_msg_segments = convert_msg_segments + \
+                                MessageSegment.text(('\n' if count != 0 else '') + segment)
+                        else:
+                            cq_code_data = CQCodeHandler.parse_cq(segment)
+                            if cq_code_data:
+                                convert_msg_segments = convert_msg_segments + MessageSegment(cq_code_data)
+                else:
+                    convert_msg_segments = convert_msg_segments + \
+                        MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
                 convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
@@ -178,15 +190,16 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         if isinstance(self.session.message.message, str):
-            m = html.unescape(self.session.message.message)
-            if text_only:
-                return ''.join(
-                    re.split(r'\[CQ:.*?]', m)).strip()
-            m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-            m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
 
-            return ''.join(
-                re.split(r'\[CQ:.*?]', m)).strip()
+            if text_only:
+                m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
+                m = re.sub(CQCodeHandler.pattern, '', m)
+            else:
+                m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
+                m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+                m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m)
+                m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
+            return m.strip()
         else:
             m = []
             for item in self.session.message.message:
@@ -196,10 +209,12 @@ class MessageSession(MessageSessionT):
                 else:
                     if item["type"] == "at":
                         m.append(f'QQ|{item["data"]["qq"]}')
-                    elif item["type"] == "reply":
-                        m.append(f'[Ke:forward,id={item["data"]["id"]}]')
+                    elif item["type"] == "json":
+                        m.append(item["data"]["json"])
                     elif item["type"] == "text":
                         m.append(item["data"]["text"])
+                    elif item["type"] in CQCodeHandler.get_supported:
+                        m.append(CQCodeHandler.generate_cq(item))
 
             return ''.join(m).strip()
 
@@ -237,41 +252,35 @@ class MessageSession(MessageSessionT):
     async def to_message_chain(self):
         lst = []
         if isinstance(self.session.message.message, str):
-            m = html.unescape(self.session.message.message)
             m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-            m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
             spl = re.split(r'(\[CQ:.*?])', m)
             for s in spl:
-                if s == '':
+                if not s:
                     continue
                 if s.startswith('[CQ:'):
-                    if s.startswith('[CQ:image'):
-                        sspl = s.split(',')
-                        for ss in sspl:
+                    cq_data = CQCodeHandler.parse_cq(s)
+                    if cq_data:
+                        if cq_data['type'] == 'image':
                             if qq_frame_type() == 'lagrange':
-                                if ss.startswith('file='):
-                                    ss = ss[5:]
-                                    if ss.endswith(']'):
-                                        ss = ss[:-1]
-                                    lst.append(Image(ss))
+                                img_src = cq_data['data'].get('file')
                             else:
-                                if ss.startswith('url='):
-                                    ss = ss[4:]
-                                    if ss.endswith(']'):
-                                        ss = ss[:-1]
-                                    lst.append(Image(ss))
+                                img_src = cq_data['data'].get('url')
+
+                            if img_src:
+                                lst.append(Image(img_src))
                 else:
                     lst.append(Plain(s))
         else:
             for item in self.session.message.message:
                 if item["type"] == "at":
                     lst.append(Plain(f"QQ|{item['data']['qq']}"))
-                elif item["type"] == "reply":
-                    lst.append(Plain(f"[Ke:forward,id={item['data']['id']}]"))
                 elif item["type"] == "text":
                     lst.append(Plain(item["data"]["text"]))
                 elif item["type"] == "image":
-                    lst.append(Image(item["data"]["file"]))
+                    if qq_frame_type() == 'lagrange':
+                        lst.append(Image(item["data"]["file"]))
+                    else:
+                        lst.append(Image(item["data"]["url"]))
 
         return MessageChain(lst)
 
