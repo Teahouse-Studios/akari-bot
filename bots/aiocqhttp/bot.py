@@ -33,7 +33,7 @@ async def startup():
 
 
 @bot.on_websocket_connection
-async def _():
+async def _(event: Event):
     await load_prompt(FetchTarget)
 
 
