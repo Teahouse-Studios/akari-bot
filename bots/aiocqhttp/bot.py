@@ -20,8 +20,8 @@ from core.utils.i18n import Locale, default_locale
 from database import BotDBUtil
 
 PrivateAssets.set('assets/private/aiocqhttp')
-EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
-Url.disable_mm = False if Config('enable_urlmanager', False) else True
+EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
+Url.disable_mm = not Config('enable_urlmanager', False)
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
 
