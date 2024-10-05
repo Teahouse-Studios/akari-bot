@@ -27,7 +27,8 @@ def qq_frame_type() -> str:
 
 class CQCodeHandler:
     get_supported = ['at', 'dice', 'face', 'forward', 'json', 'poke', 'rps', 'text']
-    pattern = re.compile(r'\[CQ:(\w+),[^\]]*\]')
+    pattern1 = re.compile(r'\[CQ:\w+,[^\]]*\]')
+    pattern2 = re.compile(r'\[CQ:(\w+),[^\]]*\]')
 
     @staticmethod
     def filter_cq(match: str):
