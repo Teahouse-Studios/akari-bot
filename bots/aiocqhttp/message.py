@@ -105,9 +105,9 @@ class MessageSession(MessageSessionT):
         count = 0
         for x in message_chain_assendable:
             if isinstance(x, Plain):
-                cq_codes = CQCodeHandler.pattern1.findall(x.text)
+                cq_codes = CQCodeHandler.pattern.findall(x.text)
                 if enable_parse_message and cq_codes:
-                    segments = CQCodeHandler.pattern1.split(x.text)
+                    segments = CQCodeHandler.pattern.split(x.text)
                     for segment in segments:
                         if segment:
                             convert_msg_segments = convert_msg_segments + \
@@ -115,7 +115,7 @@ class MessageSession(MessageSessionT):
                         else:
                             cq_code_data = CQCodeHandler.parse_cq(segment)
                             if cq_code_data:
-                                Logger.debug(cq_code_data)
+                                Logger.debug(str(cq_code_data))
                                 try:
                                     convert_msg_segments = convert_msg_segments + MessageSegment(cq_code_data)
                                 except Exception:
@@ -197,9 +197,9 @@ class MessageSession(MessageSessionT):
 
             if text_only:
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
-                m = re.sub(CQCodeHandler.pattern1, '', m)
+                m = re.sub(CQCodeHandler.pattern, '', m)
             else:
-                m = CQCodeHandler.pattern2.sub(CQCodeHandler.filter_cq, m)
+                m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
                 m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
                 m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m)
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
