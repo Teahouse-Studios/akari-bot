@@ -173,7 +173,7 @@ class MessageSession(MessageSessionT):
 
 class FetchedSession(Bot.FetchedSession):
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_split_image=True):
+    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
         if self.target.target_from == 'KOOK|Group':
             get_channel = await bot.client.fetch_public_channel(self.session.target)
             if not get_channel:

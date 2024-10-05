@@ -145,17 +145,19 @@ class MessageSession:
                                         enable_parse_message=enable_parse_message, enable_split_image=enable_split_image, callback=callback)
         raise FinishedException(f)
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_split_image=True,
+    async def send_direct_message(self, message_chain, disable_secret_check=False,
+                                  enable_parse_message=True, enable_split_image=True,
                                   callback: Coroutine = None):
         """
         用于向消息发送者直接发送消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
-        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅Telegram平台使用了切割）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅QQ平台使用）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅Telegram平台使用）
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
         :return: 被发送的消息链
         """
-        await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False,
+        await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message
                                 enable_split_image=enable_split_image, callback=callback)
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
@@ -327,15 +329,18 @@ class FetchedSession:
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = MessageSession(self.target, self.session)
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_split_image=True):
+    async def send_direct_message(self, message_chain, disable_secret_check=False,
+                                  enable_parse_message=True, enable_split_image=True):
         """
         用于向获取对象发送消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
-        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅QQ平台使用）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅Telegram平台使用）
         :return: 被发送的消息链
         """
         return await self.parent.send_direct_message(message_chain, disable_secret_check,
+                                                     enable_parse_message=enable_parse_message,
                                                      enable_split_image=enable_split_image)
 
     sendDirectMessage = send_direct_message

@@ -108,16 +108,23 @@ class MessageSession(MessageSessionT):
             if isinstance(x, Plain):
                 if enable_parse_message:
                     parts = re.split(r'(\[CQ:[^\]]+\])', x.text)
+                    parts = [part for part in parts if part]
+                    cnt = 0
                     for part in parts:
                         if re.match(r'\[CQ:[^\]]+\]', part):
                             try:
                                 cq_data = CQCodeHandler.parse_cq(part)
                                 if cq_data:
-                                    convert_msg_segments = convert_msg_segments + MessageSegment(cq_data)
+                                    convert_msg_segments = convert_msg_segments + \
+                                        MessageSegment.text('\n' if (count != 0 and cnt == 0) else '') + MessageSegment(cq_data)
                                 else:
-                                    convert_msg_segments = convert_msg_segments + MessageSegment.text(part)
+                                    convert_msg_segments = convert_msg_segments + \
+                                        MessageSegment.text(('\n' if (count != 0 and cnt == 0) else '') + part)
                             except Exception:
-                                convert_msg_segments = convert_msg_segments + MessageSegment.text(part)
+                                convert_msg_segments = convert_msg_segments + \
+                                    MessageSegment.text(('\n' if (count != 0 and cnt == 0) else '') + part)
+                            finally:
+                                cnt += 1
                         else:
                             convert_msg_segments = convert_msg_segments + \
                                 MessageSegment.text(('\n' if count != 0 else '') + part)
