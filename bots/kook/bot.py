@@ -1,4 +1,3 @@
-import os
 import sys
 
 from khl import Message, MessageTypes
@@ -14,8 +13,8 @@ from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set('assets/private/kook')
-EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
-Url.disable_mm = False if Config('enable_urlmanager', False) else True
+EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
+Url.disable_mm = not Config('enable_urlmanager', False)
 Url.md_format = True
 
 
