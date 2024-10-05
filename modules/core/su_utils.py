@@ -445,7 +445,7 @@ echo = module('echo', required_superuser=True, base=True, doc=True)
 
 @echo.command('<display_msg>')
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
-    await msg.finish(dis)
+    await msg.finish(dis, enable_parse_message=False)
 
 
 say = module('say', required_superuser=True, base=True, doc=True)

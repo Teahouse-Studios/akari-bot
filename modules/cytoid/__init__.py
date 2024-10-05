@@ -43,7 +43,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
                 if img['status']:
                     qc.reset()
             if 'path' in img:
-                await msg.finish([Image(path=img['path'])], allow_split_image=False)
+                await msg.finish([Image(path=img['path'])], enable_split_image=False)
             elif 'text' in img:
                 await msg.finish(img['text'])
         else:

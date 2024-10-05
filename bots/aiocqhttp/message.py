@@ -89,7 +89,7 @@ class MessageSession(MessageSessionT):
         quote = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True,
+                           enable_parse_message=True, enable_split_image=True,
                            callback=None) -> FinishedSession:
 
         message_chain = MessageChain(message_chain)
@@ -106,7 +106,7 @@ class MessageSession(MessageSessionT):
         for x in message_chain_assendable:
             if isinstance(x, Plain):
                 cq_codes = CQCodeHandler.pattern.findall(x.text)
-                if cq_codes:
+                if enable_parse_message and cq_codes:
                     segments = CQCodeHandler.pattern.split(x.text)
                     for segment in segments:
                         if segment:

@@ -40,7 +40,7 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True, callback=None) -> FinishedSession:
+                           enable_parse_message=True, enable_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
@@ -56,7 +56,7 @@ class MessageSession(MessageSessionT):
                 send.append(send_)
                 count += 1
             elif isinstance(x, Image):
-                if allow_split_image:
+                if enable_split_image:
                     split = await image_split(x)
                     for xs in split:
                         send_ = await bot.send_photo(self.session.target, FSInputFile(await xs.get()),

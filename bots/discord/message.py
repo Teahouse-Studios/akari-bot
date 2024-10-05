@@ -69,7 +69,7 @@ class MessageSession(MessageSessionT):
         quote = True
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True,
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, enable_parse_message=True, enable_split_image=True,
                            callback=None
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
@@ -171,7 +171,7 @@ class MessageSession(MessageSessionT):
 
 class FetchedSession(Bot.FetchedSession):
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
+    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_split_image=True):
         try:
             get_channel = await client.fetch_channel(self.session.target)
         except Exception:

@@ -46,7 +46,8 @@ class MessageSession(MessageSessionT):
         message_chain,
         quote=True,
         disable_secret_check=False,
-        allow_split_image=True,
+        enable_parse_message=True,
+        enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
@@ -134,7 +135,7 @@ class MessageSession(MessageSessionT):
                 await sendMsg(content)
             elif isinstance(x, Image):
                 split = [x]
-                if allow_split_image:
+                if enable_split_image:
                     Logger.info(f"Split image: {str(x.__dict__)}")
                     split = await image_split(x)
                 for xs in split:
