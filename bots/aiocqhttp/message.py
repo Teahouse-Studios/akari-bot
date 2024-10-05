@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import http
 import random
 import re
 import traceback
@@ -195,6 +196,7 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         if isinstance(self.session.message.message, str):
 
+            m = http.unescape(self.session.message.message)
             if text_only:
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
                 m = re.sub(CQCodeHandler.pattern, '', m)
@@ -256,6 +258,7 @@ class MessageSession(MessageSessionT):
     async def to_message_chain(self):
         lst = []
         if isinstance(self.session.message.message, str):
+            m = http.unescape(self.session.message.message)
             m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
             spl = re.split(r'(\[CQ:.*?])', m)
             for s in spl:
