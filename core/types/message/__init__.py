@@ -157,7 +157,7 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
         :return: 被发送的消息链
         """
-        await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message
+        await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message,
                                 enable_split_image=enable_split_image, callback=callback)
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
