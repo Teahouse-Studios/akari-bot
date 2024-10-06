@@ -1,3 +1,4 @@
+from config import Config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
@@ -130,14 +131,15 @@ async def info(msg: Bot.MessageSession, sid: str):
         artist = ' / '.join([ar['name'] for ar in info['ar']])
         song_url = f"https://music.163.com/#/song?id={info['id']}"
 
-        if Bot.client_name == 'QQ':
+        if Bot.client_name == 'QQ' and Config('ncmusic_enable_card', False):
             await msg.send_message(f'[CQ:music,type=163,id={info['id']}]', quote=False)
-        await msg.finish([Image(info['al']['picUrl']), Url(song_url),
-                          I18NContext('ncmusic.message.info',
-                                      name=info['name'],
-                                      id=info['id'],
-                                      artists=artist,
-                                      album=info['al']['name'],
-                                      album_id=info['al']['id'])])
+        else:
+            await msg.finish([Image(info['al']['picUrl']), Url(song_url),
+                              I18NContext('ncmusic.message.info',
+                                          name=info['name'],
+                                          id=info['id'],
+                                          artists=artist,
+                                          album=info['al']['name'],
+                                          album_id=info['al']['id'])])
     else:
         await msg.finish(msg.locale.t('ncmusic.message.info.not_found'))
