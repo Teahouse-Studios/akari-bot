@@ -220,6 +220,7 @@ class MessageSession(MessageSessionT):
                 m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
                 m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
                 m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m)
+                m = m.replace("\\\\/", "\\/")
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
             return m.strip()
         else:
@@ -232,7 +233,7 @@ class MessageSession(MessageSessionT):
                     if item["type"] == "at":
                         m.append(f'QQ|{item["data"]["qq"]}')
                     elif item["type"] == "json":
-                        m.append(html.unescape(item["data"]["data"]))
+                        m.append(html.unescape(str(item["data"]["data"])).replace("\\\\/", "\\/"))
                     elif item["type"] == "text":
                         m.append(item["data"]["text"])
                     elif item["type"] in CQCodeHandler.get_supported:
