@@ -131,7 +131,7 @@ async def info(msg: Bot.MessageSession, sid: str):
         song_url = f"https://music.163.com/#/song?id={info['id']}"
 
         if Bot.client_name == 'QQ':
-            await msg.send_message(f'[CQ:music,type=163,id={info['id']}]')
+            await msg.send_message(f'[CQ:music,type=163,id={info['id']}]', quote=False)
         await msg.finish([Image(info['al']['picUrl']), Url(song_url),
                           I18NContext('ncmusic.message.info',
                                       name=info['name'],
