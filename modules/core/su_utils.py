@@ -448,7 +448,7 @@ if Bot.client_name == 'QQ':
     @echo.command('[<display_msg>]')
     async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str) = None):
         if not dis:
-            msg = await msg.wait_next_message(msg.locale.t("core.message.echo.prompt", delete=True, append_instruction=False))
+            msg = await msg.wait_next_message(msg.locale.t("core.message.echo.prompt"), delete=True, append_instruction=False)
             dis = msg.as_display()
         await msg.finish(dis, enable_parse_message=False)
 else:
