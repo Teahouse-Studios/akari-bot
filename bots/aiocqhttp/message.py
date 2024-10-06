@@ -232,7 +232,7 @@ class MessageSession(MessageSessionT):
                     if item["type"] == "at":
                         m.append(f'QQ|{item["data"]["qq"]}')
                     elif item["type"] == "json":
-                        m.append(item["data"]["json"])
+                        m.append(html.unescape(item["data"]["data"]))
                     elif item["type"] == "text":
                         m.append(item["data"]["text"])
                     elif item["type"] in CQCodeHandler.get_supported:
