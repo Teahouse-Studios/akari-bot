@@ -1,4 +1,5 @@
 {
+    "ncmusic.help": "透過 ID 取得音樂。",
     "ncmusic.help.desc": "網易云音樂相關工具。",
     "ncmusic.help.info": "取得音樂詳細資訊。",
     "ncmusic.help.search": "搜尋網易雲音樂。",

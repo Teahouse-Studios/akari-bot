@@ -5,18 +5,20 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.utils.http import get_url
 from core.utils.text import isint
 
+API = "https://ncmusic.akari-bot.top"
 SEARCH_LIMIT = 10
 
 ncmusic = module('ncmusic',
-                 developers=['bugungu', 'DoroWolf'],
-                 desc='{ncmusic.help.desc}', doc=True,
+                 developers=['bugungu'],
+                 desc='{ncmusic.help.desc}',
+                 doc=True,
                  support_languages=['zh_cn'])
 
 
 @ncmusic.handle('search [--legacy] <keyword> {{ncmusic.help.search}}',
                 options_desc={'--legacy': '{help.option.legacy}'})
 async def search(msg: Bot.MessageSession, keyword: str):
-    url = f"https://ncmusic.akari-bot.top/search?keywords={keyword}"
+    url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
     song_count = result['result']['songCount']
     legacy = True
@@ -118,12 +120,23 @@ async def search(msg: Bot.MessageSession, keyword: str):
             else:
                 await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
 
+        if Bot.client_name == 'QQ' and Config('ncmusic_enable_card', False):
+            await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
+        else:
+            await info(msg, sid)
+
+
+@ncmusic.handle('<sid> {{ncmusic.help}}', available_for=['QQ|Group', 'QQ|Private'])
+async def info(msg: Bot.MessageSession, sid: int):
+    if Config('ncmusic_enable_card', False):
+        await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
+    else:
         await info(msg, sid)
 
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
-async def info(msg: Bot.MessageSession, sid: str):
-    url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
+async def info(msg: Bot.MessageSession, sid: int):
+    url = f"{API}/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt='json')
 
     if result['songs']:
@@ -131,15 +144,12 @@ async def info(msg: Bot.MessageSession, sid: str):
         artist = ' / '.join([ar['name'] for ar in info['ar']])
         song_url = f"https://music.163.com/#/song?id={info['id']}"
 
-        if Bot.client_name == 'QQ' and Config('ncmusic_enable_card', False):
-            await msg.send_message(f'[CQ:music,type=163,id={info['id']}]', quote=False)
-        else:
-            await msg.finish([Image(info['al']['picUrl']), Url(song_url),
-                              I18NContext('ncmusic.message.info',
-                                          name=info['name'],
-                                          id=info['id'],
-                                          artists=artist,
-                                          album=info['al']['name'],
-                                          album_id=info['al']['id'])])
+        await msg.finish([Image(info['al']['picUrl']), Url(song_url),
+                          I18NContext('ncmusic.message.info',
+                                      name=info['name'],
+                                      id=info['id'],
+                                      artists=artist,
+                                      album=info['al']['name'],
+                                      album_id=info['al']['id'])])
     else:
         await msg.finish(msg.locale.t('ncmusic.message.info.not_found'))
