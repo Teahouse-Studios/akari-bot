@@ -109,25 +109,34 @@ class MessageSession(MessageSessionT):
                 if enable_parse_message:
                     parts = re.split(r'(\[CQ:[^\]]+\])', x.text)
                     parts = [part for part in parts if part]
-                    cnt = 0
-                    for part in parts:
+                    previous_was_cq = False
+                    #  CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
+                    for i, part in enumerate(parts):
                         if re.match(r'\[CQ:[^\]]+\]', part):
                             try:
                                 cq_data = CQCodeHandler.parse_cq(part)
                                 if cq_data:
+                                    if previous_was_cq:
+                                        convert_msg_segments = convert_msg_segments + MessageSegment.text('\u200B')
                                     convert_msg_segments = convert_msg_segments + \
-                                        MessageSegment.text('\n' if (count != 0 and cnt == 0) else '') + MessageSegment(cq_data)
+                                        MessageSegment.text('\n' if (count != 0 and i == 0) else '') + \
+                                        MessageSegment(type_=cq_data['type'], data=cq_data['data'])
                                 else:
+                                    if previous_was_cq:
+                                        convert_msg_segments = convert_msg_segments + MessageSegment.text('\u200B')
                                     convert_msg_segments = convert_msg_segments + \
-                                        MessageSegment.text(('\n' if (count != 0 and cnt == 0) else '') + part)
+                                        MessageSegment.text(('\n' if (count != 0 and i == 0) else '') + part)
                             except Exception:
+                                if previous_was_cq:
+                                    convert_msg_segments = convert_msg_segments + MessageSegment.text('\u200B')
                                 convert_msg_segments = convert_msg_segments + \
-                                    MessageSegment.text(('\n' if (count != 0 and cnt == 0) else '') + part)
+                                    MessageSegment.text(('\n' if (count != 0 and i == 0) else '') + part)
                             finally:
-                                cnt += 1
+                                previous_was_cq = True
                         else:
                             convert_msg_segments = convert_msg_segments + \
                                 MessageSegment.text(('\n' if count != 0 else '') + part)
+                            previous_was_cq = False
                 else:
                     convert_msg_segments = convert_msg_segments + \
                         MessageSegment.text(('\n' if count != 0 else '') + x.text)
