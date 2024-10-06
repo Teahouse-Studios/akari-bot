@@ -54,7 +54,7 @@ class CQCodeHandler:
         if 'type' in data and 'data' in data:
             cq_type = data['type']
             params = data['data']
-            param_str = [f"{CQCodeHandler.escape_special_char(key)}={CQCodeHandler.escape_special_char(value)}"
+            param_str = [f"{key}={CQCodeHandler.escape_special_char(value)}"
                          for key, value in params.items()]
             cq_code = f"[CQ:{cq_type}," + ",".join(param_str) + "]"
             return cq_code
@@ -103,9 +103,8 @@ class CQCodeHandler:
         :param escape_comma`` 是否转义逗号（``,``）。
         :return: 转义后的字符串。
         """
-        s = s.replace('&', '&amp;') \
-            .replace('[', '&#91;') \
-            .replace(']', '&#93;')
+        s = s.replace('&', '&amp;').replace('[', '&#91;').replace(']', '&#93;')
+        s = s.replace('/', '\\/').replace('\\\\/', '\\/')
         if escape_comma:
             s = s.replace(',', '&#44;')
         return s
