@@ -219,8 +219,7 @@ class MessageSession(MessageSessionT):
             else:
                 m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
                 m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-                m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m)
-                m = m.replace("\\/", "/")
+                m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m).replace("\\/", "/")
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
             return m.strip()
         else:
@@ -275,36 +274,43 @@ class MessageSession(MessageSessionT):
     async def to_message_chain(self):
         lst = []
         if isinstance(self.session.message.message, str):
-            m = html.unescape(self.session.message.message)
-            m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-            spl = re.split(r'(\[CQ:.*?])', m)
+            spl = re.split(r'(\[CQ:(?:text|image|record).*?])', self.session.message.message)
             for s in spl:
                 if not s:
                     continue
-                if s.startswith('[CQ:'):
+                if re.match(r'\[CQ:[^\]]+\]', s):
                     cq_data = CQCodeHandler.parse_cq(s)
                     if cq_data:
-                        if cq_data['type'] == 'image':
+                        if cq_data['type'] == 'text':
+                            lst.append(Plain(cq_data['data'].get('text')))
+                        elif cq_data['type'] == 'image':
                             if qq_frame_type() == 'lagrange':
                                 img_src = cq_data['data'].get('file')
                             else:
                                 img_src = cq_data['data'].get('url')
-
                             if img_src:
                                 lst.append(Image(img_src))
+                        elif cq_data['type'] == 'record':
+                            lst.append(Voice(cq_data['data'].get('file')))
+                        else:
+                            lst.append(Plain(s))
+                    else:
+                        lst.append(Plain(s))
                 else:
                     lst.append(Plain(s))
         else:
             for item in self.session.message.message:
-                if item["type"] == "at":
-                    lst.append(Plain(f"QQ|{item['data']['qq']}"))
-                elif item["type"] == "text":
+                if item["type"] == "text":
                     lst.append(Plain(item["data"]["text"]))
                 elif item["type"] == "image":
                     if qq_frame_type() == 'lagrange':
                         lst.append(Image(item["data"]["file"]))
                     else:
                         lst.append(Image(item["data"]["url"]))
+                elif item["type"] == "record":
+                    lst.append(Voice(item["data"]["file"]))
+                else:
+                    lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
         return MessageChain(lst)
 

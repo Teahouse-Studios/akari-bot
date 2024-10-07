@@ -2,6 +2,7 @@ import html
 import re
 
 import ujson as json
+
 from config import Config
 
 
@@ -17,7 +18,7 @@ def qq_frame_type() -> str:
         return 'ntqq'
     elif frame_type in lagrange_lst:
         return 'lagrange'
-    elif frame_type in shamrock_lst or Config('use_shamrock', False):
+    elif frame_type in shamrock_lst:
         return 'shamrock'
     elif frame_type in mirai_lst:
         return 'mirai'
@@ -26,7 +27,7 @@ def qq_frame_type() -> str:
 
 
 class CQCodeHandler:
-    get_supported = ['at', 'face', 'forward', 'json', 'poke', 'text']
+    get_supported = ['at', 'face', 'forward', 'json', 'text']
     pattern = re.compile(r'\[CQ:(\w+),[^\]]*\]')
 
     @staticmethod
