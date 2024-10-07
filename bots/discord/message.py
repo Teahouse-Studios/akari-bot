@@ -137,6 +137,8 @@ class MessageSession(MessageSessionT):
             d = await download(x.url)
             if filetype.is_image(d):
                 lst.append(Image(d))
+            elif filetype.is_audio(d):
+                lst.append(Voice(d))
         return MessageChain(lst)
 
     def as_display(self, text_only=False):
