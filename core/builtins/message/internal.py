@@ -111,14 +111,7 @@ class FormattedTime(FormattedTimeT):
 
     def to_dict(self):
         return {
-            'type': 'formatted_time',
-            'data': {
-                'timestamp': self.timestamp,
-                'date': self.date,
-                'iso': self.iso,
-                'time': self.time,
-                'seconds': self.seconds,
-                'timezone': self.timezone}}
+            'type': 'formatted_time', 'data': {'timestamp': self.timestamp}}
 
 
 class I18NContext(I18NContextT):
@@ -127,10 +120,10 @@ class I18NContext(I18NContextT):
         self.kwargs = kwargs
 
     def __str__(self):
-        return str(self.to_dict())
+        return str({'type': 'i18n', 'data': {'key': self.key, **self.kwargs}})
 
     def __repr__(self):
-        return f'I18NContext(key="{self.key}", kwargs={self.kwargs})'
+        return f'I18NContext(key="{self.key}", {", ".join(f"{k}={v}" for k, v in self.kwargs.items())})'
 
     def to_dict(self):
         return {'type': 'i18n', 'data': {'key': self.key, 'kwargs': self.kwargs}}
@@ -202,7 +195,7 @@ class Image(ImageT):
         return f'Image(path="{self.path}", headers={self.headers})'
 
     def to_dict(self):
-        return {'type': 'image', 'data': {'path': self.path}}
+        return {'type': 'image', 'data': {'path': self.path, 'headers': self.headers}}
 
     async def add_random_noise(self) -> Self:
         image = PILImage.open(await self.get())
