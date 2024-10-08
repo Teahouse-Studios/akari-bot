@@ -165,13 +165,13 @@ async def typing(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "typing")
 
 
-@setup.command(name="timeoffset", description="Set the time offset within the conversation.")
+@setup.command(name="timeoffset", description="Set the time offset within the session.")
 @discord.option(name="offset", description="The timezone offset.")
 async def offset(ctx: discord.ApplicationContext, offset: str):
     await slash_parser(ctx, f"timeoffset {offset}")
 
 
-@setup.command(name="cooldown", description="Set up the command cooldown time within the conversation.")
+@setup.command(name="cooldown", description="Set up the command cooldown time within the session.")
 @discord.option(name="second", description="The command cooldown seconds.")
 async def cooldown(ctx: discord.ApplicationContext, second: str):
     await slash_parser(ctx, f"cooldown {second}")
