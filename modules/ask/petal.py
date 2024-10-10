@@ -73,7 +73,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
             Logger.warning(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
             petal = price * USD_TO_CNY * CNY_TO_PETAL
 
-        msg.data.modify_petal(-petal)
+        msg.info.modify_petal(-petal)
         return round(petal, 2)
     else:
         return 0.00
