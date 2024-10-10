@@ -52,9 +52,10 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
             if Config("wiki_whitelist_url", cfg_type=str):
                 prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
                                               url=Config("wiki_whitelist_url", cfg_type=str))
+
         else:
             prompt = ''
-            await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)
+        await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)
     else:
         result = msg.locale.t('wiki.message.error.add') + \
             ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
