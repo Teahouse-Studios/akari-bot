@@ -46,7 +46,7 @@ def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=Non
                                 if not msg:
                                     reason = f"<Redacted:{itemDetail['label']}>"
                                 else:
-                                    reason = msg.locale.t("check.Redacted", reason=itemDetail['label'])
+                                    reason = msg.locale.t("check.redacted", reason=itemDetail['label'])
                                 content = content[:pos['startPos'] + _offset] + \
                                     reason + content[pos['endPos'] + _offset:]
                                 if additional_text:
