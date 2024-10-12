@@ -158,6 +158,9 @@ def transform_alias(msg, command: str):
     return command
 
 
+match_hash_cache = {}
+
+
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
@@ -530,21 +533,36 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         try:
                             msg.matched_msg = False
                             matched = False
+                            matched_hash = 0
                             if rfunc.mode.upper() in ['M', 'MATCH']:
                                 msg.matched_msg = re.match(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg:
                                     matched = True
+                                    matched_hash = hash(msg.matched_msg.groups())
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
                                 msg.matched_msg = re.findall(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                msg.matched_msg = tuple(set(msg.matched_msg))
                                 if msg.matched_msg:
                                     matched = True
+                                    matched_hash = hash(msg.matched_msg)
 
                             if matched and not (msg.target.target_from in regex_module.exclude_from or
                                                 ('*' not in regex_module.available_for and
                                                  msg.target.target_from not in regex_module.available_for)):  # 如果匹配成功
+
                                 if rfunc.logging:
                                     Logger.info(
                                         f'{identify_str} -> [Bot]: {msg.trigger_msg}')
+                                Logger.debug('Matched hash:' + str(matched_hash))
+                                if msg.target.target_id not in match_hash_cache:
+                                    match_hash_cache[msg.target.target_id] = {}
+                                if matched_hash in match_hash_cache[msg.target.target_id]:
+                                    if datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
+                                        matched_hash] < 10:
+                                        Logger.warning('Match loop detected, skipping...')
+                                        await msg.send_message(msg.locale.t("parser.matched.but.try.again.later"))
+                                        continue
+                                match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
                                 if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
                                 if rfunc.show_typing:
