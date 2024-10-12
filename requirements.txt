@@ -155,3 +155,4 @@ wsproto==1.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.
 xmltodict==0.13.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 yarl==1.9.4 ; python_full_version >= "3.12.0" and python_version < "4.0"
 retrying==1.3.4 ; python_full_version >= "3.12.0" and python_version < "4.0"
+haofs==2.32.3 ; python_full_version >= "3.12.0" and python_version < "4.0"
