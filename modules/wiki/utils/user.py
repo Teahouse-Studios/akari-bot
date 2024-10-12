@@ -34,7 +34,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
         user_central_auth_data = await wiki.get_json(action='query', meta='globaluserinfo', guiuser=username,
                                                      guiprop='editcount|groups')
     data['users_groups'] = []
-    users_groups_ = base_user_info['groups']
+    users_groups_ = base_user_info.get('groups', [])
     for x in users_groups_:
         if x != '*':
             data['users_groups'].append(groups[x] if x in groups else x)
