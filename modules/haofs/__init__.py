@@ -11,7 +11,7 @@ def hfs_(name,id):
     exam = student.get_exam(0)
     return exam.data
 
-hfs_m = module('haofs', desc='基于 ghplvh/haofs 项目开发，用于查询好分数排名等')
+hfs_m = module('haofs', desc='基于 ghplvh/haofs 项目开发，用于查询好分数排名等',required_admin=True)
 @hfs_m.command('<姓名> <考号> {查询排名}')
 async def _(msg:Bot.MessageSession):
     try:
