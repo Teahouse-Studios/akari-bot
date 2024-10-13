@@ -95,5 +95,6 @@
     "tos.message.warning.last": "This is the last warning.",
     "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
     "unknown": "Unknown",
-    "yes": "Yes"
+    "yes": "Yes",
+    "parser.matched.but.try.again.later": "请稍后再试。"
 }
