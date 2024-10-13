@@ -31,10 +31,10 @@ async def __(msg:Bot.MessageSession):
     if 'Group' not in msg.target.target_from:
         try:
             name = msg.parsed_msg['<账号>']
+            password = msg.parsed_msg['<密码>']
             id = ''
             student = Account()
-            email, password = student.register(name, id, password='password')
-            student.login(email, password)
+            student.login(name, password)
             haofs = student.get_exam(0)
             await msg.sendMessage([Plain(f"{name}({id}) 的 {haofs.get('name')} 成绩详情："),
                                    Plain(f"分数：{haofs.get('score')}/{haofs.get('manfen')},"),
