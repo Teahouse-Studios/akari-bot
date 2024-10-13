@@ -4,7 +4,7 @@ from core.component import module
 
 import asyncio
 
-def hfs_(name,id):
+async def hfs_(name,id):
     student = Account()
     email, password = student.register(name, id, password='password')
     student.login(email,password)
@@ -17,7 +17,7 @@ async def _(msg:Bot.MessageSession):
     try:
         name = msg.parsed_msg['<姓名>']
         id = msg.parsed_msg['<考号>']
-        haofs = await asyncio.to_thread(hfs_(name,id))
+        haofs = await asyncio.to_thread(await hfs_(name,id))
         await msg.sendMessage([Plain(f"{name}({id}) 的 {haofs.get('name')} 成绩详情："),
                                Plain(f"分数：{haofs.get('score')}/{haofs.get('manfen')},"),
                                Plain(f"排名：班级 {haofs.get('classRank')}({haofs.get('classRankPart')}) | 级部 {haofs.get('gradeRank')}({haofs.get('gradeRankPart')})")])
