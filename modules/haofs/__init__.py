@@ -35,7 +35,7 @@ async def __(msg:Bot.MessageSession):
             id = ''
             student = Account()
             student.login(name, password)
-            haofs = student.get_exam(0)
+            haofs = student.get_exam(0).data
             await msg.sendMessage([Plain(f"{name}({id}) 的 {haofs.get('name')} 成绩详情："),
                                    Plain(f"分数：{haofs.get('score')}/{haofs.get('manfen')},"),
                                    Plain(
