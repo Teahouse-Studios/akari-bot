@@ -270,14 +270,6 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
-                if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module'):
-                    if enable_tos:
-                        try:
-                            await tos_msg_counter(msg, msg.trigger_msg)
-                        except AbuseWarning as e:
-                            await tos_abuse_warning(msg, str(e))
-                    else:
-                        Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                 time_start = datetime.now()
                 try:
                     await check_target_cooldown(msg)
@@ -537,14 +529,6 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         continue
 
                     for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
-                        if enable_tos and rfunc.show_typing:
-                            try:
-                                await tos_msg_counter(msg, msg.trigger_msg)
-                            except AbuseWarning as e:
-                                await tos_abuse_warning(msg, str(e))
-                        else:
-                            Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
-
                         time_start = datetime.now()
                         try:
                             msg.matched_msg = False
@@ -609,6 +593,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             Info.command_parsed += 1
                             if enable_analytics and rfunc.show_typing:
                                 BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, 'regex')
+
+                            if enable_tos and rfunc.show_typing:
+                                try:
+                                    await tos_msg_counter(msg, msg.trigger_msg)
+                                except AbuseWarning as e:
+                                    await tos_abuse_warning(msg, str(e))
+                            else:
+                                Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
                             continue
 
