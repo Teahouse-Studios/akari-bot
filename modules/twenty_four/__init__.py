@@ -106,7 +106,11 @@ def contains_all_numbers(expr, numbers):
             else:
                 return False
         i += 1
-    return True
+        
+    if all(used_count[str(num)] == numbers.count(num) for num in numbers):
+        return True
+    else:
+        return False
 
 
 tf = module('twenty_four', alias=['twentyfour', '24'],
@@ -146,7 +150,7 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
             result = calc(expr)
             if not result:
                 await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
-            elif (result == 24 or 0 < 24 - result < 1e-13) \
+            elif (result == 24 or 0 < 24 - result < 1e-13) and contains_all_numbers(expr, numbers):
                     and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 1)):
