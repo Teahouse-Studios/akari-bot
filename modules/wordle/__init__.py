@@ -206,7 +206,7 @@ async def _(msg: Bot.MessageSession):
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
 
-    qc = CoolDown('wordle', msg, all=True)
+    qc = CoolDown('wordle', msg)
     if not msg.target.target_from == 'TEST|Console' and not msg.check_super_user():
         c = qc.check(150)
         if c != 0:
