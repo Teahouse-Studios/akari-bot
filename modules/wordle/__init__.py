@@ -202,7 +202,7 @@ class WordleBoardImage:
 @wordle.command('{{wordle.help}}')
 @wordle.command('hard {{wordle.help.hard}}')
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState('wordle', msg, all=True)
+    play_state = PlayState('wordle', msg)
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
 
@@ -233,7 +233,7 @@ async def _(msg: Bot.MessageSession):
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
         if not play_state.check():
             return
-        wait = await msg.wait_anyone(timeout=None)
+        wait = await msg.wait_next_message(timeout=None)
         if not play_state.check():
             return
         word = wait.as_display(text_only=True).strip().lower()
@@ -248,7 +248,6 @@ async def _(msg: Bot.MessageSession):
         if hard_mode:
             last_word = word
         board_image.update_board()
-        await msg.sleep(2)  # 防冲突
 
         if not board.is_game_over() and board.get_trials() <= 6:
             Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
