@@ -154,9 +154,11 @@ class TotalList:
                 for __j in range(len(total_list[__i].charts)):
                     total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
             self.total_list = total_list
+            return True
         except Exception:
             Logger.error(traceback.format_exc())
-
+            return False
+            
     async def dl_cache(self):
         try:
             url = f"https://www.diving-fish.com/api/chunithmprober/music_data"
