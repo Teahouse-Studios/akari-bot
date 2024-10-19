@@ -64,7 +64,8 @@ class PlayState:
         if self.target_id not in playstate_lst:
             return False
         timeout = self.get(key='_timeout')
-        if datetime.now().timestamp() - timeout >= 0:
+        if timeout and datetime.now().timestamp() - timeout >= 0:
             self.disable()
             return False
-        self.get(key='_status')
+        else:
+            self.get(key='_status')
