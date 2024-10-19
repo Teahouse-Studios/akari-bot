@@ -52,6 +52,7 @@ class MessageSession(MessageSessionT):
         if Config('no_confirm', False):
             return True
         if message_chain:
+            message_chain = MessageChain(message_chain)
             if append_instruction:
                 print(self.locale.t("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
@@ -74,6 +75,7 @@ class MessageSession(MessageSessionT):
                                 append_instruction=True):
         send = None
         if message_chain:
+            message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
@@ -119,6 +121,7 @@ class MessageSession(MessageSessionT):
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
         send = None
         if message_chain:
+            message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain)
         try:
             if timeout:
