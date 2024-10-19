@@ -18,7 +18,7 @@ class PlayState:
         self.timeout = timedelta(seconds=timeout)
 
     def enable(self):
-        timeout = datetime.now() + self.timeout
+        timeout = (datetime.now() + self.timeout).timestamp()
         if self.target_id not in playstate_lst:
             playstate_lst[self.target_id] = {}
         if self.game not in playstate_lst[self.target_id]:
@@ -42,7 +42,7 @@ class PlayState:
             playstate_lst[self.target_id][self.sender_id][self.game]['_status'] = False
 
     def update(self, **kwargs):
-        timeout = datetime.now() + self.timeout
+        timeout = (datetime.now() + self.timeout).timestamp()
         target_dict = playstate_lst.setdefault(self.target_id, {})
         if self.all:
             game_dict = target_dict.setdefault(self.game, {'_status': False, '_timeout': timeout})
@@ -64,7 +64,7 @@ class PlayState:
         if self.target_id not in playstate_lst:
             return False
         timeout = self.get(key='_timeout')
-        if datetime.now() - timeout >= 0:
+        if datetime.now().timestamp() - timeout >= 0:
             self.disable()
             return False
         self.get(key='_status')
