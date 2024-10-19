@@ -32,7 +32,7 @@ async def update_cover() -> bool:
         if not os.path.exists(cover_path):
             try:
                 url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(id)}.png"
-                await download(url, status_code=200, path=cover_dir, filename=f'{get_cover_len5_id(id)}.png', logging_err_resp=False)
+                await download(url, status_code=200, path=cover_dir, filename=f'{get_cover_len5_id(id)}.png', attempt=1, logging_err_resp=False)
                 Logger.debug(f'Successfully download {get_cover_len5_id(id)}.png')
             except Exception as e:
                 if str(e).startswith('404'):
