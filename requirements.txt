@@ -73,7 +73,7 @@ jsonschema-specifications==2023.12.1 ; python_full_version >= "3.12.0" and pytho
 jsonschema==4.23.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 khl-py==0.3.17 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 kiwisolver==1.4.7 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
-langchain-core==0.2.41 ; python_full_version >= "3.12.0" and python_version < "4.0"
+langchain-core==0.3.12 ; python_full_version >= "3.12.0" and python_version < "4.0"
 langchain-text-splitters==0.3.0 ; python_full_version >= "3.12.0" and python_version < "4.0"
 langchain==0.2.16 ; python_full_version >= "3.12.0" and python_version < "4.0"
 langconv==0.2.0 ; python_full_version >= "3.12.0" and python_version < "4.0"
