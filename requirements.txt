@@ -77,7 +77,7 @@ langchain-core==0.2.41 ; python_full_version >= "3.12.0" and python_version < "4
 langchain-text-splitters==0.2.4 ; python_full_version >= "3.12.0" and python_version < "4.0"
 langchain==0.2.16 ; python_full_version >= "3.12.0" and python_version < "4.0"
 langconv==0.2.0 ; python_full_version >= "3.12.0" and python_version < "4.0"
-langsmith==0.1.130 ; python_full_version >= "3.12.0" and python_version < "4.0"
+langsmith==0.1.136 ; python_full_version >= "3.12.0" and python_version < "4.0"
 loguru==0.7.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 lxml==5.3.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 magic-filter==1.0.12 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
