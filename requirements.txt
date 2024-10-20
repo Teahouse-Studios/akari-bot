@@ -1,5 +1,5 @@
 aiocqhttp==1.4.4 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
-aiofile==3.8.8 ; python_full_version >= "3.12.0" and python_version < "4"
+aiofile==3.9.0 ; python_full_version >= "3.12.0" and python_version < "4"
 aiofiles==23.2.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 aiogram==3.13.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 aiohappyeyeballs==2.4.3 ; python_full_version >= "3.12.0" and python_version < "4.0"
