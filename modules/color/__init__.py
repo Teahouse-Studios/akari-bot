@@ -24,8 +24,8 @@ with open(md_color_path, 'r', encoding='utf-8') as f:
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 
 # https://github.com/ubernostrum/webcolors/issues/18
-css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
-css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
+css_names_to_hex = {**webcolors._definitions._CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
+css_hex_to_names = {**webcolors._definitions._CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 
 @c.command()
