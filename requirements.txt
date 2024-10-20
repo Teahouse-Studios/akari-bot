@@ -33,7 +33,7 @@ distlib==0.3.9 ; python_full_version >= "3.12.0" and python_full_version < "4.0.
 distro==1.9.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 duckduckgo-search==3.9.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 emoji==2.14.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
-fastapi==0.112.4 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
+fastapi==0.115.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 feedparser==6.0.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 ff3==1.0.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 ffmpy==0.4.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
