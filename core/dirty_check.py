@@ -6,7 +6,7 @@ import base64
 import datetime
 import hashlib
 import hmac
-import json
+import orjson as json
 import time
 from typing import Union, List, Dict
 
@@ -131,7 +131,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
-        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
+        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body)).digest()).decode('utf-8')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',

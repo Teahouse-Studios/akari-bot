@@ -81,7 +81,7 @@ async def update_assets():
         os.remove(download_file)
     else:
         return False
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(data, indent=4, ensure_ascii=False))
+    with open(file_path, 'wb', encoding='utf-8') as f:
+        f.write(json.dumps(data, option=json.OPT_INDENT_2))
     shutil.move(file_path, rating_path)
     return True

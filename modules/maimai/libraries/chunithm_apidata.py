@@ -35,7 +35,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
         if use_cache and data:
-            with open(cache_path, 'w') as f:
+            with open(cache_path, 'wb') as f:
                 f.write(json.dumps(data))
         return data
     except Exception as e:

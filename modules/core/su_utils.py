@@ -309,9 +309,9 @@ if Info.subprocess:
 
     def write_version_cache(msg: Bot.MessageSession):
         update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
-        with open(update, 'w') as write_version:
-            write_version.write(json.dumps({'From': msg.target.target_from,
-                                'ID': msg.target.target_id}).decode('utf-8'))
+        write_version = open(update, 'wb')
+        write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
+        write_version.close()
 
     restart_time = []
 

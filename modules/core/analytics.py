@@ -199,7 +199,7 @@ def export_analytics(
         j['from'] = from_to[0].timestamp()
         j['to'] = from_to[1].timestamp()
     cache_path = random_cache_path()
-    with open(cache_path + '.json', 'w') as f:
+    with open(cache_path + '.json', 'wb') as f:
         f.write(json.dumps(j))
     with zipfile.ZipFile(cache_path + '.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
         z.write(cache_path + '.json', 'analytics.json')

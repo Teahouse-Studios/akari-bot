@@ -351,7 +351,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                     if resp.status != 200:
                         Logger.info(f'Failed to render: {await resp.text()}')
                         return False
-                    imgs_data = json.loads(resp.read())
+                    imgs_data = json.loads(await resp.read())
                     for img in imgs_data:
                         b = base64.b64decode(img)
                         bio = BytesIO(b)
@@ -367,7 +367,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                         if resp.status != 200:
                             Logger.info(f'Failed to render: {await resp.text()}')
                             return False
-                        imgs_data = json.loads(resp.read())
+                        imgs_data = json.loads(await resp.read())
                         for img in imgs_data:
                             b = base64.b64decode(img)
                             bio = BytesIO(b)
