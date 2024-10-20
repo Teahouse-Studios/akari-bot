@@ -65,6 +65,7 @@ prompt-toolkit = "^3.0.47"
 emoji = "^2.12.1"
 langconv = "0.3.0"
 ff3 = "^1.0.2"
+orjson = "^3.10.9"
 
 
 [tool.poetry.group.dev.dependencies]
