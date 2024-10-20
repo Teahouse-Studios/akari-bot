@@ -19,20 +19,17 @@ all = ["ujson"]
 
 [[package]]
 name = "aiofile"
-version = "3.8.8"
+version = "3.9.0"
 description = "Asynchronous file operations."
 optional = false
-python-versions = ">=3.7, <4"
+python-versions = "<4,>=3.8"
 files = [
-    {file = "aiofile-3.8.8-py3-none-any.whl", hash = "sha256:41e8845cce055779cd77713d949a339deb012eab605b857765e8f8e52a5ed811"},
-    {file = "aiofile-3.8.8.tar.gz", hash = "sha256:41f3dc40bd730459d58610476e82e5efb2f84ae6e9fa088a9545385d838b8a43"},
+    {file = "aiofile-3.9.0-py3-none-any.whl", hash = "sha256:ce2f6c1571538cbdfa0143b04e16b208ecb0e9cb4148e528af8a640ed51cc8aa"},
+    {file = "aiofile-3.9.0.tar.gz", hash = "sha256:e5ad718bb148b265b6df1b3752c4d1d83024b93da9bd599df74b9d9ffcf7919b"},
 ]
 
 [package.dependencies]
 caio = ">=0.9.0,<0.10.0"
-
-[package.extras]
-develop = ["aiomisc-pytest", "coveralls", "pytest", "pytest-cov", "pytest-rst"]
 
 [[package]]
 name = "aiofiles"
