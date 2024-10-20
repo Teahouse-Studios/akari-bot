@@ -22,7 +22,7 @@ caio==0.9.17 ; python_full_version >= "3.12.0" and python_version < "4"
 certifi==2024.8.30 ; python_full_version >= "3.12.0" and python_version < "4.0"
 cffi==1.17.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 cfgv==3.4.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
-charset-normalizer==3.3.2 ; python_full_version >= "3.12.0" and python_version < "4.0"
+charset-normalizer==3.4.0 ; python_full_version >= "3.12.0" and python_version < "4.0"
 click==8.1.7 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 colorama==0.4.6 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and (sys_platform == "win32" or platform_system == "Windows")
 contourpy==1.3.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
