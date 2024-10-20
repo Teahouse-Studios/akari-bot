@@ -14,7 +14,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12.0"
-Pillow = "^10.2.0"
+Pillow = "^11.0.0"
 aiohttp = ">=3.9.3"
 beautifulsoup4 = "^4.11.1"
 psutil = "^5.9.8"
