@@ -1,9 +1,7 @@
 import asyncio
-import os
 import sys
 
 from aiogram import types
-from aiogram.types import ContentType
 
 from bots.aiogram.client import dp, bot
 from bots.aiogram.info import client_name

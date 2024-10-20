@@ -5,7 +5,6 @@ from core.component import module
 from core.utils.http import get_url
 from core.utils.web_render import webrender
 
-
 assets_path = os.path.abspath('./assets/arcaea')
 
 

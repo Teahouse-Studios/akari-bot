@@ -14,10 +14,10 @@ from tenacity import retry, stop_after_attempt
 
 from config import Config
 from core.builtins.utils import shuffle_joke
+from core.types.message import MessageSession
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
-from core.types.message import MessageSession
 from core.utils.i18n import Locale
 
 

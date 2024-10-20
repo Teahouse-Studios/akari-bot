@@ -1,11 +1,12 @@
 import os
 from typing import Optional, Dict, List, Tuple
+
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import Bot
-from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import cover_dir, rate_mapping, combo_mapping, sync_mapping, diff_list
+from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_utils import compute_rating, calc_dxstar
 
 total_list = TotalList()

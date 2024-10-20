@@ -1,5 +1,5 @@
-import os
 import json
+import os
 from datetime import datetime
 from decimal import Decimal
 
@@ -7,7 +7,6 @@ from config import Config
 from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
-
 
 ONE_K = Decimal('1000')
 # https://openai.com/pricing

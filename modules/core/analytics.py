@@ -5,7 +5,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import oss2
-import ujson as json
+import orjson as json
 import zipfile
 from dateutil.relativedelta import relativedelta
 

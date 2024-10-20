@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, TIMESTAMP, text
+from sqlalchemy import Column, String, Text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
 from database.orm import Session

@@ -1,4 +1,4 @@
-import ujson as json
+import orjson as json
 
 from core.utils.http import get_url
 

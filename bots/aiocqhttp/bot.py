@@ -3,7 +3,7 @@ import logging
 import re
 import sys
 
-import ujson as json
+import orjson as json
 from aiocqhttp import Event
 
 from bots.aiocqhttp.client import bot
@@ -15,8 +15,8 @@ from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
-from core.utils.info import Info
 from core.utils.i18n import Locale, default_locale
+from core.utils.info import Info
 from database import BotDBUtil
 
 PrivateAssets.set('assets/private/aiocqhttp')

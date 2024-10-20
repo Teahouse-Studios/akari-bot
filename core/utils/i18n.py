@@ -4,11 +4,10 @@ from collections.abc import MutableMapping
 from string import Template
 from typing import Dict, Any, Union
 
-import ujson as json
+import orjson as json
 
 from config import Config
 from .text import remove_suffix
-
 
 default_locale = Config('locale', 'zh_cn')
 
@@ -79,7 +78,7 @@ def load_locale_file():
     try:
         for l in locales:
             with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
-                locale_dict[remove_suffix(l, '.json')] = flatten(json.load(f))
+                locale_dict[remove_suffix(l, '.json')] = flatten(json.loads(f.read()))
     except Exception as e:
         err_prompt.append(str(e))
     modules_path = os.path.abspath('./modules')
@@ -91,9 +90,9 @@ def load_locale_file():
                 with open(lang_file_path, 'r', encoding='utf-8') as f:
                     try:
                         if remove_suffix(lang_file, '.json') in locale_dict:
-                            locale_dict[remove_suffix(lang_file, '.json')].update(flatten(json.load(f)))
+                            locale_dict[remove_suffix(lang_file, '.json')].update(flatten(json.loads(f.read())))
                         else:
-                            locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.load(f))
+                            locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.loads(f.read()))
                     except Exception as e:
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
     for lang in locale_dict.keys():

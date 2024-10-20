@@ -2,10 +2,10 @@ import os
 import sys
 import time
 
+import jwt
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-import uvicorn
-import jwt
 
 from bots.api.info import client_name
 from core.queue import JobQueue
@@ -14,7 +14,7 @@ from core.utils.info import Info
 
 sys.path.append(os.getcwd())
 
-from core.bot import init_async, load_prompt  # noqa: E402
+from core.bot import init_async  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402

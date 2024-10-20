@@ -12,10 +12,10 @@ from tenacity import retry, stop_after_attempt
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
 from core.logger import Logger
-from core.utils.petal import gained_petal
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
 from core.utils.http import get_url, download
+from core.utils.petal import gained_petal
 from core.utils.text import isint, remove_prefix
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间

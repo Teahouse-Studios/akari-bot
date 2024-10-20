@@ -1,5 +1,5 @@
+import orjson as json
 from sqlalchemy import text
-import ujson as json
 
 from database import BotDBUtil
 from database.orm import Session

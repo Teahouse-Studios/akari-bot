@@ -3,7 +3,7 @@ import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
-import ujson as json
+import orjson as json
 
 from core.logger import Logger
 from core.utils.http import get_url
@@ -165,13 +165,13 @@ class TotalList:
             data = await get_url(url, 200, fmt='json')
             if data:
                 with open(song_info_path, 'w') as f:
-                    json.dump(data, f)
+                    f.write(json.dumps(data))
             return data
         except Exception:
             Logger.error(traceback.format_exc())
             try:
                 with open(song_info_path, 'r') as f:
-                    data = json.load(f)
+                    data = json.loads(f.read())
                 return data
             except Exception:
                 return None

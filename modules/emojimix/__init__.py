@@ -3,7 +3,7 @@ import random
 from typing import List, Optional, Tuple
 
 import emoji
-import ujson as json
+import orjson as json
 
 from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
@@ -17,7 +17,7 @@ API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 class EmojimixGenerator:
     def __init__(self):
         with open(data_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            data = json.loads(f.read())
         self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
         self.date_mapping: dict = {idx: date for idx, date in enumerate(data["date"])}

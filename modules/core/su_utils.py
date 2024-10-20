@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 
 
-import ujson as json
+import orjson as json
 
 
 from config import Config, CFG

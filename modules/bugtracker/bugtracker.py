@@ -2,7 +2,7 @@ import base64
 from io import BytesIO
 
 import aiohttp
-import ujson as json
+import orjson as json
 from PIL import Image as PILImage
 
 from core.logger import Logger

@@ -1,12 +1,9 @@
 import math
-import re
 
 from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
-from config import Config
 from core.exceptions import ConfigValueError
 from core.logger import Logger
-from core.utils.text import isint
 from .dice import *
 
 # 配置常量

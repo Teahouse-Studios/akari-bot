@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Union
 from urllib.parse import urlparse
 
-import ujson as json
+import orjson as json
 from tenacity import retry, stop_after_attempt
 
 from core.builtins import MessageSession

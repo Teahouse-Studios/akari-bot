@@ -1,5 +1,6 @@
-from openai import AsyncOpenAI
 import re
+
+from openai import AsyncOpenAI
 
 from config import Config
 from core.builtins import Bot

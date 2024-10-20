@@ -1,8 +1,7 @@
-import os
 import traceback
 from typing import Optional
 
-import ujson as json
+import orjson as json
 
 from config import Config
 from core.builtins import Bot, Image, MessageChain, Plain
@@ -37,7 +36,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
                               fmt='json')
         if use_cache and data:
             with open(cache_path, 'w') as f:
-                json.dump(data, f)
+                f.write(json.dumps(data))
         return data
     except Exception as e:
         if str(e).startswith('400'):
@@ -55,7 +54,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
         if use_cache and os.path.exists(cache_path):
             try:
                 with open(cache_path, 'r') as f:
-                    data = json.load(f)
+                    data = json.loads(f.read())
                 await msg.send_message(msg.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:

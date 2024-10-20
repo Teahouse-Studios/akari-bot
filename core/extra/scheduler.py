@@ -5,8 +5,8 @@ import traceback
 
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
-from database import BotDBUtil
 from core.utils.info import Info
+from database import BotDBUtil
 
 load_dir_path = os.path.abspath('./schedulers/')
 

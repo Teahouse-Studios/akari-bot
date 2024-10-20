@@ -4,12 +4,12 @@ import re
 import shutil
 import string
 
-import ujson as json
+import orjson as json
 
 from config import Config
+from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
-from core.logger import Logger
 
 assets_path = os.path.abspath('./assets/phigros')
 cache_path = os.path.abspath(Config('cache_path', './cache/'))

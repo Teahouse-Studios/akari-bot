@@ -1,4 +1,4 @@
-import ujson as json
+import orjson as json
 from PIL import Image as PILImage
 
 from core.logger import Logger

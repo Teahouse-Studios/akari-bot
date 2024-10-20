@@ -5,7 +5,8 @@ from io import BytesIO
 from typing import List, Union
 
 import aiohttp
-import ujson as json
+import orjson as json
+from PIL import Image as PILImage
 from tabulate import tabulate
 
 from core.builtins.utils import shuffle_joke
@@ -13,8 +14,6 @@ from core.logger import Logger
 from .cache import random_cache_path
 from .http import download
 from .web_render import WebRender, webrender
-
-from PIL import Image as PILImage
 
 
 class ImageTable:

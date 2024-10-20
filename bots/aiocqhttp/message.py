@@ -8,14 +8,16 @@ from pathlib import Path
 from typing import List, Union
 
 import aiocqhttp.exceptions
-import ujson as json
+import orjson as json
 from aiocqhttp import MessageSegment
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
 from config import Config
-from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, MessageTaskManager
+from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, \
+    MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
@@ -24,8 +26,6 @@ from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
-
-from tenacity import retry, wait_fixed, stop_after_attempt
 
 enable_analytics = Config('enable_analytics', False)
 

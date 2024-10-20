@@ -2,8 +2,9 @@ import re
 import traceback
 from typing import List, Union
 
-from bots.aiogram.client import dp, bot, token
 from aiogram.types import FSInputFile
+
+from bots.aiogram.client import bot, token
 from bots.aiogram.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager

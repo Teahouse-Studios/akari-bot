@@ -1,20 +1,20 @@
 import os
+import random
+from collections import Counter
 from enum import Enum
 from typing import List, Optional
 
-from attr import define, field
-from collections import Counter
-from PIL import Image, ImageDraw, ImageFont
-import random
 import unicodedata
+from PIL import Image, ImageDraw, ImageFont
+from attr import define, field
 
 from config import Config
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
-from core.utils.petal import gained_petal
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
+from core.utils.petal import gained_petal
 
 assets_path = os.path.abspath('./assets/wordle')
 text_mode = Config('wordle_disable_image', False)

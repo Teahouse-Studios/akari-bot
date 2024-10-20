@@ -3,7 +3,7 @@ import traceback
 from typing import List, Union
 
 import aiohttp
-import ujson as json
+import orjson as json
 from khl import MessageTypes, Message
 
 from bots.kook.client import bot

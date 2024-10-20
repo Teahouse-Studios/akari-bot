@@ -1,7 +1,7 @@
 import html
 import re
 
-import ujson as json
+import orjson as json
 
 from config import Config
 

@@ -1,14 +1,13 @@
+import asyncio
 import os
 import sys
-
-import asyncio
 import traceback
 
-from config import Config
-from core.logger import Logger
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
+from config import Config
+from core.logger import Logger
 from core.utils.info import Info
 
 if not Config('db_path', cfg_type=str):

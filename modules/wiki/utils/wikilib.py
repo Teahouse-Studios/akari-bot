@@ -5,22 +5,20 @@ import traceback
 import urllib.parse
 from typing import Union, Dict, List
 
+import orjson as json
 from bs4 import BeautifulSoup
-
-import ujson as json
 
 import core.utils.html2text as html2text
 from config import Config
 from core.builtins import Url
 from core.dirty_check import check
+from core.exceptions import NoReportException
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale, default_locale
-from core.exceptions import NoReportException
-from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
-from modules.wiki.utils.bot import BotAccount
 from core.utils.web_render import webrender
-
+from modules.wiki.utils.bot import BotAccount
+from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
                  'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then

@@ -1,23 +1,20 @@
+import base64
 import os
 import re
 import traceback
-import urllib.parse
-import base64
-from io import BytesIO
-
 import uuid
+from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
 import aiohttp
-import ujson as json
+import orjson as json
+from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
-
-from PIL import Image as PILImage
 
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']

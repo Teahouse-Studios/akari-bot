@@ -1,10 +1,10 @@
-import math
 import random
 from typing import Awaitable, Callable, List, Tuple
+
 from core.builtins import Bot
 from core.component import module
-from core.utils.petal import gained_petal
 from core.utils.game import PlayState
+from core.utils.petal import gained_petal
 
 tic_tac_toe = module('tic_tac_toe',
                      desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'], doc=True,

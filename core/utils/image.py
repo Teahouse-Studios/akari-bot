@@ -5,7 +5,7 @@ from typing import List, Union
 
 import aiohttp
 import filetype as ft
-import ujson as json
+import orjson as json
 from PIL import Image as PILImage
 from aiofile import async_open
 

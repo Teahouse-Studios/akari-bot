@@ -3,7 +3,7 @@ import re
 from typing import Union, List, Tuple
 from urllib.parse import urlparse
 
-import ujson as json
+import orjson as json
 
 from core.builtins.message.internal import (
     Plain,

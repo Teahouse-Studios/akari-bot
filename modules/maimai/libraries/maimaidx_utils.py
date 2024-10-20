@@ -1,9 +1,8 @@
 import math
-import os
 import random
 from datetime import datetime
 
-import ujson as json
+import orjson as json
 
 from core.builtins import Bot, MessageChain, Plain
 from core.utils.http import get_url
@@ -11,7 +10,6 @@ from core.utils.image import msgchain2image
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
-
 
 total_list = TotalList()
 
@@ -626,7 +624,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
 
 async def get_grade_info(msg: Bot.MessageSession, grade: str):
     with open(grade_info_path, 'r') as file:
-        data = json.load(file)
+        data = json.loads(file.read())
 
     def key_process(input_key, conv_dict):
         key = next((k for k, v in conv_dict.items() if input_key == k), None)

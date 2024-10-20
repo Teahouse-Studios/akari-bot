@@ -7,7 +7,6 @@ from ff3 import FF3Cipher
 
 from config import Config
 
-
 T = TypeVar("T", str, bytes, bytearray)
 
 

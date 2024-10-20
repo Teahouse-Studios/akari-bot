@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
+from core.utils.i18n import default_locale
 from database.orm import Session, DB_LINK
 from database.orm_base import Base
-from core.utils.i18n import default_locale
 
 is_mysql = DB_LINK.startswith('mysql')
 

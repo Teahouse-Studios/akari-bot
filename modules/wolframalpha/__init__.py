@@ -1,5 +1,6 @@
 import os
 import urllib.parse
+
 from PIL import Image as PILImage
 
 from config import Config
@@ -9,7 +10,6 @@ from core.dirty_check import rickroll
 from core.exceptions import ConfigValueError
 from core.utils.http import download, get_url
 from .check import secret_check
-
 
 appid = Config('wolfram_alpha_appid', cfg_type=str)
 

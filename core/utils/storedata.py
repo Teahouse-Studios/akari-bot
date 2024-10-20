@@ -1,6 +1,6 @@
 from typing import Union
 
-import ujson as json
+import orjson as json
 
 from core.types import FetchTarget
 from database import BotDBUtil

@@ -5,13 +5,13 @@ from typing import Union
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
-from core.types import MessageSession
-from core.utils.image_table import image_table_render, ImageTable
 from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
+from core.types import MessageSession
 from core.utils.http import download
 from core.utils.image import svg_render
+from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo

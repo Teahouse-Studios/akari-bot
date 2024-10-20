@@ -3,7 +3,6 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
-
 ccode = client.create_group("chemical_code", "A game about chemical formulas.")
 
 

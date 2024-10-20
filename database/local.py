@@ -1,13 +1,12 @@
 import datetime
+import hashlib
 import os
 
-import ujson as json
+import orjson as json
 from sqlalchemy import create_engine, Column, Text, TIMESTAMP, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt
-
-import hashlib
 
 Base = declarative_base()
 

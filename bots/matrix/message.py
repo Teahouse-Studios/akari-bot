@@ -2,7 +2,7 @@ import mimetypes
 import os
 import re
 import traceback
-from typing import List, Union
+from typing import List
 
 import nio
 

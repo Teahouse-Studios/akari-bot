@@ -1,9 +1,9 @@
 import datetime
-from decimal import Decimal, ROUND_HALF_UP
 import uuid
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Union, List
 
-import ujson as json
+import orjson as json
 from tenacity import retry, stop_after_attempt
 
 from core.types.message import MessageSession, FetchTarget, FetchedSession

@@ -1,4 +1,3 @@
-import re
 from typing import Union
 
 from discord import Embed as DiscordEmbed

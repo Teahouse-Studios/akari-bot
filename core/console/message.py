@@ -1,8 +1,8 @@
 import asyncio
 from typing import List, Union
 
-from inputimeout import inputimeout, TimeoutOccurred
 from PIL import Image as PILImage
+from inputimeout import inputimeout, TimeoutOccurred
 
 from config import Config
 from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,

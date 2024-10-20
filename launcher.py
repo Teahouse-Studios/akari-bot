@@ -1,5 +1,5 @@
-import sys
 import importlib
+import sys
 
 from core.logger import Logger
 from core.utils.info import Info

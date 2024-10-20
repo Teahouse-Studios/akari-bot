@@ -4,7 +4,6 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import ConfigValueError
-from core.utils.text import isint
 
 MAX_COIN_NUM = Config('coin_limit', 10000)
 FACE_UP_RATE = Config('coin_faceup_rate', 4997)  # n/10000

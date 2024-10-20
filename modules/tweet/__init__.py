@@ -2,7 +2,8 @@ import base64
 import re
 from io import BytesIO
 
-import ujson as json
+import orjson as json
+from PIL import Image as PILImage
 
 from core.builtins import Bot
 from core.builtins.message import Image, Url
@@ -11,8 +12,6 @@ from core.dirty_check import check_bool, rickroll
 from core.utils.http import download, get_url
 from core.utils.text import isint
 from core.utils.web_render import webrender
-from PIL import Image as PILImage
-
 
 t = module('tweet',
            developers=['Dianliang233'],

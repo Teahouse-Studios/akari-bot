@@ -1,6 +1,5 @@
 import secrets
 import uuid
-
 from typing import List
 
 from .utils import AkariTool, parse_input
