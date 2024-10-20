@@ -51,7 +51,7 @@ tiktoken = "^0.6.0"
 pycryptodome = "^3.18.0"
 toml = "^0.10.2"
 khl-py = "^0.3.16"
-matrix-nio = "^0.24.0"
+matrix-nio = "^0.25.0"
 attrs = "^23.1.0"
 uvicorn = {extras = ["standard"], version = "^0.32.0"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
