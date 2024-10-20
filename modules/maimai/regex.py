@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        
+
     await msg.finish(await get_info(music, Plain(res)))
 
 

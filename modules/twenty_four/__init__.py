@@ -106,7 +106,7 @@ def contains_all_numbers(expr, numbers):
             else:
                 return False
         i += 1
-        
+
     if all(used_count[str(num)] == numbers.count(num) for num in numbers):
         return True
     else:

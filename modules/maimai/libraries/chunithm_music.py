@@ -158,7 +158,7 @@ class TotalList:
         except Exception:
             Logger.error(traceback.format_exc())
             return False
-            
+
     async def dl_cache(self):
         try:
             url = f"https://www.diving-fish.com/api/chunithmprober/music_data"
