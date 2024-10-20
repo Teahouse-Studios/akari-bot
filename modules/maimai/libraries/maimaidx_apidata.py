@@ -246,6 +246,7 @@ async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_ca
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'},
                               fmt='json')
+        data = {'verlist': [d for d in data['verlist'] if d.get('id', 0) < 100000]}  # 过滤宴谱
         if use_cache and data:
             with open(cache_path, 'wb') as f:
                 f.write(json.dumps(data))
