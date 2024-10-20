@@ -1,6 +1,5 @@
 import asyncio
 import os
-import random
 import re
 import traceback
 from datetime import datetime
@@ -16,6 +15,7 @@ from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
 from core.utils.http import get_url, download
 from core.utils.petal import gained_petal
+from core.utils.random import Random
 from core.utils.text import isint, remove_prefix
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
@@ -66,7 +66,7 @@ async def search_csr(id=None):
     if id:
         answer_id = id
     else:
-        answer_id = random.randint(1, CSID_RANGE_MAX)
+        answer_id = Random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
     Logger.info(f'ChemSpider ID: {answer_id}')
     get = await get_url(f'{csr_link}/Search.aspx?q={answer_id}', 200, fmt='text')

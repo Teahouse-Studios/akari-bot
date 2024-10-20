@@ -1,5 +1,4 @@
 import os
-import random
 from collections import Counter
 from enum import Enum
 from typing import List, Optional
@@ -15,6 +14,7 @@ from core.logger import Logger
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
 from core.utils.petal import gained_petal
+from core.utils.random import Random
 
 assets_path = os.path.abspath('./assets/wordle')
 text_mode = Config('wordle_disable_image', False)
@@ -127,7 +127,7 @@ class WordleBoard:
 
     @staticmethod
     def from_random_word():
-        return WordleBoard(random.choice(answers_list))
+        return WordleBoard(Random.choice(answers_list))
 
     def reset_board(self):
         self.word = ""
