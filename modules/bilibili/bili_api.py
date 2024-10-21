@@ -48,7 +48,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
 
     owner = view['owner']['name']
     avatar = view['owner']['face']
-    fans = msg.locale.num(res['data']['Card']['card']['fans'])
+    fans = msg.locale.num(res['data']['Card']['card']['fans'], 1)
 
     if use_embed:
         await msg.finish(Embed(title=f'{title}{pages}',
