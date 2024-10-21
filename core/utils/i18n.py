@@ -155,7 +155,7 @@ class Locale:
     def tl_str(self, text: str, fallback_failed_prompt=False) -> str:
         return tl_str(self, text, fallback_failed_prompt=fallback_failed_prompt)
 
-    def num(self, number: Union[int, float, str], precision: int = 0) -> str:
+    def num(self, number: Union[Decimal, int, float, str], precision: int = 0) -> str:
         """格式化数字"""
         if isint(number):
             number = int(number)
@@ -177,22 +177,22 @@ class Locale:
         return self.tl_str(f"{fmted_num} {{i18n.unit.{unit}}}")
 
     def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal('10e12'):
-            return 3, number / Decimal('10e12')
-        elif number >= Decimal('10e8'):
-            return 2, number / Decimal('10e8')
-        elif number >= Decimal('10e4'):
-            return 1, number / Decimal('10e4')
+        if number >= Decimal('10e11'):
+            return 3, number / Decimal('10e11')
+        elif number >= Decimal('10e7'):
+            return 2, number / Decimal('10e7')
+        elif number >= Decimal('10e3'):
+            return 1, number / Decimal('10e3')
         else:
             return None
 
     def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal('10e9'):
-            return 3, number / Decimal('10e9')
-        elif number >= Decimal('10e6'):
-            return 2, number / Decimal('10e6')
-        elif number >= Decimal('10e3'):
-            return 1, number / Decimal('10e3')
+        if number >= Decimal('10e8'):
+            return 3, number / Decimal('10e8')
+        elif number >= Decimal('10e5'):
+            return 2, number / Decimal('10e5')
+        elif number >= Decimal('10e2'):
+            return 1, number / Decimal('10e2')
         else:
             return None
 
