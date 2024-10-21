@@ -73,7 +73,7 @@ async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not os.path.exists(song_alias_path):
         await msg.finish(msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0]))
     with open(song_alias_path, 'r') as file:
-        data = json.load(file.read())
+        data = json.loads(file.read())
 
     result = []
     if sid in data:
