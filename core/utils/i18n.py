@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import orjson as json
 
 from config import Config
-from .text import isint, remove_suffix
+from .text import isfloat, isint, remove_suffix
 
 default_locale = Config('locale', 'zh_cn')
 
@@ -175,22 +175,22 @@ class Locale:
         return self.tl_str(f"{fmted_num} {{i18n.unit.{unit}}}")
 
     def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal('10 ** 12'):
-            return 3, Decimal('10 ** 12')
-        elif number >= Decimal('10 ** 8'):
-            return 2, Decimal('10 ** 8')
-        elif number >= Decimal('10 ** 4'):
-            return 1, Decimal('10 ** 4')
+        if number >= Decimal('10e11'):
+            return 3, Decimal('10e11')
+        elif number >= Decimal('10e7'):
+            return 2, Decimal('10e7')
+        elif number >= Decimal('10e3'):
+            return 1, Decimal('10e3')
         else:
             return None
 
     def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal('10 ** 9'):
-            return 3, Decimal('10 ** 9')
-        elif number >= Decimal('10 ** 6'):
-            return 2, Decimal('10 ** 6')
-        elif number >= Decimal('10 ** 3'):
-            return 1, Decimal('10 ** 3')
+        if number >= Decimal('10e8'):
+            return 3, Decimal('10e8')
+        elif number >= Decimal('10e5'):
+            return 2, Decimal('10e5')
+        elif number >= Decimal('10e2'):
+            return 1, Decimal('10e2')
         else:
             return None
 
