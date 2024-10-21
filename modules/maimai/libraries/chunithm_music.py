@@ -1,4 +1,3 @@
-import random
 import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
@@ -7,6 +6,7 @@ import orjson as json
 
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.random import Random
 from .chunithm_mapping import *
 
 
@@ -101,7 +101,7 @@ class MusicList(List[Music]):
         return None
 
     def random(self):
-        return random.choice(self)
+        return Random.choice(self)
 
     def filter(self,
                *,

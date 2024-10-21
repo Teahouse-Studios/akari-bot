@@ -1,5 +1,4 @@
 import math
-import random
 from datetime import datetime
 
 import orjson as json
@@ -7,6 +6,7 @@ import orjson as json
 from core.builtins import Bot, MessageChain, Plain
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
+from core.utils.random import Random
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
@@ -672,9 +672,9 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
             music_data = music_data_master + music_data_remaster
 
             for i in range(4):
-                music = random.choice(music_data)
+                music = Random.choice(music_data)
                 if music in music_data_master and music in music_data_remaster:
-                    level = random.choice([3, 4])
+                    level = Random.randint(3, 4)
                 elif music in music_data_remaster:
                     level = 4
                 else:

@@ -24,7 +24,6 @@ from core.exceptions import SendMessageFailed
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.image import msgchain2image
-from core.utils.random import Random
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
 
@@ -513,7 +512,7 @@ class FetchTarget(FetchTargetT):
             async def post_in_whitelist(lst):
                 for l in lst:
                     await l
-                    await asyncio.sleep(Random.randint(1, 5))
+                    await asyncio.sleep(random.randint(1, 5))
 
             if in_whitelist:
                 asyncio.create_task(post_in_whitelist(in_whitelist))
@@ -521,7 +520,7 @@ class FetchTarget(FetchTargetT):
             async def post_not_in_whitelist(lst):
                 for f in lst:
                     await f
-                    await asyncio.sleep(Random.randint(15, 30))
+                    await asyncio.sleep(random.randint(15, 30))
 
             if else_:
                 asyncio.create_task(post_not_in_whitelist(else_))
