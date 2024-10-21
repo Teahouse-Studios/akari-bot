@@ -156,7 +156,7 @@ class Locale:
         return tl_str(self, text, fallback_failed_prompt=fallback_failed_prompt)
 
     def num(self, number: Union[int, float, str], precision: int = 0) -> str:
-    """格式化数字"""
+        """格式化数字"""
         if isint(number):
             number = int(number)
         elif isfloat(number):
