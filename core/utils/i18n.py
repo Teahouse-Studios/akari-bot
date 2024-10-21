@@ -173,7 +173,7 @@ class Locale:
         fmted_num = self._fmt_num(scale, precision)
         return self.tl_str(f"{fmted_num} {{i18n.unit.{unit}}}")
 
-    def _get_cjk_unit(self, number: float)) -> Optional[Tuple[int, float]]:
+    def _get_cjk_unit(self, number: float) -> Optional[Tuple[int, float]]:
         if number >= 10e12:
             return 3, number / 10e12
         elif number >= 10e8:
