@@ -51,6 +51,22 @@ class Random:
             return random.randrange(start, stop, step)
 
     @classmethod
+    def randbits(cls, k: int) -> int:
+        """返回k比特长度的随机整数"""
+        if cls.use_secrets:
+            return secrets.randbits(k)
+        else:
+            return random.getrandbits(k)
+
+    @classmethod
+    def randbytes(cls, n: int) -> bytes:
+        """生成n个随机字节"""
+        if cls.use_secrets:
+            return secrets.token_bytes(n)
+        else:
+            return random.randbytes(n)
+            
+    @classmethod
     def choice(cls, seq: Sequence[T]) -> T:
         """从序列中随机选择一个元素"""
         if cls.use_secrets:
@@ -91,19 +107,3 @@ class Random:
         else:
             random.shuffle(seq)
         return seq
-
-    @classmethod
-    def randbits(cls, k: int) -> int:
-        """返回k比特长度的随机整数"""
-        if cls.use_secrets:
-            return secrets.randbits(k)
-        else:
-            return random.getrandbits(k)
-
-    @classmethod
-    def randbytes(cls, n: int) -> bytes:
-        """生成n个随机字节"""
-        if cls.use_secrets:
-            return secrets.token_bytes(n)
-        else:
-            return random.randbytes(n)
