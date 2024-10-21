@@ -1,7 +1,7 @@
 import os
 import re
 from collections.abc import MutableMapping
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from string import Template
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -197,16 +197,14 @@ class Locale:
             return None
 
     def _fmt_num(self, number: Decimal, precision: int) -> str:
+        number = number.quantize(Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP)
+        num_str = f"{number:.{precision}f}".rstrip('0').rstrip('.')
+
         if precision == 0:
             return str(int(number))
-    
-        number_str = f"{number:.{precision}g}"
-        if '.' in number_str:
-            if precision > len(number_str.split('.')[1]):
-                precision = len(number_str.split('.')[1])
-                
-        return f"{number:.{precision}f}"
 
+        return num_str
+        
 
 def get_available_locales():
     return list(locale_root.children.keys())
