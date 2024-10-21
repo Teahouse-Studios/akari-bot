@@ -173,27 +173,26 @@ class Locale:
             return str(number)
 
         unit, scale = unit_info
-        scaled_number = number / scale
-        fmted_num = self._fmt_num(scaled_number, precision)
+        fmted_num = self._fmt_num(number / scale, precision)
         return self.tl_str(f"{fmted_num} {{i18n.unit.{unit}}}")
 
     def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e11'):
-            return 3, number / Decimal('10e11')
+            return 3, Decimal('10e11')
         elif number >= Decimal('10e7'):
-            return 2, number / Decimal('10e7')
+            return 2, Decimal('10e7')
         elif number >= Decimal('10e3'):
-            return 1, number / Decimal('10e3')
+            return 1, Decimal('10e3')
         else:
             return None
 
     def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e8'):
-            return 3, number / Decimal('10e8')
+            return 3, Decimal('10e8')
         elif number >= Decimal('10e5'):
-            return 2, number / Decimal('10e5')
+            return 2, Decimal('10e5')
         elif number >= Decimal('10e2'):
-            return 1, number / Decimal('10e2')
+            return 1, Decimal('10e2')
         else:
             return None
 
