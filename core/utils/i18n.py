@@ -1,13 +1,14 @@
 import os
 import re
 from collections.abc import MutableMapping
+from decimal import Decimal
 from string import Template
 from typing import Any, Dict, Optional, Tuple, Union
 
 import orjson as json
 
 from config import Config
-from .text import isfloat, remove_suffix
+from .text import isfloat, isint, remove_suffix
 
 default_locale = Config('locale', 'zh_cn')
 
@@ -155,11 +156,13 @@ class Locale:
         return tl_str(self, text, fallback_failed_prompt=fallback_failed_prompt)
 
     def num(self, number: Union[int, float, str], precision: int = 0) -> str:
-        """格式化数字"""
-        if isfloat(number):
-            number = float(number)
+    """格式化数字"""
+        if isint(number):
+            number = int(number)
+        elif isfloat(number):
+            number = Decimal(number)
         else:
-            return number
+            return str(number)
 
         if self.locale in ['zh_cn', 'zh_tw']:
             unit_info = self._get_cjk_unit(number)
@@ -173,38 +176,37 @@ class Locale:
         fmted_num = self._fmt_num(scale, precision)
         return self.tl_str(f"{fmted_num} {{i18n.unit.{unit}}}")
 
-    def _get_cjk_unit(self, number: float) -> Optional[Tuple[int, float]]:
-        if number >= 10e12:
-            return 3, number / 10e12
-        elif number >= 10e8:
-            return 2, number / 10e8
-        elif number >= 10e4:
-            return 1, number / 10e4
+    def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+        if number >= Decimal('10e12'):
+            return 3, number / Decimal('10e12')
+        elif number >= Decimal('10e8'):
+            return 2, number / Decimal('10e8')
+        elif number >= Decimal('10e4'):
+            return 1, number / Decimal('10e4')
         else:
             return None
 
-    def _get_unit(self, number: float) -> Optional[Tuple[int, float]]:
-        if number >= 10e9:
-            return 3, number / 10e9
-        elif number >= 10e6:
-            return 2, number / 10e6
-        elif number >= 10e3:
-            return 1, number / 10e3
+    def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+        if number >= Decimal('10e9'):
+            return 3, number / Decimal('10e9')
+        elif number >= Decimal('10e6'):
+            return 2, number / Decimal('10e6')
+        elif number >= Decimal('10e3'):
+            return 1, number / Decimal('10e3')
         else:
             return None
 
-    def _fmt_num(self, number: float, precision: int) -> str:
+    def _fmt_num(self, number: Decimal, precision: int) -> str:
         if precision == 0:
             return str(int(number))
-
+    
         number_str = f"{number:.{precision}g}"
-
         if '.' in number_str:
             if precision > len(number_str.split('.')[1]):
                 precision = len(number_str.split('.')[1])
-
+                
         return f"{number:.{precision}f}"
-        
+
 
 def get_available_locales():
     return list(locale_root.children.keys())
