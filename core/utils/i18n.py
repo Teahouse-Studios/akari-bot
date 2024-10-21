@@ -173,7 +173,8 @@ class Locale:
             return str(number)
 
         unit, scale = unit_info
-        fmted_num = self._fmt_num(scale, precision)
+        scaled_number = number / scale
+        fmted_num = self._fmt_num(scaled_number, precision)
         return self.tl_str(f"{fmted_num} {{i18n.unit.{unit}}}")
 
     def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
@@ -204,7 +205,7 @@ class Locale:
             return str(int(number))
 
         return num_str
-        
+
 
 def get_available_locales():
     return list(locale_root.children.keys())
