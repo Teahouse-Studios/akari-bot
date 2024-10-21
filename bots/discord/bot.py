@@ -1,11 +1,11 @@
 import importlib
-import json
 import os
 import re
 import sys
 import traceback
 
 import discord
+import orjson as json
 
 from bots.discord.client import client
 from bots.discord.info import client_name
@@ -48,8 +48,8 @@ def load_slashcommands():
         try:
             Logger.warning('Binary mode detected, trying to load pre-built slash list...')
             js = 'assets/discord_slash_list.json'
-            with open(js, 'r', encoding='utf-8') as f:
-                dir_list = json.load(f)
+            with open(js, 'rb', encoding='utf-8') as f:
+                dir_list = json.loads(f)
         except Exception:
             Logger.error('Failed to load pre-built slash list, using default list.')
             dir_list = os.listdir(slash_load_dir)
