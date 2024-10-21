@@ -55,6 +55,7 @@ allow_request_private_ip = false
 allow_reload_base = false
 no_confirm = false
 slower_schedule = false
+use_secrets_random = true
 enable_commit_url = true
 enable_dirty_check = true
 enable_rickroll = true
