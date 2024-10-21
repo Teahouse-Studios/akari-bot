@@ -24,6 +24,7 @@ wolfram_alpha_appid =
 jwt_secret =
 ff3_key = 0AF6C4788B86F4E2FB97215E6E4A5EB0
 ff3_tweak = 6520BD033E2928
+
 [cfg]
 api_port = 5000
 base_superuser = ["QQ|2596322644",]
@@ -59,9 +60,9 @@ use_secrets_random = true
 enable_commit_url = true
 enable_dirty_check = true
 enable_rickroll = true
+rickroll_msg = "https://wdf.ink/6OUp"
 enable_shuffle_joke = false
 shuffle_rate = 0.1
-rickroll_msg = "https://wdf.ink/6OUp"
 enable_urlmanager = true
 enable_tos = false
 tos_warning_counts = 5
