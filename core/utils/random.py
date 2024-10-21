@@ -85,14 +85,12 @@ class Random:
     def shuffle(cls, seq: MutableSequence[T]) -> MutableSequence[T]:
         """随机打乱序列"""
         if cls.use_secrets:
-            x = seq.copy()
-            for i in reversed(range(1, len(x))):
+            for i in reversed(range(1, len(seq))):
                 j = secrets.randbelow(i + 1)
-                x[i], x[j] = x[j], x[i]
-            return x
+                seq[i], seq[j] = seq[j], seq[i]
         else:
             random.shuffle(seq)
-            return seq
+        return seq
 
     @classmethod
     def randbits(cls, k: int) -> int:
