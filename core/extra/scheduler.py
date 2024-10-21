@@ -27,8 +27,8 @@ def load_extra_schedulers():
         try:
             Logger.warning('Binary mode detected, trying to load pre-built schedulers list...')
             js = 'assets/schedulers_list.json'
-            with open(js, 'rb', encoding='utf-8') as f:
-                dir_list = json.loads(f)
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built schedulers list, using default list.')
             dir_list = os.listdir(load_dir_path)

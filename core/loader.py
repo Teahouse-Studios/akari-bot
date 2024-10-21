@@ -36,8 +36,8 @@ def load_modules():
         try:
             Logger.warning('Binary mode detected, trying to load pre-built modules list...')
             js = 'assets/modules_list.json'
-            with open(js, 'rb', encoding='utf-8') as f:
-                dir_list = json.loads(f)
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built modules list, using default list.')
             dir_list = os.listdir(load_dir_path)

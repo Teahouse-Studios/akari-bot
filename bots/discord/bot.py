@@ -48,8 +48,8 @@ def load_slashcommands():
         try:
             Logger.warning('Binary mode detected, trying to load pre-built slash list...')
             js = 'assets/discord_slash_list.json'
-            with open(js, 'rb', encoding='utf-8') as f:
-                dir_list = json.loads(f)
+            with open(js, 'r', encoding='utf-8') as f:
+                dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built slash list, using default list.')
             dir_list = os.listdir(slash_load_dir)
