@@ -1,7 +1,8 @@
-import json
 import os
 from datetime import datetime
 from decimal import Decimal
+
+import orjson as json
 
 from config import Config
 from core.builtins import Bot
@@ -38,16 +39,16 @@ async def load_or_refresh_cache():
     cache_dir = os.path.abspath(Config('cache_path', './cache/'))
     file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            data = json.load(file)
+        with open(file_path, 'rb') as file:
+            data = json.loads(file.read())
             return data["exchanged_petal"]
 
     exchanged_petal_data = await get_petal_exchange_rate()
     if exchanged_petal_data:
         Logger.info(f'Petal exchange rate is expired or cannot be found. Updating...')
-        with open(file_path, 'w') as file:
+        with open(file_path, 'wb') as file:
             exchanged_petal_data["update_time"] = datetime.now().strftime("%Y-%m-%d")
-            json.dump(exchanged_petal_data, file)
+            file.write(json.dumps(exchanged_petal_data))
         return exchanged_petal_data["exchanged_petal"]
 
 
@@ -71,7 +72,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
         else:
             Logger.warning(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
             petal = price * USD_TO_CNY * CNY_TO_PETAL
-
+            
         msg.info.modify_petal(-petal)
         return round(petal, 2)
     else:
