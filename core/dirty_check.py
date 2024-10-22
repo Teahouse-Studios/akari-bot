@@ -43,7 +43,7 @@ def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=Non
                             for pos in itemContext['positions']:
                                 filter_words_length = pos['endPos'] - pos['startPos']
                                 if not msg:
-                                    reason = f"<Redacted:{itemDetail['label']}>"
+                                    reason = f"<REDACTED:{itemDetail['label']}>"
                                 else:
                                     reason = msg.locale.t("check.redacted", reason=itemDetail['label'])
                                 content = content[:pos['startPos'] + _offset] + \
@@ -53,13 +53,13 @@ def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=Non
                                 _offset += len(reason) - filter_words_length
                         else:
                             if not msg:
-                                content = f"<Redacted:{itemDetail['label']}>"
+                                content = f"<REDACTED:{itemDetail['label']}>"
                             else:
                                 content = msg.locale.t("check.redacted", reason=itemDetail['label'])
                         status = False
                 else:
                     if not msg:
-                        content = f"<All Redacted:{itemDetail['label']}>"
+                        content = f"<ALL REDACTED:{itemDetail['label']}>"
                     else:
                         content = msg.locale.t("check.redacted.all", reason=itemDetail['label'])
 
