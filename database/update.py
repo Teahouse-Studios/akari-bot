@@ -3,7 +3,7 @@ from sqlalchemy import text
 
 from database import BotDBUtil
 from database.orm import Session
-from database.tables import DBVersion, TargetInfo
+from database.tables import DBVersion, TargetInfo, is_mysql
 
 
 def update_database():
@@ -58,7 +58,8 @@ def update_database():
         version.value = '4'
         session.commit()
     if value < 5:
-        session.execute(
-            text("ALTER TABLE module_wiki_WikiInfo MODIFY COLUMN siteInfo LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"))
+        if is_mysql:
+            session.execute(
+                text("ALTER TABLE module_wiki_WikiInfo MODIFY COLUMN siteInfo LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"))
+            session.commit()
         version.value = '5'
-        session.commit()
