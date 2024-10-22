@@ -1,3 +1,4 @@
+import re
 import urllib.parse
 
 from core.builtins import Url, Bot
@@ -31,7 +32,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             d.append(f"•{msg.ts2strftime(strptime2ts(x['timestamp']), iso=True,
                                          timezone=False)} - {title} .. ({count}) .. {user}")
             if x['comment']:
-                comment = msg.locale.t('message.brackets', msg=x['comment'])
+                comment = msg.locale.t('message.brackets', msg=replace_brackets(x['comment']))
                 d.append(comment)
         if x['type'] == 'log':
             if x['logtype'] == x['logaction']:
@@ -67,7 +68,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             if 'target_title' in params:
                 d.append(msg.locale.t('wiki.message.rc.params.target_title') + params['target_title'])
             if x['comment']:
-                comment = msg.locale.t('message.brackets', msg=x['comment'])
+                comment = msg.locale.t('message.brackets', msg=replace_brackets(x['comment']))
                 d.append(comment)
     y = await check(*d, msg=msg)
     yy = '\n'.join(z['content'] for z in y)
@@ -91,6 +92,12 @@ def compare_groups(old_groups, new_groups):
     return f"{added} {removed}" if added and removed else f"{added}{removed}"
 
 
+def replace_brackets(comment):
+    comment = re.sub(r'\[\[(.*?)\]\]', r'[\1]', comment)
+    comment = re.sub(r'\{\{(.*?)\}\}', r'[Template: \1]', comment)
+    return comment
+
+
 async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
     rclist = []
     userlist = []
@@ -102,7 +109,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         if 'user' in x:
             userlist.append(x.get('user'))
         if 'comment' in x:
-            commentlist.append(x.get('comment'))
+            commentlist.append(replace_brackets(x.get('comment')))
     Logger.debug(userlist)
     userlist = list(set(userlist))
     titlelist = list(set(titlelist))
@@ -136,7 +143,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
 
         user = user_checked_map.get(original_user, original_user)
         title = title_checked_map.get(original_title, original_title)
-        comment = comment_checked_map[x['comment']] if x.get('comment') else None
+        comment = comment_checked_map[replace_brackets(x['comment'])] if x.get('comment') else None
 
         if x['type'] in ['edit', 'categorize']:
             count = x['newlen'] - x['oldlen']
@@ -200,7 +207,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         if not text_status:
             if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \
                 (original_user in user_checked_map and user_checked_map[original_user] != original_user) or \
-                    (comment and comment_checked_map[x['comment']] != x['comment']):
+                (comment and comment_checked_map[replace_brackets(x['comment'])] != replace_brackets(x['comment'])):
                 t.append(msg.locale.t("wiki.message.utils.redacted"))
         rclist.append('\n'.join(t))
     return rclist
