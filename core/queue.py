@@ -1,5 +1,6 @@
 import asyncio
 import traceback
+import datetime
 
 import orjson as json
 
@@ -72,11 +73,11 @@ async def check_job_queue():
         Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
         args = json.loads(tsk.args)
         Logger.debug(f'Args: {args}')
-        # timestamp = tsk.timestamp
-        # if (datetime.datetime.now() - timestamp).total_seconds() > 7200:
-        # Logger.warning(f'Task {tsk.taskid} timeout, skip.')
-        # return_val(tsk, {}, status=False)
-        # continue
+        timestamp = tsk.timestamp
+        if (datetime.datetime.now() - timestamp).total_seconds() > 7200:
+            Logger.warning(f'Task {tsk.taskid} timeout, skip.')
+            return_val(tsk, {}, status=False)
+            continue
         try:
             if tsk.action == 'validate_permission':
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
