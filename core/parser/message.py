@@ -52,7 +52,7 @@ async def tos_abuse_warning(msg: Bot.MessageSession, e):
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
     else:
-        reason = msg.locale.tl_str(str(e))
+        reason = msg.locale.t_str(str(e))
         await msg.send_message(msg.locale.t("error.prompt.noreport", detail=reason))
 
 
@@ -279,7 +279,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     module: Module = modules[command_first_word]
                     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
                         if module.desc:
-                            desc = msg.locale.t("parser.module.desc", desc=msg.locale.tl_str(module.desc))
+                            desc = msg.locale.t("parser.module.desc", desc=msg.locale.t_str(module.desc))
 
                             if command_first_word not in msg.enabled_modules:
                                 desc += '\n' + msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
@@ -471,7 +471,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
-                    err_msg = msg.locale.tl_str(str(e))
+                    err_msg = msg.locale.t_str(str(e))
                     await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                 except Exception as e:
@@ -606,7 +606,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                         except NoReportException as e:
                             Logger.error(traceback.format_exc())
-                            err_msg = msg.locale.tl_str(str(e))
+                            err_msg = msg.locale.t_str(str(e))
                             await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:

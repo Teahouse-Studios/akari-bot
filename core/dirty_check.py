@@ -188,6 +188,6 @@ async def check_bool(*text: Union[str, List[str]]) -> bool:
 
 def rickroll(msg: Bot.MessageSession):
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
-        return msg.locale.tl_str(Config("rickroll_msg", cfg_type=str))
+        return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
     else:
         return msg.locale.t("error.message.chain.unsafe")

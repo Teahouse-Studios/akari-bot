@@ -130,7 +130,7 @@ async def config_modules(msg: Bot.MessageSession):
                                                                         ))
 
                     if modules_[m].desc:
-                        recommend_modules_help_doc_list.append(msg.locale.tl_str(modules_[m].desc))
+                        recommend_modules_help_doc_list.append(msg.locale.t_str(modules_[m].desc))
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(hdoc)
@@ -345,7 +345,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                         desc = regex.desc
                         if desc:
                             doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                  msg=msg.locale.tl_str(desc))
+                                                                  msg=msg.locale.t_str(desc))
                         else:
                             doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
             module_alias = module_.alias
@@ -412,7 +412,7 @@ async def _(msg: Bot.MessageSession):
                                       command_prefixes=msg.prefixes)
 
                 if module_.desc:
-                    doc_.append(msg.locale.tl_str(module_.desc))
+                    doc_.append(msg.locale.t_str(module_.desc))
                 if help_.args:
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
@@ -428,7 +428,7 @@ async def _(msg: Bot.MessageSession):
                             desc = regex.desc
                             if desc:
                                 doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.tl_str(desc))
+                                                                      msg=msg.locale.t_str(desc))
                             else:
                                 doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
                 appends.append(doc)
@@ -532,7 +532,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                 help_ = CommandParser(
                     module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes, msg=msg)
                 if module_.desc:
-                    doc_.append(msg.locale.tl_str(module_.desc))
+                    doc_.append(msg.locale.t_str(module_.desc))
                 if help_.args:
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
@@ -548,7 +548,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                             desc = regex.desc
                             if desc:
                                 doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.tl_str(desc))
+                                                                      msg=msg.locale.t_str(desc))
                             else:
                                 doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
                 appends.append(doc)
