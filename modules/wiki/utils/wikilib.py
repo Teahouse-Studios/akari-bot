@@ -176,8 +176,10 @@ class WikiLib:
                 raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
             raise NoReportException(str(e))
 
-    def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
+    def rearrange_siteinfo(self, info: Union[dict, str, bytes], wiki_api_link) -> WikiInfo:
         if isinstance(info, str):
+            info = json.loads(info)
+        elif isinstance(info, bytes):
             info = json.loads(info)
         extensions = info['query']['extensions']
         ext_list = []
