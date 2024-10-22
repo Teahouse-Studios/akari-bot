@@ -123,7 +123,7 @@ class WikiSiteInfo:
     @auto_rollback_error
     def update(self, info: dict):
         if not self.query:
-            session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))])
+            session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info, option=json.OPT_ESCAPE_UNICODE))])
         else:
             self.query.siteInfo = json.dumps(info)
             self.query.timestamp = datetime.now()
