@@ -14,6 +14,7 @@ class PgrBindInfo(Base):
     targetId = Column(String(512), primary_key=True)
     sessiontoken = Column(String(512))
     username = Column(String(512))
+    __table_args__ = {'extend_existing': True, 'mysql_charset': 'utf8mb4'}
 
 
 Session.create()
