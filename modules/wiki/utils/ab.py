@@ -80,6 +80,5 @@ async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot
                 if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \
                         (original_user in user_checked_map and user_checked_map[original_user] != original_user):
                     t.append(msg.locale.t("wiki.message.utils.redacted"))
-                    t.append(wiki_info.articlepath.replace('$1', "Special:AbuseLog"))
             ablist.append('\n'.join(t))
     return ablist
