@@ -70,7 +70,7 @@ class DirtyWordCache:
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
     def update(self, result: dict):
-        session.add_all([DirtyFilterTable(desc=self.query_word, result=json.dumps(result))])
+        session.add_all([DirtyFilterTable(desc=self.query_word, result=json.dumps(result).decode())])
         session.commit()
 
     def get(self):

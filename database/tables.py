@@ -18,6 +18,7 @@ class SenderInfo(Base):
     warns = Column(Integer, default=0)
     disableTyping = Column(Boolean, default=False)
     petal = Column(Integer, default=0)
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class TargetInfo(Base):
@@ -28,6 +29,7 @@ class TargetInfo(Base):
     customAdmins = Column(LONGTEXT if is_mysql else Text, default='[]')
     muted = Column(Boolean, default=False)
     locale = Column(String(512), default=default_locale)
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class StoredData(Base):
@@ -35,6 +37,7 @@ class StoredData(Base):
     __tablename__ = "StoredData"
     name = Column(String(512), primary_key=True)
     value = Column(LONGTEXT if is_mysql else Text)
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class CommandTriggerTime(Base):
@@ -43,11 +46,13 @@ class CommandTriggerTime(Base):
     targetId = Column(String(512), primary_key=True)
     commandName = Column(String(512))
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class GroupBlockList(Base):
     __tablename__ = "GroupBlockList"
     targetId = Column(String(512), primary_key=True)
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class AnalyticsData(Base):
@@ -67,6 +72,7 @@ class AnalyticsData(Base):
 class DBVersion(Base):
     __tablename__ = "DBVersion"
     value = Column(String(512), primary_key=True)
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class UnfriendlyActionsTable(Base):
@@ -77,6 +83,7 @@ class UnfriendlyActionsTable(Base):
     action = Column(String(512))
     detail = Column(String(512))
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
 class JobQueueTable(Base):
