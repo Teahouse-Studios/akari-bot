@@ -125,7 +125,7 @@ class WikiSiteInfo:
         if not self.query:
             session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info, option=json.OPT_ESCAPE_UNICODE))])
         else:
-            self.query.siteInfo = json.dumps(info)
+            self.query.siteInfo = json.dumps(info, option=json.OPT_ESCAPE_UNICODE)
             self.query.timestamp = datetime.now()
         session.commit()
         return True
