@@ -7,6 +7,6 @@
     "server.message.gamemode": "遊戲模式：",
     "server.message.not_found": "沒有找到任何類型的 Minecraft 伺服器。",
     "server.message.player": "線上玩家：",
-    "server.message.player.current": "目前線上玩家：",
+    "server.message.player.current": "當前線上玩家：",
     "server.message.version": "遊戲版本："
 }

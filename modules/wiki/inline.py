@@ -198,7 +198,7 @@ async def _(msg: Bot.MessageSession):
                                         img_table_data.append([x] + forum_data[x]['data'])
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
-                                i_msg_lst.append(I18NContext('wiki.message.forum'))
+                                i_msg_lst.append(I18NContext('wiki.message.forum.prompt'))
                                 i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                 i_msg_lst.append(I18NContext('message.reply.prompt'))

@@ -14,13 +14,11 @@ from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 from core.utils.web_render import WebRender
-from modules.wiki.utils.dbutils import WikiTargetInfo
-from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
-from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
+from .utils.dbutils import WikiTargetInfo
+from .utils.mapping import generate_screenshot_v2_blocklist, special_namespace_list, random_title_list
+from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
+from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
-generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
-special_namespace = ['special', '特殊']
-random_title = ['random', '随机页面', '隨機頁面']
 
 wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
@@ -151,7 +149,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd.split(":")[0].lower() in special_namespace and rd.split(":")[1].lower() in random_title:
+                if rd.split(":")[0].lower() in special_namespace_list and rd.split(":")[1].lower() in random_title_list:
                     tasks.append(asyncio.create_task(
                         WikiLib(q, headers, locale=session.locale.locale).random_page()))
                 else:
@@ -257,7 +255,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         img_table_data.append([x] + forum_data[x]['data'])
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
-                                i_msg_lst.append(Plain(session.locale.t('wiki.message.forum')))
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.forum.prompt')))
                                 i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
@@ -324,8 +322,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if wait_plain_slice:
                         wait_msg_list.append(
                             Plain('\n'.join(wait_plain_slice)))
-        except WhatAreUDoingError:
-            raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
                 await session.send_message(session.locale.t('error') + str(e))
