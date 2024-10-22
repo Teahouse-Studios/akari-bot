@@ -26,7 +26,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 4
+    database_version = 5
 
     class TargetInfo:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
