@@ -61,5 +61,5 @@ def update_database():
         if is_mysql:
             session.execute(
                 text("ALTER TABLE module_wiki_WikiInfo MODIFY COLUMN siteInfo LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"))
-            session.commit()
         version.value = '5'
+        session.commit()
