@@ -93,6 +93,7 @@ def compare_groups(old_groups, new_groups):
 
 
 def replace_brackets(comment):
+    comment = re.sub(r'\{\{\{(.*?)\}\}\}', r'{{{\1}}}', comment)
     comment = re.sub(r'\[\[(.*?)\]\]', r'[\1]', comment)
     comment = re.sub(r'\{\{(.*?)\}\}', r'[Template:\1]', comment)
     return comment
