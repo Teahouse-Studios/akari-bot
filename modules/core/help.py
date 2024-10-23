@@ -76,7 +76,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     malias.append(f'{a} -> {module_alias[a]}')
             if module_.developers:
                 devs = msg.locale.t('message.delimiter').join(module_.developers)
-                devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
+                devs_msg = '\n' + msg.locale.t("core.message.help.author") + devs
             else:
                 devs_msg = ''
             wiki_msg = ''
@@ -92,7 +92,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
                                          [msg.locale.t("core.message.help.table.header.help"),
                                           msg.locale.t("core.message.help.table.header.alias"),
-                                          msg.locale.t("core.message.help.author.type2")])]
+                                          msg.locale.t("core.message.help.table.header.author")])]
                     imgs = await image_table_render(tables)
                     if imgs:
                         img_list = []
@@ -121,7 +121,7 @@ async def _(msg: Bot.MessageSession):
     target_enabled_list = msg.enabled_modules
     legacy_help = True
     if not msg.parsed_msg and msg.Feature.image:
-        imgs = await help_generater(msg, module_list, target_enabled_list)
+        imgs = await help_generator(msg, module_list, target_enabled_list)
         if imgs:
             legacy_help = False
             imgchain = []
@@ -176,7 +176,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
     target_enabled_list = msg.enabled_modules
     legacy_help = True
     if msg.Feature.image and not legacy:
-        imgs = await help_generater(msg, module_list, target_enabled_list, show_disabled_module=True)
+        imgs = await help_generator(msg, module_list, target_enabled_list, show_disabled_modules=True, show_base_modules=False)
         if imgs:
             legacy_help = False
             imgchain = []
@@ -215,13 +215,13 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         await msg.finish(help_msg)
 
 
-async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module], target_enabled_list: Optional[List[str]] = [], show_all_modules: bool = False, show_disabled_module: bool = False, use_local=True):
+async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module], target_enabled_list: Optional[List[str]] = [], show_all_modules: bool = False, show_disabled_modules: bool = False, show_base_modules: bool = True, use_local=True):
     if not WebRender.status:
         return False
     elif not WebRender.local:
         use_local = False
     if show_all_modules:
-        show_disabled_module = True
+        show_disabled_modules = True
 
     html_content = '''<!DOCTYPE html>
     <html lang="en">
@@ -230,7 +230,7 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
             .grid-container {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, 100px);
-                gap: 10px;
+                gap: 5px;
                 padding: 10px;
             }
             .grid-item {
@@ -241,8 +241,8 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
                 padding: 3px;
                 border-radius: 15px;
                 border: 1px solid #ccc;
-                height: 100px;
-                width: 80px;
+                height: 120px;
+                width: 90px;
                 text-align: center;
                 overflow: hidden;
                 justify-content: center;
@@ -252,18 +252,15 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
                 word-break: break-all;
                 white-space: normal;
                 background-color: transparent;
+                box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
             }
             .orange { background-color: #F4B084; }
-            .blue { background-color: #BDD7EE; }
-            .grey { background-color: #A6A6A6; }
+            .blue { background-color: #9BC2E6; }
+            .grey { background-color: #CECECE; }
             .red { color: red; }
             .command-name {
                 font-family: 'Courier New', Courier, monospace;
                 font-size: 14px;
-            }
-            h1 {
-                text-align: center;
-                margin: 10px 0;
             }
             hr {
                 border: 0;
@@ -275,7 +272,7 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
                 font-size: 16px;
                 white-space: pre-line;
                 padding-left: 10px;
-                line-height: 1;
+                line-height: 1.2;
             }
         </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -311,18 +308,28 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
     </head>
     <body>
     <div class="botbox">
-        <h1>模块命令列表</h1>
-        <hr>
+        <br>
         <div class="grid-container">
     '''
 
-    Logger.warning(str(module_list))
+    essential = {}
+    module_ = {}
     for key, value in module_list.items():
         if value.hidden or value.required_superuser or value.required_base_superuser:
             continue
-        if not show_disabled_module and key not in target_enabled_list and not value.base:
-            continue
+        elif value.base:
+            essential[key] = value
+        else:
+            module_[key] = value
 
+    if show_base_modules:
+        module_list = {**essential, **module_}
+    else:
+        module_list = module_
+
+    for key, value in module_list.items():
+        if not show_disabled_modules and key not in target_enabled_list and not value.base:
+            continue
         command_count = len(value.command_list.set)
         regex_count = len(value.regex_list.set)
 
@@ -332,8 +339,14 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
         if not show_all_modules and key not in target_enabled_list and not value.base:
             top_bottom_class = "grey"
 
-        command_line = f'<div>{command_count} 条命令</div>' if command_count > 0 else ''
-        regex_line = f'<div>{regex_count} 条表达式</div>' if regex_count > 0 else ''
+        command_line = f'<div>{
+            msg.locale.t(
+                'core.message.help.commands',
+                count=command_count)}</div>' if command_count > 0 else ''
+        regex_line = f'<div>{
+            msg.locale.t(
+                'core.message.help.regexes',
+                count=regex_count)}</div>' if regex_count > 0 else ''
 
         html_content += f'''
         <div class="grid-item {top_bottom_class}">
@@ -345,12 +358,12 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
         </div>
     '''
 
-    html_content += '''
+    html_content += f'''
         </div>
         <hr>
         <div class="footer">
-            橙色为基础模块，蓝色为扩展模块，灰色为未启用模块。红色字的模块仅由管理员使用。<br>
-            使用“~help &lt;模块&gt;”查看详细帮助。<br>
+            {msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]).replace(
+        '<', '&lt;').replace('>', '&gt;')}<br>
         </div>
     </div>
     </body>
