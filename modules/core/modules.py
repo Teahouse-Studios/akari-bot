@@ -1,16 +1,12 @@
-import re
-import traceback
-
 from config import Config, CFG
-from core.builtins import Bot, I18NContext, Image, Plain
+from core.builtins import Bot
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
-from core.logger import Logger
 from core.parser.command import CommandParser
 from core.utils.i18n import load_locale_file
-from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
+from .help import modules_list_help
 
 m = module('module',
            base=True,
@@ -39,7 +35,7 @@ async def _(msg: Bot.MessageSession):
         legacy = False
         if msg.parsed_msg.get('--legacy', False):
             legacy = True
-        await modules_help(msg, legacy)
+        await modules_list_help(msg, legacy)
     await config_modules(msg)
 
 
@@ -58,7 +54,7 @@ async def _(msg: Bot.MessageSession):
         legacy = False
         if msg.parsed_msg.get('--legacy', False):
             legacy = True
-        await modules_help(msg, legacy)
+        await modules_list_help(msg, legacy)
     await config_modules(msg)
 
 
@@ -67,8 +63,7 @@ async def config_modules(msg: Bot.MessageSession):
     modules_ = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
-    wait_config = [msg.parsed_msg.get(
-        '<module>')] + msg.parsed_msg.get('...', [])
+    wait_config = [msg.parsed_msg.get('<module>')] + msg.parsed_msg.get('...', [])
     wait_config_list = []
     for module_ in wait_config:
         if module_ not in wait_config_list:
@@ -298,306 +293,3 @@ async def config_modules(msg: Bot.MessageSession):
             await msg.finish()
     else:
         return
-
-
-hlp = module('help', base=True, doc=True)
-
-
-@hlp.command('<module> [--legacy] {{core.help.help.detail}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
-async def bot_help(msg: Bot.MessageSession, module: str):
-    module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
-    alias = ModulesManager.modules_aliases
-    if msg.parsed_msg:
-        msgs = []
-        if module in alias:
-            help_name = alias[module].split()[0]
-        else:
-            help_name = module.split()[0]
-        if help_name in current_unloaded_modules:
-            await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
-        elif help_name in err_modules:
-            await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
-        elif help_name in module_list:
-            module_ = module_list[help_name]
-            if module_.desc:
-                desc = module_.desc
-                if locale_str := re.match(r'\{(.*)}', desc):
-                    if locale_str:
-                        desc = msg.locale.t(locale_str.group(1))
-                msgs.append(desc)
-            help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
-                                  command_prefixes=msg.prefixes)
-            if help_.args:
-                msgs.append(help_.return_formatted_help_doc())
-
-            doc = '\n'.join(msgs)
-            if module_.regex_list.set:
-                doc += '\n' + msg.locale.t("core.message.help.support_regex")
-                for regex in module_.regex_list.set:
-                    pattern = None
-                    if isinstance(regex.pattern, str):
-                        pattern = regex.pattern
-                    elif isinstance(regex.pattern, re.Pattern):
-                        pattern = regex.pattern.pattern
-                    if pattern:
-                        desc = regex.desc
-                        if desc:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                  msg=msg.locale.t_str(desc))
-                        else:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
-            module_alias = module_.alias
-            malias = []
-            if module_alias:
-                for a in module_alias:
-                    malias.append(f'{a} -> {module_alias[a]}')
-            if module_.developers:
-                devs = msg.locale.t('message.delimiter').join(module_.developers)
-                devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
-            else:
-                devs_msg = ''
-            wiki_msg = ''
-            if module_.doc:
-                if Config('help_page_url', cfg_type=str):
-                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=Config('help_page_url', cfg_type=str).replace('${module}', help_name))
-                elif Config('help_url', cfg_type=str):
-                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=(CFG.get_url('help_url') + help_name))
-            if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
-                try:
-                    tables = [ImageTable([[doc, '\n'.join(malias), devs]],
-                                         [msg.locale.t("core.message.help.table.header.help"),
-                                          msg.locale.t("core.message.help.table.header.alias"),
-                                          msg.locale.t("core.message.help.author.type2")])]
-                    imgs = await image_table_render(tables)
-                    if imgs:
-                        img_list = []
-                        for img in imgs:
-                            img_list.append(Image(img))
-                        await msg.finish(img_list + [Plain(wiki_msg)])
-                except Exception:
-                    Logger.error(traceback.format_exc())
-            if malias:
-                doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
-            doc_msg = (doc + devs_msg + wiki_msg).lstrip()
-            if doc_msg != '':
-                await msg.finish(doc_msg)
-            else:
-                await msg.finish(msg.locale.t("core.help.none"))
-        else:
-            await msg.finish(msg.locale.t("core.message.help.not_found"))
-
-
-@hlp.command()
-@hlp.command('[--legacy] {{core.help.help}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
-async def _(msg: Bot.MessageSession):
-    module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
-    target_enabled_list = msg.enabled_modules
-    legacy_help = True
-    if not msg.parsed_msg and msg.Feature.image:
-        try:
-            tables = []
-            essential = []
-            m = []
-            for x in module_list:
-                module_ = module_list[x]
-                appends = [module_.bind_prefix]
-                doc_ = []
-                help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
-                                      command_prefixes=msg.prefixes)
-
-                if module_.desc:
-                    doc_.append(msg.locale.t_str(module_.desc))
-                if help_.args:
-                    doc_.append(help_.return_formatted_help_doc())
-                doc = '\n'.join(doc_)
-                if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
-                    for regex in module_.regex_list.set:
-                        pattern = None
-                        if isinstance(regex.pattern, str):
-                            pattern = regex.pattern
-                        elif isinstance(regex.pattern, re.Pattern):
-                            pattern = regex.pattern.pattern
-                        if pattern:
-                            desc = regex.desc
-                            if desc:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.t_str(desc))
-                            else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
-                appends.append(doc)
-                module_alias = module_.alias
-                malias = []
-                if module_alias:
-                    for a in module_alias:
-                        malias.append(f'{a} -> {module_alias[a]}')
-                appends.append('\n'.join(malias) if malias else '')
-                if module_.developers:
-                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
-                if module_.base and not (
-                        module_.hidden or module_.required_superuser or module_.required_base_superuser):
-                    essential.append(appends)
-                if x in target_enabled_list and not (
-                        module_.hidden or module_.required_superuser or module_.required_base_superuser):
-                    m.append(appends)
-            if essential:
-                tables.append(ImageTable(
-                    essential, [msg.locale.t("core.message.help.table.header.base"),
-                                msg.locale.t("core.message.help.table.header.help"),
-                                msg.locale.t("core.message.help.table.header.alias"),
-                                msg.locale.t("core.message.help.author.type2")]))
-            if m:
-                tables.append(ImageTable(m, [msg.locale.t("core.message.help.table.header.external"),
-                                             msg.locale.t("core.message.help.table.header.help"),
-                                             msg.locale.t("core.message.help.table.header.alias"),
-                                             msg.locale.t("core.message.help.author.type2")]))
-            if tables:
-                imgs = await image_table_render(tables)
-                if imgs:
-                    legacy_help = False
-                    img_list = []
-                    for img in imgs:
-                        img_list.append(Image(img))
-                    help_msg_list = img_list + [I18NContext("core.message.help.more_information",
-                                                            prefix=msg.prefixes[0])]
-                    if Config('help_url', cfg_type=str):
-                        help_msg_list.append(I18NContext("core.message.help.more_information.document",
-                                                         url=Config('help_url', cfg_type=str)))
-                    if Config('donate_url', cfg_type=str):
-                        help_msg_list.append(I18NContext("core.message.help.more_information.donate",
-                                                         url=Config('donate_url', cfg_type=str)))
-                    await msg.finish(help_msg_list)
-        except Exception:
-            Logger.error(traceback.format_exc())
-    if legacy_help:
-        help_msg = [msg.locale.t("core.message.help.legacy.base")]
-        essential = []
-        for x in module_list:
-            if module_list[x].base and not (
-                    module_list[x].hidden or module_list[x].required_superuser or module_list[x].required_base_superuser):
-                essential.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(essential))
-        module_ = []
-        for x in module_list:
-            if x in target_enabled_list and not (
-                    module_list[x].hidden or module_list[x].required_superuser or module_list[x].required_base_superuser):
-                module_.append(x)
-        if module_:
-            help_msg.append(msg.locale.t("core.message.help.legacy.external"))
-            help_msg.append(' | '.join(module_))
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.legacy.more_information",
-                prefix=msg.prefixes[0]))
-        if Config('help_url', cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.more_information.document",
-                    url=Config('help_url', cfg_type=str)))
-        if Config('donate_url', cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.more_information.donate",
-                    url=Config('donate_url', cfg_type=str)))
-        await msg.finish(help_msg)
-
-
-async def modules_help(msg: Bot.MessageSession, legacy):
-    module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
-    legacy_help = True
-    help_msg = [msg.locale.t("core.message.module.list.prompt", prefix=msg.prefixes[0])]
-    if Config('help_url', cfg_type=str):
-        help_msg.append(msg.locale.t(
-            "core.message.help.more_information.document",
-                        url=Config('help_url', cfg_type=str)))
-    if msg.Feature.image and not legacy:
-        try:
-            tables = []
-            m = []
-            for x in module_list:
-                module_ = module_list[x]
-                if x[0] == '_':
-                    continue
-                if module_.base or module_.hidden or module_.required_superuser or module_.required_base_superuser:
-                    continue
-                appends = [module_.bind_prefix]
-                doc_ = []
-                help_ = CommandParser(
-                    module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes, msg=msg)
-                if module_.desc:
-                    doc_.append(msg.locale.t_str(module_.desc))
-                if help_.args:
-                    doc_.append(help_.return_formatted_help_doc())
-                doc = '\n'.join(doc_)
-                if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
-                    for regex in module_.regex_list.set:
-                        pattern = None
-                        if isinstance(regex.pattern, str):
-                            pattern = regex.pattern
-                        elif isinstance(regex.pattern, re.Pattern):
-                            pattern = regex.pattern.pattern
-                        if pattern:
-                            desc = regex.desc
-                            if desc:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.t_str(desc))
-                            else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
-                appends.append(doc)
-                module_alias = module_.alias
-                malias = []
-                if module_alias:
-                    for a in module_alias:
-                        malias.append(f'{a} -> {module_alias[a]}')
-                appends.append('\n'.join(malias) if malias else '')
-                if module_.developers:
-                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
-                m.append(appends)
-            if m:
-                tables.append(ImageTable(m, [msg.locale.t("core.message.help.table.header.external"),
-                                             msg.locale.t("core.message.help.table.header.help"),
-                                             msg.locale.t("core.message.help.table.header.alias"),
-                                             msg.locale.t("core.message.help.author.type2")]))
-            if tables:
-                imgs = await image_table_render(tables)
-
-                if imgs:
-                    img_list = []
-                    for img in imgs:
-                        img_list.append(Image(img))
-                    legacy_help = False
-                    await msg.finish(img_list + [Plain('\n'.join(help_msg))])
-        except Exception:
-            Logger.error(traceback.format_exc())
-    if legacy_help:
-        module_ = []
-        for x in module_list:
-            if x[0] == '_':
-                continue
-            if module_list[x].base or module_list[x].hidden or \
-                    module_list[x].required_superuser or module_list[x].required_base_superuser:
-                continue
-            module_.append(module_list[x].bind_prefix)
-        if module_:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables")]
-            help_msg.append(' | '.join(module_))
-        else:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
-        help_msg.append(
-            msg.locale.t(
-                "core.message.module.list.prompt",
-                prefix=msg.prefixes[0]))
-        if Config('help_url', cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.more_information.document",
-                    url=Config('help_url', cfg_type=str)))
-        await msg.finish(help_msg)

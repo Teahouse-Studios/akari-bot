@@ -151,7 +151,7 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang
 @locale.command()
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
+    res = msg.locale.t("core.message.locale.prompt", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     if Config('locale_url', cfg_type=str):
