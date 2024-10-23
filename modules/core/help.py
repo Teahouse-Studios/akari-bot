@@ -129,7 +129,7 @@ async def _(msg: Bot.MessageSession):
                 imgchain.append(Image(img))
 
             help_msg_list = [I18NContext("core.message.help.more_information",
-                                                    prefix=msg.prefixes[0])]
+                                         prefix=msg.prefixes[0])]
             if Config('help_url', cfg_type=str):
                 help_msg_list.append(I18NContext("core.message.help.more_information.document",
                                                  url=Config('help_url', cfg_type=str)))
@@ -223,7 +223,7 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
     if show_all_modules:
         show_disabled_module = True
 
-    html_content ='''<!DOCTYPE html>
+    html_content = '''<!DOCTYPE html>
     <html lang="en">
     <head>
         <style>
@@ -358,7 +358,7 @@ async def help_generater(msg: Bot.MessageSession, module_list: Dict[str, Module]
     '''
     fname = random_cache_path() + '.html'
     with open(fname, 'w', encoding='utf-8') as fi:
-      fi.write(html_content)
+        fi.write(html_content)
 
     d = {'content': html_content, 'element': '.botbox'}
 
