@@ -223,7 +223,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
 env = Environment(loader=FileSystemLoader('assets/templates'))
 
 
-async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module], target_enabled_list: Optional[List[str]] = [], show_all_modules: bool = False, show_disabled_modules: bool = False, show_base_modules: bool = True, use_local=True):
+async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module], target_enabled_list: Optional[List[str]] = [], show_base_modules: bool = True, show_disabled_modules: bool = False, use_local=True):
     if not WebRender.status:
         return False
     elif not WebRender.local:
@@ -252,7 +252,7 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
     html_content = env.get_template('help_doc.html').render(
         module_list=module_list,
         msg=msg,
-        show_all_modules=show_all_modules,
+        show_disabled_modules=show_disabled_modules,
         target_enabled_list=target_enabled_list,
         len=len,
         CommandParser=CommandParser)
