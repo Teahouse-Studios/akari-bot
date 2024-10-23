@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, 100px);
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .grid-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3px;
+            border-radius: 15px;
+            border: 1px solid #ccc;
+            height: 120px;
+            width: 90px;
+            text-align: center;
+            overflow: hidden;
+            justify-content: center;
+            font-size: 12px;
+            margin: 5px 0;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+            background-color: transparent;
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .orange {
+            background-color: #F4B084;
+        }
+
+        .blue {
+            background-color: #9BC2E6;
+        }
+
+        .grey {
+            background-color: #CECECE;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .command-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px dashed #ccc;
+            margin: 5px 0;
+        }
+
+        .footer {
+            text-align: left;
+            font-size: 16px;
+            white-space: pre-line;
+            padding-left: 10px;
+            line-height: 1.2;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap"
+        rel="stylesheet">
+    <style>html body {
+        margin-top: 0px !important;
+        font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ko) {
+        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ja) {
+        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-TW) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-HK) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
+        font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+    }</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Help</title>
+</head>
+<body>
+<div class="botbox">
+    <br>
+    <div class="grid-container">
+        {% for key, value in module_list.items() %}
+        <div class="grid-item {{ 'grey' if show_all_modules and key not in target_enabled_list and not value.base else ('orange' if value.base else 'blue' )}}">
+            <div class="{{ 'red' if value.base else '' }}">
+                {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
+                              command_prefixes=msg.prefixes) %}
+                <div class="command-name">{{ value.bind_prefix }}</div>
+                {% if len(help_.args) > 0 %}
+                <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
+                {%- endif %}
+                {% if len(value.regex_list.set) > 0 %}
+                <div>{{ msg.locale.t('core.message.help.regex_count', count=len(value.regex_list.set)) }}</div>
+                {%- endif %}
+            </div>
+        </div>
+        {%- endfor %}
+    </div>
+    <hr>
+    <div class="footer">
+        {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]).replace(
+        '<', '&lt;').replace('>', '&gt;') }}
+            <br>
+        </div>
+</div>
+</body>
+</html>
