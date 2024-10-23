@@ -240,6 +240,10 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
         else:
             module_[key] = value
 
+
+    if not show_disabled_modules:
+        module_ = {k: v for k, v in module_.item() if k in target_enabled_list}
+    
     if show_base_modules:
         module_list = {**essential, **module_}
     else:
@@ -248,7 +252,7 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
     html_content = env.get_template('help_doc.html').render(
         module_list=module_list,
         msg=msg,
-        show_disabled_modules=show_disabled_modules,
+        show_all_modules=show_all_modules,
         target_enabled_list=target_enabled_list,
         len=len,
         CommandParser=CommandParser)
