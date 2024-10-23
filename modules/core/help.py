@@ -228,8 +228,6 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
         return False
     elif not WebRender.local:
         use_local = False
-    if show_all_modules:
-        show_disabled_modules = True
     essential = {}
     module_ = {}
     for key, value in module_list.items():
