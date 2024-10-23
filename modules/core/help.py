@@ -188,7 +188,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             for img in imgs:
                 imgchain.append(Image(img))
 
-            help_msg = [I18NContext("core.message.help.detail", prefix=msg.prefixes[0])]
+            help_msg = []
             if Config('help_url', cfg_type=str):
                 help_msg.append(I18NContext(
                     "core.message.help.document",
