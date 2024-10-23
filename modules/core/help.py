@@ -341,11 +341,11 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
 
         command_line = f'<div>{
             msg.locale.t(
-                'core.message.help.commands',
+                'core.message.help.command_count',
                 count=command_count)}</div>' if command_count > 0 else ''
         regex_line = f'<div>{
             msg.locale.t(
-                'core.message.help.regexes',
+                'core.message.help.regex_count',
                 count=regex_count)}</div>' if regex_count > 0 else ''
 
         html_content += f'''
