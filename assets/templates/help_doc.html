@@ -4,7 +4,7 @@
     <style>
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, 100px);
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 5px;
             padding: 10px;
         }
@@ -123,7 +123,6 @@
     <div class="footer">
         {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]).replace(
         '<', '&lt;').replace('>', '&gt;') }}
-            <br>
         </div>
 </div>
 </body>
