@@ -12,7 +12,7 @@
     "mcv.message.mcdv": "The latest version: ${version}\n(The data from Mojira may be earlier than the official release. Information is for reference purposes only).",
     "mcv.message.mcev": "The latest version: ${version}",
     "mcv.message.mclgv": "The latest version: ${version}\n(The data from Mojira may be earlier than the official release. Information is for reference purposes only).",
-    "mcv.message.mcv": "The latest version in the launcher: \n${launcher_ver}\nThe latest version recorded on Mojira: \n${jira_ver}\n(The latest version in the launcher shall prevail, Mojira is only for previewing the version)",
+    "mcv.message.mcv": "当前启动器内最新版本为：\n${launcher_ver}\nMojira 上所记录最新版本为：\n${jira_ver}\n（以启动器内最新版本为准，Mojira 仅作版本号预览用）",
     "mcv.message.mcv.jira.failed": "Failed to get Mojira information.",
     "mcv.message.mcv.launcher": "The latest release: ${release}\nRelease time: ${release_time}\nThe latest snapshot: ${snapshot}\nRelease time: ${snapshot_time}",
     "mcv.message.mcv.launcher.failed": "Failed to get manifest.json."
