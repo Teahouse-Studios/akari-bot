@@ -39,7 +39,7 @@
             background-color: #9BC2E6;
         }
 
-        .grey {
+        .gray {
             background-color: #CECECE;
         }
 
@@ -121,8 +121,9 @@
     </div>
     <hr>
     <div class="footer">
-        {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]).replace(
-        '<', '&lt;').replace('>', '&gt;') }}
+        {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]) }} <br> {{ 
+            msg.locale.t('core.message.help.detail', prefix=msg.prefixes[0]).replace(
+            '<', '&lt;').replace('>', '&gt;') }}
         </div>
     <br>
 </div>

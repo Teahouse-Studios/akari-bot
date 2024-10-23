@@ -129,13 +129,13 @@ async def _(msg: Bot.MessageSession):
             for img in imgs:
                 imgchain.append(Image(img))
 
-            help_msg_list = [I18NContext("core.message.help.more_information",
+            help_msg_list = [I18NContext("core.message.help.all_modules",
                                          prefix=msg.prefixes[0])]
             if Config('help_url', cfg_type=str):
-                help_msg_list.append(I18NContext("core.message.help.more_information.document",
+                help_msg_list.append(I18NContext("core.message.help.document",
                                                  url=Config('help_url', cfg_type=str)))
             if Config('donate_url', cfg_type=str):
-                help_msg_list.append(I18NContext("core.message.help.more_information.donate",
+                help_msg_list.append(I18NContext("core.message.help.donate",
                                                  url=Config('donate_url', cfg_type=str)))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
@@ -156,17 +156,21 @@ async def _(msg: Bot.MessageSession):
             help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
-                "core.message.help.legacy.more_information",
+                "core.message.help.detail",
+                prefix=msg.prefixes[0]))
+        help_msg.append(
+            msg.locale.t(
+                "core.message.help.all_modules",
                 prefix=msg.prefixes[0]))
         if Config('help_url', cfg_type=str):
             help_msg.append(
                 msg.locale.t(
-                    "core.message.help.more_information.document",
+                    "core.message.help.document",
                     url=Config('help_url', cfg_type=str)))
         if Config('donate_url', cfg_type=str):
             help_msg.append(
                 msg.locale.t(
-                    "core.message.help.more_information.donate",
+                    "core.message.help.donate",
                     url=Config('donate_url', cfg_type=str)))
         await msg.finish(help_msg)
 
@@ -184,10 +188,10 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             for img in imgs:
                 imgchain.append(Image(img))
 
-            help_msg = [I18NContext("core.message.module.list.prompt", prefix=msg.prefixes[0])]
+            help_msg = [I18NContext("core.message.help.detail", prefix=msg.prefixes[0])]
             if Config('help_url', cfg_type=str):
                 help_msg.append(I18NContext(
-                    "core.message.help.more_information.document",
+                    "core.message.help.document",
                                 url=Config('help_url', cfg_type=str)))
             await msg.finish(imgchain + help_msg)
     if legacy_help:
@@ -206,12 +210,12 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
         help_msg.append(
             msg.locale.t(
-                "core.message.module.list.prompt",
+                "core.message.help.detail",
                 prefix=msg.prefixes[0]))
         if Config('help_url', cfg_type=str):
             help_msg.append(
                 msg.locale.t(
-                    "core.message.help.more_information.document",
+                    "core.message.help.document",
                     url=Config('help_url', cfg_type=str)))
         await msg.finish(help_msg)
 
@@ -241,7 +245,13 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
     else:
         module_list = module_
 
-    html_content = env.get_template('help_doc.html').render(module_list=module_list, msg=msg, show_disabled_modules=show_disabled_modules, target_enabled_list=target_enabled_list, len=len, CommandParser=CommandParser)
+    html_content = env.get_template('help_doc.html').render(
+        module_list=module_list,
+        msg=msg,
+        show_disabled_modules=show_disabled_modules,
+        target_enabled_list=target_enabled_list,
+        len=len,
+        CommandParser=CommandParser)
     fname = random_cache_path() + '.html'
     with open(fname, 'w', encoding='utf-8') as fi:
         fi.write(html_content)
