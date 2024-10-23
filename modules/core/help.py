@@ -330,7 +330,11 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
     for key, value in module_list.items():
         if not show_disabled_modules and key not in target_enabled_list and not value.base:
             continue
-        command_count = len(value.command_list.set)
+
+        help_ = CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
+                              command_prefixes=msg.prefixes)
+
+        command_count = len(help_.args) if help_.args else 0
         regex_count = len(value.regex_list.set)
 
         top_bottom_class = "orange" if value.base else "blue"
