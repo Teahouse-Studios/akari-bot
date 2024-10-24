@@ -24,11 +24,13 @@ m = module('module',
             'enable all {{core.help.module.enable_all}}',
             'disable <module>... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
-            'reload <module> ...',
-            'load <module> ...',
-            'unload <module> ...',
             'list [--legacy] {{core.help.module.list}}'],
            options_desc={'--legacy': '{help.option.legacy}'},
+           exclude_from=['QQ|Guild'])
+@m.command(['reload <module> ...',
+            'load <module> ...',
+            'unload <module> ...'],
+           required_super_user=True,
            exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -43,11 +45,13 @@ async def _(msg: Bot.MessageSession):
             'enable all [-g] {{core.help.module.enable_all}}',
             'disable [-g]  <module> ... {{core.help.module.disable}}',
             'disable all [-g] {{core.help.module.disable_all}}',
-            'reload <module> ...',
-            'load <module> ...',
-            'unload <module> ...',
             'list [--legacy] {{core.help.module.list}}'],
            options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
+           available_for=['QQ|Guild'])
+@m.command(['reload <module> ...',
+            'load <module> ...',
+            'unload <module> ...'],
+           required_super_user=True,
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
