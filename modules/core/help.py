@@ -238,10 +238,9 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
         else:
             module_[key] = value
 
-
     if not show_disabled_modules:
         module_ = {k: v for k, v in module_.items() if k in target_enabled_list}
-    
+
     if show_base_modules:
         module_list = {**essential, **module_}
     else:
@@ -284,8 +283,8 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False
-    read = open(pic)
-    load_img = json.loads(read.read())
+    with open(pic) as read:
+        load_img = json.loads(read.read())
     img_lst = []
     for x in load_img:
         b = base64.b64decode(x)

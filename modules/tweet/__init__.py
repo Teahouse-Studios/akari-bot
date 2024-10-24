@@ -91,8 +91,8 @@ async def _(msg: Bot.MessageSession, tweet: str):
         }, post_data=json.dumps(
             {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,
              'element': 'article'}), request_private_ip=True)
-        read = open(pic)
-        load_img = json.loads(read.read())
+        with open(pic) as read:
+            load_img = json.loads(read.read())
         img_lst = []
         for x in load_img:
             b = base64.b64decode(x)
