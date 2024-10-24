@@ -26,12 +26,14 @@ m = module('module',
             'disable all {{core.help.module.disable_all}}',
             'list [--legacy] {{core.help.module.list}}'],
            options_desc={'--legacy': '{help.option.legacy}'},
-           exclude_from=['QQ|Guild'])
+           exclude_from=['QQ|Guild'],
+           priority=2)
 @m.command(['reload <module> ...',
             'load <module> ...',
             'unload <module> ...'],
            required_superuser=True,
-           exclude_from=['QQ|Guild'])
+           exclude_from=['QQ|Guild'],
+           priority=1)
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
@@ -47,12 +49,14 @@ async def _(msg: Bot.MessageSession):
             'disable all [-g] {{core.help.module.disable_all}}',
             'list [--legacy] {{core.help.module.list}}'],
            options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
-           available_for=['QQ|Guild'])
+           available_for=['QQ|Guild'],
+           priority=2)
 @m.command(['reload <module> ...',
             'load <module> ...',
             'unload <module> ...'],
            required_superuser=True,
-           available_for=['QQ|Guild'])
+           available_for=['QQ|Guild'],
+           priority=1)
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
