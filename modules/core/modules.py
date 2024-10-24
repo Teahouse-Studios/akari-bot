@@ -30,7 +30,7 @@ m = module('module',
 @m.command(['reload <module> ...',
             'load <module> ...',
             'unload <module> ...'],
-           required_super_user=True,
+           required_superuser=True,
            exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession):
 @m.command(['reload <module> ...',
             'load <module> ...',
             'unload <module> ...'],
-           required_super_user=True,
+           required_superuser=True,
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
