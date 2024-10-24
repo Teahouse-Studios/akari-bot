@@ -37,39 +37,43 @@ async def bot_help(msg: Bot.MessageSession, module: str):
             help_name = alias[module].split()[0]
         else:
             help_name = module.split()[0]
+
         if help_name in current_unloaded_modules:
             await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
             await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
         elif help_name in module_list:
             module_ = module_list[help_name]
-            if module_.desc:
-                desc = module_.desc
-                if locale_str := re.match(r'\{(.*)}', desc):
-                    if locale_str:
-                        desc = msg.locale.t(locale_str.group(1))
-                msgs.append(desc)
-            help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
-                                  command_prefixes=msg.prefixes)
-            if help_.args:
-                msgs.append(help_.return_formatted_help_doc())
+            if msg.check_super_user() or not (module_.required_superuser or module_.required_base_superuser):
+                if module_.desc:
+                    desc = msg.locale.t_str(module_.desc)
+                    msgs.append(desc)
+                help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
+                                      command_prefixes=msg.prefixes)
+                if help_.args:
+                    msgs.append(help_.return_formatted_help_doc())
 
-            doc = '\n'.join(msgs)
-            if module_.regex_list.set:
-                doc += '\n' + msg.locale.t("core.message.help.support_regex")
-                for regex in module_.regex_list.set:
-                    pattern = None
-                    if isinstance(regex.pattern, str):
-                        pattern = regex.pattern
-                    elif isinstance(regex.pattern, re.Pattern):
-                        pattern = regex.pattern.pattern
-                    if pattern:
-                        desc = regex.desc
-                        if desc:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                  msg=msg.locale.t_str(desc))
-                        else:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
+                doc = '\n'.join(msgs)
+                if module_.regex_list.set:
+                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
+                    regex_list = module_.regex_list.get(
+                        msg.target.target_from, show_required_superuser=msg.check_super_user())
+                    for regex in regex_list:
+                        pattern = None
+                        if isinstance(regex.pattern, str):
+                            pattern = regex.pattern
+                        elif isinstance(regex.pattern, re.Pattern):
+                            pattern = regex.pattern.pattern
+                        if pattern:
+                            desc = regex.desc
+                            if desc:
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
+                                                                      msg=msg.locale.t_str(desc))
+                            else:
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
+            else:
+                doc = ''
+
             module_alias = module_.alias
             malias = []
             if module_alias:

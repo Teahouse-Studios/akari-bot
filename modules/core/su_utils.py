@@ -526,11 +526,11 @@ async def _(msg: Bot.MessageSession, k: str):
 if Config('enable_petal', False):
     petal = module('petal', alias='petals', base=True, doc=True)
 
-    @petal.command()
+    @petal.command('{{core.help.petal}}')
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
-    @petal.command('[<sender>] {{core.help.petal}}', required_superuser=True)
+    @petal.command('[<sender>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):
         sender = msg.parsed_msg['<sender>']
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):

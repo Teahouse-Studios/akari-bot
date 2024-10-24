@@ -11,9 +11,11 @@ class CommandMatches:
         self.set.append(meta)
         return self.set
 
-    def get(self, target_from: str) -> List[CommandMeta]:
+    def get(self, target_from: str, show_required_superuser: bool = False) -> List[CommandMeta]:
         metas = []
         for meta in self.set:
+            if not show_required_superuser and (meta.required_superuser or meta.required_base_superuser):
+                continue
             if target_from in meta.exclude_from:
                 continue
             if target_from in meta.available_for or '*' in meta.available_for:
@@ -28,6 +30,17 @@ class RegexMatches:
     def add(self, meta):
         self.set.append(meta)
         return self.set
+
+    def get(self, target_from: str, show_required_superuser: bool = False) -> List[RegexMeta]:
+        metas = []
+        for meta in self.set:
+            if not show_required_superuser and (meta.required_superuser or meta.required_base_superuser):
+                continue
+            if target_from in meta.exclude_from:
+                continue
+            if target_from in meta.available_for or '*' in meta.available_for:
+                metas.append(meta)
+        return metas
 
 
 class ScheduleMatches:

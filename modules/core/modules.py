@@ -126,8 +126,12 @@ async def config_modules(msg: Bot.MessageSession):
 
                     if modules_[m].desc:
                         recommend_modules_help_doc_list.append(msg.locale.t_str(modules_[m].desc))
-                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
-                                         command_prefixes=msg.prefixes).return_formatted_help_doc()
+                    hdoc = CommandParser(
+                        modules_[m],
+                        msg=msg,
+                        bind_prefix=modules_[m].bind_prefix,
+                        command_prefixes=msg.prefixes,
+                        is_superuser=msg.check_super_user()).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
