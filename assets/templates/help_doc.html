@@ -100,34 +100,33 @@
     <title>Module Help</title>
 </head>
 <body>
-<div class="botbox">
-    <br>
-    <div class="grid-container">
-        {% set is_superuser=msg.check_super_user() %}
-        {% for key, value in module_list.items() %}
-        <div class="grid-item {{ 'gray' if show_disabled_modules and key not in target_enabled_list and not value.base else ('orange' if value.base else 'blue' )}}">
-            <div class="{{ 'red' if value.required_admin else '' }}">
-                {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
-                              command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
-                {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser) %}
-                <div class="command-name">{{ value.bind_prefix }}</div>
-                {% if len(help_.args) > 0 %}
-                <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
-                {%- endif %}
-                {% if len(regex_list) > 0 %}
-                <div>{{ msg.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
-                {%- endif %}
+    <div class="botbox">
+        <br>
+        <div class="grid-container">
+            {% set is_superuser=msg.check_super_user() %}
+            {% for key, value in module_list.items() %}
+            <div class="grid-item {{ 'gray' if show_disabled_modules and key not in target_enabled_list and not value.base else ('orange' if value.base else 'blue' )}}">
+                <div class="{{ 'red' if value.required_admin else '' }}">
+                    {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
+                                  command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
+                    {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser) %}
+                    <div class="command-name">{{ value.bind_prefix }}</div>
+                    {% if len(help_.args) > 0 %}
+                    <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
+                    {%- endif %}
+                    {% if len(regex_list) > 0 %}
+                    <div>{{ msg.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
+                    {%- endif %}
+                </div>
             </div>
+            {%- endfor %}
         </div>
-        {%- endfor %}
+        <hr>
+        <div class="footer">
+            {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]) }} <br> {{ 
+                msg.locale.t('core.message.help.detail', prefix=msg.prefixes[0]) |safe }}
+            </div>
+        <br>
     </div>
-    <hr>
-    <div class="footer">
-        {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]) }} <br> {{ 
-            msg.locale.t('core.message.help.detail', prefix=msg.prefixes[0]).replace(
-            '<', '&lt;').replace('>', '&gt;') }}
-        </div>
-    <br>
-</div>
 </body>
 </html>

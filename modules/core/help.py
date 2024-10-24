@@ -2,10 +2,10 @@ import base64
 import re
 from io import BytesIO
 import traceback
-from typing import Dict, List, Optional
 
 import aiohttp
 import orjson as json
+from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
 
 from config import Config, CFG
@@ -14,13 +14,14 @@ from core.component import module
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
-from core.types import Module
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.image_table import ImageTable, image_table_render
 from core.utils.web_render import WebRender, webrender
 
-from jinja2 import FileSystemLoader, Environment
+
+env = Environment(loader=FileSystemLoader('assets/templates'))
+
 
 hlp = module('help', base=True, doc=True)
 
@@ -121,12 +122,9 @@ async def bot_help(msg: Bot.MessageSession, module: str):
 @hlp.command('[--legacy] {{core.help.help}}',
              options_desc={'--legacy': '{help.option.legacy}'})
 async def _(msg: Bot.MessageSession):
-    module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
-    target_enabled_list = msg.enabled_modules
     legacy_help = True
     if not msg.parsed_msg and msg.Feature.image:
-        imgs = await help_generator(msg, module_list, target_enabled_list)
+        imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
             imgchain = []
@@ -143,6 +141,9 @@ async def _(msg: Bot.MessageSession):
                                                  url=Config('donate_url', cfg_type=str)))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
+        module_list = ModulesManager.return_modules_list(
+            target_from=msg.target.target_from)
+        target_enabled_list = msg.enabled_modules
         help_msg = [msg.locale.t("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
@@ -180,12 +181,9 @@ async def _(msg: Bot.MessageSession):
 
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
-    module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
-    target_enabled_list = msg.enabled_modules
     legacy_help = True
     if msg.Feature.image and not legacy:
-        imgs = await help_generator(msg, module_list, target_enabled_list, show_disabled_modules=True, show_base_modules=False)
+        imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False)
         if imgs:
             legacy_help = False
             imgchain = []
@@ -199,6 +197,9 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
                                 url=Config('help_url', cfg_type=str)))
             await msg.finish(imgchain + help_msg)
     if legacy_help:
+        module_list = ModulesManager.return_modules_list(
+            target_from=msg.target.target_from)
+        target_enabled_list = msg.enabled_modules
         module_ = []
         for x in module_list:
             if x[0] == '_':
@@ -224,14 +225,16 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         await msg.finish(help_msg)
 
 
-env = Environment(loader=FileSystemLoader('assets/templates'))
+async def help_generator(msg: Bot.MessageSession, show_base_modules: bool = True, show_disabled_modules: bool = False, use_local: bool = True):
+    module_list = ModulesManager.return_modules_list(
+        target_from=msg.target.target_from)
+    target_enabled_list = msg.enabled_modules
 
-
-async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module], target_enabled_list: Optional[List[str]] = [], show_base_modules: bool = True, show_disabled_modules: bool = False, use_local=True):
     if not WebRender.status:
         return False
     elif not WebRender.local:
         use_local = False
+
     essential = {}
     module_ = {}
     for key, value in module_list.items():
@@ -251,18 +254,17 @@ async def help_generator(msg: Bot.MessageSession, module_list: Dict[str, Module]
         module_list = module_
 
     html_content = env.get_template('help_doc.html').render(
+        CommandParser=CommandParser,
+        len=len,
         module_list=module_list,
         msg=msg,
         show_disabled_modules=show_disabled_modules,
-        target_enabled_list=target_enabled_list,
-        len=len,
-        CommandParser=CommandParser)
+        target_enabled_list=target_enabled_list)
     fname = random_cache_path() + '.html'
     with open(fname, 'w', encoding='utf-8') as fi:
         fi.write(html_content)
 
     d = {'content': html_content, 'element': '.botbox'}
-
     html_ = json.dumps(d)
 
     try:

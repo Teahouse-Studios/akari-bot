@@ -6,14 +6,18 @@ from typing import List, Union
 import aiohttp
 import filetype as ft
 import orjson as json
-from PIL import Image as PILImage
 from aiofile import async_open
+from jinja2 import FileSystemLoader, Environment
+from PIL import Image as PILImage
 
 from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
+
+
+env = Environment(loader=FileSystemLoader('assets/templates'))
 
 
 async def image_split(i: Image) -> List[Image]:
@@ -46,7 +50,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
 
     :param message_chain: 消息链或消息链列表。
     :param use_local: 是否使用本地Webrender渲染。
-    :return: 图片的PIL对象
+    :return: 图片的PIL对象列表。
     '''
     if not WebRender.status:
         return False
@@ -54,74 +58,33 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
         use_local = False
     if isinstance(message_chain, List):
         message_chain = MessageChain(message_chain)
+
     lst = []
-    html_template = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap" rel="stylesheet">
-    <style>html body {
-        margin-top: 0px !important;
-        font-family: 'Noto Sans SC', sans-serif;
-    }
-
-    :lang(ko) {
-        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
-    }
-
-    :lang(ja) {
-        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
-
-    :lang(zh-TW) {
-        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
-
-    :lang(zh-HK) {
-        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
-
-    :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
-        font-family:  'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
-    }</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="botbox"'>
-    ${content}
-    </div>
-</body>
-</html>"""
 
     for m in message_chain.as_sendable(msg=msg, embed=False):
         if isinstance(m, Plain):
             lst.append('<div>' + m.text.replace('\n', '<br>') + '</div>')
-        if isinstance(m, Image):
+        elif isinstance(m, Image):
             async with async_open(await m.get(), 'rb') as fi:
                 data = await fi.read()
                 try:
                     ftt = ft.match(data)
                     lst.append(f'<img src="data:{ftt.mime};base64,{
-                        (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
+                               (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
                 except Exception:
                     Logger.error(traceback.format_exc())
-        if isinstance(m, Voice):
+        elif isinstance(m, Voice):
             lst.append('<div>[Voice]</div>')
-        if isinstance(m, Embed):
+        elif isinstance(m, Embed):
             lst.append('<div>[Embed]</div>')
 
-    pic = False
-
-    d = {'content': html_template.replace('${content}', '\n'.join(lst)), 'element': '.botbox'}
-
-    html_ = json.dumps(d)
-
+    html_content = env.get_template('msgchain_to_image.html').render(content='\n'.join(lst))
     fname = random_cache_path() + '.html'
     with open(fname, 'w', encoding='utf-8') as fi:
-        fi.write(d['content'])
+        fi.write(html_content)
+
+    d = {'content': html_content, 'element': '.botbox'}
+    html_ = json.dumps(d)
 
     try:
         pic = await download(webrender('element_screenshot', use_local=use_local),
@@ -145,6 +108,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False
+
     with open(pic) as read:
         load_img = json.loads(read.read())
     img_lst = []
@@ -153,84 +117,33 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
         bio = BytesIO(b)
         bimg = PILImage.open(bio)
         img_lst.append(bimg)
+
     return img_lst
 
 
 async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bool]:
     '''使用Webrender渲染svg文件。
 
-    :param message_chain: svg文件路径。
+    :param file_path: svg文件路径。
     :param use_local: 是否使用本地Webrender渲染。
-    :return: 图片的PIL对象
+    :return: 图片的PIL对象。
     '''
     if not WebRender.status:
         return False
     elif not WebRender.local:
         use_local = False
 
-    html_template = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap" rel="stylesheet">
-    <style>html body {
-        margin-top: 0px !important;
-        font-family: 'Noto Sans SC', sans-serif;
-    }
-
-    :lang(ko) {
-        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
-    }
-
-    :lang(ja) {
-        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
-
-    :lang(zh-TW) {
-        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
-
-    :lang(zh-HK) {
-        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
-
-    :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
-        font-family:  'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
-    }
-    .botbox {
-        display: inline-block;
-        width: fit-content;
-        height: fit-content;
-    }
-
-    .botbox svg {
-        width: 100%;
-        height: 100%;
-        }</style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File</title>
-</head>
-<body>
-    <div class="botbox">
-    ${content}
-    </div>
-</body>
-</html>"""
-
     with open(file_path, 'r') as file:
         svg_content = file.read()
 
-    pic = False
-
-    d = {'content': html_template.replace('${content}', svg_content), 'element': '.botbox', 'counttime': False}
-
-    html_ = json.dumps(d)
+    html_content = env.get_template('svg_template.html').render(svg=svg_content)
 
     fname = random_cache_path() + '.html'
     with open(fname, 'w', encoding='utf-8') as fi:
-        fi.write(d['content'])
+        fi.write(html_content)
+
+    d = {'content': html_content, 'element': '.botbox', 'counttime': False}
+    html_ = json.dumps(d)
 
     try:
         pic = await download(webrender('element_screenshot', use_local=use_local),
@@ -254,12 +167,15 @@ async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bo
         else:
             Logger.info('[Webrender] Generation Failed.')
             return False
+
     with open(pic) as read:
         load_img = json.loads(read.read())
+
     img_lst = []
     for x in load_img:
         b = base64.b64decode(x)
         bio = BytesIO(b)
         bimg = PILImage.open(bio)
         img_lst.append(bimg)
+
     return img_lst
