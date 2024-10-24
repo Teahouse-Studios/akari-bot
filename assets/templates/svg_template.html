@@ -30,21 +30,51 @@
     }
     .botbox {
         display: inline-block;
-        width: fit-content;
-        height: fit-content;
+        width: auto;
+        height: auto;
     }
 
     .botbox svg {
-        width: 100%;
-        height: 100%;
-        }</style>
+        display: block;
+        width: auto;
+        height: auto;
+    }</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File</title>
 </head>
 <body>
     <div class="botbox">
-        {{ svg }}
+        {{ svg | safe }}
     </div>
+
+    <script>
+        window.onload = function() {
+            const botbox = document.querySelector('.botbox');
+            const svg = botbox.querySelector('svg');
+
+            if (svg) {
+                let viewBox = svg.getAttribute('viewBox');
+                if (!viewBox) {
+                    const width = svg.getAttribute('width');
+                    const height = svg.getAttribute('height');
+                    if (width && height) {
+                        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                        viewBox = `0 0 ${width} ${height}`;
+                    }
+                }
+
+                if (viewBox) {
+                    const [minX, minY, width, height] = viewBox.split(' ').map(Number);
+                    botbox.style.width = `${width}px`;
+                    botbox.style.height = `${height}px`;
+                } else {
+                    const bbox = svg.getBBox();
+                    botbox.style.width = `${bbox.width}px`;
+                    botbox.style.height = `${bbox.height}px`;
+                }
+            }
+        }
+    </script>
 </body>
 </html>
