@@ -44,7 +44,7 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
 EnableDirtyWordCheck.status = True
 Url.disable_mm = True
 PrivateAssets.set('assets/private/console')
-console_history_path = os.path.abspath('assets/private/console/.console_history')
+console_history_path = os.path.abspath(PrivateAssets.path + '/.console_history')
 if os.path.exists(console_history_path):
     os.remove(console_history_path)
 
@@ -80,7 +80,7 @@ async def send_command(msg):
 
 if __name__ == '__main__':
     init_bot()
-    Info.client_name = 'Test'
+    Info.client_name = client_name
     loop = asyncio.new_event_loop()
     loop.run_until_complete(console_scheduler())
     try:
