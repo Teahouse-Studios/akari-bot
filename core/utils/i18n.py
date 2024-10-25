@@ -154,10 +154,10 @@ class Locale:
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(*args, **kwargs)
 
-    def t_str(self, text: str, fallback_failed_prompt=False) -> str:
+    def t_str(self, text: str, fallback_failed_prompt=False, **kwargs) -> str:
         if locale_str := re.findall(r'\{(.*)}', text):
             for l in locale_str:
-                text = text.replace(f'{{{l}}}', self.t(l, fallback_failed_prompt=fallback_failed_prompt))
+                text = text.replace(f'{{{l}}}', self.t(l, fallback_failed_prompt=fallback_failed_prompt, **kwargs))
         return text
 
     def int(self, number: Union[Decimal, int, str], precision: int = 0) -> str:

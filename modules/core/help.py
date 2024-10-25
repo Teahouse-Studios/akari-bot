@@ -193,7 +193,7 @@ async def _(msg: Bot.MessageSession):
 async def modules_list_help(msg: Bot.MessageSession, legacy):
     legacy_help = True
     if msg.Feature.image and not legacy:
-        imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False)
+        imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
             imgchain = []
@@ -209,7 +209,6 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
             target_from=msg.target.target_from)
-        target_enabled_list = msg.enabled_modules
         module_ = []
         for x in module_list:
             if x[0] == '_':
@@ -235,7 +234,11 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         await msg.finish(help_msg)
 
 
-async def help_generator(msg: Bot.MessageSession, show_base_modules: bool = True, show_disabled_modules: bool = False, use_local: bool = True):
+async def help_generator(msg: Bot.MessageSession,
+                         show_base_modules: bool = True,
+                         show_disabled_modules: bool = False,
+                         show_dev_modules: bool = True,
+                         use_local: bool = True):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
@@ -247,26 +250,35 @@ async def help_generator(msg: Bot.MessageSession, show_base_modules: bool = True
     elif not WebRender.local:
         use_local = False
 
+    dev_module_list = []
     essential = {}
     module_ = {}
+
     for key, value in module_list.items():
         if value.hidden:
             continue
-        if not is_superuser and value.required_superuser or \
+        elif not is_superuser and value.required_superuser or \
                 not is_base_superuser and value.required_base_superuser:
             continue
-        elif value.base:
+
+        if value.base:
             essential[key] = value
         else:
             module_[key] = value
 
+        if value.required_superuser or value.required_base_superuser:
+            dev_module_list.append(key)
+
     if not show_disabled_modules:
-        module_ = {k: v for k, v in module_.items() if k in target_enabled_list}
+        module_ = {k: v for k, v in module_.items() if k in target_enabled_list or k in dev_module_list}
 
     if show_base_modules:
         module_list = {**essential, **module_}
     else:
         module_list = module_
+
+    if not show_dev_modules:
+        module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
 
     html_content = env.get_template('help_doc.html').render(
         CommandParser=CommandParser,
