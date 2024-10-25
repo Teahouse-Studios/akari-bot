@@ -204,10 +204,14 @@ class BotDBUtil:
             return session.query(TargetInfo).filter(*filter_).all()
 
     class SenderInfo:
-        def __init__(self, sender_id):
+        def __init__(self, sender_id, auto_init=True):
             self.sender_id = sender_id
             self.query = self.query_SenderInfo
-
+            self.auto_init = auto_init
+        
+            if self.auto_init and not self.query:
+                self.init()
+        
         @property
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.sender_id).first()
