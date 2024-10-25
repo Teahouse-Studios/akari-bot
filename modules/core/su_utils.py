@@ -15,16 +15,14 @@ from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.types import Param
-from core.utils.info import Info
+from core.utils.info import Info, get_all_sender_name, get_all_target_name
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint, decrypt_string
 from database import BotDBUtil
 
 
-target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group", "KOOK|Person",
-               "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
-               "Telegram|Group", "Telegram|Private", "Telegram|Supergroup", "TEST|Console",]
-sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User", "TEST",]
+target_list = get_all_target_name()
+sender_list = get_all_sender_name()
 
 
 su = module('superuser', alias='su', required_superuser=True, base=True, doc=True)

@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession):
 
     qc = CoolDown('call_openai', msg)
     c = qc.check(60)
-    if c == 0 or msg.target.target_from == 'TEST|Console' or is_superuser:
+    if c == 0 or msg.target.client_name == 'TEST' or is_superuser:
         if hasattr(msg, 'parsed_msg'):
             question = msg.parsed_msg['<question>']
             gpt4 = bool(msg.parsed_msg['-4'])
@@ -136,7 +136,7 @@ async def _(msg: Bot.MessageSession):
         if petal != 0:
             chain.append(I18NContext('petal.message.cost', amount=petal))
 
-        if msg.target.target_from != 'TEST|Console' and not is_superuser:
+        if msg.target.client_name != 'TEST' and not is_superuser:
             qc.reset()
         await msg.finish(chain)
     else:

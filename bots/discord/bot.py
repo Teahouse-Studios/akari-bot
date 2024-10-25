@@ -8,7 +8,7 @@ import discord
 import orjson as json
 
 from bots.discord.client import client
-from bots.discord.info import client_name
+from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
 from config import Config
 from core.bot import init_async, load_prompt
@@ -28,7 +28,7 @@ dc_token = Config('discord_token', cfg_type=str)
 
 @client.event
 async def on_ready():
-    Logger.info('Logged on as ' + str(client.user))
+    Logger.info(f'Logged on as {client.user}')
     global count
     if count == 0:
         await init_async()
@@ -88,9 +88,9 @@ async def on_message(message):
     # don't respond to ourselves
     if message.author == client.user or message.author.bot:
         return
-    target = "Discord|Channel"
+    target = target_channel_name
     if isinstance(message.channel, discord.DMChannel):
-        target = "Discord|DM|Channel"
+        target = target_dm_channel_name
     target_id = f"{target}|{message.channel.id}"
     reply_id = None
     if message.reference:
@@ -104,10 +104,10 @@ async def on_message(message):
     msg = MessageSession(
         target=MsgInfo(
             target_id=target_id,
-            sender_id=f"Discord|Client|{message.author.id}",
+            sender_id=f"{sender_name}|{message.author.id}",
             sender_name=message.author.name,
             target_from=target,
-            sender_from="Discord|Client",
+            sender_from=sender_name,
             client_name=client_name,
             message_id=message.id,
             reply_id=reply_id),

@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
 
     qc = CoolDown('call_openai', msg)
     c = qc.check(60)
-    if c == 0 or msg.target.target_from == 'TEST|Console' or is_superuser:
+    if c == 0 or msg.target.client_name == 'TEST' or is_superuser:
         f_msg = await msg.wait_next_message(msg.locale.t('summary.message'), append_instruction=False)
         try:
             f = re.search(r'\[CQ:forward,id=(-?\d+).*?]', f_msg.as_display()).group(1)
@@ -81,7 +81,7 @@ async def _(msg: Bot.MessageSession):
             output = f"{output}\n{msg.locale.t('petal.message.cost', amount=petal)}"
         await wait_msg.delete()
 
-        if msg.target.target_from != 'TEST|Console' and not is_superuser:
+        if msg.target.client_name != 'TEST' and not is_superuser:
             qc.reset()
 
         output = await check(output, msg=msg)

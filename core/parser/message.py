@@ -4,6 +4,7 @@ import re
 import traceback
 from datetime import datetime
 
+from bots.aiocqhttp.info import target_group_name as qq_group_name, target_guild_name as qq_guild_name
 from bots.aiocqhttp.utils import qq_frame_type
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
@@ -433,7 +434,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except SendMessageFailed:
-                    if msg.target.target_from == 'QQ|Group':  # wtf onebot 11
+                    if msg.target.target_from == qq_group_name:  # wtf onebot 11
                         if qq_frame_type() == 'ntqq':
                             await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
                                                emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
@@ -454,7 +455,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     time_used = datetime.now() - time_start
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
-                    if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module'):
+                    if (msg.target.target_from != qq_guild_name or command_first_word != 'module'):
                         if enable_tos:
                             try:
                                 await tos_msg_counter(msg, msg.trigger_msg)
@@ -636,7 +637,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             ExecutionLockList.remove(msg)
 
             except SendMessageFailed:
-                if msg.target.target_from == 'QQ|Group':  # wtf onebot 11
+                if msg.target.target_from == qq_group_name:  # wtf onebot 11
                     if qq_frame_type() == 'ntqq':
                         await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
                                            emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
