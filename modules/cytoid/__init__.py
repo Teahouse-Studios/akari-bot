@@ -32,14 +32,14 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if not query_id:
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     if query:
-        if msg.target.target_from == 'TEST|Console':
+        if msg.target.client_name == 'TEST':
             c = 0
         else:
             qc = CoolDown('cytoid_rank', msg)
             c = qc.check(150)
         if c == 0:
             img = await get_rating(msg, query_id, query)
-            if msg.target.target_from != 'TEST|Console':
+            if msg.target.client_name != 'TEST':
                 if img['status']:
                     qc.reset()
             if 'path' in img:

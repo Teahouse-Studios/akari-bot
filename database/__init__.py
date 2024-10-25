@@ -204,13 +204,9 @@ class BotDBUtil:
             return session.query(TargetInfo).filter(*filter_).all()
 
     class SenderInfo:
-        def __init__(self, sender_id, auto_init=True):
+        def __init__(self, sender_id):
             self.sender_id = sender_id
             self.query = self.query_SenderInfo
-            self.auto_init = auto_init
-        
-            if self.auto_init and not self.query:
-                self.init()
         
         @property
         def query_SenderInfo(self):
@@ -290,8 +286,9 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def edit(self, column: str, value):
-            query = self.query_SenderInfo
-            setattr(query, column, value)
+            if not self.query:
+                self.query = self.init()
+            setattr(self.query, column, value)
             session.commit()
             session.expire_all()
             return True

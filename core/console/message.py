@@ -9,6 +9,7 @@ from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, Fetc
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.console.info import *
 from core.exceptions import WaitCancelException
 from core.logger import Logger
 from core.types import Session, MsgInfo, FinishedSession as FinS
@@ -110,13 +111,15 @@ class MessageSession(MessageSessionT):
             raise WaitCancelException
         if message_chain and delete:
             await send.delete()
-        return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
-                                             sender_id='TEST|0',
-                                             sender_name='',
-                                             target_from='TEST|Console',
-                                             sender_from='TEST', client_name='TEST', message_id=0,
+        return MessageSession(target=MsgInfo(target_id=f'{target_name}|0',
+                                             sender_id=f'{sender_name}|0',
+                                             sender_name='Console',
+                                             target_from=target_name,
+                                             sender_from=sender_name,
+                                             client_name=client_name,
+                                             message_id=0,
                                              reply_id=None),
-                              session=Session(message=c, target='TEST|Console|0', sender='TEST|0'))
+                              session=Session(message=c, target=f'{target_name}|0', sender=f'{sender_name}|0'))
 
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
         send = None
@@ -198,11 +201,14 @@ class FetchedSession(FetchedSessionT):
 
 
 class FetchTarget(FetchTargetT):
-    name = 'TEST'
+    name = client_name
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        return FetchedSession('TEST|Console', '0', 'TEST', '0')
+        return FetchedSession(target_from=target_name,
+                              target_id='0',
+                              sender_from=sender_name,
+                              sender_id='0')
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):

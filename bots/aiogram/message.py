@@ -5,7 +5,7 @@ from typing import List, Union
 from aiogram.types import FSInputFile
 
 from bots.aiogram.client import bot, token
-from bots.aiogram.info import client_name
+from bots.aiogram.info import *
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
@@ -160,13 +160,15 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        match_channel = re.match(r'^(Telegram\|.*?)\|(.*)', target_id)
+        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
 
-        if match_channel:
-            target_from = sender_from = match_channel.group(1)
-            target_id = match_channel.group(2)
+        if match_target:
+            target_from = sender_from = match_target.group(1)
+            target_id = match_target.group(2)
             if sender_id:
-                match_sender = re.match(r'^(Telegram\|User)\|(.*)', sender_id)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
