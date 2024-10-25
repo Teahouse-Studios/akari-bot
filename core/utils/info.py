@@ -1,10 +1,23 @@
+import importlib
+import glob
+import os
+import traceback
+
+from core.logger import Logger
+
 def get_all_clients_name():
-    from bots.aiocqhttp.info import client_name as cq_client_name
-    from bots.kook.info import client_name as kook_client_name
-    from bots.matrix.info import client_name as matrix_client_name
-    from bots.discord.info import client_name as discord_client_name
-    from bots.aiogram.info import client_name as aiogram_client_name
-    return [cq_client_name, kook_client_name, matrix_client_name, discord_client_name, aiogram_client_name, 'TEST']
+    client_names = []
+    for info_file in glob.glob('./bots/*/info.py'):
+        module_name = os.path.splitext(os.path.relpath(info_file, './'))[0].replace('/', '.')
+        try:
+            module = importlib.import_module(module_name)
+            if hasattr(module, 'client_name'):
+                client_names.append(module.client_name)
+        except Exception as e:
+            Logger.error(traceback.format_exc(e))
+
+    client_names.append('TEST')
+    return client_names
 
 
 class Info:
