@@ -16,7 +16,7 @@
             align-items: center;
             padding: 3px;
             border-radius: 15px;
-            border: 1px solid #ccc;
+            border: 1px solid gray;
             height: 75px;
             width: 100px;
             text-align: center;
@@ -31,19 +31,25 @@
             box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .orange {
+        .base {
             background-color: #F4B084;
         }
 
-        .blue {
+        .external {
             background-color: #9BC2E6;
         }
 
-        .gray {
+        .disabled {
             background-color: #CECECE;
         }
 
-        .red {
+        .dev {
+            font-style: italic;
+            color: black;
+            border: 1px dashed gray;
+        }
+
+        .admin {
             color: red;
         }
 
@@ -54,7 +60,7 @@
 
         hr {
             border: 0;
-            border-top: 1px dashed #ccc;
+            border-top: 1px dashed gray;
             margin: 5px 0;
         }
 
@@ -103,13 +109,12 @@
     <div class="botbox">
         <br>
         <div class="grid-container">
-            {% set is_superuser=msg.check_super_user() %}
             {% for key, value in module_list.items() %}
-            <div class="grid-item {{ 'gray' if show_disabled_modules and key not in target_enabled_list and not value.base else ('orange' if value.base else 'blue' )}}">
-                <div class="{{ 'red' if value.required_admin else '' }}">
+            <div class="grid-item{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else (' base' if value.base else ' external') }}">
+                <div class="{% if not (value.required_superuser or value.required_base_superuser) %}{{ 'admin' if value.required_admin else '' }}{% endif %}">
                     {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
                                   command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
-                    {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser) %}
+                    {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
                     <div class="command-name">{{ value.bind_prefix }}</div>
                     {% if len(help_.args) > 0 %}
                     <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>

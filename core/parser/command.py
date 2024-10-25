@@ -4,6 +4,7 @@ import shlex
 import traceback
 from typing import Dict, Optional, Union
 
+from core.builtins import base_superuser_list
 from core.exceptions import InvalidCommandFormatError
 from core.types import MessageSession, Module
 from core.utils.i18n import Locale, default_locale
@@ -26,9 +27,12 @@ class CommandParser:
         help_docs = {}
         if is_superuser is None:
             is_superuser = self.msg.check_super_user() if self.msg else False
+        is_base_superuser = (msg.target.sender_id in base_superuser_list) if self.msg else False
         for match in (
             args.command_list.set if not self.msg else args.command_list.get(
-                self.msg.target.target_from, show_required_superuser=is_superuser)):
+                self.msg.target.target_from,
+                show_required_superuser=is_superuser,
+                show_required_base_superuser=is_base_superuser)):
             if match.help_doc:
                 for m in match.help_doc:
                     help_docs[m] = {'priority': match.priority, 'meta': match}

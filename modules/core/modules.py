@@ -38,7 +38,6 @@ m = module('module',
             'list [--legacy] {{core.help.module.list}}'],
            options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
            available_for=['QQ|Guild'])
-
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
@@ -49,6 +48,7 @@ async def _(msg: Bot.MessageSession):
 
 
 async def config_modules(msg: Bot.MessageSession):
+    is_superuser = msg.check_super_user()
     alias = ModulesManager.modules_aliases
     modules_ = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
@@ -78,8 +78,8 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.enable.not_found", module=module_))
                 else:
-                    if modules_[module_].required_superuser and not msg.check_super_user():
-                        msglist.append(msg.locale.t("cparser.superuser.permission.denied"))
+                    if modules_[module_].required_superuser and not is_superuser:
+                        msglist.append(msg.locale.t("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.enable.already", module=module_))
                     else:
@@ -121,7 +121,7 @@ async def config_modules(msg: Bot.MessageSession):
                         msg=msg,
                         bind_prefix=modules_[m].bind_prefix,
                         command_prefixes=msg.prefixes,
-                        is_superuser=msg.check_super_user()).return_formatted_help_doc()
+                        is_superuser=is_superuser).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
@@ -139,7 +139,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.disable.not_found", module=module_))
                 else:
-                    if modules_[module_].required_superuser and not msg.check_super_user():
+                    if modules_[module_].required_superuser and not is_superuser:
                         msglist.append(msg.locale.t("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.disable.base", module=module_))
@@ -160,113 +160,99 @@ async def config_modules(msg: Bot.MessageSession):
                     else:
                         msglist.append(msg.locale.t("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get('reload', False):
-        if msg.check_super_user():
-            def module_reload(module, extra_modules, base_module=False):
-                reload_count = ModulesManager.reload_module(module)
-                if base_module and reload_count >= 1:
-                    return msg.locale.t("core.message.module.reload.base.success")
-                elif reload_count > 1:
-                    return msg.locale.t('core.message.module.reload.success', module=module) + \
-                        ('\n' if len(extra_modules) != 0 else '') + \
-                        '\n'.join(extra_modules) + \
-                        '\n' + msg.locale.t('core.message.module.reload.with', reload_count=reload_count - 1)
-                elif reload_count == 1:
-                    return msg.locale.t('core.message.module.reload.success', module=module) + \
-                        ('\n' if len(extra_modules) != 0 else '') + \
-                        '\n'.join(extra_modules) + \
-                        '\n' + msg.locale.t('core.message.module.reload.no_more')
-                else:
-                    return msg.locale.t("core.message.module.reload.failed")
+        def module_reload(module, extra_modules, base_module=False):
+            reload_count = ModulesManager.reload_module(module)
+            if base_module and reload_count >= 1:
+                return msg.locale.t("core.message.module.reload.base.success")
+            elif reload_count > 1:
+                return msg.locale.t('core.message.module.reload.success', module=module) + \
+                    ('\n' if len(extra_modules) != 0 else '') + \
+                    '\n'.join(extra_modules) + \
+                    '\n' + msg.locale.t('core.message.module.reload.with', reload_count=reload_count - 1)
+            elif reload_count == 1:
+                return msg.locale.t('core.message.module.reload.success', module=module) + \
+                    ('\n' if len(extra_modules) != 0 else '') + \
+                    '\n'.join(extra_modules) + \
+                    '\n' + msg.locale.t('core.message.module.reload.no_more')
+            else:
+                return msg.locale.t("core.message.module.reload.failed")
 
-            for module_ in wait_config_list:
-                base_module = False
-                if module_ not in modules_:
-                    msglist.append(msg.locale.t("core.message.module.reload.not_found", module=module_))
-                else:
-                    extra_reload_modules = ModulesManager.search_related_module(module_, False)
-                    if modules_[module_].base:
-                        if Config('allow_reload_base', False):
-                            confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
-                                                             append_instruction=False)
-                            if confirm:
-                                base_module = True
-                            else:
-                                await msg.finish()
-                        else:
-                            await msg.finish(msg.locale.t("core.message.module.reload.base.failed", module=module_))
-
-                    elif len(extra_reload_modules):
-                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
-                                                                      modules='\n'.join(extra_reload_modules)), append_instruction=False)
-                        if not confirm:
-                            await msg.finish()
-                    unloaded_list = Config('unloaded_modules', [])
-                    if unloaded_list and module_ in unloaded_list:
-                        unloaded_list.remove(module_)
-                        CFG.write('unloaded_modules', unloaded_list)
-                    msglist.append(module_reload(module_, extra_reload_modules, base_module))
-
-            locale_err = load_locale_file()
-            if len(locale_err) != 0:
-                msglist.append(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
-        else:
-            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
-    elif msg.parsed_msg.get('load', False):
-        if msg.check_super_user():
-
-            for module_ in wait_config_list:
-                if module_ not in current_unloaded_modules:
-                    msglist.append(msg.locale.t("core.message.module.load.not_found"))
-                    continue
-                if ModulesManager.load_module(module_):
-                    msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
-                    unloaded_list = Config('unloaded_modules', [])
-                    if unloaded_list and module_ in unloaded_list:
-                        unloaded_list.remove(module_)
-                        CFG.write('unloaded_modules', unloaded_list)
-                else:
-                    msglist.append(msg.locale.t("core.message.module.load.failed"))
-
-        else:
-            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
-
-    elif msg.parsed_msg.get('unload', False):
-        if msg.check_super_user():
-
-            for module_ in wait_config_list:
-                if module_ not in modules_:
-                    if module_ in err_modules:
-                        if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm"), append_instruction=False):
-                            unloaded_list = Config('unloaded_modules', [])
-                            if not unloaded_list:
-                                unloaded_list = []
-                            if module_ not in unloaded_list:
-                                unloaded_list.append(module_)
-                                CFG.write('unloaded_modules', unloaded_list)
-                            msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
-                            err_modules.remove(module_)
-                            current_unloaded_modules.append(module_)
+        for module_ in wait_config_list:
+            base_module = False
+            if module_ not in modules_:
+                msglist.append(msg.locale.t("core.message.module.reload.not_found", module=module_))
+            else:
+                extra_reload_modules = ModulesManager.search_related_module(module_, False)
+                if modules_[module_].base:
+                    if Config('allow_reload_base', False):
+                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
+                                                         append_instruction=False)
+                        if confirm:
+                            base_module = True
                         else:
                             await msg.finish()
                     else:
-                        msglist.append(msg.locale.t("core.message.module.unload.not_found"))
-                    continue
-                if modules_[module_].base:
-                    msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
-                    continue
-                if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm"), append_instruction=False):
-                    if ModulesManager.unload_module(module_):
-                        msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                        await msg.finish(msg.locale.t("core.message.module.reload.base.failed", module=module_))
+
+                elif len(extra_reload_modules):
+                    confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
+                                                                  modules='\n'.join(extra_reload_modules)), append_instruction=False)
+                    if not confirm:
+                        await msg.finish()
+                unloaded_list = Config('unloaded_modules', [])
+                if unloaded_list and module_ in unloaded_list:
+                    unloaded_list.remove(module_)
+                    CFG.write('unloaded_modules', unloaded_list)
+                msglist.append(module_reload(module_, extra_reload_modules, base_module))
+
+        locale_err = load_locale_file()
+        if len(locale_err) != 0:
+            msglist.append(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
+    elif msg.parsed_msg.get('load', False):
+        for module_ in wait_config_list:
+            if module_ not in current_unloaded_modules:
+                msglist.append(msg.locale.t("core.message.module.load.not_found"))
+                continue
+            if ModulesManager.load_module(module_):
+                msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
+                unloaded_list = Config('unloaded_modules', [])
+                if unloaded_list and module_ in unloaded_list:
+                    unloaded_list.remove(module_)
+                    CFG.write('unloaded_modules', unloaded_list)
+            else:
+                msglist.append(msg.locale.t("core.message.module.load.failed"))
+    elif msg.parsed_msg.get('unload', False):
+        for module_ in wait_config_list:
+            if module_ not in modules_:
+                if module_ in err_modules:
+                    if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm"), append_instruction=False):
                         unloaded_list = Config('unloaded_modules', [])
                         if not unloaded_list:
                             unloaded_list = []
-                        unloaded_list.append(module_)
-                        CFG.write('unloaded_modules', unloaded_list)
+                        if module_ not in unloaded_list:
+                            unloaded_list.append(module_)
+                            CFG.write('unloaded_modules', unloaded_list)
+                        msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                        err_modules.remove(module_)
+                        current_unloaded_modules.append(module_)
+                    else:
+                        await msg.finish()
                 else:
-                    await msg.finish()
-
-        else:
-            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+                    msglist.append(msg.locale.t("core.message.module.unload.not_found"))
+                continue
+            if modules_[module_].base:
+                msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
+                continue
+            if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm"), append_instruction=False):
+                if ModulesManager.unload_module(module_):
+                    msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                    unloaded_list = Config('unloaded_modules', [])
+                    if not unloaded_list:
+                        unloaded_list = []
+                    unloaded_list.append(module_)
+                    CFG.write('unloaded_modules', unloaded_list)
+            else:
+                await msg.finish()
 
     if msglist:
         if not recommend_modules_help_doc_list:
