@@ -83,7 +83,8 @@ admin = module('admin',
                       'unban': 'admin unban',
                       'ban list': 'admin ban list'},
                desc='{core.help.admin.desc}',
-               doc=True)
+               doc=True,
+               exclude_from=['TEST|Console'])
 
 
 @admin.command([
@@ -247,7 +248,7 @@ async def _(msg: Bot.MessageSession, second: int):
     await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
 
 
-mute = module('mute', base=True, doc=True, required_admin=True)
+mute = module('mute', base=True, doc=True, required_admin=True, exclude_from=['TEST|Console'])
 
 
 @mute.command('{{core.help.mute}}')
@@ -259,7 +260,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, doc=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
+leave = module('leave', alias='dismiss', base=True, doc=True, required_admin=True, available_for=['QQ|Group'])
 
 
 @leave.command('{{core.help.leave}}')

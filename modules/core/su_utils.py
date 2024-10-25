@@ -25,7 +25,7 @@ target_list = get_all_target_name()
 sender_list = get_all_sender_name()
 
 
-su = module('superuser', alias='su', required_superuser=True, base=True, doc=True)
+su = module('superuser', alias='su', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
 
 
 @su.command('add <user>')
@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
-set_ = module('set', required_superuser=True, base=True, doc=True)
+set_ = module('set', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
 
 
 @set_.command('module enable <target> <modules> ...',
@@ -156,7 +156,7 @@ if Bot.client_name == 'QQ':
         await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
-ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True)
+ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
 
 
 @ae.command('check <user>')
@@ -526,7 +526,7 @@ if Config('enable_petal', False):
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
-    @petal.command('[<sender>]', required_superuser=True)
+    @petal.command('[<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
     async def _(msg: Bot.MessageSession):
         sender = msg.parsed_msg['<sender>']
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -534,7 +534,8 @@ if Config('enable_petal', False):
         sender_info = BotDBUtil.SenderInfo(sender)
         await msg.finish(msg.locale.t('core.message.petal', sender=sender, petal=sender_info.petal))
 
-    @petal.command('modify <petal> [<sender>]', required_superuser=True)
+    @petal.command('modify <petal>', available_for=['TEST|Console'])
+    @petal.command('modify <petal> [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
     async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
         if sender:
             if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -548,7 +549,8 @@ if Config('enable_petal', False):
             sender_info.modify_petal(petal)
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=sender_info.petal))
 
-    @petal.command('clear [<sender>]', required_superuser=True)
+    @petal.command('clear', required_superuser=True, available_for=['TEST|Console'])
+    @petal.command('clear [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
     async def _(msg: Bot.MessageSession, sender: str = None):
         if sender:
             if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
