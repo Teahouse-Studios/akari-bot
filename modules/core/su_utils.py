@@ -4,9 +4,7 @@ import shutil
 import sys
 from datetime import datetime
 
-
 import orjson as json
-
 
 from config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
