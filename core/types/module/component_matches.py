@@ -11,10 +11,13 @@ class CommandMatches:
         self.set.append(meta)
         return self.set
 
-    def get(self, target_from: str, show_required_superuser: bool = False) -> List[CommandMeta]:
+    def get(self, target_from: str, show_required_superuser: bool = False,
+            show_required_base_superuser: bool = False) -> List[CommandMeta]:
         metas = []
         for meta in self.set:
-            if not show_required_superuser and (meta.required_superuser or meta.required_base_superuser):
+            if not show_required_base_superuser and meta.required_base_superuser:
+                continue
+            if not show_required_superuser and meta.required_superuser:
                 continue
             if target_from in meta.exclude_from:
                 continue
@@ -31,10 +34,13 @@ class RegexMatches:
         self.set.append(meta)
         return self.set
 
-    def get(self, target_from: str, show_required_superuser: bool = False) -> List[RegexMeta]:
+    def get(self, target_from: str, show_required_superuser: bool = False,
+            show_required_base_superuser: bool = False) -> List[RegexMeta]:
         metas = []
         for meta in self.set:
-            if not show_required_superuser and (meta.required_superuser or meta.required_base_superuser):
+            if not show_required_base_superuser and meta.required_base_superuser:
+                continue
+            if not show_required_superuser and meta.required_superuser:
                 continue
             if target_from in meta.exclude_from:
                 continue
