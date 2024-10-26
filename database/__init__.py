@@ -208,7 +208,7 @@ class BotDBUtil:
         def __init__(self, sender_id):
             self.sender_id = sender_id
             self.query = self.query_SenderInfo
-        
+
         @property
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.sender_id).first()

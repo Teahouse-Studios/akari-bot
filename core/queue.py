@@ -16,6 +16,7 @@ _queue_tasks = {}
 
 class JobQueue:
     name = 'Internal|' + str(uuid4())
+
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
         taskid = BotDBUtil.JobQueue.add(target_client, action, args)
