@@ -217,7 +217,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         if e.args == (404,):
             await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
         Logger.error(traceback.format_exc())
-        return {'status': False, 'text': msg.locale.t("error") + str(e)}
+        return {'status': False, 'text': msg.locale.t("message.error") + str(e)}
 
 
 async def download_cover_thumb(uid):

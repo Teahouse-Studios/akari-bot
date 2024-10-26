@@ -160,7 +160,7 @@ async def _(msg: Bot.MessageSession):
 @locale.command('[<lang>] {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
-        await msg.finish(Locale(lang).t("success"))
+        await msg.finish(Locale(lang).t("message.success"))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         res = msg.locale.t("core.message.locale.set.invalid") + '\n' + \
@@ -172,7 +172,7 @@ async def config_gu(msg: Bot.MessageSession, lang: str):
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
-        await msg.finish(msg.locale.t("success"))
+        await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 

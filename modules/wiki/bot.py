@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
 @wb.handle('logout <apilink>')
 async def _(msg: Bot.MessageSession, apilink: str):
     BotAccountDB.remove(apilink)
-    await msg.finish(msg.locale.t("success"))
+    await msg.finish(msg.locale.t("message.success"))
 
 
 @wb.handle('toggle')
