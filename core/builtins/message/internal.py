@@ -13,12 +13,12 @@ from PIL import Image as PILImage
 from tenacity import retry, stop_after_attempt
 
 from config import Config
-from core.builtins.utils import shuffle_joke
 from core.types.message import MessageSession
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.utils.i18n import Locale
+from core.utils.joke import joke
 
 
 class Plain(PlainT):
@@ -27,7 +27,7 @@ class Plain(PlainT):
         for t in texts:
             self.text += str(t)
         if not disable_joke:
-            self.text = shuffle_joke(self.text)
+            self.text = joke(self.text)
 
     def __str__(self):
         return self.text
