@@ -1,6 +1,6 @@
 import re
 
-import ujson as json
+import orjson as json
 
 from core.builtins import Bot, Plain
 from core.component import module
@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
 
     if int(sid) > 100000:
         with open(utage_info_path, 'r') as file:
-            utage_data = json.load(file)
+            utage_data = json.loads(file.read())
 
         res = msg.locale.t(
             'maimai.message.song.utage',
@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        
+
     await msg.finish(await get_info(music, Plain(res)))
 
 

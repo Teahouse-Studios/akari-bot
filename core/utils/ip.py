@@ -10,7 +10,7 @@ class IP:
     country = None
 
 
-def append_ip(ip_info):
+def append_ip(ip_info: dict):
     Secret.add(ip_info['ip'])
     IP.country = ip_info['country']
     IP.address = ip_info['ip']

@@ -1,8 +1,8 @@
 import re
 from html import unescape
-from bs4 import BeautifulSoup
 
-import ujson as json
+import orjson as json
+from bs4 import BeautifulSoup
 
 from core.builtins import Bot, Plain, Image, Url
 from core.component import module

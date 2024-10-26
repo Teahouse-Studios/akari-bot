@@ -11,7 +11,7 @@ engine = db.engine
 
 class CytoidBindInfo(Base):
     __tablename__ = table_prefix + 'CytoidBindInfo'
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {'extend_existing': True, 'mysql_charset': 'utf8mb4'}
     targetId = Column(String(512), primary_key=True)
     username = Column(String(512))
 

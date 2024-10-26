@@ -1,4 +1,4 @@
-import ujson as json
+import orjson as json
 
 from core.logger import Logger
 from core.utils.http import post_url

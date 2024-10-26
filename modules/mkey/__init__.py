@@ -1,5 +1,5 @@
-from core.component import module
 from core.builtins import Bot
+from core.component import module
 from .generator import get_mkey
 
 mk = module('mkey', desc='{mkey.help.desc}', doc=True, developers=['OasisAkari', 'Kurisu'])

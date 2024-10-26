@@ -37,7 +37,7 @@ class MessageSession(MessageSessionT):
         quote = False
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True,
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, enable_parse_message=True, enable_split_image=True,
                            callback=None
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)

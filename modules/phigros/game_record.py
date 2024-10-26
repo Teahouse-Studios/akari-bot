@@ -1,6 +1,6 @@
 import struct
 
-import ujson as json
+import orjson as json
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
@@ -20,7 +20,7 @@ def decrypt_bytes(encrypted):
 
 
 def parse_game_record(file_path):
-    rating = json.load(open('./assets/phigros/rating.json', 'r', encoding='utf-8'))
+    rating = json.loads(open('./assets/phigros/rating.json', 'r', encoding='utf-8').read())
     decrypted_data = {}
     with open(file_path, 'rb+') as rd:
         data = decrypt_bytes(rd.read())

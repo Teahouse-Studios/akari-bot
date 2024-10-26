@@ -4,7 +4,7 @@ import re
 from typing import Tuple, Union
 
 import numpy as np
-import ujson as json
+import orjson as json
 import webcolors
 from PIL import Image, ImageDraw, ImageFont
 
@@ -20,12 +20,12 @@ md_color_path = os.path.join(assets_path, 'material_colors.json')
 
 font = ImageFont.truetype(font_path, 40)
 with open(md_color_path, 'r', encoding='utf-8') as f:
-    material_colors = material_colors_names_to_hex = json.load(f)
+    material_colors = material_colors_names_to_hex = json.loads(f.read())
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 
 # https://github.com/ubernostrum/webcolors/issues/18
-css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
-css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
+css_names_to_hex = {**webcolors._definitions._CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
+css_hex_to_names = {**webcolors._definitions._CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 
 @c.command()

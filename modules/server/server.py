@@ -1,8 +1,7 @@
 import re
 import traceback
 
-import aiohttp
-import ujson as json
+import orjson as json
 
 from core.logger import Logger
 from core.utils.http import get_url

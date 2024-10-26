@@ -1,6 +1,6 @@
 import traceback
 
-import ujson as json
+import orjson as json
 
 from config import Config
 from core.builtins import Bot

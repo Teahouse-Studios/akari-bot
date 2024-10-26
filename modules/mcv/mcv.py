@@ -2,7 +2,7 @@ from datetime import datetime
 import re
 
 from google_play_scraper import app as google_play_scraper
-import ujson as json
+import orjson as json
 
 from core.builtins import Bot, ErrorMessage
 from core.logger import Logger

@@ -2,15 +2,17 @@ import re
 import traceback
 from typing import List, Union
 
-from bots.aiogram.client import dp, bot, token
 from aiogram.types import FSInputFile
-from bots.aiogram.info import client_name
+
+from bots.aiogram.client import bot, token
+from bots.aiogram.info import *
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
+from core.utils.http import download
 from core.utils.image import image_split
 from database import BotDBUtil
 
@@ -40,7 +42,7 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True, callback=None) -> FinishedSession:
+                           enable_parse_message=True, enable_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
@@ -56,7 +58,7 @@ class MessageSession(MessageSessionT):
                 send.append(send_)
                 count += 1
             elif isinstance(x, Image):
-                if allow_split_image:
+                if enable_split_image:
                     split = await image_split(x)
                     for xs in split:
                         send_ = await bot.send_photo(self.session.target, FSInputFile(await xs.get()),
@@ -110,9 +112,17 @@ class MessageSession(MessageSessionT):
 
     async def to_message_chain(self):
         lst = []
+        if self.session.message.audio:
+            file = await bot.get_file(self.session.message.audio.file_id)
+            d = await download(f'https://api.telegram.org/file/bot{token}/{file.file_path}')
+            lst.append(Voice(d))
         if self.session.message.photo:
             file = await bot.get_file(self.session.message.photo[-1]['file_id'])
             lst.append(Image(f'https://api.telegram.org/file/bot{token}/{file.file_path}'))
+        if self.session.message.voice:
+            file = await bot.get_file(self.session.message.voice.file_id)
+            d = await download(f'https://api.telegram.org/file/bot{token}/{file.file_path}')
+            lst.append(Voice(d))
         if self.session.message.caption:
             lst.append(Plain(self.session.message.caption))
         if self.session.message.text:
@@ -150,13 +160,15 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        match_channel = re.match(r'^(Telegram\|.*?)\|(.*)', target_id)
+        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
 
-        if match_channel:
-            target_from = sender_from = match_channel.group(1)
-            target_id = match_channel.group(2)
+        if match_target:
+            target_from = sender_from = match_target.group(1)
+            target_id = match_target.group(2)
             if sender_id:
-                match_sender = re.match(r'^(Telegram\|User)\|(.*)', sender_id)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)

@@ -1,9 +1,9 @@
-from datetime import datetime
 import re
 import traceback
+from datetime import datetime
 from urllib.parse import quote
 
-import ujson as json
+import orjson as json
 from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 

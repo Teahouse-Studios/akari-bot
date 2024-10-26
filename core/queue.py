@@ -1,10 +1,10 @@
 import asyncio
-from datetime import datetime
 import traceback
+import datetime
 
-import ujson as json
+import orjson as json
 
-from core.builtins import Bot, Temp, MessageChain
+from core.builtins import Bot, MessageChain
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
@@ -73,6 +73,9 @@ async def check_job_queue():
         Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
         args = json.loads(tsk.args)
         Logger.debug(f'Args: {args}')
+        timestamp = tsk.timestamp
+        if (datetime.datetime.now() - timestamp).total_seconds() > 7200:
+            Logger.warning(f'Task {tsk.taskid} timeout, {(datetime.datetime.now() - timestamp).total_seconds()}')
         try:
             if tsk.action == 'validate_permission':
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])

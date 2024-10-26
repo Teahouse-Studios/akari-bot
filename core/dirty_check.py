@@ -6,8 +6,7 @@ import base64
 import datetime
 import hashlib
 import hmac
-import json
-import re
+import orjson as json
 import time
 from typing import Union, List, Dict
 
@@ -31,7 +30,7 @@ def computeMD5hash(my_string):
     return m.hexdigest()
 
 
-def parse_data(result: dict):
+def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=None) -> Dict:
     original_content = content = result['content']
     status = True
     for itemResult in result['results']:
@@ -39,20 +38,45 @@ def parse_data(result: dict):
             for itemDetail in itemResult['details']:
                 if 'contexts' in itemDetail:
                     for itemContext in itemDetail["contexts"]:
-                        content = re.sub(itemContext['context'], "<吃掉了>", content, flags=re.I)
+                        _offset = 0
+                        if 'positions' in itemContext:
+                            for pos in itemContext['positions']:
+                                filter_words_length = pos['endPos'] - pos['startPos']
+                                if not msg:
+                                    reason = f"<REDACTED:{itemDetail['label']}>"
+                                else:
+                                    reason = msg.locale.t("check.redacted", reason=itemDetail['label'])
+                                content = content[:pos['startPos'] + _offset] + \
+                                    reason + content[pos['endPos'] + _offset:]
+                                if additional_text:
+                                    content += '\n' + additional_text + '\n'
+                                _offset += len(reason) - filter_words_length
+                        else:
+                            if not msg:
+                                content = f"<REDACTED:{itemDetail['label']}>"
+                            else:
+                                content = msg.locale.t("check.redacted", reason=itemDetail['label'])
                         status = False
                 else:
-                    content = "<全部吃掉了>"
+                    if not msg:
+                        content = f"<ALL REDACTED:{itemDetail['label']}>"
+                    else:
+                        content = msg.locale.t("check.redacted.all", reason=itemDetail['label'])
+
+                    if additional_text:
+                        content += '\n' + additional_text + '\n'
                     status = False
     return {'content': content, 'status': status, 'original': original_content}
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(*text: Union[str, List[str]]) -> List[Dict]:
+async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, additional_text=None) -> List[Dict]:
     '''检查字符串是否合规
 
     :param text: 字符串（List/Union）。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
+    :param msg: 消息会话，若指定则本地化返回的消息。
+    :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<REDACTED:原因>，全部不合规则是'<ALL REDACTED:原因>'。
     '''
     access_key_id = Config("check_access_key_id", cfg_type=str)
     access_key_secret = Config("check_access_key_secret", cfg_type=str)
@@ -80,7 +104,7 @@ async def check(*text: Union[str, List[str]]) -> List[Dict]:
             if not query_list[q][pq]:
                 cache = DirtyWordCache(pq)
                 if not cache.need_insert:
-                    query_list.update({q: {pq: parse_data(cache.get())}})
+                    query_list.update({q: {pq: parse_data(cache.get(), msg=msg, additional_text=additional_text)}})
     call_api_list = {}
     for q in query_list:
         for pq in query_list[q]:
@@ -107,7 +131,7 @@ async def check(*text: Union[str, List[str]]) -> List[Dict]:
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
-        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
+        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body)).digest()).decode('utf-8')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -141,7 +165,8 @@ async def check(*text: Union[str, List[str]]) -> List[Dict]:
                     for item in result['data']:
                         content = item['content']
                         for n in call_api_list[content]:
-                            query_list.update({n: {content: parse_data(item)}})
+                            query_list.update(
+                                {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
                         DirtyWordCache(content).update(item)
                 else:
                     raise ValueError(await resp.text())
@@ -163,6 +188,6 @@ async def check_bool(*text: Union[str, List[str]]) -> bool:
 
 def rickroll(msg: Bot.MessageSession):
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
-        return msg.locale.tl_str(Config("rickroll_msg", cfg_type=str))
+        return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
     else:
         return msg.locale.t("error.message.chain.unsafe")

@@ -8,13 +8,13 @@ import nio
 
 from bots.matrix import client
 from bots.matrix.client import bot
-from bots.matrix.info import client_name
+from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
+from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
 PrivateAssets.set('assets/private/matrix')
@@ -78,13 +78,12 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if isinstance(resp, nio.ErrorResponse):
         Logger.error(f"Failed to get display name for {event.sender}")
         return
-    sender_name = resp.displayname
 
-    msg = MessageSession(MsgInfo(target_id=f'Matrix|Room|{room.room_id}',
-                                 sender_id=f'Matrix|{event.sender}',
-                                 target_from='Matrix|Room',
-                                 sender_from='Matrix',
-                                 sender_name=sender_name,
+    msg = MessageSession(MsgInfo(target_id=f'{target_name}|{room.room_id}',
+                                 sender_id=f'{sender_name}|{event.sender}',
+                                 target_from=target_name,
+                                 sender_from=sender_name,
+                                 sender_name=resp.displayname,
                                  client_name=client_name,
                                  message_id=event.event_id,
                                  reply_id=reply_id),
@@ -222,6 +221,7 @@ async def start():
 
 
 if bot:
+    Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     asyncio.run(start())

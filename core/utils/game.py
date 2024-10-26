@@ -1,7 +1,8 @@
-from core.types import MessageSession
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
-playstate_lst: Dict[str, Dict[Union[MessageSession, str], Dict[str, Union[int, Dict[str, int]]]]] = {}
+from core.types import MessageSession
+
+playstate_lst: Dict[Union[str, MessageSession], Dict[Union[str, MessageSession], Dict[str, Dict[str, Any]]]] = {}
 
 
 class PlayState:

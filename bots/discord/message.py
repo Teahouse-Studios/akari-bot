@@ -7,7 +7,7 @@ import discord
 import filetype
 
 from bots.discord.client import client
-from bots.discord.info import client_name
+from bots.discord.info import *
 from config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
@@ -69,7 +69,7 @@ class MessageSession(MessageSessionT):
         quote = True
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True,
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, enable_parse_message=True, enable_split_image=True,
                            callback=None
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
@@ -137,11 +137,13 @@ class MessageSession(MessageSessionT):
             d = await download(x.url)
             if filetype.is_image(d):
                 lst.append(Image(d))
+            elif filetype.is_audio(d):
+                lst.append(Voice(d))
         return MessageChain(lst)
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        msg = re.sub(r'<@(.*?)>', r'Discord|Client|\1', msg)
+        msg = re.sub(r'<@(.*?)>', fr'{sender_name}|\1', msg)
         return msg
 
     async def delete(self):
@@ -171,7 +173,7 @@ class MessageSession(MessageSessionT):
 
 class FetchedSession(Bot.FetchedSession):
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
+    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
         try:
             get_channel = await client.fetch_channel(self.session.target)
         except Exception:
@@ -189,12 +191,14 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        match_channel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', target_id)
-        if match_channel:
-            target_from = sender_from = match_channel.group(1)
-            target_id = match_channel.group(2)
+        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
+        if match_target:
+            target_from = sender_from = match_target.group(1)
+            target_id = match_target.group(2)
             if sender_id:
-                match_sender = re.match(r'^(Discord\|Client)\|(.*)', sender_id)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)

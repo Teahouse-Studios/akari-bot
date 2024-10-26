@@ -1,10 +1,8 @@
-﻿import secrets
-
-from config import Config
+﻿from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import ConfigValueError
-from core.utils.text import isint
+from core.utils.random import Random
 
 MAX_COIN_NUM = Config('coin_limit', 10000)
 FACE_UP_RATE = Config('coin_faceup_rate', 4997)  # n/10000
@@ -34,7 +32,7 @@ async def flip_coins(count: int, msg):
     face_down = 0
     stand = 0
     for i in range(count):
-        rand_num = secrets.randbelow(MAX_COIN_NUM)
+        rand_num = Random.randint(1, MAX_COIN_NUM)
         if rand_num < FACE_UP_RATE:
             face_up += 1
         elif rand_num < FACE_UP_RATE + FACE_DOWN_RATE:

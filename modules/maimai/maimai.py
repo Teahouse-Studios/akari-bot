@@ -1,12 +1,9 @@
-from core.builtins import Bot, Plain, Image as BImage
+from core.builtins import Image as BImage
 from core.component import module
 from core.utils.text import isint
-from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, get_info, get_record, search_by_alias, update_alias, update_cover
+from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate
-from .libraries.maimaidx_mapping import diff_list, level_list, goal_list, genre_i18n_mapping
-from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()
@@ -276,7 +273,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     res = []
     if int(sid) > 100000:
         with open(utage_info_path, 'r') as file:
-            utage_data = json.load(file)
+            utage_data = json.loads(file.read())
 
         res.append(f"「{utage_data[sid]['comment']}」")
         if utage_data[sid]['referrals_num']['mode'] == 'normal':
@@ -368,7 +365,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     if int(sid) > 100000:
         with open(utage_info_path, 'r') as file:
-            utage_data = json.load(file)
+            utage_data = json.loads(file.read())
 
         res = msg.locale.t(
             'maimai.message.song.utage',

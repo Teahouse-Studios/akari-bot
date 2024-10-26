@@ -4,7 +4,7 @@ import shutil
 import sys
 from datetime import datetime
 
-import ujson as json
+import orjson as json
 
 from config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
@@ -13,26 +13,24 @@ from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
-from core.queue import JobQueue
 from core.tos import pardon_user, warn_user
-from core.utils.info import Info
+from core.types import Param
+from core.utils.info import Info, get_all_sender_name, get_all_target_name
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint, decrypt_string
 from database import BotDBUtil
 
 
-target_list = ["Discord|Channel", "Discord|DM|Channel", "KOOK|Group", "KOOK|Person",
-               "Matrix|Room", "QQ|Group", "QQ|Guild", "QQ|Private", "Telegram|Channel",
-               "Telegram|Group", "Telegram|Private", "Telegram|Supergroup", "TEST|Console",]
-sender_list = ["Discord|Client", "KOOK|User", "Matrix", "QQ", "QQ|Tiny", "Telegram|User", "TEST",]
+target_list = get_all_target_name()
+sender_list = get_all_sender_name()
 
 
-su = module('superuser', alias='su', required_superuser=True, base=True, doc=True)
+su = module('superuser', alias='su', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
 
 
 @su.command('add <user>')
 async def add_su(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
@@ -41,7 +39,7 @@ async def add_su(msg: Bot.MessageSession, user: str):
 
 @su.command('remove <user>')
 async def del_su(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user == msg.target.sender_id:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"), append_instruction=False)
@@ -70,14 +68,14 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
-set_ = module('set', required_superuser=True, base=True, doc=True)
+set_ = module('set', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
 
 
 @set_.command('module enable <target> <modules> ...',
               'module disable <target> <modules> ...',
               'module list <target>')
 async def _(msg: Bot.MessageSession, target: str):
-    if not any(target.startswith(f'{target_from}|') for target_from in target_list):
+    if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
     target_data = BotDBUtil.TargetInfo(target)
     if not target_data.query:
@@ -112,7 +110,7 @@ async def _(msg: Bot.MessageSession, target: str):
               'option edit <target> <k> <v>',
               'option remove <target> <k>')
 async def _(msg: Bot.MessageSession, target: str):
-    if not any(target.startswith(f'{target_from}|') for target_from in target_list):
+    if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
     target_data = BotDBUtil.TargetInfo(target)
     if not target_data.query:
@@ -158,7 +156,7 @@ if Bot.client_name == 'QQ':
         await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
-ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True)
+ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
 
 
 @ae.command('check <user>')
@@ -167,7 +165,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     sender_info = BotDBUtil.SenderInfo(user)
-    warns = sender_info.query.warns
+    warns = sender_info.warns
     temp_banned_time = await check_temp_ban(user)
     if temp_banned_time:
         stat += '\n' + msg.locale.t("core.message.abuse.check.tempbanned", ban_time=temp_banned_time)
@@ -188,7 +186,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
 
 @ae.command('revoke <user> [<count>]')
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     warn_count = await warn_user(user, -count)
     await msg.finish(msg.locale.t("core.message.abuse.revoke.success", user=user, count=count, warn_count=warn_count))
@@ -196,7 +194,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
 
 @ae.command('clear <user>')
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     await pardon_user(user)
     await msg.finish(msg.locale.t("core.message.abuse.clear.success", user=user))
@@ -212,7 +210,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command('ban <user>')
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     sender_info = BotDBUtil.SenderInfo(user)
     if sender_info.edit('isInBlockList', True) and sender_info.edit('isInAllowList', False):
@@ -221,7 +219,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command('unban <user>')
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     sender_info = BotDBUtil.SenderInfo(user)
     if sender_info.edit('isInBlockList', False):
@@ -307,7 +305,7 @@ if Info.subprocess:
 
     def write_version_cache(msg: Bot.MessageSession):
         update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
-        write_version = open(update, 'w')
+        write_version = open(update, 'wb')
         write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
         write_version.close()
 
@@ -441,10 +439,18 @@ if Bot.FetchTarget.name == 'QQ':
 
 echo = module('echo', required_superuser=True, base=True, doc=True)
 
-
-@echo.command('<display_msg>')
-async def _(msg: Bot.MessageSession, display_msg: str):
-    await msg.finish(display_msg)
+if Bot.client_name == 'QQ':
+    @echo.command()
+    @echo.command('[<display_msg>]')
+    async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str) = None):
+        if not dis:
+            msg = await msg.wait_next_message(msg.locale.t("core.message.echo.prompt"), delete=True, append_instruction=False)
+            dis = msg.as_display()
+        await msg.finish(dis, enable_parse_message=False)
+else:
+    @echo.command('<display_msg>')
+    async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str) = None):
+        await msg.finish(dis)
 
 
 say = module('say', required_superuser=True, base=True, doc=True)
@@ -516,11 +522,11 @@ async def _(msg: Bot.MessageSession, k: str):
 if Config('enable_petal', False):
     petal = module('petal', alias='petals', base=True, doc=True)
 
-    @petal.command()
+    @petal.command('{{core.help.petal}}')
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
-    @petal.command('[<sender>] {{core.help.petal}}', required_superuser=True)
+    @petal.command('[<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
     async def _(msg: Bot.MessageSession):
         sender = msg.parsed_msg['<sender>']
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -528,7 +534,8 @@ if Config('enable_petal', False):
         sender_info = BotDBUtil.SenderInfo(sender)
         await msg.finish(msg.locale.t('core.message.petal', sender=sender, petal=sender_info.petal))
 
-    @petal.command('modify <petal> [<sender>]', required_superuser=True)
+    @petal.command('modify <petal>', available_for=['TEST|Console'])
+    @petal.command('modify <petal> [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
     async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
         if sender:
             if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -542,7 +549,8 @@ if Config('enable_petal', False):
             sender_info.modify_petal(petal)
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=sender_info.petal))
 
-    @petal.command('clear [<sender>]', required_superuser=True)
+    @petal.command('clear', required_superuser=True, available_for=['TEST|Console'])
+    @petal.command('clear [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
     async def _(msg: Bot.MessageSession, sender: str = None):
         if sender:
             if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):

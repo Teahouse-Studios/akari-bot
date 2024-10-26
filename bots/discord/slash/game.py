@@ -3,7 +3,6 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
-
 ccode = client.create_group("chemical_code", "A game about chemical formulas.")
 
 
@@ -45,22 +44,22 @@ async def random(ctx: discord.ApplicationContext):
 
 
 @tic_tac_toe.command(name="noob", description="Play with the noob robot.")
-async def random(ctx: discord.ApplicationContext):
+async def noob(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "noob")
 
 
 @tic_tac_toe.command(name="expert", description="Play with the expert robot.")
-async def random(ctx: discord.ApplicationContext):
+async def expert(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "expert")
 
 
 @tic_tac_toe.command(name="master", description="Play with the master robot.")
-async def random(ctx: discord.ApplicationContext):
+async def master(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "master")
 
 
 @tic_tac_toe.command(name="duo", description="Double player game.")
-async def random(ctx: discord.ApplicationContext):
+async def duo(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 

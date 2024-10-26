@@ -1,6 +1,7 @@
 import os
 import urllib.parse
-from PIL import Image
+
+from PIL import Image as PILImage
 
 from config import Config
 from core.builtins import Bot, Image as BImage
@@ -9,7 +10,6 @@ from core.dirty_check import rickroll
 from core.exceptions import ConfigValueError
 from core.utils.http import download, get_url
 from .check import secret_check
-
 
 appid = Config('wolfram_alpha_appid', cfg_type=str)
 
@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession, query: str):
     try:
         img_path = await download(url, status_code=200)
         if img_path:
-            with Image.open(img_path) as img:
+            with PILImage.open(img_path) as img:
                 output = os.path.splitext(img_path)[0] + ".png"
                 img.save(output, "PNG")
             os.remove(img_path)
