@@ -1,15 +1,13 @@
 import re
 import traceback
-from datetime import datetime, timedelta
 
 from core.logger import Logger
 from core.queue import JobQueue
-from core.scheduler import DateTrigger, Scheduler, CronTrigger, IntervalTrigger
+from core.scheduler import Scheduler, IntervalTrigger
+from core.utils.templist import TempList
 from modules.wiki import WikiLib
 from modules.wikilog.dbutils import WikiLogUtil
 from modules.wikilog.utils import convert_data_to_text
-from core.utils.http import get_url
-
 
 fetch_cache = {}
 
@@ -28,7 +26,7 @@ async def wiki_log():
         for wiki in fetches[id_]:
             Logger.debug(f'Checking fetch {id_} {wiki}...')
             if wiki not in fetch_cache[id_]:
-                fetch_cache[id_][wiki] = {'AbuseLog': [], 'RecentChanges': []}
+                fetch_cache[id_][wiki] = {'AbuseLog': TempList(300), 'RecentChanges': TempList(300)}
             if wiki not in matched_logs[id_]:
                 matched_logs[id_][wiki] = {'AbuseLog': [], 'RecentChanges': []}
             use_bot = fetches[id_][wiki]['use_bot']

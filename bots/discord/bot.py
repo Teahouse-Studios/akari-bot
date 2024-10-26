@@ -1,21 +1,21 @@
 import importlib
-import json
 import os
 import re
 import sys
 import traceback
 
 import discord
+import orjson as json
 
 from bots.discord.client import client
-from bots.discord.info import client_name
+from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
 from config import Config
+from core.bot import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import init_async, load_prompt
 from core.utils.info import Info
 
 PrivateAssets.set('assets/private/discord')
@@ -28,7 +28,7 @@ dc_token = Config('discord_token', cfg_type=str)
 
 @client.event
 async def on_ready():
-    Logger.info('Logged on as ' + str(client.user))
+    Logger.info(f'Logged on as {client.user}')
     global count
     if count == 0:
         await init_async()
@@ -49,7 +49,7 @@ def load_slashcommands():
             Logger.warning('Binary mode detected, trying to load pre-built slash list...')
             js = 'assets/discord_slash_list.json'
             with open(js, 'r', encoding='utf-8') as f:
-                dir_list = json.load(f)
+                dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built slash list, using default list.')
             dir_list = os.listdir(slash_load_dir)
@@ -88,9 +88,9 @@ async def on_message(message):
     # don't respond to ourselves
     if message.author == client.user or message.author.bot:
         return
-    target = "Discord|Channel"
+    target = target_channel_name
     if isinstance(message.channel, discord.DMChannel):
-        target = "Discord|DM|Channel"
+        target = target_dm_channel_name
     target_id = f"{target}|{message.channel.id}"
     reply_id = None
     if message.reference:
@@ -104,10 +104,10 @@ async def on_message(message):
     msg = MessageSession(
         target=MsgInfo(
             target_id=target_id,
-            sender_id=f"Discord|Client|{message.author.id}",
+            sender_id=f"{sender_name}|{message.author.id}",
             sender_name=message.author.name,
             target_from=target,
-            sender_from="Discord|Client",
+            sender_from=sender_name,
             client_name=client_name,
             message_id=message.id,
             reply_id=reply_id),
@@ -118,6 +118,7 @@ async def on_message(message):
     await parser(msg, prefix=prefix)
 
 
+Info.client_name = client_name
 if 'subprocess' in sys.argv:
     Info.subprocess = True
 

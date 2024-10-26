@@ -63,7 +63,7 @@
     "wiki.message.not_found.autofix.choice.prompt": "Please directly send the specified number to obtain the corresponding content. If you reply \"Yes\", the content of ${number} will be selected by default. Sending other content means canceling the operation.",
     "wiki.message.not_found.autofix.confirm": "Note: [${title}] does not exist. Did you mean [${redirected_title}]?",
     "wiki.message.not_set": "Start wiki not set.",
-    "wiki.message.ntqq.forward.sending": "合并转发消息构造中，请耐心等待……",
+    "wiki.message.ntqq.forward.sending": "The forward message is being constructed, please waiting...",
     "wiki.message.ntqq.forward.timeout": "If the message have not been sent for a long time, try re-fetching by option \"--legacy\".",
     "wiki.message.prefix.reset.success": "The prefix have been reset.",
     "wiki.message.prefix.set.success": "The prefix have been updated: ${wiki_prefix}",

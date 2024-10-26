@@ -1,11 +1,11 @@
-from math import isnan
 import os
+from math import isnan
+
 import pandas as pd
 
 from core.builtins import Bot
 from core.component import module
 from core.utils.info import Info
-
 
 csv_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'consumer_price_index.csv')
 

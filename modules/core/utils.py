@@ -66,7 +66,9 @@ async def _(msg: Bot.MessageSession):
                                       swap=swap,
                                       swap_percent=swap_percent,
                                       disk_space=disk,
-                                      disk_space_total=disk_total)
+                                      disk_space_total=disk_total,
+                                      client_name=Info.client_name,
+                                      command_parsed=Info.command_parsed)
     else:
         disk_percent = psutil.disk_usage('/').percent
         result += '\n' + msg.locale.t("core.message.ping.simple",
@@ -81,7 +83,8 @@ admin = module('admin',
                       'unban': 'admin unban',
                       'ban list': 'admin ban list'},
                desc='{core.help.admin.desc}',
-               doc=True)
+               doc=True,
+               exclude_from=['TEST|Console'])
 
 
 @admin.command([
@@ -149,7 +152,7 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang
 @locale.command()
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
+    res = msg.locale.t("core.message.locale.prompt", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     if Config('locale_url', cfg_type=str):
@@ -245,7 +248,7 @@ async def _(msg: Bot.MessageSession, second: int):
     await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
 
 
-mute = module('mute', base=True, doc=True, required_admin=True)
+mute = module('mute', base=True, doc=True, required_admin=True, exclude_from=['TEST|Console'])
 
 
 @mute.command('{{core.help.mute}}')
@@ -257,7 +260,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, doc=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
+leave = module('leave', alias='dismiss', base=True, doc=True, required_admin=True, available_for=['QQ|Group'])
 
 
 @leave.command('{{core.help.leave}}')

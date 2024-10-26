@@ -5,59 +5,21 @@ import traceback
 import urllib.parse
 from typing import Union, Dict, List
 
+import orjson as json
 from bs4 import BeautifulSoup
-
-import ujson as json
 
 import core.utils.html2text as html2text
 from config import Config
 from core.builtins import Url
 from core.dirty_check import check
+from core.exceptions import AbuseWarning, NoReportException
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale, default_locale
-from core.exceptions import NoReportException
-from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
-from modules.wiki.utils.bot import BotAccount
 from core.utils.web_render import webrender
-
-
-redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
-                 'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then
-                 'https://minecraft.fandom.com/zh/api.php': 'https://zh.minecraft.wiki/api.php'
-                 }
-
-request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
-    # re.compile(r'.*runescape\.wiki'),
-]
-
-special_talk_page_class = {
-    'https://zh.minecraft.wiki/api.php': [
-        'page-Minecraft_Wiki_社区专页',
-        'page-Minecraft_Wiki_管理员告示板',
-
-    ],
-    'https://minecraft.wiki/api.php': [
-        'page-Minecraft_Wiki_Admin_noticeboard'
-    ],
-}
-
-forum_class = {
-    'https://zh.minecraft.wiki/api.php': [
-        'page-Minecraft_Wiki_论坛',
-
-    ],
-    'https://minecraft.wiki/api.php': [
-        'page-Minecraft_Wiki_Forum'
-    ],
-    'https://pt.minecraft.wiki/api.php': [
-        'page-Minecraft_Wiki_Fórum'
-    ],
-    'https://es.minecraft.wiki/api.php': [
-        'page-Minecraft_Wiki_Foro'
-    ]
-
-}
+from .bot import BotAccount
+from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
+from .mapping import *
 
 
 class InvalidPageIDError(Exception):
@@ -73,10 +35,6 @@ class DangerousContentError(Exception):
 
 
 class PageNotFound(Exception):
-    pass
-
-
-class WhatAreUDoingError(Exception):
     pass
 
 
@@ -218,8 +176,10 @@ class WikiLib:
                 raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
             raise NoReportException(str(e))
 
-    def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
+    def rearrange_siteinfo(self, info: Union[dict, str, bytes], wiki_api_link) -> WikiInfo:
         if isinstance(info, str):
+            info = json.loads(info)
+        elif isinstance(info, bytes):
             info = json.loads(info)
         extensions = info['query']['extensions']
         ext_list = []
@@ -354,7 +314,7 @@ class WikiLib:
         api = self.wiki_info.api
         return await self.get_json_from_api(api, _no_login=_no_login, **kwargs)
 
-    async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> dict:
+    async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
         await self.fixup_wiki_info()
         api = self.wiki_info.api
         if api in redirect_list:
@@ -545,7 +505,7 @@ class WikiLib:
             ban = True
         if _tried > 5:
             if Config('enable_tos', True):
-                raise WhatAreUDoingError
+                raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         selected_section = None
         query_props = ['info', 'imageinfo', 'langlinks', 'templates']
         if self.wiki_info.api.find('moegirl.org.cn') != -1:
@@ -841,7 +801,7 @@ class WikiLib:
                             page_info.link = full_url
                             page_info.file = file
                             page_info.desc = page_desc
-                            if not _iw and not page_info.args and page_info.id != -1:
+                            if not _iw and not page_info.args and page_info.id != -1 and page_info.id:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                         else:
                             page_info.title = query_langlinks.title
@@ -874,7 +834,7 @@ class WikiLib:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t:
-                            if before_page_info.args or page_info.id == -1:
+                            if before_page_info.args or page_info.id == -1 or not page_info.id:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link:

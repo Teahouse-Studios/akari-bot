@@ -1,14 +1,14 @@
 import os
 import re
 from collections.abc import MutableMapping
+from decimal import Decimal, ROUND_HALF_UP
 from string import Template
-from typing import Dict, Any, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
-import ujson as json
+import orjson as json
 
 from config import Config
-from .text import remove_suffix
-
+from .text import isint, remove_suffix
 
 default_locale = Config('locale', 'zh_cn')
 
@@ -79,7 +79,7 @@ def load_locale_file():
     try:
         for l in locales:
             with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
-                locale_dict[remove_suffix(l, '.json')] = flatten(json.load(f))
+                locale_dict[remove_suffix(l, '.json')] = flatten(json.loads(f.read()))
     except Exception as e:
         err_prompt.append(str(e))
     modules_path = os.path.abspath('./modules')
@@ -91,15 +91,19 @@ def load_locale_file():
                 with open(lang_file_path, 'r', encoding='utf-8') as f:
                     try:
                         if remove_suffix(lang_file, '.json') in locale_dict:
-                            locale_dict[remove_suffix(lang_file, '.json')].update(flatten(json.load(f)))
+                            locale_dict[remove_suffix(lang_file, '.json')].update(flatten(json.loads(f.read())))
                         else:
-                            locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.load(f))
+                            locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.loads(f.read()))
                     except Exception as e:
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
     for lang in locale_dict.keys():
         for k in locale_dict[lang].keys():
             locale_root.update_node(f'{lang}.{k}', locale_dict[lang][k])
     return err_prompt
+
+
+def get_available_locales():
+    return list(locale_root.children.keys())
 
 
 class Locale:
@@ -116,18 +120,6 @@ class Locale:
 
     def __contains__(self, key: str):
         return key in self.data
-
-    def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
-        """获取本地化字符串"""
-        if isinstance(key, dict):
-            if ft := key.get(self.locale):
-                return ft
-            elif 'fallback' in key:
-                return key['fallback']
-            else:
-                return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
-        localized = self.get_string_with_fallback(key, fallback_failed_prompt)
-        return Template(localized).safe_substitute(*args, **kwargs)
 
     def get_locale_node(self, path: str):
         """获取本地化节点"""
@@ -150,21 +142,67 @@ class Locale:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-    tl = t
+    def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
+        """获取本地化字符串"""
+        if isinstance(key, dict):
+            if ft := key.get(self.locale):
+                return ft
+            elif 'fallback' in key:
+                return key['fallback']
+            else:
+                return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
+        localized = self.get_string_with_fallback(key, fallback_failed_prompt)
+        return Template(localized).safe_substitute(*args, **kwargs)
 
-    def tl_str(self, text: str, fallback_failed_prompt=False) -> str:
-        return tl_str(self, text, fallback_failed_prompt=fallback_failed_prompt)
+    def t_str(self, text: str, fallback_failed_prompt=False, **kwargs) -> str:
+        if locale_str := re.findall(r'\{(.*)}', text):
+            for l in locale_str:
+                text = text.replace(f'{{{l}}}', self.t(l, fallback_failed_prompt=fallback_failed_prompt, **kwargs))
+        return text
+
+    def int(self, number: Union[Decimal, int, str], precision: int = 0) -> str:
+        """格式化数字"""
+        if isint(number):
+            number = int(number)
+        else:
+            return str(number)
+
+        if self.locale in ['zh_cn', 'zh_tw']:
+            unit_info = self._get_cjk_unit(number)
+        else:
+            unit_info = self._get_unit(number)
+
+        if not unit_info:
+            return str(number)
+
+        unit, scale = unit_info
+        fmted_num = self._fmt_num(number / scale, precision)
+        return self.t_str(f"{fmted_num} {{i18n.unit.{unit}}}")
+
+    def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+        if number >= Decimal('10e11'):
+            return 3, Decimal('10e11')
+        elif number >= Decimal('10e7'):
+            return 2, Decimal('10e7')
+        elif number >= Decimal('10e3'):
+            return 1, Decimal('10e3')
+        else:
+            return None
+
+    def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+        if number >= Decimal('10e8'):
+            return 3, Decimal('10e8')
+        elif number >= Decimal('10e5'):
+            return 2, Decimal('10e5')
+        elif number >= Decimal('10e2'):
+            return 1, Decimal('10e2')
+        else:
+            return None
+
+    def _fmt_num(self, number: Decimal, precision: int) -> str:
+        number = number.quantize(Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP)
+        num_str = f"{number:.{precision}f}".rstrip('0').rstrip('.')
+        return num_str if precision > 0 else str(int(number))
 
 
-def get_available_locales():
-    return list(locale_root.children.keys())
-
-
-def tl_str(locale: Locale, text: str, fallback_failed_prompt=False) -> str:
-    if locale_str := re.findall(r'\{(.*)}', text):
-        for l in locale_str:
-            text = text.replace(f'{{{l}}}', locale.t(l, fallback_failed_prompt=fallback_failed_prompt))
-    return text
-
-
-__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'tl_str', 'default_locale']
+__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'default_locale']

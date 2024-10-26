@@ -12,7 +12,7 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
         current_warns = int(msg.info.warns) + 1
         msg.info.edit('warns', current_warns)
         warn_template = [msg.locale.t("tos.message.warning")]
-        i18n_reason = msg.locale.tl_str(reason)
+        i18n_reason = msg.locale.t_str(reason)
         warn_template.append(msg.locale.t("tos.message.reason") + i18n_reason)
         if current_warns < WARNING_COUNTS or msg.info.is_in_allow_list:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
@@ -56,7 +56,7 @@ async def tos_report(sender, target, reason, banned=False):
     locale = Locale(default_locale)
     if report_targets:
         warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
-        reason = locale.tl_str(reason)
+        reason = locale.t_str(reason)
         warn_template.append(locale.t("tos.message.reason") + reason)
         if banned:
             action = locale.t("tos.message.action.blocked")

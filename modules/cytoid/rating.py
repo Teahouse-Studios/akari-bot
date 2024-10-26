@@ -7,7 +7,7 @@ from datetime import datetime
 from os.path import abspath
 
 import aiohttp
-import ujson as json
+import orjson as json
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from aiofile import async_open
 from gql import Client, gql
@@ -16,10 +16,10 @@ from gql.transport.aiohttp import AIOHTTPTransport
 from config import Config
 from core.builtins import Bot
 from core.logger import Logger
-from core.utils.http import get_url
 from core.utils.html2text import html2text
-from core.utils.text import parse_time_string
+from core.utils.http import get_url
 from core.utils.image import get_fontsize
+from core.utils.text import parse_time_string
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):

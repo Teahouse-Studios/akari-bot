@@ -1,16 +1,15 @@
 import random
 import re
 import traceback
-from datetime import datetime, timezone
-from database.local import CrowdinActivityRecords
 
 from config import Config
-from core.builtins import Plain, Embed, EmbedField
+from core.builtins import Embed, EmbedField
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.html2text import html2text
 from core.utils.http import get_url
+from database.local import CrowdinActivityRecords
 
 first = True
 

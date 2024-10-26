@@ -4,8 +4,8 @@ import urllib.parse
 from core.builtins import Bot
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
-from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.time import strptime2ts
+from modules.wiki.utils.wikilib import WikiLib
 
 
 async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
@@ -34,7 +34,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
         user_central_auth_data = await wiki.get_json(action='query', meta='globaluserinfo', guiuser=username,
                                                      guiprop='editcount|groups')
     data['users_groups'] = []
-    users_groups_ = base_user_info['groups']
+    users_groups_ = base_user_info.get('groups', [])
     for x in users_groups_:
         if x != '*':
             data['users_groups'].append(groups[x] if x in groups else x)

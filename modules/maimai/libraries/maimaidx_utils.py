@@ -1,17 +1,15 @@
 import math
-import os
-import random
 from datetime import datetime
 
-import ujson as json
+import orjson as json
 
 from core.builtins import Bot, MessageChain, Plain
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
+from core.utils.random import Random
 from .maimaidx_apidata import get_record, get_song_record, get_total_record, get_plate
 from .maimaidx_mapping import *
 from .maimaidx_music import TotalList
-
 
 total_list = TotalList()
 
@@ -276,7 +274,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
                     entry_output += f" {combo_rank}{sync_rank}"
-                if dx:
+                if dx and dx[0]:
                     entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
                 output_lines.append(entry_output)
         else:
@@ -566,7 +564,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
         prompt.append(msg.locale.t('maimai.message.plate.remaster', song_remain=len(song_remain_remaster)))
 
     if song_remain:
-        await msg.send_message('\n'.join(prompt))
+        await msg.send_message(prompt)
 
     song_record = [[s['id'], s['level_index']] for s in verlist]
 
@@ -626,7 +624,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
 
 async def get_grade_info(msg: Bot.MessageSession, grade: str):
     with open(grade_info_path, 'r') as file:
-        data = json.load(file)
+        data = json.loads(file.read())
 
     def key_process(input_key, conv_dict):
         key = next((k for k, v in conv_dict.items() if input_key == k), None)
@@ -674,9 +672,9 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
             music_data = music_data_master + music_data_remaster
 
             for i in range(4):
-                music = random.choice(music_data)
+                music = Random.choice(music_data)
                 if music in music_data_master and music in music_data_remaster:
-                    level = random.choice([3, 4])
+                    level = Random.randint(3, 4)
                 elif music in music_data_remaster:
                     level = 4
                 else:

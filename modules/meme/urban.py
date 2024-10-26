@@ -1,4 +1,4 @@
-import ujson as json
+import orjson as json
 
 from core.builtins import Url
 from core.logger import Logger

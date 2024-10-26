@@ -1,12 +1,11 @@
 import os
 from os.path import abspath
-from typing import Union, Any, get_origin, get_args
+from typing import Union, Any
 
-from loguru import logger
 import toml
+from loguru import logger
 
 from core.exceptions import ConfigFileNotFound, ConfigValueError
-
 
 config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)

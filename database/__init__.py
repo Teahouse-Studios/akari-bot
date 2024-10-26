@@ -1,9 +1,9 @@
 import datetime
-from decimal import Decimal, ROUND_HALF_UP
 import uuid
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Union, List
 
-import ujson as json
+import orjson as json
 from tenacity import retry, stop_after_attempt
 
 from core.types.message import MessageSession, FetchTarget, FetchedSession
@@ -26,7 +26,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 4
+    database_version = 5
 
     class TargetInfo:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
@@ -207,7 +207,7 @@ class BotDBUtil:
         def __init__(self, sender_id):
             self.sender_id = sender_id
             self.query = self.query_SenderInfo
-
+        
         @property
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.sender_id).first()
@@ -286,8 +286,9 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def edit(self, column: str, value):
-            query = self.query_SenderInfo
-            setattr(query, column, value)
+            if not self.query:
+                self.query = self.init()
+            setattr(self.query, column, value)
             session.commit()
             session.expire_all()
             return True

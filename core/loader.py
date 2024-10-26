@@ -1,10 +1,11 @@
 import importlib
-import json
 import os
 import re
 import sys
 import traceback
 from typing import Dict, Union, Callable
+
+import orjson as json
 
 from config import Config
 from core.logger import Logger
@@ -36,7 +37,7 @@ def load_modules():
             Logger.warning('Binary mode detected, trying to load pre-built modules list...')
             js = 'assets/modules_list.json'
             with open(js, 'r', encoding='utf-8') as f:
-                dir_list = json.load(f)
+                dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built modules list, using default list.')
             dir_list = os.listdir(load_dir_path)

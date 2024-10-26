@@ -1,9 +1,9 @@
+from langconv.converter import LanguageConverter
+from langconv.language.zh import zh_tw
+
 from core.builtins import Bot, Plain, Url
 from core.component import module
 from core.utils.http import get_url
-
-from langconv.converter import LanguageConverter
-from langconv.language.zh import zh_tw
 
 msg_types = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
 

@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 
-import ujson as json
+import orjson as json
 
 from config import CFG
 from core.background_tasks import init_background_task

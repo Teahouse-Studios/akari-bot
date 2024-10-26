@@ -1,31 +1,29 @@
 import html
 import logging
-import os
 import re
 import sys
 
-import ujson as json
+import orjson as json
 from aiocqhttp import Event
 
 from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import client_name
+from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from config import Config
+from core.bot import load_prompt, init_async
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
-from core.utils.info import Info
 from core.utils.i18n import Locale, default_locale
+from core.utils.info import Info
 from database import BotDBUtil
 
 PrivateAssets.set('assets/private/aiocqhttp')
-EnableDirtyWordCheck.status = True if Config('enable_dirty_check', False) else False
-Url.disable_mm = False if Config('enable_urlmanager', False) else True
+EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
+Url.disable_mm = not Config('enable_urlmanager', False)
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
-string_post = Config("qq_string_post", False)
 
 
 @bot.on_startup
@@ -49,35 +47,22 @@ async def message_handler(event: Event):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
     if event.user_id in ignore_ids:
         return
-    
+    string_post = False
+    if isinstance(event.message, str):
+        string_post = True
+
     if string_post:
-        filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
-        if filter_msg:
-            match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
-            if match_json:
-                load_json = json.loads(html.unescape(match_json.group(1)))
-                if load_json['app'] == 'com.tencent.multimsg':
-                    event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
-                else:
-                    return
-            else:
-                return
+        match_json = re.match(r'\[CQ:json,data=(.*?)\]', event.message, re.MULTILINE | re.DOTALL)
+        if match_json:
+            load_json = json.loads(html.unescape(match_json.group(1)))
+            if load_json['app'] == 'com.tencent.multimsg':
+                event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
     else:
-        filter_msg = False
-        for item in event.message:
-            if re.match(r'.*?<\?xml.*?>.*?', item["data"].get("text", ""), re.MULTILINE | re.DOTALL):
-                filter_msg = True
-        if event.message[0]["type"] in ["json", "xml"] or filter_msg:
-            match_json = event.message[0]["type"] == "json"
-            if match_json:
-                load_json = json.loads(html.unescape(event.message[0]["data"]["data"]))
-                if load_json['app'] == 'com.tencent.multimsg':
-                    event.message = [{"type": "forward","data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
-                else:
-                    return
-            else:
-                return
-        
+        if event.message[0]["type"] == "json":
+            load_json = json.loads(event.message[0]["data"]["data"])
+            if load_json['app'] == 'com.tencent.multimsg':
+                event.message = [{"type": "forward", "data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
+
     reply_id = None
     if string_post:
         match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
@@ -86,7 +71,7 @@ async def message_handler(event: Event):
     else:
         if event.message[0]["type"] == "reply":
             reply_id = int(event.message[0]["data"]["id"])
-    
+
     prefix = None
     if string_post:
         if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
@@ -101,14 +86,16 @@ async def message_handler(event: Event):
                 event.message = event.message[1:]
                 if not event.message:
                     event.message = [{"type": "text", "data": {"text": "help"}}]
-                prefix = ['']    
+                prefix = ['']
 
-    target_id = f'Group|{str(event.group_id)}' if event.detail_type == 'group' else f'Private|{str(event.user_id)}'
+    target_id = f'{target_group_name}|{event.group_id}' if event.detail_type == 'group' else f'{target_private_name}|{event.user_id}'
 
-    msg = MessageSession(MsgInfo(target_id=f'QQ|{target_id}',
-                                 sender_id=f'QQ|{str(event.user_id)}',
-                                 target_from='QQ|Group' if event.detail_type == 'group' else 'QQ|Private',
-                                 sender_from='QQ', sender_name=event.sender['nickname'], client_name=client_name,
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=f'{sender_name}|{event.user_id}',
+                                 target_from=target_group_name if event.detail_type == 'group' else target_private_name,
+                                 sender_from=sender_name,
+                                 sender_name=event.sender['nickname'],
+                                 client_name=client_name,
                                  message_id=event.message_id,
                                  reply_id=reply_id),
                          Session(message=event,
@@ -144,22 +131,23 @@ async def _(event):
     match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
     if match_reply:
         reply_id = int(match_reply.group(1))
-    target_id = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
-    msg = MessageSession(MsgInfo(target_id=target_id,
-                                 sender_id=f'QQ|Tiny|{str(event.user_id)}',
-                                 target_from='QQ|Guild',
-                                 sender_from='QQ|Tiny', sender_name=event.sender['nickname'], client_name=client_name,
+    msg = MessageSession(MsgInfo(target_id=f'{target_guild_name}|{event.guild_id}|{event.channel_id}',
+                                 sender_id=f'{sender_tiny_name}|{event.user_id}',
+                                 target_from=target_guild_name,
+                                 sender_from=sender_tiny_name,
+                                 sender_name=event.sender['nickname'],
+                                 client_name=client_name,
                                  message_id=event.message_id,
                                  reply_id=reply_id),
                          Session(message=event,
-                                 target=f'{str(event.guild_id)}|{str(event.channel_id)}',
+                                 target=f'{event.guild_id}|{event.channel_id}',
                                  sender=event.user_id))
     await parser(msg, running_mention=True)
 
 
 @bot.on('request.friend')
 async def _(event: Event):
-    sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.user_id))
+    sender_info = BotDBUtil.SenderInfo(f'{sender_name}|{event.user_id}')
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
     if not Config('qq_allow_approve_friend', False):
@@ -173,14 +161,14 @@ async def _(event: Event):
 
 @bot.on('request.group.invite')
 async def _(event: Event):
-    sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.user_id))
+    sender_info = BotDBUtil.SenderInfo(f'{sender_name}|{event.user_id}')
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
     if not Config('qq_allow_approve_group_invite', False):
         await bot.send_private_msg(user_id=event.user_id,
                                    message=Locale(default_locale).t('qq.prompt.disable_group_invite'))
     else:
-        if BotDBUtil.GroupBlockList.check('QQ|Group|' + str(event.group_id)):
+        if BotDBUtil.GroupBlockList.check(f'{target_group_name}|{event.group_id}'):
             return {'approve': False}
         return {'approve': True}
 
@@ -190,15 +178,15 @@ async def _(event: Event):
     if event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
-        sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.operator_id))
+        sender_info = BotDBUtil.SenderInfo(f'{sender_name}|{str(event.operator_id)}')
         unfriendly_actions.add('mute', str(event.duration))
         result = unfriendly_actions.check_mute()
         if event.duration >= 259200:
             result = True
         if result and not sender_info.is_super_user:
             reason = Locale(default_locale).t('tos.message.reason.mute')
-            await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
-            BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
+            await tos_report(f'{sender_name}|{event.operator_id}', f'{target_group_name}|{event.group_id}', reason, banned=True)
+            BotDBUtil.GroupBlockList.add(f'{target_group_name}|{event.group_id}')
             await bot.call_action('set_group_leave', group_id=event.group_id)
             sender_info.edit('isInAllowList', False)
             sender_info.edit('isInBlockList', True)
@@ -209,11 +197,11 @@ async def _(event: Event):
 async def _(event: Event):
     if event.sub_type == 'kick_me':
         BotDBUtil.UnfriendlyActions(target_id=event.group_id, sender_id=event.operator_id).add('kick')
-        sender_info = BotDBUtil.SenderInfo('QQ|' + str(event.operator_id))
+        sender_info = BotDBUtil.SenderInfo(f'{sender_name}|{event.operator_id}')
         if not sender_info.is_super_user:
             reason = Locale(default_locale).t('tos.message.reason.kick')
-            await tos_report('QQ|' + str(event.operator_id), 'QQ|Group|' + str(event.group_id), reason, banned=True)
-            BotDBUtil.GroupBlockList.add('QQ|Group|' + str(event.group_id))
+            await tos_report(f'{sender_name}|{event.operator_id}', f'{target_group_name}|{event.group_id}', reason, banned=True)
+            BotDBUtil.GroupBlockList.add(f'{target_group_name}|{event.group_id}')
             sender_info.edit('isInAllowList', False)
             sender_info.edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
@@ -221,7 +209,7 @@ async def _(event: Event):
 
 @bot.on_message('group')
 async def _(event: Event):
-    result = BotDBUtil.GroupBlockList.check(f'QQ|Group|{str(event.group_id)}')
+    result = BotDBUtil.GroupBlockList.check(f'{target_group_name}|{event.group_id}')
     if result:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
         if Config('issue_url', cfg_type=str):
@@ -233,6 +221,7 @@ async def _(event: Event):
 qq_host = Config("qq_host", cfg_type=str)
 if qq_host:
     argv = sys.argv
+    Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     host, port = qq_host.split(':')

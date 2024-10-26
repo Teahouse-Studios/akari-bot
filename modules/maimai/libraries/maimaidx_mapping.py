@@ -2,7 +2,6 @@ import os
 
 from config import Config
 
-
 DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10

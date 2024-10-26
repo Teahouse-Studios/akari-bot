@@ -22,10 +22,8 @@ async def _(msg: Bot.MessageSession, term: str):
     res_moegirl = await moegirl(term, msg.locale)
     res_nbnhhsh = await nbnhhsh(term, msg.locale)
     res_urban = await urban(term, msg.locale)
-    chk = await check(res_moegirl, res_nbnhhsh, res_urban)
+    chk = await check(res_moegirl, res_nbnhhsh, res_urban, msg=msg)
     res = ''
     for i in chk:
         res += i['content'] + '\n'
-    res = res.replace("<吃掉了>", msg.locale.t("check.redacted"))
-    res = res.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
     await msg.finish(res.strip())

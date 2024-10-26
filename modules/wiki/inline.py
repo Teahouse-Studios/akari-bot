@@ -162,13 +162,15 @@ async def _(msg: Bot.MessageSession):
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in
                                                     range(len(get_page.sections))]
-                                    i_msg_lst.append(I18NContext('wiki.message.invalid_section.prompt' if (
-                                        get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
+                                    i_msg_lst.append(
+                                        I18NContext(
+                                            'wiki.message.invalid_section.prompt' if (
+            get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
                                     i_msg_lst += [Image(ii) for ii in await
-                                                     image_table_render(
-                                                        ImageTable(session_data,
+                                                  image_table_render(
+                                        ImageTable(session_data,
                                                    [msg.locale.t('wiki.message.table.header.id'),
-                                                        msg.locale.t('wiki.message.table.header.section')]))]
+                                                    msg.locale.t('wiki.message.table.header.section')]))]
                                     i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                     i_msg_lst.append(I18NContext('message.reply.prompt'))
 
@@ -196,7 +198,7 @@ async def _(msg: Bot.MessageSession):
                                         img_table_data.append([x] + forum_data[x]['data'])
                                 img_table = ImageTable(img_table_data, img_table_headers)
                                 i_msg_lst = []
-                                i_msg_lst.append(I18NContext('wiki.message.forum'))
+                                i_msg_lst.append(I18NContext('wiki.message.forum.prompt'))
                                 i_msg_lst += [Image(ii) for ii in await image_table_render(img_table)]
                                 i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                 i_msg_lst.append(I18NContext('message.reply.prompt'))

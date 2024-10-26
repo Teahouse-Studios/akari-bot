@@ -1,13 +1,9 @@
 import re
-from datetime import datetime
-from typing import Union
-from urllib.parse import urlparse
 
-import ujson as json
+import orjson as json
 from tenacity import retry, stop_after_attempt
 
 from core.builtins import Bot
-from core.logger import Logger
 from database import session, auto_rollback_error
 from modules.wikilog.orm import WikiLogTargetSetInfo
 

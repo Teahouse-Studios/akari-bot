@@ -1,14 +1,15 @@
 import asyncio
 from typing import List, Union
 
+from PIL import Image as PILImage
 from inputimeout import inputimeout, TimeoutOccurred
-from PIL import Image as PImage
 
 from config import Config
 from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.console.info import *
 from core.exceptions import WaitCancelException
 from core.logger import Logger
 from core.types import Session, MsgInfo, FinishedSession as FinS
@@ -33,7 +34,7 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True, callback=None) -> FinishedSession:
+                           enable_parse_message=True, enable_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
         for x in message_chain.as_sendable(self, embed=False):
@@ -42,7 +43,7 @@ class MessageSession(MessageSessionT):
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
             elif isinstance(x, Image):
                 image_path = await x.get()
-                img = PImage.open(image_path)
+                img = PILImage.open(image_path)
                 img.show()
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {image_path}')
         return FinishedSession(self, [0], ['Should be a callable here... hmm...'])
@@ -52,6 +53,7 @@ class MessageSession(MessageSessionT):
         if Config('no_confirm', False):
             return True
         if message_chain:
+            message_chain = MessageChain(message_chain)
             if append_instruction:
                 print(self.locale.t("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
@@ -74,6 +76,7 @@ class MessageSession(MessageSessionT):
                                 append_instruction=True):
         send = None
         if message_chain:
+            message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
@@ -108,17 +111,20 @@ class MessageSession(MessageSessionT):
             raise WaitCancelException
         if message_chain and delete:
             await send.delete()
-        return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
-                                             sender_id='TEST|0',
-                                             sender_name='',
-                                             target_from='TEST|Console',
-                                             sender_from='TEST', client_name='TEST', message_id=0,
+        return MessageSession(target=MsgInfo(target_id=f'{target_name}|0',
+                                             sender_id=f'{sender_name}|0',
+                                             sender_name='Console',
+                                             target_from=target_name,
+                                             sender_from=sender_name,
+                                             client_name=client_name,
+                                             message_id=0,
                                              reply_id=None),
-                              session=Session(message=c, target='TEST|Console|0', sender='TEST|0'))
+                              session=Session(message=c, target=f'{target_name}|0', sender=f'{sender_name}|0'))
 
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
         send = None
         if message_chain:
+            message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain)
         try:
             if timeout:
@@ -195,11 +201,14 @@ class FetchedSession(FetchedSessionT):
 
 
 class FetchTarget(FetchTargetT):
-    name = 'TEST'
+    name = client_name
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        return FetchedSession('TEST|Console', '0', 'TEST', '0')
+        return FetchedSession(target_from=target_name,
+                              target_id='0',
+                              sender_from=sender_name,
+                              sender_id='0')
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):

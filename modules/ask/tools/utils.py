@@ -1,6 +1,6 @@
 from typing import Any, Awaitable, Callable, Optional
 
-import ujson as json
+import orjson as json
 from langchain.tools import StructuredTool
 
 from core.types.message import MessageSession, MsgInfo, Session

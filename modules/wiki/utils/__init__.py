@@ -28,11 +28,11 @@ async def rc_loader(msg: Bot.MessageSession):
         from bots.aiocqhttp.utils import qq_frame_type
         if qq_frame_type() == 'ntqq':
             try:
-                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.1'))
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending'))
                 nodelist = await rc_qq(msg, start_wiki)
                 await msg.fake_forward_msg(nodelist)
             except Exception:
-                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.2'))
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.timeout'))
             legacy = False
         else:
 
@@ -82,11 +82,11 @@ async def ab_loader(msg: Bot.MessageSession):
         from bots.aiocqhttp.utils import qq_frame_type
         if qq_frame_type() == 'ntqq':
             try:
-                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.1'))
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending'))
                 nodelist = await ab_qq(msg, start_wiki)
                 await msg.fake_forward_msg(nodelist)
             except Exception:
-                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending.2'))
+                await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.timeout'))
             legacy = False
         else:
             try:

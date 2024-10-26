@@ -1,9 +1,7 @@
-import random
 import traceback
-from datetime import datetime, timedelta
 from urllib.parse import quote
 
-import ujson as json
+import orjson as json
 
 from config import Config
 from core.builtins import Url, I18NContext
@@ -13,7 +11,6 @@ from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.web_render import webrender
-
 
 """class Article:
     count = 10
