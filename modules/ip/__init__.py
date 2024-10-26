@@ -119,7 +119,7 @@ async def format_ip(msg, info: Dict[str, Any]):
         'sixtofour': msg.locale.t('ip.message.ip_property.sixtofour'),
         'teredo': msg.locale.t('ip.message.ip_property.teredo'),
         'site_local': msg.locale.t('ip.message.ip_property.site_local'),
-        'unknown': msg.locale.t('unknown')
+        'unknown': msg.locale.t('message.unknown')
     }
 
     res.append(info['ip'])

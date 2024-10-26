@@ -5,6 +5,6 @@
     "arcaea.help.random": "Random a song.",
     "arcaea.help.rank.free": "View the current rank of the free packs.",
     "arcaea.help.rank.paid": "View the current rank of the paid packs.",
-    "arcaea.message.download": "Current latest version is ${version}.\nDownload: ${url}",
+    "arcaea.message.download": "Current latest version: ${version}\nDownload: ${url}",
     "arcaea.message.get_failed": "Failed to fetch."
 }
