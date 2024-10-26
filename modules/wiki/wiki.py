@@ -324,9 +324,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             Plain('\n'.join(wait_plain_slice)))
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.send_message(session.locale.t('error') + str(e))
+                await session.send_message(session.locale.t('message.error') + str(e))
             else:
-                msg_list.append(Plain(session.locale.t('error') + str(e)))
+                msg_list.append(Plain(session.locale.t('message.error') + str(e)))
     if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all([not render_infobox_list, not render_section_list,

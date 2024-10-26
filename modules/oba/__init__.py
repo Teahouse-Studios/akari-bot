@@ -118,11 +118,11 @@ async def top(msg: Bot.MessageSession, rank: int = 1):
     node_list = []
     for i in range(rank - 1, rank - 1 + TOP_LIMIT):
         node = rankList[i]
-        sponsor = node.get('sponsor', msg.locale.t("unknown"))
+        sponsor = node.get('sponsor', msg.locale.t("message.unknown"))
         try:
             sponsor_name = sponsor.get('name')
         except AttributeError:
-            sponsor_name = msg.locale.t("unknown")
+            sponsor_name = msg.locale.t("message.unknown")
 
         try:
             status = '🟩' if node.get('isEnabled') else '🟥'
@@ -152,11 +152,11 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
     node_list = []
     for rank, node in match_list:
-        sponsor = node.get('sponsor', msg.locale.t("unknown"))
+        sponsor = node.get('sponsor', msg.locale.t("message.unknown"))
         try:
             sponsor_name = sponsor.get('name')
         except AttributeError:
-            sponsor_name = msg.locale.t("unknown")
+            sponsor_name = msg.locale.t("message.unknown")
 
         try:
             status = '🟩' if node.get('isEnabled') else '🟥'
