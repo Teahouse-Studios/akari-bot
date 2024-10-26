@@ -497,7 +497,9 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append([int(music.id), 2])
             if [int(music.id), 3] not in song_played:
                 song_remain_master.append([int(music.id), 3])
-            if version in ['舞', '覇'] and len(music.level) == 5 and [int(music.id), 4] not in song_played:
+            if version in ['舞', '覇'] and len(music.level) == 5 and \
+            [int(music.id), 4] not in song_played and \
+            int(music.id) in mai_plate_remaster_required:
                 song_remain_remaster.append([int(music.id), 4])
     song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))  # 根据ID排序结果
     song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))
