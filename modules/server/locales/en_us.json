@@ -4,9 +4,9 @@
     "server.help.option.r": "Show raw info.",
     "server.message.error": "An error occurred: Nothing is returned when calling API.",
     "server.message.local_ip": "Invalid domain name or IP address.",
-    "server.message.gamemode": "Game Mode: ",
+    "server.message.gamemode": "Game mode: ",
     "server.message.not_found": "Does not find any type of Minecraft server.",
-    "server.message.player": "Online Player: ",
-    "server.message.player.current": "Current Online Player: ",
-    "server.message.version": "Game Version: "
+    "server.message.player": "Online players: ",
+    "server.message.player.current": "Current online players: ",
+    "server.message.version": "Game version: "
 }
