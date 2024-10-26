@@ -78,7 +78,8 @@ async def check_job_queue():
         args = json.loads(tsk.args)
         Logger.debug(f'Args: {args}')
         timestamp = tsk.timestamp
-        if BotDBUtil.time_offset is not None and datetime.datetime.now().timestamp() - timestamp.timestamp() - BotDBUtil.time_offset > 7200:
+        if BotDBUtil.time_offset is not None and datetime.datetime.now().timestamp() - timestamp.timestamp() - \
+                BotDBUtil.time_offset > 7200:
             Logger.warning(f'Task {tsk.taskid} timeout, {
                            datetime.datetime.now().timestamp() - timestamp.timestamp() - BotDBUtil.time_offset}, skip.')
             return_val(tsk, {}, status=False)
