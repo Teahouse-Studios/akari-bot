@@ -47,7 +47,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
     data['registration_time'] = base_user_info['registration']
     data['registration_time'] = msg.ts2strftime(strptime2ts(data['registration_time'])) if data[
         'registration_time'] else msg.locale.t(
-        'unknown')
+        'message.unknown')
     data['edited_count'] = str(base_user_info['editcount'])
     data['gender'] = base_user_info['gender']
     if data['gender'] == 'female':
@@ -55,23 +55,23 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
     elif data['gender'] == 'male':
         data['gender'] = msg.locale.t('wiki.message.user.gender.male')
     elif data['gender'] == 'unknown':
-        data['gender'] = msg.locale.t('unknown')
+        data['gender'] = msg.locale.t('message.unknown')
     # if one day LGBTers...
 
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
         data['blocked_time'] = msg.ts2strftime(strptime2ts(data['blocked_time'])) \
-            if data['blocked_time'] else msg.locale.t('unknown')
+            if data['blocked_time'] else msg.locale.t('message.unknown')
         data['blocked_expires'] = base_user_info.get('blockexpiry', None)
         if data['blocked_expires']:
             if data['blocked_expires'] != "infinite":
                 data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires']))
         else:
-            data['blocked_expires'] = msg.locale.t('unknown')
+            data['blocked_expires'] = msg.locale.t('message.unknown')
         data['blocked_reason'] = base_user_info['blockreason']
         data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] else msg.locale.t(
-            'unknown')
+            'message.unknown')
 
     Logger.debug(str(data))
     msgs = []

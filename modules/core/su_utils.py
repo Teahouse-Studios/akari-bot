@@ -34,7 +34,7 @@ async def add_su(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await msg.finish(msg.locale.t("success"))
+            await msg.finish(msg.locale.t("message.success"))
 
 
 @su.command('remove <user>')
@@ -47,7 +47,7 @@ async def del_su(msg: Bot.MessageSession, user: str):
             await msg.finish()
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await msg.finish(msg.locale.t("success"))
+            await msg.finish(msg.locale.t("message.success"))
 
 
 purge = module('purge', required_superuser=True, base=True, doc=True)
@@ -129,7 +129,7 @@ async def _(msg: Bot.MessageSession, target: str):
                 v = json.loads(v)
             except json.JSONDecodeError as e:
                 Logger.error(str(e))
-                await msg.finish(msg.locale.t("failed"))
+                await msg.finish(msg.locale.t("message.failed"))
         elif v.lower() == 'true':
             v = True
         elif v.lower() == 'false':
@@ -139,7 +139,7 @@ async def _(msg: Bot.MessageSession, target: str):
     elif 'remove' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         target_data.remove_option(k)
-        await msg.finish(msg.locale.t("success"))
+        await msg.finish(msg.locale.t("message.success"))
 
 
 if Bot.client_name == 'QQ':
@@ -506,17 +506,17 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
             v = json.loads(v)
         except json.JSONDecodeError as e:
             Logger.error(str(e))
-            await msg.finish(msg.locale.t("failed"))
+            await msg.finish(msg.locale.t("message.failed"))
     CFG.write(k, v, msg.parsed_msg['-s'])
-    await msg.finish(msg.locale.t("success"))
+    await msg.finish(msg.locale.t("message.success"))
 
 
 @cfg_.command('delete <k>')
 async def _(msg: Bot.MessageSession, k: str):
     if CFG.delete(k):
-        await msg.finish(msg.locale.t("success"))
+        await msg.finish(msg.locale.t("message.success"))
     else:
-        await msg.finish(msg.locale.t("failed"))
+        await msg.finish(msg.locale.t("message.failed"))
 
 
 if Config('enable_petal', False):
@@ -569,7 +569,7 @@ jobqueue = module('jobqueue', required_superuser=True, base=True)
 @jobqueue.command('clear')
 async def stop_playing_maimai(msg: Bot.MessageSession):
     BotDBUtil.JobQueue.clear(0)
-    await msg.finish(msg.locale.t("success"))
+    await msg.finish(msg.locale.t("message.success"))
 
 
 decry = module('decrypt', required_superuser=True, base=True, doc=True)
@@ -581,4 +581,4 @@ async def _(msg: Bot.MessageSession):
     if dec:
         await msg.finish(dec)
     else:
-        await msg.finish(msg.locale.t("failed"))
+        await msg.finish(msg.locale.t("message.failed"))

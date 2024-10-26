@@ -441,8 +441,8 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append([song['id'], song['level_index']])
             if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_master.append([song['id'], song['level_index']])
-            if version in ['舞', '覇'] and song['level_index'] == 4 and song['achievements'] < (
-                    100.0 if goal == '将' else 80.0):
+            if version in ['舞', '覇'] and int(song['id']) in mai_plate_remaster_required and \
+               song['level_index'] == 4 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_remaster.append([song['id'], song['level_index']])  # 霸者和舞牌需要Re:MASTER难度
             song_played.append([song['id'], song['level_index']])
     elif goal == '極':
@@ -455,7 +455,8 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append([song['id'], song['level_index']])
             if song['level_index'] == 3 and not song['fc']:
                 song_remain_master.append([song['id'], song['level_index']])
-            if version == '舞' and song['level_index'] == 4 and not song['fc']:
+            if version == '舞' and int(song['id']) in mai_plate_remaster_required and \
+                song['level_index'] == 4 and not song['fc']:
                 song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal == '舞舞':
@@ -468,7 +469,8 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append([song['id'], song['level_index']])
             if song['level_index'] == 3 and song['fs'] not in ['fsd', 'fsdp']:
                 song_remain_master.append([song['id'], song['level_index']])
-            if version == '舞' and song['level_index'] == 4 and song['fs'] not in ['fsd', 'fsdp']:
+            if version == '舞' and int(song['id']) in mai_plate_remaster_required and \
+               song['level_index'] == 4 and song['fs'] not in ['fsd', 'fsdp']:
                 song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal == '神':
@@ -481,7 +483,8 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append([song['id'], song['level_index']])
             if song['level_index'] == 3 and song['fc'] not in ['ap', 'app']:
                 song_remain_master.append([song['id'], song['level_index']])
-            if version == '舞' and song['level_index'] == 4 and song['fc'] not in ['ap', 'app']:
+            if version == '舞' and int(song['id']) in mai_plate_remaster_required and \
+               song['level_index'] == 4 and song['fc'] not in ['ap', 'app']:
                 song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     else:
@@ -497,7 +500,9 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_expert.append([int(music.id), 2])
             if [int(music.id), 3] not in song_played:
                 song_remain_master.append([int(music.id), 3])
-            if version in ['舞', '覇'] and len(music.level) == 5 and [int(music.id), 4] not in song_played:
+            if version in ['舞', '覇'] and len(music.level) == 5 and \
+               int(music.id) in mai_plate_remaster_required and \
+               [int(music.id), 4] not in song_played:
                 song_remain_remaster.append([int(music.id), 4])
     song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))  # 根据ID排序结果
     song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))

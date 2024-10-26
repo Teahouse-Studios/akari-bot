@@ -136,7 +136,7 @@ class ErrorMessage(EMsg):
         if locale:
             locale = Locale(locale)
             error_message = locale.t_str(error_message, **kwargs)
-            self.error_message = locale.t('error') + error_message
+            self.error_message = locale.t('message.error') + error_message
             if enable_report and Config('bug_report_url', cfg_type=str):
                 self.error_message += '\n' + locale.t('error.prompt.address',
                                                       url=str(Url(Config('bug_report_url', cfg_type=str))))

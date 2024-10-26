@@ -1,18 +1,18 @@
 {
     "whois.help": "Query WHOIS information.",
-    "whois.message.creation_date": "Registration Date: ",
+    "whois.message.creation_date": "Registration date: ",
     "whois.message.dnssec": "DNSSEC: ",
-    "whois.message.domain_name": "Domain Name: ",
+    "whois.message.domain_name": "Domain name: ",
     "whois.message.email": "Email: ",
-    "whois.message.expiration_date": "Expiration Date: ",
+    "whois.message.expiration_date": "Expiration date: ",
     "whois.message.get_failed": "Failed to fetch WHOIS.",
     "whois.message.location": "Location: ",
     "whois.message.name": "Name: ",
-    "whois.message.name_servers": "DNS Servers: ",
+    "whois.message.name_servers": "DNS servers: ",
     "whois.message.organization": "Organization: ",
     "whois.message.postal_code": "Postcode: ",
     "whois.message.referral_url": "Referrer URL: ",
     "whois.message.registrar": "Registrar: ",
-    "whois.message.updated_date": "Updated Date: ",
-    "whois.message.whois_server": "WHOIS Servers: "
+    "whois.message.updated_date": "Updated date: ",
+    "whois.message.whois_server": "WHOIS servers: "
 }

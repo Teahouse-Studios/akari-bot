@@ -561,7 +561,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     if datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
                                             matched_hash] < 10:
                                         Logger.warning('Match loop detected, skipping...')
-                                        await msg.send_message(msg.locale.t("parser.matched.but.try.again.later"))
+                                        await msg.send_message(msg.locale.t("parser.matched.but_try_again_later"))
                                         continue
                                 match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
                                 if enable_tos and rfunc.show_typing:

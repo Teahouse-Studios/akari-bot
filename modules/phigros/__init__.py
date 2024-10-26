@@ -82,6 +82,6 @@ async def _(msg: Bot.MessageSession):
 @phi.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_assets():
-        await msg.finish(msg.locale.t("success"))
+        await msg.finish(msg.locale.t("message.success"))
     else:
-        await msg.finish(msg.locale.t("failed"))
+        await msg.finish(msg.locale.t("message.failed"))

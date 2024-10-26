@@ -1,4 +1,5 @@
 {
+    "ncmusic.help": "通过 ID 获取音乐。",
     "ncmusic.help.desc": "网易云音乐相关工具。",
     "ncmusic.help.info": "获取音乐详细信息。",
     "ncmusic.help.search": "搜索网易云音乐。",

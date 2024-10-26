@@ -46,9 +46,9 @@ async def get_weekly(with_img=False, zh_tw=False):
         Plain(
             locale.t(
                 "weekly.message.link",
-                img=imglink if imglink else locale.t("none"),
+                img=imglink if imglink else locale.t("message.none"),
                 article=str(
-                    Url(f'https://zh.minecraft.wiki{page[0]}') if page else locale.t("none")),
+                    Url(f'https://zh.minecraft.wiki{page[0]}') if page else locale.t("message.none")),
                 link=str(
                     Url(f'https://zh.minecraft.wiki/wiki/?oldid={str(result["parse"]["revid"])}')))))
     if imglink and with_img:

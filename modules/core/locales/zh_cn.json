@@ -201,7 +201,7 @@
     "core.message.update.failed": "尝试从 GitHub 获取更新失败。",
     "core.message.version": "当前机器人版本号：${commit}",
     "core.message.version.unknown": "无法获取版本号。此实例可能没有使用 Git 进行部署。",
-    "core.message.whoami": "你的 ID 是：${sender}\n本对话的 ID 是：${target}",
+    "core.message.whoami": "你的 ID：${sender}\n本对话的 ID：${target}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
     "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
