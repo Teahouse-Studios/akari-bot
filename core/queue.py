@@ -74,9 +74,9 @@ async def check_job_queue():
         args = json.loads(tsk.args)
         Logger.debug(f'Args: {args}')
         timestamp = tsk.timestamp
-        # if (datetime.datetime.now(datetime.UTC) - timestamp).total_seconds() > 7200:
-        #     Logger.warning(f'Task {tsk.taskid} timeout, {
-        #                    (datetime.datetime.now(datetime.UTC) - timestamp).total_seconds()}')
+        if datetime.datetime.now().timestamp() - timestamp.timestamp()  > 7200:
+            Logger.warning(f'Task {tsk.taskid} timeout, {
+                           (datetime.datetime.now(datetime.UTC) - timestamp).total_seconds()}')
         try:
             if tsk.action == 'validate_permission':
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
