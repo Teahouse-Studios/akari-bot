@@ -5,6 +5,6 @@
     "arcaea.help.random": "隨機一首歌曲。",
     "arcaea.help.rank.free": "檢視當前免費包遊玩排行。",
     "arcaea.help.rank.paid": "檢視當前付費包遊玩排行。",
-    "arcaea.message.download": "當前的最新版本為 ${version}。\n下載網址：${url}",
+    "arcaea.message.download": "當前最新版本：${version}\n下載網址：${url}",
     "arcaea.message.get_failed": "取得失敗。"
 }
