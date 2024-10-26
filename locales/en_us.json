@@ -99,5 +99,5 @@
     "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
     "unknown": "Unknown",
     "yes": "Yes",
-    "parser.matched.but.try.again.later": "请稍后再试。"
+    "parser.matched.but_try_again_later": "Please try again later."
 }
