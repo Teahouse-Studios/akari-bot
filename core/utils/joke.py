@@ -5,19 +5,16 @@ from datetime import datetime
 from config import Config
 
 
-shuffle_list = ['shuffle', '2023']
+shuffle_list = ['shuffle']
 
 
 def joke(text: str):
     current_date = datetime.now().date()
     enable_joke = Config('enable_joke', cfg_type=bool)
-    joke_type = Config('joke_type', cfg_type=str)
+#    joke_type = Config('joke_type', cfg_type=str)
 
     if enable_joke or (enable_joke is None and (current_date.month == 4 and current_date.day == 1)):
-        if joke_type in shuffle_list:
-            return shuffle_joke(text)
-        else:
-            ...
+        return shuffle_joke(text)
     return text
 
 

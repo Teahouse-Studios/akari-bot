@@ -9,11 +9,11 @@ import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate
 
-from core.builtins.utils import shuffle_joke
 from core.logger import Logger
-from .cache import random_cache_path
-from .http import download
-from .web_render import WebRender, webrender
+from core.utils.cache import random_cache_path
+from core.utils.http import download
+from core.utils.joke import joke
+from core.utils.web_render import WebRender, webrender
 
 
 class ImageTable:
@@ -39,10 +39,10 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             for row in tbl.data:
                 cs = []
                 for c in row:
-                    c = shuffle_joke(c)
+                    c = joke(c)
                     cs.append(re.sub(r'\n', '<br>', escape(c)))
                 d.append(cs)
-            headers = [shuffle_joke(header) for header in tbl.headers]
+            headers = [joke(header) for header in tbl.headers]
             w = len(headers) * 500
             if w > max_width:
                 max_width = w
