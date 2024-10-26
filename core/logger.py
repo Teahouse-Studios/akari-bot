@@ -7,6 +7,7 @@ from loguru import logger
 
 from config import Config
 
+
 debug = Config('debug', False)
 
 logpath = os.path.abspath('./logs')
@@ -16,7 +17,7 @@ if not os.path.exists(logpath):
 bot_name = re.split(r'[/\\]', sys.path[0])[-1].title()
 
 args = sys.argv
-if not args[0].endswith('.py'):
+if 'subprocess' in args:
     bot_name = args[-1].title()
 if args[0].lower() == 'console.py':
     bot_name = 'Console'
