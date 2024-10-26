@@ -30,7 +30,7 @@ async def init_async(start_scheduler=True) -> None:
                 Scheduler.add_job(func=schedule.function, trigger=schedule.trigger, misfire_grace_time=30,
                                   max_instance=1)
     await asyncio.gather(*gather_list)
-    init_background_task()
+    await init_background_task()
     if start_scheduler:
         if not Info.subprocess:
             load_extra_schedulers()
