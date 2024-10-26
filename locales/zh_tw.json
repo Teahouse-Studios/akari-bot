@@ -99,5 +99,5 @@
     "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
     "unknown": "未知",
     "yes": "是",
-    "parser.matched.but.try.again.later": "请稍后再试。"
+    "parser.matched.but_try_again_later": "請稍後再試。"
 }
