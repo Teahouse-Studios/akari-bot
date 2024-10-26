@@ -71,16 +71,18 @@ async def check_job_queue():
         if tsk.hasDone:
             _queue_tasks[tskid]['result'] = json.loads(tsk.returnVal)
             _queue_tasks[tskid]['flag'].set()
-    get_all = BotDBUtil.JobQueue.get_all(target_client=Bot.FetchTarget.name)
     get_internal = BotDBUtil.JobQueue.get_all(target_client=JobQueue.name)
-    for tsk in get_all + get_internal:
+    get_all = BotDBUtil.JobQueue.get_all(target_client=Bot.FetchTarget.name)
+    for tsk in get_internal + get_all:
         Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
         args = json.loads(tsk.args)
         Logger.debug(f'Args: {args}')
         timestamp = tsk.timestamp
-        # if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
-        #     Logger.warning(f'Task {tsk.taskid} timeout, {
-        #                    (datetime.datetime.now(datetime.UTC) - timestamp).total_seconds()}')
+        if BotDBUtil.time_offset is not None and datetime.datetime.now().timestamp() - timestamp.timestamp() - BotDBUtil.time_offset > 7200:
+            Logger.warning(f'Task {tsk.taskid} timeout, {
+                           datetime.datetime.now().timestamp() - timestamp.timestamp() - BotDBUtil.time_offset}, skip.')
+            return_val(tsk, {}, status=False)
+            continue
         try:
             if tsk.action == 'validate_permission':
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
