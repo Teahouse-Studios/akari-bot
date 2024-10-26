@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ msg.locale.locale }}">
 <head>
     <style>
         .grid-container {
@@ -90,15 +90,15 @@
         font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
 
-    :lang(zh-TW) {
-        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    :lang(zh-TW),  :lang(zh_TW){
+        font-family: 'Noto Sans TC', 'Noto Sans HK', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
 
     :lang(zh-HK) {
         font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
 
-    :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
+    :lang(zh-Hans), :lang(zh-CN), :lang(zh), :lang(zh_CN) {
         font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
     }</style>
     <meta charset="UTF-8">
