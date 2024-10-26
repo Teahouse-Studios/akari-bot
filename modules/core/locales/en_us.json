@@ -113,7 +113,7 @@
     "core.message.help.table.header.alias": "Command Alias",
     "core.message.help.table.header.author": "Module Author",
     "core.message.help.table.header.base": "Base Module List",
-    "core.message.help.table.header.external": "Extended Module List",
+    "core.message.help.table.header.external": "External Module List",
     "core.message.help.table.header.help": "Help",
     "core.message.leave.confirm": "This operation is irreversible. Are you sure?",
     "core.message.leave.success": "Goodbye.",
@@ -201,7 +201,7 @@
     "core.message.update.failed": "Failed to fetch update from GitHub.",
     "core.message.version": "Current bot version: ${commit}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
-    "core.message.whoami": "Your ID: ${sender}\nConversation ID: ${target}",
+    "core.message.whoami": "Your ID: ${sender}\nSession ID: ${target}",
     "core.message.whoami.admin": "(You have admin permission for this session)",
     "core.message.whoami.botadmin": "(You have bot admin permission for this session)",
     "core.message.whoami.superuser": "(You have superuser permission)"
