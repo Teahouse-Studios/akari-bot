@@ -60,16 +60,17 @@
     "parser.command.format.invalid": "语法错误。\n使用“${prefix}help ${module}”查看帮助。",
     "parser.command.running.prompt": "当前有命令正在执行，请稍后再试。",
     "parser.command.running.prompt2": "先前的命令正在执行中。",
+    "parser.matched.but_try_again_later": "请稍后再试。",
     "parser.module.desc": "介绍：\n${desc}",
     "parser.module.disabled.prompt": "“${module}”模块未开启，请使用“${prefix}enable ${module}”开启本模块。",
     "parser.module.unloaded": "“${module}”模块当前未加载，请联系开发者处理。",
     "parser.superuser.permission.denied": "你没有使用该命令的权限。",
     "petal.message.cost": "（使用了 ${amount} 片花瓣）",
+    "petal.message.cost.not_enough": "你的花瓣不足。",
     "petal.message.gained.limit": "但是，本日获得花瓣已达到每日上限，请明日再试。",
     "petal.message.gained.success": "获得了 ${amount} 片花瓣。",
     "petal.message.lost.limit": "（本日失去花瓣已达到每日上限。）",
     "petal.message.lost.success": "失去了 ${amount} 片花瓣。",
-    "petal.message.cost.not_enough": "你的花瓣不足。",
     "qq.prompt.disable_friend_request": "你好！本机器人不主动同意好友请求，请联系机器人所有者添加好友。",
     "qq.prompt.disable_group_invite": "你好！本机器人不主动同意入群请求，请联系机器人所有者邀请加入群聊。",
     "qq.prompt.disable_temp_session": "请添加好友后再进行命令交互。",
@@ -98,6 +99,5 @@
     "tos.message.warning.last": "这是最后一次警告。",
     "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。",
     "unknown": "未知",
-    "yes": "是",
-    "parser.matched.but.try.again.later": "请稍后再试。"
+    "yes": "是"
 }
