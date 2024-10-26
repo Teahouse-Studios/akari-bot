@@ -63,7 +63,7 @@
     "parser.command.format.invalid": "Syntax error.\nUse \"${prefix}help ${module}\" for help.",
     "parser.command.running.prompt": "There are currently commands executing. Please try again later.",
     "parser.command.running.prompt2": "The previous command is being executed.",
-    "parser.matched.but.try.again.later": "请稍后再试。",
+    "parser.matched.but_try_again_later": "Please try again later.",
     "parser.module.desc": "Description:\n${desc}",
     "parser.module.disabled.prompt": "\"${module}\" module is not enabled. Please use \"${prefix}enable ${module}\" to enable the module.",
     "parser.module.unloaded": "\"${module}\"hasn't been loaded yet. Please contact the developers to solve this issue.",
@@ -99,8 +99,5 @@
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
-    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
-    "unknown": "Unknown",
-    "yes": "Yes",
-    "parser.matched.but_try_again_later": "Please try again later."
+    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings."
 }

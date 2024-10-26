@@ -64,6 +64,7 @@
     "parser.command.format.invalid": "語法錯誤。\n使用「${prefix}help ${module}」檢視說明。",
     "parser.command.running.prompt": "當前有指令正在執行，請稍後再試。",
     "parser.command.running.prompt2": "先前的指令正在執行中。",
+    "parser.matched.but_try_again_later": "請稍後再試。",
     "parser.module.desc": "描述：\n${desc}",
     "parser.module.disabled.prompt": "「${module}」模組未啟用，請使用「${prefix}enable ${module}」啟用此模組。",
     "parser.module.unloaded": "「${module}」模組當前未載入，請聯絡開發人員處理。",
@@ -99,8 +100,5 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
-    "unknown": "未知",
-    "yes": "是",
-    "parser.matched.but_try_again_later": "請稍後再試。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
 }
