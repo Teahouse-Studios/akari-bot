@@ -18,8 +18,8 @@
     "ip.message.organization": "Organization: ",
     "ip.message.postal_code": "Postcode: ",
     "ip.message.real_ip": "Real IP:",
-    "ip.message.reverse": "Reverse Resolution: ",
+    "ip.message.reverse": "Reverse resolution: ",
     "ip.message.type": "Type: ",
-    "ip.message.utc": "Time Zone:",
+    "ip.message.utc": "Timezone:",
     "ip.help": "Query the information of IP."
 }
