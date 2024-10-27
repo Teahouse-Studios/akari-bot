@@ -1,7 +1,7 @@
 {
     "bot_name": "小可",
-    "check.redacted": "<已編輯:{reason}>",
-    "check.redacted.all": "<全部已編輯:{reason}>",
+    "check.redacted": "<已編輯:${reason}>",
+    "check.redacted.all": "<全部已編輯:${reason}>",
     "core.help.alias": "指令別名：",
     "core.help.none": "（此模組沒有說明資訊）",
     "core.help.options": "選項：",
