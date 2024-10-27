@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         }
 
         a[href^="https://x.com/intent/follow"],
-        a[href^="https://help.x.com/en/twitter-for-websites-ads-info-and-privacy"],
+        a[href^="https://help.x.com/en/x-for-websites-ads-info-and-privacy"],
         div[class^="tweet-replies"],
         button[aria-label="Copy link"],
         a[aria-label="Reply to this Tweet on Twitter"],
