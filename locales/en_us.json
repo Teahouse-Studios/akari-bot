@@ -1,7 +1,7 @@
 {
     "bot_name": "Akaribot",
-    "check.redacted": "<REDACTED:{reason}>",
-    "check.redacted.all": "<ALL REDACTED:{reason}>",
+    "check.redacted": "<REDACTED:${reason}>",
+    "check.redacted.all": "<ALL REDACTED:${reason}>",
     "core.help.alias": "Alias: ",
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
