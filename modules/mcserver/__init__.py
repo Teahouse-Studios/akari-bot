@@ -1,8 +1,6 @@
 import asyncio
 import re
 
-import ipaddress
-
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check
@@ -22,8 +20,8 @@ async def main(msg: Bot.MessageSession):
     if match_object:
         server_address = match_object.group(1)
 
-    if check_local_ip(server_address):
-        await msg.finish(msg.locale.t('server.message.local_ip'))
+    if check_local_address(server_address):
+        await msg.finish(msg.locale.t('server.message.local_address'))
 
     java_info, bedrock_info = await asyncio.gather(
         query_java_server(msg, server_address, raw, showplayer),
@@ -40,12 +38,25 @@ async def main(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('server.message.not_found'))
 
 
-def check_local_ip(server_address):
+def check_local_address(server_address):
     if server_address.lower() == 'localhost':
         return True
 
-    try:
-        ip = ipaddress.ip_address(server_address)
-        return ip.is_private or ip.is_loopback
-    except ValueError:
-        return False
+    match_serip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
+    if match_serip:
+        if match_serip.group(1) == '192':
+            if match_serip.group(2) == '168':
+                return True
+        if match_serip.group(1) == '172':
+            if 16 <= int(match_serip.group(2)) <= 31:
+                return True
+        if match_serip.group(1) == '10':
+            if 0 <= int(match_serip.group(2)) <= 255:
+                return True
+        if match_serip.group(1) == '127':
+            return True
+        if match_serip.group(1) == '0':
+            if match_serip.group(2) == '0':
+                if match_serip.group(3) == '0':
+                    return True
+    return False
