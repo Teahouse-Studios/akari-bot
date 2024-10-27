@@ -1,11 +1,12 @@
 from config import Config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
+from core.exceptions import ConfigValueError
 from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 
-API = Config('ncmusic_api', str)
+API = Config('ncmusic_api', cfg_type=str)
 SEARCH_LIMIT = 10
 
 ncmusic = module('ncmusic',
@@ -18,6 +19,8 @@ ncmusic = module('ncmusic',
 @ncmusic.handle('search [--legacy] <keyword> {{ncmusic.help.search}}',
                 options_desc={'--legacy': '{help.option.legacy}'})
 async def search(msg: Bot.MessageSession, keyword: str):
+    if not API:
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
     song_count = result['result']['songCount']
@@ -127,7 +130,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
 
 @ncmusic.handle('<sid> {{ncmusic.help}}', available_for=['QQ|Group', 'QQ|Private'])
-async def info(msg: Bot.MessageSession, sid: int):
+async def _(msg: Bot.MessageSession, sid: int):
     if Config('ncmusic_enable_card', False):
         await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
     else:
@@ -136,6 +139,8 @@ async def info(msg: Bot.MessageSession, sid: int):
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession, sid: int):
+    if not API:
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     url = f"{API}/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt='json')
 
