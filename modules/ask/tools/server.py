@@ -1,12 +1,12 @@
 import asyncio
 
-from modules.server.server import server
+from modules.mcserver.server import query_java_server, query_bedrock_server
 from .utils import fake_msg, AkariTool
 
 
 async def minecraft_server(address: str):
     results = await asyncio.gather(
-        server(address, fake_msg, mode='j'), server(address, fake_msg, mode='b'),
+        query_java_server(fake_msg, address), query_bedrock_server(fake_msg, address),
     )
     return f'Java Edition result: {results[0]}\n\nBedrock Edition result: {results[1]}'
 

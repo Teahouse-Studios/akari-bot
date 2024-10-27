@@ -5,7 +5,7 @@ from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 
-API = "https://ncmusic.akari-bot.top"
+API = Config('ncmusic_api', str)
 SEARCH_LIMIT = 10
 
 ncmusic = module('ncmusic',
