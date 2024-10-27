@@ -99,5 +99,5 @@ async def _(msg: Bot.MessageSession, tweet: str):
             bio = BytesIO(b)
             bimg = PILImage.open(bio)
             img_lst.append(Image(bimg))
-        img_lst.append(Url(f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
+        img_lst.append(Url(f"https://x.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
         await msg.finish(img_lst)
