@@ -39,65 +39,60 @@ async def _(msg: Bot.MessageSession, tweet: str):
         res = await get_url(f'https://react-tweet.vercel.app/api/tweet/{tweet_id}', 200)
     except ValueError as e:
         if str(e).startswith('404'):
-            await msg.finish(msg.locale.t('tweet.message.invalid'))
+            await msg.finish(msg.locale.t('tweet.message.not_found'))
         else:
             raise e
 
     res_json = json.loads(res)
-    if not res_json['data']:
-        await msg.finish(msg.locale.t('tweet.message.not_found'))
-    elif res_json['data']['__typename'] == "TweetTombstone":
-        await msg.finish(f"{msg.locale.t('tweet.message.tombstone')}{res_json['data']['tombstone']['text']['text'].replace(' Learn more', '')}")
-    else:
-        if await check_bool(res_json['data']['text'], res_json['data']['user']['name'],
-                            res_json['data']['user']['screen_name']):
-            await msg.finish(rickroll(msg))
+    if await check_bool(res_json['data']['text'], res_json['data']['user']['name'],
+                        res_json['data']['user']['screen_name']):
+        await msg.finish(rickroll(msg))
 
-        css = '''
-            main {
-                justify-content: start !important;
-            }
+    css = '''
+        main {
+            justify-content: start !important;
+        }
 
-            main > div {
-                margin: 0 !important;
-                border: 0 !important;
-            }
+        main > div {
+            margin: 0 !important;
+            border: 0 !important;
+        }
 
-            article {
-                padding: .75rem 1rem;
-            }
+        article {
+            padding: .75rem 1rem;
+        }
 
-            footer {
-                display: none;
-            }
+        footer {
+            display: none;
+        }
 
-            #__next > div {
-                height: auto;
-                padding: 0;
-            }
+        #__next > div {
+            height: auto;
+            padding: 0;
+        }
 
-            a[href^="https://twitter.com/intent/follow"],
-            a[href^="https://help.twitter.com/en/twitter-for-websites-ads-info-and-privacy"],
-            div[class^="tweet-replies"],
-            button[aria-label="Copy link"],
-            a[aria-label="Reply to this Tweet on Twitter"],
-            span[class^="tweet-header_separator"] {
-                display: none;
-            }
-        '''
+        a[href^="https://twitter.com/intent/follow"],
+        a[href^="https://help.twitter.com/en/twitter-for-websites-ads-info-and-privacy"],
+        div[class^="tweet-replies"],
+        button[aria-label="Copy link"],
+        a[aria-label="Reply to this Tweet on Twitter"],
+        span[class^="tweet-header_separator"] {
+            display: none;
+        }
+    '''
 
-        pic = await download(web_render, method='POST', headers={
-            'Content-Type': 'application/json',
-        }, post_data=json.dumps(
-            {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,
-             'element': 'article'}), request_private_ip=True)
-        with open(pic) as read:
-            load_img = json.loads(read.read())
-        img_lst = []
-        for x in load_img:
-            b = base64.b64decode(x)
-            bio = BytesIO(b)
-            bimg = PILImage.open(bio)
-            img_lst.append(Image(bimg))
-        img_lst.append(Url(f"https://x.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
-        await msg.finish(img_lst)
+    pic = await download(web_render, method='POST', headers={
+        'Content-Type': 'application/json',
+    }, post_data=json.dumps(
+        {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,
+         'element': 'article'}), request_private_ip=True)
+    with open(pic) as read:
+        load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        img_lst.append(Image(bimg))
+    img_lst.append(Url(f"https://x.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"))
+    await msg.finish(img_lst)
