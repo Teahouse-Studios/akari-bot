@@ -202,21 +202,21 @@ setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alia
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
     if not msg.info.disable_typing:
-        msg.info.edit('disable_typing', True)
+        msg.info.edit('disableTyping', True)
         await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
     else:
-        msg.info.edit('disable_typing', False)
+        msg.info.edit('disableTyping', False)
         await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
 
 '''
 @setup.command('check {{core.help.setup.check}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
-    state = msg.options.get('typo_check')
+    state = msg.info.typo_check
     if state:
-        msg.data.edit_option('typo_check', False)
+        msg.data.edit_option('typoCheck', False)
         await msg.finish(msg.locale.t('core.message.setup.check.enable'))
     else:
-        msg.data.edit_option('typo_check', True)
+        msg.data.edit_option('typoCheck', True)
         await msg.finish(msg.locale.t('core.message.setup.check.disable'))
 '''
 
