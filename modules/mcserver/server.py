@@ -43,7 +43,8 @@ async def query_java_server(msg: Bot.MessageSession, address: str, raw: bool = F
     except Exception:
         if Config('debug', False):
             Logger.error(traceback.format_exc())
-
+        return ''
+        
     if raw:
         return '\n'.join(servers)
     return re.sub(r'§\w', "", '\n'.join(servers))
@@ -77,7 +78,8 @@ async def query_bedrock_server(msg, address, raw=False):
     except Exception:
         if Config('debug', False):
             Logger.error(traceback.format_exc())
-
+        return ''
+        
     if raw:
         return '\n'.join(servers)
     return re.sub(r'§\w', "", '\n'.join(servers))
