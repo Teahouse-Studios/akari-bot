@@ -182,11 +182,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        if ((msg.info.is_in_block_list and not msg.info.is_in_allow_list) \
-            or (msg.target.sender_id in msg.options.get('ban', [])) and \ 
-            not msg.info.is_super_user):
+        if (msg.info.is_in_block_list and not msg.info.is_in_allow_list and not msg.info.is_super_user) or \
+           (msg.target.sender_id in msg.options.get('ban', []) and not msg.info.is_super_user):
             return
-
+                    
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix:
