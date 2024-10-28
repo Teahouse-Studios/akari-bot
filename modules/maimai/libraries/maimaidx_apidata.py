@@ -78,8 +78,8 @@ async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     result = []
     if sid in data:
         result = data[sid]  # 此处的列表是歌曲别名列表
-
-    return result.sort()
+        result = sorted(result)
+    return result
 
 
 async def search_by_alias(input_: str) -> list:
