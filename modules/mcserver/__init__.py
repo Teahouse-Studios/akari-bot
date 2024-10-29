@@ -39,7 +39,7 @@ async def main(msg: Bot.MessageSession):
 
 
 def check_local_address(server_address):
-    if server_address.lower() == 'localhost':
+    if 'localhost' in server_address.lower():
         return True
 
     match_serip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
