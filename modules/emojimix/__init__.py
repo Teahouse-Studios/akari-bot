@@ -138,7 +138,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         Logger.debug(str(combo))
         unsupported_emojis = mixer.check_supported(combo)
         if unsupported_emojis:
-            await msg.finish(f"{msg.locale.t('emojimix.message.unsupported')}{', '.join(unsupported_emojis)}")
+            await msg.finish(f"{msg.locale.t('emojimix.message.unsupported')}{
+                msg.locale.t('message.delimiter').join(unsupported_emojis)}")
     else:
         emoji_code1 = '-'.join(f'{ord(char):x}' for char in emoji1)
         if emoji_code1 not in mixer.known_supported_emoji:
