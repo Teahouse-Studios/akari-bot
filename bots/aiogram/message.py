@@ -183,6 +183,8 @@ class FetchTarget(FetchTargetT):
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
             if fet:
+                if BotDBUtil.TargetInfo(fet.target.target_id).is_muted:
+                    continue
                 lst.append(fet)
         return lst
 

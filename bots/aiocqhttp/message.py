@@ -404,6 +404,8 @@ class FetchTarget(FetchTargetT):
                 if fet.target.target_from == target_guild_name:
                     if fet.session.target not in guild_list:
                         continue
+                if BotDBUtil.TargetInfo(fet.target.target_id).is_muted:
+                    continue
                 lst.append(fet)
         return lst
 
