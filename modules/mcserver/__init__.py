@@ -16,10 +16,6 @@ async def main(msg: Bot.MessageSession):
     raw = msg.parsed_msg.get('-r', False)
     showplayer = msg.parsed_msg.get('-p', False)
 
-    match_object = re.match(r'(.*)[\s:](.*)', server_address, re.M | re.I)
-    if match_object:
-        server_address = match_object.group(1)
-
     if check_local_address(server_address):
         await msg.finish(msg.locale.t('server.message.local_address'))
 
@@ -39,7 +35,7 @@ async def main(msg: Bot.MessageSession):
 
 
 def check_local_address(server_address):
-    if server_address.lower() == 'localhost':
+    if 'localhost' in server_address.lower():
         return True
 
     match_serip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
