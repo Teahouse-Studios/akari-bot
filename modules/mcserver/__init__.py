@@ -30,7 +30,7 @@ async def main(msg: Bot.MessageSession):
     else:
         sendmsg = '\n'.join(sendmsg).split('\n')
         sendmsg = await check(*sendmsg, msg=msg)
-        t = ''.join(x['content'] for x in sendmsg)
+        t = '\n'.join(x['content'] for x in sendmsg)
         await msg.finish(t.strip())
 
 
