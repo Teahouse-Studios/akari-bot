@@ -19,7 +19,7 @@ from core.types import Param
 from core.utils.info import Info, get_all_sender_name, get_all_target_name
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint, decrypt_string
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 
 target_list = get_all_target_name()

@@ -12,7 +12,7 @@ from core.exceptions import WaitCancelException
 from core.types.message import MessageSession as MessageSessionT, MsgInfo, Session
 from core.utils.i18n import Locale
 from core.utils.text import parse_time_string
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 
 class MessageSession(MessageSessionT):

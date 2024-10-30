@@ -13,8 +13,8 @@ from core.config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.cache import random_cache_path
-from database import session, BotDBUtil
-from database.tables import AnalyticsData, is_mysql
+from core.database import session, BotDBUtil
+from core.database.tables import AnalyticsData, is_mysql
 
 
 def get_first_record(msg: Bot.MessageSession):

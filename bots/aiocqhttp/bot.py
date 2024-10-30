@@ -19,7 +19,7 @@ from core.tos import tos_report
 from core.types import MsgInfo, Session
 from core.utils.i18n import Locale, default_locale
 from core.utils.info import Info
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 EnableDirtyWordCheck.status = Config('enable_dirty_check', False)

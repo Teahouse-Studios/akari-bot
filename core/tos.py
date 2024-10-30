@@ -1,7 +1,7 @@
 from core.config import Config
 from core.builtins import Bot
 from core.utils.i18n import Locale, default_locale
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 report_targets = Config('report_targets', [])
 WARNING_COUNTS = Config('tos_warning_counts', 5)

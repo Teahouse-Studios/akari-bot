@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 
 from core.config import Config
-from database.orm_base import Base
+from core.database.orm_base import Base
 
 DB_LINK = Config('db_path', cfg_type=str)
 

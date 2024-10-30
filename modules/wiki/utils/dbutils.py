@@ -7,7 +7,7 @@ import orjson as json
 from tenacity import retry, stop_after_attempt
 
 from core.builtins import MessageSession
-from database import session, auto_rollback_error
+from core.database import session, auto_rollback_error
 from modules.wiki.utils.orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList, WikiBotAccountList
 
 

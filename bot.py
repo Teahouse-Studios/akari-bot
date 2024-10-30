@@ -12,7 +12,7 @@ from loguru import logger
 
 from core.config import Config
 from core.path import cache_path
-from database import BotDBUtil, session, DBVersion
+from core.database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         query_dbver = session.query(DBVersion).first()
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
         logger.info(f'Updating database from {current_ver} to {target_ver}...')
-        from database.update import update_database
+        from core.database.update import update_database
 
         update_database()
         logger.info('Database updated successfully!')

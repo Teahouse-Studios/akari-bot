@@ -19,7 +19,7 @@ from core.types import Module, Param
 from core.utils.i18n import Locale, default_locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)

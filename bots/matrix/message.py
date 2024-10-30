@@ -14,7 +14,7 @@ from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchedTargetT, FinishedSession as FinS
 from core.utils.image import image_split
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 enable_analytics = Config("enable_analytics", False)
 

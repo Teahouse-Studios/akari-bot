@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from database import BotDBUtil
+from core.database import BotDBUtil
 from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 from modules.wiki.utils.wikilib import WikiLib

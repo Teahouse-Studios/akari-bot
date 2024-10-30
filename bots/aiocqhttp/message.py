@@ -25,7 +25,7 @@ from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 

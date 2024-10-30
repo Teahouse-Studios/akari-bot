@@ -9,7 +9,7 @@ from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.html2text import html2text
 from core.utils.http import get_url
-from database.local import CrowdinActivityRecords
+from core.database.local import CrowdinActivityRecords
 
 first = True
 

@@ -1,9 +1,9 @@
 import orjson as json
 from sqlalchemy import text
 
-from database import BotDBUtil
-from database.orm import Session
-from database.tables import DBVersion, TargetInfo, is_mysql
+from core.database import BotDBUtil
+from core.database.orm import Session
+from core.database.tables import DBVersion, TargetInfo, is_mysql
 
 
 def update_database():

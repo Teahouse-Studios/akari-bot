@@ -14,7 +14,7 @@ from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"

@@ -5,7 +5,7 @@ from core.config import Config
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
-from database.tables import is_mysql
+from core.database.tables import is_mysql
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 

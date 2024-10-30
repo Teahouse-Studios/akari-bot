@@ -15,7 +15,7 @@ from core.builtins.message.internal import I18NContext, Embed, Voice
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.http import download
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 

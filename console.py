@@ -25,8 +25,8 @@ from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from database import BotDBUtil, session
-from database.tables import DBVersion
+from core.database import BotDBUtil, session
+from core.database.tables import DBVersion
 
 query_dbver = session.query(DBVersion).first()
 if not query_dbver:
@@ -36,7 +36,7 @@ if not query_dbver:
 
 if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
     print(f'Updating database from {current_ver} to {target_ver}...')
-    from database.update import update_database
+    from core.database.update import update_database
 
     update_database()
     print('Database updated successfully! Please restart the program.')
