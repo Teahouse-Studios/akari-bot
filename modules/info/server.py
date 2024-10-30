@@ -1,105 +1,85 @@
 import re
 import traceback
 
-import aiohttp
-import ujson as json
+from mcstatus import JavaServer, BedrockServer
 
-from core.builtins import ErrorMessage
+from config import Config
+from core.builtins import Bot
 from core.logger import Logger
 
 
-async def server(address, raw=False, showplayer=True, mode='j'):
-    matchObj = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
+async def query_java_server(msg: Bot.MessageSession, address: str, raw: bool = False, showplayer: bool = False) -> str:
+    match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
+    serip = match_object.group(1) if match_object else address
+    port = int(match_object.group(2)) if match_object else 25565
     servers = []
-    n = '\n'
 
-    if matchObj:
-        serip = matchObj.group(1)
-        port1 = matchObj.group(2)
-        port2 = matchObj.group(2)
-    else:
-        serip = address
-        port1 = '25565'
-        port2 = '19132'
+    try:
+        server = JavaServer.lookup(f"{serip}:{port}")
+        status = await server.async_status()
+        Logger.debug(str(status))
+        servers.append('[JE]')
 
-    if mode == 'j':
-        try:
-            url = 'http://motd.wd-api.com/v1/java?host=' + serip + '&port=' + port1
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                    if req.status != 200:
-                        print(await req.text())
-                    else:
-                        jejson = json.loads(await req.text())
-                        try:
-                            servers.append('[JE]')
-                            if 'description' in jejson:
-                                description = jejson['description']
-                                if 'text' in description:
-                                    servers.append(str(description['text']))
-                                elif 'extra' in description:
-                                    extra = description['extra']
-                                    text = []
-                                    qwq = ''
-                                    for item in extra[:]:
-                                        text.append(str(item['text']))
-                                    servers.append(qwq.join(text))
-                                else:
-                                    servers.append(str(description))
+        description = status.description
+        if isinstance(description, str):
+            servers.append(description)
+        elif isinstance(description, dict):
+            servers.append(description.get('text', ''))
+            servers.append(''.join(extra.get('text', '') for extra in description.get('extra', [])))
 
-                            if 'players' in jejson:
-                                onlinesplayer = f"在线玩家：{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
-                                servers.append(onlinesplayer)
-                                if showplayer:
-                                    playerlist = []
-                                    if 'sample' in jejson['players']:
-                                        for x in jejson['players']['sample']:
-                                            playerlist.append(x['name'])
-                                        servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
-                                    else:
-                                        if jejson['players']['online'] == 0:
-                                            servers.append('当前在线玩家：\n无')
-                            if 'version' in jejson:
-                                versions = "游戏版本：" + jejson['version']['name']
-                                servers.append(versions)
-                            servers.append(serip + ':' + port1)
-                        except Exception:
-                            traceback.print_exc()
-                            servers.append(str(ErrorMessage("JE查询调用API时发生错误。")))
-        except Exception:
-            traceback.print_exc()
-        if raw:
-            return n.join(servers)
-        return re.sub(r'§\w', "", n.join(servers))
-    if mode == 'b':
-        try:
-            beurl = 'http://motd.wd-api.com/v1/bedrock?host=' + serip + '&port=' + port2
-            print(beurl)
-            async with aiohttp.ClientSession() as session2:
-                async with session2.get(beurl, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                    if req.status != 200:
-                        Logger.debug(await req.text())
-                    else:
-                        bemotd = await req.text()
-                        bejson = json.loads(bemotd)
-                        unpack_data = bejson['data'].split(';')
-                        motd_1 = unpack_data[1]
-                        motd_2 = unpack_data[7]
-                        player_count = unpack_data[4]
-                        max_players = unpack_data[5]
-                        edition = unpack_data[0]
-                        version_name = unpack_data[3]
-                        game_mode = unpack_data[8]
-                        bemsg = '[BE]\n' + \
-                                motd_1 + ' - ' + motd_2 + \
-                                '\n在线玩家：' + player_count + '/' + max_players + \
-                                '\n游戏版本：' + edition + version_name + \
-                                '\n游戏模式：' + game_mode
-                        servers.append(bemsg)
-                        servers.append(serip + ':' + port2)
+        onlinesplayer = f"在线玩家：{status.players.online} / {status.players.max}"
+        servers.append(onlinesplayer)
 
-        except Exception:
-            traceback.print_exc()
-        if raw:
-            return n.join(servers)
-        return re.sub(r'§\w', "", n.join(servers))
+        if showplayer:
+            playerlist = [player.name for player in status.players.sample] if status.players.sample else []
+            players_text = '\n'.join(playerlist) if playerlist else "无"
+            servers.append("当前在线玩家：" + '\n' + players_text)
+
+        if hasattr(status, 'version') and hasattr(status.version, 'name'):
+            servers.append("游戏版本：" + status.version.name)
+
+        servers.append(f"{serip}:{port}")
+
+    except Exception:
+        if Config('debug', False):
+            Logger.error(traceback.format_exc())
+        return ''
+
+    if raw:
+        return '\n'.join(servers)
+    return re.sub(r'§\w', "", '\n'.join(servers))
+
+
+async def query_bedrock_server(msg, address, raw=False):
+    match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
+    serip = match_object.group(1) if match_object else address
+    port = int(match_object.group(2)) if match_object else 19132
+    servers = []
+
+    try:
+        server = BedrockServer.lookup(f"{serip}:{port}")
+        status = await server.async_status()
+        Logger.debug(str(status))
+        servers.append('[BE]')
+        servers.append(status.motd.raw)
+
+        player_count = f"在线玩家：{status.players_online} / {status.players_max}"
+        servers.append(player_count)
+
+        if hasattr(status, 'version') and hasattr(status.version, 'name'):
+            servers.append("游戏版本：" + status.version.name)
+
+        if hasattr(status, 'gamemode'):
+            game_mode = "游戏模式：" + status.gamemode
+            servers.append(game_mode)
+
+        servers.append(f"{serip}:{port}")
+
+    except Exception:
+        if Config('debug', False):
+            Logger.error(traceback.format_exc())
+        return ''
+
+    if raw:
+        return '\n'.join(servers)
+    return re.sub(r'§\w', "", '\n'.join(servers))

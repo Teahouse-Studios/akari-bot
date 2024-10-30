@@ -1,13 +1,16 @@
 import itertools
 import re
+import asyncio
 from ast import literal_eval
 
 from core.builtins import Bot, BotDBUtil
 from core.component import module
-from .server import server
+from .server import query_java_server, query_bedrock_server
 
-inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
-                 desc='Minecraft服务器信息模块')
+inf = module('info',
+             alias={'s': 'info url', 'server': 'info url', 'info':'info list'},
+             developers=['haoye_qwq', '_LittleC_', 'OasisAkari', 'DoroWolf'],
+             desc='Minecraft服务器信息模块')
 
 
 # def write(id_group: str, data: dict):
@@ -49,11 +52,11 @@ inf = module('info', alias={'s': 'info url', 'server': 'info url'}, developers='
 info_ = BotDBUtil().InfoServers()
 
 
-@inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
+@inf.handle('bind <name> <address:port> {绑定服务器}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.target_id
     name = msg.parsed_msg['<name>']
-    serip = msg.parsed_msg['<ServerUrl>']
+    serip = msg.parsed_msg['<address:port>']
     if not info_.exist(id_group=group_id):
         info_.write(id_group=group_id, data={name: serip})
     else:
@@ -84,12 +87,17 @@ async def __(msg: Bot.MessageSession):
         await msg.sendMessage('列表中暂无服务器，请先绑定')
 
 
-@inf.handle('url <ServerUrl> {查询任意服务器信息}')
+@inf.handle('url <address:port> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
-    info = await server(msg.parsed_msg['<ServerUrl>'])
-    send = await msg.sendMessage(info + '\n[90秒后撤回]')
-    await msg.sleep(90)
-    await send.delete()
+    address = msg.parsed_msg['<address:port>']
+    info_je,info_be = await asyncio.gather(query_java_server(msg,address),query_bedrock_server(msg,address))
+    s_msg = [info_je,info_be]
+    if s_msg == ['','']:
+        await msg.finish("没有找到任何类型的 Minecraft 服务器。")
+    else:
+        send = await msg.sendMessage('\n'.join(s_msg) + '\n[90秒后撤回]')
+        await msg.sleep(90)
+        await send.delete()
 
 
 @inf.handle('<name> {查询已绑定的服务器信息}')
@@ -97,12 +105,17 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
     group_id = msg.target.target_id
     if info_.exist(id_group=group_id) and name in info_.read(id_group=group_id):
-        info = await server(info_.read(id_group=group_id)[name])
-        send = await msg.sendMessage(info + '\n[90秒后撤回]')
-        await msg.sleep(90)
-        await send.delete()
+        address = msg.parsed_msg['<address:port>']
+        info_je, info_be = await asyncio.gather(query_java_server(msg, address), query_bedrock_server(msg, address))
+        s_msg = [info_je, info_be]
+        if s_msg == ['', '']:
+            await msg.finish("没有找到任何类型的 Minecraft 服务器。")
+        else:
+            send = await msg.sendMessage('\n'.join(s_msg) + '\n[90秒后撤回]')
+            await msg.sleep(90)
+            await send.delete()
     else:
-        send = await msg.sendMessage('服务器不存在，请检查输入\n[90秒后撤回]')
+        send = await msg.sendMessage('服务器未绑定，请检查输入\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
 
