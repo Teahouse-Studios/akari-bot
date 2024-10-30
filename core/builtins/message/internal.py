@@ -1,9 +1,9 @@
 import base64
 import random
+import os
 import re
 import uuid
 from datetime import datetime, timezone
-from os.path import abspath
 from typing import List, Self
 from urllib import parse
 
@@ -12,11 +12,12 @@ import filetype
 from PIL import Image as PILImage
 from tenacity import retry, stop_after_attempt
 
-from config import Config
+from core.config import Config
 from core.types.message import MessageSession
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
+from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
 from core.utils.joke import joke
 
@@ -158,7 +159,7 @@ class Image(ImageT):
         self.path = path
         self.headers = headers
         if isinstance(path, PILImage.Image):
-            save = f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.png'
+            save = f'{random_cache_path()}.png'
             path.convert('RGBA').save(save)
             self.path = save
         elif re.match('^https?://.*', path):
@@ -166,8 +167,8 @@ class Image(ImageT):
 
     async def get(self):
         if self.need_get:
-            return abspath(await self.get_image())
-        return abspath(self.path)
+            return os.path.abspath(await self.get_image())
+        return os.path.abspath(self.path)
 
     @retry(stop=stop_after_attempt(3))
     async def get_image(self):
@@ -176,15 +177,15 @@ class Image(ImageT):
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 raw = await req.read()
                 ft = filetype.match(raw).extension
-                img_path = f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.{ft}'
+                img_path = f'{random_cache_path()}.{ft}'
                 with open(img_path, 'wb+') as image_cache:
                     image_cache.write(raw)
                 return img_path
 
     async def get_base64(self):
         file = await self.get()
-        with open(file, 'rb') as f:
-            return str(base64.b64encode(f.read()), "UTF-8")
+        with open(file, 'r', encoding='utf-8') as f:
+            return str(base64.b64encode(f.read()))
 
     def __str__(self):
         return self.path
@@ -206,7 +207,7 @@ class Image(ImageT):
 
         image.alpha_composite(noise_image)
 
-        save = f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.png'
+        save = f'{random_cache_path()}.png'
         image.save(save)
         return Image(save)
 
@@ -288,7 +289,7 @@ class Embed(EmbedT):
             for f in self.fields:
                 text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
         if self.author:
-            text_lst.append(msg.locale.t('message.embed.author') + self.author)
+            text_lst.append(f"{msg.locale.t('message.embed.author')}{self.author}")
         if self.footer:
             text_lst.append(self.footer)
         message_chain = []

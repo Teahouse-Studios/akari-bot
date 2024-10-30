@@ -2,7 +2,7 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
-from config import Config
+from core.config import Config
 from core.utils.i18n import get_available_locales
 
 

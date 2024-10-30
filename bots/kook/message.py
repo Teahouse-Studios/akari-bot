@@ -8,7 +8,7 @@ from khl import MessageTypes, Message
 
 from bots.kook.client import bot
 from bots.kook.info import *
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger

@@ -164,13 +164,13 @@ class TotalList:
             url = f"https://www.diving-fish.com/api/chunithmprober/music_data"
             data = await get_url(url, 200, fmt='json')
             if data:
-                with open(song_info_path, 'wb') as f:
+                with open(chu_song_info_path, 'wb') as f:
                     f.write(json.dumps(data))
             return data
         except Exception:
             Logger.error(traceback.format_exc())
             try:
-                with open(song_info_path, 'r') as f:
+                with open(chu_song_info_path, 'r', encoding='utf-8') as f:
                     data = json.loads(f.read())
                 return data
             except Exception:

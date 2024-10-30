@@ -1,4 +1,4 @@
-from config import Config, CFG
+from core.config import Config, CFG
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError

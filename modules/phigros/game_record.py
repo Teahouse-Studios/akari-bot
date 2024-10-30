@@ -1,3 +1,4 @@
+import os
 import struct
 
 import orjson as json
@@ -5,6 +6,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
 from core.logger import Logger
+from core.path import assets_path
 from core.utils.text import remove_suffix
 
 levels = {'EZ': 1, 'HD': 2, 'IN': 4, 'AT': 8, }
@@ -20,7 +22,8 @@ def decrypt_bytes(encrypted):
 
 
 def parse_game_record(file_path):
-    rating = json.loads(open('./assets/phigros/rating.json', 'r', encoding='utf-8').read())
+    with open(os.path.join(assets_path, 'phigros', 'rating.json'), 'r', encoding='utf-8') as f:
+        rating = json.loads(f.read())
     decrypted_data = {}
     with open(file_path, 'rb+') as rd:
         data = decrypt_bytes(rd.read())

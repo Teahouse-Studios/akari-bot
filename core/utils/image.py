@@ -12,12 +12,13 @@ from PIL import Image as PILImage
 
 from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
 from core.logger import Logger
+from core.path import templates_path
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
 
-env = Environment(loader=FileSystemLoader('assets/templates'))
+env = Environment(loader=FileSystemLoader(templates_path))
 
 
 async def image_split(i: Image) -> List[Image]:
@@ -79,7 +80,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
             lst.append('<div>[Embed]</div>')
 
     html_content = env.get_template('msgchain_to_image.html').render(content='\n'.join(lst))
-    fname = random_cache_path() + '.html'
+    fname = f'{random_cache_path()}.html'
     with open(fname, 'w', encoding='utf-8') as fi:
         fi.write(html_content)
 
@@ -133,12 +134,12 @@ async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bo
     elif not WebRender.local:
         use_local = False
 
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         svg_content = file.read()
 
     html_content = env.get_template('svg_template.html').render(svg=svg_content)
 
-    fname = random_cache_path() + '.html'
+    fname = f'{random_cache_path()}.html'
     with open(fname, 'w', encoding='utf-8') as fi:
         fi.write(html_content)
 

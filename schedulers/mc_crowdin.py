@@ -2,7 +2,7 @@ import random
 import re
 import traceback
 
-from config import Config
+from core.config import Config
 from core.builtins import Embed, EmbedField
 from core.logger import Logger
 from core.queue import JobQueue

@@ -3,7 +3,7 @@ from urllib.parse import quote
 
 import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Url, I18NContext
 from core.logger import Logger
 from core.queue import JobQueue

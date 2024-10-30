@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, timezone as datetimezone
 from typing import List
 
-from config import Config
+from core.config import Config
 from core.builtins.message.chain import *
 from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager

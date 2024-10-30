@@ -3,7 +3,7 @@ import traceback
 import discord
 
 from bots.discord.message import convert_embed, MessageSession as MessageSessionT
-from config import Config
+from core.config import Config
 from core.builtins import Plain, Image, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, I18NContext

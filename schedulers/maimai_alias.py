@@ -1,6 +1,6 @@
 import traceback
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
 from core.scheduler import Scheduler, CronTrigger
 from modules.maimai.libraries.maimaidx_apidata import update_alias

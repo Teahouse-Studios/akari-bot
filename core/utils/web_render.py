@@ -1,7 +1,7 @@
 import traceback
 from typing import Union
 
-from config import CFG
+from core.config import CFG
 from core.logger import Logger
 from core.utils.http import get_url
 

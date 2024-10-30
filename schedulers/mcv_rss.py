@@ -7,7 +7,7 @@ import orjson as json
 from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
-from config import Config
+from core.config import Config
 from core.builtins import I18NContext, FormattedTime
 from core.logger import Logger
 from core.queue import JobQueue

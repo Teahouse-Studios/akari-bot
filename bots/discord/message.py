@@ -8,7 +8,7 @@ import filetype
 
 from bots.discord.client import client
 from bots.discord.info import *
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Embed, Voice

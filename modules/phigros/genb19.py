@@ -5,18 +5,19 @@ import uuid
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 from core.logger import Logger
+from core.path import assets_path, noto_sans_demilight_path
+from core.utils.cache import random_cache_path
 
-assets_path = os.path.abspath('./assets/phigros')
+pgr_assets_path = os.path.join(assets_path, 'phigros')
 
 levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
 
 
 def drawb19(username, rks_acc, b19data):
     b19img = Image.new("RGBA", (1570, 1320), '#1e2129')
-    font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
-    font = ImageFont.truetype(font_path, 20)
-    font2 = ImageFont.truetype(font_path, 15)
-    font3 = ImageFont.truetype(font_path, 25)
+    font = ImageFont.truetype(noto_sans_demilight_path, 20)
+    font2 = ImageFont.truetype(noto_sans_demilight_path, 15)
+    font3 = ImageFont.truetype(noto_sans_demilight_path, 25)
 
     # username
     drawtext = ImageDraw.Draw(b19img)
@@ -48,9 +49,9 @@ def drawb19(username, rks_acc, b19data):
             if not song_id:
                 cardimg = Image.new('RGBA', (384, 240), 'black')
             else:
-                imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.split(".")[0].lower()}')
+                imgpath = os.path.join(pgr_assets_path, 'illustration', f'{song_id.split(".")[0].lower()}')
                 if not os.path.exists(imgpath):
-                    imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.lower()}.png')
+                    imgpath = os.path.join(pgr_assets_path, 'illustration', f'{song_id.lower()}.png')
                 if not os.path.exists(imgpath):
                     cardimg = Image.new('RGBA', (384, 240), 'black')
                 else:
@@ -117,6 +118,6 @@ def drawb19(username, rks_acc, b19data):
     if __name__ == '__main__':
         b19img.show()
     else:
-        savefilename = os.path.abspath(f'./cache/{str(uuid.uuid4())}.jpg')
+        savefilename = f'{random_cache_path()}.jpg'
         b19img.convert("RGB").save(savefilename)
         return savefilename

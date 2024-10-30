@@ -6,8 +6,9 @@ import traceback
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
+from core.path import assets_path
 from core.utils.info import Info
 
 if not Config('db_path', cfg_type=str):
@@ -43,8 +44,8 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
 
 EnableDirtyWordCheck.status = True
 Url.disable_mm = True
-PrivateAssets.set('assets/private/console')
-console_history_path = os.path.abspath(PrivateAssets.path + '/.console_history')
+PrivateAssets.set(os.path.join(assets_path, 'private', 'console'))
+console_history_path = os.path.join(PrivateAssets.path, '.console_history')
 if os.path.exists(console_history_path):
     os.remove(console_history_path)
 

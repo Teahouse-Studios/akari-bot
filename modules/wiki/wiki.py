@@ -386,7 +386,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         async def image_and_voice():
             def check_svg(file_path):
                 try:
-                    with open(file_path, 'r') as file:
+                    with open(file_path, 'r', encoding='utf-8') as file:
                         check = file.read(1024)
                         return '<svg' in check
                 except Exception:

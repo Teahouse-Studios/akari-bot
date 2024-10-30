@@ -4,9 +4,10 @@ from decimal import Decimal
 
 import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.logger import Logger
+from core.path import cache_path
 from core.utils.http import get_url
 
 ONE_K = Decimal('1000')
@@ -36,10 +37,9 @@ async def get_petal_exchange_rate():
 
 
 async def load_or_refresh_cache():
-    cache_dir = os.path.abspath(Config('cache_path', './cache/'))
-    file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
+    file_path = os.path.join(cache_path, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
-        with open(file_path, 'rb') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             data = json.loads(file.read())
             return data["exchanged_petal"]
 
@@ -72,7 +72,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
         else:
             Logger.warning(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
             petal = price * USD_TO_CNY * CNY_TO_PETAL
-            
+
         msg.info.modify_petal(-petal)
         return round(petal, 2)
     else:

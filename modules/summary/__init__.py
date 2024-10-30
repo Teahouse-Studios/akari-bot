@@ -2,7 +2,7 @@ import re
 
 from openai import AsyncOpenAI
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check, check_bool, rickroll

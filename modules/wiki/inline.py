@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession):
 
     def check_svg(file_path):
         try:
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding='utf-8') as file:
                 check = file.read(1024)
                 return '<svg' in check
         except Exception:

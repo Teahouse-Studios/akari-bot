@@ -14,10 +14,11 @@ from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
+from core.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
-PrivateAssets.set('assets/private/matrix')
+PrivateAssets.set(os.path.join(assets_path, 'private', 'matrix'))
 Url.disable_mm = True
 
 
@@ -139,7 +140,7 @@ async def start():
     # if sync is nio.SyncError:
     #     Logger.error(f"Failed in first sync: {sync.status_code} - {sync.message}")
     try:
-        with open(client.store_path_next_batch, 'r') as fp:
+        with open(client.store_path_next_batch, 'r', encoding='utf-8') as fp:
             bot.next_batch = fp.read()
             Logger.info(f"Loaded next sync batch from storage: {bot.next_batch}")
     except FileNotFoundError:

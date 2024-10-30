@@ -3,7 +3,7 @@ import os
 import urllib3
 from nio import AsyncClient, AsyncClientConfig
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
 
 homeserver = Config('matrix_homeserver', cfg_type=str)

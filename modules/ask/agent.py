@@ -3,7 +3,7 @@ from langchain.agents.openai_functions_agent.base import OpenAIFunctionsAgent
 from langchain.callbacks import StdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 
-from config import Config
+from core.config import Config
 from modules.ask.tools import tools
 
 llm = ChatOpenAI(

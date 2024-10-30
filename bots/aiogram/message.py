@@ -6,7 +6,7 @@ from aiogram.types import FSInputFile
 
 from bots.aiogram.client import bot, token
 from bots.aiogram.info import *
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger

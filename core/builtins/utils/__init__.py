@@ -1,4 +1,4 @@
-from config import Config
+from core.config import Config
 from core.types import PrivateAssets, Secret
 
 default_confirm_command = ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y']

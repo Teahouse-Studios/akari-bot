@@ -10,7 +10,8 @@ from time import sleep
 import psutil
 from loguru import logger
 
-from config import Config
+from core.config import Config
+from core.path import cache_path
 from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
@@ -61,7 +62,6 @@ disabled_bots = Config('disabled_bots', [])
 
 
 def run_bot():
-    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     os.makedirs(cache_path, exist_ok=True)

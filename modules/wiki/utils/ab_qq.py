@@ -1,4 +1,4 @@
-from config import Config
+from core.config import Config
 from core.builtins import MessageSession
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib

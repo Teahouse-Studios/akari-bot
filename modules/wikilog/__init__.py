@@ -2,7 +2,7 @@ import re
 
 import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger

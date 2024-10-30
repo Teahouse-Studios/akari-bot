@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.utils.storedata import get_stored_list, update_stored_list
 

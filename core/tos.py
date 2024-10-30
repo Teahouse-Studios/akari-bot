@@ -1,4 +1,4 @@
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.utils.i18n import Locale, default_locale
 from database import BotDBUtil

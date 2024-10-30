@@ -6,7 +6,7 @@ from datetime import datetime
 
 from bots.aiocqhttp.info import target_group_name as qq_group_name, target_guild_name as qq_guild_name
 from bots.aiocqhttp.utils import qq_frame_type
-from config import Config
+from core.config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
@@ -595,7 +595,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             if enable_analytics and rfunc.show_typing:
                                 BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, 'regex')
 
-                            if not module.base:
+                            if not regex_module.base:
                                 if enable_tos and rfunc.show_typing:
                                     try:
                                         await tos_msg_counter(msg, msg.trigger_msg)

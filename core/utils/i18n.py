@@ -1,3 +1,4 @@
+import glob
 import os
 import re
 from collections.abc import MutableMapping
@@ -7,7 +8,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import orjson as json
 
-from config import Config
+from core.config import Config
+from core.path import locales_path, modules_locales_path
 from .text import isint, remove_suffix
 
 default_locale = Config('locale', 'zh_cn')
@@ -74,20 +76,20 @@ def flatten(d: Dict[str, Any], parent_key='', sep='.'):
 def load_locale_file():
     locale_dict = {}
     err_prompt = []
-    locales_path = os.path.abspath('./locales')
+
     locales = os.listdir(locales_path)
     try:
         for l in locales:
-            with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
+            with open(os.path.join(locales_path, l), 'r', encoding='utf-8') as f:
                 locale_dict[remove_suffix(l, '.json')] = flatten(json.loads(f.read()))
     except Exception as e:
         err_prompt.append(str(e))
-    modules_path = os.path.abspath('./modules')
-    for m in os.listdir(modules_path):
-        if os.path.isdir(f'{modules_path}/{m}/locales'):
-            locales_m = os.listdir(f'{modules_path}/{m}/locales')
+
+    for modules_locales_file in glob.glob(modules_locales_path):
+        if os.path.isdir(modules_locales_file):
+            locales_m = os.listdir(modules_locales_file)
             for lang_file in locales_m:
-                lang_file_path = f'{modules_path}/{m}/locales/{lang_file}'
+                lang_file_path = os.path.join(modules_locales_file, lang_file)
                 with open(lang_file_path, 'r', encoding='utf-8') as f:
                     try:
                         if remove_suffix(lang_file, '.json') in locale_dict:
@@ -96,9 +98,11 @@ def load_locale_file():
                             locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.loads(f.read()))
                     except Exception as e:
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
+
     for lang in locale_dict.keys():
         for k in locale_dict[lang].keys():
             locale_root.update_node(f'{lang}.{k}', locale_dict[lang][k])
+
     return err_prompt
 
 

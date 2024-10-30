@@ -29,6 +29,7 @@ from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
+from core.path import assets_path
 from core.utils.text import isint
 
 
@@ -97,7 +98,7 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = 'modules/mkey/data'
+        self._data_path = os.path.join(assets_path, 'mkey', 'data')
 
     # Read AES key (v2).
     def _read_aes_key(self, file_name):

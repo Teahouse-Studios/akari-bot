@@ -3,7 +3,7 @@ import urllib.parse
 
 from PIL import Image as PILImage
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.dirty_check import rickroll

@@ -4,7 +4,6 @@ import time
 import traceback
 import uuid
 from datetime import datetime
-from os.path import abspath
 
 import aiohttp
 import orjson as json
@@ -13,9 +12,11 @@ from aiofile import async_open
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.logger import Logger
+from core.path import assets_path, noto_sans_demilight_path, nunito_regular_path, nunito_light_path
+from core.utils.cache import random_cache_path
 from core.utils.html2text import html2text
 from core.utils.http import get_url
 from core.utils.image import get_fontsize
@@ -83,7 +84,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         """)
 
         result = await client.execute_async(query)
-        workdir = os.path.abspath(Config("cache_path", "./cache/") + str(uuid.uuid4()))
+        workdir = random_cache_path()
         os.mkdir(workdir)
         best_records = result['profile'][query_type]
         rank = 0
@@ -157,13 +158,13 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             except BaseException:
                 Logger.error(traceback.format_exc())
 
-        font4 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Regular.ttf'), 35)
+        font4 = ImageFont.truetype(nunito_regular_path, 35)
         drawtext = ImageDraw.Draw(b30img)
         get_name_width = get_fontsize(font4, nick)[0]
         get_img_width = b30img.width
         drawtext.text((get_img_width - get_name_width - 150, 30), nick, '#ffffff', font=font4)
 
-        font5 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
+        font5 = ImageFont.truetype(noto_sans_demilight_path, 20)
         level_text = f'{msg.locale.t("cytoid.message.b30.level")} {profile_level}'
         level_text_size = get_fontsize(font5, level_text)
         level_text_width = level_text_size[0]
@@ -173,7 +174,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         drawtext_level.text(((img_level.width - level_text_width) / 2, (img_level.height - level_text_height) / 2),
                             level_text, '#ffffff', font=font5)
         b30img.alpha_composite(img_level, (1825 - img_level.width - 20, 85))
-        font6 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Light.ttf'), 20)
+        font6 = ImageFont.truetype(nunito_light_path, 20)
         rating_text = f'Rating {str(round(float(profile_rating), 2))}'
         rating_text_size = get_fontsize(font6, rating_text)
         rating_text_width = rating_text_size[0]
@@ -209,7 +210,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         if __name__ == '__main__':
             b30img.show()
         else:
-            savefilename = os.path.abspath(f'{Config("cache_path", "./cache/")}{str(uuid.uuid4())}.jpg')
+            savefilename = f'{random_cache_path()}.jpg'
             b30img.convert("RGB").save(savefilename)
             # shutil.rmtree(workdir)
             return {'status': True, 'path': savefilename}
@@ -222,10 +223,10 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 
 async def download_cover_thumb(uid):
     try:
-        d = abspath('./assets/cytoid-cover/' + uid + '/')
+        d = os.path.join(assets_path, 'cytoid-cover', uid)
         if not os.path.exists(d):
             os.makedirs(d)
-        path = d + '/thumbnail.png'
+        path = os.path.join(d, 'thumbnail.png')
         if not os.path.exists(d):
             os.mkdir(d)
         if not os.path.exists(path):
@@ -247,10 +248,10 @@ async def download_cover_thumb(uid):
 async def download_avatar_thumb(link, id):
     Logger.debug(f'Downloading avatar for {str(id)}')
     try:
-        d = abspath('./assets/cytoid-avatar/')
+        d = os.path.join(assets_path, 'cytoid-avatar')
         if not os.path.exists(d):
             os.makedirs(d)
-        path = d + f'/{id}.png'
+        path = os.path.join(d, f'{id}.png')
         if not os.path.exists(d):
             os.mkdir(d)
         if os.path.exists(path):
@@ -296,14 +297,13 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
             .crop((0, crop_start_y, 384, 240 + crop_start_y))
     else:
         img = downlight.enhance(0.5).resize((384, img_h))
-    img_type = Image.open(f'./assets/cytoid/{chart_type}.png')
+    img_type = Image.open(os.path.join(assets_path, 'cytoid', f'{chart_type}.png'))
     img_type = img_type.convert('RGBA')
     img_type = img_type.resize((40, 40))
     img.alpha_composite(img_type, (20, 20))
-    font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
-    font = ImageFont.truetype(font_path, 25)
-    font2 = ImageFont.truetype(font_path, 15)
-    font3 = ImageFont.truetype(font_path, 20)
+    font = ImageFont.truetype(noto_sans_demilight_path, 25)
+    font2 = ImageFont.truetype(noto_sans_demilight_path, 15)
+    font3 = ImageFont.truetype(noto_sans_demilight_path, 20)
     drawtext = ImageDraw.Draw(img)
     drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), html2text(chart_name), '#ffffff', font=font)

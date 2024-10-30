@@ -13,6 +13,7 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
 from core.logger import Logger
+from core.path import cache_path
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
@@ -109,7 +110,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
             return False
         soup = BeautifulSoup(html, 'html.parser')
         pagename = uuid.uuid4()
-        url = os.path.abspath(f'./cache/{pagename}.html')
+        url = os.path.join(cache_path, f'{pagename}.html')
         if os.path.exists(url):
             os.remove(url)
         Logger.info('Downloaded raw.')

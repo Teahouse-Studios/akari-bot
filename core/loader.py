@@ -7,14 +7,14 @@ from typing import Dict, Union, Callable
 
 import orjson as json
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
 from core.types import Module, PrivateAssets
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
+from core.path import modules_path
 from core.utils.i18n import load_locale_file
 from core.utils.info import Info
 
-load_dir_path = os.path.abspath('./modules/')
 all_modules = []
 current_unloaded_modules = []
 err_modules = []
@@ -31,7 +31,7 @@ def load_modules():
         err_prompt.append('\n'.join(locale_err))
     fun_file = None
     if not Info.binary_mode:
-        dir_list = os.listdir(load_dir_path)
+        dir_list = os.listdir(modules_path)
     else:
         try:
             Logger.warning('Binary mode detected, trying to load pre-built modules list...')
@@ -40,7 +40,7 @@ def load_modules():
                 dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built modules list, using default list.')
-            dir_list = os.listdir(load_dir_path)
+            dir_list = os.listdir(modules_path)
 
     Logger.info('Attempting to load modules...')
 
@@ -48,7 +48,7 @@ def load_modules():
         try:
             if file_name == 'secret' and not Config('enable_secret_module', False):
                 continue
-            file_path = os.path.join(load_dir_path, file_name)
+            file_path = os.path.join(modules_path, file_name)
             fun_file = None
             if not Info.binary_mode:
                 if os.path.isdir(file_path):
@@ -79,7 +79,7 @@ def load_modules():
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
     Logger.info('All modules loaded.')
-    loader_cache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
+    loader_cache = os.path.join(PrivateAssets.path, '.cache_loader')
     open_loader_cache = open(loader_cache, 'w')
     if err_prompt:
         err_prompt = re.sub(r'  File \"<frozen importlib.*?>\", .*?\n', '', '\n'.join(err_prompt))

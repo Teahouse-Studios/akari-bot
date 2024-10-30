@@ -4,8 +4,9 @@ from typing import Optional, Dict, List, Tuple
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import Bot
+from core.path import noto_sans_demilight_path, noto_sans_symbol_path
 from .maimaidx_apidata import get_record
-from .maimaidx_mapping import cover_dir, rate_mapping, combo_mapping, sync_mapping, diff_list
+from .maimaidx_mapping import mai_cover_path, rate_mapping, combo_mapping, sync_mapping, diff_list
 from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_utils import compute_rating, calc_dxstar
 
@@ -135,48 +136,50 @@ class DrawBest(object):
         Color = [(69, 193, 36), (255, 186, 1), (255, 90, 102), (134, 49, 200), (217, 197, 233)]
         levelTriagle = [(itemW, 0), (itemW - 27, 0), (itemW, 27)]
         imgDraw = ImageDraw.Draw(img)
-        textFontPath = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
-        symbolFontPath = os.path.abspath('./assets/NotoSansSymbols2-Regular.ttf')
 
         for num in range(min(len(self.sdBest), 35)):
             i = num // 5
             j = num % 5
             chartInfo = sdBest[num]
-            pngPath = os.path.join(cover_dir, f'{get_cover_len5_id(chartInfo.idNum)}.png')
+            pngPath = os.path.join(mai_cover_path, f'{get_cover_len5_id(chartInfo.idNum)}.png')
             if not os.path.exists(pngPath):
-                pngPath = os.path.join(cover_dir, '01000.png')
-            temp = Image.open(pngPath).convert('RGB')
-            temp = self._resizePic(temp, itemW / temp.size[0])
-            temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
-            temp = temp.filter(ImageFilter.GaussianBlur(2))
-            temp = temp.point(lambda p: int(p * 0.72))
+                pngPath = os.path.join(mai_cover_path, '01000.png')
+
+            if os.path.exists(pngPath):
+                temp = Image.open(pngPath).convert('RGB')
+                temp = self._resizePic(temp, itemW / temp.size[0])
+                temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
+                temp = temp.filter(ImageFilter.GaussianBlur(2))
+                temp = temp.point(lambda p: int(p * 0.72))
+            else:
+                temp = Image.new('RGB', (int(itemW), int(itemH)), (111, 111, 111, 255))
 
             tempDraw = ImageDraw.Draw(temp)
             tempDraw.polygon(levelTriagle, Color[chartInfo.diff])
-            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding='utf-8')
             title = chartInfo.title
             if self._coloumWidth(title) > 12:
                 title = self._changeColumnWidth(title, 12) + '...'
             tempDraw.text((6, 7), title, 'white', font)
-            font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding='utf-8')
             tempDraw.text((7, 29), f'ID: {chartInfo.idNum}', 'white', font)
-            font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
-            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding='utf-8')
             tempDraw.text((96, 42), chartInfo.rate, 'white', font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding='utf-8')
             if chartInfo.combo:
                 tempDraw.text((80, 27), chartInfo.combo, 'white', font)
             if chartInfo.sync:
                 tempDraw.text((110, 27), chartInfo.sync, 'white', font)
             if chartInfo.dxScore:
-                font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+                font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding='utf-8')
                 tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                               font)
-                font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
+                font = ImageFont.truetype(noto_sans_symbol_path, 12, encoding='utf-8')
                 tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
                               font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding='utf-8')
             tempDraw.text((7, 80), f'{chartInfo.ds} -> {compute_rating(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
             tempDraw.text((120, 80), f'#{num + 1}', 'white', font)
@@ -190,41 +193,45 @@ class DrawBest(object):
             i = num // 5
             j = num % 5
             chartInfo = dxBest[num]
-            pngPath = os.path.join(cover_dir, f'{get_cover_len5_id(chartInfo.idNum)}.png')
+            pngPath = os.path.join(mai_cover_path, f'{get_cover_len5_id(chartInfo.idNum)}.png')
             if not os.path.exists(pngPath):
-                pngPath = os.path.join(cover_dir, '01000.png')
-            temp = Image.open(pngPath).convert('RGB')
-            temp = self._resizePic(temp, itemW / temp.size[0])
-            temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
-            temp = temp.filter(ImageFilter.GaussianBlur(2))
-            temp = temp.point(lambda p: int(p * 0.72))
+                pngPath = os.path.join(mai_cover_path, '01000.png')
+
+            if os.path.exists(pngPath):
+                temp = Image.open(pngPath).convert('RGB')
+                temp = self._resizePic(temp, itemW / temp.size[0])
+                temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
+                temp = temp.filter(ImageFilter.GaussianBlur(2))
+                temp = temp.point(lambda p: int(p * 0.72))
+            else:
+                temp = Image.new('RGB', (int(itemW), int(itemH)), (111, 111, 111, 255))
 
             tempDraw = ImageDraw.Draw(temp)
             tempDraw.polygon(levelTriagle, Color[chartInfo.diff])
-            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding='utf-8')
             title = chartInfo.title
             if self._coloumWidth(title) > 12:
                 title = self._changeColumnWidth(title, 12) + '...'
             tempDraw.text((6, 7), title, 'white', font)
-            font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding='utf-8')
             tempDraw.text((7, 29), f'ID: {chartInfo.idNum}', 'white', font)
-            font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding='utf-8')
             tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
-            font = ImageFont.truetype(textFontPath, 18, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding='utf-8')
             tempDraw.text((96, 42), chartInfo.rate, 'white', font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding='utf-8')
             if chartInfo.combo:
                 tempDraw.text((80, 27), chartInfo.combo, 'white', font)
             if chartInfo.sync:
                 tempDraw.text((110, 27), chartInfo.sync, 'white', font)
             if chartInfo.dxScore:
-                font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+                font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding='utf-8')
                 tempDraw.text((7, 63), f'{chartInfo.dxScore}/{chartInfo.dxScoreMax}', 'white',
                               font)
-                font = ImageFont.truetype(symbolFontPath, 12, encoding='utf-8')
+                font = ImageFont.truetype(noto_sans_symbol_path, 12, encoding='utf-8')
                 tempDraw.text((90, 61), calc_dxstar(chartInfo.dxScore, chartInfo.dxScoreMax), 'white',
                               font)
-            font = ImageFont.truetype(textFontPath, 12, encoding='utf-8')
+            font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding='utf-8')
             tempDraw.text((7, 80), f'{chartInfo.ds} -> {compute_rating(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
             tempDraw.text((120, 80), f'#{num + 1}', 'white', font)
@@ -263,18 +270,17 @@ class DrawBest(object):
         return "".join(list_str)
 
     def draw(self):
-        textFontPath = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
         imgDraw = ImageDraw.Draw(self.img)
-        font = ImageFont.truetype(textFontPath, 30, encoding='utf-8')
+        font = ImageFont.truetype(noto_sans_demilight_path, 30, encoding='utf-8')
         imgDraw.text((34, 24), " ".join(self.userName), fill='black', font=font)
-        font = ImageFont.truetype(textFontPath, 16, encoding='utf-8')
+        font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding='utf-8')
         imgDraw.text((34, 64), f"RATING    {self.playerRating}", fill='black', font=font)
-        font = ImageFont.truetype(textFontPath, 20, encoding='utf-8')
+        font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding='utf-8')
         imgDraw.text((34, 114), f"STANDARD ({self.sdRating})", fill='black', font=font)
         imgDraw.text((34, 914), f"NEW ({self.dxRating})", fill='black', font=font)
         self._drawBestList(self.img, self.sdBest, self.dxBest)
 
-        font = ImageFont.truetype(textFontPath, 10, encoding='utf-8')
+        font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding='utf-8')
         imgDraw.text((5, 1285), f'Generated by Teahouse Studios "Akaribot"', 'black', font=font)
 
     def getDir(self):

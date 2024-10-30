@@ -456,7 +456,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if song['level_index'] == 3 and not song['fc']:
                 song_remain_master.append([song['id'], song['level_index']])
             if version == '舞' and int(song['id']) in mai_plate_remaster_required and \
-                song['level_index'] == 4 and not song['fc']:
+                    song['level_index'] == 4 and not song['fc']:
                 song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal == '舞舞':
@@ -628,7 +628,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
 
 
 async def get_grade_info(msg: Bot.MessageSession, grade: str):
-    with open(grade_info_path, 'r') as file:
+    with open(mai_grade_info_path, 'r', encoding='utf-8') as file:
         data = json.loads(file.read())
 
     def key_process(input_key, conv_dict):

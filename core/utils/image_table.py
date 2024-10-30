@@ -63,7 +63,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             }</style>"""
         html = {'content': tblst + css, 'width': w, 'mw': False}
         if save_source:
-            fname = random_cache_path() + '.html'
+            fname = f'{random_cache_path()}.html'
             with open(fname, 'w', encoding='utf-8') as fi:
                 fi.write(tblst + css)
 

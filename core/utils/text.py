@@ -5,7 +5,7 @@ from typing import TypeVar
 
 from ff3 import FF3Cipher
 
-from config import Config
+from core.config import Config
 
 T = TypeVar("T", str, bytes, bytearray)
 

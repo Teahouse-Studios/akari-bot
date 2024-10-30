@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 from aiogram import types
@@ -9,10 +10,11 @@ from bots.aiogram.message import MessageSession, FetchTarget
 from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.parser.message import parser
+from core.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
-PrivateAssets.set('assets/private/aiogram')
+PrivateAssets.set(os.path.join(assets_path, 'private', 'aiogram'))
 Url.disable_mm = True
 
 

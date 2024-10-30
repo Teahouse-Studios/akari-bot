@@ -8,19 +8,20 @@ import orjson as json
 from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
 
-from config import Config, CFG
+from core.config import Config, CFG
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
+from core.path import templates_path
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.image_table import ImageTable, image_table_render
 from core.utils.web_render import WebRender, webrender
 
 
-env = Environment(loader=FileSystemLoader('assets/templates'))
+env = Environment(loader=FileSystemLoader(templates_path))
 
 
 hlp = module('help', base=True, doc=True)
@@ -289,7 +290,7 @@ async def help_generator(msg: Bot.MessageSession,
         msg=msg,
         show_disabled_modules=show_disabled_modules,
         target_enabled_list=target_enabled_list)
-    fname = random_cache_path() + '.html'
+    fname = f'{random_cache_path()}.html'
     with open(fname, 'w', encoding='utf-8') as fi:
         fi.write(html_content)
 

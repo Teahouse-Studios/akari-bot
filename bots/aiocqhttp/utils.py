@@ -3,7 +3,7 @@ import re
 
 import orjson as json
 
-from config import Config
+from core.config import Config
 
 
 def qq_frame_type() -> str:

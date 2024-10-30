@@ -1,17 +1,18 @@
 import os
 
-from config import Config
+from core.config import Config
+from core.path import assets_path
 
 DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 
-assets_path = os.path.abspath('./assets/maimai/')
-cover_dir = os.path.join(assets_path, "static", "mai", "cover")
-grade_info_path = os.path.join(assets_path, "mai_grade_info.json")
-song_alias_path = os.path.join(assets_path, "mai_song_alias.json")
-song_info_path = os.path.join(assets_path, "mai_song_info.json")
-utage_info_path = os.path.join(assets_path, "mai_utage_info.json")
+mai_assets_path = os.path.join(assets_path, 'maimai')
+mai_cover_path = os.path.join(mai_assets_path, "static", "mai", "cover")
+mai_alias_path = os.path.join(mai_assets_path, "mai_song_alias.json")
+mai_grade_info_path = os.path.join(mai_assets_path, "mai_grade_info.json")
+mai_song_info_path = os.path.join(mai_assets_path, "mai_song_info.json")
+mai_utage_info_path = os.path.join(mai_assets_path, "mai_utage_info.json")
 
 achievement_list = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]
 rate_list = ["D", "C", "B", "BB", "BBB", "A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+"]

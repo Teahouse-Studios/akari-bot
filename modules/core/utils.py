@@ -5,7 +5,7 @@ import jwt
 import psutil
 from cpuinfo import get_cpu_info
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Url
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
