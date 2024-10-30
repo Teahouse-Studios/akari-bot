@@ -5,6 +5,7 @@ config/*.toml
 .idea
 .DS_Store
 .vscode
+.vs
 test*
 *.db
 cache/*
