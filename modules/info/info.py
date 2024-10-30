@@ -105,7 +105,7 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
     group_id = msg.target.target_id
     if info_.exist(id_group=group_id) and name in info_.read(id_group=group_id):
-        address = msg.parsed_msg['<address:port>']
+        address = info_.read(id_group=group_id)[name]
         info_je, info_be = await asyncio.gather(query_java_server(msg, address), query_bedrock_server(msg, address))
         s_msg = [info_je, info_be]
         if s_msg == ['', '']:
