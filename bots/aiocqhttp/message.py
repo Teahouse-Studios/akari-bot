@@ -158,13 +158,14 @@ class MessageSession(MessageSessionT):
                 img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
                 imgs = await msgchain2image(img_chain, self)
                 msgsgm = MessageSegment.text('')
-                for img in imgs:
-                    im = Image(img)
-                    msgsgm = msgsgm + MessageSegment.image('base64://' + await im.get_base64())
-                try:
-                    send = await bot.send_group_msg(group_id=self.session.target, message=msgsgm)
-                except aiocqhttp.exceptions.ActionFailed as e:
-                    raise SendMessageFailed(e.result['wording'])
+                if imgs:
+                    for img in imgs:
+                        im = Image(img)
+                        msgsgm = msgsgm + MessageSegment.image('base64://' + await im.get_base64())
+                    try:
+                        send = await bot.send_group_msg(group_id=self.session.target, message=msgsgm)
+                    except aiocqhttp.exceptions.ActionFailed as e:
+                        raise SendMessageFailed(e.result['wording'])
 
             if Temp.data['is_group_message_blocked']:
                 asyncio.create_task(resending_group_message())
