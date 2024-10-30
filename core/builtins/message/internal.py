@@ -184,8 +184,8 @@ class Image(ImageT):
 
     async def get_base64(self):
         file = await self.get()
-        with open(file, 'r', encoding='utf-8') as f:
-            return str(base64.b64encode(f.read()))
+        with open(file, 'rb') as f:
+            return str(base64.b64encode(f.read()), "UTF-8")
 
     def __str__(self):
         return self.path
