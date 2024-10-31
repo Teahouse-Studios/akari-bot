@@ -90,12 +90,15 @@ async def __(msg: Bot.MessageSession):
 @inf.handle('url <address:port> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
     address = msg.parsed_msg['<address:port>']
-    info_je,info_be = await asyncio.gather(query_java_server(msg,address),query_bedrock_server(msg,address))
+    info_je,info_be = await asyncio.gather(
+        query_java_server(address),
+        query_bedrock_server(address)
+    )
     s_msg = [info_je,info_be]
     if s_msg == ['','']:
         await msg.finish("没有找到任何类型的 Minecraft 服务器。")
     else:
-        send = await msg.sendMessage('\n'.join(s_msg) + '\n[90秒后撤回]')
+        send = await msg.sendMessage(('\n'.join(s_msg)).strip() + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
 
@@ -106,12 +109,15 @@ async def ____(msg: Bot.MessageSession):
     group_id = msg.target.target_id
     if info_.exist(id_group=group_id) and name in info_.read(id_group=group_id):
         address = info_.read(id_group=group_id)[name]
-        info_je, info_be = await asyncio.gather(query_java_server(msg, address), query_bedrock_server(msg, address))
+        info_je, info_be = await asyncio.gather(
+            query_java_server(address),
+            query_bedrock_server(address)
+        )
         s_msg = [info_je, info_be]
         if s_msg == ['', '']:
             await msg.finish("没有找到任何类型的 Minecraft 服务器。")
         else:
-            send = await msg.sendMessage('\n'.join(s_msg) + '\n[90秒后撤回]')
+            send = await msg.sendMessage(('\n'.join(s_msg)).strip() + '\n[90秒后撤回]')
             await msg.sleep(90)
             await send.delete()
     else:
