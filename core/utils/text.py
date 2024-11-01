@@ -5,33 +5,9 @@ from typing import TypeVar
 
 from ff3 import FF3Cipher
 
-from core.config import Config
+from core.config import Config, isint, isfloat
 
 T = TypeVar("T", str, bytes, bytearray)
-
-
-def remove_suffix(string: T, suffix: T) -> T:
-    return string.removesuffix(suffix)
-
-
-def remove_prefix(string: T, prefix: T) -> T:
-    return string.removeprefix(prefix)
-
-
-def isfloat(num_str: str) -> bool:
-    try:
-        float(num_str)
-        return True
-    except Exception:
-        return False
-
-
-def isint(num_str: str) -> bool:
-    try:
-        int(num_str)
-        return True
-    except Exception:
-        return False
 
 
 def parse_time_string(time_str: str) -> timedelta:
@@ -71,3 +47,6 @@ def decrypt_string(text):
     if m := re.match(r'^.{2}:(.*?):.{2}.*?$', dec_text):
         return m.group(1)
     return False
+
+
+__all__ = ["parse_time_string", "random_string", "decrypt_string", "isint", "isfloat"]

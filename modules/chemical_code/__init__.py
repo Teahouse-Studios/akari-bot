@@ -17,7 +17,7 @@ from core.utils.game import PlayState
 from core.utils.http import get_url, download
 from core.utils.petal import gained_petal
 from core.utils.random import Random
-from core.utils.text import isint, remove_prefix
+from core.utils.text import isint
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
@@ -49,10 +49,10 @@ def parse_elements(formula: str) -> dict:
             break
         for element in element_lists:
             if formula.startswith(element):
-                formula = remove_prefix(formula, element)
+                formula = formula.removeprefix(element)
                 if count := re.match('^([0-9]+).*$', formula):
                     elements[element] = int(count.group(1))
-                    formula = remove_prefix(formula, count.group(1))
+                    formula = formula.removeprefix(count.group(1))
                 else:
                     elements[element] = 1
                 break

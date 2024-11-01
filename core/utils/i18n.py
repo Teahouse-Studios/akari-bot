@@ -10,7 +10,7 @@ import orjson as json
 
 from core.config import Config
 from core.path import locales_path, modules_locales_path
-from .text import isint, remove_suffix
+from .text import isint
 
 default_locale = Config('locale', 'zh_cn')
 
@@ -81,7 +81,7 @@ def load_locale_file():
     try:
         for l in locales:
             with open(os.path.join(locales_path, l), 'r', encoding='utf-8') as f:
-                locale_dict[remove_suffix(l, '.json')] = flatten(json.loads(f.read()))
+                locale_dict[l.removesuffix('.json')] = flatten(json.loads(f.read()))
     except Exception as e:
         err_prompt.append(str(e))
 
@@ -92,10 +92,10 @@ def load_locale_file():
                 lang_file_path = os.path.join(modules_locales_file, lang_file)
                 with open(lang_file_path, 'r', encoding='utf-8') as f:
                     try:
-                        if remove_suffix(lang_file, '.json') in locale_dict:
-                            locale_dict[remove_suffix(lang_file, '.json')].update(flatten(json.loads(f.read())))
+                        if lang_file.removesuffix('.json') in locale_dict:
+                            locale_dict[lang_file.removesuffix('.json')].update(flatten(json.loads(f.read())))
                         else:
-                            locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.loads(f.read()))
+                            locale_dict[lang_file.removesuffix('.json')] = flatten(json.loads(f.read()))
                     except Exception as e:
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
 

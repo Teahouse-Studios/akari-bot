@@ -7,7 +7,6 @@ from Crypto.Util.Padding import unpad
 
 from core.logger import Logger
 from core.path import assets_path
-from core.utils.text import remove_suffix
 
 levels = {'EZ': 1, 'HD': 2, 'IN': 4, 'AT': 8, }
 secret = bytes([232, 150, 154, 210, 165, 64, 37, 155, 151, 145, 144, 139, 136, 230, 191, 3, 30, 109, 33, 149, 110, 250,
@@ -34,7 +33,7 @@ def parse_game_record(file_path):
             if name_length == 1:
                 continue
             name = data[pos:(pos + name_length)]
-            name = remove_suffix(name.decode('utf-8'), '.0')
+            name = name.decode('utf-8').removesuffix('.0')
 
             pos += name_length
             score_length = data[pos]

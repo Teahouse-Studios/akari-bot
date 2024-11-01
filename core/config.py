@@ -17,7 +17,7 @@ def isfloat(num_str: str) -> bool:
     try:
         float(num_str)
         return True
-    except Exception:
+    except ValueError:
         return False
 
 
@@ -25,7 +25,7 @@ def isint(num_str: str) -> bool:
     try:
         int(num_str)
         return True
-    except Exception:
+    except ValueError:
         return False
 
 
