@@ -13,7 +13,7 @@ cfg_file_path = os.path.join(config_path, config_filename)
 old_cfg_file_path = os.path.join(config_path, 'config.cfg')
 
 
-def isfloat(num_str: str) -> bool:
+def isfloat(num_str: Union[str, float]) -> bool:
     try:
         float(num_str)
         return True
@@ -21,7 +21,7 @@ def isfloat(num_str: str) -> bool:
         return False
 
 
-def isint(num_str: str) -> bool:
+def isint(num_str: Union[str, int]) -> bool:
     try:
         int(num_str)
         return True

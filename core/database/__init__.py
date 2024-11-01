@@ -347,7 +347,7 @@ class BotDBUtil:
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def update(self, name, value: str):
+        def update(self, name, value: Union[str, bytes]):
             exists = self.get(name)
             if not exists:
                 self.add(name=name, value=value)
