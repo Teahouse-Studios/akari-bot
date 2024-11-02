@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="{{ msg.locale.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap"
+        rel="stylesheet">
+    <style>html body {
+        margin-top: 0 !important;
+        font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ko) {
+        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ja) {
+        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-TW), :lang(zh_TW) {
+        font-family: 'Noto Sans TC', 'Noto Sans HK', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-HK) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-Hans), :lang(zh-CN), :lang(zh), :lang(zh_CN) {
+        font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+    }
+
+
+    .content-layout {
+        width: 720px;
+        padding: 10px;
+
+    }
+
+    .help-shard {
+        border: 1px solid #000;
+        padding: 8px;
+        position: relative;
+    }
+
+    .help-shard:nth-child(2n) {
+        background-color: #f7f7f7;
+    }
+
+    .help-shard h3 {
+        margin: 0;
+    }
+
+    .help-shard .authors {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        border: 1px solid #000;
+        border-radius: 5px;
+        max-width: 600px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .help-contents-layout {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .help-alias-layout {
+        border: 1px solid #000;
+        border-radius: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .help-detail {
+        border-bottom: 1px solid #cecece;
+        background-color: #e4e4e4;
+    }
+
+    .help-detail:nth-child(2n) {
+        background-color: #f0f0f0;
+    }
+    </style>
+</head>
+
+<body>
+<div class="botbox">
+    <div class="content-layout">
+        <h2>{{ msg.locale.t("core.message.help.table.header.help") }}</h2>
+        <div class="help-shard">
+            <h3>{{ help_name }}</h3>
+            <hr>
+            {% if module.developers %}
+                <div class="authors">
+                    {{ msg.locale.t("core.message.help.author") }}{{ msg.locale.t('message.delimiter').join(module.developers) }}</div>
+            {%- endif %}
+            {% if module.desc %}
+                <div class="help-desc">{{ msg.locale.t_str(module.desc) }}</div>
+            {%- endif %}
+            <div class="help-contents-layout">
+                <div class="help-commands">
+                    <div
+                        class="available-commands-header">{{ msg.locale.t("core.message.help.available_commands") }}</div>
+                    {% set command_doc = CommandParser(module_list[help_name], msg=msg,
+                                                       bind_prefix=module_list[help_name].bind_prefix,
+                                                       command_prefixes=msg.prefixes,
+                                                       is_superuser=is_superuser).return_formatted_help_doc().split('\n') %}
+                    {% for doc in command_doc %}
+                        <div class="help-detail">{{ doc }}</div>
+                    {%- endfor %}
+                </div>
+                {% if module.alias %}
+                    <div class="help-alias">
+                        <div class="help-alias-layout">
+                            <div class="available-alias-header">{{ msg.locale.t("core.help.alias") }}</div>
+                            {% for alias in module.alias %}
+                                <div class="help-detail">{{ alias }} -> {{ module.alias[alias] }}</div>
+                            {%- endfor %}
+                        </div>
+                    </div>
+                {%- endif %}
+            </div>
+            {% if module.regex_list.set %}
+                <div class="regex-contents-layout">
+                    <div class="available-regex-header">{{ msg.locale.t("core.message.help.support_regex") }}</div>
+                    {% set regex_list = module.regex_list.get(
+                        msg.target.target_from,
+                        show_required_superuser=is_superuser,
+                        show_required_base_superuser=is_base_superuser) %}
+                    {% for regex in regex_list %}
+                    {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
+                (regex.pattern.pattern if isinstance(regex.pattern, re.Pattern) else None) %}
+                    {% if pattern %}
+                        <div class="help-detail">{{ pattern }} {{ msg.locale.t("core.message.help.regex.detail",
+                                                                      msg=msg.locale.t_str(desc)) if regex.desc else
+                                                                       msg.locale.t("core.message.help.regex.no_information") }}</div>
+                    {%- endif %}
+                    {%- endfor %}
+
+                </div>
+            {%- endif %}
+        </div>
+    </div>
+</div>
+</body>
+
+
+</html>

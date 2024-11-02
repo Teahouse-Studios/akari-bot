@@ -100,18 +100,45 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 elif Config('help_url', cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=(CFG.get_url('help_url') + help_name))
-            if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
+            if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and WebRender.status:
                 try:
-                    tables = [ImageTable([[doc, '\n'.join(malias), devs]],
-                                         [msg.locale.t("core.message.help.table.header.help"),
-                                          msg.locale.t("core.message.help.table.header.alias"),
-                                          msg.locale.t("core.message.help.table.header.author")])]
-                    imgs = await image_table_render(tables)
-                    if imgs:
-                        img_list = []
-                        for img in imgs:
-                            img_list.append(Image(img))
-                        await msg.finish(img_list + [Plain(wiki_msg)])
+                    html_content = env.get_template('help_doc_detail.html').render(msg=msg,
+                                                                                   module=module_,
+                                                                                   CommandParser=CommandParser,
+                                                                                   help_name=help_name,
+                                                                                   is_superuser=is_superuser,
+                                                                                   is_base_superuser=is_base_superuser,
+                                                                                   module_list=module_list)
+
+                    fname = f'{random_cache_path()}.html'
+                    with open(fname, 'w', encoding='utf-8') as fi:
+                        fi.write(html_content)
+
+                    d = {'content': html_content, 'element': '.content-layout'}
+                    html_ = json.dumps(d)
+
+                    try:
+                        pic = await download(webrender('element_screenshot'),
+                                             status_code=200,
+                                             headers={'Content-Type': 'application/json'},
+                                             method="POST",
+                                             post_data=html_,
+                                             attempt=1,
+                                             timeout=30,
+                                             request_private_ip=True
+                                             )
+                    except aiohttp.ClientConnectorError:
+                        Logger.info('[Webrender] Generation Failed.')
+                        raise
+                    with open(pic) as read:
+                        load_img = json.loads(read.read())
+                    img_lst = []
+                    for x in load_img:
+                        b = base64.b64decode(x)
+                        bio = BytesIO(b)
+                        bimg = PILImage.open(bio)
+                        img_lst.append(Image(bimg))
+                    await msg.finish(img_lst + [Plain(wiki_msg)])
                 except Exception:
                     Logger.error(traceback.format_exc())
             if malias:
