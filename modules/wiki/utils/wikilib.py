@@ -177,9 +177,7 @@ class WikiLib:
             raise NoReportException(str(e))
 
     def rearrange_siteinfo(self, info: Union[dict, str, bytes], wiki_api_link) -> WikiInfo:
-        if isinstance(info, str):
-            info = json.loads(info)
-        elif isinstance(info, bytes):
+        if isinstance(info, (str, bytes)):
             info = json.loads(info)
         extensions = info['query']['extensions']
         ext_list = []
@@ -402,7 +400,7 @@ class WikiLib:
     async def search_page(self, search_text, namespace='*', limit=10, srwhat='text'):
         await self.fixup_wiki_info()
         title_split = search_text.split(':')
-        if title_split[0] in self.wiki_info.interwiki:
+        if len(title_split) > 1 and title_split[0] in self.wiki_info.interwiki:
             search_text = ':'.join(title_split[1:])
             q_site = WikiLib(self.wiki_info.interwiki[title_split[0]], self.headers)
             result = await q_site.search_page(search_text, namespace, limit)
