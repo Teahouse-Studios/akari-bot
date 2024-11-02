@@ -81,9 +81,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
     if not start_wiki:
         if isinstance(session, Bot.MessageSession):
             await session.finish(session.locale.t('wiki.message.set.not_set', prefix=session.prefixes[0]))
-    if lang in interwiki_list:
-        start_wiki = interwiki_list[lang]
-        lang = None
+    # if lang in interwiki_list:
+    #     start_wiki = interwiki_list[lang]
+    #     lang = None
     if title:
         if isinstance(title, str):
             title = [title]

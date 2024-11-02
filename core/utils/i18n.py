@@ -120,7 +120,7 @@ class Locale:
         self.fallback_lng = fallback_lng
 
     def __getitem__(self, key: str):
-        return self.data[key]
+        return self.data.query_node(key)
 
     def __contains__(self, key: str):
         return key in self.data

@@ -45,7 +45,7 @@ async def pardon_user(user: str):
 
 async def warn_user(user: str, count: int = 1):
     sender_info = BotDBUtil.SenderInfo(user)
-    current_warns = int(sender_info.query.warns) + count
+    current_warns = int(sender_info.warns) + count
     sender_info.edit('warns', current_warns)
     if current_warns > WARNING_COUNTS and WARNING_COUNTS >= 1 and not sender_info.is_in_allow_list:
         sender_info.edit('isInBlockList', True)

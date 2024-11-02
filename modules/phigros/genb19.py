@@ -1,6 +1,5 @@
 import os
 import traceback
-import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 

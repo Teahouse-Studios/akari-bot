@@ -2,7 +2,6 @@ import asyncio
 import os
 import time
 import traceback
-import uuid
 from datetime import datetime
 
 import aiohttp
@@ -12,8 +11,8 @@ from aiofile import async_open
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
-from core.config import Config
 from core.builtins import Bot
+from core.config import Config
 from core.logger import Logger
 from core.path import assets_path, noto_sans_demilight_path, nunito_regular_path, nunito_light_path
 from core.utils.cache import random_cache_path

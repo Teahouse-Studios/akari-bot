@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone as datetimezone
+from datetime import datetime, UTC as datetimeUTC
 from typing import List
 
 from core.config import Config
@@ -177,7 +177,7 @@ class MessageSession(MessageSessionT):
         return (
             datetime.fromtimestamp(
                 timestamp,
-                datetimezone.utc) +
+                datetimeUTC) +
             self.timezone_offset).strftime(
             ' '.join(ftime_template))
 
