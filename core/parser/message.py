@@ -559,7 +559,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     match_hash_cache[msg.target.target_id] = {}
                                 if matched_hash in match_hash_cache[msg.target.target_id]:
                                     if datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
-                                            matched_hash] < 10:
+                                            matched_hash] < (msg.options.get('cooldown_time', 0) or 10)
                                         Logger.warning('Match loop detected, skipping...')
                                         await msg.send_message(msg.locale.t("parser.matched.but_try_again_later"))
                                         continue
