@@ -17,8 +17,8 @@ from core.parser.command import CommandParser
 from core.path import templates_path
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.image_table import ImageTable, image_table_render
 from core.utils.web_render import WebRender, webrender
+from html import escape
 
 
 env = Environment(loader=FileSystemLoader(templates_path))
@@ -108,7 +108,8 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                                                                                    help_name=help_name,
                                                                                    is_superuser=is_superuser,
                                                                                    is_base_superuser=is_base_superuser,
-                                                                                   module_list=module_list)
+                                                                                   module_list=module_list,
+                                                                                   escape=escape)
 
                     fname = f'{random_cache_path()}.html'
                     with open(fname, 'w', encoding='utf-8') as fi:

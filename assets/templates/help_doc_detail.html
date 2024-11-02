@@ -36,7 +36,7 @@
 
 
     .content-layout {
-        width: 720px;
+        width: 800px;
         padding: 10px;
 
     }
@@ -116,7 +116,7 @@
                                                        command_prefixes=msg.prefixes,
                                                        is_superuser=is_superuser).return_formatted_help_doc().split('\n') %}
                     {% for doc in command_doc %}
-                        <div class="help-detail">{{ doc }}</div>
+                        <div class="help-detail">{{ escape(doc) }}</div>
                     {%- endfor %}
                 </div>
                 {% if module.alias %}
@@ -141,7 +141,7 @@
                     {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
                 (regex.pattern.pattern if isinstance(regex.pattern, re.Pattern) else None) %}
                     {% if pattern %}
-                        <div class="help-detail">{{ pattern }} {{ msg.locale.t("core.message.help.regex.detail",
+                        <div class="help-detail">{{ escape(pattern) }} {{ msg.locale.t("core.message.help.regex.detail",
                                                                       msg=msg.locale.t_str(desc)) if regex.desc else
                                                                        msg.locale.t("core.message.help.regex.no_information") }}</div>
                     {%- endif %}
