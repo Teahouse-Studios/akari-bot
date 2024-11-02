@@ -36,7 +36,7 @@
 
 
     .content-layout {
-        width: 800px;
+        width: fit-content;
         padding: 10px;
 
     }
@@ -45,6 +45,10 @@
         border: 1px solid #000;
         padding: 8px;
         position: relative;
+    }
+
+    .help-commands{
+        width: min-content;
     }
 
     .help-shard:nth-child(2n) {
@@ -72,7 +76,7 @@
     .help-contents-layout {
         display: flex;
         justify-content: space-between;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
     }
 
     .help-alias-layout {
@@ -80,11 +84,13 @@
         border-radius: 5px;
         padding-left: 5px;
         padding-right: 5px;
+        margin-left: 10px;
     }
 
     .help-detail {
         border-bottom: 1px solid #cecece;
         background-color: #e4e4e4;
+        white-space: nowrap;
     }
 
     .help-detail:nth-child(2n) {
@@ -152,7 +158,23 @@
         </div>
     </div>
 </div>
-</body>
+<script>
 
+    window.onload = function() {
+        const layout = document.querySelector('.content-layout');
+        if (layout.getBoundingClientRect().width >= 1280){
+            layout.style.setProperty('width', 'min-content')
+            const help_contents_layout = document.querySelector('.help-contents-layout')
+            help_contents_layout.style.setProperty('flex-wrap', 'wrap')
+            const help_alias_layout = document.querySelector('.help-alias-layout')
+            help_alias_layout.style.setProperty('border', 'none')
+            help_alias_layout.style.setProperty('margin', '0')
+            help_alias_layout.style.setProperty('padding', '0')
+            const help_commands = document.querySelector('.help-commands')
+            help_alias_layout.style.setProperty('width', help_commands.getBoundingClientRect().width + 'px')
+        }
+    }
+</script>
+</body>
 
 </html>
