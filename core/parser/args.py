@@ -5,7 +5,6 @@ from typing import List, Dict, Union
 from core.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
 
 
-
 class ArgumentPattern:
     def __init__(self, name):
         self.name = name
@@ -15,7 +14,6 @@ class ArgumentPattern:
 
     def __repr__(self):
         return self.__str__()
-
 
 
 class DescPattern:
