@@ -14,7 +14,7 @@ from core.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
-PrivateAssets.set(os.path.join(assets_path, 'private', 'qq'))
+PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
 EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
 Url.disable_mm = False
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
@@ -103,10 +103,8 @@ class MyClient(botpy.Client):
                 sender=message.author.member_openid))
         await parser(msg)
 
-
 intents = botpy.Intents(public_guild_messages=True, guild_messages=True, public_messages=True)
 client = MyClient(intents=intents)
-
 
 Info.client_name = client_name
 if 'subprocess' in sys.argv:
