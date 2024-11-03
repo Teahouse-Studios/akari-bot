@@ -94,7 +94,7 @@
     "core.message.forward_msg.disabled": "Forward message has been disabled.",
     "core.message.forward_msg.enable": "Forward message enabled.",
     "core.message.help.all_modules": "Use \"${prefix}module list\" to view all available modules.",
-    "core.message.help.author": "Module author: ",
+    "core.message.help.author": "Author: ",
     "core.message.help.command_count": "${count} Command(s)",
     "core.message.help.detail": "Use \"${prefix}help <module name>\" to view details.",
     "core.message.help.document": "You can also consult the web documentation for help:\n${url}",
