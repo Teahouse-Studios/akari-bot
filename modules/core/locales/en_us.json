@@ -154,7 +154,7 @@
     "core.message.petal.modify": "Successfully modified ${add_petal} petal(s) for user ${sender}. ${petal} petal(s) remain now.",
     "core.message.petal.modify.self": "Successfully modified ${add_petal} petal(s). ${petal} petal(s) remain now.",
     "core.message.petal.self": "You have ${petal} petal(s).",
-    "core.message.ping.detail": "System startup time: ${system_boot_time}\nBot running time: ${bot_running_time}\nPython version: ${python_version}\nWebrender status: ${web_render_status}\nClient name: ${client_name}\nCommand parsed since startup: ${command_parsed}\nCPU model: ${cpu_brand}\nCurrent CPU usage: ${cpu_usage}%\nPhysical memory: ${ram}M Utilized: ${ram_percent}%\nSwap memory: ${swap}M Utilized: ${swap_percent}%\nDisk capacity: ${disk_space}G/${disk_space_total}G",
+    "core.message.ping.detail": "System startup time: ${system_boot_time}\nBot running time: ${bot_running_time}\nPython version: ${python_version}\nWebRender status: ${web_render_status}\nClient name: ${client_name}\nCommand parsed since startup: ${command_parsed}\nCPU model: ${cpu_brand}\nCurrent CPU usage: ${cpu_usage}%\nPhysical memory: ${ram}M Utilized: ${ram_percent}%\nSwap memory: ${swap}M Utilized: ${swap_percent}%\nDisk capacity: ${disk_space}G/${disk_space_total}G",
     "core.message.ping.simple": "Bot running time: ${bot_running_time}\nServer disk utilized: ${disk_percent}%",
     "core.message.prefix.add.already": "This command prefix already exists in the custom prefix list.",
     "core.message.prefix.add.success": "Custom command prefix added: ${prefix}",

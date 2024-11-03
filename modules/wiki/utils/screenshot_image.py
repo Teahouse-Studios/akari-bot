@@ -35,7 +35,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             elements_.insert(0, '.mw-body-content')
         if allow_special_page and not content_mode:
             elements_.insert(0, '.diff')
-        Logger.info('[Webrender] Generating element screenshot...')
+        Logger.info('[WebRender] Generating element screenshot...')
         try:
             img = await download(webrender('element_screenshot', use_local=use_local),
                                  status_code=200,
@@ -55,10 +55,10 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             else:
                 return False
         except ValueError:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     else:
-        Logger.info('[Webrender] Generating section screenshot...')
+        Logger.info('[WebRender] Generating section screenshot...')
         try:
             section = section.replace(" ", '_')
             img = await download(webrender('section_screenshot', use_local=use_local),
@@ -79,7 +79,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             else:
                 return False
         except ValueError:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     read = open(img)
     load_img = json.loads(read.read())

@@ -47,10 +47,10 @@ save_source = True
 
 
 async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True) -> Union[List[PILImage], bool]:
-    '''使用Webrender将消息链转换为图片。
+    '''使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
-    :param use_local: 是否使用本地Webrender渲染。
+    :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象列表。
     '''
     if not WebRender.status:
@@ -107,7 +107,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                                  request_private_ip=True
                                  )
         else:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
 
     with open(pic) as read:
@@ -123,10 +123,10 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
 
 
 async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bool]:
-    '''使用Webrender渲染svg文件。
+    '''使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。
-    :param use_local: 是否使用本地Webrender渲染。
+    :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象。
     '''
     if not WebRender.status:
@@ -166,7 +166,7 @@ async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bo
                                  request_private_ip=True
                                  )
         else:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
 
     with open(pic) as read:

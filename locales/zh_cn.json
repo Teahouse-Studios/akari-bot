@@ -12,7 +12,7 @@
     "core.message.confirm": "你确定吗？",
     "error.config.invalid": "配置参数无效或未找到，请检查配置文件。",
     "error.config.secret.not_found": "未找到 API 密钥，请检查配置文件。",
-    "error.config.webrender.invalid": "未配置 Webrender，无法使用此命令。",
+    "error.config.webrender.invalid": "未配置 WebRender，无法使用此命令。",
     "error.i18n.fallback": "（如果你看到了这条奇怪的字符串，说明我们又搞砸了什么！\n请反馈此问题以便快速解决。）",
     "error.message.chain.empty": "机器人尝试发送空消息链，请联系机器人开发者解决问题。",
     "error.message.chain.invalid": "机器人尝试发送无效消息链，请联系机器人开发者解决问题。",

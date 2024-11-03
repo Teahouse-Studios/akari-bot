@@ -1,5 +1,5 @@
 {
-    "bot_name": "Akaribot",
+    "bot_name": "AkariBot",
     "check.redacted": "<REDACTED:${reason}>",
     "check.redacted.all": "<ALL REDACTED:${reason}>",
     "core.help.alias": "Alias: ",
