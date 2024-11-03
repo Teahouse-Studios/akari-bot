@@ -118,6 +118,7 @@ python-whois==0.9.4 ; python_full_version >= "3.12.0" and python_full_version < 
 pytz==2024.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pywin32==306 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and sys_platform == "win32"
 pyyaml==6.0.2 ; python_full_version >= "3.12.0" and python_version < "4.0"
+qq-botpy==1.2.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 quart==0.19.7 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 referencing==0.35.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 regex==2024.9.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
