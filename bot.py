@@ -14,6 +14,14 @@ from core.config import Config
 from core.path import cache_path
 from core.database import BotDBUtil, session, DBVersion
 
+ascii_art = r'''
+          ._.             _  .____       ._.
+     /\   | |            (_) |  _ \      | |
+    /  \  | | ____ _ _ __ _  | |_) | ___ | |_
+   / /\ \ | |/ / _` | '__| | |  _ < / _ \| __|
+  / ____ \|   < (_| | |  | | | |_) | (_) | |_
+ /_/    \_\_|\_\__,_|_|  |_| |____/ \___/ \__|
+'''
 encode = 'UTF-8'
 
 bots_and_required_configs = {
@@ -54,6 +62,7 @@ def init_bot():
         for bu in base_superuser:
             BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
+    print(ascii_art)
 
 
 pidlst = []
