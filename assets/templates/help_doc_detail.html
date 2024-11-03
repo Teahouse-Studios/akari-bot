@@ -103,13 +103,13 @@
 <body>
 <div class="botbox">
     <div class="content-layout">
-        <h2>{{ msg.locale.t("core.message.help.header.help") }}</h2>
+        <h2>{{ msg.locale.t("core.help.header") }}</h2>
         <div class="help-shard">
             <h3>{{ help_name }}</h3>
             <hr>
             {% if module.developers %}
                 <div class="authors">
-                    {{ msg.locale.t("core.message.help.author") }}{{ msg.locale.t('message.delimiter').join(module.developers) }}</div>
+                    {{ msg.locale.t("core.help.author") }}{{ msg.locale.t('message.delimiter').join(module.developers) }}</div>
             {%- endif %}
             {% if module.desc %}
                 <div class="help-desc">{{ msg.locale.t_str(module.desc) }}</div>
@@ -119,7 +119,7 @@
                     {% set command_doc = help.return_formatted_help_doc().split('\n') %}
                     {%if help.args %}
                     <div
-                        class="available-commands-header">{{ msg.locale.t("core.message.help.available_commands") }}</div>
+                        class="available-commands-header">{{ msg.locale.t("core.help.commands") }}</div>
                     {% endif %}
                     {% for doc in command_doc %}
                         {% if doc == msg.locale.t("core.help.options") %}
@@ -142,7 +142,7 @@
             </div>
             {% if regex_list %}
                 <div class="regex-contents-layout">
-                    <div class="available-regex-header">{{ msg.locale.t("core.message.help.support_regex") }}</div>
+                    <div class="available-regex-header">{{ msg.locale.t("core.help.regex") }}</div>
                     {% for regex in regex_list %}
                     {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
                 (regex.pattern.pattern if isinstance(regex.pattern, repattern) else None) %}

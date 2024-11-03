@@ -94,7 +94,6 @@
     "core.message.forward_msg.disabled": "转发消息已关闭。",
     "core.message.forward_msg.enable": "已开启转发消息。",
     "core.message.help.all_modules": "使用“${prefix}module list”查看所有的可用模块。",
-    "core.message.help.author": "模块作者：",
     "core.message.help.command_count": "${count} 条命令",
     "core.message.help.detail": "使用“${prefix}help <模块名称>”查看详细信息。",
     "core.message.help.document": "你也可以通过查阅在线文档获取帮助：\n${url}",
@@ -109,9 +108,6 @@
     "core.message.help.regex.detail": "（${msg}）",
     "core.message.help.regex.no_information": "（无描述）",
     "core.message.help.regex_count": "${count} 条表达式",
-    "core.message.help.support_regex": "此模块支持正则表达式，消息发送时将会匹配以下内容：",
-    "core.message.help.header.list": "模块列表",
-    "core.message.help.header.help": "模块帮助信息",
     "core.message.leave.confirm": "此操作不可逆，你确定吗？",
     "core.message.leave.success": "已执行，再见。",
     "core.message.locale.contribute": "欢迎前往协助翻译：\n${url}",
@@ -129,6 +125,7 @@
     "core.message.module.enable.not_found": "失败：“${module}”模块不存在。",
     "core.message.module.enable.qqchannel_global.success": "成功：为所有文字频道开启“${module}”模块。",
     "core.message.module.enable.success": "成功：开启模块“${module}”。",
+    "core.message.module.list.header": "模块列表",
     "core.message.module.load.failed": "加载模块失败。",
     "core.message.module.load.not_found": "失败：该模块已加载或不存在。",
     "core.message.module.load.success": "成功加载模块：${module}",
@@ -201,6 +198,5 @@
     "core.message.whoami": "你的 ID：${sender}\n本对话的 ID：${target}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
-    "core.message.help.available_commands": "可用命令："
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
 }

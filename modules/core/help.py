@@ -71,7 +71,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     is_base_superuser and module_.required_base_superuser:
 
                 if regex_list:
-                    mdocs.append(msg.locale.t("core.message.help.support_regex"))
+                    mdocs.append(msg.locale.t("core.help.regex"))
                     for regex in regex_list:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -92,7 +92,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                         malias.append(f'{a} -> {module_.alias[a]}')
                 if module_.developers:
                     devs = msg.locale.t('message.delimiter').join(module_.developers)
-                    devs_msg = '\n' + msg.locale.t("core.message.help.author") + devs
+                    devs_msg = '\n' + msg.locale.t("core.help.author") + devs
                 else:
                     devs_msg = ''
             else:
@@ -177,13 +177,13 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     if wiki_msg:
                         await msg.finish(wiki_msg)
                     else:
-                        await msg.finish(msg.locale.t("core.help.none"))
+                        await msg.finish(msg.locale.t("core.help.info.none"))
 
             doc_msg = (doc + devs_msg + wiki_msg).lstrip()
             if doc_msg:
                 await msg.finish(doc_msg)
             else:
-                await msg.finish(msg.locale.t("core.help.none"))
+                await msg.finish(msg.locale.t("core.help.info.none"))
         else:
             await msg.finish(msg.locale.t("core.message.help.not_found"))
 
