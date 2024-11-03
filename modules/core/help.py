@@ -35,8 +35,10 @@ async def bot_help(msg: Bot.MessageSession, module: str):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     alias = ModulesManager.modules_aliases
+
     if msg.parsed_msg:
-        msgs = []
+        mdocs = []
+        malias = []
         if module in alias:
             help_name = alias[module].split()[0]
         else:
@@ -48,24 +50,28 @@ async def bot_help(msg: Bot.MessageSession, module: str):
             await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
         elif help_name in module_list:
             module_ = module_list[help_name]
+
+            if module_.desc:
+                desc = msg.locale.t_str(module_.desc)
+                mdocs.append(desc)
+
+            help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
+                                  command_prefixes=msg.prefixes, is_superuser=is_superuser)
+
+            if help_.args:
+                mdocs.append(help_.return_formatted_help_doc())
+
+            regex_list = module_.regex_list.get(
+                msg.target.target_from,
+                show_required_superuser=is_superuser,
+                show_required_base_superuser=is_base_superuser)
+
             if not module_.required_superuser and not module_.required_base_superuser or \
                     is_superuser and module_.required_superuser or \
                     is_base_superuser and module_.required_base_superuser:
-                if module_.desc:
-                    desc = msg.locale.t_str(module_.desc)
-                    msgs.append(desc)
-                help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
-                                      command_prefixes=msg.prefixes, is_superuser=is_superuser)
-                if help_.args:
-                    msgs.append(help_.return_formatted_help_doc())
 
-                doc = '\n'.join(msgs)
-                if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
-                    regex_list = module_.regex_list.get(
-                        msg.target.target_from,
-                        show_required_superuser=is_superuser,
-                        show_required_base_superuser=is_base_superuser)
+                if regex_list:
+                    mdocs.append(msg.locale.t("core.message.help.support_regex"))
                     for regex in regex_list:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -73,26 +79,26 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                         elif isinstance(regex.pattern, re.Pattern):
                             pattern = regex.pattern.pattern
                         if pattern:
-                            desc = regex.desc
-                            if desc:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.t_str(desc))
+                            rdesc = regex.desc
+                            if rdesc:
+                                mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.detail",
+                                                                       msg=msg.locale.t_str(rdesc))}')
                             else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
+                                mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.no_information")}')
+                doc = '\n'.join(mdocs)
+
+                if module_.alias:
+                    for a in module_.alias:
+                        malias.append(f'{a} -> {module_.alias[a]}')
+                if module_.developers:
+                    devs = msg.locale.t('message.delimiter').join(module_.developers)
+                    devs_msg = '\n' + msg.locale.t("core.message.help.author") + devs
+                else:
+                    devs_msg = ''
             else:
                 doc = ''
-
-            module_alias = module_.alias
-            malias = []
-            if module_alias:
-                for a in module_alias:
-                    malias.append(f'{a} -> {module_alias[a]}')
-            if module_.developers:
-                devs = msg.locale.t('message.delimiter').join(module_.developers)
-                devs_msg = '\n' + msg.locale.t("core.message.help.author") + devs
-            else:
                 devs_msg = ''
-            wiki_msg = ''
+
             if module_.doc:
                 if Config('help_page_url', cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
@@ -100,52 +106,82 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 elif Config('help_url', cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=(CFG.get_url('help_url') + help_name))
-            if len(doc) > 500 and not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and WebRender.status:
-                try:
-                    html_content = env.get_template('help_doc_detail.html').render(msg=msg,
-                                                                                   module=module_,
-                                                                                   CommandParser=CommandParser,
-                                                                                   help_name=help_name,
-                                                                                   is_superuser=is_superuser,
-                                                                                   is_base_superuser=is_base_superuser,
-                                                                                   module_list=module_list,
-                                                                                   escape=escape)
+                else:
+                    wiki_msg = ''
+            else:
+                wiki_msg = ''
 
-                    fname = f'{random_cache_path()}.html'
-                    with open(fname, 'w', encoding='utf-8') as fi:
-                        fi.write(html_content)
+            if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and WebRender.status:
+                if not WebRender.local:
+                    use_local = False
 
-                    d = {'content': html_content, 'element': '.content-layout'}
-                    html_ = json.dumps(d)
-
+                if any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)) and \
+                    (not module_.required_superuser and not module_.required_base_superuser or
+                     is_superuser and module_.required_superuser or
+                     is_base_superuser and module_.required_base_superuser):
                     try:
-                        pic = await download(webrender('element_screenshot'),
-                                             status_code=200,
-                                             headers={'Content-Type': 'application/json'},
-                                             method="POST",
-                                             post_data=html_,
-                                             attempt=1,
-                                             timeout=30,
-                                             request_private_ip=True
-                                             )
-                    except aiohttp.ClientConnectorError:
-                        Logger.info('[Webrender] Generation Failed.')
-                        raise
-                    with open(pic) as read:
-                        load_img = json.loads(read.read())
-                    img_lst = []
-                    for x in load_img:
-                        b = base64.b64decode(x)
-                        bio = BytesIO(b)
-                        bimg = PILImage.open(bio)
-                        img_lst.append(Image(bimg))
-                    await msg.finish(img_lst + [Plain(wiki_msg)])
-                except Exception:
-                    Logger.error(traceback.format_exc())
-            if malias:
-                doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
+                        html_content = env.get_template('help_doc_detail.html').render(msg=msg,
+                                                                                       module=module_,
+                                                                                       help=help_,
+                                                                                       help_name=help_name,
+                                                                                       regex_list=regex_list,
+                                                                                       escape=escape,
+                                                                                       isinstance=isinstance,
+                                                                                       str=str,
+                                                                                       repattern=re.Pattern)
+
+                        fname = f'{random_cache_path()}.html'
+                        with open(fname, 'w', encoding='utf-8') as fi:
+                            fi.write(html_content)
+
+                        d = {'content': html_content, 'element': '.content-layout'}
+                        html_ = json.dumps(d)
+
+                        try:
+                            pic = await download(webrender('element_screenshot', use_local=use_local),
+                                                 status_code=200,
+                                                 headers={'Content-Type': 'application/json'},
+                                                 method="POST",
+                                                 post_data=html_,
+                                                 attempt=1,
+                                                 timeout=30,
+                                                 request_private_ip=True
+                                                 )
+                        except aiohttp.ClientConnectorError:
+                            if use_local:
+                                try:
+                                    pic = await download(webrender('element_screenshot', use_local=False),
+                                                         status_code=200,
+                                                         method='POST',
+                                                         headers={'Content-Type': 'application/json'},
+                                                         post_data=html_,
+                                                         request_private_ip=True
+                                                         )
+                                except aiohttp.ClientConnectorError:
+                                    Logger.info('[Webrender] Generation Failed.')
+                                    raise
+                            else:
+                                Logger.info('[Webrender] Generation Failed.')
+                                raise
+                        with open(pic) as read:
+                            load_img = json.loads(read.read())
+                        img_lst = []
+                        for x in load_img:
+                            b = base64.b64decode(x)
+                            bio = BytesIO(b)
+                            bimg = PILImage.open(bio)
+                            img_lst.append(Image(bimg))
+                        await msg.finish(img_lst + [Plain(wiki_msg)])
+                    except Exception:
+                        Logger.error(traceback.format_exc())
+                else:
+                    if wiki_msg:
+                        await msg.finish(wiki_msg)
+                    else:
+                        await msg.finish(msg.locale.t("core.help.none"))
+
             doc_msg = (doc + devs_msg + wiki_msg).lstrip()
-            if doc_msg != '':
+            if doc_msg:
                 await msg.finish(doc_msg)
             else:
                 await msg.finish(msg.locale.t("core.help.none"))

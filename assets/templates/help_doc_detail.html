@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Module Help</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
         rel="stylesheet">
     <style>html body {
         margin-top: 0 !important;
@@ -37,8 +37,8 @@
 
     .content-layout {
         width: fit-content;
+        min-width: 400px;
         padding: 10px;
-
     }
 
     .help-shard {
@@ -57,6 +57,7 @@
 
     .help-shard h3 {
         margin: 0;
+        font-family: 'Noto Mono', monospace;
     }
 
     .help-shard .authors {
@@ -102,7 +103,7 @@
 <body>
 <div class="botbox">
     <div class="content-layout">
-        <h2>{{ msg.locale.t("core.message.help.table.header.help") }}</h2>
+        <h2>{{ msg.locale.t("core.message.help.header.help") }}</h2>
         <div class="help-shard">
             <h3>{{ help_name }}</h3>
             <hr>
@@ -115,16 +116,19 @@
             {%- endif %}
             <div class="help-contents-layout">
                 <div class="help-commands">
+                    {% set command_doc = help.return_formatted_help_doc().split('\n') %}
+                    {%if help.args %}
                     <div
                         class="available-commands-header">{{ msg.locale.t("core.message.help.available_commands") }}</div>
-                    {% set command_doc = CommandParser(module_list[help_name], msg=msg,
-                                                       bind_prefix=module_list[help_name].bind_prefix,
-                                                       command_prefixes=msg.prefixes,
-                                                       is_superuser=is_superuser).return_formatted_help_doc().split('\n') %}
+                    {% endif %}
                     {% for doc in command_doc %}
-                        <div class="help-detail">{{ escape(doc) }}</div>
-                    {%- endfor %}
-                </div>
+                        {% if doc == msg.locale.t("core.help.options") %}
+                            <div class="available-options-header">{{ msg.locale.t("core.help.options") }}</div>
+                        {% else %}
+                            <div class="help-detail">{{ escape(doc) }}</div>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
                 {% if module.alias %}
                     <div class="help-alias">
                         <div class="help-alias-layout">
@@ -136,23 +140,18 @@
                     </div>
                 {%- endif %}
             </div>
-            {% if module.regex_list.set %}
+            {% if regex_list %}
                 <div class="regex-contents-layout">
                     <div class="available-regex-header">{{ msg.locale.t("core.message.help.support_regex") }}</div>
-                    {% set regex_list = module.regex_list.get(
-                        msg.target.target_from,
-                        show_required_superuser=is_superuser,
-                        show_required_base_superuser=is_base_superuser) %}
                     {% for regex in regex_list %}
                     {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
-                (regex.pattern.pattern if isinstance(regex.pattern, re.Pattern) else None) %}
+                (regex.pattern.pattern if isinstance(regex.pattern, repattern) else None) %}
                     {% if pattern %}
                         <div class="help-detail">{{ escape(pattern) }} {{ msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.t_str(desc)) if regex.desc else
+                                                                      msg=msg.locale.t_str(regex.desc)) if regex.desc else
                                                                        msg.locale.t("core.message.help.regex.no_information") }}</div>
                     {%- endif %}
                     {%- endfor %}
-
                 </div>
             {%- endif %}
         </div>
