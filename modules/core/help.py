@@ -112,8 +112,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 wiki_msg = ''
 
             if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and WebRender.status:
-                if not WebRender.local:
-                    use_local = False
+                use_local = True if WebRender.local else False
 
                 if any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)) and \
                     (not module_.required_superuser and not module_.required_base_superuser or
