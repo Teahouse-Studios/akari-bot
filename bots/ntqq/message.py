@@ -13,7 +13,7 @@ from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
 from core.utils.http import download
 
-enable_analytics = Config('enable_analytics', False)
+enable_send_url = Config('qq_enable_send_url', False)
 
 
 class FinishedSession(FinS):
@@ -40,12 +40,7 @@ class MessageSession(MessageSessionT):
 
     async def send_message(self, message_chain, quote=False, disable_secret_check=False,
                            enable_parse_message=False, enable_split_image=False, callback=None) -> FinishedSession:
-        """
-        用于向消息发送者回复消息。
-        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :return: 被发送的消息链
-        """
-        ...
+        Logger.info(str(message_chain))
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
@@ -53,20 +48,20 @@ class MessageSession(MessageSessionT):
         plains = []
         images = []
         url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 plains.append(x)
             elif isinstance(x, Image):
                 images.append(await x.get())
         sends = []
         if len(plains) != 0:
-            msg = '\n'.join([x.text for x in plains])
+            msg = '\n'.join([x.text for x in plains]).strip()
             filtered_msg = []
             lines = msg.split('\n')
             for line in lines:
                 if not url_pattern.findall(line):
                     filtered_msg.append(line)
-            msg = '\n'.join(filtered_msg)
+            msg = '\n'.join(filtered_msg).strip()
             send = await self.session.message.reply(content=msg)
             Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
         if len(images) != 0:
@@ -76,10 +71,11 @@ class MessageSession(MessageSessionT):
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
 
         msg_ids = []
-#        for x in send:
-#            msg_ids.append(x['id'])
-#            if callback:
-#                MessageTaskManager.add_callback(x['id'], callback)
+        for x in send:
+            Logger.info(str(x))
+            msg_ids.append(x['id'])
+            if callback:
+                MessageTaskManager.add_callback(x['id'], callback)
         return FinishedSession(self, msg_ids, sends)
 
     async def check_native_permission(self):
