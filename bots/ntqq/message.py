@@ -66,7 +66,7 @@ class MessageSession(MessageSessionT):
                 filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
 
-            send = await self.session.message.reply(content=msg, file_image=i)
+            send = await self.session.message.reply(content=msg)
             Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
         if len(images) != 0:
             for i in images:
