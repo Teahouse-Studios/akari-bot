@@ -5,14 +5,14 @@ import botpy
 from botpy.message import GroupMessage, Message
 
 from bots.ntqq.info import *
-from core.types import MessageSession, FetchTarget
+from bots.ntqq.message import MessageSession
 from core.bot import init_async, load_prompt
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.config import Config
 from core.logger import Logger
 from core.parser.message import parser
 from core.path import assets_path
-from core.types import MsgInfo, Session
+from core.types import MsgInfo, Session, FetchTarget
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
