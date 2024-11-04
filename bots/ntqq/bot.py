@@ -9,6 +9,7 @@ from core.types import MessageSession, FetchTarget
 from core.bot import init_async, load_prompt
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.config import Config
+from core.logger import Logger
 from core.parser.message import parser
 from core.path import assets_path
 from core.types import MsgInfo, Session
@@ -29,6 +30,7 @@ class MyClient(botpy.Client):
         await load_prompt(FetchTarget)
 
     async def on_at_message_create(self, message: Message):
+        Logger.info(message.content)
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -55,6 +57,7 @@ class MyClient(botpy.Client):
         await parser(msg)
 
     async def on_message_create(self, message: Message):
+        Logger.info(message.content)
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -81,6 +84,7 @@ class MyClient(botpy.Client):
         await parser(msg)
 
     async def on_group_at_message_create(self, message: GroupMessage):
+        Logger.info(message.content)
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -102,6 +106,7 @@ class MyClient(botpy.Client):
                     message.group_openid}',
                 sender=message.author.member_openid))
         await parser(msg)
+
 
 intents = botpy.Intents(public_guild_messages=True, guild_messages=True, public_messages=True)
 client = MyClient(intents=intents)
