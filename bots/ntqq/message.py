@@ -21,11 +21,12 @@ class FinishedSession(FinS):
         """
         用于删除这条消息。
         """
-        try:
-            for x in self.result:
-                await x._api.recall_message(channel_id=self.session.message.channel_id, message_id=x['id'], hidetip=True)
-        except Exception:
-            Logger.error(traceback.format_exc())
+        ...
+#        try:
+#            for x in self.result:
+#                await x._api.recall_message(channel_id=self.session.message.channel_id, message_id=x['id'], hidetip=True)
+#        except Exception:
+#            Logger.error(traceback.format_exc())
 
 
 class MessageSession(MessageSessionT):
@@ -34,7 +35,7 @@ class MessageSession(MessageSessionT):
         voice = False
         embed = False
         forward = False
-        delete = True
+        delete = False
         quote = False
         wait = False
 
@@ -105,11 +106,12 @@ class MessageSession(MessageSessionT):
         return msg
 
     async def delete(self):
-        try:
-            await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
-        except Exception:
-            Logger.error(traceback.format_exc())
-            return False
+        ...
+#        try:
+#            await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
+#        except Exception:
+#            Logger.error(traceback.format_exc())
+#            return False
 
     sendMessage = send_message
     asDisplay = as_display
