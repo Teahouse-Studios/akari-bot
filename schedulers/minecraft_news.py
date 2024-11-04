@@ -46,7 +46,7 @@ async def start_check_news():
     try:
         get_webrender = webrender('source', url)
         if get_webrender == url:
-            Logger.debug('Webrender is not working, skip check minecraft news.')
+            Logger.debug('WebRender is not working, skip check minecraft news.')
             return
         getpage = await get_url(get_webrender, 200, attempt=1, request_private_ip=True, logging_err_resp=False)
         if getpage:

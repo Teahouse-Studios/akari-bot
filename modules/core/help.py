@@ -157,10 +157,10 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                                                          request_private_ip=True
                                                          )
                                 except aiohttp.ClientConnectorError:
-                                    Logger.info('[Webrender] Generation Failed.')
+                                    Logger.info('[WebRender] Generation Failed.')
                                     raise
                             else:
-                                Logger.info('[Webrender] Generation Failed.')
+                                Logger.info('[WebRender] Generation Failed.')
                                 raise
                         with open(pic) as read:
                             load_img = json.loads(read.read())
@@ -380,7 +380,7 @@ async def help_generator(msg: Bot.MessageSession,
                                  request_private_ip=True
                                  )
         else:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     with open(pic) as read:
         load_img = json.loads(read.read())

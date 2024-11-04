@@ -50,5 +50,5 @@ async def self_knowledge_func(query: str):
 
 self_knowledge_tool = AkariTool.from_function(
     func=self_knowledge_func,
-    description='Get facts about yourself, Akaribot. Useful for when you need to answer questions about yourself if the user is curious. Input should be a full question in English.'
+    description='Get facts about yourself, AkariBot. Useful for when you need to answer questions about yourself if the user is curious. Input should be a full question in English.'
 )

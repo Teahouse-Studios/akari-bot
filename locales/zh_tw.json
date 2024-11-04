@@ -12,7 +12,7 @@
     "core.message.confirm": "你確定嗎？",
     "error.config.invalid": "設定參數無效或未找到，請檢查設定檔。",
     "error.config.secret.not_found": "未找到 API 金鑰，請檢查設定檔。",
-    "error.config.webrender.invalid": "未設定 Webrender，無法使用此指令。",
+    "error.config.webrender.invalid": "未設定 WebRender，無法使用此指令。",
     "error.i18n.fallback": "（如果你看到了這條奇怪的字串，說明我們又搞砸了什麼！\n請回報此問題以便快速解決。）",
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.invalid": "機器人嘗試傳送無效訊息鏈，請聯絡機器人開發人員解決問題。",
