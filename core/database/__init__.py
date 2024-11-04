@@ -26,7 +26,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 5
+    database_version = 6
     time_offset = None
 
     class TargetInfo:
@@ -365,7 +365,7 @@ class BotDBUtil:
         def add(self, command, module_name, module_type):
             session.add(AnalyticsData(targetId=self.target.target.target_id,
                                       senderId=self.target.target.sender_id,
-                                      command=command,
+                                      command='*'.join(command[::2]),
                                       moduleName=module_name, moduleType=module_type))
             session.commit()
 
