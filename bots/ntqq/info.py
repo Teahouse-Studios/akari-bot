@@ -1,8 +1,8 @@
 client_name = 'QQ'
 
-sender_tiny_name = f'{client_name}|Tiny'
-sender_name_list = [sender_tiny_name]
+sender_name = f'{client_name}|Open'
+sender_name_list = [sender_name]
 
-target_group_name = f'{client_name}|Group'
-target_guild_name = f'{client_name}|Guild'
+target_group_name = f'{client_name}|Open|Group'
+target_guild_name = f'{client_name}|Open|Guild'
 target_name_list = [target_guild_name]
