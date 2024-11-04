@@ -23,7 +23,7 @@ class FinishedSession(FinS):
         """
         try:
             for x in self.result:
-                await x.recall_message(x, channel_id=x.channel_id, message_id=x.id, hidetip=True)
+                await x._api.recall_message(channel_id=self.session.message.channel_id, message_id=x['id'], hidetip=True)
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -40,7 +40,6 @@ class MessageSession(MessageSessionT):
 
     async def send_message(self, message_chain, quote=False, disable_secret_check=False,
                            enable_parse_message=False, enable_split_image=False, callback=None) -> FinishedSession:
-        Logger.info(str(message_chain))
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
@@ -56,13 +55,18 @@ class MessageSession(MessageSessionT):
         sends = []
         if len(plains) != 0:
             msg = '\n'.join([x.text for x in plains]).strip()
+
             filtered_msg = []
             lines = msg.split('\n')
             for line in lines:
-                if not url_pattern.findall(line):
-                    filtered_msg.append(line)
+                if enable_send_url:
+                    line = url_pattern.sub(r'str(Url("\1", use_mm=True))', line)
+                elif url_pattern.findall(line):
+                    continue
+                filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
-            send = await self.session.message.reply(content=msg)
+
+            send = await self.session.message.reply(content=msg, file_image=i)
             Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
         if len(images) != 0:
             for i in images:
@@ -71,7 +75,7 @@ class MessageSession(MessageSessionT):
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
 
         msg_ids = []
-        for x in send:
+        for x in sends:
             Logger.info(str(x))
             msg_ids.append(x['id'])
             if callback:
@@ -102,7 +106,7 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         try:
-            await self.session.message._api.recall_message(self.session.message, channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
+            await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
         except Exception:
             Logger.error(traceback.format_exc())
             return False
