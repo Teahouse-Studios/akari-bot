@@ -50,9 +50,7 @@ class MyClient(botpy.Client):
                 target=f'{message.guild_id}|{message.channel_id}',
                 sender=message.author.id))
         if not message.content:
-            message.content = 'help'
-            prefix = ['']
-            require_enable_modules = False
+            message.content = '/help'
         if message.content.startswith('/'):
             prefix = ['/']
             require_enable_modules = False
@@ -100,9 +98,7 @@ class MyClient(botpy.Client):
                 target=message.group_openid,
                 sender=message.author.member_openid))
         if not message.content:
-            message.content = 'help'
-            prefix = ['']
-            require_enable_modules = False
+            message.content = '/help'
         if message.content.startswith('/'):
             prefix = ['/']
             require_enable_modules = False
