@@ -165,9 +165,9 @@ class MessageSession(MessageSessionT):
                         seq += 1
         msg_ids = []
         for x in sends:
-            msg_ids.append(x.id)
+            msg_ids.append(x['id'])
             if callback:
-                MessageTaskManager.add_callback(x.id, callback)
+                MessageTaskManager.add_callback(x['id'], callback)
 
         return FinishedSession(self, msg_ids, send)
 
@@ -219,12 +219,12 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.session.target.target_from in [target_guild_name, target_direct_name]:
+            if self.msg.target.target_from in [target_guild_name, target_direct_name]:
                 emoji_id = str(Config('qq_typing_emoji', '181', (str, int)))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
                 from bots.ntqq.bot import client
-                await client.api.put_reaction(channel_id=self.msg.session.target.target_id.split('|')[-1],
-                                              message_id=self.msg.session.target.message_id,
+                await client.api.put_reaction(channel_id=self.msg.target.target_id.split('|')[-1],
+                                              message_id=self.msg.target.message_id,
                                               emoji_type=emoji_type,
                                               emoji_id=emoji_id)
         async def __aexit__(self, exc_type, exc_val, exc_tb):
