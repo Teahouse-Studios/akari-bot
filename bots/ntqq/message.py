@@ -78,7 +78,7 @@ class MessageSession(MessageSessionT):
                 send_img = await image_1.get() if image_1 else None
                 send = await self.session.message.reply(content=msg,
                                                         file_image=send_img,
-                                                        message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                                                        message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
                 if image_1:
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
@@ -87,7 +87,7 @@ class MessageSession(MessageSessionT):
                 send_img = await image_1.get() if image_1 else None
                 send = await self.session.message.reply(content=msg,
                                                         file_image=send_img,
-                                                        message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                                                        message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
                 sends.append(send)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
                 if image_1:
@@ -129,7 +129,7 @@ class MessageSession(MessageSessionT):
                             sends.append(send)
                         seq += 1
             elif isinstance(self.session.message, C2CMessage):
-                """
+
                 if image_1:
                     send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
                                                                              file_type=1,
@@ -164,13 +164,12 @@ class MessageSession(MessageSessionT):
                         if send:
                             sends.append(send)
                         seq += 1
-                """
-                send = await self.session.message.reply(content=msg,
+                """send = await self.session.message.reply(content=msg,
                                                         message_reference=Reference(message_id=self.session.message.id,
                                                                                     ignore_get_message_error=False) if quote and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                 if send:
-                    sends.append(send)
+                    sends.append(send)"""
         msg_ids = []
         for x in sends:
             msg_ids.append(x['id'])
