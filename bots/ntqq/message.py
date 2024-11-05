@@ -129,6 +129,7 @@ class MessageSession(MessageSessionT):
                             sends.append(send)
                         seq += 1
             elif isinstance(self.session.message, C2CMessage):
+                """
                 if image_1:
                     send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
                                                                              file_type=1,
@@ -163,12 +164,19 @@ class MessageSession(MessageSessionT):
                         if send:
                             sends.append(send)
                         seq += 1
+                """
+                send = await self.session.message.reply(content=msg,
+                                                        message_reference=Reference(message_id=self.session.message.id,
+                                                                                    ignore_get_message_error=False) if quote and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                if send:
+                    sends.append(send)
         msg_ids = []
         for x in sends:
             msg_ids.append(x['id'])
             if callback:
                 MessageTaskManager.add_callback(x['id'], callback)
-
+                
         return FinishedSession(self, msg_ids, send)
 
     async def check_native_permission(self):
