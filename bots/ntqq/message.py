@@ -1,6 +1,6 @@
 import re
 import traceback
-from typing import Union
+from typing import List, Union
 
 import filetype
 
@@ -8,6 +8,7 @@ from bots.ntqq.info import *
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.config import Config
+from core.database import BotDBUtil
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
@@ -147,6 +148,17 @@ class FetchTarget(FetchTargetT):
                 sender_id = target_id
 
             return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+
+    @staticmethod
+    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
+        lst = []
+        for x in target_list:
+            fet = await FetchTarget.fetch_target(x)
+            if fet:
+                if BotDBUtil.TargetInfo(fet.target.target_id).is_muted:
+                    continue
+                lst.append(fet)
+        return lst
 
 
 Bot.MessageSession = MessageSession
