@@ -64,6 +64,7 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
         importlib.import_module(f"bots.{bot_name}.bot")
     except ModuleNotFoundError:
         Logger.error(f"[{bot_name}] ???, entry not found.")
+
         sys.exit(1)
 
 
