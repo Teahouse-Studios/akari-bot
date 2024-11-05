@@ -6,7 +6,6 @@ import filetype
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Reference
 
-from bots.ntqq.bot import client
 from bots.ntqq.info import *
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
@@ -17,6 +16,7 @@ from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
 from core.utils.http import download
 
+enable_analytics = Config('enable_analytics', False)
 enable_send_url = Config('qq_enable_send_url', False)
 
 
@@ -27,8 +27,9 @@ class FinishedSession(FinS):
         """
         if self.session.target.target_from in [target_guild_name, target_direct_name]:
             try:
+                from bots.ntqq.bot import client
                 for x in self.message_id:
-                    await client.api.recall_message(channel_id=self.session.target.split('|')[1], message_id=x, hidetip=True)
+                    await client.api.recall_message(channel_id=self.session.target.target_id.split('|')[-1], message_id=x, hidetip=True)
             except Exception:
                 Logger.error(traceback.format_exc())
 
@@ -177,6 +178,42 @@ class FetchTarget(FetchTargetT):
                     continue
                 lst.append(fet)
         return lst
+
+    @staticmethod
+    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+        if user_list:
+            for x in user_list:
+                try:
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
+                        else:
+                            msgchain = MessageChain([Plain(message)])
+                    msgchain = MessageChain(msgchain)
+                    await x.send_direct_message(msgchain)
+                    if enable_analytics:
+                        BotDBUtil.Analytics(x).add('', module_name, 'schedule')
+                except Exception:
+                    Logger.error(traceback.format_exc())
+        else:
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "QQ|Bot")
+            for x in get_target_id:
+                fetch = await FetchTarget.fetch_target(x.targetId)
+                if fetch:
+                    try:
+                        msgchain = message
+                        if isinstance(message, str):
+                            if i18n:
+                                msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
+                            else:
+                                msgchain = MessageChain([Plain(message)])
+                        msgchain = MessageChain(msgchain)
+                        await fetch.send_direct_message(msgchain)
+                        if enable_analytics:
+                            BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
+                    except Exception:
+                        Logger.error(traceback.format_exc())
 
 
 Bot.MessageSession = MessageSession
