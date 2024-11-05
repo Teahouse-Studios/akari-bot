@@ -39,7 +39,7 @@ class MessageSession(MessageSessionT):
         voice = False
         embed = False
         forward = False
-        delete = False
+        delete = True
         quote = True
         wait = False
 
