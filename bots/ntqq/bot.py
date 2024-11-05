@@ -29,30 +29,32 @@ class MyClient(botpy.Client):
         await load_prompt(FetchTarget)
 
     async def on_at_message_create(self, message: Message):
-        message.content = re.sub(r'<@(.*?)>', '', message.content)
+        message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_group_name}|{
-                    message.group_openid}',
+                    message.guild_id}',
                 sender_id=f'{sender_name}|{
-                    message.group_openid}|{
-                    message.author.member_openid}',
+                    message.guild_id}|{
+                    message.author.id}',
                 target_from=target_group_name,
-                sender_from=f'{sender_name}|{message.group_openid}',
-                sender_name=message.author.member_openid,
+                sender_from=f'{sender_name}|{message.guild_id}',
+                sender_name=message.author.id,
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
             Session(
                 message=message,
                 target=f'{target_group_name}|{
-                    message.group_openid}',
+                    message.guild_id}',
                 sender=f'{
-                    message.group_openid}|{
-                    message.author.member_openid}'))
+                    message.guild_id}|{
+                    message.author.id}'))
+        if message.content.startswith('/'):
+            await parser(msg, prefix=['/'], require_enable_modules=False)
         await parser(msg)
 
     async def on_message_create(self, message: Message):
@@ -62,27 +64,27 @@ class MyClient(botpy.Client):
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_group_name}|{
-                    message.group_openid}',
+                    message.guild_id}',
                 sender_id=f'{sender_name}|{
-                    message.group_openid}|{
-                    message.author.member_openid}',
+                    message.guild_id}|{
+                    message.author.id}',
                 target_from=target_group_name,
-                sender_from=f'{sender_name}|{message.group_openid}',
-                sender_name=message.author.member_openid,
+                sender_from=f'{sender_name}|{message.guild_id}',
+                sender_name=message.author.id,
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
             Session(
                 message=message,
                 target=f'{target_group_name}|{
-                    message.group_openid}',
+                    message.guild_id}',
                 sender=f'{
-                    message.group_openid}|{
-                    message.author.member_openid}'))
+                    message.guild_id}|{
+                    message.author.id}'))
         await parser(msg)
 
     async def on_group_at_message_create(self, message: GroupMessage):
-        message.content = re.sub(r'<@(.*?)>', '', message.content)
+        message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -106,6 +108,8 @@ class MyClient(botpy.Client):
                 sender=f'{
                     message.group_openid}|{
                     message.author.member_openid}'))
+        if message.content.startswith('/'):
+            await parser(msg, prefix=['/'], require_enable_modules=False)
         await parser(msg)
 
 

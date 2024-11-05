@@ -103,7 +103,7 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        msg = re.sub(r'<@(.*?)>', fr'{sender_tiny_name}|\1', msg)
+        msg = re.sub(r'<@(.*?)>', fr'{sender_name}|\1', msg)
         return msg
 
     async def delete(self):
@@ -165,4 +165,3 @@ class FetchTarget(FetchTargetT):
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
-Bot.client_name = client_name
