@@ -3384,6 +3384,22 @@ files = [
 ]
 
 [[package]]
+name = "qq-botpy"
+version = "1.2.1"
+description = "qq robot client with python3"
+optional = false
+python-versions = "*"
+files = [
+    {file = "qq-botpy-1.2.1.tar.gz", hash = "sha256:442172a0557a9b43d2777d1c5e072090a9d1a54d588d1c5da8d3efc014f4887f"},
+    {file = "qq_botpy-1.2.1-py3-none-any.whl", hash = "sha256:18b215690dfed88f711322136ec54b6760040b9b1608eb5db7a44e00f59e4f01"},
+]
+
+[package.dependencies]
+aiohttp = ">=3.7.4,<4"
+APScheduler = "*"
+PyYAML = "*"
+
+[[package]]
 name = "quart"
 version = "0.19.7"
 description = "A Python ASGI web microframework with the same API as Flask"
@@ -4523,4 +4539,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "c07851a6818fbf58f5fc1fcf2cf8a9c61998fc561d12351f7534e7d9df510753"
+content-hash = "a3f17a651fb287ecb5679095204495b56fd3cdccdbaabbe4e442809c71acf286"
