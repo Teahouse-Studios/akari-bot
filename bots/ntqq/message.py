@@ -12,19 +12,15 @@ from core.builtins.message.chain import MessageChain
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, \
-    FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download
 
 enable_analytics = Config('enable_analytics', False)
 enable_send_url = Config('qq_bot_enable_send_url', False)
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
-        """
-        用于删除这条消息。
-        """
         if self.session.target.target_from in [target_guild_name, target_direct_name]:
             try:
                 from bots.ntqq.bot import client
@@ -42,6 +38,7 @@ class MessageSession(MessageSessionT):
         forward = False
         delete = True
         quote = True
+        typing = False
         wait = False
 
     async def send_message(self, message_chain, quote=False, disable_secret_check=False,
@@ -71,36 +68,92 @@ class MessageSession(MessageSessionT):
                     continue
                 filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
-
+            image_1 = images[0] if images else None
+            images.pop(0)
+            seq = 1
+            sends = []
             if isinstance(self.session.message, Message):
-                image = await images[0].get() if images else None
-                send = await self.session.message.reply(content=msg, file_image=image, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                send_img = await image_1.get() if image_1 else None
+                send = await self.session.message.reply(content=msg,
+                                                        file_image=send_img,
+                                                        message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                sends.append(send)
             elif isinstance(self.session.message, DirectMessage):
-                image = await images[0].get() if images else None
-                send = await self.session.message.reply(content=msg, file_image=image, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                send_img = await image_1.get() if image_1 else None
+                send = await self.session.message.reply(content=msg,
+                                                        file_image=send_img,
+                                                        message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                sends.append(send)
             elif isinstance(self.session.message, GroupMessage):
-                #  不是很懂如何发图片orz..
-                #                media = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid, file_type=1, url=image)
-                # send = await self.session.message.reply(content=msg, media=media,
-                # message_reference=Reference(message_id=self.session.message.id) if quote
-                # and self.session.message else None)
                 msg = '\n' + msg
-                send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
-                seq = 2
-                for img in images:
-                    send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid, file_type=1, file_data=await img.get_base64())
-                    await self.session.message._api.post_group_message(group_openid=self.session.message.group_openid, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False), msg_type=7, media=send_img, msg_id=self.session.message.id, msg_seq=seq)
+                if image_1:
+                    send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
+                                                                               file_type=1,
+                                                                               file_data=await image_1.get_base64())
+                    send = await self.session.message.reply(content=msg,
+                                                            message_reference=Reference(message_id=self.session.message.id,
+                                                                                        ignore_get_message_error=False) if quote and self.session.message else None,
+                                                            msg_type=1,
+                                                            media=send_img,
+                                                            msg_seq=seq))
                     seq += 1
+                else:
+                    send = await self.session.message.reply(content=msg,
+                                                            message_reference=Reference(message_id=self.session.message.id,
+                                                                                        ignore_get_message_error=False) if quote and self.session.message else None)
+                if send:
+                    sends.append(send)
+                if images:
+                    for img in images:
+                        send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
+                                                                                   file_type=1,
+                                                                                   file_data=await img.get_base64())
+                        send = await self.session.message.reply(message_reference=Reference(message_id=self.session.message.id,
+                                                                                            ignore_get_message_error=False) if quote and self.session.message else None,
+                                                                msg_type=7,
+                                                                media=send_img,
+                                                                msg_seq=seq)
+                        if send:
+                            sends.append(send)
+                        seq += 1
             elif isinstance(self.session.message, C2CMessage):
-                #  不是很懂如何发图片orz..
-                send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
-                # for img in images:
-                # send = await
-                # self.session.message._api.post_c2c_file(openid=self.session.message.id,
-                # file_type=1, url=await img.get())
-        if callback:
-            MessageTaskManager.add_callback(send['id'], callback)
-        return FinishedSession(self, send['id'], sends)
+                if image_1:
+                    send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.openid,
+                                                                             file_type=1,
+                                                                             file_data=await image_1.get_base64())
+                    send = await self.session.message.reply(content=msg,
+                                                            message_reference=Reference(message_id=self.session.message.id,
+                                                                                        ignore_get_message_error=False) if quote and self.session.message else None,
+                                                            msg_type=1,
+                                                            media=send_img,
+                                                            msg_seq=seq))
+                    seq += 1
+                else:
+                    send = await self.session.message.reply(content=msg,
+                                                            message_reference=Reference(message_id=self.session.message.id,
+                                                                                        ignore_get_message_error=False) if quote and self.session.message else None)
+                if send:
+                    sends.append(send)
+                if images:
+                    for img in images:
+                        send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.openid,
+                                                                                 file_type=1,
+                                                                                 file_data=await img.get_base64())
+                        send = await self.session.message.reply(message_reference=Reference(message_id=self.session.message.id,
+                                                                                            ignore_get_message_error=False) if quote and self.session.message else None,
+                                                                msg_type=7,
+                                                                media=send_img,
+                                                                msg_seq=seq)
+                        if send:
+                            sends.append(send)
+                        seq += 1
+        msg_ids = []
+        for x in sends:
+            msg_ids.append(x.id)
+            if callback:
+                MessageTaskManager.add_callback(x.id, callback)
+
+        return FinishedSession(self, msg_ids, send)
 
     async def check_native_permission(self):
         if isinstance(self.session.message, Message):
@@ -112,7 +165,7 @@ class MessageSession(MessageSessionT):
         elif isinstance(self.session.message, DirectMessage):
             return True
         elif isinstance(self.session.message, GroupMessage):
-            ...  # QQ群好像无法获取成员权限信息..
+            ...  # 群组好像无法获取成员权限信息...
         elif isinstance(self.session.message, C2CMessage):
             return True
         return False
@@ -150,8 +203,14 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            pass
-
+            if self.session.target.target_from in [target_guild_name, target_direct_name]
+                emoji_id = str(Config('qq_typing_emoji', '181', (str, int)))
+                emoji_type = 1 if int(emoji_id) < 9000 else 2
+                from bots.ntqq.bot import client
+                await client.api.put_reaction(channel_id=self.session.target.target_id.split('|')[-1],
+                                              message_id=self.session.target.message_id,
+                                              emoji_type=emoji_type,
+                                              emoji_id=emoji_id)
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
 

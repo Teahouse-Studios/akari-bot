@@ -12,8 +12,7 @@ from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, \
-    FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
@@ -41,11 +40,8 @@ async def channel_msg_delete(msg_id: str):
     return res
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
-        """
-        用于删除这条消息。
-        """
         try:
             for x in self.result:
                 for y in self.result[x]:
