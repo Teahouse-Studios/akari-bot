@@ -87,12 +87,13 @@ class MessageSession(MessageSessionT):
                 msg = '\n' + msg
                 send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
                 for img in images:
-                    send = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid, file_type=1, file_data=await img.get_base64())
+                    send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid, file_type=1, file_data=await img.get_base64())
+                    post = await self.session.message._api.post_group_message(group_openid=self.session.message.group_openid, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False), content='', media=send_img)
             elif isinstance(self.session.message, C2CMessage):
                 #  不是很懂如何发图片orz..
                 send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
-                for img in images:
-                    send = await self.session.message._api.post_c2c_file(openid=self.session.message.id, file_type=1, url=await img.get())
+                # for img in images:
+                #     send = await self.session.message._api.post_c2c_file(openid=self.session.message.id, file_type=1, url=await img.get())
         if callback:
             MessageTaskManager.add_callback(send['id'], callback)
         return FinishedSession(self, send['id'], sends)
