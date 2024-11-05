@@ -11,3 +11,12 @@ if __name__ == "__main__":
     slash_list = os.listdir('bots/discord/slash')
     with open('assets/discord_slash_list.json', 'w') as f:
         f.write(json.dumps(slash_list))
+    bots_list = os.listdir('bots')
+    i_lst = []
+    for i in bots_list:
+        p = os.path.join('bots', i)
+        if os.path.isdir(p):
+            if 'bot.py' in os.listdir(p):
+                i_lst.append(p.replace('\\', '/'))
+    with open('assets/bots_list.json', 'w') as f:
+        f.write(json.dumps(i_lst))
