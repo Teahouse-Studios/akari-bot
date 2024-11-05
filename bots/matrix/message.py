@@ -39,6 +39,7 @@ class MessageSession(MessageSessionT):
         forward = False
         delete = True
         quote = True
+        typing = False
         wait = True
 
     async def send_message(
