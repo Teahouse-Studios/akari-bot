@@ -10,7 +10,7 @@ DB_LINK = Config('db_path', cfg_type=str)
 
 class DBSession:
     def __init__(self):
-        self.engine = create_engine(DB_LINK, isolation_level="READ UNCOMMITTED")
+        self.engine = create_engine(DB_LINK, isolation_level="READ UNCOMMITTED", pool_pre_ping=True)
         self.Session = sessionmaker()
         self.Session.configure(bind=self.engine)
 
