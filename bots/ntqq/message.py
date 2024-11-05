@@ -77,6 +77,9 @@ class MessageSession(MessageSessionT):
                 send = await self.session.message.reply(content=msg,
                                                         file_image=send_img,
                                                         message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
+                if image_1:
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
                 sends.append(send)
             elif isinstance(self.session.message, DirectMessage):
                 send_img = await image_1.get() if image_1 else None
@@ -84,6 +87,9 @@ class MessageSession(MessageSessionT):
                                                         file_image=send_img,
                                                         message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
                 sends.append(send)
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
+                if image_1:
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
             elif isinstance(self.session.message, GroupMessage):
                 msg = '\n' + msg
                 if image_1:
@@ -96,11 +102,14 @@ class MessageSession(MessageSessionT):
                                                             msg_type=1,
                                                             media=send_img,
                                                             msg_seq=seq))
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
                     seq += 1
                 else:
                     send = await self.session.message.reply(content=msg,
                                                             message_reference=Reference(message_id=self.session.message.id,
                                                                                         ignore_get_message_error=False) if quote and self.session.message else None)
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                 if send:
                     sends.append(send)
                 if images:
@@ -113,6 +122,7 @@ class MessageSession(MessageSessionT):
                                                                 msg_type=7,
                                                                 media=send_img,
                                                                 msg_seq=seq)
+                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
                         if send:
                             sends.append(send)
                         seq += 1
@@ -127,11 +137,14 @@ class MessageSession(MessageSessionT):
                                                             msg_type=1,
                                                             media=send_img,
                                                             msg_seq=seq))
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
                     seq += 1
                 else:
                     send = await self.session.message.reply(content=msg,
                                                             message_reference=Reference(message_id=self.session.message.id,
                                                                                         ignore_get_message_error=False) if quote and self.session.message else None)
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                 if send:
                     sends.append(send)
                 if images:
@@ -144,6 +157,7 @@ class MessageSession(MessageSessionT):
                                                                 msg_type=7,
                                                                 media=send_img,
                                                                 msg_seq=seq)
+                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
                         if send:
                             sends.append(send)
                         seq += 1
