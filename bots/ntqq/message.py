@@ -175,7 +175,7 @@ class MessageSession(MessageSessionT):
             msg_ids.append(x['id'])
             if callback:
                 MessageTaskManager.add_callback(x['id'], callback)
-                
+
         return FinishedSession(self, msg_ids, send)
 
     async def check_native_permission(self):
@@ -234,6 +234,7 @@ class MessageSession(MessageSessionT):
                                               message_id=self.msg.target.message_id,
                                               emoji_type=emoji_type,
                                               emoji_id=emoji_id)
+
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
 
