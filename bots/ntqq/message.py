@@ -130,7 +130,7 @@ class MessageSession(MessageSessionT):
                         seq += 1
             elif isinstance(self.session.message, C2CMessage):
                 if image_1:
-                    send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.openid,
+                    send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
                                                                              file_type=1,
                                                                              file_data=await image_1.get_base64())
                     send = await self.session.message.reply(content=msg,
