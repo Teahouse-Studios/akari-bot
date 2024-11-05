@@ -68,8 +68,10 @@ class MessageSession(MessageSessionT):
                     continue
                 filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
-            image_1 = images[0] if images else None
-            images.pop(0)
+            image_1 = None
+            if images:
+                image_1 = images[0]
+                images.pop(0)
             seq = 1
             sends = []
             if isinstance(self.session.message, Message):
