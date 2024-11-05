@@ -33,6 +33,8 @@ class MyClient(botpy.Client):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
+        prefix = None
+        require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_group_name}|{
@@ -53,9 +55,14 @@ class MyClient(botpy.Client):
                 sender=f'{
                     message.guild_id}|{
                     message.author.id}'))
+        if not message.content:
+            message.content = 'help'
+            prefix = ['']
+            require_enable_modules = False
         if message.content.startswith('/'):
-            await parser(msg, prefix=['/'], require_enable_modules=False)
-        await parser(msg)
+            prefix = ['/']
+            require_enable_modules = False
+        await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
     async def on_message_create(self, message: Message):
         reply_id = None
@@ -88,6 +95,8 @@ class MyClient(botpy.Client):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
+        prefix = None
+        require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_group_name}|{
@@ -108,9 +117,14 @@ class MyClient(botpy.Client):
                 sender=f'{
                     message.group_openid}|{
                     message.author.member_openid}'))
+        if not message.content:
+            message.content = 'help'
+            prefix = ['']
+            require_enable_modules = False
         if message.content.startswith('/'):
-            await parser(msg, prefix=['/'], require_enable_modules=False)
-        await parser(msg)
+            prefix = ['/']
+            require_enable_modules = False
+        await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
 intents = botpy.Intents(public_guild_messages=True, guild_messages=True, public_messages=True)
