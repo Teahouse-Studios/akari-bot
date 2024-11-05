@@ -12,15 +12,14 @@ from core.builtins.message.chain import MessageChain
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, \
-    FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download
 
 enable_analytics = Config('enable_analytics', False)
 enable_send_url = Config('qq_bot_enable_send_url', False)
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         if self.session.target.target_from in [target_guild_name, target_direct_name]:
             try:
