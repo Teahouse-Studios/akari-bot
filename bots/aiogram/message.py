@@ -11,7 +11,7 @@ from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSes
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
-    FinishedSession as FinS
+    FinishedSession as FinishedSessionT
 from core.utils.http import download
 from core.utils.image import image_split
 from core.database import BotDBUtil
@@ -19,11 +19,8 @@ from core.database import BotDBUtil
 enable_analytics = Config('enable_analytics', False)
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
-        """
-        用于删除这条消息。
-        """
         try:
             for x in self.result:
                 await x.delete()
