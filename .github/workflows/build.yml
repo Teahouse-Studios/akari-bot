@@ -50,6 +50,7 @@ jobs:
               oss2
               langconv
               aliyunsdkcore
+              emoji
 
 
       - name: Copy Assets
