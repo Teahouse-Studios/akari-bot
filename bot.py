@@ -65,6 +65,7 @@ def go(bot_name: str = None, subprocess: bool = False):
         Logger.error(f"[{bot_name}] ???, entry not found.")
         sys.exit(1)
 
+
 disabled_bots = Config('disabled_bots', [])
 processes = []
 
@@ -111,7 +112,6 @@ def run_bot():
         if not processes:
             break
         sleep(1)
-
 
 
 if __name__ == '__main__':

@@ -22,11 +22,12 @@ if 'subprocess' in args:
 if args[0].lower() == 'console.py':
     bot_name = 'Console'
 
+
 def basic_logger_format(bot_name: str):
     return f"<cyan>[{bot_name.title()}]</cyan>"\
-    "<yellow>[{name}:{function}:{line}]</yellow>"\
-    "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"\
-    "<level>[{level}]:{message}</level>"
+        "<yellow>[{name}:{function}:{line}]</yellow>"\
+        "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"\
+        "<level>[{level}]:{message}</level>"
 
 
 class LoggingLogger:
