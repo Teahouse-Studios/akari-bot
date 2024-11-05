@@ -91,11 +91,12 @@ class MessageSession(MessageSessionT):
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
             elif isinstance(self.session.message, GroupMessage):
                 seq = 2
-                msg = '\n' + msg
-                send = await self.session.message.reply(content=msg)
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
-                if send:
-                    sends.append(send)
+                if msg:
+                    msg = '\n' + msg
+                    send = await self.session.message.reply(content=msg)
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                    if send:
+                        sends.append(send)
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
@@ -112,10 +113,11 @@ class MessageSession(MessageSessionT):
                         seq += 1
             elif isinstance(self.session.message, C2CMessage):
                 seq = 2
-                send = await self.session.message.reply(content=msg)
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
-                if send:
-                    sends.append(send)
+                if msg:
+                    send = await self.session.message.reply(content=msg)
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                    if send:
+                        sends.append(send)
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
