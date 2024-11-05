@@ -96,7 +96,7 @@ class MessageSession(MessageSessionT):
                 msg = '\n' + msg
                 if image_1:
                     send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
-                                                                               file_type=1,
+                                                                               file_type=0,
                                                                                file_data=await image_1.get_base64())
                     send = await self.session.message.reply(content=msg,
                                                             message_reference=Reference(message_id=self.session.message.id,
