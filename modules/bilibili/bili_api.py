@@ -51,7 +51,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
     fans = msg.locale.int(res['data']['Card']['card']['fans'], 1)
 
     if use_embed:
-        await msg.finish(Embed(title=f'{title}{pages}',
+        await msg.send_message(Embed(title=f'{title}{pages}',
                                description=desc,
                                url=video_url,
                                author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
@@ -69,11 +69,11 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
                                        EmbedField(msg.locale.t('bilibili.message.embed.time'), time)]))
     elif not get_detail:
         output = msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
-        await msg.finish([Image(pic), Url(video_url), Plain(output)])
+        await msg.send_message([Image(pic), Url(video_url), Plain(output)])
     else:
         output = msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
                               owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
                               reply=stat_reply,
                               like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
                               desc=desc, time=time)
-        await msg.finish([Image(pic), Url(video_url), Plain(output)])
+        await msg.send_message([Image(pic), Url(video_url), Plain(output)])

@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
         if x != '' and x not in query_list and x[0] != '#':
             query_list.append(x.split("|")[0])
     if query_list:
-        await query_pages(msg, query_list, inline_mode=True)
+        await query_pages(msg, query_list[:5], inline_mode=True)
 
 
 @wiki_inline.regex(re.compile(r'\{\{(.*?)\}\}', flags=re.I), mode='A',
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession):
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
             query_list.append(x.split("|")[0])
     if query_list:
-        await query_pages(msg, query_list, template=True, inline_mode=True)
+        await query_pages(msg, query_list[:5], template=True, inline_mode=True)
 
 
 @wiki_inline.regex(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False,
@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
             if y != '' and y not in query_list and y[0] != '#':
                 query_list.append(y)
     if query_list:
-        await query_pages(msg, query_list, mediawiki=True, inline_mode=True)
+        await query_pages(msg, query_list[:5], mediawiki=True, inline_mode=True)
 
 
 @wiki_inline.regex(re.compile(

@@ -35,7 +35,7 @@ async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
 @bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)', mode='A', flags=re.I,
            desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
-    titles = list(set(msg.matched_msg))
+    titles = list(set(msg.matched_msg))[:5]
     for title in titles:
         if title != '':
             await query_bugtracker(msg, title)
