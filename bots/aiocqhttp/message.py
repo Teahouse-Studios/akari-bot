@@ -22,7 +22,7 @@ from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from core.database import BotDBUtil
@@ -30,11 +30,8 @@ from core.database import BotDBUtil
 enable_analytics = Config('enable_analytics', False)
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
-        """
-        用于删除这条消息。
-        """
         if self.session.target.target_from in [target_group_name, target_private_name]:
             try:
                 for x in self.message_id:
