@@ -63,7 +63,7 @@ class Bot:
                             await asyncio.create_task(hook.function(Bot.FetchTarget, ModuleHookContext(args)))
                         return
 
-                raise ValueError("Invalid module name")
+                raise ValueError(f"Invalid module name {module_or_hook_name}")
             else:
                 if module_or_hook_name:
                     if module_or_hook_name in ModulesManager.modules_hooks:
@@ -71,7 +71,7 @@ class Bot:
                                                                                                     ModuleHookContext(
                                                                                                         args)))
                         return
-                raise ValueError("Invalid hook name")
+                raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 
 class FetchedSession(FetchedSessionT):
