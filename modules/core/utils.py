@@ -198,15 +198,15 @@ async def _(msg: Bot.MessageSession):
 
 setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alias='toggle')
 
-
-@setup.command('typing {{core.help.setup.typing}}')
-async def _(msg: Bot.MessageSession):
-    if not msg.info.disable_typing:
-        msg.info.edit('disableTyping', True)
-        await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
-    else:
-        msg.info.edit('disableTyping', False)
-        await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
+if msg.Feature.typing:
+    @setup.command('typing {{core.help.setup.typing}}')
+    async def _(msg: Bot.MessageSession):
+        if not msg.info.disable_typing:
+            msg.info.edit('disableTyping', True)
+            await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
+        else:
+            msg.info.edit('disableTyping', False)
+            await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
 
 '''
 @setup.command('check {{core.help.setup.check}}', required_admin=True)
