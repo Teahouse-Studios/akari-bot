@@ -37,20 +37,20 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_group_name}|{
+                target_id=f'{target_guild_name}|{
                     message.guild_id}',
-                sender_id=f'{sender_name}|{
+                sender_id=f'{sender_tiny_name}|{
                     message.guild_id}|{
                     message.author.id}',
-                target_from=target_group_name,
-                sender_from=f'{sender_name}|{message.guild_id}',
+                target_from=target_guild_name,
+                sender_from=f'{sender_tiny_name}|{message.guild_id}',
                 sender_name=message.author.id,
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
             Session(
                 message=message,
-                target=f'{target_group_name}|{
+                target=f'{target_guild_name}|{
                     message.guild_id}',
                 sender=f'{
                     message.guild_id}|{
@@ -70,20 +70,20 @@ class MyClient(botpy.Client):
             reply_id = message.message_reference.message_id
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_group_name}|{
+                target_id=f'{target_guild_name}|{
                     message.guild_id}',
-                sender_id=f'{sender_name}|{
+                sender_id=f'{sender_tiny_name}|{
                     message.guild_id}|{
                     message.author.id}',
-                target_from=target_group_name,
-                sender_from=f'{sender_name}|{message.guild_id}',
+                target_from=target_guild_name,
+                sender_from=sender_tiny_name,
                 sender_name=message.author.id,
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
             Session(
                 message=message,
-                target=f'{target_group_name}|{
+                target=f'{target_guild_name}|{
                     message.guild_id}',
                 sender=f'{
                     message.guild_id}|{
@@ -105,7 +105,7 @@ class MyClient(botpy.Client):
                     message.group_openid}|{
                     message.author.member_openid}',
                 target_from=target_group_name,
-                sender_from=f'{sender_name}|{message.group_openid}',
+                sender_from=sender_name,
                 sender_name=message.author.member_openid,
                 client_name=client_name,
                 message_id=message.id,
