@@ -89,7 +89,7 @@ class MessageSession(MessageSessionT):
                 seq = 2
                 for img in images:
                     send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid, file_type=1, file_data=await img.get_base64())
-                    await self.session.message._api.post_group_message(group_openid=self.session.message.group_openid, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False), content='', media=send_img, msg_id=self.session.message.id, msg_seq=seq)
+                    await self.session.message._api.post_group_message(group_openid=self.session.message.group_openid, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False), msg_type=7, media=send_img, msg_id=self.session.message.id, msg_seq=seq)
                     seq += 1
             elif isinstance(self.session.message, C2CMessage):
                 #  不是很懂如何发图片orz..
