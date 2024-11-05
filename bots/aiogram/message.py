@@ -6,7 +6,7 @@ from aiogram.types import FSInputFile
 
 from bots.aiogram.client import bot, token
 from bots.aiogram.info import *
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
@@ -14,7 +14,7 @@ from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
 from core.utils.http import download
 from core.utils.image import image_split
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 
@@ -183,6 +183,8 @@ class FetchTarget(FetchTargetT):
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
             if fet:
+                if BotDBUtil.TargetInfo(fet.target.target_id).is_muted:
+                    continue
                 lst.append(fet)
         return lst
 
@@ -225,4 +227,3 @@ class FetchTarget(FetchTargetT):
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
-Bot.client_name = client_name

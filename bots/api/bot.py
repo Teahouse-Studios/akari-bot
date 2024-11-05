@@ -18,8 +18,8 @@ from core.bot import init_async  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
-from config import Config  # noqa: E402
-from database import BotDBUtil  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.database import BotDBUtil  # noqa: E402
 from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 from core.logger import Logger  # noqa: E402
 

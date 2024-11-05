@@ -4,7 +4,7 @@ import orjson as json
 from tenacity import retry, stop_after_attempt
 
 from core.builtins import Bot
-from database import session, auto_rollback_error
+from core.database import session, auto_rollback_error
 from modules.wikilog.orm import WikiLogTargetSetInfo
 
 

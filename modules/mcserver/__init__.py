@@ -28,9 +28,9 @@ async def main(msg: Bot.MessageSession):
     if sendmsg == ['', '']:
         await msg.finish(msg.locale.t('server.message.not_found'))
     else:
-        sendmsg = '\n'.join(sendmsg)
-        sendmsg = await check(sendmsg, msg=msg)
-        t = ''.join(x['content'] for x in sendmsg)
+        sendmsg = '\n'.join(sendmsg).split('\n')
+        sendmsg = await check(*sendmsg, msg=msg)
+        t = '\n'.join(x['content'] for x in sendmsg)
         await msg.finish(t.strip())
 
 

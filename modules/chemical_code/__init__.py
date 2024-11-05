@@ -10,20 +10,20 @@ from tenacity import retry, stop_after_attempt
 
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
+from core.path import assets_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState
 from core.utils.http import get_url, download
 from core.utils.petal import gained_petal
 from core.utils.random import Random
-from core.utils.text import isint, remove_prefix
+from core.utils.text import isint
 
 CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
 csr_link = 'https://legacy.chemspider.com'
-assets_path = os.path.abspath(f'./assets/chemical_code')
 
-special_id_path = os.path.join(assets_path, 'special_id')  # 去掉文件扩展名并存储在 special_id 列表中
+special_id_path = os.path.join(assets_path, 'chemical_code', 'special_id')  # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [os.path.splitext(filename)[0] for filename in os.listdir(
     special_id_path)]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
@@ -49,10 +49,10 @@ def parse_elements(formula: str) -> dict:
             break
         for element in element_lists:
             if formula.startswith(element):
-                formula = remove_prefix(formula, element)
+                formula = formula.removeprefix(element)
                 if count := re.match('^([0-9]+).*$', formula):
                     elements[element] = int(count.group(1))
-                    formula = remove_prefix(formula, count.group(1))
+                    formula = formula.removeprefix(count.group(1))
                 else:
                     elements[element] = 1
                 break
@@ -167,7 +167,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         im = im.convert("RGBA")
         image = PILImage.new("RGBA", im.size, 'white')
         image.alpha_composite(im, (0, 0))
-        newpath = random_cache_path() + '.png'
+        newpath = f'{random_cache_path()}.png'
         image.save(newpath)
 
     set_timeout = play_state.check('length') // 30

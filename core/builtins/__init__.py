@@ -1,10 +1,10 @@
 import asyncio
 from typing import Union, List
 
-from config import Config
+from core.config import Config
 from core.loader import ModulesManager
 from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
-from database import BotDBUtil
+from core.database import BotDBUtil
 from .message import *
 from .message.chain import *
 from .message.internal import *

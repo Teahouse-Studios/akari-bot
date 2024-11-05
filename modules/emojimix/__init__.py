@@ -1,4 +1,5 @@
 import os
+import random
 from typing import List, Optional, Tuple
 
 import emoji
@@ -7,10 +8,9 @@ import orjson as json
 from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
 from core.logger import Logger
-from core.utils.random import Random
+from core.path import assets_path
 
-assets_path = os.path.abspath('./assets/emojimix')
-data_path = os.path.join(assets_path, 'emoji_data.json')
+data_path = os.path.join(assets_path, 'emojimix', 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 
 
@@ -42,9 +42,9 @@ class EmojimixGenerator:
             for key in self.data:
                 if emoji_code in key:
                     emoji_combo_list.append(key)
-            combo = Random.choice(emoji_combo_list)
+            combo = random.choice(emoji_combo_list)
         else:
-            combo = Random.choice(list(self.data.keys()))
+            combo = random.choice(list(self.data.keys()))
         combo = tuple(i.strip() for i in combo[1:-1].split(","))
         return combo
 
@@ -138,7 +138,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         Logger.debug(str(combo))
         unsupported_emojis = mixer.check_supported(combo)
         if unsupported_emojis:
-            await msg.finish(f"{msg.locale.t('emojimix.message.unsupported')}{', '.join(unsupported_emojis)}")
+            await msg.finish(f"{msg.locale.t('emojimix.message.unsupported')}{
+                msg.locale.t('message.delimiter').join(unsupported_emojis)}")
     else:
         emoji_code1 = '-'.join(f'{ord(char):x}' for char in emoji1)
         if emoji_code1 not in mixer.known_supported_emoji:

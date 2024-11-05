@@ -1,11 +1,11 @@
-from config import Config, CFG
+from core.config import Config, CFG
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from core.utils.i18n import load_locale_file
-from database import BotDBUtil
+from core.database import BotDBUtil
 from .help import modules_list_help
 
 m = module('module',

@@ -10,15 +10,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins import Bot, Embed, EmbedField, Image as BImage
 from core.component import module
-
-assets_path = os.path.abspath('./assets/color')
+from core.path import assets_path, noto_sans_demilight_path
 
 c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}', doc=True)
 
-font_path = os.path.abspath('./assets/Noto Sans CJK DemiLight.otf')
-md_color_path = os.path.join(assets_path, 'material_colors.json')
+md_color_path = os.path.join(assets_path, 'color', 'material_colors.json')
 
-font = ImageFont.truetype(font_path, 40)
+font = ImageFont.truetype(noto_sans_demilight_path, 40)
 with open(md_color_path, 'r', encoding='utf-8') as f:
     material_colors = material_colors_names_to_hex = json.loads(f.read())
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}

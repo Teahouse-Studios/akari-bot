@@ -10,9 +10,18 @@ from time import sleep
 import psutil
 from loguru import logger
 
-from config import Config
-from database import BotDBUtil, session, DBVersion
+from core.config import Config
+from core.path import cache_path
+from core.database import BotDBUtil, session, DBVersion
 
+ascii_art = r'''
+          ._.             _  .____       ._.
+     /\   | |            (_) |  _ \      | |
+    /  \  | | ____ _ _ __ _  | |_) | ___ | |_
+   / /\ \ | |/ / _` | '__| | |  _ < / _ \| __|
+  / ____ \|   < (_| | |  | | | |_) | (_) | |_
+ /_/    \_\_|\_\__,_|_|  |_| |____/ \___/ \__|
+'''
 encode = 'UTF-8'
 
 bots_and_required_configs = {
@@ -53,6 +62,7 @@ def init_bot():
         for bu in base_superuser:
             BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
+    print(ascii_art)
 
 
 pidlst = []
@@ -61,7 +71,6 @@ disabled_bots = Config('disabled_bots', [])
 
 
 def run_bot():
-    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     os.makedirs(cache_path, exist_ok=True)
@@ -151,7 +160,7 @@ if __name__ == '__main__':
         query_dbver = session.query(DBVersion).first()
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
         logger.info(f'Updating database from {current_ver} to {target_ver}...')
-        from database.update import update_database
+        from core.database.update import update_database
 
         update_database()
         logger.info('Database updated successfully!')

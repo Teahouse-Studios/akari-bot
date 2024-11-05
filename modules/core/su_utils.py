@@ -6,19 +6,20 @@ from datetime import datetime
 
 import orjson as json
 
-from config import Config, CFG
+from core.config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.path import cache_path
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.types import Param
 from core.utils.info import Info, get_all_sender_name, get_all_target_name
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint, decrypt_string
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 
 target_list = get_all_target_name()
@@ -55,7 +56,6 @@ purge = module('purge', required_superuser=True, base=True, doc=True)
 
 @purge.command()
 async def _(msg: Bot.MessageSession):
-    cache_path = os.path.abspath(Config('cache_path', './cache/'))
     if os.path.exists(cache_path):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
@@ -304,7 +304,7 @@ if Info.subprocess:
         sys.exit(233)
 
     def write_version_cache(msg: Bot.MessageSession):
-        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
+        update = os.path.join(PrivateAssets.path, 'cache_restart_author')
         write_version = open(update, 'wb')
         write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
         write_version.close()

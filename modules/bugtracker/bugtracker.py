@@ -20,7 +20,7 @@ async def make_screenshot(page_link, use_local=True):
         return False
     elif not WebRender.local:
         use_local = False
-    Logger.info('[Webrender] Generating element screenshot...')
+    Logger.info('[WebRender] Generating element screenshot...')
     try:
         img = await download(webrender('element_screenshot', use_local=use_local),
                              status_code=200,
@@ -44,7 +44,7 @@ async def make_screenshot(page_link, use_local=True):
                 img_lst.append(bimg)
             return img_lst
         else:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     except aiohttp.ClientConnectorError:
         if use_local:
@@ -52,7 +52,7 @@ async def make_screenshot(page_link, use_local=True):
         else:
             return False
     except ValueError:
-        Logger.info('[Webrender] Generation Failed.')
+        Logger.info('[WebRender] Generation Failed.')
         return False
 
 

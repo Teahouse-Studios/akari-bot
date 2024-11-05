@@ -5,7 +5,7 @@ from PIL import Image as PILImage
 from openai import OpenAI, AsyncOpenAI
 import tiktoken
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module

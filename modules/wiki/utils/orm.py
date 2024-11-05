@@ -1,8 +1,8 @@
 from sqlalchemy import Column, String, Text, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
-from database.orm import Session
-from database.orm_base import Base
+from core.database.orm import Session
+from core.database.orm_base import Base
 
 table_prefix = 'module_wiki_'
 db = Session

@@ -16,6 +16,7 @@ assets/maimai*
 !assets/maimai/mai_utage_info.json
 !assets/maimai/mai_grade_info.json
 assets/phigros*
+assets/private*
 bots/**/assets
 version*
 .pid_last

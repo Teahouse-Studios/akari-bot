@@ -6,8 +6,9 @@ import traceback
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
+from core.path import assets_path
 from core.utils.info import Info
 
 if not Config('db_path', cfg_type=str):
@@ -24,8 +25,8 @@ from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from database import BotDBUtil, session
-from database.tables import DBVersion
+from core.database import BotDBUtil, session
+from core.database.tables import DBVersion
 
 query_dbver = session.query(DBVersion).first()
 if not query_dbver:
@@ -35,7 +36,7 @@ if not query_dbver:
 
 if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
     print(f'Updating database from {current_ver} to {target_ver}...')
-    from database.update import update_database
+    from core.database.update import update_database
 
     update_database()
     print('Database updated successfully! Please restart the program.')
@@ -43,8 +44,8 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
 
 EnableDirtyWordCheck.status = True
 Url.disable_mm = True
-PrivateAssets.set('assets/private/console')
-console_history_path = os.path.abspath(PrivateAssets.path + '/.console_history')
+PrivateAssets.set(os.path.join(assets_path, 'private', 'console'))
+console_history_path = os.path.join(PrivateAssets.path, '.console_history')
 if os.path.exists(console_history_path):
     os.remove(console_history_path)
 

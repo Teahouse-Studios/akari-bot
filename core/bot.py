@@ -4,7 +4,7 @@ import os
 
 import orjson as json
 
-from config import CFG
+from core.config import CFG
 from core.background_tasks import init_background_task
 from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
@@ -51,12 +51,12 @@ async def load_secret():
 
 
 async def load_prompt(bot) -> None:
-    author_cache = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
-    loader_cache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
+    author_cache = os.path.join(PrivateAssets.path, 'cache_restart_author')
+    loader_cache = os.path.join(PrivateAssets.path, '.cache_loader')
     if os.path.exists(author_cache):
-        open_author_cache = open(author_cache, 'r')
+        open_author_cache = open(author_cache, 'r', encoding='utf-8')
         author = json.loads(open_author_cache.read())['ID']
-        open_loader_cache = open(loader_cache, 'r')
+        open_loader_cache = open(loader_cache, 'r', encoding='utf-8')
         m = await bot.fetch_target(author)
         if m:
             if (read := open_loader_cache.read()) != '':

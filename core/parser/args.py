@@ -1,16 +1,34 @@
 import re
 import traceback
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from core.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
 
 
-class Pattern:
-    pass
+class ArgumentPattern:
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return 'ArgumentPattern("{}")'.format(self.name)
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class DescPattern:
+    def __init__(self, text: str):
+        self.text = text
+
+    def __str__(self):
+        return 'DescPattern("{}")'.format(self.text)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Template:
-    def __init__(self, args: List[Pattern], priority: int = 1):
+    def __init__(self, args: List[Union[ArgumentPattern, 'OptionalPattern', DescPattern]], priority: int = 1):
         self.args_ = args
         self.priority = priority
 
@@ -25,35 +43,13 @@ class Template:
         return self.__str__()
 
 
-class ArgumentPattern(Pattern):
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return 'ArgumentPattern("{}")'.format(self.name)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class OptionalPattern(Pattern):
+class OptionalPattern:
     def __init__(self, flag: str, args: List[Template]):
         self.flag = flag
         self.args = args
 
     def __str__(self):
         return 'OptionalPattern("{}", {})'.format(self.flag, self.args)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class DescPattern(Pattern):
-    def __init__(self, text: str):
-        self.text = text
-
-    def __str__(self):
-        return 'DescPattern("{}")'.format(self.text)
 
     def __repr__(self):
         return self.__str__()
@@ -203,7 +199,7 @@ def templates_to_str(templates: List[Template], with_desc=False, simplify=True) 
     return text
 
 
-def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
+def parse_argv(argv: List[str], templates: List['Template']) -> MatchedResult:
     matched_result = []
     for template in templates:
         try:
@@ -228,7 +224,9 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                             index_flag = argv_copy.index(a.flag)
                             len_t_args = len(a.args[0].args)
                             if len(argv_copy[index_flag:]) >= len_t_args:
+
                                 sub_argv = argv_copy[index_flag + 1: index_flag + len_t_args + 1]
+
                                 parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
                                 del argv_copy[index_flag: index_flag + len_t_args + 1]
             for a in args:

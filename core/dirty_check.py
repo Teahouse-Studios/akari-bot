@@ -13,10 +13,10 @@ from typing import Union, List, Dict
 import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, EnableDirtyWordCheck
 from core.logger import Logger
-from database.local import DirtyWordCache
+from core.database.local import DirtyWordCache
 
 
 def hash_hmac(key, code, sha1):

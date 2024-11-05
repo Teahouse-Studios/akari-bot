@@ -2,7 +2,7 @@ import re
 
 import numpy as np
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.utils.random import Random
 from core.utils.text import isint

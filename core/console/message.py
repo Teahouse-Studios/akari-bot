@@ -4,7 +4,7 @@ from typing import List, Union
 from PIL import Image as PILImage
 from inputimeout import inputimeout, TimeoutOccurred
 
-from config import Config
+from core.config import Config
 from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT

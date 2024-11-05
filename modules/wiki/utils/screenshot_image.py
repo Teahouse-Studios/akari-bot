@@ -13,6 +13,7 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
 from core.logger import Logger
+from core.path import cache_path
 from core.utils.http import download
 from core.utils.web_render import WebRender, webrender
 
@@ -34,7 +35,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             elements_.insert(0, '.mw-body-content')
         if allow_special_page and not content_mode:
             elements_.insert(0, '.diff')
-        Logger.info('[Webrender] Generating element screenshot...')
+        Logger.info('[WebRender] Generating element screenshot...')
         try:
             img = await download(webrender('element_screenshot', use_local=use_local),
                                  status_code=200,
@@ -54,10 +55,10 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             else:
                 return False
         except ValueError:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     else:
-        Logger.info('[Webrender] Generating section screenshot...')
+        Logger.info('[WebRender] Generating section screenshot...')
         try:
             section = section.replace(" ", '_')
             img = await download(webrender('section_screenshot', use_local=use_local),
@@ -78,7 +79,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             else:
                 return False
         except ValueError:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     read = open(img)
     load_img = json.loads(read.read())
@@ -109,7 +110,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
             return False
         soup = BeautifulSoup(html, 'html.parser')
         pagename = uuid.uuid4()
-        url = os.path.abspath(f'./cache/{pagename}.html')
+        url = os.path.join(cache_path, f'{pagename}.html')
         if os.path.exists(url):
             os.remove(url)
         Logger.info('Downloaded raw.')

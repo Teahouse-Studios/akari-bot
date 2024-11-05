@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher
 
-from config import Config
+from core.config import Config
 
 token = Config('telegram_token', cfg_type=str)
 

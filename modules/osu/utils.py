@@ -2,7 +2,7 @@ import traceback
 
 import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.exceptions import ConfigValueError
 from core.logger import Logger

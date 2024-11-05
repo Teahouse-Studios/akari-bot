@@ -272,7 +272,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     res = []
     if int(sid) > 100000:
-        with open(utage_info_path, 'r') as file:
+        with open(mai_utage_info_path, 'r', encoding='utf-8') as file:
             utage_data = json.loads(file.read())
 
         res.append(f"「{utage_data[sid]['comment']}」")
@@ -364,7 +364,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if int(sid) > 100000:
-        with open(utage_info_path, 'r') as file:
+        with open(mai_utage_info_path, 'r', encoding='utf-8') as file:
             utage_data = json.loads(file.read())
 
         res = msg.locale.t(
@@ -657,9 +657,13 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
         await msg.finish([Plain(compute_rating(base, score))])
 
 
-@mai.command('update', required_superuser=True)
+@mai.command('update [--no-cover]', required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    if await update_alias() and await update_cover() and await total_list.update():
+    if msg.parsed_msg.get('--no-cover', False):
+        actions = await update_alias() and await total_list.update()
+    else:
+        actions = await update_alias() and await update_cover() and await total_list.update()
+    if actions:
         await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("message.failed"))

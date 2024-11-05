@@ -1,5 +1,6 @@
 import html
 import logging
+import os
 import re
 import sys
 
@@ -9,17 +10,18 @@ from aiocqhttp import Event
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
-from config import Config
+from core.config import Config
 from core.bot import load_prompt, init_async
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
+from core.path import assets_path
 from core.tos import tos_report
 from core.types import MsgInfo, Session
 from core.utils.i18n import Locale, default_locale
 from core.utils.info import Info
-from database import BotDBUtil
+from core.database import BotDBUtil
 
-PrivateAssets.set('assets/private/aiocqhttp')
+PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
 Url.disable_mm = not Config('enable_urlmanager', False)
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
@@ -88,7 +90,9 @@ async def message_handler(event: Event):
                     event.message = [{"type": "text", "data": {"text": "help"}}]
                 prefix = ['']
 
-    target_id = f'{target_group_name}|{event.group_id}' if event.detail_type == 'group' else f'{target_private_name}|{event.user_id}'
+    target_id = f'{target_group_name}|{
+        event.group_id}' if event.detail_type == 'group' else f'{target_private_name}|{
+        event.user_id}'
 
     msg = MessageSession(MsgInfo(target_id=target_id,
                                  sender_id=f'{sender_name}|{event.user_id}',

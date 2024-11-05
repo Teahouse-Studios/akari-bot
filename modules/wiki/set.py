@@ -1,6 +1,6 @@
 import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo

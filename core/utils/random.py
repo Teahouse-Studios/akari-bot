@@ -1,8 +1,8 @@
-from typing import Any, Sequence, List, MutableSequence, Optional, TypeVar
 import random
 import secrets
+from typing import Sequence, List, MutableSequence, Optional, TypeVar
 
-from config import Config
+from core.config import Config
 
 INF = 2 ** 53
 T = TypeVar('T')
@@ -65,7 +65,7 @@ class Random:
             return secrets.token_bytes(n)
         else:
             return random.randbytes(n)
-            
+
     @classmethod
     def choice(cls, seq: Sequence[T]) -> T:
         """从序列中随机选择一个元素"""

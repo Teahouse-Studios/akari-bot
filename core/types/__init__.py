@@ -1,12 +1,13 @@
 import os
 
+from core.path import assets_path
 from .command import *
 from .message import *
 from .module import *
 
 
 class PrivateAssets:
-    path = os.path.abspath('assets/private/default')
+    path = os.path.join(assets_path, 'private', 'default')
     if not os.path.exists(path):
         os.makedirs(path)
 

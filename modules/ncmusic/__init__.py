@@ -1,4 +1,4 @@
-from config import Config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.exceptions import ConfigValueError

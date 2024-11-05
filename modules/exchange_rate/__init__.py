@@ -1,6 +1,6 @@
 import datetime
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import ConfigValueError
