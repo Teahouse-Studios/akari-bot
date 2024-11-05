@@ -217,7 +217,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.session.target.target_from in [target_guild_name, target_direct_name]
+            if self.session.target.target_from in [target_guild_name, target_direct_name]:
                 emoji_id = str(Config('qq_typing_emoji', '181', (str, int)))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
                 from bots.ntqq.bot import client
