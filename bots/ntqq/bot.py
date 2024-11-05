@@ -145,7 +145,12 @@ class MyClient(botpy.Client):
         await parser(msg)
 
 
-intents = botpy.Intents(public_guild_messages=True, guild_messages=True, public_messages=True)
+intents = botpy.Intents.none()
+intents.public_guild_messages = True
+intents.public_messages = True
+if Config('qq_private_bot', False):
+    intents.guild_messages = True
+
 client = MyClient(intents=intents)
 
 Info.client_name = client_name
