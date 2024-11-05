@@ -84,6 +84,7 @@ class MessageSession(MessageSessionT):
                 # send = await self.session.message.reply(content=msg, media=media,
                 # message_reference=Reference(message_id=self.session.message.id) if quote
                 # and self.session.message else None)
+                msg = '\n' + msg
                 send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
             elif isinstance(self.session.message, C2CMessage):
                 #  不是很懂如何发图片orz..
