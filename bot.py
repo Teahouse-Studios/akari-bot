@@ -1,18 +1,16 @@
+import importlib
+import multiprocessing
 import os
 import shutil
-import subprocess
 import sys
 import traceback
-from queue import Queue, Empty
-from threading import Thread
 from time import sleep
 
-import psutil
-from loguru import logger
-
 from core.config import Config
-from core.path import cache_path
 from core.database import BotDBUtil, session, DBVersion
+from core.logger import Logger
+from core.path import cache_path
+from core.utils.info import Info
 
 ascii_art = r'''
           ._.             _  .____       ._.
@@ -44,16 +42,6 @@ class RestartBot(Exception):
     pass
 
 
-def get_pid(name):
-    return [p.pid for p in psutil.process_iter() if p.name().find(name) != -1]
-
-
-def enqueue_output(out, queue):
-    for line in iter(out.readline, b''):
-        queue.put(line)
-    out.close()
-
-
 def init_bot():
     base_superuser = Config('base_superuser', cfg_type=(str, list))
     if base_superuser:
@@ -65,9 +53,21 @@ def init_bot():
     print(ascii_art)
 
 
-pidlst = []
+def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
+    Logger.info(f"[{bot_name}] Here we go!")
+    Info.subprocess = subprocess
+    Info.binary_mode = binary_mode
+    Logger.rename(bot_name)
+
+    try:
+        importlib.import_module(f"bots.{bot_name}.bot")
+    except ModuleNotFoundError:
+        Logger.error(f"[{bot_name}] ???, entry not found.")
+        sys.exit(1)
+
 
 disabled_bots = Config('disabled_bots', [])
+processes = []
 
 
 def run_bot():
@@ -78,7 +78,7 @@ def run_bot():
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
     lst = bots_and_required_configs.keys()
-    runlst = []
+
     for bl in lst:
         if bl in disabled_bots:
             continue
@@ -86,107 +86,63 @@ def run_bot():
             abort = False
             for c in bots_and_required_configs[bl]:
                 if not Config(c):
-                    logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
+                    Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
                     break
             if abort:
                 continue
-
-        launch_args = [sys.executable, 'launcher.py', 'subprocess', bl]
-
-        if sys.platform == 'win32' and 'launcher.exe' in os.listdir('.') and not sys.argv[0].endswith('.py'):
-            launch_args = ['launcher.exe', 'subprocess', bl]
-
-        elif 'launcher.bin' in os.listdir('.') and not sys.argv[0].endswith('.py'):
-            launch_args = ['./launcher.bin', 'subprocess', bl]
-
-        p = subprocess.Popen(launch_args, shell=False, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
-                             cwd=os.path.abspath('.'), env=envs)
-        runlst.append(p)
-        pidlst.append(p.pid)
-
-    q = Queue()
-    threads = []
-    for p in runlst:
-        threads.append(Thread(target=enqueue_output, args=(p.stdout, q)))
-
-    for t in threads:
-        t.daemon = True
-        t.start()
-
+        p = multiprocessing.Process(target=go, args=(bl, True, True if not sys.argv[0].endswith('.py') else False))
+        p.start()
+        processes.append(p)
     while True:
-        try:
-            line = q.get_nowait()
-        except Empty:
-            sleep(1)
-        else:
-            try:
-                logger.info(line.decode(encode)[:-1])
-            except UnicodeDecodeError:
-                encode_list = ['GBK']
-                for e in encode_list:
-                    try:
-                        logger.warning(f'Cannot decode string from UTF-8, decode with {e}: '
-                                       + line.decode(e)[:-1])
-                        break
-                    except Exception:
-                        if encode_list[-1] != e:
-                            logger.warning(f'Cannot decode string from {e}, '
-                                           f'attempting with {encode_list[encode_list.index(e) + 1]}.')
-                        else:
-                            logger.error(f'Cannot decode string from {e}, no more attempts.')
+        for p in processes:
+            if p.is_alive():
+                continue
+            else:
+                if p.exitcode == 233:
+                    Logger.warning(f'{p.pid} exited with code 233, restart all bots.')
+                    raise RestartBot
+                else:
+                    Logger.critical(f'Process {p.pid} exited with code {p.exitcode}, please check the log.')
+                    processes.remove(p)
+                break
 
-        for p in runlst:
-            if p.poll() == 233:
-                logger.warning(f'{p.pid} exited with code 233, restart all bots.')
-                pidlst.remove(p.pid)
-                raise RestartBot
-
-        # break when all processes are done.
-        if all(p.poll() for p in runlst):
+        if not processes:
             break
-
-        sleep(0.0001)
+        sleep(1)
 
 
 if __name__ == '__main__':
-    logger.remove()
-    logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).first()
     if not query_dbver:
         session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
-        logger.info(f'Updating database from {current_ver} to {target_ver}...')
+        Logger.info(f'Updating database from {current_ver} to {target_ver}...')
         from core.database.update import update_database
 
         update_database()
-        logger.info('Database updated successfully!')
+        Logger.info('Database updated successfully!')
     init_bot()
     try:
         while True:
             try:
                 run_bot()  # Process will block here so
-                logger.critical('All bots exited unexpectedly, please check the output')
+                Logger.critical('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:
-                for x in pidlst:
-                    try:
-                        os.kill(x, 9)
-                    except (PermissionError, ProcessLookupError):
-                        pass
-                pidlst.clear()
-                sleep(5)
+                for ps in processes:
+                    ps.terminate()
+                    ps.join()
+                processes.clear()
                 continue
             except Exception:
-                logger.critical('An error occurred, please check the output.')
+                Logger.critical('An error occurred, please check the output.')
                 traceback.print_exc()
                 break
     except (KeyboardInterrupt, SystemExit):
-        for x in pidlst:
-            try:
-                os.kill(x, 9)
-            except (PermissionError, ProcessLookupError):
-                pass
+        for ps in processes:
+            ps.terminate()
+            ps.join()
+        processes.clear()
