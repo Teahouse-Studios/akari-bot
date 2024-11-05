@@ -84,7 +84,7 @@
     "core.message.analytics.days": "最近 30 日的「${module}」指令呼叫次數統計（自 ${first_record} 開始統計）：",
     "core.message.analytics.days.total": "最近 30 日的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
     "core.message.analytics.disabled": "機器人未啟用指令統計功能。",
-    "core.message.analytics.export": "導出地址：\n${url}\n將在 ${expires} 秒後過期。",
+    "core.message.analytics.export": "導出地址：${url}\n將在 ${expires} 秒後過期。",
     "core.message.analytics.export.waiting": "正在導出資訊……可能需要一些時間。",
     "core.message.analytics.none": "機器人資料庫為空，正在初始化……",
     "core.message.analytics.year": "最近一年的「${module}」指令呼叫次數统计（自 ${first_record} 開始統計）：",
