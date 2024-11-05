@@ -3,7 +3,7 @@ import re
 import sys
 
 import botpy
-from botpy.message import GroupMessage, Message
+from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.ntqq.info import *
 from bots.ntqq.message import MessageSession
@@ -37,24 +37,18 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_guild_name}|{
-                    message.guild_id}',
-                sender_id=f'{sender_tiny_name}|{
-                    message.guild_id}|{
-                    message.author.id}',
+                target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
+                sender_id=f'{sender_name}|{message.author.id}',
                 target_from=target_guild_name,
-                sender_from=f'{sender_tiny_name}|{message.guild_id}',
+                sender_from=sender_name,
                 sender_name=message.author.id,
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
             Session(
                 message=message,
-                target=f'{target_guild_name}|{
-                    message.guild_id}',
-                sender=f'{
-                    message.guild_id}|{
-                    message.author.id}'))
+                target=f'{message.guild_id}|{message.channel_id}',
+                sender=message.author.id))
         if not message.content:
             message.content = 'help'
             prefix = ['']
@@ -70,24 +64,18 @@ class MyClient(botpy.Client):
             reply_id = message.message_reference.message_id
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_guild_name}|{
-                    message.guild_id}',
-                sender_id=f'{sender_tiny_name}|{
-                    message.guild_id}|{
-                    message.author.id}',
+                target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
+                sender_id=f'{sender_name}|{message.author.id}',
                 target_from=target_guild_name,
-                sender_from=sender_tiny_name,
+                sender_from=sender_name,
                 sender_name=message.author.id,
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
             Session(
                 message=message,
-                target=f'{target_guild_name}|{
-                    message.guild_id}',
-                sender=f'{
-                    message.guild_id}|{
-                    message.author.id}'))
+                target=f'{message.guild_id}|{message.channel_id}',
+                sender=message.author.id))
         await parser(msg)
 
     async def on_group_at_message_create(self, message: GroupMessage):
@@ -99,11 +87,8 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_group_name}|{
-                    message.group_openid}',
-                sender_id=f'{sender_name}|{
-                    message.group_openid}|{
-                    message.author.member_openid}',
+                target_id=f'{target_group_name}|{message.group_openid}',
+                sender_id=f'{sender_name}|{message.author.member_openid}',
                 target_from=target_group_name,
                 sender_from=sender_name,
                 sender_name=message.author.member_openid,
@@ -112,11 +97,8 @@ class MyClient(botpy.Client):
                 reply_id=reply_id),
             Session(
                 message=message,
-                target=f'{target_group_name}|{
-                    message.group_openid}',
-                sender=f'{
-                    message.group_openid}|{
-                    message.author.member_openid}'))
+                target=message.group_openid,
+                sender=message.author.member_openid))
         if not message.content:
             message.content = 'help'
             prefix = ['']
@@ -125,6 +107,46 @@ class MyClient(botpy.Client):
             prefix = ['/']
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
+
+    async def on_direct_message_create(self, message: DirectMessage):
+        reply_id = None
+        if message.message_reference:
+            reply_id = message.message_reference.message_id
+        msg = MessageSession(
+            MsgInfo(
+                target_id=f'{target_direct_name}|{message.guild_id}|{message.channel_id}',
+                sender_id=f'{sender_name}|{message.author.id}',
+                target_from=target_direct_name,
+                sender_from=sender_name,
+                sender_name=message.author.id,
+                client_name=client_name,
+                message_id=message.id,
+                reply_id=reply_id),
+            Session(
+                message=message,
+                target=f'{message.guild_id}|{message.channel_id}',
+                sender=message.author.id))
+        await parser(msg)
+
+    async def on_c2c_message_create(self, message: C2CMessage):
+        reply_id = None
+        if message.message_reference:
+            reply_id = message.message_reference.message_id
+        msg = MessageSession(
+            MsgInfo(
+                target_id=f'{target_C2C_name}|{message.author.user_openid}',
+                sender_id=f'{sender_name}|{message.author.user_openid}',
+                target_from=target_C2C_name,
+                sender_from=sender_name,
+                sender_name=message.author.user_openid,
+                client_name=client_name,
+                message_id=message.id,
+                reply_id=reply_id),
+            Session(
+                message=message,
+                target=message.author.user_openid,
+                sender=message.author.user_openid))
+        await parser(msg)
 
 
 intents = botpy.Intents(public_guild_messages=True, guild_messages=True, public_messages=True)

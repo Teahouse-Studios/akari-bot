@@ -3,7 +3,10 @@ import traceback
 from typing import List, Union
 
 import filetype
+from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
+from botpy.types.message import Reference
 
+from bots.ntqq.bot import client
 from bots.ntqq.info import *
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
@@ -22,12 +25,12 @@ class FinishedSession(FinS):
         """
         用于删除这条消息。
         """
-        ...
-#        try:
-#            for x in self.result:
-#                await x._api.recall_message(channel_id=self.session.message.channel_id, message_id=x['id'], hidetip=True)
-#        except Exception:
-#            Logger.error(traceback.format_exc())
+        if self.session.target.target_from in [target_guild_name, target_direct_name]:
+            try:
+                for x in self.message_id:
+                    await client.api.recall_message(channel_id=self.session.target.split('|')[1], message_id=x, hidetip=True)
+            except Exception:
+                Logger.error(traceback.format_exc())
 
 
 class MessageSession(MessageSessionT):
@@ -37,7 +40,7 @@ class MessageSession(MessageSessionT):
         embed = False
         forward = False
         delete = False
-        quote = False
+        quote = True
         wait = False
 
     async def send_message(self, message_chain, quote=False, disable_secret_check=False,
@@ -53,9 +56,9 @@ class MessageSession(MessageSessionT):
             if isinstance(x, Plain):
                 plains.append(x)
             elif isinstance(x, Image):
-                images.append(await x.get())
+                images.append(x)
         sends = []
-        if len(plains) != 0:
+        if len(plains + images) != 0:
             msg = '\n'.join([x.text for x in plains]).strip()
 
             filtered_msg = []
@@ -68,28 +71,40 @@ class MessageSession(MessageSessionT):
                 filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
 
-            send = await self.session.message.reply(content=msg)
-            Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
-        if len(images) != 0:
-            for i in images:
-                send = await self.session.message.reply(file_image=i)
-                sends.append(send)
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
+            if isinstance(self.session.message, Message):
+                image = await images[0].get() if images else None
+                send = await self.session.message.reply(content=msg, file_image=image, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+            elif isinstance(self.session.message, DirectMessage):
+                image = await images[0].get() if images else None
+                send = await self.session.message.reply(content=msg, file_image=image, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+            elif isinstance(self.session.message, GroupMessage):
+                #  不是很懂如何发图片orz..
+                #                media = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid, file_type=1, url=image)
+                # send = await self.session.message.reply(content=msg, media=media,
+                # message_reference=Reference(message_id=self.session.message.id) if quote
+                # and self.session.message else None)
+                send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
+            elif isinstance(self.session.message, C2CMessage):
+                #  不是很懂如何发图片orz..
+                send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id) if quote and self.session.message else None)
 
-        msg_ids = []
-        for x in sends:
-            Logger.info(str(x))
-            msg_ids.append(x['id'])
-            if callback:
-                MessageTaskManager.add_callback(x['id'], callback)
-        return FinishedSession(self, msg_ids, sends)
+        if callback:
+            MessageTaskManager.add_callback(send['id'], callback)
+        return FinishedSession(self, send['id'], sends)
 
     async def check_native_permission(self):
-        info = self.session.message.member
-        admins = ["2", "4"]
-        for x in admins:
-            if x in info.roles:
-                return True
+        if isinstance(self.session.message, Message):
+            info = self.session.message.member
+            admins = ["2", "4"]
+            for x in admins:
+                if x in info.roles:
+                    return True
+        elif isinstance(self.session.message, DirectMessage):
+            return True
+        elif isinstance(self.session.message, GroupMessage):
+            ...  # QQ群好像无法获取成员权限信息..
+        elif isinstance(self.session.message, C2CMessage):
+            return True
         return False
 
     async def to_message_chain(self):
@@ -107,12 +122,13 @@ class MessageSession(MessageSessionT):
         return msg
 
     async def delete(self):
-        ...
-#        try:
-#            await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
-#        except Exception:
-#            Logger.error(traceback.format_exc())
-#            return False
+        if self.session.target.target_from in [target_guild_name, target_direct_name]:
+            try:
+                await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
+                return True
+            except Exception:
+                Logger.error(traceback.format_exc())
+                return False
 
     sendMessage = send_message
     asDisplay = as_display
