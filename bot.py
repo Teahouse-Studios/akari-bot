@@ -53,10 +53,10 @@ def init_bot():
     print(ascii_art)
 
 
-def go(bot_name: str = None, subprocess: bool = False):
+def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
     Logger.info(f"[{bot_name}] Here we go!")
-    if subprocess:
-        Info.subprocess = True
+    Info.subprocess = subprocess
+    Info.binary_mode = binary_mode
     Logger.rename(bot_name)
 
     try:
@@ -91,9 +91,7 @@ def run_bot():
                     break
             if abort:
                 continue
-        if not sys.argv[0].endswith('.py'):
-            Info.binary_mode = True
-        p = multiprocessing.Process(target=go, args=(bl, True))
+        p = multiprocessing.Process(target=go, args=(bl, True, True if Info.binary_mode else False))
         p.start()
         processes.append(p)
     while True:
