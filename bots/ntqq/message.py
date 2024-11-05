@@ -93,7 +93,9 @@ class MessageSession(MessageSessionT):
                 #  不是很懂如何发图片orz..
                 send = await self.session.message.reply(content=msg, message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
                 # for img in images:
-                #     send = await self.session.message._api.post_c2c_file(openid=self.session.message.id, file_type=1, url=await img.get())
+                # send = await
+                # self.session.message._api.post_c2c_file(openid=self.session.message.id,
+                # file_type=1, url=await img.get())
         if callback:
             MessageTaskManager.add_callback(send['id'], callback)
         return FinishedSession(self, send['id'], sends)
