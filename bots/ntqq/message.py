@@ -101,7 +101,7 @@ class MessageSession(MessageSessionT):
                                                                                         ignore_get_message_error=False) if quote and self.session.message else None,
                                                             msg_type=1,
                                                             media=send_img,
-                                                            msg_seq=seq))
+                                                            msg_seq=seq)
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
                     seq += 1
@@ -136,7 +136,7 @@ class MessageSession(MessageSessionT):
                                                                                         ignore_get_message_error=False) if quote and self.session.message else None,
                                                             msg_type=1,
                                                             media=send_img,
-                                                            msg_seq=seq))
+                                                            msg_seq=seq)
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
                     seq += 1
