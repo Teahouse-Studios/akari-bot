@@ -34,7 +34,8 @@ bots_and_required_configs = {
         'matrix_user',
         'matrix_device_id',
         'matrix_token'],
-    'api': []
+    'api': [],
+    'ntqq': ['qq_appid', 'qq_secret'],
 }
 
 
