@@ -91,7 +91,7 @@ def run_bot():
                     break
             if abort:
                 continue
-        p = multiprocessing.Process(target=go, args=(bl, True, True if Info.binary_mode else False))
+        p = multiprocessing.Process(target=go, args=(bl, True, True if not sys.argv[0].endswith('.py') else False))
         p.start()
         processes.append(p)
     while True:
