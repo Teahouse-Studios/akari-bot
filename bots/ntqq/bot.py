@@ -19,8 +19,8 @@ from core.utils.info import Info
 PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
 EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
 Url.disable_mm = False
-qq_appid = Config("qq_appid", cfg_type=str)
-qq_secret = Config("qq_secret", cfg_type=str)
+qq_appid = Config("qq_bot_appid", cfg_type=str)
+qq_secret = Config("qq_bot_secret", cfg_type=str)
 
 
 class MyClient(botpy.Client):
