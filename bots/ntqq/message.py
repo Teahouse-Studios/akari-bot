@@ -151,7 +151,7 @@ class MessageSession(MessageSessionT):
                     sends.append(send)
                 if images:
                     for img in images:
-                        send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.openid,
+                        send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
                                                                                  file_type=1,
                                                                                  file_data=await img.get_base64())
                         send = await self.session.message.reply(message_reference=Reference(message_id=self.session.message.id,
