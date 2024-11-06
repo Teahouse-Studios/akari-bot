@@ -147,7 +147,7 @@ async def _(msg: Bot.MessageSession):
             plt.gca().invert_yaxis()
 
             for i, v in enumerate(module_counts):
-                plt.text(v, i, str(v), va='center')
+                plt.text(v, i, str(v), color='black', va='center')
 
             path = f'{random_cache_path()}.png'
             plt.savefig(path, bbox_inches='tight')
