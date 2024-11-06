@@ -1,4 +1,5 @@
 import base64
+import traceback
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from typing import Tuple
@@ -12,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 from core.config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
+from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.database import session, BotDBUtil
 from core.database.tables import AnalyticsData, is_mysql
@@ -44,6 +46,7 @@ async def _(msg: Bot.MessageSession):
                                           counts=get_counts,
                                           counts_today=get_counts_today))
         except AttributeError:
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("core.message.analytics.none"))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
@@ -84,6 +87,7 @@ async def _(msg: Bot.MessageSession):
             plt.close()
             await msg.finish([Plain(result), Image(path)])
         except AttributeError:
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("core.message.analytics.none"))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
@@ -125,6 +129,7 @@ async def _(msg: Bot.MessageSession):
             plt.close()
             await msg.finish([Plain(result), Image(path)])
         except AttributeError:
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("core.message.analytics.none"))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
@@ -155,6 +160,7 @@ async def _(msg: Bot.MessageSession):
 
             await msg.finish([Image(path)])
         except AttributeError:
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("core.message.analytics.none"))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
