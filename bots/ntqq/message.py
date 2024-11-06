@@ -258,7 +258,7 @@ class FetchedSession(Bot.FetchedSession):
             self.session.message = C2CMessage(
                 api=client.api, event_id=None, data={
                     "author": {
-                        "id": self.target.target_id}})
+                        "user_openid": self.target.target_id.split('|')[-1]}})
 
         return await self.parent.send_direct_message(message_chain, disable_secret_check=disable_secret_check)
 
