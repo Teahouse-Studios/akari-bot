@@ -4,6 +4,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Union, List
 
 import orjson as json
+from sqlalchemy import func
 from tenacity import retry, stop_after_attempt
 
 from core.types.message import MessageSession, FetchTarget, FetchedSession
@@ -390,6 +391,15 @@ class BotDBUtil:
             if module_name:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).count()
+
+        @staticmethod
+        def get_modules_count():
+            results = session.query(
+                AnalyticsData.moduleName, func.count(
+                    AnalyticsData.id)).group_by(
+                AnalyticsData.moduleName).all()
+            modules_count = {module_name: count for module_name, count in results}
+            return modules_count
 
     class UnfriendlyActions:
         def __init__(self, target_id, sender_id):

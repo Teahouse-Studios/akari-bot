@@ -130,6 +130,36 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
+@ana.command('modules')
+async def _(msg: Bot.MessageSession):
+    if Config('enable_analytics', False):
+        try:
+            module_counts = BotDBUtil.Analytics.get_modules_count()
+            top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:30]
+
+            module_names = [item[0] for item in top_modules]
+            module_counts = [item[1] for item in top_modules]
+
+            plt.figure(figsize=(10, 6))
+            plt.barh(module_names, module_counts, color='skyblue')
+            plt.xlabel('Counts')
+            plt.ylabel('Modules')
+            plt.gca().invert_yaxis()
+
+            for i, v in enumerate(module_counts):
+                plt.text(v, i, str(v), va='center')
+
+            path = f'{random_cache_path()}.png'
+            plt.savefig(path, bbox_inches='tight')
+            plt.close()
+
+            await msg.finish([Image(path)])
+        except AttributeError:
+            await msg.finish(msg.locale.t("core.message.analytics.none"))
+    else:
+        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+
+
 @ana.command('export')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics', False):

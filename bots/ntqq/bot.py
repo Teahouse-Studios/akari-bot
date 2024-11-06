@@ -51,7 +51,7 @@ class MyClient(botpy.Client):
                 sender=message.author.id))
         if not message.content:
             message.content = '/help'
-        if message.content.startswith('/'):
+        if message.content.strip().startswith('/'):
             prefix = ['/']
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
@@ -60,6 +60,8 @@ class MyClient(botpy.Client):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
+        prefix = None
+        require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
@@ -74,7 +76,10 @@ class MyClient(botpy.Client):
                 message=message,
                 target=f'{message.guild_id}|{message.channel_id}',
                 sender=message.author.id))
-        await parser(msg)
+        if message.content.strip().startswith('/'):
+            prefix = ['/']
+            require_enable_modules = False
+        await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
     async def on_group_at_message_create(self, message: GroupMessage):
         message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
@@ -99,7 +104,7 @@ class MyClient(botpy.Client):
                 sender=message.author.member_openid))
         if not message.content:
             message.content = '/help'
-        if message.content.startswith('/'):
+        if message.content.strip().startswith('/'):
             prefix = ['/']
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
@@ -108,6 +113,8 @@ class MyClient(botpy.Client):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
+        prefix = None
+        require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_direct_name}|{message.guild_id}|{message.channel_id}',
@@ -122,12 +129,17 @@ class MyClient(botpy.Client):
                 message=message,
                 target=f'{message.guild_id}|{message.channel_id}',
                 sender=message.author.id))
-        await parser(msg)
+        if message.content.strip().startswith('/'):
+            prefix = ['/']
+            require_enable_modules = False
+        await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
     async def on_c2c_message_create(self, message: C2CMessage):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
+        prefix = None
+        require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_C2C_name}|{message.author.user_openid}',
@@ -142,7 +154,10 @@ class MyClient(botpy.Client):
                 message=message,
                 target=message.author.user_openid,
                 sender=message.author.user_openid))
-        await parser(msg)
+        if message.content.strip().startswith('/'):
+            prefix = ['/']
+            require_enable_modules = False
+        await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
 intents = botpy.Intents.none()
