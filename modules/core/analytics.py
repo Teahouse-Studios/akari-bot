@@ -45,9 +45,11 @@ async def _(msg: Bot.MessageSession):
                                           first_record=first_record,
                                           counts=get_counts,
                                           counts_today=get_counts_today))
-        except AttributeError:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -86,9 +88,11 @@ async def _(msg: Bot.MessageSession):
             plt.savefig(path)
             plt.close()
             await msg.finish([Plain(result), Image(path)])
-        except AttributeError:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -128,19 +132,22 @@ async def _(msg: Bot.MessageSession):
             plt.savefig(path)
             plt.close()
             await msg.finish([Plain(result), Image(path)])
-        except AttributeError:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
-@ana.command('modules')
-async def _(msg: Bot.MessageSession):
+@ana.command('modules [<rank>]')
+async def _(msg: Bot.MessageSession, rank: int = None):
+    rank = rank if rank and rank > 0 else 30
     if Config('enable_analytics', False):
         try:
             module_counts = BotDBUtil.Analytics.get_modules_count()
-            top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:30]
+            top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:rank]
 
             module_names = [item[0] for item in top_modules]
             module_counts = [item[1] for item in top_modules]
@@ -159,9 +166,11 @@ async def _(msg: Bot.MessageSession):
             plt.close()
 
             await msg.finish([Image(path)])
-        except AttributeError:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
