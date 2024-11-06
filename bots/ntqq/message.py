@@ -63,7 +63,7 @@ class MessageSession(MessageSessionT):
             lines = msg.split('\n')
             for line in lines:
                 if enable_send_url:
-                    line = url_pattern.sub(lambda match: f'str(Url({match.group(0)}, use_mm=True))', line)
+                    line = url_pattern.sub(lambda match: str(Url(match.group(0), use_mm=True)), line)
                 elif url_pattern.findall(line):
                     continue
                 filtered_msg.append(line)
