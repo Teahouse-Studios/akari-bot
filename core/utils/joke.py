@@ -5,7 +5,7 @@ from datetime import datetime
 from core.config import Config
 
 
-shuffle_list = ['shuffle']
+url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
 
 
 def joke(text: str):
@@ -21,7 +21,7 @@ def joke(text: str):
 def shuffle_joke(text: str) -> str:
     shuffle_rate = Config('shuffle_rate', 0.1, (float, int))
 
-    urls = re.finditer(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    urls = url_pattern.finditer(text)
     url_positions = [(url.start(), url.end()) for url in urls]
 
     parts = []
