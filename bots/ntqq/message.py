@@ -47,9 +47,10 @@ class MessageSession(MessageSessionT):
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
 
-        plains = []
-        images = []
-        url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\)\\/,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        plains: List[Plain] = []
+        images: List[Image] = []
+        url_pattern = re.compile(
+            r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\)\\/,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 plains.append(x)
@@ -69,6 +70,7 @@ class MessageSession(MessageSessionT):
                 filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
             image_1 = None
+            send_img = None
             sends = []
             if isinstance(self.session.message, Message):
                 if images:
@@ -114,12 +116,21 @@ class MessageSession(MessageSessionT):
                             sends.append(send)
             elif isinstance(self.session.message, GroupMessage):
                 seq = self.session.message.msg_seq if self.session.message.msg_seq else 1
-                if msg:
-                    msg = '\n' + msg
-                    send = await self.session.message.reply(content=msg, msg_seq=seq)
-                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
-                    if send:
-                        sends.append(send)
+                if images:
+                    image_1 = images[0]
+                    images.pop(0)
+                    send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
+                                                                               file_type=1,
+                                                                               file_data=await image_1.get_base64())
+                send = await self.session.message.reply(content=msg,
+                                                        msg_type=7 if send_img else 0,
+                                                        media=send_img,
+                                                        msg_seq=seq)
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                if image_1:
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
+                if send:
+                    sends.append(send)
                     seq += 1
                 if images:
                     for img in images:
@@ -130,15 +141,25 @@ class MessageSession(MessageSessionT):
                         Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
                         if send:
                             sends.append(send)
-                        seq += 1
+                            seq += 1
                 self.session.message.msg_seq = seq
             elif isinstance(self.session.message, C2CMessage):
                 seq = self.session.message.msg_seq if self.session.message.msg_seq else 1
-                if msg:
-                    send = await self.session.message.reply(content=msg, msg_seq=seq)
-                    Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
-                    if send:
-                        sends.append(send)
+                if images:
+                    image_1 = images[0]
+                    images.pop(0)
+                    send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
+                                                                             file_type=1,
+                                                                             file_data=await image_1.get_base64())
+                send = await self.session.message.reply(content=msg,
+                                                        msg_type=7 if send_img else 0,
+                                                        media=send_img,
+                                                        msg_seq=seq)
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
+                if image_1:
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
+                if send:
+                    sends.append(send)
                     seq += 1
                 if images:
                     for img in images:
@@ -149,7 +170,7 @@ class MessageSession(MessageSessionT):
                         Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
                         if send:
                             sends.append(send)
-                        seq += 1
+                            seq += 1
                 self.session.message.msg_seq = seq
         msg_ids = []
         for x in sends:
@@ -218,6 +239,31 @@ class MessageSession(MessageSessionT):
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
+
+
+class FetchedSession(Bot.FetchedSession):
+
+    async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
+        from bots.ntqq.bot import client
+        if self.target.target_from == target_guild_name:
+            self.session.message = Message(api=client.api, event_id=None, data={
+                                           "channel_id": self.target.target_id.split('|')[-1]})
+        elif self.target.target_from == target_direct_name:
+            self.session.message = DirectMessage(api=client.api, event_id=None, data={
+                                                 "channel_id": self.target.target_id.split('|')[-1]})
+        elif self.target.target_from == target_group_name:
+            self.session.message = GroupMessage(api=client.api, event_id=None, data={
+                                                "group_openid": self.target.target_id.split('|')[-1]})
+        elif self.target.target_from == target_C2C_name:
+            self.session.message = C2CMessage(
+                api=client.api, event_id=None, data={
+                    "author": {
+                        "id": self.target.target_id}})
+
+        return await self.parent.send_direct_message(message_chain, disable_secret_check=disable_secret_check)
+
+
+Bot.FetchedSession = FetchedSession
 
 
 class FetchTarget(FetchTargetT):

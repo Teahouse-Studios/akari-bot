@@ -184,7 +184,8 @@ class FetchedSession(Bot.FetchedSession):
             return False
 
         message_chain = MessageChain(message_chain)
-
+        if not message_chain.is_safe and not disable_secret_check:
+            await self.send_direct_message(I18NContext("error.message.chain.unsafe"))
         for x in message_chain.as_sendable(self.parent, embed=False):
             if isinstance(x, Plain):
                 await get_channel.send(x.text)
