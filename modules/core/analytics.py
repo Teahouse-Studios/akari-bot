@@ -151,8 +151,7 @@ async def _(msg: Bot.MessageSession, rank: int = None):
 
             module_names = [item[0] for item in top_modules]
             module_counts = [item[1] for item in top_modules]
-
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, max(6, len(module_names) * 0.5)))
             plt.barh(module_names, module_counts, color='skyblue')
             plt.xlabel('Counts')
             plt.ylabel('Modules')
