@@ -157,7 +157,7 @@ class MessageSession(MessageSessionT):
             if callback:
                 MessageTaskManager.add_callback(x['id'], callback)
 
-        return FinishedSession(self, msg_ids, send)
+        return FinishedSession(self, msg_ids, sends)
 
     async def check_native_permission(self):
         if isinstance(self.session.message, Message):
@@ -226,7 +226,7 @@ class FetchTarget(FetchTargetT):
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
         target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
-        match_target = re.match(fr"({target_pattern})\|(.*)", target_id)
+        match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)

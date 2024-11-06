@@ -33,7 +33,7 @@ m = module('module',
            exclude_from=['QQ|Guild'])
 @m.command(['enable [-g] <module> ... {{core.help.module.enable}}',
             'enable all [-g] {{core.help.module.enable_all}}',
-            'disable [-g]  <module> ... {{core.help.module.disable}}',
+            'disable [-g] <module> ... {{core.help.module.disable}}',
             'disable all [-g] {{core.help.module.disable_all}}',
             'list [--legacy] {{core.help.module.list}}'],
            options_desc={'-g': '{core.help.option.module.g}', '--legacy': '{help.option.legacy}'},
