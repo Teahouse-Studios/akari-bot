@@ -7,7 +7,7 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Reference
 
 from bots.ntqq.info import *
-from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
+from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, Url, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.config import Config
 from core.database import BotDBUtil
