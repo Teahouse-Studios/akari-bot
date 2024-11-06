@@ -49,7 +49,7 @@ class MessageSession(MessageSessionT):
 
         plains = []
         images = []
-        url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+/]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 plains.append(x)
@@ -63,7 +63,7 @@ class MessageSession(MessageSessionT):
             lines = msg.split('\n')
             for line in lines:
                 if enable_send_url:
-                    line = url_pattern.sub(r'{str(Url("\\1", use_mm=True))}', line)
+                    line = url_pattern.sub(r"{str(Url(\1, use_mm=True))}", line)
                     line = f'f"{line}"'
                 elif url_pattern.findall(line):
                     continue
