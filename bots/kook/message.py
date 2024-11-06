@@ -257,6 +257,8 @@ class FetchTarget(FetchTargetT):
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
+                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
+                        continue
                     try:
                         msgchain = message
                         if isinstance(message, str):

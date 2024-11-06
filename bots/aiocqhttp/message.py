@@ -83,9 +83,9 @@ class MessageSession(MessageSessionT):
         embed = False
         forward = True
         delete = True
-        wait = True
         quote = True
         typing = True
+        wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
                            enable_parse_message=True, enable_split_image=True,
@@ -502,6 +502,8 @@ class FetchTarget(FetchTargetT):
                     if fetch.target.target_from == target_guild_name:
                         if fetch.session.target not in guild_list:
                             continue
+                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
+                        continue
 
                     if fetch.target.target_from in [target_private_name, target_guild_name]:
                         in_whitelist.append(post_(fetch))

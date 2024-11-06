@@ -68,70 +68,89 @@ class MessageSession(MessageSessionT):
                     continue
                 filtered_msg.append(line)
             msg = '\n'.join(filtered_msg).strip()
+            image_1 = None
             sends = []
             if isinstance(self.session.message, Message):
-                image_1 = images[0] if images else None
+                if images:
+                    image_1 = images[0]
+                    images.pop(0)
                 send_img = await image_1.get() if image_1 else None
+                msg_quote = Reference(
+                    message_id=self.session.message.id,
+                    ignore_get_message_error=False) if quote and self.session.message and not send_img else None
                 send = await self.session.message.reply(content=msg,
                                                         file_image=send_img,
-                                                        message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
+                                                        message_reference=msg_quote)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
                 if image_1:
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
+                if images:
+                    for img in images:
+                        send_img = await img.get()
+                        send = await self.session.message.reply(file_image=send_img)
+                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
+                        if send:
+                            sends.append(send)
                 sends.append(send)
             elif isinstance(self.session.message, DirectMessage):
-                image_1 = images[0] if images else None
+                if images:
+                    image_1 = images[0]
+                    images.pop(0)
                 send_img = await image_1.get() if image_1 else None
-                send = await self.session.message.reply(content=msg,
-                                                        file_image=send_img,
-                                                        message_reference=Reference(message_id=self.session.message.id, ignore_get_message_error=False) if quote and self.session.message else None)
+                msg_quote = Reference(
+                    message_id=self.session.message.id,
+                    ignore_get_message_error=False) if quote and self.session.message and not send_img else None
+                send = await self.session.message.reply(content=msg, file_image=send_img, message_reference=msg_quote)
                 sends.append(send)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
                 if image_1:
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}')
+                if images:
+                    for img in images:
+                        send_img = await img.get()
+                        send = await self.session.message.reply(file_image=send_img)
+                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
+                        if send:
+                            sends.append(send)
             elif isinstance(self.session.message, GroupMessage):
-                seq = 2
+                seq = self.session.message.msg_seq if self.session.message.msg_seq else 1
                 if msg:
                     msg = '\n' + msg
-                    send = await self.session.message.reply(content=msg)
+                    send = await self.session.message.reply(content=msg, msg_seq=seq)
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                     if send:
                         sends.append(send)
+                    seq += 1
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
                                                                                    file_type=1,
                                                                                    file_data=await img.get_base64())
-                        send = await self.session.message.reply(message_reference=Reference(message_id=self.session.message.id,
-                                                                                            ignore_get_message_error=False) if quote and self.session.message else None,
-                                                                msg_type=7,
-                                                                media=send_img,
-                                                                msg_seq=seq)
+                        send = await self.session.message.reply(msg_type=7, media=send_img, msg_seq=seq)
                         Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
                         if send:
                             sends.append(send)
                         seq += 1
+                self.session.message.msg_seq = seq
             elif isinstance(self.session.message, C2CMessage):
-                seq = 2
+                seq = self.session.message.msg_seq if self.session.message.msg_seq else 1
                 if msg:
-                    send = await self.session.message.reply(content=msg)
+                    send = await self.session.message.reply(content=msg, msg_seq=seq)
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg.strip()}')
                     if send:
                         sends.append(send)
+                    seq += 1
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_c2c_file(openid=self.session.message.author.user_openid,
                                                                                  file_type=1,
                                                                                  file_data=await img.get_base64())
-                        send = await self.session.message.reply(message_reference=Reference(message_id=self.session.message.id,
-                                                                                            ignore_get_message_error=False) if quote and self.session.message else None,
-                                                                msg_type=7,
-                                                                media=send_img,
-                                                                msg_seq=seq)
+                        send = await self.session.message.reply(msg_type=7, media=send_img, msg_seq=seq)
                         Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}')
                         if send:
                             sends.append(send)
                         seq += 1
+                self.session.message.msg_seq = seq
         msg_ids = []
         for x in sends:
             msg_ids.append(x['id'])
@@ -255,6 +274,8 @@ class FetchTarget(FetchTargetT):
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
+                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
+                        continue
                     try:
                         msgchain = message
                         if isinstance(message, str):

@@ -17,9 +17,6 @@ from core.types import Session, MsgInfo, FinishedSession as FinS
 
 class FinishedSession(FinS):
     async def delete(self):
-        """
-        用于删除这条消息。
-        """
         print("(Tried to delete message, but I'm a console so I cannot do it :< )")
 
 
@@ -29,8 +26,11 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = False
+        embed = False
         forward = False
-        delete = True
+        delete = False
+        quote = False
+        typing = True
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,

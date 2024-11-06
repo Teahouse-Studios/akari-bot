@@ -3,7 +3,7 @@ import datetime
 from core.builtins import Bot, Embed, EmbedField, Image
 from core.component import module
 
-t = module('embed_test', required_superuser=True)
+t = module('embed_test', required_superuser=True, hidden=True)
 
 
 @t.handle()
