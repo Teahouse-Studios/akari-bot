@@ -66,10 +66,14 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser)
 
-            if not module_.required_superuser and not module_.required_base_superuser or \
-                    is_superuser and module_.required_superuser or \
-                    is_base_superuser and module_.required_base_superuser:
-
+            doc = ''
+            devs_msg = ''
+            if (module_.required_superuser and not is_superuser) or \
+               (module_.required_base_superuser and not is_base_superuser):
+                pass
+            elif module_.rss and not msg.Feature.rss:
+                pass
+            else:
                 if regex_list:
                     mdocs.append(msg.locale.t("core.help.regex"))
                     for regex in regex_list:
@@ -95,9 +99,6 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     devs_msg = '\n' + msg.locale.t("core.help.author") + devs
                 else:
                     devs_msg = ''
-            else:
-                doc = ''
-                devs_msg = ''
 
             if module_.doc:
                 if Config('help_page_url', cfg_type=str):
@@ -114,10 +115,12 @@ async def bot_help(msg: Bot.MessageSession, module: str):
             if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and WebRender.status:
                 use_local = True if WebRender.local else False
 
-                if any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)) and \
-                    (not module_.required_superuser and not module_.required_base_superuser or
-                     is_superuser and module_.required_superuser or
-                     is_base_superuser and module_.required_base_superuser):
+                if (module_.required_superuser and not is_superuser) or \
+                   (module_.required_base_superuser and not is_base_superuser):
+                    pass
+                elif module_.rss and not msg.Feature.rss:
+                    pass
+                elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
                         html_content = env.get_template('help_doc_detail.html').render(msg=msg,
                                                                                        module=module_,
@@ -173,11 +176,11 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                         await msg.finish(img_lst + [Plain(wiki_msg)])
                     except Exception:
                         Logger.error(traceback.format_exc())
+
+                if wiki_msg:
+                    await msg.finish(wiki_msg)
                 else:
-                    if wiki_msg:
-                        await msg.finish(wiki_msg)
-                    else:
-                        await msg.finish(msg.locale.t("core.help.info.none"))
+                    await msg.finish(msg.locale.t("core.help.info.none"))
 
             doc_msg = (doc + devs_msg + wiki_msg).lstrip()
             if doc_msg:
@@ -320,6 +323,8 @@ async def help_generator(msg: Bot.MessageSession,
 
     for key, value in module_list.items():
         if value.hidden:
+            continue
+        if value.rss and not msg.Feature.rss:
             continue
         elif not is_superuser and value.required_superuser or \
                 not is_base_superuser and value.required_base_superuser:

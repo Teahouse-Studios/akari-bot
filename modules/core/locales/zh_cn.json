@@ -121,6 +121,7 @@
     "core.message.module.disable.not_found": "失败：“${module}”模块不存在。",
     "core.message.module.disable.qqchannel_global.success": "成功：为所有文字频道关闭“${module}”模块。",
     "core.message.module.disable.success": "成功：关闭模块“${module}”。",
+    "core.message.module.enable.unsupported_rss": "失败：此客户端不支持订阅 RSS 模块。",
     "core.message.module.enable.already": "失败：“${module}”模块已开启。",
     "core.message.module.enable.not_found": "失败：“${module}”模块不存在。",
     "core.message.module.enable.qqchannel_global.success": "成功：为所有文字频道开启“${module}”模块。",

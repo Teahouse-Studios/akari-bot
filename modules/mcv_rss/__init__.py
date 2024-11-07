@@ -4,8 +4,10 @@ from core.component import module
 mcv_rss = module('mcv_rss',
                  developers=['OasisAkari', 'Dianliang233'],
                  recommend_modules=['mcv_jira_rss'],
-                 desc='{mcv_rss.help.mcv_rss.desc}', doc=True,
-                 alias='mcvrss')
+                 desc='{mcv_rss.help.mcv_rss.desc}',
+                 alias='mcvrss',
+                 doc=True,
+                 rss=True)
 
 
 @mcv_rss.hook()
@@ -15,8 +17,10 @@ async def mcv_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 mcbv_rss = module('mcbv_rss', developers=['OasisAkari'],
                   recommend_modules=['mcbv_jira_rss'],
-                  desc='{mcv_rss.help.mcbv_rss.desc}', doc=True,
-                  alias='mcbvrss')
+                  desc='{mcv_rss.help.mcbv_rss.desc}',
+                  alias='mcbvrss',
+                  doc=True,
+                  rss=True)
 
 
 @mcbv_rss.hook()
@@ -27,8 +31,10 @@ async def mcbv_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 mcv_jira_rss = module('mcv_jira_rss',
                       developers=['OasisAkari', 'Dianliang233'],
                       recommend_modules=['mcv_rss'],
-                      desc='{mcv_rss.help.mcv_jira_rss.desc}', doc=True,
-                      alias='mcvjirarss')
+                      desc='{mcv_rss.help.mcv_jira_rss.desc}',
+                      alias='mcvjirarss',
+                      doc=True,
+                      rss=True)
 
 
 @mcv_jira_rss.hook()
@@ -39,8 +45,10 @@ async def mcv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 mcbv_jira_rss = module('mcbv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        recommend_modules=['mcbv_rss'],
-                       desc='{mcv_rss.help.mcbv_jira_rss.desc}', doc=True,
-                       alias='mcbvjirarss')
+                       desc='{mcv_rss.help.mcbv_jira_rss.desc}',
+                       alias='mcbvjirarss',
+                       doc=True,
+                       rss=True)
 
 
 @mcbv_jira_rss.hook()
@@ -50,9 +58,11 @@ async def mcbv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 mcdv_jira_rss = module('mcdv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
-                       desc='{mcv_rss.help.mcdv_jira_rss.desc}', doc=True,
+                       desc='{mcv_rss.help.mcdv_jira_rss.desc}',
                        alias='mcdvjirarss',
-                       hidden=True)
+                       doc=True,
+                       hidden=True,
+                       rss=True)
 
 
 @mcdv_jira_rss.hook()
@@ -62,9 +72,11 @@ async def mcdv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 mclgv_jira_rss = module('mclgv_jira_rss',
                         developers=['OasisAkari', 'Dianliang233'],
-                        desc='{mcv_rss.help.mclgv_jira_rss.desc}', doc=True,
+                        desc='{mcv_rss.help.mclgv_jira_rss.desc}',
                         alias='mclgvjirarss',
-                        hidden=True)
+                        doc=True,
+                        hidden=True,
+                        rss=True)
 
 
 @mclgv_jira_rss.hook()
