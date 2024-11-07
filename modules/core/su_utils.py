@@ -522,7 +522,7 @@ async def _(msg: Bot.MessageSession, k: str):
     else:
         await msg.finish(msg.locale.t("message.failed"))
 
-    petal = module('petal', alias='petals', base=True, doc=True, load=Config('enable_petal', False))
+petal = module('petal', alias='petals', base=True, doc=True, load=Config('enable_petal', False))
 
 
 @petal.command('{{core.help.petal}}')
