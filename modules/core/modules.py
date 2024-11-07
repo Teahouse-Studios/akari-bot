@@ -72,6 +72,8 @@ async def config_modules(msg: Bot.MessageSession):
                     continue
                 if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
                     continue
+                if modules_[function].rss and not msg.Feature.rss:
+                    continue
                 enable_list.append(function)
         else:
             for module_ in wait_config_list:
