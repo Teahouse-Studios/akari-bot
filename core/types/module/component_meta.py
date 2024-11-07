@@ -24,7 +24,6 @@ class CommandMeta:
                  required_base_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
                  exclude_from: Union[str, list, tuple] = '',
-                 load: bool = True,
                  priority: int = 1
                  ):
         self.function = function
@@ -47,7 +46,6 @@ class CommandMeta:
             exclude_from = list(exclude_from)
         self.available_for = available_for
         self.exclude_from = exclude_from
-        self.load = load
         self.priority = priority
 
 
@@ -63,7 +61,6 @@ class RegexMeta:
                  available_for: Union[str, list, tuple] = '*',
                  exclude_from: Union[str, list, tuple] = '',
                  flags: re.RegexFlag = 0,
-                 load: bool = True,
                  show_typing: bool = True,
                  logging: bool = True
                  ):
@@ -85,7 +82,6 @@ class RegexMeta:
             exclude_from = list(exclude_from)
         self.available_for = available_for
         self.exclude_from = exclude_from
-        self.load = load
         self.show_typing = show_typing
         self.logging = logging
 

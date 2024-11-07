@@ -19,8 +19,6 @@ class CommandMatches:
                 continue
             if not show_required_superuser and meta.required_superuser:
                 continue
-            if not meta.load:
-                continue
             if target_from in meta.exclude_from:
                 continue
             if target_from in meta.available_for or '*' in meta.available_for:
@@ -43,8 +41,6 @@ class RegexMatches:
             if not show_required_base_superuser and meta.required_base_superuser:
                 continue
             if not show_required_superuser and meta.required_superuser:
-                continue
-            if not meta.load:
                 continue
             if target_from in meta.exclude_from:
                 continue

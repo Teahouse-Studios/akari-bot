@@ -27,7 +27,6 @@ class Bind:
                     required_base_superuser: bool = False,
                     available_for: Union[str, list, tuple] = '*',
                     exclude_from: Union[str, list, tuple] = '',
-                    load: bool = True,
                     priority: int = 1):
             def decorator(function):
                 nonlocal help_doc
@@ -49,7 +48,6 @@ class Bind:
                         required_base_superuser=required_base_superuser,
                         available_for=available_for,
                         exclude_from=exclude_from,
-                        load=load,
                         priority=priority))
                 return function
 
@@ -62,9 +60,7 @@ class Bind:
                   required_base_superuser: bool = False,
                   available_for: Union[str, list, tuple] = '*',
                   exclude_from: Union[str, list, tuple] = '',
-                  load: bool = True,
-                  show_typing: bool = True,
-                  logging: bool = True):
+                  show_typing: bool = True, logging: bool = True):
             def decorator(function):
                 ModulesManager.bind_to_module(
                     self.bind_prefix,
@@ -79,7 +75,6 @@ class Bind:
                         required_base_superuser=required_base_superuser,
                         available_for=available_for,
                         exclude_from=exclude_from,
-                        load=load,
                         show_typing=show_typing,
                         logging=logging))
                 return function
@@ -115,7 +110,6 @@ class Bind:
                    required_base_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
                    exclude_from: Union[str, list, tuple] = '',
-                   load: bool = True,
                    priority: int = 1):
             ...
 
@@ -127,9 +121,7 @@ class Bind:
                    required_base_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
                    exclude_from: Union[str, list, tuple] = '',
-                   load: bool = True,
-                   show_typing: bool = True,
-                   logging: bool = True):
+                   show_typing: bool = True, logging: bool = True):
             ...
 
         @overload
@@ -155,8 +147,6 @@ def module(
     base: bool = False,
     doc: bool = False,
     hidden: bool = False,
-    load: bool = True,
-    rss: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
     available_for: Union[str, list, tuple] = '*',
@@ -175,8 +165,6 @@ def module(
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param doc: 此命令是否存在线上说明文件。
     :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
-    :param init: 将此命令设置是否加载。
-    :param rss: 将此命令设为RSS命令。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
     :param available_for: 此命令支持的平台列表。
@@ -192,8 +180,6 @@ def module(
                     base=base,
                     doc=doc,
                     hidden=hidden,
-                    load=load,
-                    rss=rss,
                     required_admin=required_admin,
                     required_superuser=required_superuser,
                     required_base_superuser=required_base_superuser,

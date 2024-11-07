@@ -339,8 +339,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                 msg.locale.t("parser.admin.submodule.permission.denied"))
                                             return
 
-                                    if submodule.load or \
-                                        msg.target.target_from in submodule.exclude_from or \
+                                    if msg.target.target_from in submodule.exclude_from or \
                                         ('*' not in submodule.available_for and
                                          msg.target.target_from not in submodule.available_for):
                                         raise InvalidCommandFormatError
@@ -525,8 +524,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         if not await msg.check_permission():
                             continue
 
-                    if regex_module.load or \
-                        msg.target.target_from in regex_module.exclude_from or \
+                    if msg.target.target_from in regex_module.exclude_from or \
                         ('*' not in regex_module.available_for and
                          msg.target.target_from not in regex_module.available_for):
                         continue
@@ -549,7 +547,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     matched = True
                                     matched_hash = hash(msg.matched_msg)
 
-                            if matched and not (regex_module.load or msg.target.target_from in regex_module.exclude_from or
+                            if matched and not (msg.target.target_from in regex_module.exclude_from or
                                                 ('*' not in regex_module.available_for and
                                                  msg.target.target_from not in regex_module.available_for)):  # 如果匹配成功
 

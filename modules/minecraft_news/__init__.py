@@ -3,10 +3,7 @@ from core.component import module
 
 minecraft_news = module('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
                         recommend_modules=['feedback_news'],
-                        desc='{minecraft_news.help.minecraft_news}',
-                        alias=['minecraftnews', 'mcnews'],
-                        doc=True,
-                        rss=True)
+                        desc='{minecraft_news.help.minecraft_news}', doc=True, alias=['minecraftnews', 'mcnews'])
 
 
 @minecraft_news.hook()
@@ -15,10 +12,8 @@ async def start_check_news(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 
 feedback_news = module('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
-                       desc='{minecraft_news.help.feedback_news}',
-                       alias='feedbacknews',
-                       doc=True,
-                       rss=True)
+                       desc='{minecraft_news.help.feedback_news}', doc=True,
+                       alias='feedbacknews')
 
 
 @feedback_news.hook()
