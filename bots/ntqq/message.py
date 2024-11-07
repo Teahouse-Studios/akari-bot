@@ -82,7 +82,7 @@ class MessageSession(MessageSessionT):
                     message_id=self.session.message.id,
                     ignore_get_message_error=False) if quote and not send_img else None
                 if not msg_quote and quote:
-                    msg = f'<qqbot-at-user id="{self.session.message.author.id}" />\n' + msg
+                    msg = f'<@{self.session.message.author.id}> \n' + msg
                 send = await self.session.message.reply(content=msg,
                                                         file_image=send_img,
                                                         message_reference=msg_quote)
