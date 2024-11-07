@@ -117,7 +117,7 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_direct_name}|{message.guild_id}|{message.channel_id}',
+                target_id=f'{target_direct_name}|{message.guild_id}',
                 sender_id=f'{sender_name}|{message.author.id}',
                 target_from=target_direct_name,
                 sender_from=sender_name,
@@ -127,7 +127,7 @@ class MyClient(botpy.Client):
                 reply_id=reply_id),
             Session(
                 message=message,
-                target=f'{message.guild_id}|{message.channel_id}',
+                target=message.guild_id,
                 sender=message.author.id))
         if message.content.strip().startswith('/'):
             prefix = ['/']
@@ -163,6 +163,7 @@ class MyClient(botpy.Client):
 intents = botpy.Intents.none()
 intents.public_guild_messages = True
 intents.public_messages = True
+intents.direct_message = True
 if Config('qq_private_bot', False):
     intents.guild_messages = True
 
