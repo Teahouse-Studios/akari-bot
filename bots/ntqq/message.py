@@ -38,6 +38,7 @@ class MessageSession(MessageSessionT):
         forward = False
         delete = True
         quote = True
+        rss = False
         typing = False
         wait = False
 

@@ -33,7 +33,7 @@ rcshows = [
     'redirect',
     'unpatrolled']
 
-wikilog = module('wikilog', developers=['OasisAkari'], required_admin=True, doc=True)
+wikilog = module('wikilog', developers=['OasisAkari'], required_admin=True, doc=True, rss=True)
 
 
 @wikilog.handle('add wiki <apilink> {{wikilog.help.add.wiki}}',
