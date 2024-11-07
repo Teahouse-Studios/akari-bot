@@ -27,7 +27,7 @@ class Bind:
                     required_base_superuser: bool = False,
                     available_for: Union[str, list, tuple] = '*',
                     exclude_from: Union[str, list, tuple] = '',
-                    init: bool = True,
+                    load: bool = True,
                     priority: int = 1):
             def decorator(function):
                 nonlocal help_doc
@@ -49,7 +49,7 @@ class Bind:
                         required_base_superuser=required_base_superuser,
                         available_for=available_for,
                         exclude_from=exclude_from,
-                        init=init,
+                        load=load,
                         priority=priority))
                 return function
 
@@ -62,7 +62,7 @@ class Bind:
                   required_base_superuser: bool = False,
                   available_for: Union[str, list, tuple] = '*',
                   exclude_from: Union[str, list, tuple] = '',
-                  init: bool = True,
+                  load: bool = True,
                   show_typing: bool = True,
                   logging: bool = True):
             def decorator(function):
@@ -79,7 +79,7 @@ class Bind:
                         required_base_superuser=required_base_superuser,
                         available_for=available_for,
                         exclude_from=exclude_from,
-                        init=init,
+                        load=load,
                         show_typing=show_typing,
                         logging=logging))
                 return function
@@ -115,7 +115,7 @@ class Bind:
                    required_base_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
                    exclude_from: Union[str, list, tuple] = '',
-                   init: bool = True,
+                   load: bool = True,
                    priority: int = 1):
             ...
 
@@ -127,7 +127,7 @@ class Bind:
                    required_base_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
                    exclude_from: Union[str, list, tuple] = '',
-                   init: bool = True,
+                   load: bool = True,
                    show_typing: bool = True,
                    logging: bool = True):
             ...
@@ -155,7 +155,7 @@ def module(
     base: bool = False,
     doc: bool = False,
     hidden: bool = False,
-    init: bool = True,
+    load: bool = True,
     rss: bool = False,
     required_superuser: bool = False,
     required_base_superuser: bool = False,
@@ -192,7 +192,7 @@ def module(
                     base=base,
                     doc=doc,
                     hidden=hidden,
-                    init=init,
+                    load=load,
                     rss=rss,
                     required_admin=required_admin,
                     required_superuser=required_superuser,

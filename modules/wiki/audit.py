@@ -16,7 +16,7 @@ aud = module('wiki_audit',
              required_superuser=True,
              alias='wau', doc=True,
              available_for=audit_available_list,
-             init=Config('enable_urlmanager', False))
+             load=Config('enable_urlmanager', False))
 
 
 @aud.command(['trust <apilink>',

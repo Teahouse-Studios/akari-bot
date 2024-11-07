@@ -243,7 +243,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if sender_info.edit('isInAllowList', False):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
-    @ae.command('block <target>', init=(Bot.client_name == 'QQ'))
+    @ae.command('block <target>', load=(Bot.client_name == 'QQ'))
     async def _(msg: Bot.MessageSession, target: str):
         if not target.startswith('QQ|Group|'):
             await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -252,7 +252,7 @@ async def _(msg: Bot.MessageSession, user: str):
         if BotDBUtil.GroupBlockList.add(target):
             await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
-    @ae.command('unblock <target>', init=(Bot.client_name == 'QQ'))
+    @ae.command('unblock <target>', load=(Bot.client_name == 'QQ'))
     async def _(msg: Bot.MessageSession, target: str):
         if not target.startswith('QQ|Group|'):
             await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -294,7 +294,7 @@ async def update_bot(msg: Bot.MessageSession):
     else:
         await msg.finish(msg.locale.t("core.message.update.binary_mode"))
 
-rst = module('restart', required_superuser=True, base=True, doc=True, init=Info.subprocess)
+rst = module('restart', required_superuser=True, base=True, doc=True, load=Info.subprocess)
 
 
 def restart():
@@ -342,7 +342,7 @@ async def restart_bot(msg: Bot.MessageSession):
     else:
         await msg.finish()
 
-upds = module('update&restart', required_superuser=True, alias='u&r', base=True, doc=True, init=Info.subprocess)
+upds = module('update&restart', required_superuser=True, alias='u&r', base=True, doc=True, load=Info.subprocess)
 
 
 @upds.command()
@@ -379,7 +379,7 @@ async def _(msg: Bot.MessageSession):
         sys.exit()
 
 
-resume = module('resume', required_base_superuser=True, base=True, doc=True, init=(Bot.FetchTarget.name == 'QQ'))
+resume = module('resume', required_base_superuser=True, base=True, doc=True, load=(Bot.FetchTarget.name == 'QQ'))
 
 
 @resume.command()
@@ -425,7 +425,7 @@ async def _(msg: Bot.MessageSession):
     Temp.data['waiting_for_send_group_message'] = []
     await msg.finish(msg.locale.t("core.message.resume.clear"))
 
-forward_msg = module('forward_msg', required_superuser=True, base=True, doc=True, init=(Bot.FetchTarget.name == 'QQ'))
+forward_msg = module('forward_msg', required_superuser=True, base=True, doc=True, load=(Bot.FetchTarget.name == 'QQ'))
 
 
 @forward_msg.command()
@@ -474,7 +474,7 @@ async def _(msg: Bot.MessageSession):
     raise TestException(e)
 
 
-_eval = module('eval', required_superuser=True, base=True, doc=True, init=Config('enable_eval', False))
+_eval = module('eval', required_superuser=True, base=True, doc=True, load=Config('enable_eval', False))
 
 
 @_eval.command('<display_msg>')
@@ -522,7 +522,7 @@ async def _(msg: Bot.MessageSession, k: str):
     else:
         await msg.finish(msg.locale.t("message.failed"))
 
-    petal = module('petal', alias='petals', base=True, doc=True, init=Config('enable_petal', False))
+    petal = module('petal', alias='petals', base=True, doc=True, load=Config('enable_petal', False))
 
 
 @petal.command('{{core.help.petal}}')

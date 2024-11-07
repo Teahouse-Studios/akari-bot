@@ -33,7 +33,7 @@ ana = module(
     required_superuser=True,
     base=True,
     doc=True,
-    init=Config(
+    load=Config(
         'enable_analytics',
         False))
 
