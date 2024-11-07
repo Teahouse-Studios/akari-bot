@@ -80,7 +80,9 @@ class MessageSession(MessageSessionT):
                 send_img = await image_1.get() if image_1 else None
                 msg_quote = Reference(
                     message_id=self.session.message.id,
-                    ignore_get_message_error=False) if quote and self.session.message and not send_img else None
+                    ignore_get_message_error=False) if quote and not send_img else None
+                if not msg_quote and quote:
+                    msg = f'<qqbot-at-user id="{self.session.message.author.id}" />\n' + msg
                 send = await self.session.message.reply(content=msg,
                                                         file_image=send_img,
                                                         message_reference=msg_quote)
@@ -102,7 +104,7 @@ class MessageSession(MessageSessionT):
                 send_img = await image_1.get() if image_1 else None
                 msg_quote = Reference(
                     message_id=self.session.message.id,
-                    ignore_get_message_error=False) if quote and self.session.message and not send_img else None
+                    ignore_get_message_error=False) if quote and not send_img else None
                 send = await self.session.message.reply(content=msg, file_image=send_img, message_reference=msg_quote)
                 sends.append(send)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
@@ -123,6 +125,8 @@ class MessageSession(MessageSessionT):
                     send_img = await self.session.message._api.post_group_file(group_openid=self.session.message.group_openid,
                                                                                file_type=1,
                                                                                file_data=await image_1.get_base64())
+                if msg and self.session.message.id:
+                    msg = '\n' + msg
                 send = await self.session.message.reply(content=msg,
                                                         msg_type=7 if send_img else 0,
                                                         media=send_img,

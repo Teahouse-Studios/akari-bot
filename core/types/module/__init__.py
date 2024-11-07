@@ -27,6 +27,7 @@ class Module:
                  base: bool = False,
                  doc: bool = False,
                  hidden: bool = False,
+                 load: bool = True,
                  rss: bool = False,
                  required_superuser: bool = False,
                  required_base_superuser: bool = False,
@@ -46,6 +47,7 @@ class Module:
         self.base: bool = base
         self.doc: bool = doc
         self.hidden: bool = hidden
+        self.load: bool = load
         self.rss: bool = rss
         self.required_superuser: bool = required_superuser
         self.required_base_superuser: bool = required_base_superuser

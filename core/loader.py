@@ -184,6 +184,8 @@ class ModulesManager:
             returns = {}
             for m in modules:
                 if isinstance(modules[m], Module):
+                    if not modules[m].load:
+                        continue
                     if target_from in modules[m].exclude_from:
                         continue
                     available = modules[m].available_for
