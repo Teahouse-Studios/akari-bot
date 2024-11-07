@@ -9,7 +9,6 @@ mcr = module(
         'QQ|Private',
         'QQ|Group',
         'QQ|Guild'],
-    rss=True,
     required_superuser=True)
 
 
