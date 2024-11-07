@@ -125,6 +125,7 @@
     "core.message.module.enable.not_found": "失敗：「${module}」模組不存在。",
     "core.message.module.enable.qqchannel_global.success": "成功：為所有文字頻道啟用「${module}」模組。",
     "core.message.module.enable.success": "成功：啟用模組「${module}」。",
+    "core.message.module.enable.unsupported_rss": "失敗：此用戶端不支援訂閱 RSS 模組。",
     "core.message.module.list.header": "模組列表",
     "core.message.module.load.failed": "載入模組失敗。",
     "core.message.module.load.not_found": "失敗：此模組已載入或不存在。",

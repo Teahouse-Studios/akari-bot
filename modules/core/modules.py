@@ -82,6 +82,8 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(msg.locale.t("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.enable.already", module=module_))
+                    elif modules_[module_].rss and not msg.Feature.rss:
+                        msglist.append(msg.locale.t("core.message.module.enable.unsupported_rss"))
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules

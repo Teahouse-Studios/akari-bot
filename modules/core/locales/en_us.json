@@ -125,6 +125,7 @@
     "core.message.module.enable.not_found": "Failed: Module \"${module}\" does not exist.",
     "core.message.module.enable.qqchannel_global.success": "Success: Enabled module \"${module}\" for all text channels.",
     "core.message.module.enable.success": "Success: Enabled module \"${module}\".",
+    "core.message.module.enable.unsupported_rss": "Failed: This client does not support the RSS subscription modules.",
     "core.message.module.list.header": "Module List",
     "core.message.module.load.failed": "Failed to load module.",
     "core.message.module.load.not_found": "Failed: This module has been loaded or does not exist.",
