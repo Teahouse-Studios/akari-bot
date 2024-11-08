@@ -38,7 +38,7 @@ class MyClient(botpy.Client):
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
-                sender_id=f'{sender_name}|{message.author.id}',
+                sender_id=f'{sender_tiny_name}|{message.author.id}',
                 target_from=target_guild_name,
                 sender_from=sender_name,
                 sender_name=message.author.id[:6],
@@ -65,7 +65,7 @@ class MyClient(botpy.Client):
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
-                sender_id=f'{sender_name}|{message.author.id}',
+                sender_id=f'{sender_tiny_name}|{message.author.id}',
                 target_from=target_guild_name,
                 sender_from=sender_name,
                 sender_name=message.author.id[:6],
@@ -118,7 +118,7 @@ class MyClient(botpy.Client):
         msg = MessageSession(
             MsgInfo(
                 target_id=f'{target_direct_name}|{message.guild_id}',
-                sender_id=f'{sender_name}|{message.author.id}',
+                sender_id=f'{sender_tiny_name}|{message.author.id}',
                 target_from=target_direct_name,
                 sender_from=sender_name,
                 sender_name=message.author.id[:6],
