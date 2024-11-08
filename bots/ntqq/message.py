@@ -211,14 +211,14 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        if self.session.target.target_from in [target_guild_prefix, target_direct_prefix]:
+        if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
             msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|Tiny|\1', msg)
         else:
             msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|\1', msg)
         return msg
 
     async def delete(self):
-        if self.session.target.target_from in [target_guild_prefix, target_direct_prefix]:
+        if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
             try:
                 await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
                 return True
