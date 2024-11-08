@@ -12,13 +12,13 @@ from PIL import Image as PILImage
 from tenacity import retry, stop_after_attempt
 
 from core.config import Config
+from core.joke import joke
 from core.types.message import MessageSession
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
-from core.utils.joke import joke
 
 
 class Plain(PlainT):

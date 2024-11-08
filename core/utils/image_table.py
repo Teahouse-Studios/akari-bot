@@ -10,9 +10,9 @@ from PIL import Image as PILImage
 from tabulate import tabulate
 
 from core.logger import Logger
+from core.joke import joke
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.joke import joke
 from core.utils.web_render import WebRender, webrender
 
 

@@ -18,6 +18,9 @@ from core.utils.http import download
 enable_analytics = Config('enable_analytics', False)
 enable_send_url = Config('qq_bot_enable_send_url', False)
 
+url_pattern = re.compile(
+    r'\b(?:http[s]?://)?(?:[a-zA-Z0-9-@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b')
+
 
 class FinishedSession(FinishedSessionT):
     async def delete(self):
@@ -51,8 +54,7 @@ class MessageSession(MessageSessionT):
 
         plains: List[Plain] = []
         images: List[Image] = []
-        url_pattern = re.compile(
-            r'http[s]?://(?:[a-zA-Z]|[0-9]|[$\-_@.&+]|[!*\\(\\)\\/,]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 plains.append(x)

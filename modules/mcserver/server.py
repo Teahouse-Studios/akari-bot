@@ -38,8 +38,7 @@ async def query_java_server(msg: Bot.MessageSession, address: str, raw: bool = F
         if hasattr(status, 'version') and hasattr(status.version, 'name'):
             servers.append(msg.locale.t('server.message.version') + status.version.name)
 
-        if msg.target.client_name != 'QQ|Bot':
-            servers.append(f"{serip}:{port}")
+        servers.append(f"{serip}:{port}")
 
     except Exception:
         if Config('debug', False):
@@ -74,8 +73,7 @@ async def query_bedrock_server(msg, address, raw=False):
             game_mode = msg.locale.t('server.message.gamemode') + status.gamemode
             servers.append(game_mode)
 
-        if msg.target.client_name != 'QQ|Bot':
-            servers.append(f"{serip}:{port}")
+        servers.append(f"{serip}:{port}")
 
     except Exception:
         if Config('debug', False):

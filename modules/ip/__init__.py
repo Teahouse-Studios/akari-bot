@@ -8,7 +8,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.http import get_url
 
-ip = module('ip', developers=['Dianliang233'], doc=True, load=(Bot.client_name != 'QQ|Bot'))
+ip = module('ip', developers=['Dianliang233'], doc=True)
 
 
 @ip.handle('<ip_address> {{ip.help}}')

@@ -15,7 +15,7 @@ def format(input_):
         return input_
 
 
-w = module('whois', developers=['DoroWolf'], doc=True, load=(Bot.client_name != 'QQ|Bot'))
+w = module('whois', developers=['DoroWolf'], doc=True)
 
 
 @w.handle('<domain> {{whois.help}}')
