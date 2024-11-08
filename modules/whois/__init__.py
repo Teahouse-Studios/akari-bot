@@ -18,7 +18,7 @@ def format(input_):
 w = module('whois', developers=['DoroWolf'], doc=True)
 
 
-@w.handle('<domain> {{whois.help}}')
+@w.handle('<domain> {{whois.help}}', load=(Bot.client_name != 'QQ|Bot'))
 async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     await msg.finish(res)
