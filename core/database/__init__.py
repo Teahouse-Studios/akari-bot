@@ -199,8 +199,10 @@ class BotDBUtil:
             return self.query.locale
 
         @staticmethod
-        def get_enabled_this(module_name, id_prefix=None) -> List[TargetInfo]:
-            filter_ = [TargetInfo.enabledModules.like(f'%"{module_name}"%')]
+        def get_target_list(module_name=None, id_prefix=None) -> List[TargetInfo]:
+            filter_ = []
+            if module_name:
+                filter_.append(TargetInfo.enabledModules.like(f'%"{module_name}"%'))
             if id_prefix:
                 filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
             return session.query(TargetInfo).filter(*filter_).all()
@@ -294,6 +296,13 @@ class BotDBUtil:
             session.commit()
             session.expire_all()
             return True
+
+        @staticmethod
+        def get_sender_list(id_prefix=None) -> List[SenderInfo]:
+            filter_ = []
+            if id_prefix:
+                filter_.append(SenderInfo.id.like(f'{id_prefix}%'))
+            return session.query(SenderInfo).filter(*filter_).all()
 
     class GroupBlockList:
         @staticmethod

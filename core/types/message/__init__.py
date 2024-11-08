@@ -354,7 +354,7 @@ class FetchTarget:
     name = ''
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
+    async def fetch_target(target_id: str, sender_id=None) -> FetchedSession:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
@@ -368,7 +368,7 @@ class FetchTarget:
         raise NotImplementedError
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name: str, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
         """
         尝试向开启此模块的对象发送一条消息。
         :param module_name: 模块名
@@ -377,6 +377,19 @@ class FetchTarget:
         :param i18n: 是否使用i18n，若为True则message为i18n的key（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
+
+    @staticmethod
+    async def post_global_message(message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+        """
+        尝试向所有对象发送一条消息。
+        :param message: 消息文本
+        :param user_list: 用户列表
+        :param i18n: 是否使用i18n，若为True则message为i18n的key（或为指定语言的dict映射表（k=语言，v=文本））
+        """
+        raise NotImplementedError
+
+    postMessage = post_message
+    postGlobalMessage = post_global_message
 
 
 class ModuleHookContext:

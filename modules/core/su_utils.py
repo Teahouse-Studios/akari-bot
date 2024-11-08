@@ -8,8 +8,10 @@ import orjson as json
 
 from core.config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins.message.chain import MessageChain
 from core.component import module
 from core.exceptions import NoReportException, TestException
+from core.utils.i18n import Locale
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.path import cache_path
@@ -484,6 +486,20 @@ async def _(msg: Bot.MessageSession, display_msg: str):
     except Exception as e:
         Logger.error(str(e))
         raise NoReportException(e)
+
+
+post_ = module('post', required_superuser=True, base=True, doc=True)
+
+
+@post_.command('<post_msg>')
+async def _(msg: Bot.MessageSession, post_msg: str):
+    post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.post.confirm", post_msg=post_msg), append_instruction=False)
+    if confirm:
+        await Bot.FetchTarget.post_global_message(post_msg)
+        await msg.finish(msg.locale.t("core.message.post.prompt"))
+    else:
+        await msg.finish()
 
 
 cfg_ = module('config', required_superuser=True, alias='cfg', base=True, doc=True)

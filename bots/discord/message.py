@@ -218,6 +218,7 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+        module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:
                 try:
@@ -229,12 +230,12 @@ class FetchTarget(FetchTargetT):
                             msgchain = MessageChain([Plain(message)])
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
-                    if enable_analytics:
+                    if enable_analytics and module_name:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Discord")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "Discord")
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
@@ -249,10 +250,13 @@ class FetchTarget(FetchTargetT):
                                 msgchain = MessageChain([Plain(message)])
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
-                        if enable_analytics:
+                        if enable_analytics and module_name:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
+
+    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

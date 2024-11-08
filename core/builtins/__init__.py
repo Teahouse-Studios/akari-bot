@@ -41,7 +41,7 @@ class Bot:
 
     @staticmethod
     async def get_enabled_this_module(module: str) -> List[FetchedSessionT]:
-        lst = BotDBUtil.TargetInfo.get_enabled_this(module)
+        lst = BotDBUtil.TargetInfo.get_target_list(module)
         fetched = []
         for x in lst:
             x = Bot.FetchTarget.fetch_target(x)

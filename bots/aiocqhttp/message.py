@@ -405,8 +405,6 @@ class FetchTarget(FetchTargetT):
                 if fet.target.target_from == target_guild_name:
                     if fet.session.target not in guild_list:
                         continue
-                if BotDBUtil.TargetInfo(fet.target.target_id).is_muted:
-                    continue
                 lst.append(fet)
         return lst
 
@@ -414,6 +412,7 @@ class FetchTarget(FetchTargetT):
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
+        module_name = None if module_name == '*' else module_name
 
         async def post_(fetch_: Bot.FetchedSession):
             nonlocal _tsk
@@ -439,7 +438,7 @@ class FetchTarget(FetchTargetT):
                     await fetch_.send_direct_message(new_msgchain)
                     if _tsk:
                         _tsk = []
-                if enable_analytics:
+                if enable_analytics and module_name:
                     BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
                 await asyncio.sleep(0.5)
             except SendMessageFailed as e:
@@ -469,7 +468,7 @@ class FetchTarget(FetchTargetT):
             for x in user_list:
                 await post_(x)
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "QQ")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "QQ")
             group_list_raw = await bot.call_action('get_group_list')
             group_list = [g['group_id'] for g in group_list_raw]
             friend_list_raw = await bot.call_action('get_friend_list')
@@ -533,6 +532,9 @@ class FetchTarget(FetchTargetT):
                 asyncio.create_task(post_not_in_whitelist(else_))
                 Logger.info(f"The task of posting messages to whitelisted groups is complete. "
                             f"Posting message to {len(else_)} groups not in whitelist.")
+
+    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession
