@@ -159,14 +159,14 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
 
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
             if sender_id:
-                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_prefix_list)
                 match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)

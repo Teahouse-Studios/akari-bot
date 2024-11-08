@@ -173,11 +173,11 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
-        if self.target.target_from == target_group_name:
+        if self.target.target_from == target_group_prefix:
             get_channel = await bot.client.fetch_public_channel(self.session.target)
             if not get_channel:
                 return False
-        elif self.target.target_from == target_person_name:
+        elif self.target.target_from == target_person_prefix:
             get_channel = await bot.client.fetch_user(self.session.target)
             Logger.debug(f'get_channel: {get_channel}')
             if not get_channel:
@@ -211,13 +211,13 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
             if sender_id:
-                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_prefix_list)
                 match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)

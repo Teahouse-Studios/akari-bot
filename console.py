@@ -67,15 +67,15 @@ async def console_command():
 
 async def send_command(msg):
     Logger.info('-------Start-------')
-    returns = await parser(MessageSession(target=MsgInfo(target_id=f'{target_name}|0',
-                                                         sender_id=f'{sender_name}|0',
-                                                         sender_name='Console',
-                                                         target_from=target_name,
-                                                         sender_from=sender_name,
+    returns = await parser(MessageSession(target=MsgInfo(target_id=f'{target_prefix}|0',
+                                                         sender_id=f'{sender_prefix}|0',
+                                                         sender_prefix='Console',
+                                                         target_from=target_prefix,
+                                                         sender_from=sender_prefix,
                                                          client_name=client_name,
                                                          message_id=0,
                                                          reply_id=None),
-                                          session=Session(message=msg, target=f'{target_name}|0', sender=f'{sender_name}|0')))
+                                          session=Session(message=msg, target=f'{target_prefix}|0', sender=f'{sender_prefix}|0')))
     Logger.info('----Process end----')
     return returns
 

@@ -23,20 +23,20 @@ Url.md_format = True
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
 async def msg_handler(message: Message):
     if message.channel_type.name == "GROUP":
-        target_id = f'{target_group_name}|{message.target_id}'
+        target_id = f'{target_group_prefix}|{message.target_id}'
     else:
-        target_id = f'{target_person_name}|{message.author_id}'
+        target_id = f'{target_person_prefix}|{message.author_id}'
     reply_id = None
     if 'quote' in message.extra:
         reply_id = message.extra['quote']['rong_id']
 
-    target = f'{target_name}|{message.channel_type.name.title()}'
+    target = f'{target_prefix}|{message.channel_type.name.title()}'
 
     msg = MessageSession(MsgInfo(target_id=target_id,
-                                 sender_id=f'{sender_name}|{message.author_id}',
+                                 sender_id=f'{sender_prefix}|{message.author_id}',
                                  target_from=target,
-                                 sender_from=sender_name,
-                                 sender_name=message.author.nickname,
+                                 sender_from=sender_prefix,
+                                 sender_prefix=message.author.nickname,
                                  client_name=client_name,
                                  message_id=message.id,
                                  reply_id=reply_id),

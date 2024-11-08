@@ -1,10 +1,10 @@
 client_name = 'QQ'
 
-sender_name = client_name
-sender_tiny_name = f'{client_name}|Tiny'
-sender_name_list = [sender_name, sender_tiny_name]
+sender_prefix = client_name
+sender_tiny_prefix = f'{client_name}|Tiny'
+sender_prefix_list = [sender_prefix, sender_tiny_prefix]
 
-target_guild_name = f'{client_name}|Guild'
-target_group_name = f'{client_name}|Group'
-target_private_name = f'{client_name}|Private'
-target_name_list = [target_guild_name, target_group_name, target_private_name]
+target_guild_prefix = f'{client_name}|Guild'
+target_group_prefix = f'{client_name}|Group'
+target_private_prefix = f'{client_name}|Private'
+target_prefix_list = [target_guild_prefix, target_group_prefix, target_private_prefix]

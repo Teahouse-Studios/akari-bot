@@ -4,7 +4,7 @@ import re
 import traceback
 from datetime import datetime
 
-from bots.aiocqhttp.info import target_group_name as qq_group_name, target_guild_name as qq_guild_name
+from bots.aiocqhttp.info import target_group_prefix as qq_group_name, target_guild_prefix as qq_guild_name
 from bots.aiocqhttp.utils import qq_frame_type
 from core.config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \

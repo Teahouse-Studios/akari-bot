@@ -6,8 +6,8 @@ import traceback
 import orjson as json
 
 from core.console.info import client_name as console_client_name, \
-    sender_name_list as console_sender_name, \
-    target_name_list as console_target_name
+    sender_prefix_list as console_sender_prefix, \
+    target_prefix_list as console_target_prefix
 from core.logger import Logger
 from core.path import bots_info_path
 
@@ -68,12 +68,12 @@ def get_all_clients_name():
     return get_bot_names('client_name', console_client_name)
 
 
-def get_all_sender_name():
-    return get_bot_names('sender_name_list', console_sender_name)
+def get_all_sender_prefix():
+    return get_bot_names('sender_prefix_list', console_sender_prefix)
 
 
-def get_all_target_name():
-    return get_bot_names('target_name_list', console_target_name)
+def get_all_target_prefix():
+    return get_bot_names('target_prefix_list', console_target_prefix)
 
 
 class Info:
@@ -84,4 +84,4 @@ class Info:
     client_name = ''
 
 
-__all__ = ["get_all_clients_name", "get_all_sender_name", "get_all_target_name", "Info"]
+__all__ = ["get_all_clients_name", "get_all_sender_prefix", "get_all_target_prefix", "Info"]

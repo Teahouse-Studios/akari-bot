@@ -32,7 +32,7 @@ enable_analytics = Config('enable_analytics', False)
 
 class FinishedSession(FinishedSessionT):
     async def delete(self):
-        if self.session.target.target_from in [target_group_name, target_private_name]:
+        if self.session.target.target_from in [target_group_prefix, target_private_prefix]:
             try:
                 for x in self.message_id:
                     if x != 0:
@@ -97,7 +97,7 @@ class MessageSession(MessageSessionT):
         message_chain_assendable = message_chain.as_sendable(self, embed=False)
 
         convert_msg_segments = MessageSegment.text('')
-        if quote and self.target.target_from == target_group_name and self.session.message:
+        if quote and self.target.target_from == target_group_prefix and self.session.message:
             convert_msg_segments = MessageSegment.reply(self.session.message.message_id)
 
         if not message_chain.is_safe and not disable_secret_check:
@@ -143,11 +143,11 @@ class MessageSession(MessageSessionT):
             elif isinstance(x, Image):
                 convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
-                if self.target.target_from != target_guild_name:
+                if self.target.target_from != target_guild_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
         Logger.info(f'[Bot] -> [{self.target.target_id}]: {message_chain_assendable}')
-        if self.target.target_from == target_group_name:
+        if self.target.target_from == target_group_prefix:
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=convert_msg_segments)
             except aiocqhttp.exceptions.NetworkError:
@@ -170,7 +170,7 @@ class MessageSession(MessageSessionT):
             if Temp.data['is_group_message_blocked']:
                 asyncio.create_task(resending_group_message())
 
-        elif self.target.target_from == target_guild_name:
+        elif self.target.target_from == target_guild_prefix:
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
                                          channel_id=int(match_guild.group(2)), message=convert_msg_segments)
@@ -189,14 +189,14 @@ class MessageSession(MessageSessionT):
     async def check_native_permission(self):
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
         async def _check():
-            if self.target.target_from == target_private_name:
+            if self.target.target_from == target_private_prefix:
                 return True
-            elif self.target.target_from == target_group_name:
+            elif self.target.target_from == target_group_prefix:
                 get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
                                                         user_id=self.session.sender)
                 if get_member_info['role'] in ['owner', 'admin']:
                     return True
-            elif self.target.target_from == target_guild_name:
+            elif self.target.target_from == target_guild_prefix:
                 match_guild = re.match(r'(.*)\|(.*)', self.session.target)
                 get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
                                                         user_id=self.session.sender)
@@ -219,7 +219,7 @@ class MessageSession(MessageSessionT):
                 m = re.sub(CQCodeHandler.pattern, '', m)
             else:
                 m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
-                m = re.sub(r'\[CQ:at,qq=(.*?)]', fr'{sender_name}|\1', m)
+                m = re.sub(r'\[CQ:at,qq=(.*?)]', fr'{sender_prefix}|\1', m)
                 m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m).replace("\\/", "/")
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
             return m.strip()
@@ -231,7 +231,7 @@ class MessageSession(MessageSessionT):
                         m.append(item["data"]["text"])
                 else:
                     if item["type"] == "at":
-                        m.append(fr'{sender_name}|{item["data"]["qq"]}')
+                        m.append(fr'{sender_prefix}|{item["data"]["qq"]}')
                     elif item["type"] == "json":
                         m.append(html.unescape(str(item["data"]["data"])).replace("\\/", "/"))
                     elif item["type"] == "text":
@@ -242,7 +242,7 @@ class MessageSession(MessageSessionT):
             return ''.join(m).strip()
 
     async def fake_forward_msg(self, nodelist):
-        if self.target.target_from == target_group_name:
+        if self.target.target_from == target_group_prefix:
             get_ = get_stored_list(Bot.FetchTarget, 'forward_msg')
             if not get_['status']:
                 await self.send_message(self.locale.t("core.message.forward_msg.disabled"))
@@ -250,7 +250,7 @@ class MessageSession(MessageSessionT):
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def delete(self):
-        if self.target.target_from in [target_private_name, target_group_name]:
+        if self.target.target_from in [target_private_prefix, target_group_prefix]:
             try:
                 if isinstance(self.session.message, list):
                     for x in self.session.message:
@@ -328,7 +328,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.target.target_from == target_group_name:  # wtf onebot 11
+            if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
                 if qq_frame_type() == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
                                           emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
@@ -359,13 +359,13 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr"({target_pattern})\|(.*)", target_id)
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
             if sender_id:
-                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_prefix_list)
                 match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
@@ -396,13 +396,13 @@ class FetchTarget(FetchTargetT):
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
             if fet:
-                if fet.target.target_from == target_group_name:
+                if fet.target.target_from == target_group_prefix:
                     if fet.session.target not in group_list:
                         continue
-                if fet.target.target_from == target_private_name:
+                if fet.target.target_from == target_private_prefix:
                     if fet.session.target not in friend_list:
                         continue
-                if fet.target.target_from == target_guild_name:
+                if fet.target.target_from == target_guild_prefix:
                     if fet.session.target not in guild_list:
                         continue
                 lst.append(fet)
@@ -418,7 +418,7 @@ class FetchTarget(FetchTargetT):
             nonlocal _tsk
             nonlocal blocked
             try:
-                if Temp.data['is_group_message_blocked'] and fetch_.target.target_from == target_group_name:
+                if Temp.data['is_group_message_blocked'] and fetch_.target.target_from == target_group_prefix:
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
                                                                         'i18n': i18n, 'kwargs': kwargs})
                 else:
@@ -494,19 +494,19 @@ class FetchTarget(FetchTargetT):
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 Logger.debug(fetch)
                 if fetch:
-                    if fetch.target.target_from == target_group_name:
+                    if fetch.target.target_from == target_group_prefix:
                         if int(fetch.session.target) not in group_list:
                             continue
-                    if fetch.target.target_from == target_private_name:
+                    if fetch.target.target_from == target_private_prefix:
                         if int(fetch.session.target) not in friend_list:
                             continue
-                    if fetch.target.target_from == target_guild_name:
+                    if fetch.target.target_from == target_guild_prefix:
                         if fetch.session.target not in guild_list:
                             continue
                     if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
                         continue
 
-                    if fetch.target.target_from in [target_private_name, target_guild_name]:
+                    if fetch.target.target_from in [target_private_prefix, target_guild_prefix]:
                         in_whitelist.append(post_(fetch))
                     else:
                         load_options: dict = json.loads(x.options)

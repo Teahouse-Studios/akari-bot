@@ -89,9 +89,9 @@ async def on_message(message):
     # don't respond to ourselves
     if message.author == client.user or message.author.bot:
         return
-    target = target_channel_name
+    target = target_channel_prefix
     if isinstance(message.channel, discord.DMChannel):
-        target = target_dm_channel_name
+        target = target_dm_channel_prefix
     target_id = f"{target}|{message.channel.id}"
     reply_id = None
     if message.reference:
@@ -105,10 +105,10 @@ async def on_message(message):
     msg = MessageSession(
         target=MsgInfo(
             target_id=target_id,
-            sender_id=f"{sender_name}|{message.author.id}",
-            sender_name=message.author.name,
+            sender_id=f"{sender_prefix}|{message.author.id}",
+            sender_prefix=message.author.name,
             target_from=target,
-            sender_from=sender_name,
+            sender_from=sender_prefix,
             client_name=client_name,
             message_id=message.id,
             reply_id=reply_id),

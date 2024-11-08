@@ -10,28 +10,28 @@ from core.types import MsgInfo, Session
 
 
 def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext]):
-    target = target_channel_name
+    target = target_channel_prefix
     if isinstance(ctx, discord.ApplicationContext):
         if isinstance(ctx.channel, discord.DMChannel):
-            target = target_dm_channel_name
+            target = target_dm_channel_prefix
         target_id = f"{target}|{ctx.channel.id}"
-        sender_id = f"{sender_name}|{ctx.author.id}"
+        sender_id = f"{sender_prefix}|{ctx.author.id}"
     else:
         if isinstance(ctx.interaction.channel, discord.PartialMessage):
-            target_id = f"{target_dm_channel_name}|{ctx.interaction.channel.id}"
+            target_id = f"{target_dm_channel_prefix}|{ctx.interaction.channel.id}"
         else:
             target_id = f"{target}|{ctx.interaction.channel_id}"
-        sender_id = f"{sender_name}|{ctx.interaction.user.id}"
+        sender_id = f"{sender_prefix}|{ctx.interaction.user.id}"
     return MessageSession(
         target=MsgInfo(
             target_id=target_id,
             sender_id=sender_id,
-            sender_name=ctx.author.name if isinstance(
+            sender_prefix=ctx.author.name if isinstance(
                 ctx,
                 discord.ApplicationContext) else ctx.interaction.user.name,
-            target_from=target_slash_name,
-            sender_from=sender_name,
-            client_name=target_slash_name,
+            target_from=target_slash_prefix,
+            sender_from=sender_prefix,
+            client_name=target_slash_prefix,
             message_id=0),
         session=Session(
             message=ctx,

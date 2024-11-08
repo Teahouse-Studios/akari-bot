@@ -1,9 +1,9 @@
 client_name = 'KOOK'
 
-sender_name = f'{client_name}|User'
-sender_name_list = [sender_name]
+sender_prefix = f'{client_name}|User'
+sender_prefix_list = [sender_prefix]
 
-target_name = client_name
-target_group_name = f'{client_name}|Group'
-target_person_name = f'{client_name}|Person'
-target_name_list = [target_group_name, target_person_name]
+target_prefix = client_name
+target_group_prefix = f'{client_name}|Group'
+target_person_prefix = f'{client_name}|Person'
+target_prefix_list = [target_group_prefix, target_person_prefix]
