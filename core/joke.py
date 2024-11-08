@@ -3,10 +3,7 @@ import re
 from datetime import datetime
 
 from core.config import Config
-
-
-url_pattern = re.compile(
-    r'\b(?:http[s]?://)?(?:[a-zA-Z0-9-@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b')
+from core.utils.http import url_pattern
 
 
 def joke(text: str):

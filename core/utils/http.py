@@ -22,6 +22,9 @@ debug = Config('debug', False)
 if not (proxy := Config('proxy', cfg_type=str)):
     proxy = ''
 
+url_pattern = re.compile(
+    r'\b(?:http[s]?://)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b')
+
 _matcher_private_ips = re.compile(
     r'^(?:127\.|0?10\.|172\.0?1[6-9]\.|172\.0?2[0-9]\.172\.0?3[01]\.|192\.168\.|169\.254\.|::1|[fF][cCdD][0-9a-fA-F]{2}:|[fF][eE][89aAbB][0-9a-fA-F]:)'
 )
@@ -224,4 +227,4 @@ async def dowanload_to_cache(url: str, filename: str = None, status_code: int = 
                    logging_err_resp=logging_err_resp)
 
 
-__all__ = ['get_url', 'post_url', 'download']
+__all__ = ['get_url', 'post_url', 'download', 'url_pattern']

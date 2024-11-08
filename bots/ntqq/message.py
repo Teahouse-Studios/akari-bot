@@ -13,13 +13,10 @@ from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
-from core.utils.http import download
+from core.utils.http import download, url_pattern
 
 enable_analytics = Config('enable_analytics', False)
 enable_send_url = Config('qq_bot_enable_send_url', False)
-
-url_pattern = re.compile(
-    r'\b(?:http[s]?://)?(?:[a-zA-Z0-9-@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b')
 
 
 class FinishedSession(FinishedSessionT):
