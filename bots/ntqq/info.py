@@ -1,7 +1,8 @@
 client_name = 'QQ|Bot'
 
-sender_name = f'{client_name}'
-sender_name_list = [sender_name]
+sender_name = client_name
+sender_tiny_name = f'{client_name}|Tiny'
+sender_name_list = [sender_name, sender_tiny_name]
 
 target_C2C_name = f'{client_name}|C2C'
 target_direct_name = f'{client_name}|Direct'
