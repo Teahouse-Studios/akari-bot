@@ -4,7 +4,7 @@
 # If you don't need some functions, please delete the corresponding keys.
 
 [secret]
-db_path = "mysql+pymysql://"
+db_path = "sqlite:///database/save.db"
 check_access_key_id =
 check_access_key_secret =
 web_render =

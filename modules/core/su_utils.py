@@ -491,13 +491,27 @@ async def _(msg: Bot.MessageSession, display_msg: str):
 post_ = module('post', required_superuser=True, base=True, doc=True)
 
 
-@post_.command('<post_msg>')
+@post_.command('<target> <post_msg>')
+async def _(msg: Bot.MessageSession, target: str, post_msg: str):
+    if not target.startswith(f'{msg.target.target_from}|'):
+        await msg.finish(msg.locale.t('message.id.invalid.target', target=msg.target.target_from))
+    post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    session = await Bot.FetchTarget.fetch_target(target)
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False)
+    if confirm:
+        await Bot.FetchTarget.post_global_message(post_msg, [session])
+        await msg.finish(msg.locale.t("core.message.post.success"))
+    else:
+        await msg.finish()
+
+
+@post_.command('global <post_msg>')
 async def _(msg: Bot.MessageSession, post_msg: str):
     post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
-    confirm = await msg.wait_confirm(msg.locale.t("core.message.post.confirm", post_msg=post_msg), append_instruction=False)
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False)
     if confirm:
         await Bot.FetchTarget.post_global_message(post_msg)
-        await msg.finish(msg.locale.t("core.message.post.prompt"))
+        await msg.finish(msg.locale.t("core.message.post.success"))
     else:
         await msg.finish()
 
