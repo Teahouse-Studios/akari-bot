@@ -112,15 +112,15 @@ class MessageSession(MessageSessionT):
             raise WaitCancelException
         if message_chain and delete:
             await send.delete()
-        return MessageSession(target=MsgInfo(target_id=f'{target_name}|0',
-                                             sender_id=f'{sender_name}|0',
-                                             sender_name='Console',
-                                             target_from=target_name,
-                                             sender_from=sender_name,
+        return MessageSession(target=MsgInfo(target_id=f'{target_prefix}|0',
+                                             sender_id=f'{sender_prefix}|0',
+                                             sender_prefix='Console',
+                                             target_from=target_prefix,
+                                             sender_from=sender_prefix,
                                              client_name=client_name,
                                              message_id=0,
                                              reply_id=None),
-                              session=Session(message=c, target=f'{target_name}|0', sender=f'{sender_name}|0'))
+                              session=Session(message=c, target=f'{target_prefix}|0', sender=f'{sender_prefix}|0'))
 
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
         send = None
@@ -206,9 +206,9 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        return FetchedSession(target_from=target_name,
+        return FetchedSession(target_from=target_prefix,
                               target_id='0',
-                              sender_from=sender_name,
+                              sender_from=sender_prefix,
                               sender_id='0')
 
     @staticmethod

@@ -37,11 +37,11 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
-                sender_id=f'{sender_name}|{message.author.id}',
-                target_from=target_guild_name,
-                sender_from=sender_name,
-                sender_name=message.author.id[:6],
+                target_id=f'{target_guild_prefix}|{message.guild_id}|{message.channel_id}',
+                sender_id=f'{sender_tiny_prefix}|{message.author.id}',
+                target_from=target_guild_prefix,
+                sender_from=sender_prefix,
+                sender_prefix=message.author.id[:6],
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
@@ -64,11 +64,11 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_guild_name}|{message.guild_id}|{message.channel_id}',
-                sender_id=f'{sender_name}|{message.author.id}',
-                target_from=target_guild_name,
-                sender_from=sender_name,
-                sender_name=message.author.id[:6],
+                target_id=f'{target_guild_prefix}|{message.guild_id}|{message.channel_id}',
+                sender_id=f'{sender_tiny_prefix}|{message.author.id}',
+                target_from=target_guild_prefix,
+                sender_from=sender_prefix,
+                sender_prefix=message.author.id[:6],
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
@@ -90,11 +90,11 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_group_name}|{message.group_openid}',
-                sender_id=f'{sender_name}|{message.author.member_openid}',
-                target_from=target_group_name,
-                sender_from=sender_name,
-                sender_name=message.author.member_openid[:6],
+                target_id=f'{target_group_prefix}|{message.group_openid}',
+                sender_id=f'{sender_prefix}|{message.author.member_openid}',
+                target_from=target_group_prefix,
+                sender_from=sender_prefix,
+                sender_prefix=message.author.member_openid[:6],
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
@@ -117,11 +117,11 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_direct_name}|{message.guild_id}',
-                sender_id=f'{sender_name}|{message.author.id}',
-                target_from=target_direct_name,
-                sender_from=sender_name,
-                sender_name=message.author.id[:6],
+                target_id=f'{target_direct_prefix}|{message.guild_id}',
+                sender_id=f'{sender_tiny_prefix}|{message.author.id}',
+                target_from=target_direct_prefix,
+                sender_from=sender_prefix,
+                sender_prefix=message.author.id[:6],
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),
@@ -142,11 +142,11 @@ class MyClient(botpy.Client):
         require_enable_modules = True
         msg = MessageSession(
             MsgInfo(
-                target_id=f'{target_C2C_name}|{message.author.user_openid}',
-                sender_id=f'{sender_name}|{message.author.user_openid}',
-                target_from=target_C2C_name,
-                sender_from=sender_name,
-                sender_name=message.author.user_openid[:6],
+                target_id=f'{target_c2c_prefix}|{message.author.user_openid}',
+                sender_id=f'{sender_prefix}|{message.author.user_openid}',
+                target_from=target_c2c_prefix,
+                sender_from=sender_prefix,
+                sender_prefix=message.author.user_openid[:6],
                 client_name=client_name,
                 message_id=message.id,
                 reply_id=reply_id),

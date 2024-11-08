@@ -1,7 +1,7 @@
 client_name = 'Telegram'
 
-sender_name = f'{client_name}|User'
-sender_name_list = [sender_name]
+sender_prefix = f'{client_name}|User'
+sender_prefix_list = [sender_prefix]
 
-target_name = client_name
-target_name_list = [f'{client_name}|Private', f'{client_name}|Group', f'{client_name}|Supergroup', f'{client_name}|Channel']
+target_prefix = client_name
+target_prefix_list = [f'{client_name}|Private', f'{client_name}|Group', f'{client_name}|Supergroup', f'{client_name}|Channel']

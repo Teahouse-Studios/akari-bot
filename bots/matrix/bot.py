@@ -80,11 +80,11 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         Logger.error(f"Failed to get display name for {event.sender}")
         return
 
-    msg = MessageSession(MsgInfo(target_id=f'{target_name}|{room.room_id}',
-                                 sender_id=f'{sender_name}|{event.sender}',
-                                 target_from=target_name,
-                                 sender_from=sender_name,
-                                 sender_name=resp.displayname,
+    msg = MessageSession(MsgInfo(target_id=f'{target_prefix}|{room.room_id}',
+                                 sender_id=f'{sender_prefix}|{event.sender}',
+                                 target_from=target_prefix,
+                                 sender_from=sender_prefix,
+                                 sender_prefix=resp.displayname,
                                  client_name=client_name,
                                  message_id=event.event_id,
                                  reply_id=reply_id),

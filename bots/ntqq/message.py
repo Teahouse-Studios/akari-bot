@@ -21,7 +21,7 @@ enable_send_url = Config('qq_bot_enable_send_url', False)
 
 class FinishedSession(FinishedSessionT):
     async def delete(self):
-        if self.session.target.target_from == target_guild_name:
+        if self.session.target.target_from == target_guild_prefix:
             try:
                 from bots.ntqq.bot import client
                 for x in self.message_id:
@@ -211,11 +211,14 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        msg = re.sub(r'<@(.*?)>', fr'{sender_name}|\1', msg)
+        if self.session.target.target_from in [target_guild_prefix, target_direct_prefix]:
+            msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|Tiny|\1', msg)
+        else:
+            msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|\1', msg)
         return msg
 
     async def delete(self):
-        if self.session.target.target_from in [target_guild_name, target_direct_name]:
+        if self.session.target.target_from in [target_guild_prefix, target_direct_prefix]:
             try:
                 await self.session.message._api.recall_message(channel_id=self.session.message.channel_id, message_id=self.session.message.id, hidetip=True)
                 return True
@@ -233,7 +236,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.target.target_from == target_guild_name:
+            if self.msg.target.target_from == target_guild_prefix:
                 emoji_id = str(Config('qq_typing_emoji', '181', (str, int)))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
                 from bots.ntqq.bot import client
@@ -250,16 +253,16 @@ class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
         from bots.ntqq.bot import client
-        if self.target.target_from == target_guild_name:
+        if self.target.target_from == target_guild_prefix:
             self.session.message = Message(api=client.api, event_id=None, data={
                                            "channel_id": self.target.target_id.split('|')[-1]})
-        elif self.target.target_from == target_direct_name:
+        elif self.target.target_from == target_direct_prefix:
             self.session.message = DirectMessage(api=client.api, event_id=None, data={
                                                  "guild_id": self.target.target_id.split('|')[-1]})
-        elif self.target.target_from == target_group_name:
+        elif self.target.target_from == target_group_prefix:
             self.session.message = GroupMessage(api=client.api, event_id=None, data={
                                                 "group_openid": self.target.target_id.split('|')[-1]})
-        elif self.target.target_from == target_C2C_name:
+        elif self.target.target_from == target_c2c_prefix:
             self.session.message = C2CMessage(
                 api=client.api, event_id=None, data={
                     "author": {
@@ -276,13 +279,13 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        target_pattern = r'|'.join(re.escape(item) for item in target_name_list)
+        target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
             if sender_id:
-                sender_pattern = r'|'.join(re.escape(item) for item in sender_name_list)
+                sender_pattern = r'|'.join(re.escape(item) for item in sender_prefix_list)
                 match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)

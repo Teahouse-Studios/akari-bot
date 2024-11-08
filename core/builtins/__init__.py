@@ -84,7 +84,7 @@ class FetchedSession(FetchedSessionT):
                               sender_id=f'{sender_from}|{sender_id}',
                               target_from=target_from,
                               sender_from=sender_from,
-                              sender_name='',
+                              sender_prefix='',
                               client_name=Bot.client_name,
                               message_id=0,
                               reply_id=None)

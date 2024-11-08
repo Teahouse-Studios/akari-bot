@@ -1,7 +1,7 @@
 client_name = 'TEST'
 
-sender_name = client_name
-sender_name_list = [sender_name]
+sender_prefix = client_name
+sender_prefix_list = [sender_prefix]
 
-target_name = f'{client_name}|Console'
-target_name_list = [target_name]
+target_prefix = f'{client_name}|Console'
+target_prefix_list = [target_prefix]
