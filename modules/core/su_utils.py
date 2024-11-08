@@ -493,7 +493,7 @@ post_ = module('post', required_superuser=True, base=True, doc=True)
 
 @post_.command('<target> <post_msg>')
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
-    if not target.startswith(f'{msg.target.target_from}|'):
+    if not target.startswith(f'{msg.target.client_name}|'):
         await msg.finish(msg.locale.t('message.id.invalid.target', target=msg.target.target_from))
     post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
     session = await Bot.FetchTarget.fetch_target(target)
