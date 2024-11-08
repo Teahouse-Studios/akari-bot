@@ -45,19 +45,17 @@ se = SimpleEval()
 se.functions.update(math_funcs)
 
 
-async def process_expression(msg: Bot.MessageSession, expr: str, dc: str, use_markdown: bool = False):
+async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
-        use_markdown = True
-    if use_markdown:
+    if msg.Feature.markdown:
         expr = expr.replace('*', '\\*')
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)
     if err:
         return err
-    output = generate_dice_message(msg, expr, dice_list, count, times, dc, use_markdown)
+    output = generate_dice_message(msg, expr, dice_list, count, times, dc)
     return output
 
 
@@ -134,9 +132,9 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 # 在数字与数字之间加上乘号
 
 
-def insert_multiply(lst: list, use_markdown: bool = False):
+def insert_multiply(msg: Bot.MessageSession, lst: list):
     result = []
-    asterisk = '\\*' if use_markdown else '*'
+    asterisk = '\\*' if msg.Feature.markdown else '*'
     for i in range(len(lst)):
         if i == 0:
             result.append(lst[i])
@@ -156,7 +154,7 @@ def insert_multiply(lst: list, use_markdown: bool = False):
 
 
 def generate_dice_message(msg: Bot.MessageSession, expr: str, dice_expr_list: list,
-                          dice_count: int, times: int, dc: str, use_markdown: bool = False):
+                          dice_count: int, times: int, dc: str):
     success_num = 0
     fail_num = 0
     output = msg.locale.t('dice.message.output')
@@ -181,8 +179,8 @@ def generate_dice_message(msg: Bot.MessageSession, expr: str, dice_expr_list: li
                 dice_res_list[i] = f'({str(res)})' if res < 0 else str(res)
             else:
                 continue
-        dice_detail_list = insert_multiply(dice_detail_list, use_markdown)
-        dice_res_list = insert_multiply(dice_res_list)
+        dice_detail_list = insert_multiply(msg, dice_detail_list)
+        dice_res_list = insert_multiply(msg, dice_res_list)
         output_line += ''.join(dice_detail_list)
         try:
             if dice_res_list:

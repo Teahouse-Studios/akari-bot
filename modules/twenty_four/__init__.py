@@ -118,10 +118,8 @@ tf = module('twenty_four', alias=['twentyfour', '24'],
 
 
 @tf.command('{{twenty_four.help}}')
-async def _(msg: Bot.MessageSession, use_markdown=False):
+async def _(msg: Bot.MessageSession):
     play_state = PlayState('twenty_four', msg)
-    if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
-        use_markdown = True
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
     else:
@@ -143,7 +141,7 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 1)):
                     send += '\n' + g_msg
-            if use_markdown:
+            if msg.Feature.markdown:
                 send.replace('*', '\\*')
             await answer.finish(send)
         elif check_valid(expr):

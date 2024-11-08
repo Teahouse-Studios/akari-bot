@@ -34,6 +34,7 @@ class MessageSession(MessageSessionT):
         embed = False
         forward = False
         delete = True
+        markdown = False
         quote = True
         rss = True
         typing = False
