@@ -211,7 +211,10 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        msg = re.sub(r'<@(.*?)>', fr'{sender_name}|\1', msg)
+        if self.session.target.target_from in [target_guild_name, target_direct_name]:
+            msg = re.sub(r'<@(.*?)>', fr'{sender_name}|Tiny|\1', msg)
+        else:
+            msg = re.sub(r'<@(.*?)>', fr'{sender_name}|\1', msg)
         return msg
 
     async def delete(self):
