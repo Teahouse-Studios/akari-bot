@@ -10,7 +10,7 @@
     "oba.message.query_time": "Query Time: ${query_time}",
     "oba.message.search.not_found": "No result found.",
     "oba.message.sponsor": "Sponsor: ${name}\nSponsor URL: ${url}\nWarning: The node sponsor here have no affiliation with Teahouse Studios.",
-    "oba.message.status.detail": "当前在线节点：${current_nodes} 个\n5 分钟负载：${load}\n总带宽：${bandwidth} Mbps\n当前出网带宽：${current_bandwidth} Mbps\n当日请求：${hits} 次\n当日全网总流量：${size}",
-    "oba.message.status.version": "OpenBMCLAPI 最新版本: ${version}",
-    "oba.message.top": "${rank} | ${name} | ${id}\n${size} | ${hits}\n节点赞助商：${sponsor_name}"
+    "oba.message.status.detail": "Current clusters: ${current_nodes}\n5-Minute Load: ${load}\nTotal bandwidth: ${bandwidth} Mbps\nCurrent bandwidth: ${current_bandwidth} Mbps\nToday's hits: ${hits}\nToday's traffic: ${size}",
+    "oba.message.status.version": "The OpenBMCLAPI latest version: ${version}",
+    "oba.message.top": "${rank} | ${name} | ${id}\n${size} | ${hits}\nSponsor: ${sponsor_name}"
 }
