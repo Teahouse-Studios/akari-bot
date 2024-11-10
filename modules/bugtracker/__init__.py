@@ -32,7 +32,7 @@ async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
             await msg.finish(msg.locale.t('bugtracker.message.invalid_mojira_id'))
 
 
-@bug.regex(r'\b((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)\b', mode='A', flags=re.I,
+@bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)', mode='A', flags=re.I,
            desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
     titles = list(set(msg.matched_msg))[:5]
