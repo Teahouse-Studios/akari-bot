@@ -1,6 +1,8 @@
 import logging
 import re
 import time
+
+from base64 import urlsafe_b64encode
 from typing import Dict
 from urllib.parse import unquote
 
@@ -193,7 +195,7 @@ class Account:
         self.__get_account_data()
 
         data = {
-            i: self.__account_data['linkedStudent'][i]
+            i: self.__account_data['linkedStudent'].get(i,'NaN')
             for i in ('studentId', 'studentName', 'schoolName', 'grade',
                       'className', 'xuehao')
         }

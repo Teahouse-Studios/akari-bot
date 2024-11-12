@@ -318,8 +318,14 @@ class BotDBUtil:
                 return False
 
     class InfoServers:
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
+        @staticmethod
+        def exist(id_group: str):
+            session.expire_all()
+            query_exist = session.query(InfoServers).filter_by(from_target=id_group).first()
+            if query_exist:
+                return True
+            else:
+                return False
 
         def write(self,id_group: str, data: dict):
             json_data = json.dumps(data)
@@ -332,14 +338,6 @@ class BotDBUtil:
         def read(self,id_group: str):
             data = session.query(InfoServers).filter_by(from_target=id_group).first()
             return json.loads(data.servers)
-
-        def exist(self,id_group: str):
-            session.expire_all()
-            query_exist = session.query(InfoServers).filter_by(from_target=id_group).first()
-            if query_exist:
-                return True
-            else:
-                return False
 
         def reset(self,id_group: str):
             if self.exist(id_group=id_group):
@@ -354,6 +352,41 @@ class BotDBUtil:
                 return True
             else:
                 return False
+
+    class HaofsAccount():
+        @staticmethod
+        def isexist(sender: str):
+            session.expire_all()
+            query_exist = session.query(HaofsAccount).filter_by(from_sender=sender).first()
+            if query_exist:
+                return True
+            else:
+                return False
+
+        def sign_up(self,from_sender: str,email: str,password: str):
+            if self.isexist(from_sender):
+                wr = session.query(HaofsAccount).filter_by(from_sender=from_sender).first()
+                wr.email = email
+                wr.password = password
+            else:
+                session.add(HaofsAccount(from_sender=from_sender,
+                                         email=email,
+                                         password=password,
+                                         ))
+            session.commit()
+
+        def login(self,sender: str):
+            if self.isexist(sender):
+                data = session.query(HaofsAccount).filter_by(from_sender=sender).first()
+                return data.email,data.password
+            else:
+                return False
+
+        def delete(self,sender):
+            if self.isexist(sender):
+                data = session.query(HaofsAccount).filter_by(from_sender=sender).first()
+                session.delete(data)
+
 
     class Data:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
