@@ -4,7 +4,6 @@ from httpcore import NetworkError
 
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.utils.image import msgchain2image
 
 import asyncio
 
@@ -95,10 +94,7 @@ async def ____(msg:Bot.MessageSession):
         for obj in exm:
             papers.append(Plain(obj))
             papers.extend([Image(i) for i in exm.get(obj).pictures])
-        if not await msgchain2image(papers,msg,True):
-            papers.append(Plain('[120秒后撤回，需保存请截图]'))
-            s = await msg.send_message(papers)
-            await msg.sleep(120)
-            await s.delete()
-        else:
-            await msg.send_message([Image(await msgchain2image(papers,msg,True))])
+        papers.append(Plain('[120秒后撤回，需保存请截图]'))
+        s = await msg.send_message(papers)
+        await msg.sleep(120)
+        await s.delete()
