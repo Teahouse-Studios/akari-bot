@@ -74,7 +74,7 @@ async def ___(msg:Bot.MessageSession):
         exam = stud.get_exam(0).data
         await msg.send_message(
             [
-                Plain(f"{stud.student.get('name')}({stud.student.get('xuehao')}) 的 {exam.get('name')} 成绩详情："),
+                Plain(f"{stud.student.get('studentName')}({stud.student.get('xuehao')}) 的 {exam.get('name')} 成绩详情："),
                 Plain(f"分数：{exam.get('score')}/{exam.get('manfen')},"),
                 Plain(f"排名：班级 {exam.get('classRank')}({exam.get('classRankPart')}) | 级部 {exam.get('gradeRank')}({exam.get('gradeRankPart')})")
             ],
