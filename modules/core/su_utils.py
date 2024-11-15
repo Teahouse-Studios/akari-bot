@@ -110,7 +110,7 @@ async def _(msg: Bot.MessageSession, target: str):
 
 @set_.command('option get <target> [<k>]',
               'option edit <target> <k> <v>',
-              'option remove <target> <k>')
+              'option delete <target> <k>')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
@@ -138,7 +138,7 @@ async def _(msg: Bot.MessageSession, target: str):
             v = False
         target_data.edit_option(k, v)
         await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
-    elif 'remove' in msg.parsed_msg:
+    elif 'delete' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         target_data.remove_option(k)
         await msg.finish(msg.locale.t("message.success"))
