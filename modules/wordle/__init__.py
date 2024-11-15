@@ -280,7 +280,7 @@ async def terminate(msg: Bot.MessageSession):
         play_state.disable()
         board.reset_board()
         qc.reset()
-        await msg.finish(msg.locale.t('wordle.message.stop', answer=play_state.check('answer')))
+        await msg.finish(msg.locale.t('wordle.message.stop', answer=play_state.get('answer')))
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
 

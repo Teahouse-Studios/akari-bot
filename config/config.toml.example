@@ -34,6 +34,7 @@ base_superuser = ["QQ|2596322644",]
 debug = false
 command_prefix = ["~", "～",]
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y",]
+ignored_sender = ["QQ|2854196310",]
 disabled_bots = ["",]
 report_targets = ["",]
 locale = "zh_cn"

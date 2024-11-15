@@ -26,6 +26,7 @@ EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
 Url.disable_mm = not Config('enable_urlmanager', False)
 qq_account = str(Config("qq_account", cfg_type=(int, str)))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False)
+ignored_sender = Config("ignored_sender", [])
 
 
 @bot.on_startup
@@ -39,15 +40,19 @@ async def _(event: Event):
     await load_prompt(FetchTarget)
 
 
-ignore_ids = [2854196310]  # Q群管家
-
-
 async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session', True):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
-    if event.user_id in ignore_ids:
+
+    if event.detail_type == 'group':
+        target_id = f'{target_group_prefix}|{event.group_id}'
+    else:
+        target_id = f'{target_private_prefix}|{event.user_id}'
+    sender_id = f'{sender_prefix}|{event.user_id}'
+
+    if sender_id in ignored_sender:
         return
     string_post = False
     if isinstance(event.message, str):
@@ -81,30 +86,29 @@ async def message_handler(event: Event):
                 event.message = match_at.group(2)
                 if event.message in ['', ' ']:
                     event.message = 'help'
-                prefix = ['']
+                    prefix = ['']
     else:
         if event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == qq_account:
                 event.message = event.message[1:]
                 if not event.message:
                     event.message = [{"type": "text", "data": {"text": "help"}}]
-                prefix = ['']
+                    prefix = ['']
 
-    target_id = f'{target_group_prefix}|{
-        event.group_id}' if event.detail_type == 'group' else f'{target_private_prefix}|{
-        event.user_id}'
-
-    msg = MessageSession(MsgInfo(target_id=target_id,
-                                 sender_id=f'{sender_prefix}|{event.user_id}',
-                                 target_from=target_group_prefix if event.detail_type == 'group' else target_private_prefix,
-                                 sender_from=sender_prefix,
-                                 sender_prefix=event.sender['nickname'],
-                                 client_name=client_name,
-                                 message_id=event.message_id,
-                                 reply_id=reply_id),
-                         Session(message=event,
-                                 target=event.group_id if event.detail_type == 'group' else event.user_id,
-                                 sender=event.user_id))
+    msg = MessageSession(
+        MsgInfo(
+            target_id=target_id,
+            sender_id=sender_id,
+            target_from=target_group_prefix if event.detail_type == 'group' else target_private_prefix,
+            sender_from=sender_prefix,
+            sender_prefix=event.sender['nickname'],
+            client_name=client_name,
+            message_id=event.message_id,
+            reply_id=reply_id),
+        Session(
+            message=event,
+            target=event.group_id if event.detail_type == 'group' else event.user_id,
+            sender=event.user_id))
     await parser(msg, running_mention=True, prefix=prefix)
 
 
@@ -128,15 +132,18 @@ async def _(event):
     if not GuildAccountInfo.tiny_id:
         profile = await bot.call_action('get_guild_service_profile')
         GuildAccountInfo.tiny_id = profile['tiny_id']
-    tiny_id = event.user_id
-    if tiny_id == GuildAccountInfo.tiny_id:
+    target_id = f'{target_guild_prefix}|{event.guild_id}|{event.channel_id}'
+    sender_id = f'{sender_tiny_prefix}|{event.user_id}'
+    if sender_id in ignored_sender:
+        return
+    if event.user_id == GuildAccountInfo.tiny_id:
         return
     reply_id = None
     match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
     if match_reply:
         reply_id = int(match_reply.group(1))
-    msg = MessageSession(MsgInfo(target_id=f'{target_guild_prefix}|{event.guild_id}|{event.channel_id}',
-                                 sender_id=f'{sender_tiny_prefix}|{event.user_id}',
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=sender_id,
                                  target_from=target_guild_prefix,
                                  sender_from=sender_tiny_prefix,
                                  sender_prefix=event.sender['nickname'],
@@ -151,7 +158,8 @@ async def _(event):
 
 @bot.on('request.friend')
 async def _(event: Event):
-    sender_info = BotDBUtil.SenderInfo(f'{sender_prefix}|{event.user_id}')
+    sender_id = f'{sender_prefix}|{event.user_id}'
+    sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
     if not Config('qq_allow_approve_friend', False):
@@ -165,7 +173,8 @@ async def _(event: Event):
 
 @bot.on('request.group.invite')
 async def _(event: Event):
-    sender_info = BotDBUtil.SenderInfo(f'{sender_prefix}|{event.user_id}')
+    sender_id = f'{sender_prefix}|{event.user_id}'
+    sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
     if not Config('qq_allow_approve_group_invite', False):
@@ -182,15 +191,17 @@ async def _(event: Event):
     if event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
-        sender_info = BotDBUtil.SenderInfo(f'{sender_prefix}|{str(event.operator_id)}')
+        target_id = f'{target_group_prefix}|{event.group_id}'
+        sender_id = f'{sender_prefix}|{event.operator_id}'
+        sender_info = BotDBUtil.SenderInfo(sender_id)
         unfriendly_actions.add('mute', str(event.duration))
         result = unfriendly_actions.check_mute()
         if event.duration >= 259200:
             result = True
         if result and not sender_info.is_super_user:
             reason = Locale(default_locale).t('tos.message.reason.mute')
-            await tos_report(f'{sender_prefix}|{event.operator_id}', f'{target_group_prefix}|{event.group_id}', reason, banned=True)
-            BotDBUtil.GroupBlockList.add(f'{target_group_prefix}|{event.group_id}')
+            await tos_report(sender_id, target_id, reason, banned=True)
+            BotDBUtil.GroupBlockList.add(target_id)
             await bot.call_action('set_group_leave', group_id=event.group_id)
             sender_info.edit('isInAllowList', False)
             sender_info.edit('isInBlockList', True)
@@ -201,11 +212,13 @@ async def _(event: Event):
 async def _(event: Event):
     if event.sub_type == 'kick_me':
         BotDBUtil.UnfriendlyActions(target_id=event.group_id, sender_id=event.operator_id).add('kick')
-        sender_info = BotDBUtil.SenderInfo(f'{sender_prefix}|{event.operator_id}')
+        target_id = f'{target_group_prefix}|{event.group_id}'
+        sender_id = f'{sender_prefix}|{event.operator_id}'
+        sender_info = BotDBUtil.SenderInfo(sender_id)
         if not sender_info.is_super_user:
             reason = Locale(default_locale).t('tos.message.reason.kick')
-            await tos_report(f'{sender_prefix}|{event.operator_id}', f'{target_group_prefix}|{event.group_id}', reason, banned=True)
-            BotDBUtil.GroupBlockList.add(f'{target_group_prefix}|{event.group_id}')
+            await tos_report(sender_id, target_id, reason, banned=True)
+            BotDBUtil.GroupBlockList.add(target_id)
             sender_info.edit('isInAllowList', False)
             sender_info.edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
@@ -213,7 +226,8 @@ async def _(event: Event):
 
 @bot.on_message('group')
 async def _(event: Event):
-    result = BotDBUtil.GroupBlockList.check(f'{target_group_prefix}|{event.group_id}')
+    target_id = f'{target_group_prefix}|{event.group_id}'
+    result = BotDBUtil.GroupBlockList.check(target_id)
     if result:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
         if Config('issue_url', cfg_type=str):

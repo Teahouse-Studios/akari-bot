@@ -40,7 +40,7 @@ async def game(msg: Bot.MessageSession,
                x_callback: GameCallback,
                o_callback: GameCallback) -> 0 | 1 | 2:
     # 0 = empty; 1 = x; 2 = o
-    play_state = PlayState('tic_tac_toe', msg, all=True)
+    play_state = PlayState('tic_tac_toe', msg)
     board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     while True:
         if not play_state.check():
@@ -76,12 +76,12 @@ def format_board(board: GameBoard):
 
 def generate_human_callback(msg: Bot.MessageSession, player: str):
     async def callback(board: List[List[int]]):
-        play_state = PlayState('tic_tac_toe', msg, all=True)
+        play_state = PlayState('tic_tac_toe', msg)
         await msg.send_message(format_board(board) + f'\n{msg.locale.t("tic_tac_toe.message.turn", player=player)}', quote=False)
         while True:
             if not play_state.check():
                 raise TerminationError
-            wait = await msg.wait_anyone(timeout=None)
+            wait = await msg.wait_next_message(timeout=None)
             text = wait.as_display(text_only=True)
             if text == 'stop':
                 raise TerminationError
@@ -249,7 +249,7 @@ async def random_bot_callback(board: GameBoard):
 
 @tic_tac_toe.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
-    play_state = PlayState('tic_tac_toe', msg, all=True)
+    play_state = PlayState('tic_tac_toe', msg)
     if play_state.check():
         play_state.disable()
         await msg.finish(msg.locale.t('game.message.stop'))
@@ -275,7 +275,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     else:
         game_type = 'random'
         bot_callback = random_bot_callback
-    play_state = PlayState('tic_tac_toe', msg, all=True)
+    play_state = PlayState('tic_tac_toe', msg)
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
     else:
@@ -300,7 +300,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
 
 @tic_tac_toe.command('duo {{tic_tac_toe.help.duo}}')
 async def ttt_multiplayer(msg: Bot.MessageSession):
-    play_state = PlayState('tic_tac_toe', msg, all=True)
+    play_state = PlayState('tic_tac_toe', msg)
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
     else:
