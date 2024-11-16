@@ -70,11 +70,18 @@ jinja2 = "^3.1.4"
 mcstatus = "^11.1.1"
 qq-botpy = "^1.2.1"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
+mail-gw = "^0.5"
 
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
 pycodestyle = "2.12.1"
+
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
 
 [build-system]
 requires = ["poetry-core"]
