@@ -4,6 +4,7 @@ import os
 import shutil
 import sys
 import traceback
+from datetime import datetime
 from time import sleep
 
 from core.config import Config
@@ -45,6 +46,9 @@ class RestartBot(Exception):
     pass
 
 
+failed_to_start_attempts = {}
+
+
 def init_bot():
     base_superuser = Config('base_superuser', cfg_type=(str, list))
     if base_superuser:
@@ -74,6 +78,23 @@ disabled_bots = Config('disabled_bots', [])
 processes = []
 
 
+def restart_process(bot_name: str):
+    if bot_name not in failed_to_start_attempts or datetime.now().timestamp() - failed_to_start_attempts[bot_name]['timestamp'] > 60:
+        failed_to_start_attempts[bot_name] = {}
+        failed_to_start_attempts[bot_name]['count'] = 0
+        failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
+    failed_to_start_attempts[bot_name]['count'] += 1
+    failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
+    if failed_to_start_attempts[bot_name]['count'] > 3:
+        Logger.error(f'Bot {bot_name} failed to start 3 times, abort to restart, please check the log.')
+        return
+
+    Logger.warning(f'Restarting bot {bot_name}...')
+    p = multiprocessing.Process(target=go, args=(bot_name, True, True if not sys.argv[0].endswith('.py') else False), name=bot_name)
+    p.start()
+    processes.append(p)
+
+
 def run_bot():
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
@@ -95,7 +116,7 @@ def run_bot():
                     break
             if abort:
                 continue
-        p = multiprocessing.Process(target=go, args=(bl, True, True if not sys.argv[0].endswith('.py') else False))
+        p = multiprocessing.Process(target=go, args=(bl, True, True if not sys.argv[0].endswith('.py') else False), name=bl)
         p.start()
         processes.append(p)
     while True:
@@ -104,11 +125,14 @@ def run_bot():
                 continue
             else:
                 if p.exitcode == 233:
-                    Logger.warning(f'{p.pid} exited with code 233, restart all bots.')
+                    Logger.warning(f'{p.pid} ({p.name}) exited with code 233, restart all bots.')
                     raise RestartBot
                 else:
-                    Logger.critical(f'Process {p.pid} exited with code {p.exitcode}, please check the log.')
+                    Logger.critical(f'Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.')
                     processes.remove(p)
+                    p.terminate()
+                    p.join()
+                    restart_process(p.name)
                 break
 
         if not processes:
