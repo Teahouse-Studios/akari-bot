@@ -105,7 +105,7 @@ async def check_job_queue():
                 Logger.warning(f'Unknown action {tsk.action}, skip.')
             return_val(tsk, {}, status=False)
         except QueueFinished:
-            Logger.info(f'Task {tsk.action}({tsk.taskid}) finished.')
+            Logger.debug(f'Task {tsk.action}({tsk.taskid}) finished.')
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
