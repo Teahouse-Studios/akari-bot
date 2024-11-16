@@ -3,7 +3,7 @@ import traceback
 
 from mcstatus import JavaServer, BedrockServer
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
 
 

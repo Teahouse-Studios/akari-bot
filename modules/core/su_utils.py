@@ -7,7 +7,7 @@ from datetime import datetime
 import orjson as json
 
 from core.config import Config, CFG
-from config import Config, CFG
+from core.config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.component import module

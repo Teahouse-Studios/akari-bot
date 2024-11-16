@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import ujson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import on_command
 from core.loader import ModulesManager
