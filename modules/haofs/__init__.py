@@ -1,5 +1,5 @@
 from core.extra.hfs import Account, Paper, Exam
-from database import BotDBUtil
+from core.database import BotDBUtil
 from httpcore import NetworkError
 
 from core.builtins import Bot, Plain, Image

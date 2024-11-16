@@ -1,4 +1,4 @@
-from config import Config
+from core.config import Config
 from aiohttp import ClientSession
 from retrying import retry
 from core.exceptions import FaildToQueryWeather
