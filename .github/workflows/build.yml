@@ -39,8 +39,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: bot.py
-          onefile: true
-          standalone: true
+          mode: onefile
           output-dir: wrapper-build
           include-plugin-directory: |
               modules

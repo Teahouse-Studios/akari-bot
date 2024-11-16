@@ -79,7 +79,8 @@ processes = []
 
 
 def restart_process(bot_name: str):
-    if bot_name not in failed_to_start_attempts or datetime.now().timestamp() - failed_to_start_attempts[bot_name]['timestamp'] > 60:
+    if bot_name not in failed_to_start_attempts or datetime.now(
+    ).timestamp() - failed_to_start_attempts[bot_name]['timestamp'] > 60:
         failed_to_start_attempts[bot_name] = {}
         failed_to_start_attempts[bot_name]['count'] = 0
         failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
@@ -90,7 +91,13 @@ def restart_process(bot_name: str):
         return
 
     Logger.warning(f'Restarting bot {bot_name}...')
-    p = multiprocessing.Process(target=go, args=(bot_name, True, True if not sys.argv[0].endswith('.py') else False), name=bot_name)
+    p = multiprocessing.Process(
+        target=go,
+        args=(
+            bot_name,
+            True,
+            True if not sys.argv[0].endswith('.py') else False),
+        name=bot_name)
     p.start()
     processes.append(p)
 
@@ -116,7 +123,13 @@ def run_bot():
                     break
             if abort:
                 continue
-        p = multiprocessing.Process(target=go, args=(bl, True, True if not sys.argv[0].endswith('.py') else False), name=bl)
+        p = multiprocessing.Process(
+            target=go,
+            args=(
+                bl,
+                True,
+                True if not sys.argv[0].endswith('.py') else False),
+            name=bl)
         p.start()
         processes.append(p)
     while True:
