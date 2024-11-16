@@ -38,20 +38,20 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
     else:
         pages = ''
 
-    stat_view = format_num(msg, stat['view'])
-    stat_danmaku = format_num(msg, stat['danmaku'])
-    stat_reply = format_num(msg, stat['reply'])
-    stat_favorite = format_num(msg, stat['favorite'])
-    stat_coin = format_num(msg, stat['coin'])
-    stat_share = format_num(msg, stat['share'])
-    stat_like = format_num(msg, stat['like'])
+    stat_view = msg.locale.int(stat['view'], 1)
+    stat_danmaku = msg.locale.int(stat['danmaku'], 1)
+    stat_reply = msg.locale.int(stat['reply'], 1)
+    stat_favorite = msg.locale.int(stat['favorite'], 1)
+    stat_coin = msg.locale.int(stat['coin'], 1)
+    stat_share = msg.locale.int(stat['share'], 1)
+    stat_like = msg.locale.int(stat['like'], 1)
 
     owner = view['owner']['name']
     avatar = view['owner']['face']
-    fans = format_num(msg, res['data']['Card']['card']['fans'])
+    fans = msg.locale.int(res['data']['Card']['card']['fans'], 1)
 
     if use_embed:
-        await msg.finish(Embed(title=f'{title}{pages}',
+        await msg.send_message(Embed(title=f'{title}{pages}',
                                description=desc,
                                url=video_url,
                                author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
@@ -69,41 +69,11 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
                                        EmbedField(msg.locale.t('bilibili.message.embed.time'), time)]))
     elif not get_detail:
         output = msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
-        await msg.finish([Image(pic), Url(video_url), Plain(output)])
+        await msg.send_message([Image(pic), Url(video_url), Plain(output)])
     else:
         output = msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
                               owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
                               reply=stat_reply,
                               like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
                               desc=desc, time=time)
-        await msg.finish([Image(pic), Url(video_url), Plain(output)])
-
-
-def format_num(msg: Bot.MessageSession, number):
-    if msg.locale.locale in ['zh_cn', 'zh_tw']:
-        zh_tw = True if msg.locale.locale == 'zh_tw' else False
-        if number >= 100000000:
-            formatted_number = number / 100000000
-            formatted_str = f'{formatted_number:.2f}' if formatted_number < 100 else f'{formatted_number:.1f}'
-            return formatted_str.rstrip('0').rstrip('.') + ('億' if zh_tw else '亿')
-        elif number >= 10000:
-            formatted_number = number / 10000
-            formatted_str = f'{formatted_number:.2f}' if formatted_number < 100 else f'{formatted_number:.1f}'
-            return formatted_str.rstrip('0').rstrip('.') + ('萬' if zh_tw else '万')
-        else:
-            return str(number)
-    else:
-        if number >= 1000000000:
-            formatted_number = number / 1000000000
-            formatted_str = f'{formatted_number:.2f}' if formatted_number < 100 else f'{formatted_number:.1f}'
-            return formatted_str.rstrip('0').rstrip('.') + 'G'
-        elif number >= 1000000:
-            formatted_number = number / 1000000
-            formatted_str = f'{formatted_number:.2f}' if formatted_number < 100 else f'{formatted_number:.1f}'
-            return formatted_str.rstrip('0').rstrip('.') + 'M'
-        elif number >= 1000:
-            formatted_number = number / 1000
-            formatted_str = f'{formatted_number:.2f}' if formatted_number < 100 else f'{formatted_number:.1f}'
-            return formatted_str.rstrip('0').rstrip('.') + 'k'
-        else:
-            return str(number)
+        await msg.send_message([Image(pic), Url(video_url), Plain(output)])

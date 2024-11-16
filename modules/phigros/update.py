@@ -4,16 +4,15 @@ import re
 import shutil
 import string
 
-import ujson as json
+import orjson as json
 
-from config import Config
+from core.logger import Logger
+from core.path import assets_path
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
-from core.logger import Logger
 
-assets_path = os.path.abspath('./assets/phigros')
-cache_path = os.path.abspath(Config('cache_path', './cache/'))
-rating_path = os.path.abspath(f'{assets_path}/rating.json')
+pgr_assets_path = os.path.join(assets_path, 'phigros')
+rating_path = os.path.join(pgr_assets_path, 'rating.json')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 json_url_mirror = 'https://gh.api.99988866.xyz/https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 
@@ -31,11 +30,11 @@ def remove_punctuations(text):
 
 
 async def update_assets():
-    illustration_path = os.path.join(assets_path, 'illustration')
+    illustration_path = os.path.join(pgr_assets_path, 'illustration')
     if not os.path.exists(illustration_path):
         os.makedirs(illustration_path, exist_ok=True)
     illustration_list = os.listdir(illustration_path)
-    file_path = random_cache_path() + '.json'
+    file_path = f'{random_cache_path()}.json'
     data = {}
     try:
         update = await get_url(json_url, 200)
@@ -59,7 +58,7 @@ async def update_assets():
                 if download_file:
                     shutil.move(download_file, os.path.join(illustration_path, song_name))
             except Exception:
-                shutil.copy(os.path.abspath('./assets/unknown'), os.path.join(illustration_path, song_name))
+                shutil.copy(os.path.join(pgr_assets_path, 'unknown'), os.path.join(illustration_path, song_name))
     Logger.info('Phigros illustrations download completed.')
     another_assets_url = 'https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
     another_assets_url_mirror = 'https://gh.api.99988866.xyz/https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
@@ -81,7 +80,7 @@ async def update_assets():
         os.remove(download_file)
     else:
         return False
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(data, indent=4, ensure_ascii=False))
+    with open(file_path, 'wb', encoding='utf-8') as f:
+        f.write(json.dumps(data, option=json.OPT_INDENT_2))
     shutil.move(file_path, rating_path)
     return True

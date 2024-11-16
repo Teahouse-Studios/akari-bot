@@ -16,7 +16,10 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
     if result[1]:
         screenshot = await make_screenshot(result[1])
         if screenshot:
-            await msg.send_message(Image(screenshot))
+            img_chain = []
+            for scr in screenshot:
+                img_chain.append(Image(scr))
+            await msg.send_message(img_chain)
 
 
 @bug.command('<mojiraid> {{bugtracker.help}}')
@@ -32,7 +35,7 @@ async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
 @bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)', mode='A', flags=re.I,
            desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
-    titles = list(set(msg.matched_msg))
+    titles = list(set(msg.matched_msg))[:5]
     for title in titles:
         if title != '':
             await query_bugtracker(msg, title)

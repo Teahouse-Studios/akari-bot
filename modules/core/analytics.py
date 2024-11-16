@@ -1,20 +1,22 @@
 import base64
+import traceback
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import oss2
-import ujson as json
+import orjson as json
 import zipfile
 from dateutil.relativedelta import relativedelta
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
+from core.logger import Logger
 from core.utils.cache import random_cache_path
-from database import session, BotDBUtil
-from database.tables import AnalyticsData, is_mysql
+from core.database import session, BotDBUtil
+from core.database.tables import AnalyticsData, is_mysql
 
 
 def get_first_record(msg: Bot.MessageSession):
@@ -43,8 +45,11 @@ async def _(msg: Bot.MessageSession):
                                           first_record=first_record,
                                           counts=get_counts,
                                           counts_today=get_counts_today))
-        except AttributeError:
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -79,12 +84,15 @@ async def _(msg: Bot.MessageSession):
             plt.gca().yaxis.get_major_locator().set_params(integer=True)
             for xitem, yitem in zip(data_x, data_y):
                 plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-            path = random_cache_path() + '.png'
+            path = f'{random_cache_path()}.png'
             plt.savefig(path)
             plt.close()
             await msg.finish([Plain(result), Image(path)])
-        except AttributeError:
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -120,12 +128,48 @@ async def _(msg: Bot.MessageSession):
             plt.gca().yaxis.get_major_locator().set_params(integer=True)
             for xitem, yitem in zip(data_x, data_y):
                 plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-            path = random_cache_path() + '.png'
+            path = f'{random_cache_path()}.png'
             plt.savefig(path)
             plt.close()
             await msg.finish([Plain(result), Image(path)])
-        except AttributeError:
-            await msg.finish(msg.locale.t("core.message.analytics.none"))
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
+    else:
+        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+
+
+@ana.command('modules [<rank>]')
+async def _(msg: Bot.MessageSession, rank: int = None):
+    rank = rank if rank and rank > 0 else 30
+    if Config('enable_analytics', False):
+        try:
+            module_counts = BotDBUtil.Analytics.get_modules_count()
+            top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:rank]
+
+            module_names = [item[0] for item in top_modules]
+            module_counts = [item[1] for item in top_modules]
+            plt.figure(figsize=(10, max(6, len(module_names) * 0.5)))
+            plt.barh(module_names, module_counts, color='skyblue')
+            plt.xlabel('Counts')
+            plt.ylabel('Modules')
+            plt.gca().invert_yaxis()
+
+            for i, v in enumerate(module_counts):
+                plt.text(v, i, str(v), color='black', va='center')
+
+            path = f'{random_cache_path()}.png'
+            plt.savefig(path, bbox_inches='tight')
+            plt.close()
+
+            await msg.finish([Image(path)])
+        except AttributeError as e:
+            if str(e).find("NoneType") != -1:
+                await msg.finish(msg.locale.t("core.message.analytics.none"))
+            else:
+                Logger.error(traceback.format_exc())
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -198,14 +242,14 @@ def export_analytics(
     if from_to:
         j['from'] = from_to[0].timestamp()
         j['to'] = from_to[1].timestamp()
-    cache_path = random_cache_path()
-    with open(cache_path + '.json', 'w') as f:
+    rnd_path = random_cache_path()
+    with open(f'{rnd_path}.json', 'wb') as f:
         f.write(json.dumps(j))
-    with zipfile.ZipFile(cache_path + '.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
-        z.write(cache_path + '.json', 'analytics.json')
+    with zipfile.ZipFile(f'{rnd_path}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
+        z.write(f'{rnd_path}.json', 'analytics.json')
     auth = oss2.Auth(oss_ak, oss_sk)
     bucket = oss2.Bucket(auth, oss_endpoint, oss_bucket)
-    bucket.put_object_from_file('analytics.zip', cache_path + '.zip')
+    bucket.put_object_from_file('analytics.zip', f'{rnd_path}.zip')
     url = bucket.sign_url('GET', 'analytics.zip', expires=expires)
     if custom_domain := Config('oss_custom_domain'):
         url = urllib.parse.urlparse(url)

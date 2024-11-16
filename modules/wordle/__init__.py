@@ -1,21 +1,21 @@
 import os
+from collections import Counter
 from enum import Enum
 from typing import List, Optional
 
-from attr import define, field
-from collections import Counter
-from PIL import Image, ImageDraw, ImageFont
-import random
 import unicodedata
+from PIL import Image, ImageDraw, ImageFont
+from attr import define, field
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
-from core.petal import gained_petal
+from core.path import assets_path, noto_sans_bold_path
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
-from core.utils.info import Info
+from core.utils.petal import gained_petal
+from core.utils.random import Random
 
 text_mode = Config('wordle_disable_image', False)
 
@@ -23,11 +23,8 @@ wordle = module('wordle',
                 desc='{wordle.help.desc}', doc=True, developers=['Dianliang233', 'DoroWolf']
                 )
 
-words_txt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt')
-answers_txt = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt')
-if Info.binary_mode:
-    words_txt = './modules/wordle/words.txt'
-    answers_txt = './modules/wordle/answers.txt'
+words_txt = os.path.join(assets_path, 'wordle', 'words.txt')
+answers_txt = os.path.join(assets_path, 'wordle', 'answers.txt')
 with open(words_txt, encoding='utf8') as handle:
     word_list = handle.read().splitlines()
 with open(answers_txt, encoding='utf8') as handle:
@@ -130,7 +127,7 @@ class WordleBoard:
 
     @staticmethod
     def from_random_word():
-        return WordleBoard(random.choice(answers_list))
+        return WordleBoard(Random.choice(answers_list))
 
     def reset_board(self):
         self.word = ""
@@ -152,7 +149,6 @@ class WordleBoardImage:
     green_color = (107, 169, 100)
     yellow_color = (201, 180, 88)
     grey_color = (120, 124, 126)
-    font_path = 'assets/Noto Sans CJK Bold.otf'
 
     def __init__(self, wordle_board: WordleBoard, dark_theme: bool):
         self.wordle_board = wordle_board
@@ -179,7 +175,7 @@ class WordleBoardImage:
     def update_board(self):
         draw = ImageDraw.Draw(self.image)
         font_size = int(self.cell_size * 0.8)
-        font = ImageFont.truetype(self.font_path, font_size)
+        font = ImageFont.truetype(noto_sans_bold_path, font_size)
 
         for row_index, row in enumerate(self.wordle_board.test_board()):
             for col_index, square in enumerate(row):
@@ -205,12 +201,12 @@ class WordleBoardImage:
 @wordle.command('{{wordle.help}}')
 @wordle.command('hard {{wordle.help.hard}}')
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState('wordle', msg, all=True)
+    play_state = PlayState('wordle', msg)
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
 
-    qc = CoolDown('wordle', msg, all=True)
-    if not msg.target.target_from == 'TEST|Console' and not msg.check_super_user():
+    qc = CoolDown('wordle', msg)
+    if not msg.target.client_name == 'TEST' and not msg.check_super_user():
         c = qc.check(150)
         if c != 0:
             await msg.finish(msg.locale.t('message.cooldown', time=int(150 - c)))
@@ -236,7 +232,7 @@ async def _(msg: Bot.MessageSession):
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
         if not play_state.check():
             return
-        wait = await msg.wait_anyone(timeout=None)
+        wait = await msg.wait_next_message(timeout=None)
         if not play_state.check():
             return
         word = wait.as_display(text_only=True).strip().lower()
@@ -251,7 +247,6 @@ async def _(msg: Bot.MessageSession):
         if hard_mode:
             last_word = word
         board_image.update_board()
-        await msg.sleep(2)  # 防冲突
 
         if not board.is_game_over() and board.get_trials() <= 6:
             Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
@@ -279,13 +274,13 @@ async def _(msg: Bot.MessageSession):
 @wordle.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
-    play_state = PlayState('wordle', msg, all=True)
-    qc = CoolDown('wordle', msg, all=True)
+    play_state = PlayState('wordle', msg)
+    qc = CoolDown('wordle', msg)
     if play_state.check():
         play_state.disable()
         board.reset_board()
         qc.reset()
-        await msg.finish(msg.locale.t('wordle.message.stop', answer=play_state.check('answer')))
+        await msg.finish(msg.locale.t('wordle.message.stop', answer=play_state.get('answer')))
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
 

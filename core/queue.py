@@ -1,19 +1,36 @@
 import asyncio
-from datetime import datetime
 import traceback
+import datetime
+from uuid import uuid4
 
-import ujson as json
+import orjson as json
 
-from core.builtins import Bot, Temp, MessageChain
+from core.builtins import Bot, MessageChain
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
-from database import BotDBUtil
+from core.database import BotDBUtil
+from core.database.tables import JobQueueTable
 
 _queue_tasks = {}
+queue_actions = {}
+
+
+class QueueFinished(Exception):
+    pass
+
+
+def action(action_name: str):
+    def decorator(func):
+        queue_actions[action_name] = func
+        return func
+
+    return decorator
 
 
 class JobQueue:
+    name = 'Internal|' + str(uuid4())
+
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
         taskid = BotDBUtil.JobQueue.add(target_client, action, args)
@@ -60,6 +77,7 @@ def return_val(tsk, value: dict, status=True):
     else:
         value = status
     BotDBUtil.JobQueue.return_val(tsk, value)
+    raise QueueFinished
 
 
 async def check_job_queue():
@@ -68,31 +86,63 @@ async def check_job_queue():
         if tsk.hasDone:
             _queue_tasks[tskid]['result'] = json.loads(tsk.returnVal)
             _queue_tasks[tskid]['flag'].set()
+    get_internal = BotDBUtil.JobQueue.get_all(target_client=JobQueue.name)
     get_all = BotDBUtil.JobQueue.get_all(target_client=Bot.FetchTarget.name)
-    for tsk in get_all:
+    for tsk in get_internal + get_all:
         Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
         args = json.loads(tsk.args)
         Logger.debug(f'Args: {args}')
         try:
-            if tsk.action == 'validate_permission':
-                fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
-                if fetch:
-                    return_val(tsk, {'value': await fetch.parent.check_permission()})
-                else:
-                    return_val(tsk, {'value': False})
-            if tsk.action == 'trigger_hook':
-                await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
-                return_val(tsk, {})
-            if tsk.action == 'secret_append_ip':
-                append_ip(args)
-                return_val(tsk, {})
-            if tsk.action == 'send_message':
-                return_val(tsk, {'send': True})
-                try:
-                    await Bot.send_message(args['target_id'], MessageChain(args['message']))
-                except Exception:
-                    Logger.error(traceback.format_exc())
-                    return_val(tsk, {'send': False})
+            timestamp = tsk.timestamp
+            if BotDBUtil.time_offset is not None and datetime.datetime.now().timestamp() - timestamp.timestamp() - \
+                    BotDBUtil.time_offset > 7200:
+                Logger.warning(f'Task {tsk.taskid} timeout, {
+                    datetime.datetime.now().timestamp() - timestamp.timestamp() - BotDBUtil.time_offset}, skip.')
+            elif tsk.action in queue_actions:
+                await queue_actions[tsk.action](tsk, args)
+                Logger.warning(f'Task {tsk.action}({tsk.taskid}) not returned any value, did you forgot something?')
+            else:
+                Logger.warning(f'Unknown action {tsk.action}, skip.')
+            return_val(tsk, {}, status=False)
+        except QueueFinished:
+            Logger.info(f'Task {tsk.action}({tsk.taskid}) finished.')
+        except Exception:
+            f = traceback.format_exc()
+            Logger.error(f)
+            return_val(tsk, {'traceback': f}, status=False)
 
-        except Exception as e:
-            return_val(tsk, {'traceback': traceback.format_exc()}, status=False)
+
+@action('validate_permission')
+async def _(tsk: JobQueueTable, args: dict):
+    fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
+    if fetch:
+        return_val(tsk, {'value': await fetch.parent.check_permission()})
+    else:
+        return_val(tsk, {'value': False})
+
+
+@action('trigger_hook')
+async def _(tsk: JobQueueTable, args: dict):
+    await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
+    return_val(tsk, {})
+
+
+@action('secret_append_ip')
+async def _(tsk: JobQueueTable, args: dict):
+    append_ip(args)
+    return_val(tsk, {})
+
+
+@action('send_message')
+async def _(tsk: JobQueueTable, args: dict):
+    await Bot.send_message(args['target_id'], MessageChain(args['message']))
+    return_val(tsk, {'send': True})
+
+
+@action('verify_timezone')
+async def _(tsk: JobQueueTable, args: dict):
+    timestamp = tsk.timestamp
+    tz_ = datetime.datetime.now().timestamp() - timestamp.timestamp()
+    Logger.debug(f'Timezone offset: {tz_}')
+    BotDBUtil.time_offset = tz_
+    return_val(tsk, {})

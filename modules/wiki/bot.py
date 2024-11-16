@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from database import BotDBUtil
+from core.database import BotDBUtil
 from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 from modules.wiki.utils.wikilib import WikiLib
@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
 @wb.handle('logout <apilink>')
 async def _(msg: Bot.MessageSession, apilink: str):
     BotAccountDB.remove(apilink)
-    await msg.finish(msg.locale.t("success"))
+    await msg.finish(msg.locale.t("message.success"))
 
 
 @wb.handle('toggle')

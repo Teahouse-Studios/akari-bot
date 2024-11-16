@@ -1,8 +1,8 @@
 import asyncio
-from datetime import datetime, timezone as datetimezone
+from datetime import datetime, UTC as datetimeUTC
 from typing import List
 
-from config import Config
+from core.config import Config
 from core.builtins.message.chain import *
 from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager
@@ -12,7 +12,7 @@ from core.exceptions import WaitCancelException
 from core.types.message import MessageSession as MessageSessionT, MsgInfo, Session
 from core.utils.i18n import Locale
 from core.utils.text import parse_time_string
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 
 class MessageSession(MessageSessionT):
@@ -177,7 +177,7 @@ class MessageSession(MessageSessionT):
         return (
             datetime.fromtimestamp(
                 timestamp,
-                datetimezone.utc) +
+                datetimeUTC) +
             self.timezone_offset).strftime(
             ' '.join(ftime_template))
 

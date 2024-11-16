@@ -1,19 +1,27 @@
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
-from core.utils.image_table import image_table_render, ImageTable
+from core.exceptions import ConfigValueError
 from core.utils.http import get_url
+from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 
+API = Config('ncmusic_api', cfg_type=str)
+SEARCH_LIMIT = 10
+
 ncmusic = module('ncmusic',
-                 developers=['bugungu', 'DoroWolf'],
-                 desc='{ncmusic.help.desc}', doc=True,
+                 developers=['bugungu'],
+                 desc='{ncmusic.help.desc}',
+                 doc=True,
                  support_languages=['zh_cn'])
 
 
 @ncmusic.handle('search [--legacy] <keyword> {{ncmusic.help.search}}',
                 options_desc={'--legacy': '{help.option.legacy}'})
 async def search(msg: Bot.MessageSession, keyword: str):
-    url = f"https://ncmusic.akari-bot.top/search?keywords={keyword}"
+    if not API:
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
+    url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
     song_count = result['result']['songCount']
     legacy = True
@@ -21,7 +29,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
     if song_count == 0:
         await msg.finish(msg.locale.t('ncmusic.message.search.not_found'))
 
-    songs = result['result']['songs'][:10]
+    songs = result['result']['songs'][:SEARCH_LIMIT]
 
     if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
 
@@ -43,14 +51,14 @@ async def search(msg: Bot.MessageSession, keyword: str):
             'ID'
         ])
 
-        img = await image_table_render(tables)
-        if img:
+        imgs = await image_table_render(tables)
+        if imgs:
             legacy = False
-
-            send_msg.append(Image(img))
-            if song_count > 10:
-                song_count = 10
-                send_msg.append(I18NContext("message.collapse", amount="10"))
+            for img in imgs:
+                send_msg.append(Image(img))
+            if song_count > SEARCH_LIMIT:
+                song_count = SEARCH_LIMIT
+                send_msg.append(I18NContext("message.collapse", amount=SEARCH_LIMIT))
 
         if song_count == 1:
             send_msg.append(I18NContext('ncmusic.message.search.confirm'))
@@ -90,9 +98,9 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 send_msg += f"（{' / '.join(song['album']['transNames'])}）"
             send_msg += f"（{song['id']}）\n"
 
-        if song_count > 10:
-            song_count = 10
-            send_msg += msg.locale.t("message.collapse", amount="10")
+        if song_count > SEARCH_LIMIT:
+            song_count = SEARCH_LIMIT
+            send_msg += msg.locale.t("message.collapse", amount=SEARCH_LIMIT)
 
         if song_count == 1:
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.confirm')
@@ -115,12 +123,25 @@ async def search(msg: Bot.MessageSession, keyword: str):
             else:
                 await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
 
+        if Bot.client_name == 'QQ' and Config('ncmusic_enable_card', False):
+            await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
+        else:
+            await info(msg, sid)
+
+
+@ncmusic.handle('<sid> {{ncmusic.help}}', available_for=['QQ|Group', 'QQ|Private'])
+async def _(msg: Bot.MessageSession, sid: int):
+    if Config('ncmusic_enable_card', False):
+        await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
+    else:
         await info(msg, sid)
 
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
-async def info(msg: Bot.MessageSession, sid: str):
-    url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
+async def info(msg: Bot.MessageSession, sid: int):
+    if not API:
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
+    url = f"{API}/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt='json')
 
     if result['songs']:

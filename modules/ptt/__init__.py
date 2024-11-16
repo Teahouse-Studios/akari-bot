@@ -4,11 +4,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.component import module
 from core.builtins import Bot, Image as BImage
+from core.path import assets_path
 from core.utils.cache import random_cache_path
 from core.utils.image import get_fontsize
 
 
-assets_path = os.path.abspath('./assets/arcaea')
+arc_assets_path = os.path.join(assets_path, 'arcaea')
 
 
 p = module('ptt', developers=['OasisAkari'], doc=True)
@@ -42,10 +43,10 @@ async def pttimg(msg: Bot.MessageSession, ptt: str):
 
     else:
         pttimg = 'off'
-    pttimgr = Image.open(f'{assets_path}/ptt/rating_{str(pttimg)}.png')
+    pttimgr = Image.open(os.path.join(arc_assets_path, 'ptt', f'rating_{str(pttimg)}.png'))
     ptttext = Image.new("RGBA", (119, 119))
-    font1 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 49)
-    font2 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 33)
+    font1 = ImageFont.truetype(os.path.join(arc_assets_path, 'Fonts', 'Exo-SemiBold.ttf'), 49)
+    font2 = ImageFont.truetype(os.path.join(arc_assets_path, 'Fonts', 'Exo-SemiBold.ttf'), 33)
     if ptt >= 0 and ptt <= 99.99:
         rawptt = str(ptt).split('.')
         if len(rawptt) < 2:
@@ -81,6 +82,6 @@ async def pttimg(msg: Bot.MessageSession, ptt: str):
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
     ptttext = ptttext.resize(pttimgr.size)
     pttimgr.alpha_composite(ptttext, (0, 0))
-    savepath = random_cache_path() + '.png'
+    savepath = f'{random_cache_path()}.png'
     pttimgr.save(savepath)
     await msg.finish([BImage(path=savepath)])

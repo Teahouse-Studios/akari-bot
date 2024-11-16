@@ -1,5 +1,6 @@
 {
     "bugtracker.help": "Query the corresponding ticket on Mojira.",
     "bugtracker.help.regex.desc": "Send the Mojira ticket ID to query info.",
-    "bugtracker.message.get_failed": "Failed to get info. The ticket may not exist or set to private."
+    "bugtracker.message.get_failed": "Failed to get info. The ticket may not exist or set to private.",
+    "bugtracker.message.invalid_mojira_id": "Invalid Mojira ticket ID."
 }

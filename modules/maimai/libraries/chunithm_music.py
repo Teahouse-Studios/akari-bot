@@ -1,10 +1,13 @@
-import random
 import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
+import orjson as json
+
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.random import Random
+from .chunithm_mapping import *
 
 
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
@@ -98,7 +101,7 @@ class MusicList(List[Music]):
         return None
 
     def random(self):
-        return random.choice(self)
+        return Random.choice(self)
 
     def filter(self,
                *,
@@ -144,7 +147,7 @@ class TotalList:
 
     async def update(self):
         try:
-            obj = await get_url('https://www.diving-fish.com/api/chunithmprober/music_data', 200, fmt='json')
+            obj = await self.dl_cache()
             total_list: MusicList = MusicList(obj)
             for __i in range(len(total_list)):
                 total_list[__i] = Music(total_list[__i])
@@ -155,3 +158,20 @@ class TotalList:
         except Exception:
             Logger.error(traceback.format_exc())
             return False
+
+    async def dl_cache(self):
+        try:
+            url = f"https://www.diving-fish.com/api/chunithmprober/music_data"
+            data = await get_url(url, 200, fmt='json')
+            if data:
+                with open(chu_song_info_path, 'wb') as f:
+                    f.write(json.dumps(data))
+            return data
+        except Exception:
+            Logger.error(traceback.format_exc())
+            try:
+                with open(chu_song_info_path, 'r', encoding='utf-8') as f:
+                    data = json.loads(f.read())
+                return data
+            except Exception:
+                return None

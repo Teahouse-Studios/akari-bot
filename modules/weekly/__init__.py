@@ -1,8 +1,8 @@
 import re
 from html import unescape
-from bs4 import BeautifulSoup
 
-import ujson as json
+import orjson as json
+from bs4 import BeautifulSoup
 
 from core.builtins import Bot, Plain, Image, Url
 from core.component import module
@@ -46,9 +46,9 @@ async def get_weekly(with_img=False, zh_tw=False):
         Plain(
             locale.t(
                 "weekly.message.link",
-                img=imglink if imglink else locale.t("none"),
+                img=imglink if imglink else locale.t("message.none"),
                 article=str(
-                    Url(f'https://zh.minecraft.wiki{page[0]}') if page else locale.t("none")),
+                    Url(f'https://zh.minecraft.wiki{page[0]}') if page else locale.t("message.none")),
                 link=str(
                     Url(f'https://zh.minecraft.wiki/wiki/?oldid={str(result["parse"]["revid"])}')))))
     if imglink and with_img:
@@ -64,7 +64,8 @@ async def get_weekly_img(with_img=False, zh_tw=False):
                                        element=['div#fp-section-weekly'])
     msg_ = []
     if img:
-        msg_.append(Image(path=img))
+        for i in img:
+            msg_.append(Image(i))
     if with_img:
         """result = json.loads(await get_url(
             'https://zh.minecraft.wiki/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
@@ -103,4 +104,7 @@ async def _(msg: Bot.MessageSession):
 @wky.handle('teahouse image {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
-    await msg.finish(Image(await msgchain2image([Plain(weekly)], msg)))
+    imgchain = []
+    for img in await msgchain2image([Plain(weekly)], msg):
+        imgchain.append(Image(img))
+    await msg.finish(imgchain)

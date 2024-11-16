@@ -1,0 +1,11 @@
+{
+    "server.help": "Get Minecraft: Java/Bedrock Edition server MOTD.",
+    "server.help.option.p": "Show players list.",
+    "server.help.option.r": "Show raw info.",
+    "server.message.local_address": "Invalid domain name or IP address.",
+    "server.message.gamemode": "Game mode: ",
+    "server.message.not_found": "Does not find any type of Minecraft server.",
+    "server.message.player": "Online players: ",
+    "server.message.player.current": "Current online players: ",
+    "server.message.version": "Game version: "
+}

@@ -1,15 +1,15 @@
-import os
+import base64
+from io import BytesIO
 
 import aiohttp
-import ujson as json
+import orjson as json
+from PIL import Image as PILImage
 
-from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download, get_url
 from core.utils.web_render import WebRender, webrender
 
 elements = ['div#descriptionmodule']
-assets_path = os.path.abspath('./assets/')
 
 spx_cache = {}
 
@@ -20,7 +20,7 @@ async def make_screenshot(page_link, use_local=True):
         return False
     elif not WebRender.local:
         use_local = False
-    Logger.info('[Webrender] Generating element screenshot...')
+    Logger.info('[WebRender] Generating element screenshot...')
     try:
         img = await download(webrender('element_screenshot', use_local=use_local),
                              status_code=200,
@@ -34,9 +34,17 @@ async def make_screenshot(page_link, use_local=True):
                              request_private_ip=True
                              )
         if img:
-            return img
+            read = open(img)
+            load_img = json.loads(read.read())
+            img_lst = []
+            for x in load_img:
+                b = base64.b64decode(x)
+                bio = BytesIO(b)
+                bimg = PILImage.open(bio)
+                img_lst.append(bimg)
+            return img_lst
         else:
-            Logger.info('[Webrender] Generation Failed.')
+            Logger.info('[WebRender] Generation Failed.')
             return False
     except aiohttp.ClientConnectorError:
         if use_local:
@@ -44,7 +52,7 @@ async def make_screenshot(page_link, use_local=True):
         else:
             return False
     except ValueError:
-        Logger.info('[Webrender] Generation Failed.')
+        Logger.info('[WebRender] Generation Failed.')
         return False
 
 

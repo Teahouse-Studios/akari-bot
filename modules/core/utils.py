@@ -5,13 +5,13 @@ import jwt
 import psutil
 from cpuinfo import get_cpu_info
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Url
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 from core.utils.web_render import WebRender
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 import subprocess
 
@@ -66,7 +66,9 @@ async def _(msg: Bot.MessageSession):
                                       swap=swap,
                                       swap_percent=swap_percent,
                                       disk_space=disk,
-                                      disk_space_total=disk_total)
+                                      disk_space_total=disk_total,
+                                      client_name=Info.client_name,
+                                      command_parsed=Info.command_parsed)
     else:
         disk_percent = psutil.disk_usage('/').percent
         result += '\n' + msg.locale.t("core.message.ping.simple",
@@ -81,7 +83,8 @@ admin = module('admin',
                       'unban': 'admin unban',
                       'ban list': 'admin ban list'},
                desc='{core.help.admin.desc}',
-               doc=True)
+               doc=True,
+               exclude_from=['TEST|Console'])
 
 
 @admin.command([
@@ -131,14 +134,14 @@ async def config_ban(msg: Bot.MessageSession):
     if 'ban' in msg.parsed_msg:
         if user not in admin_ban_list:
             msg.data.edit_option('ban', admin_ban_list + [user])
-            await msg.finish(msg.locale.t('success'))
+            await msg.finish(msg.locale.t('message.success'))
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if 'unban' in msg.parsed_msg:
         if user in (banlist := admin_ban_list):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
-            await msg.finish(msg.locale.t('success'))
+            await msg.finish(msg.locale.t('message.success'))
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
@@ -149,7 +152,7 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}', alias='lang
 @locale.command()
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
+    res = msg.locale.t("core.message.locale.prompt", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     if Config('locale_url', cfg_type=str):
@@ -160,7 +163,7 @@ async def _(msg: Bot.MessageSession):
 @locale.command('[<lang>] {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
-        await msg.finish(Locale(lang).t("success"))
+        await msg.finish(Locale(lang).t("message.success"))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         res = msg.locale.t("core.message.locale.set.invalid") + '\n' + \
@@ -172,7 +175,7 @@ async def config_gu(msg: Bot.MessageSession, lang: str):
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
-        await msg.finish(msg.locale.t("success"))
+        await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
@@ -195,25 +198,24 @@ async def _(msg: Bot.MessageSession):
 
 setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alias='toggle')
 
-
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
     if not msg.info.disable_typing:
-        msg.info.edit('disable_typing', True)
+        msg.info.edit('disableTyping', True)
         await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
     else:
-        msg.info.edit('disable_typing', False)
+        msg.info.edit('disableTyping', False)
         await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
 
 '''
 @setup.command('check {{core.help.setup.check}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
-    state = msg.options.get('typo_check')
+    state = msg.info.typo_check
     if state:
-        msg.data.edit_option('typo_check', False)
+        msg.data.edit_option('typoCheck', False)
         await msg.finish(msg.locale.t('core.message.setup.check.enable'))
     else:
-        msg.data.edit_option('typo_check', True)
+        msg.data.edit_option('typoCheck', True)
         await msg.finish(msg.locale.t('core.message.setup.check.disable'))
 '''
 
@@ -245,7 +247,7 @@ async def _(msg: Bot.MessageSession, second: int):
     await msg.finish(msg.locale.t('core.message.setup.cooldown.success', time=second))
 
 
-mute = module('mute', base=True, doc=True, required_admin=True)
+mute = module('mute', base=True, doc=True, required_admin=True, exclude_from=['TEST|Console'])
 
 
 @mute.command('{{core.help.mute}}')
@@ -257,7 +259,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, doc=True, required_admin=True, available_for=['QQ|Group'], alias='dismiss')
+leave = module('leave', alias='dismiss', base=True, doc=True, required_admin=True, available_for=['QQ|Group'])
 
 
 @leave.command('{{core.help.leave}}')

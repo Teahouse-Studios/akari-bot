@@ -1,37 +1,13 @@
-import sys
+import random
+import re
 from datetime import timedelta
 from typing import TypeVar
 
+from ff3 import FF3Cipher
+
+from core.config import Config, isint, isfloat
+
 T = TypeVar("T", str, bytes, bytearray)
-
-if sys.version_info.minor > 8:  # PY39
-    def remove_suffix(string: T, suffix: T) -> T:
-        return string.removesuffix(suffix)
-
-    def remove_prefix(string: T, prefix: T) -> T:
-        return string.removeprefix(prefix)
-else:
-    def remove_suffix(string: T, suffix: T) -> T:
-        return string[:-len(suffix)] if string.endswith(suffix) else string
-
-    def remove_prefix(string: T, prefix: T) -> T:
-        return string[len(prefix):] if string.startswith(prefix) else string
-
-
-def isfloat(num_str: str) -> bool:
-    try:
-        float(num_str)
-        return True
-    except Exception:
-        return False
-
-
-def isint(num_str: str) -> bool:
-    try:
-        int(num_str)
-        return True
-    except Exception:
-        return False
 
 
 def parse_time_string(time_str: str) -> timedelta:
@@ -53,3 +29,24 @@ def parse_time_string(time_str: str) -> timedelta:
         return timedelta(hours=hour, minutes=minute)
     except Exception:
         return timedelta()
+
+
+def random_string(length: int) -> str:
+    return ''.join(random.choices("0123456789ABCDEF", k=length))
+
+
+def decrypt_string(text):
+    key = Config('ff3_key', random_string(32))
+    tweak = Config('ff3_tweak', random_string(14))
+    c = FF3Cipher.withCustomAlphabet(
+        key, tweak, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+    d = []
+    for i in range(0, len(text), 28):
+        d.append(text[i:i + 28])
+    dec_text = ''.join([c.decrypt(i) for i in d])
+    if m := re.match(r'^.{2}:(.*?):.{2}.*?$', dec_text):
+        return m.group(1)
+    return False
+
+
+__all__ = ["parse_time_string", "random_string", "decrypt_string", "isint", "isfloat"]

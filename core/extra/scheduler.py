@@ -1,14 +1,14 @@
 import importlib
-import json
 import os
 import traceback
 
-from core.logger import Logger
-from core.scheduler import Scheduler, IntervalTrigger
-from database import BotDBUtil
-from core.utils.info import Info
+import orjson as json
 
-load_dir_path = os.path.abspath('./schedulers/')
+from core.logger import Logger
+from core.path import schedulars_path
+from core.scheduler import Scheduler, IntervalTrigger
+from core.utils.info import Info
+from core.database import BotDBUtil
 
 
 def load_extra_schedulers():
@@ -21,20 +21,20 @@ def load_extra_schedulers():
     fun_file = None
     Logger.info('Attempting to load schedulers...')
     if not Info.binary_mode:
-        dir_list = os.listdir(load_dir_path)
+        dir_list = os.listdir(schedulars_path)
     else:
         try:
             Logger.warning('Binary mode detected, trying to load pre-built schedulers list...')
             js = 'assets/schedulers_list.json'
             with open(js, 'r', encoding='utf-8') as f:
-                dir_list = json.load(f)
+                dir_list = json.loads(f.read())
         except Exception:
             Logger.error('Failed to load pre-built schedulers list, using default list.')
-            dir_list = os.listdir(load_dir_path)
+            dir_list = os.listdir(schedulars_path)
 
     for file_name in dir_list:
         try:
-            file_path = os.path.join(load_dir_path, file_name)
+            file_path = os.path.join(schedulars_path, file_name)
             fun_file = None
             if not Info.binary_mode:
                 if os.path.isdir(file_path):

@@ -1,10 +1,10 @@
 import re
-import secrets
 
 import numpy as np
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
+from core.utils.random import Random
 from core.utils.text import isint
 
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -122,7 +122,7 @@ class Dice(DiceItemBase):
         positive = self.positive
         # 生成随机序列
         for i in range(self.count):
-            dice_results.append(secrets.randbelow(int(self.sides)) + 1)
+            dice_results.append(Random.randint(1, int(self.sides)))
         if adv != 0:
             new_results = []
             indexes = np.array(dice_results).argsort()
@@ -197,7 +197,7 @@ class FudgeDice(DiceItemBase):
         result = 0
 
         dice_results = ['-', '-', '0', '0', '+', '+']
-        selected_results = [secrets.choice(dice_results) for _ in range(self.count)]
+        selected_results = [Random.choice(dice_results) for _ in range(self.count)]
 
         if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
             output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
@@ -262,12 +262,12 @@ class BonusPunishDice(DiceItemBase):
         result = 0
         # 生成随机序列
 
-        d100_result = secrets.randbelow(100) + 1
+        d100_result = Random.randint(1, 100)
         d100_digit = d100_result % 10
         output += f'D100={d100_result}, {self.code}'
 
         for i in range(self.count):
-            dice_results.append(secrets.randbelow(10))
+            dice_results.append(Random.randint(0, 9))
 
         new_results = [d100_result] + [int(str(item) + str(d100_digit)) for item in dice_results]
         new_results = [100 if item == 0 else item for item in new_results]  # 将所有00转为100
@@ -380,7 +380,7 @@ class WODDice(DiceItemBase):
             indexes = []
             # 生成随机序列
             for i in range(dice_count):
-                dice_results.append(secrets.randbelow(int(self.sides)) + 1)
+                dice_results.append(Random.randint(1, int(self.sides)))
 
                 if success_line and success_line <= dice_results[i]:
                     indexes.append(i)
@@ -492,7 +492,7 @@ class DXDice(DiceItemBase):
             dice_rounds += 1
             # 生成随机序列
             for i in range(dice_count):
-                dice_results.append(secrets.randbelow(int(self.sides)) + 1)
+                dice_results.append(Random.randint(1, int(self.sides)))
                 if dice_results[i] >= add_line:
                     dice_exceed_results.append(True)
                 else:

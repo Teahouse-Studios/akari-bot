@@ -1,9 +1,9 @@
 from typing import Union
 
-import ujson as json
+import orjson as json
 
 from core.types import FetchTarget
-from database import BotDBUtil
+from core.database import BotDBUtil
 
 
 def get_stored_list(bot: Union[FetchTarget, str], name: str) -> list:

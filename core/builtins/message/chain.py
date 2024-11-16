@@ -3,7 +3,7 @@ import re
 from typing import Union, List, Tuple
 from urllib.parse import urlparse
 
-import ujson as json
+import orjson as json
 
 from core.builtins.message.internal import (
     Plain,
@@ -18,6 +18,7 @@ from core.builtins.message.internal import (
 from core.builtins.utils import Secret
 from core.logger import Logger
 from core.types.message import MessageChain as MessageChainT, MessageSession
+from core.utils.http import url_pattern
 
 
 class MessageChain(MessageChainT):
@@ -260,14 +261,9 @@ class MessageChain(MessageChainT):
         return self.__str__()
 
 
-site_whitelist = ["http.cat"]
-
-
 def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
     split_all = re.split(r"(\[Ke:.*?])", text)
-    for x in split_all:
-        if not x:
-            split_all.remove("")
+    split_all = [x for x in split_all if x]
     elements = []
     for e in split_all:
         match = re.match(r"\[Ke:(.*?),(.*)]", e)
@@ -297,7 +293,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                         img = None
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or parse_url[1] in site_whitelist:
+                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 img = Image(path=ma.group(2))
                         if ma.group(1) == "headers":
                             img.headers = json.loads(
@@ -313,7 +309,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                     if ma:
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or parse_url[1] in site_whitelist:
+                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 elements.append(Voice(path=ma.group(2)))
                         else:
                             elements.append(Voice(a))

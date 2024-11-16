@@ -1,9 +1,9 @@
 import traceback
 from datetime import datetime, timezone
 
-import ujson as json
+import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot
 from core.exceptions import ConfigValueError
 from core.logger import Logger

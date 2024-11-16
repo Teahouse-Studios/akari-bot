@@ -3,8 +3,8 @@
     "arcaea.help.desc": "查詢 Arcaea 相關內容。",
     "arcaea.help.download": "取得最新版本的遊戲 APK（中國版）。",
     "arcaea.help.random": "隨機一首歌曲。",
-    "arcaea.help.rank.free": "檢視目前免費包遊玩排行。",
-    "arcaea.help.rank.paid": "檢視目前付費包遊玩排行。",
-    "arcaea.message.download": "目前的最新版本為 ${version}。\n下載網址：${url}",
+    "arcaea.help.rank.free": "檢視當前免費包遊玩排行。",
+    "arcaea.help.rank.paid": "檢視當前付費包遊玩排行。",
+    "arcaea.message.download": "當前最新版本：${version}\n下載網址：${url}",
     "arcaea.message.get_failed": "取得失敗。"
 }

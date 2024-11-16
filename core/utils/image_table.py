@@ -1,16 +1,19 @@
+import base64
 import re
 from html import escape
+from io import BytesIO
 from typing import List, Union
 
 import aiohttp
-import ujson as json
+import orjson as json
+from PIL import Image as PILImage
 from tabulate import tabulate
 
-from core.builtins.utils import shuffle_joke
 from core.logger import Logger
-from .cache import random_cache_path
-from .http import download
-from .web_render import WebRender, webrender
+from core.joke import joke
+from core.utils.cache import random_cache_path
+from core.utils.http import download
+from core.utils.web_render import WebRender, webrender
 
 
 class ImageTable:
@@ -19,7 +22,7 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True) -> Union[List[PILImage], bool]:
     if not WebRender.status:
         return False
     elif not WebRender.local:
@@ -36,10 +39,10 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             for row in tbl.data:
                 cs = []
                 for c in row:
-                    c = shuffle_joke(c)
+                    c = joke(c)
                     cs.append(re.sub(r'\n', '<br>', escape(c)))
                 d.append(cs)
-            headers = [shuffle_joke(header) for header in tbl.headers]
+            headers = [joke(header) for header in tbl.headers]
             w = len(headers) * 500
             if w > max_width:
                 max_width = w
@@ -60,7 +63,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             }</style>"""
         html = {'content': tblst + css, 'width': w, 'mw': False}
         if save_source:
-            fname = random_cache_path() + '.html'
+            fname = f'{random_cache_path()}.html'
             with open(fname, 'w', encoding='utf-8') as fi:
                 fi.write(tblst + css)
 
@@ -87,8 +90,15 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                 )
     except Exception:
         Logger.exception("Error at image_table_render.")
-
-    return pic
+    with open(pic) as read:
+        load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        img_lst.append(bimg)
+    return img_lst
 
 
 __all__ = ['ImageTable', 'image_table_render']

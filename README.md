@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="256" src="./assets/character_marked.png" alt="logo">
+  <img width="512" src="./assets/character_marked.png" alt="logo">
 
 # 小可好耶机 · AkariHaoyeBot v4
 

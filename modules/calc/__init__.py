@@ -19,13 +19,11 @@ if Info.binary_mode:
         await msg.finish(msg.locale.t("calc.message.binary_mode"))
 else:
     @c.command('<math_expression> {{calc.help}}')
-    async def _(msg: Bot.MessageSession, math_expression: str, use_markdown=False):
-        if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
-            use_markdown = True
+    async def _(msg: Bot.MessageSession, math_expression: str):
         expr = math_expression.replace("\\", "")
         res = await spawn_subprocess('/calc.py', expr, msg)
         if res[:6] == 'Result':
-            if use_markdown:
+            if msg.Feature.markdown:
                 expr = expr.replace('*', '\\*')
             m = f'{expr} = {res[7:]}'
             await msg.finish(m)

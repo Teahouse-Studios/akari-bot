@@ -1,6 +1,4 @@
-import colorsys
 import discord
-import random
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser

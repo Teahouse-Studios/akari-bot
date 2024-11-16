@@ -1,5 +1,5 @@
-import shutil
 import os
+import shutil
 
 if __name__ == "__main__":
     os.makedirs('output', exist_ok=True)

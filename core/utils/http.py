@@ -13,13 +13,17 @@ from aiofile import async_open
 from aiohttp import TCPConnector
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from config import Config
+from core.config import Config
 from core.logger import Logger
+from core.path import cache_path
 
 logging_resp = False
 debug = Config('debug', False)
 if not (proxy := Config('proxy', cfg_type=str)):
     proxy = ''
+
+url_pattern = re.compile(
+    r'\b(?:http[s]?://)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b')
 
 _matcher_private_ips = re.compile(
     r'^(?:127\.|0?10\.|172\.0?1[6-9]\.|172\.0?2[0-9]\.172\.0?3[01]\.|192\.168\.|169\.254\.|::1|[fF][cCdD][0-9a-fA-F]{2}:|[fF][eE][89aAbB][0-9a-fA-F]:)'
@@ -39,9 +43,9 @@ def private_ip_check(url: str):
             f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
 
-async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20,
-                  attempt=3,
-                  request_private_ip=False, logging_err_resp=True, cookies=None):
+async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt: str = None, timeout: int = 20,
+                  attempt: int = 3,
+                  request_private_ip: bool = False, logging_err_resp: bool = True, cookies: dict = None):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -91,7 +95,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                         text = await req.text()
                         return text
             except asyncio.exceptions.TimeoutError:
-                raise asyncio.exceptions.TimeoutError('Request timeout')
+                raise ValueError('Request timeout')
             except Exception as e:
                 if logging_err_resp:
                     Logger.error(f'Error while requesting {url}: \n{e}')
@@ -100,8 +104,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     return await get_()
 
 
-async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt=None, timeout=20,
-                   attempt=3, request_private_ip=False, logging_err_resp=True, cookies=None):
+async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt: str = None, timeout: int = 20,
+                   attempt: int = 3, request_private_ip: bool = False, logging_err_resp: bool = True, cookies: dict = None):
     '''利用AioHttp发送POST请求。
 
     :param url: 需要发送的url。
@@ -150,7 +154,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                         text = await req.text()
                         return text
             except asyncio.exceptions.TimeoutError:
-                raise asyncio.exceptions.TimeoutError('Request timeout')
+                raise ValueError('Request timeout')
             except Exception as e:
                 if logging_err_resp:
                     Logger.error(f'Error while requesting {url}: {e}')
@@ -159,9 +163,9 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     return await _post()
 
 
-async def download(url: str, filename=None, path=None, status_code: int = False, method="GET", post_data=None,
-                   headers: dict = None, timeout=20, attempt=3, request_private_ip=False,
-                   logging_err_resp=True) -> Union[str, bool]:
+async def download(url: str, filename: str = None, path: str = None, status_code: int = False, method: str = "GET", post_data: any = None,
+                   headers: dict = None, timeout: int = 20, attempt: int = 3, request_private_ip: bool = False,
+                   logging_err_resp: bool = True) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到指定目录。
 
     :param url: 需要获取的url。
@@ -203,7 +207,7 @@ async def download(url: str, filename=None, path=None, status_code: int = False,
                     ftt = 'txt'
                 filename = f'{str(uuid.uuid4())}.{ftt}'
             if not path:
-                path = os.path.abspath(Config('cache_path', './cache/'))
+                path = cache_path
             path = os.path.join(path, filename)
             async with async_open(path, 'wb+') as file:
                 await file.write(data)
@@ -214,4 +218,13 @@ async def download(url: str, filename=None, path=None, status_code: int = False,
     return await download_()
 
 
-__all__ = ['get_url', 'post_url', 'download']
+async def dowanload_to_cache(url: str, filename: str = None, status_code: int = False, method: str = "GET", post_data: any = None,
+                             headers: dict = None, timeout: int = 20, attempt: int = 3, request_private_ip: bool = False,
+                             logging_err_resp: bool = True) -> Union[str, bool]:
+    '''下载内容到缓存，仅作兼容用。'''
+    await download(url=url, filename=filename, path=cache_path, status_code=status_code, method=method, post_data=post_data,
+                   headers=headers, timeout=timeout, attempt=attempt, request_private_ip=request_private_ip,
+                   logging_err_resp=logging_err_resp)
+
+
+__all__ = ['get_url', 'post_url', 'download', 'url_pattern']

@@ -1,12 +1,12 @@
 import itertools
-import random
 
 from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
-from core.petal import gained_petal, lost_petal
 from core.utils.game import PlayState
+from core.utils.petal import gained_petal, lost_petal
+from core.utils.random import Random
 from core.utils.text import isint
 
 no_solution_lst = ['无解', '無解', 'none', 'n/a', 'na', 'n.a.', ]
@@ -106,7 +106,11 @@ def contains_all_numbers(expr, numbers):
             else:
                 return False
         i += 1
-    return True
+
+    if all(used_count[str(num)] == numbers.count(num) for num in numbers):
+        return True
+    else:
+        return False
 
 
 tf = module('twenty_four', alias=['twentyfour', '24'],
@@ -114,16 +118,14 @@ tf = module('twenty_four', alias=['twentyfour', '24'],
 
 
 @tf.command('{{twenty_four.help}}')
-async def _(msg: Bot.MessageSession, use_markdown=False):
+async def _(msg: Bot.MessageSession):
     play_state = PlayState('twenty_four', msg)
-    if msg.target.sender_from in ['Discord|Client', 'KOOK|User']:
-        use_markdown = True
     if play_state.check():
         await msg.finish(msg.locale.t('game.message.running'))
     else:
         play_state.enable()
 
-    numbers = [random.randint(1, 13) for _ in range(4)]
+    numbers = [Random.randint(1, 13) for _ in range(4)]
     solution = await find_solution(numbers)
 
     answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=None, append_instruction=False)
@@ -138,9 +140,9 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
                     send += '\n' + g_msg
             else:
                 send = msg.locale.t('twenty_four.message.correct')
-                if (g_msg := await gained_petal(msg, 2)):
+                if (g_msg := await gained_petal(msg, 1)):
                     send += '\n' + g_msg
-            if use_markdown:
+            if msg.Feature.markdown:
                 send.replace('*', '\\*')
             await answer.finish(send)
         elif check_valid(expr):
@@ -150,7 +152,7 @@ async def _(msg: Bot.MessageSession, use_markdown=False):
             elif (result == 24 or 0 < 24 - result < 1e-13) \
                     and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
-                if (g_msg := await gained_petal(msg, 2)):
+                if (g_msg := await gained_petal(msg, 1)):
                     send += '\n' + g_msg
                 await answer.finish(send)
             else:

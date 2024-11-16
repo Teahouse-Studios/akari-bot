@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap" rel="stylesheet">
+    <style>html body {
+        margin-top: 0px !important;
+        font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ko) {
+        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ja) {
+        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-TW) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-HK) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
+        font-family:  'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+    }
+    .botbox {
+        display: inline-block;
+        width: auto;
+        height: auto;
+    }
+
+    .botbox svg {
+        display: block;
+        width: auto;
+        height: auto;
+    }</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File</title>
+</head>
+<body>
+    <div class="botbox">
+        {{ svg | safe }}
+    </div>
+
+    <script>
+        window.onload = function() {
+            const botbox = document.querySelector('.botbox');
+            const svg = botbox.querySelector('svg');
+
+            if (svg) {
+                let viewBox = svg.getAttribute('viewBox');
+                if (!viewBox) {
+                    const width = svg.getAttribute('width');
+                    const height = svg.getAttribute('height');
+                    if (width && height) {
+                        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                        viewBox = `0 0 ${width} ${height}`;
+                    }
+                }
+
+                if (viewBox) {
+                    const [minX, minY, width, height] = viewBox.split(' ').map(Number);
+                    botbox.style.width = `${width}px`;
+                    botbox.style.height = `${height}px`;
+                } else {
+                    const bbox = svg.getBBox();
+                    botbox.style.width = `${bbox.width}px`;
+                    botbox.style.height = `${bbox.height}px`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

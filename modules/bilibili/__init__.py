@@ -1,5 +1,4 @@
 import re
-from urllib.parse import urlparse
 
 import aiohttp
 
@@ -35,22 +34,27 @@ async def _(msg: Bot.MessageSession):
     await get_video_info(msg, query)
 
 
-@bili.regex(re.compile(r"BV[a-zA-Z0-9]{10}"), mode='A', desc="{bilibili.help.regex.bv}")
+@bili.regex(re.compile(r"\bBV[a-zA-Z0-9]{10}\b"), mode='A', desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
-    query = f"?bvid={msg.matched_msg[0]}"
-    await get_video_info(msg, query)
+    matched = list(set(msg.matched_msg))[:5]
+    for video in matched:
+        if video != '':
+            query = f"?bvid={video}"
+            await get_video_info(msg, query)
 
 
 @bili.regex(
-    re.compile(r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)"),
+    re.compile(r"\b(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)\b"),
     mode="A",
     desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
-    video = msg.matched_msg[0]
-    query = await parse_shorturl(f"https://b23.tv/{video}")
-    if not query:
-        return
-    await get_video_info(msg, query)
+    matched = list(set(msg.matched_msg))[:5]
+    for video in matched:
+        if video != '':
+            query = await parse_shorturl(f"https://b23.tv/{video}")
+            if not query:
+                return
+            await get_video_info(msg, query)
 
 
 async def parse_shorturl(shorturl):

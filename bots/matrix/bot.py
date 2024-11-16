@@ -8,17 +8,20 @@ import nio
 
 from bots.matrix import client
 from bots.matrix.client import bot
-from bots.matrix.info import client_name
+from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
+from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
+from core.config import Config
 from core.logger import Logger
 from core.parser.message import parser
+from core.path import assets_path
 from core.types import MsgInfo, Session
-from core.utils.bot import load_prompt, init_async
 from core.utils.info import Info
 
-PrivateAssets.set('assets/private/matrix')
+PrivateAssets.set(os.path.join(assets_path, 'private', 'matrix'))
 Url.disable_mm = True
+ignored_sender = Config("ignored_sender", [])
 
 
 async def on_sync(resp: nio.SyncResponse):
@@ -60,6 +63,10 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if event.source['content']['msgtype'] == 'm.notice':
         # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
+    target_id = f'{target_prefix}|{room.room_id}'
+    sender_id = f'{sender_prefix}|{event.sender}'
+    if sender_id in ignored_sender:
+        return
     reply_id = None
     if 'm.relates_to' in event.source['content']:
         relatesTo = event.source['content']['m.relates_to']
@@ -78,13 +85,12 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if isinstance(resp, nio.ErrorResponse):
         Logger.error(f"Failed to get display name for {event.sender}")
         return
-    sender_name = resp.displayname
 
-    msg = MessageSession(MsgInfo(target_id=f'Matrix|Room|{room.room_id}',
-                                 sender_id=f'Matrix|{event.sender}',
-                                 target_from='Matrix|Room',
-                                 sender_from='Matrix',
-                                 sender_name=sender_name,
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=sender_id,
+                                 target_from=target_prefix,
+                                 sender_from=sender_prefix,
+                                 sender_prefix=resp.displayname,
                                  client_name=client_name,
                                  message_id=event.event_id,
                                  reply_id=reply_id),
@@ -140,7 +146,7 @@ async def start():
     # if sync is nio.SyncError:
     #     Logger.error(f"Failed in first sync: {sync.status_code} - {sync.message}")
     try:
-        with open(client.store_path_next_batch, 'r') as fp:
+        with open(client.store_path_next_batch, 'r', encoding='utf-8') as fp:
             bot.next_batch = fp.read()
             Logger.info(f"Loaded next sync batch from storage: {bot.next_batch}")
     except FileNotFoundError:
@@ -222,6 +228,7 @@ async def start():
 
 
 if bot:
+    Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     asyncio.run(start())

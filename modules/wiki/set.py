@@ -1,6 +1,6 @@
-import ujson as json
+import orjson as json
 
-from config import Config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
@@ -52,9 +52,10 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
             if Config("wiki_whitelist_url", cfg_type=str):
                 prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
                                               url=Config("wiki_whitelist_url", cfg_type=str))
+
         else:
             prompt = ''
-            await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)
+        await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=interwiki, name=check.value.name) + prompt)
     else:
         result = msg.locale.t('wiki.message.error.add') + \
             ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
@@ -84,14 +85,15 @@ async def _(msg: Bot.MessageSession):
     if query != {}:
         if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
-            img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
+            imgs = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:
-            img = None
-        if img:
+            imgs = None
+        if imgs:
+            img_list = [Image(ii) for ii in imgs]
             mt = msg.locale.t("wiki.message.iw.list", prefix=msg.prefixes[0])
             if base_interwiki_link:
                 mt += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
-            await msg.finish([Image(img), Plain(mt)])
+            await msg.finish(img_list + [Plain(mt)])
         else:
             result = msg.locale.t("wiki.message.iw.list.legacy") + '\n' + \
                 '\n'.join([f'{x}: {query[x]}' for x in query])
@@ -119,7 +121,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
-    prompt = msg.locale.t("wiki.message.headers.show", headers=json.dumps(headers), prefix=msg.prefixes[0])
+    prompt = msg.locale.t("wiki.message.headers.show", headers=json.dumps(headers).decode(), prefix=msg.prefixes[0])
     await msg.finish(prompt)
 
 
@@ -129,7 +131,7 @@ async def _(msg: Bot.MessageSession):
     add = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
     if add:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
+        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers()).decode()))
     else:
         await msg.finish(msg.locale.t("wiki.message.headers.add.failed"))
 
@@ -140,7 +142,7 @@ async def _(msg: Bot.MessageSession):
     delete = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=False)
     if delete:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
+        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers()).decode()))
 
 
 @wiki.command('headers reset {{wiki.help.headers.reset}}', required_admin=True)

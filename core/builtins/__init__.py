@@ -1,10 +1,10 @@
 import asyncio
 from typing import Union, List
 
-from config import Config
+from core.config import Config
 from core.loader import ModulesManager
 from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
-from database import BotDBUtil
+from core.database import BotDBUtil
 from .message import *
 from .message.chain import *
 from .message.internal import *
@@ -24,8 +24,8 @@ class Bot:
 
     @staticmethod
     async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],
-                           disable_secret_check=False,
-                           allow_split_image=True):
+                           disable_secret_check=False, enable_parse_message=True,
+                           enable_split_image=True):
         if isinstance(target, str):
             target = await Bot.FetchTarget.fetch_target(target)
             if not target:
@@ -33,7 +33,7 @@ class Bot:
         if isinstance(msg, list):
             msg = MessageChain(msg)
         Logger.info(target.__dict__)
-        await target.send_direct_message(msg, disable_secret_check, allow_split_image)
+        await target.send_direct_message(msg, disable_secret_check, enable_split_image)
 
     @staticmethod
     async def fetch_target(target: str):
@@ -41,7 +41,7 @@ class Bot:
 
     @staticmethod
     async def get_enabled_this_module(module: str) -> List[FetchedSessionT]:
-        lst = BotDBUtil.TargetInfo.get_enabled_this(module)
+        lst = BotDBUtil.TargetInfo.get_target_list(module)
         fetched = []
         for x in lst:
             x = Bot.FetchTarget.fetch_target(x)
@@ -63,7 +63,7 @@ class Bot:
                             await asyncio.create_task(hook.function(Bot.FetchTarget, ModuleHookContext(args)))
                         return
 
-                raise ValueError("Invalid module name")
+                raise ValueError(f"Invalid module name {module_or_hook_name}")
             else:
                 if module_or_hook_name:
                     if module_or_hook_name in ModulesManager.modules_hooks:
@@ -71,7 +71,7 @@ class Bot:
                                                                                                     ModuleHookContext(
                                                                                                         args)))
                         return
-                raise ValueError("Invalid hook name")
+                raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 
 class FetchedSession(FetchedSessionT):
@@ -84,7 +84,7 @@ class FetchedSession(FetchedSessionT):
                               sender_id=f'{sender_from}|{sender_id}',
                               target_from=target_from,
                               sender_from=sender_from,
-                              sender_name='',
+                              sender_prefix='',
                               client_name=Bot.client_name,
                               message_id=0,
                               reply_id=None)
