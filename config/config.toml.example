@@ -25,6 +25,7 @@ openai_api_key =
 osu_api_key =
 wolfram_alpha_appid =
 jwt_secret =
+qweather_api_key =
 ff3_key = 0AF6C4788B86F4E2FB97215E6E4A5EB0
 ff3_tweak = 6520BD033E2928
 

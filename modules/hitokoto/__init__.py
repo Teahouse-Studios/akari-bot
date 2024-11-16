@@ -1,35 +1,58 @@
-from langconv.converter import LanguageConverter
-from langconv.language.zh import zh_tw
-
-from core.builtins import Bot, Plain, Url
+from core.builtins import Bot
 from core.component import module
-from core.utils.http import get_url
-
-msg_types = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
-
-hitokoto = module('hitokoto',
-                  developers=['bugungu', 'DoroWolf'],
-                  desc='{hitokoto.help.desc}',
-                  doc=True,
-                  alias=['htkt', 'yiyan'],
-                  support_languages=['zh_cn', 'zh_tw'])
+from aiohttp import ClientSession
+import asyncio
+import ujson as json
 
 
-@hitokoto.handle()
-@hitokoto.handle('[<msg_type>] {{hitokoto.help.type}}')
-async def _(msg: Bot.MessageSession, msg_type: str = None):
-    url = f'https://v1.hitokoto.cn/'
-    if msg_type:
-        if msg_type in msg_types:
-            url += "?c=" + msg_type
-        else:
-            await msg.finish(msg.locale.t('hitokoto.message.invalid'))
+async def hitokoto_():
+    url = 'https://v1.hitokoto.cn/'
+    async with ClientSession() as session:
+        async with session.get(url) as response_:
+            result = json.loads(await response_.text())
+            if response_.status == 200:
+                text = result['hitokoto']
+                frm = result['from']
+                who = result['from_who']
+                if not who:
+                    who = ''
+                return f"「{text}」\n    ——{who}《{frm}》"
+            else:
+                return '请求失败'
 
-    data = await get_url(url, 200, fmt='json')
-    if msg.locale.locale == 'zh_tw':
-        data = {k: LanguageConverter.from_language(zh_tw).convert(v) if
-                isinstance(v, str) else v for k, v in data.items()}
-    from_who = data["from_who"] or ""
-    tp = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + data['type'])
-    link = f"https://hitokoto.cn?id={data['id']}"
-    await msg.finish([Plain(f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}"), Url(link)])
+
+hitokoto = module('hitokoto', alias=['hitk', 'saying', '一言'],
+                  desc='一言', developers=['haoye_qwq'])
+
+
+@hitokoto.handle('{一言}')
+async def hitokoto__(msg: Bot.MessageSession):
+    await msg.sendMessage(await hitokoto_())
+#
+#
+# @hitokoto.handle('cowsay {哲学牛牛}')
+# async def cowsay(msg: Bot.MessageSession):
+#     await msg.sendMessage(cowsay_())
+#
+#
+# # @hitokoto.handle('echo_cave add <sth> {添加回声洞}',
+# #              'echo_cave del <num> {删除回声洞}',
+# #              'echo_cave {显示回声洞}')
+# # async def ___(msg: Bot.MessageSession):
+# #     if 'add' in msg.parsed_msg:
+# #
+# # cq = await msg.asDisplay()
+# # cq = re.findall(r'^\[CQ:image,(\s\S)*\]', cq, re.I | re.M)
+#
+#
+# @hitokoto.handle('{回声洞(WIP)}')
+# async def ___(msg: Bot.MessageSession):
+#     mode = ['hitokoto', 'cowsay']
+#     if random.choice(mode) == 'hitokoto':
+#         await msg.sendMessage(hitokoto_())
+#     else:
+#         await msg.sendMessage(cowsay_())
+
+if __name__ == '__main__':
+    hit = asyncio.run(hitokoto_())
+    print(hit)
