@@ -4,7 +4,7 @@ from typing import List, Union
 from PIL import Image as PILImage
 from inputimeout import inputimeout, TimeoutOccurred
 
-from core.config import Config
+from core.config import config
 from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
@@ -52,7 +52,7 @@ class MessageSession(MessageSessionT):
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
         send = None
-        if Config('no_confirm', False):
+        if config('no_confirm', False):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)

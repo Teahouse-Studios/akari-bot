@@ -1,12 +1,11 @@
 from aiogram import Bot, Dispatcher
 
-from core.config import Config
-from core.utils.http import proxy
+from core.config import config
 
-token = Config('telegram_token', cfg_type=str)
+token = config('telegram_token', cfg_type=str, secret=True)
 
 if token:
-    bot = Bot(token=token, proxy=Config('proxy', cfg_type=str))
+    bot = Bot(token=token, proxy=config('proxy', cfg_type=str, secret=True))
     dp = Dispatcher()
 else:
     bot = dp = False

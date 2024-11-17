@@ -4,7 +4,7 @@ import os
 
 import orjson as json
 
-from core.config import CFG
+from core.config import CFGManager
 from core.background_tasks import init_background_task
 from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
@@ -43,11 +43,11 @@ async def init_async(start_scheduler=True) -> None:
 
 
 async def load_secret():
-    for x in CFG.value:
+    for x in CFGManager.value:
         if x == 'secret':
-            for y in CFG().value[x]:
-                if CFG().value[x][y]:
-                    Secret.add(str(CFG().value[x][y]).upper())
+            for y in CFGManager().value[x]:
+                if CFGManager().value[x][y]:
+                    Secret.add(str(CFGManager().value[x][y]).upper())
 
 
 async def load_prompt(bot) -> None:

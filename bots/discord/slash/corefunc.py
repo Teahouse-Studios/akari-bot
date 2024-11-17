@@ -2,7 +2,7 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
-from core.config import Config
+from core.config import config
 from core.utils.i18n import get_available_locales
 
 
@@ -36,7 +36,7 @@ async def ping(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-if Config('enable_petal', False):
+if config('enable_petal', False):
     @client.slash_command(name="petal", description="Get the number of petals.")
     async def petal(ctx: discord.ApplicationContext):
         await slash_parser(ctx, "")

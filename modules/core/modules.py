@@ -1,4 +1,4 @@
-from core.config import Config, CFG
+from core.config import config, CFGManager
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
@@ -188,7 +188,7 @@ async def config_modules(msg: Bot.MessageSession):
             else:
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
                 if modules_[module_].base:
-                    if Config('allow_reload_base', False):
+                    if config('allow_reload_base', False):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
                                                          append_instruction=False)
                         if confirm:
@@ -203,10 +203,10 @@ async def config_modules(msg: Bot.MessageSession):
                                                                   modules='\n'.join(extra_reload_modules)), append_instruction=False)
                     if not confirm:
                         await msg.finish()
-                unloaded_list = Config('unloaded_modules', [])
+                unloaded_list = config('unloaded_modules', [])
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
-                    CFG.write('unloaded_modules', unloaded_list)
+                    CFGManager.write('unloaded_modules', unloaded_list)
                 msglist.append(module_reload(module_, extra_reload_modules, base_module))
 
         locale_err = load_locale_file()
@@ -219,10 +219,10 @@ async def config_modules(msg: Bot.MessageSession):
                 continue
             if ModulesManager.load_module(module_):
                 msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
-                unloaded_list = Config('unloaded_modules', [])
+                unloaded_list = config('unloaded_modules', [])
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
-                    CFG.write('unloaded_modules', unloaded_list)
+                    CFGManager.write('unloaded_modules', unloaded_list)
             else:
                 msglist.append(msg.locale.t("core.message.module.load.failed"))
     elif msg.parsed_msg.get('unload', False):
@@ -230,12 +230,12 @@ async def config_modules(msg: Bot.MessageSession):
             if module_ not in modules_:
                 if module_ in err_modules:
                     if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm"), append_instruction=False):
-                        unloaded_list = Config('unloaded_modules', [])
+                        unloaded_list = config('unloaded_modules', [])
                         if not unloaded_list:
                             unloaded_list = []
                         if module_ not in unloaded_list:
                             unloaded_list.append(module_)
-                            CFG.write('unloaded_modules', unloaded_list)
+                            CFGManager.write('unloaded_modules', unloaded_list)
                         msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
                         err_modules.remove(module_)
                         current_unloaded_modules.append(module_)
@@ -250,11 +250,11 @@ async def config_modules(msg: Bot.MessageSession):
             if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm"), append_instruction=False):
                 if ModulesManager.unload_module(module_):
                     msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
-                    unloaded_list = Config('unloaded_modules', [])
+                    unloaded_list = config('unloaded_modules', [])
                     if not unloaded_list:
                         unloaded_list = []
                     unloaded_list.append(module_)
-                    CFG.write('unloaded_modules', unloaded_list)
+                    CFGManager.write('unloaded_modules', unloaded_list)
             else:
                 await msg.finish()
 

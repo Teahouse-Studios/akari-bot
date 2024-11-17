@@ -2,14 +2,14 @@ import re
 
 import numpy as np
 
-from core.config import Config
+from core.config import config
 from core.builtins import Bot
 from core.utils.random import Random
 from core.utils.text import isint
 
-MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
-MAX_OUTPUT_CNT = Config('dice_output_count', 50)  # 输出的最多数据量
-MAX_OUTPUT_LEN = Config('dice_output_len', 200)  # 输出的最大长度
+MAX_DICE_COUNT = config('dice_limit', 100)  # 一次摇动最多的骰子数量
+MAX_OUTPUT_CNT = config('dice_output_count', 50)  # 输出的最多数据量
+MAX_OUTPUT_LEN = config('dice_output_len', 200)  # 输出的最大长度
 
 
 # 异常类定义

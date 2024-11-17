@@ -3,12 +3,12 @@ import re
 
 import orjson as json
 
-from core.config import Config
+from core.config import config
 
 
 def qq_frame_type() -> str:
     '''获取正在使用的QQ机器人框架'''
-    frame_type = Config('qq_frame_type', 'mirai').lower()
+    frame_type = config('qq_frame_type', 'mirai').lower()
     ntqq_lst = ['ntqq', 'llonebot', 'napcat', 'napcatqq', ]
     shamrock_lst = ['shamrock', 'openshamrock', ]
     lagrange_lst = ['lagrange', ]

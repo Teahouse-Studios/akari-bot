@@ -8,11 +8,9 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import orjson as json
 
-from core.config import Config
 from core.path import locales_path, modules_locales_path
 from .text import isint
 
-default_locale = Config('locale', 'zh_cn')
 
 # Load all locale files into memory
 
@@ -209,4 +207,7 @@ class Locale:
         return num_str if precision > 0 else str(int(number))
 
 
-__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'default_locale']
+locale_loaded_err = load_locale_file()
+
+
+__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'locale_loaded_err']

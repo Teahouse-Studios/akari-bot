@@ -2,14 +2,14 @@ import random
 import secrets
 from typing import Sequence, List, MutableSequence, Optional, TypeVar
 
-from core.config import Config
+from core.config import config
 
 INF = 2 ** 53
 T = TypeVar('T')
 
 
 class Random:
-    use_secrets = Config('use_secrets_random', False)
+    use_secrets = config('use_secrets_random', False)
 
     @classmethod
     def random(cls) -> float:

@@ -9,14 +9,14 @@ from botpy.types.message import Reference
 from bots.ntqq.info import *
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, Url, MessageTaskManager
 from core.builtins.message.chain import MessageChain
-from core.config import Config
+from core.config import config
 from core.database import BotDBUtil
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download, url_pattern
 
-enable_analytics = Config('enable_analytics', False)
-enable_send_url = Config('qq_bot_enable_send_url', False)
+enable_analytics = config('enable_analytics', False)
+enable_send_url = config('qq_bot_enable_send_url', False)
 
 
 class FinishedSession(FinishedSessionT):
@@ -237,7 +237,7 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_guild_prefix:
-                emoji_id = str(Config('qq_typing_emoji', '181', (str, int)))
+                emoji_id = str(config('qq_typing_emoji', '181', (str, int)))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
                 from bots.ntqq.bot import client
                 await client.api.put_reaction(channel_id=self.msg.target.target_id.split('|')[-1],

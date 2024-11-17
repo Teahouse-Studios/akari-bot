@@ -7,7 +7,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
 
-from core.config import Config
+from core.config import config
 from ..utils import AkariTool
 
 docs = [os.path.join(os.path.dirname(__file__), 'src', file)
@@ -21,7 +21,7 @@ for doc in docs:
     for i in text_splitter.split_documents(documents):
         texts.append(i)
 
-embeddings = OpenAIEmbeddings(openai_api_key=Config('openai_api_key', cfg_type=str))
+embeddings = OpenAIEmbeddings(openai_api_key=config('openai_api_key', cfg_type=str, secret=True))
 doc_search = Chroma.from_documents(
     texts,
     embeddings,
@@ -32,7 +32,7 @@ doc_search = Chroma.from_documents(
 doc_search.persist()
 llm = ChatOpenAI(
     temperature=0,
-    openai_api_key=Config('openai_api_key', cfg_type=str),
+    openai_api_key=config('openai_api_key', cfg_type=str, secret=True),
     model_kwargs={
         'frequency_penalty': 0.0,
         'presence_penalty': 0.0})

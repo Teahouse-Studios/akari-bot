@@ -9,7 +9,7 @@ from bots.aiogram.info import *
 from bots.aiogram.message import MessageSession, FetchTarget
 from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
-from core.config import Config
+from core.config import config
 from core.parser.message import parser
 from core.path import assets_path
 from core.types import MsgInfo, Session
@@ -17,7 +17,7 @@ from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiogram'))
 Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = config("ignored_sender", [])
 
 
 @dp.message()

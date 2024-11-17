@@ -5,8 +5,7 @@ if __name__ == "__main__":
     os.makedirs('output', exist_ok=True)
     shutil.copytree('assets', 'output/assets')
     os.makedirs('output/config', exist_ok=True)
-    shutil.copyfile('config/config.toml.example', 'output/config/config.toml.example')
-    shutil.copytree('locales', 'output/locales')
+    shutil.copytree('core/locales', 'output/core/locales')
     shutil.copytree('modules', 'output/modules')
 
     def remove_py_files(path):

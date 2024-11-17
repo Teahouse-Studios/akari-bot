@@ -7,7 +7,7 @@ import traceback
 from datetime import datetime
 from time import sleep
 
-from core.config import Config
+from core.config import config, CFGManager
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
 from core.path import cache_path
@@ -50,7 +50,7 @@ failed_to_start_attempts = {}
 
 
 def init_bot():
-    base_superuser = Config('base_superuser', cfg_type=(str, list))
+    base_superuser = config('base_superuser', cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
@@ -73,9 +73,14 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
 
         sys.exit(1)
 
-
-disabled_bots = Config('disabled_bots', [])
+disabled_bots = []
 processes = []
+
+for t in CFGManager.value.keys():
+    if t.startswith('bot_') and not t.endswith('_secret'):
+        if 'enable' in CFGManager.value[t]:
+            if not CFGManager.value[t]['enable']:
+                disabled_bots.append(t[4:])
 
 
 def restart_process(bot_name: str):
@@ -117,7 +122,7 @@ def run_bot():
         if bl in bots_and_required_configs:
             abort = False
             for c in bots_and_required_configs[bl]:
-                if not Config(c):
+                if not config(c):
                     Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
                     break

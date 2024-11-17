@@ -1,10 +1,11 @@
-from core.config import Config
+from core.config import config
 from core.builtins import Bot
-from core.utils.i18n import Locale, default_locale
+from core.utils.i18n import Locale
 from core.database import BotDBUtil
 
-report_targets = Config('report_targets', [])
-WARNING_COUNTS = Config('tos_warning_counts', 5)
+report_targets = config('report_targets', [])
+WARNING_COUNTS = config('tos_warning_counts', 5)
+default_locale = config("default_locale", cfg_type=str)
 
 
 async def warn_target(msg: Bot.MessageSession, reason: str):
@@ -25,8 +26,8 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
                     msg.locale.t(
                         'tos.message.warning.prompt',
                         warn_counts=WARNING_COUNTS))
-            if current_warns <= 2 and Config('issue_url', cfg_type=str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
+            if current_warns <= 2 and config('issue_url', cfg_type=str):
+                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=config('issue_url', cfg_type=str)))
         elif current_warns == WARNING_COUNTS:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(msg.locale.t('tos.message.warning.last'))
@@ -34,8 +35,8 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
             msg.info.edit('isInBlockList', True)
             await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
             warn_template.append(msg.locale.t('tos.message.banned'))
-            if Config('issue_url', cfg_type=str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
+            if config('issue_url', cfg_type=str):
+                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=config('issue_url', cfg_type=str)))
         await msg.send_message('\n'.join(warn_template))
 
 

@@ -9,17 +9,20 @@ import orjson as json
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
-from core.config import Config
+from core.config import config
 from core.builtins import Url
 from core.dirty_check import check
 from core.exceptions import AbuseWarning, NoReportException
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.i18n import Locale, default_locale
+from core.utils.i18n import Locale
 from core.utils.web_render import webrender
 from .bot import BotAccount
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from .mapping import *
+
+
+default_locale = config("default_locale", cfg_type=str)
 
 
 class InvalidPageIDError(Exception):
@@ -251,7 +254,7 @@ class WikiLib:
                 return WikiStatus(available=False, value=False, message=self.locale.t(
                     "wiki.message.utils.wikilib.get_failed.not_mediawiki"))
             except Exception as e:
-                if Config('debug', False):
+                if config('debug', False):
                     Logger.error(traceback.format_exc())
                 if e.args == (403,):
                     message = self.locale.t("wiki.message.utils.wikilib.get_failed.forbidden")
@@ -275,7 +278,7 @@ class WikiLib:
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
-            if Config('debug', False):
+            if config('debug', False):
                 Logger.error(traceback.format_exc())
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
             if self.url.find('moegirl.org.cn') != -1:
@@ -502,7 +505,7 @@ class WikiLib:
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if _tried > 5:
-            if Config('enable_tos', True):
+            if config('enable_tos', True):
                 raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         selected_section = None
         query_props = ['info', 'imageinfo', 'langlinks', 'templates']
@@ -649,7 +652,7 @@ class WikiLib:
                                             invalid_namespace = research[1]
                                         return research
                                     except Exception:
-                                        if Config('debug', False):
+                                        if config('debug', False):
                                             Logger.error(traceback.format_exc())
                                         return None, False
 

@@ -10,7 +10,7 @@ import orjson as json
 from bots.discord.client import client
 from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
-from core.config import Config
+from core.config import config
 from core.bot import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
@@ -21,11 +21,11 @@ from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'discord'))
 Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = config("ignored_sender", [])
 
 count = 0
 
-dc_token = Config('discord_token', cfg_type=str)
+dc_token = config('discord_token', cfg_type=str, secret=True)
 
 
 @client.event

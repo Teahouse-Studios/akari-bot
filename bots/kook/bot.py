@@ -8,17 +8,17 @@ from bots.kook.info import *
 from bots.kook.message import MessageSession, FetchTarget
 from core.bot import load_prompt, init_async
 from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
-from core.config import Config
+from core.config import config
 from core.parser.message import parser
 from core.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'kook'))
-EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
-Url.disable_mm = not Config('enable_urlmanager', False)
+EnableDirtyWordCheck.status = config('enable_dirty_check', False)
+Url.disable_mm = not config('enable_urlmanager', False)
 Url.md_format = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = config("ignored_sender", [])
 
 
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))

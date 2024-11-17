@@ -5,11 +5,11 @@ import sys
 
 from loguru import logger
 
-from core.config import Config
+from core.config import config
 from core.path import logs_path
 
 
-debug = Config('debug', False)
+debug = config('debug', False)
 
 if not os.path.exists(logs_path):
     os.mkdir(logs_path)

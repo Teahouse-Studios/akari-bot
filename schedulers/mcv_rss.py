@@ -7,7 +7,7 @@ import orjson as json
 from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
-from core.config import Config
+from core.config import config
 from core.builtins import I18NContext, FormattedTime
 from core.logger import Logger
 from core.queue import JobQueue
@@ -53,12 +53,12 @@ async def get_article(version):
         else:
             return link, title.text
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())
         return '', ''
 
 
-trigger_times = 60 if not Config('slower_schedule', False) else 180
+trigger_times = 60 if not config('slower_schedule', False) else 180
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
@@ -116,7 +116,7 @@ async def mcv_rss():
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())
 
 
@@ -134,7 +134,7 @@ async def mcbv_rss():
             verlist.append(version)
             update_stored_list('scheduler', 'mcbv_rss', verlist)
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())
 
 
@@ -165,7 +165,7 @@ async def mcv_jira_rss():
                 update_stored_list('scheduler', 'mcv_jira_rss', verlist)
 
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())
 
 
@@ -191,7 +191,7 @@ async def mcbv_jira_rss():
                 verlist.append(release)
                 update_stored_list('scheduler', 'mcbv_jira_rss', verlist)
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())
 
 
@@ -217,7 +217,7 @@ async def mcdv_jira_rss():
                 verlist.append(release)
                 update_stored_list('scheduler', 'mcdv_jira_rss', verlist)
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())
 
 
@@ -243,5 +243,5 @@ async def mclgv_jira_rss():
                 verlist.append(release)
                 update_stored_list('scheduler', 'mclgv_jira_rss', verlist)
     except Exception:
-        if Config('debug', False):
+        if config('debug', False):
             Logger.error(traceback.format_exc())

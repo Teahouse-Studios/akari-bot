@@ -7,7 +7,7 @@ import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 from attr import define, field
 
-from core.config import Config
+from core.config import config
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
@@ -17,7 +17,7 @@ from core.utils.game import PlayState
 from core.utils.petal import gained_petal
 from core.utils.random import Random
 
-text_mode = Config('wordle_disable_image', False)
+text_mode = config('wordle_disable_image', False)
 
 wordle = module('wordle',
                 desc='{wordle.help.desc}', doc=True, developers=['Dianliang233', 'DoroWolf']

@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-from core.config import Config
+from core.config import config
 from core.builtins import Bot
 from core.component import module
 from core.utils.http import get_url
@@ -14,7 +14,7 @@ mod_dl = module(
     recommend_modules=['mcmod'],
     alias='moddl')
 
-x_api_key = Config("curseforge_api_key", cfg_type=str)
+x_api_key = config("curseforge_api_key", cfg_type=str, secret=True)
 if not x_api_key:
     # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
     enable_mirror = True

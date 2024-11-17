@@ -6,9 +6,8 @@ from datetime import datetime
 
 import orjson as json
 
-from core.config import Config, CFG
+from core.config import config, CFGManager
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
-from core.builtins.message.chain import MessageChain
 from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.utils.i18n import Locale
@@ -20,7 +19,8 @@ from core.tos import pardon_user, warn_user
 from core.types import Param
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.text import isfloat, isint, decrypt_string
+from core.utils.text import isfloat, isint
+from core.utils.decrypt import decrypt_string
 from core.database import BotDBUtil
 
 
@@ -476,7 +476,7 @@ async def _(msg: Bot.MessageSession):
     raise TestException(e)
 
 
-_eval = module('eval', required_superuser=True, base=True, doc=True, load=Config('enable_eval', False))
+_eval = module('eval', required_superuser=True, base=True, doc=True, load=config('enable_eval', False))
 
 
 @_eval.command('<display_msg>')
@@ -495,7 +495,7 @@ post_ = module('post', required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f'{msg.target.client_name}|'):
         await msg.finish(msg.locale.t('message.id.invalid.target', target=msg.target.target_from))
-    post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    post_msg = f'{Locale(config('default_locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
     session = await Bot.FetchTarget.fetch_target(target)
     confirm = await msg.wait_confirm(msg.locale.t("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False)
     if confirm:
@@ -507,7 +507,7 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 
 @post_.command('global <post_msg>')
 async def _(msg: Bot.MessageSession, post_msg: str):
-    post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    post_msg = f'{Locale(config('default_locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
     confirm = await msg.wait_confirm(msg.locale.t("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False)
     if confirm:
         await Bot.FetchTarget.post_global_message(post_msg)
@@ -521,7 +521,7 @@ cfg_ = module('config', required_superuser=True, alias='cfg', base=True, doc=Tru
 
 @cfg_.command('get <k>')
 async def _(msg: Bot.MessageSession, k: str):
-    await msg.finish(str(Config(k)))
+    await msg.finish(str(config(k)))
 
 
 @cfg_.command('write <k> <v> [-s]')
@@ -541,18 +541,18 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
         except json.JSONDecodeError as e:
             Logger.error(str(e))
             await msg.finish(msg.locale.t("message.failed"))
-    CFG.write(k, v, msg.parsed_msg['-s'])
+    CFGManager.write(k, v, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("message.success"))
 
 
 @cfg_.command('delete <k>')
 async def _(msg: Bot.MessageSession, k: str):
-    if CFG.delete(k):
+    if CFGManager.delete(k):
         await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("message.failed"))
 
-petal = module('petal', alias='petals', base=True, doc=True, load=Config('enable_petal', False))
+petal = module('petal', alias='petals', base=True, doc=True, load=config('enable_petal', False))
 
 
 @petal.command('{{core.help.petal}}')

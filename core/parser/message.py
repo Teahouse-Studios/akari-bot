@@ -6,7 +6,7 @@ from datetime import datetime
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_name, target_guild_prefix as qq_guild_name
 from bots.aiocqhttp.utils import qq_frame_type
-from core.config import Config
+from core.config import config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
@@ -16,15 +16,16 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module, Param
-from core.utils.i18n import Locale, default_locale
+from core.utils.i18n import Locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 from core.database import BotDBUtil
 
-enable_tos = Config('enable_tos', True)
-enable_analytics = Config('enable_analytics', False)
-report_targets = Config('report_targets', [])
-TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300) if Config('tos_temp_ban_time', 300) > 0 else 300
+default_locale = config("default_locale", cfg_type=str)
+enable_tos = config('enable_tos', True)
+enable_analytics = config('enable_analytics', False)
+report_targets = config('report_targets', [])
+TOS_TEMPBAN_TIME = config('tos_temp_ban_time', 300) if config('tos_temp_ban_time', 300) > 0 else 300
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -48,7 +49,7 @@ async def remove_temp_ban(target):
 
 
 async def tos_abuse_warning(msg: Bot.MessageSession, e):
-    if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
+    if enable_tos and config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
@@ -438,16 +439,16 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     if msg.target.target_from == qq_group_name:  # wtf onebot 11
                         if qq_frame_type() == 'ntqq':
                             await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
-                                               emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
+                                               emoji_id=str(config('qq_limited_emoji', '10060', (str, int))))
                         elif qq_frame_type() == 'lagrange':
                             await msg.call_api('group_poke', group_id=msg.session.target,
-                                               user_id=int(Config("qq_account", cfg_type=(int, str))))
+                                               user_id=int(config("qq_account", cfg_type=(int, str))))
                         elif qq_frame_type() == 'shamrock':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                               message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                               message=f'[CQ:touch,id={int(config("qq_account", cfg_type=(int, str)))}]')
                         elif qq_frame_type() == 'mirai':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                               message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                               message=f'[CQ:poke,qq={int(config("qq_account", cfg_type=(int, str)))}]')
                         else:
                             pass
                     await msg.send_message(msg.locale.t("error.message.limited"))
@@ -486,9 +487,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         timeout = False
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                    if Config('bug_report_url', cfg_type=str):
+                    if config('bug_report_url', cfg_type=str):
                         errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
+                                                      url=str(Url(config('bug_report_url', cfg_type=str))))
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:
@@ -627,9 +628,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 timeout = False
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                            if Config('bug_report_url', cfg_type=str):
+                            if config('bug_report_url', cfg_type=str):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url', cfg_type=str))))
+                                                              url=str(Url(config('bug_report_url', cfg_type=str))))
                             await msg.send_message(errmsg)
 
                             if not timeout and report_targets:
@@ -644,16 +645,16 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 if msg.target.target_from == qq_group_name:  # wtf onebot 11
                     if qq_frame_type() == 'ntqq':
                         await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
-                                           emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
+                                           emoji_id=str(config('qq_limited_emoji', '10060', (str, int))))
                     elif qq_frame_type() == 'lagrange':
                         await msg.call_api('group_poke', group_id=msg.session.target,
-                                           user_id=int(Config("qq_account", cfg_type=(int, str))))
+                                           user_id=int(config("qq_account", cfg_type=(int, str))))
                     elif qq_frame_type() == 'shamrock':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:touch,id={int(config("qq_account", cfg_type=(int, str)))}]')
                     elif qq_frame_type() == 'mirai':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:poke,qq={int(config("qq_account", cfg_type=(int, str)))}]')
                     else:
                         pass
                 await msg.send_message((msg.locale.t("error.message.limited")))
