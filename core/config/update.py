@@ -13,6 +13,7 @@ config_filename = 'config.toml'
 cfg_file_path = os.path.join(config_path, config_filename)
 old_cfg_file_path = os.path.join(config_path, 'config.cfg')
 
+
 def convert_cfg_to_toml():
     import configparser
     config_old = configparser.ConfigParser()
@@ -39,6 +40,7 @@ def convert_cfg_to_toml():
 
 # If the config file does not exist, try to convert the old config file to the new format, or raise an error.
 
+
 if not os.path.exists(cfg_file_path):
     if os.path.exists(old_cfg_file_path):
         convert_cfg_to_toml()
@@ -50,7 +52,9 @@ if not os.path.exists(cfg_file_path):
 
 config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
 
-# If config version not exists, regenerate the config file (assumed as version 0 to convert old to new format since this is the first time to generate the config file for everyone)
+# If config version not exists, regenerate the config file (assumed as
+# version 0 to convert old to new format since this is the first time to
+# generate the config file for everyone)
 if 'config_version' not in config:
     shutil.copy(cfg_file_path, cfg_file_path + '.bak')
     d = toml_document()
@@ -136,7 +140,6 @@ if 'config_version' not in config:
     Reorganize.bot_add_enabled_flag()
     Reorganize.reorganize_bot_key("telegram_token")
 
-
     d.add(nl())
 
     # api
@@ -146,7 +149,6 @@ if 'config_version' not in config:
     Reorganize.reorganize_bot_key('jwt_secret')
     Reorganize.reorganize_bot_key('api_port')
 
-
     d.add(nl())
 
     # discord
@@ -155,7 +157,6 @@ if 'config_version' not in config:
     Reorganize.bot_add_enabled_flag()
     Reorganize.reorganize_bot_key('discord_token')
 
-
     d.add(nl())
 
     # kook
@@ -163,7 +164,6 @@ if 'config_version' not in config:
     Reorganize.table = 'kook'
     Reorganize.bot_add_enabled_flag()
     Reorganize.reorganize_bot_key('kook_token')
-
 
     d.add(nl())
 
@@ -177,7 +177,6 @@ if 'config_version' not in config:
     Reorganize.reorganize_bot_key('matrix_device_name')
     Reorganize.reorganize_bot_key('matrix_token')
 
-
     d.add(nl())
 
     # ntqq
@@ -188,7 +187,6 @@ if 'config_version' not in config:
     Reorganize.reorganize_bot_key("qq_bot_secret")
     Reorganize.reorganize_bot_key("qq_private_bot")
     Reorganize.reorganize_bot_key("qq_bot_enable_send_url")
-
 
     d.add(nl())
 
@@ -204,7 +202,6 @@ if 'config_version' not in config:
         d['cfg'].pop('locale')
     if 'disabled_bots' in d['cfg']:
         d['cfg'].pop('disabled_bots')
-
 
     for t in ['secret', 'cfg']:
         for k in d[t]:
@@ -222,12 +219,3 @@ if config['config_version'] == 0:
     #     f.write(toml_dumps(config))
     # config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
     #
-
-
-
-
-
-
-
-
-

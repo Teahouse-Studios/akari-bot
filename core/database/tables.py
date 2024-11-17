@@ -8,6 +8,7 @@ from core.config import config
 is_mysql = DB_LINK.startswith('mysql')
 default_locale = config("default_locale", cfg_type=str)
 
+
 class SenderInfo(Base):
     """发送者信息"""
     __tablename__ = "SenderInfo"

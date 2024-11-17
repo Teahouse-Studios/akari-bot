@@ -73,6 +73,7 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
 
         sys.exit(1)
 
+
 disabled_bots = []
 processes = []
 

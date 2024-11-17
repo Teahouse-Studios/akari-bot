@@ -5,6 +5,7 @@ from ff3 import FF3Cipher
 
 from core.utils.text import random_string
 
+
 def decrypt_string(text):
     key = config('ff3_key', random_string(32), secret=True)
     tweak = config('ff3_tweak', random_string(14), secret=True)

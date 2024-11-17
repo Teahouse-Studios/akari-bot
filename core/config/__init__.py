@@ -31,7 +31,8 @@ class CFGManager:
         cls._ts = os.path.getmtime(cfg_file_path)
 
     @classmethod
-    def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None, secret: bool=False, table_name: str=None) -> Any:
+    def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type,
+            tuple, None] = None, secret: bool = False, table_name: str = None) -> Any:
         q = q.lower()
         if os.path.getmtime(cfg_file_path) != cls._ts:
             cls.load()
@@ -114,7 +115,6 @@ class CFGManager:
                         cls.value[target].add(toml_comment(localed_comment))
                     cls.value[target].add(q, value)
 
-
         with open(cfg_file_path, 'w', encoding='utf-8') as f:
             f.write(toml_dumps(cls.value))
         cls.load()
@@ -150,8 +150,17 @@ class CFGManager:
 
 CFGManager.load()
 
+
 class ConfigOption:
-    def __init__(self, q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None, secret: bool=False, table_name: str=None):
+    def __init__(self,
+                 q: str,
+                 default: Union[Any,
+                                None] = None,
+                 cfg_type: Union[type,
+                                 tuple,
+                                 None] = None,
+                 secret: bool = False,
+                 table_name: str = None):
         self._cfg = CFGManager
         self.q = q
         self.default = default
@@ -159,12 +168,14 @@ class ConfigOption:
         self.secret = secret
         self.table_name = table_name
 
-
     @property
     def value(self):
         return self._cfg.get(self.q, self.default, self.cfg_type, self.secret, self.table_name)
 
-def config(q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None] = None, secret: bool=False, table_name: str=None) -> Any:
+
+def config(q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None]
+           = None, secret: bool = False, table_name: str = None) -> Any:
     return ConfigOption(q, default, cfg_type, secret, table_name).value
+
 
 default_locale = config('default_locale', default_locale, str)

@@ -198,6 +198,7 @@ async def _(msg: Bot.MessageSession):
 
 setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alias='toggle')
 
+
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
     if not msg.info.disable_typing:

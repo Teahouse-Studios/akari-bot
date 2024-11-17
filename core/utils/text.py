@@ -2,6 +2,7 @@ import random
 from datetime import timedelta
 from typing import TypeVar, Union
 
+
 def isfloat(num_str: Union[str, float]) -> bool:
     try:
         float(num_str)
@@ -16,6 +17,7 @@ def isint(num_str: Union[str, int]) -> bool:
         return True
     except ValueError:
         return False
+
 
 T = TypeVar("T", str, bytes, bytearray)
 
