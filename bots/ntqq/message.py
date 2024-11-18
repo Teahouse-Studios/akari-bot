@@ -16,7 +16,7 @@ from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedS
 from core.utils.http import download, url_pattern
 
 enable_analytics = config('enable_analytics', False)
-enable_send_url = config('qq_bot_enable_send_url', False)
+enable_send_url = config('qq_bot_enable_send_url', False, table_name='bot_ntqq')
 
 
 class FinishedSession(FinishedSessionT):

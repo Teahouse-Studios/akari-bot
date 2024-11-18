@@ -17,6 +17,8 @@ from .text import isint
 # We might change this behavior in the future and read them on demand as
 # locale files get too large
 
+supported_locales = ['zh_cn', 'zh_tw', 'en_us']
+
 
 class LocaleNode:
     """本地化树节点"""
@@ -112,7 +114,8 @@ class Locale:
     def __init__(self, locale: str, fallback_lng=None):
         """创建一个本地化对象"""
         if not fallback_lng:
-            fallback_lng = ['zh_cn', 'zh_tw', 'en_us']
+            fallback_lng = supported_locales.copy()
+            fallback_lng.remove(locale)
         self.locale = locale
         self.data: LocaleNode = locale_root.query_node(locale)
         self.fallback_lng = fallback_lng

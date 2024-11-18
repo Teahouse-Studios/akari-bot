@@ -25,7 +25,7 @@ ignored_sender = config("ignored_sender", [])
 
 count = 0
 
-dc_token = config('discord_token', cfg_type=str, secret=True)
+dc_token = config('discord_token', cfg_type=str, secret=True, table_name='bot_discord_secret')
 
 
 @client.event

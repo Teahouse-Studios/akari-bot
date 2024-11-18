@@ -7,7 +7,9 @@ import traceback
 from datetime import datetime
 from time import sleep
 
+import core.scripts.config_generate # noqa
 from core.config import config, CFGManager
+
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
 from core.path import cache_path

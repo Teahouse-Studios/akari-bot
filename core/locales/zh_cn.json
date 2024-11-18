@@ -13,7 +13,7 @@
     "error.config.invalid": "配置参数无效或未找到，请检查配置文件。",
     "error.config.config.comments.not_found": "未找到 API 密钥，请检查配置文件。",
     "error.config.webrender.invalid": "未配置 WebRender，无法使用此命令。",
-    "error.i18n.fallback": "（如果你看到了这条奇怪的字符串，说明我们又搞砸了什么！\n请反馈此问题以便快速解决。）",
+    "error.i18n.fallback": "（如果你看到了这条奇怪的字符串，说明我们又搞砸了什么！请反馈此问题以便快速解决。）",
     "error.message.chain.empty": "机器人尝试发送空消息链，请联系机器人开发者解决问题。",
     "error.message.chain.invalid": "机器人尝试发送无效消息链，请联系机器人开发者解决问题。",
     "error.message.chain.plain.empty": "机器人尝试发送空文本消息，请联系机器人开发者解决问题。",
@@ -151,8 +151,8 @@
     "config.comments.qq_allow_approve_friend": "使用 onebot 协议时，是否自动同意好友请求。",
     "config.comments.qq_allow_approve_group_invite": "使用 onebot 协议时，是否自动同意群邀请。",
     "config.comments.qq_enable_listening_self_message": "使用 onebot 协议时，是否启用自身消息监听。",
-    "config.comments.qq_limited_emoji": "使用 onebot 协议时，消息处理失败时向消息挂上的回应 emoji，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
-    "config.comments.qq_typing_emoji": "使用 onebot 协议时，正在处理消息时向消息挂上的回应 emoji id，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
+    "config.comments.qq_limited_emoji": "使用 QQ 相关协议端时，消息处理失败时向消息挂上的回应 emoji，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
+    "config.comments.qq_typing_emoji": "使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应 emoji id，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
     "config.comments.qq_bot_enable_send_url": "使用 QQ 机器人（官方）时，是否启用发送 URL。",
     "config.comments.qq_private_bot": "使用 QQ 机器人（官方）时，是否为私域机器人。",
     "config.comments.allow_request_private_ip": "是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）",
@@ -196,8 +196,10 @@
     "config.header.line.1": "https://toml.io/en/v1.0.0",
     "config.header.line.2": "注意：TOML 不是 Python。请不要在此处使用 Python 语法。",
     "config.header.line.3": "例如：TOML 中的布尔值必须是小写。",
-    "config.table.secrets": "密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。",
-    "config.table.cfg": "一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。"
+    "config.table.secret": "密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。",
+    "config.table.cfg": "一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。",
+    "config.table.secret_bot": "平台机器人的密钥信息配置，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。",
+    "config.table.cfg_bot": "平台机器人的配置信息，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。"
 
 
 }

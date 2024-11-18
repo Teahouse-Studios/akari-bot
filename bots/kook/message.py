@@ -17,7 +17,7 @@ from core.database import BotDBUtil
 
 enable_analytics = config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"
-kook_headers = {f'Authorization': f"Bot {config('kook_token', cfg_type=str)}"}
+kook_headers = {f'Authorization': f"Bot {config('kook_token', cfg_type=str, secret=True, table_name='bot_kook_secret')}"}
 
 
 async def direct_msg_delete(msg_id: str):

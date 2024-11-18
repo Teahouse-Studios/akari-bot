@@ -1,7 +1,8 @@
 import os
+from time import sleep
 from typing import Union, Any
 
-from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, nl
+from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, nl, document as toml_document
 from loguru import logger
 from tomlkit.items import Table
 
@@ -32,9 +33,11 @@ class CFGManager:
 
     @classmethod
     def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type,
-            tuple, None] = None, secret: bool = False, table_name: str = None) -> Any:
+            tuple, None] = None, secret: bool = False, table_name: str = None, _generate: bool=False) -> Any:
         q = q.lower()
         if os.path.getmtime(cfg_file_path) != cls._ts:
+            logger.warning(f'[Config] Config file has been modified, reloading...')
+            sleep(1)
             cls.load()
 
         value = None
@@ -50,11 +53,14 @@ class CFGManager:
                         value = cls.value[t]
                         break
         else:
-            value = cls.value.get(table_name).get(q)
+            try:
+                value = cls.value.get(table_name).get(q)
+            except AttributeError:
+                pass
 
-        if value is None and default is not None:
+        if (not value and _generate) or (value is None and default is not None):
             logger.warning(f'[Config] Config {q} not found, filled with default value.')
-            cls.write(q, default, secret, table_name)
+            cls.write(q, default, secret, table_name, _generate)
 
             return default
         if cfg_type:
@@ -83,11 +89,15 @@ class CFGManager:
         return value
 
     @classmethod
-    def write(cls, q: str, value: Union[Any, None], secret: bool = False, table_name: str = None):
+    def write(cls, q: str, value: Union[Any, None], secret: bool = False, table_name: str = None, _generate: bool=False):
         q = q.lower()
         if os.path.getmtime(cfg_file_path) != cls._ts:
+            logger.warning(f'[Config] Config file has been modified, reloading...')
+            sleep(1)
             cls.load()
         found = False
+        if value is None:
+            value = "<Replace me>"
         for t in cls.value.keys():
             if isinstance(cls.value[t], Table):
                 if q in cls.value[t]:
@@ -107,14 +117,27 @@ class CFGManager:
                     target = 'secret'
                 if table_name:
                     target = table_name
-                if target in cls.value:
-                    cls.value[target].add(nl())
-                    qc = 'config.comments.' + q
-                    localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
-                    if localed_comment != qc:
-                        cls.value[target].add(toml_comment(localed_comment))
-                    cls.value[target].add(q, value)
+                if target not in cls.value:
+                    if target == 'cfg':
+                        table_comment_key = 'config.table.cfg'
+                    elif target == 'secret':
+                        table_comment_key = 'config.table.secret'
+                    elif 'secret' in target:
+                        table_comment_key = 'config.table.secret_bot'
+                    else:
+                        table_comment_key = 'config.table.cfg_bot'
+                    cls.value.add(target, toml_document())
+                    cls.value[target].add(toml_comment(get_locale.t(table_comment_key)))
 
+
+                cls.value[target].add(q, value)
+                qc = 'config.comments.' + q
+                localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
+                if localed_comment != qc:
+                    cls.value[target].value.item(q).comment(localed_comment)
+
+        if _generate:
+            return
         with open(cfg_file_path, 'w', encoding='utf-8') as f:
             f.write(toml_dumps(cls.value))
         cls.load()
@@ -123,6 +146,8 @@ class CFGManager:
     def delete(cls, q: str) -> bool:
         q = q.lower()
         if os.path.getmtime(cfg_file_path) != cls._ts:
+            logger.warning(f'[Config] Config file has been modified, reloading...')
+            sleep(1)
             cls.load()
         value_s = cls.value.get('secret')
         value_n = cls.value.get('cfg')
@@ -160,22 +185,24 @@ class ConfigOption:
                                  tuple,
                                  None] = None,
                  secret: bool = False,
-                 table_name: str = None):
+                 table_name: str = None,
+                 _generate: bool = False):
         self._cfg = CFGManager
         self.q = q
         self.default = default
         self.cfg_type = cfg_type
         self.secret = secret
         self.table_name = table_name
+        self._generate = _generate
 
     @property
     def value(self):
-        return self._cfg.get(self.q, self.default, self.cfg_type, self.secret, self.table_name)
+        return self._cfg.get(self.q, self.default, self.cfg_type, self.secret, self.table_name, self._generate)
 
 
 def config(q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None]
-           = None, secret: bool = False, table_name: str = None) -> Any:
-    return ConfigOption(q, default, cfg_type, secret, table_name).value
+           = None, secret: bool = False, table_name: str = None, _generate: bool=False) -> Any:
+    return ConfigOption(q, default, cfg_type, secret, table_name, _generate).value
 
 
 default_locale = config('default_locale', default_locale, str)

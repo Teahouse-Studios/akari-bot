@@ -191,8 +191,8 @@ def export_analytics(
     from_to: Tuple[datetime, datetime] = None,
     commands: bool = False, expires: int = 600
 ):
-    # oss_ak = config('oss_ak')
-    # oss_sk = config('oss_sk')
+    # oss_ak = config('oss_ak', secret=True)
+    # oss_sk = config('oss_sk', secret=True)
     # oss_endpoint = config('oss_endpoint')
     # oss_bucket = config('oss_bucket')
     # if not oss_ak or not oss_sk or not oss_endpoint or not oss_bucket:
