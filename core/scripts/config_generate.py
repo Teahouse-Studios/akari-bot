@@ -12,7 +12,8 @@ cfg_file_path = os.path.join(config_path, config_filename)
 if not os.path.exists(cfg_file_path):
     while True:
         lang_list = ['zh_cn', 'zh_tw', 'en_us']
-        lang = input("""Hello, it seems you are first time to run Akari-bot, what language do you want to use by default?
+        lang = input(
+            """Hello, it seems you are first time to run Akari-bot, what language do you want to use by default?
     1. zh_cn (简体中文)
     2. zh_tw (繁體中文)
     3. en_us (English)
@@ -23,11 +24,9 @@ if not os.path.exists(cfg_file_path):
         else:
             print('Invalid input, please try again.')
 
-
     import traceback
     from tomlkit import dumps
-    from core.utils.text import random_string # noqa
-
+    from core.utils.text import random_string  # noqa
 
     config_code_list = []
 
@@ -42,8 +41,7 @@ if not os.path.exists(cfg_file_path):
         f.write('default_locale = "' + lang + '"')
         f.close()
 
-
-    from core.config import config, CFGManager # noqa
+    from core.config import config, CFGManager  # noqa
     from core.config.update import config_version
 
     CFGManager.value.add('config_version', config_version)
@@ -69,8 +67,6 @@ if not os.path.exists(cfg_file_path):
                                         break
                                     param_text += param
                                 config_code_list.append(param_text)
-
-
 
     for c in config_code_list:
         if c.endswith(','):

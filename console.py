@@ -6,7 +6,7 @@ import traceback
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
-import core.scripts.config_generate # noqa
+import core.scripts.config_generate  # noqa
 from core.config import config
 from core.logger import Logger
 from core.path import assets_path

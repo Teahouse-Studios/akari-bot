@@ -11,7 +11,11 @@ user = config('matrix_user', cfg_type=str, table_name='bot_matrix')
 device_id = config('matrix_device_id', cfg_type=str, secret=True, table_name='bot_matrix_secret')
 device_name = config('matrix_device_name', cfg_type=str, secret=True, table_name='bot_matrix_secret')
 token = config('matrix_token', cfg_type=str, secret=True, table_name='bot_matrix_secret')
-megolm_backup_passphrase = config('matrix_megolm_backup_passphrase', cfg_type=str, secret=True, table_name='bot_matrix_secret')
+megolm_backup_passphrase = config(
+    'matrix_megolm_backup_passphrase',
+    cfg_type=str,
+    secret=True,
+    table_name='bot_matrix_secret')
 
 store_path = os.path.abspath('./matrix_store')
 store_path_nio = os.path.join(store_path, 'nio')

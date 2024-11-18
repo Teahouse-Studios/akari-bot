@@ -33,7 +33,7 @@ class CFGManager:
 
     @classmethod
     def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type,
-            tuple, None] = None, secret: bool = False, table_name: str = None, _generate: bool=False) -> Any:
+            tuple, None] = None, secret: bool = False, table_name: str = None, _generate: bool = False) -> Any:
         q = q.lower()
         if os.path.getmtime(cfg_file_path) != cls._ts:
             logger.warning(f'[Config] Config file has been modified, reloading...')
@@ -89,7 +89,8 @@ class CFGManager:
         return value
 
     @classmethod
-    def write(cls, q: str, value: Union[Any, None], secret: bool = False, table_name: str = None, _generate: bool=False):
+    def write(cls, q: str, value: Union[Any, None], secret: bool = False,
+              table_name: str = None, _generate: bool = False):
         q = q.lower()
         if os.path.getmtime(cfg_file_path) != cls._ts:
             logger.warning(f'[Config] Config file has been modified, reloading...')
@@ -128,7 +129,6 @@ class CFGManager:
                         table_comment_key = 'config.table.cfg_bot'
                     cls.value.add(target, toml_document())
                     cls.value[target].add(toml_comment(get_locale.t(table_comment_key)))
-
 
                 cls.value[target].add(q, value)
                 qc = 'config.comments.' + q
@@ -201,7 +201,7 @@ class ConfigOption:
 
 
 def config(q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None]
-           = None, secret: bool = False, table_name: str = None, _generate: bool=False) -> Any:
+           = None, secret: bool = False, table_name: str = None, _generate: bool = False) -> Any:
     return ConfigOption(q, default, cfg_type, secret, table_name, _generate).value
 
 

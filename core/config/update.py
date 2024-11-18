@@ -84,8 +84,6 @@ if len(config.value) < 1:
 
         # reorganize some keys
 
-
-
         class Reorganize:
             table = ''
 
