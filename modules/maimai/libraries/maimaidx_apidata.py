@@ -32,7 +32,7 @@ async def update_cover() -> bool:
                 Logger.debug(f'Successfully download {get_cover_len5_id(id)}.png')
             except Exception as e:
                 if str(e).startswith('404'):
-                    if config('debug', False):
+                    if Config('debug', False):
                         Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
                     continue
                 else:

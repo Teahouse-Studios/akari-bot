@@ -13,7 +13,7 @@ from typing import Union, List, Dict
 import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot
 from core.logger import Logger
 from core.database.local import DirtyWordCache
@@ -78,8 +78,8 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
     :returns: 经过审核后的字符串。不合规部分会被替换为'<REDACTED:原因>，全部不合规则是'<ALL REDACTED:原因>'。
     '''
-    access_key_id = config("check_access_key_id", cfg_type=str, secret=True)
-    access_key_secret = config("check_access_key_secret", cfg_type=str, secret=True)
+    access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
+    access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not Bot.Info.dirty_word_check:
@@ -187,7 +187,7 @@ async def check_bool(*text: Union[str, List[str]]) -> bool:
 
 
 def rickroll(msg: Bot.MessageSession):
-    if config("enable_rickroll", True) and config("rickroll_msg", cfg_type=str):
-        return msg.locale.t_str(config("rickroll_msg", cfg_type=str))
+    if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
+        return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
     else:
         return msg.locale.t("error.message.chain.unsafe")

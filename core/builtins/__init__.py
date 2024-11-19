@@ -1,7 +1,7 @@
 import asyncio
 from typing import Union, List
 
-from core.config import config
+from core.config import Config
 from core.loader import ModulesManager
 from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
 from core.constants.info import Info
@@ -98,7 +98,7 @@ class FetchedSession(FetchedSessionT):
 
 Bot.FetchedSession = FetchedSession
 
-base_superuser_list = config("base_superuser", cfg_type=(str, list))
+base_superuser_list = Config("base_superuser", cfg_type=(str, list))
 
 if isinstance(base_superuser_list, str):
     base_superuser_list = [base_superuser_list]

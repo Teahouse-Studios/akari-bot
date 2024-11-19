@@ -3,14 +3,14 @@ import traceback
 import discord
 
 from bots.discord.message import convert_embed, MessageSession as MessageSessionT
-from core.config import config
+from core.config import Config
 from core.builtins import Plain, Image, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, I18NContext
 from core.logger import Logger
 from core.types import FinishedSession as FinS
 
-enable_analytics = config('enable_analytics', False)
+enable_analytics = Config('enable_analytics', False)
 
 
 class FinishedSession(FinS):

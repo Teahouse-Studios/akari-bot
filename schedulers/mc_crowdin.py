@@ -2,7 +2,7 @@ import random
 import re
 import traceback
 
-from core.config import config
+from core.config import Config
 from core.builtins import Embed, EmbedField
 from core.logger import Logger
 from core.queue import JobQueue
@@ -17,7 +17,7 @@ filter_words = ['Mojang']
 base_url = 'https://crowdin.com/'
 
 
-@Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not config('slower_schedule', False) else 180))
+@Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule', False) else 180))
 async def check_crowdin():
     global first
     randstr = 'abcdefghijklmnopqrstuvwxyz'
@@ -80,7 +80,7 @@ async def check_crowdin():
                             if not first and not CrowdinActivityRecords.check(identify):
                                 await JobQueue.trigger_hook_all('mc_crowdin', message=[Embed(title='New Crowdin Updates', description=m, color=0x00ff00, fields=[EmbedField(name=k, value=v, inline=True) for k, v in identify_.items()]).to_dict()])
     except Exception:
-        if config('debug', False):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())
     if first:
         first = False

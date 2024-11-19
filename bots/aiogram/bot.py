@@ -9,7 +9,7 @@ from bots.aiogram.info import *
 from bots.aiogram.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
-from core.config import config
+from core.config import Config
 from core.parser.message import parser
 from core.constants.path import assets_path
 from core.types import MsgInfo, Session
@@ -17,7 +17,7 @@ from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiogram'))
 Url.disable_mm = True
-ignored_sender = config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", [])
 
 
 @dp.message()
@@ -47,7 +47,7 @@ async def on_startup(dispatcher):
     await load_prompt(FetchTarget)
 
 
-if config("enable", False, cfg_type=bool, table_name='bot_aiogram'):
+if Config("enable", False, cfg_type=bool, table_name='bot_aiogram'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

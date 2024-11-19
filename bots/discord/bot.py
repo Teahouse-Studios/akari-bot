@@ -10,7 +10,7 @@ import orjson as json
 from bots.discord.client import client
 from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
-from core.config import config
+from core.config import Config
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
@@ -21,11 +21,11 @@ from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'discord'))
 Url.disable_mm = True
-ignored_sender = config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", [])
 
 count = 0
 
-dc_token = config('discord_token', cfg_type=str, secret=True, table_name='bot_discord_secret')
+dc_token = Config('discord_token', cfg_type=str, secret=True, table_name='bot_discord_secret')
 
 
 @client.event
@@ -123,7 +123,7 @@ async def on_message(message):
     await parser(msg, prefix=prefix)
 
 
-if config("enable", False, cfg_type=bool, table_name='bot_discord'):
+if Config("enable", False, cfg_type=bool, table_name='bot_discord'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

@@ -9,7 +9,7 @@ import orjson as json
 import zipfile
 from dateutil.relativedelta import relativedelta
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.logger import Logger
@@ -31,7 +31,7 @@ ana = module('analytics', alias='ana', required_superuser=True, base=True, doc=T
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
-    if config('enable_analytics', False):
+    if Config('enable_analytics', False):
         try:
             first_record = get_first_record(msg)
             get_counts = BotDBUtil.Analytics.get_count()
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command('days [<module>]')
 async def _(msg: Bot.MessageSession):
-    if config('enable_analytics', False):
+    if Config('enable_analytics', False):
         try:
             first_record = get_first_record(msg)
             module_ = msg.parsed_msg.get('<module>')
@@ -98,7 +98,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command('year [<module>]')
 async def _(msg: Bot.MessageSession):
-    if config('enable_analytics', False):
+    if Config('enable_analytics', False):
         try:
             first_record = get_first_record(msg)
             module_ = msg.parsed_msg.get('<module>')
@@ -143,7 +143,7 @@ async def _(msg: Bot.MessageSession):
 @ana.command('modules [<rank>]')
 async def _(msg: Bot.MessageSession, rank: int = None):
     rank = rank if rank and rank > 0 else 30
-    if config('enable_analytics', False):
+    if Config('enable_analytics', False):
         try:
             module_counts = BotDBUtil.Analytics.get_modules_count()
             top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:rank]

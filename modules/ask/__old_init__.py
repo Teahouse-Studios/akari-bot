@@ -4,7 +4,7 @@ import re
 
 from PIL import Image as PILImage
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check_bool, rickroll
@@ -12,11 +12,11 @@ from core.constants.exceptions import ConfigValueError
 from core.utils.cooldown import CoolDown
 from .petal import count_petal
 
-os.environ['LANGCHAIN_TRACING_V2'] = str(config('enable_langsmith'))
-if config('enable_langsmith'):
-    os.environ['LANGCHAIN_ENDPOINT'] = config('langsmith_endpoint')
-    os.environ['LANGCHAIN_PROJECT'] = config('langsmith_project')
-    os.environ['LANGCHAIN_API_KEY'] = config('langsmith_api_key')
+os.environ['LANGCHAIN_TRACING_V2'] = str(Config('enable_langsmith'))
+if Config('enable_langsmith'):
+    os.environ['LANGCHAIN_ENDPOINT'] = Config('langsmith_endpoint')
+    os.environ['LANGCHAIN_PROJECT'] = Config('langsmith_project')
+    os.environ['LANGCHAIN_API_KEY'] = Config('langsmith_api_key')
 
     from langchain.callbacks import get_openai_callback  # noqa: E402
     from .agent import agent_executor  # noqa: E402
@@ -28,7 +28,7 @@ if config('enable_langsmith'):
     @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
     async def _(msg: Bot.MessageSession):
         is_superuser = msg.check_super_user()
-        if not config('openai_api_key', secret=True):
+        if not Config('openai_api_key', secret=True):
             raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
         if not is_superuser and msg.petal <= 0:  # refuse
             await msg.finish(msg.locale.t('petal.message.cost.not_enough'))

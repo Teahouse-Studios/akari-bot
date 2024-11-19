@@ -10,7 +10,7 @@ from aiocqhttp import Event
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
-from core.config import config
+from core.config import Config
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.parser.message import parser
@@ -22,12 +22,12 @@ from core.utils.i18n import Locale
 from core.database import BotDBUtil
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
-Info.dirty_word_check = config('enable_dirty_check', False)
-Url.disable_mm = not config('enable_urlmanager', False)
-qq_account = str(config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
-enable_listening_self_message = config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
-ignored_sender = config("ignored_sender", [])
-default_locale = config("default_locale", cfg_type=str)
+Info.dirty_word_check = Config('enable_dirty_check', False)
+Url.disable_mm = not Config('enable_urlmanager', False)
+qq_account = str(Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
+enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
+ignored_sender = Config("ignored_sender", [])
+default_locale = Config("default_locale", cfg_type=str)
 
 
 @bot.on_startup
@@ -44,7 +44,7 @@ async def _(event: Event):
 async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
-            if config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
+            if Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
                 return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
 
     if event.detail_type == 'group':
@@ -163,7 +163,7 @@ async def _(event: Event):
     sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
-    if not config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
+    if not Config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
         await bot.send_private_msg(user_id=event.user_id,
                                    message=Locale(default_locale).t('qq.prompt.disable_friend_request'))
     else:
@@ -178,7 +178,7 @@ async def _(event: Event):
     sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
-    if not config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
+    if not Config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
         await bot.send_private_msg(user_id=event.user_id,
                                    message=Locale(default_locale).t('qq.prompt.disable_group_invite'))
     else:
@@ -231,14 +231,14 @@ async def _(event: Event):
     result = BotDBUtil.GroupBlockList.check(target_id)
     if result:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
-        if config('issue_url', cfg_type=str):
-            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=config('issue_url', cfg_type=str))
+        if Config('issue_url', cfg_type=str):
+            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str))
         await bot.send(event=event, message=res)
         await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
-qq_host = config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp_secret')
-if qq_host and config("enable", False, cfg_type=bool, table_name='bot_aiocqhttp'):
+qq_host = Config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp_secret')
+if qq_host and Config("enable", False, cfg_type=bool, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name
     if 'subprocess' in sys.argv:

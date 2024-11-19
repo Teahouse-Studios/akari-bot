@@ -13,13 +13,13 @@ from aiofile import async_open
 from aiohttp import TCPConnector
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.config import config
+from core.config import Config
 from core.logger import Logger
 from core.constants.path import cache_path
 
 logging_resp = False
-debug = config('debug', False)
-if not (proxy := config('proxy', cfg_type=str, secret=True)):
+debug = Config('debug', False)
+if not (proxy := Config('proxy', cfg_type=str, secret=True)):
     proxy = ''
 
 url_pattern = re.compile(
@@ -65,7 +65,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     async def get_():
         Logger.debug(f'[GET] {url}')
 
-        if not config('allow_request_private_ip', False) and not request_private_ip:
+        if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
         async with aiohttp.ClientSession(headers=headers,
@@ -123,7 +123,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _post():
         Logger.debug(f'[POST] {url}')
-        if not config('allow_request_private_ip', False) and not request_private_ip:
+        if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
         async with aiohttp.ClientSession(headers=headers,
@@ -187,7 +187,7 @@ async def download(url: str, filename: str = None, path: str = None, status_code
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def download_(filename=filename, path=path):
-        if not config('allow_request_private_ip', False) and not request_private_ip:
+        if not Config('allow_request_private_ip', False) and not request_private_ip:
             private_ip_check(url)
 
         data = None

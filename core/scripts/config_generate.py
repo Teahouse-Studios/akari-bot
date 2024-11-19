@@ -48,7 +48,7 @@ Please input the number of the language you want to use:""")
         f.write('initialized = false\n')
         f.close()
 
-    from core.config import config, CFGManager  # noqa
+    from core.config import Config, CFGManager  # noqa
 
     for dir in dir_list:
         for root, dirs, files in os.walk(dir):

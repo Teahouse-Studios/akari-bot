@@ -5,7 +5,7 @@ import jwt
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Url
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
@@ -14,7 +14,7 @@ from core.database import BotDBUtil
 
 import subprocess
 
-jwt_secret = config('jwt_secret', cfg_type=str, secret=True)
+jwt_secret = Config('jwt_secret', cfg_type=str, secret=True)
 
 ver = module('version', base=True, doc=True)
 
@@ -24,7 +24,7 @@ async def bot_version(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
         send_msgs = [I18NContext('core.message.version', commit=commit)]
-        if config('enable_commit_url', True):
+        if Config('enable_commit_url', True):
             repo_url = subprocess.check_output(['git', 'config', '--get', 'remote.origin.url']).decode().strip()
             repo_url = repo_url.replace('.git', '')  # Remove .git from the repo URL
             commit_url = f"{repo_url}/commit/{commit}"
@@ -154,8 +154,8 @@ async def _(msg: Bot.MessageSession):
     res = msg.locale.t("core.message.locale.prompt", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
-    if config('locale_url', cfg_type=str):
-        res += '\n' + msg.locale.t("core.message.locale.contribute", url=config('locale_url', cfg_type=str))
+    if Config('locale_url', cfg_type=str):
+        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', cfg_type=str))
     await msg.finish(res)
 
 

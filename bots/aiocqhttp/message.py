@@ -15,7 +15,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, \
     MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
@@ -27,7 +27,7 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from core.database import BotDBUtil
 
-enable_analytics = config('enable_analytics', False)
+enable_analytics = Config('enable_analytics', False)
 
 
 class FinishedSession(FinishedSessionT):
@@ -331,7 +331,7 @@ class MessageSession(MessageSessionT):
             if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
                 if qq_frame_type() == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
-                                          emoji_id=str(config('qq_typing_emoji', '181', (str, int))))
+                                          emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
                 else:
                     if self.msg.session.sender in last_send_typing_time:
                         if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:

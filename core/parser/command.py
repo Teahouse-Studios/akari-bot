@@ -9,11 +9,11 @@ from core.constants.exceptions import InvalidCommandFormatError
 from core.types import MessageSession, Module
 from core.utils.i18n import Locale
 from .args import parse_argv, Template, templates_to_str, DescPattern
-from ..config import config
+from ..config import Config
 from ..logger import Logger
 
 
-default_locale = config("default_locale", cfg_type=str)
+default_locale = Config("default_locale", cfg_type=str)
 
 
 class CommandParser:

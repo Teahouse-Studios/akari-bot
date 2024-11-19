@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, UTC as datetimeUTC
 from typing import List
 
-from core.config import config
+from core.config import Config
 from core.builtins.message.chain import *
 from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager
@@ -34,14 +34,14 @@ class MessageSession(MessageSessionT):
         self.petal = self.info.petal
         self.tmp = {}
         self._tz_offset = self.options.get(
-            'timezone_offset', config('timezone_offset', '+8'))
+            'timezone_offset', Config('timezone_offset', '+8'))
         self.timezone_offset = parse_time_string(self._tz_offset)
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True) \
             -> bool:
         send = None
         ExecutionLockList.remove(self)
-        if config('no_confirm', False):
+        if Config('no_confirm', False):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)

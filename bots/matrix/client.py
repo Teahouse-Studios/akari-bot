@@ -3,15 +3,15 @@ import os
 import urllib3
 from nio import AsyncClient, AsyncClientConfig
 
-from core.config import config
+from core.config import Config
 from core.logger import Logger
 
-homeserver = config('matrix_homeserver', cfg_type=str, table_name='bot_matrix')
-user = config('matrix_user', cfg_type=str, table_name='bot_matrix')
-device_id = config('matrix_device_id', cfg_type=str, secret=True, table_name='bot_matrix_secret')
-device_name = config('matrix_device_name', cfg_type=str, secret=True, table_name='bot_matrix_secret')
-token = config('matrix_token', cfg_type=str, secret=True, table_name='bot_matrix_secret')
-megolm_backup_passphrase = config(
+homeserver = Config('matrix_homeserver', cfg_type=str, table_name='bot_matrix')
+user = Config('matrix_user', cfg_type=str, table_name='bot_matrix')
+device_id = Config('matrix_device_id', cfg_type=str, secret=True, table_name='bot_matrix_secret')
+device_name = Config('matrix_device_name', cfg_type=str, secret=True, table_name='bot_matrix_secret')
+token = Config('matrix_token', cfg_type=str, secret=True, table_name='bot_matrix_secret')
+megolm_backup_passphrase = Config(
     'matrix_megolm_backup_passphrase',
     cfg_type=str,
     secret=True,

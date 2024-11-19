@@ -8,7 +8,7 @@ from datetime import datetime
 from time import sleep
 
 import core.scripts.config_generate  # noqa
-from core.config import config, CFGManager
+from core.config import Config, CFGManager
 
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
@@ -52,7 +52,7 @@ failed_to_start_attempts = {}
 
 
 def init_bot():
-    base_superuser = config('base_superuser', cfg_type=(str, list))
+    base_superuser = Config('base_superuser', cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
@@ -125,7 +125,7 @@ def run_bot():
         if bl in bots_and_required_configs:
             abort = False
             for c in bots_and_required_configs[bl]:
-                if not config(c):
+                if not Config(c):
                     Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
                     break

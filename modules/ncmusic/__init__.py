@@ -1,4 +1,4 @@
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.constants.exceptions import ConfigValueError
@@ -6,7 +6,7 @@ from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 
-API = config('ncmusic_api', cfg_type=str, secret=True)
+API = Config('ncmusic_api', cfg_type=str, secret=True)
 SEARCH_LIMIT = 10
 
 ncmusic = module('ncmusic',
@@ -123,7 +123,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             else:
                 await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
 
-        if Bot.client_name == 'QQ' and config('ncmusic_enable_card', False):
+        if Bot.client_name == 'QQ' and Config('ncmusic_enable_card', False):
             await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
         else:
             await info(msg, sid)
@@ -131,7 +131,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
 @ncmusic.handle('<sid> {{ncmusic.help}}', available_for=['QQ|Group', 'QQ|Private'])
 async def _(msg: Bot.MessageSession, sid: int):
-    if config('ncmusic_enable_card', False):
+    if Config('ncmusic_enable_card', False):
         await msg.finish(f'[CQ:music,type=163,id={sid}]', quote=False)
     else:
         await info(msg, sid)

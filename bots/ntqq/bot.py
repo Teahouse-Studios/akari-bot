@@ -9,17 +9,17 @@ from bots.ntqq.info import *
 from bots.ntqq.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
-from core.config import config
+from core.config import Config
 from core.parser.message import parser
 from core.constants.path import assets_path
 from core.constants.info import Info
 from core.types import MsgInfo, Session
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
-Info.dirty_word_check = config('enable_dirty_check', False)
+Info.dirty_word_check = Config('enable_dirty_check', False)
 Url.disable_mm = False
-qq_appid = str(config("qq_bot_appid", cfg_type=(int, str), table_name='bot_ntqq'))
-qq_secret = config("qq_bot_secret", cfg_type=str, secret=True, table_name='bot_ntqq_secret')
+qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name='bot_ntqq'))
+qq_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name='bot_ntqq_secret')
 
 
 class MyClient(botpy.Client):
@@ -159,12 +159,12 @@ class MyClient(botpy.Client):
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
-if config("enable", False, cfg_type=bool, table_name='bot_ntqq'):
+if Config("enable", False, cfg_type=bool, table_name='bot_ntqq'):
     intents = botpy.Intents.none()
     intents.public_guild_messages = True
     intents.public_messages = True
     intents.direct_message = True
-    if config('qq_private_bot', False, table_name='bot_ntqq'):
+    if Config('qq_private_bot', False, table_name='bot_ntqq'):
         intents.guild_messages = True
 
     client = MyClient(intents=intents)

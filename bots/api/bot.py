@@ -18,14 +18,14 @@ from core.bot_init import init_async  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
-from core.config import config  # noqa: E402
+from core.config import Config  # noqa: E402
 from core.database import BotDBUtil  # noqa: E402
 from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 from core.logger import Logger  # noqa: E402
 
 
 app = FastAPI()
-jwt_secret = config('jwt_secret', cfg_type=str, secret=True)
+jwt_secret = Config('jwt_secret', cfg_type=str, secret=True)
 
 
 @app.on_event("startup")
@@ -181,10 +181,10 @@ async def get_locale(locale: str, string: str):
             "detail": "Not Found"
         })
 
-if (__name__ == "__main__" or Info.subprocess) and config("enable", True, cfg_type=bool, table_name='bot_api'):
+if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, cfg_type=bool, table_name='bot_api'):
     while True:
         Info.client_name = client_name
-        uvicorn.run(app, port=config('api_port', 5000), log_level="info")
+        uvicorn.run(app, port=Config('api_port', 5000), log_level="info")
         Logger.error('API Server crashed, is the port occupied?')
         Logger.error('Retrying in 5 seconds...')
         time.sleep(5)

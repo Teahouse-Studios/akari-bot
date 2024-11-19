@@ -1,6 +1,6 @@
 import orjson as json
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
@@ -8,7 +8,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .audit import audit_available_list
 from .wiki import wiki
 
-enable_urlmanager = config('enable_urlmanager')
+enable_urlmanager = Config('enable_urlmanager')
 
 
 @wiki.command('set <wikiurl> {{wiki.help.set}}', required_admin=True)
@@ -25,9 +25,9 @@ async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
         result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
         if result and enable_urlmanager and not in_allowlist:
             prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
-            if config("wiki_whitelist_url", cfg_type=str):
+            if Config("wiki_whitelist_url", cfg_type=str):
                 prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                              url=config("wiki_whitelist_url", cfg_type=str))
+                                              url=Config("wiki_whitelist_url", cfg_type=str))
         else:
             prompt = ''
         await msg.finish(msg.locale.t("wiki.message.set.success", name=check.value.name) + prompt)
@@ -49,9 +49,9 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
         result = target.config_interwikis(interwiki, check.value.api, let_it=True)
         if result and enable_urlmanager and not check.value.in_allowlist:
             prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
-            if config("wiki_whitelist_url", cfg_type=str):
+            if Config("wiki_whitelist_url", cfg_type=str):
                 prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                              url=config("wiki_whitelist_url", cfg_type=str))
+                                              url=Config("wiki_whitelist_url", cfg_type=str))
 
         else:
             prompt = ''

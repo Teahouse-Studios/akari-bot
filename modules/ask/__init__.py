@@ -5,7 +5,7 @@ from PIL import Image as PILImage
 from openai import OpenAI, AsyncOpenAI
 import tiktoken
 
-from core.config import config
+from core.config import Config
 from core.logger import Logger
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
@@ -15,13 +15,13 @@ from core.utils.cooldown import CoolDown
 from .formatting import generate_latex, generate_code_snippet
 from .petal import count_petal
 
-if config('openai_api_key', cfg_type=str):
+if Config('openai_api_key', cfg_type=str):
     client = AsyncOpenAI(
-        api_key=config('openai_api_key', cfg_type=str, secret=True),
+        api_key=Config('openai_api_key', cfg_type=str, secret=True),
     )
 
     sync_client = OpenAI(
-        api_key=config('openai_api_key', cfg_type=str, secret=True),
+        api_key=Config('openai_api_key', cfg_type=str, secret=True),
     )
 
     INSTRUCTIONS = '''You are the chat mode of AkariBot (Chinese: 小可), a chat bot created by Teahouse Studios (Chinese: 茶馆工作室)
@@ -55,9 +55,9 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}', doc=True)
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
-    if not config('openai_api_key', cfg_type=str, secret=True):
+    if not Config('openai_api_key', cfg_type=str, secret=True):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
-    if config('enable_petal', False) and not is_superuser and msg.petal <= 0:  # refuse
+    if Config('enable_petal', False) and not is_superuser and msg.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('petal.message.cost.not_enough'))
 
     qc = CoolDown('call_openai', msg)

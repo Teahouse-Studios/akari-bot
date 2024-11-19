@@ -2,7 +2,7 @@ import re
 
 import orjson as json
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
@@ -50,9 +50,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
             return
     if not in_allowlist:
         prompt = msg.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
-        if config("wiki_whitelist_url", cfg_type=str):
+        if Config("wiki_whitelist_url", cfg_type=str):
             prompt += '\n' + msg.locale.t("wiki.message.wiki_audit.untrust.address",
-                                          url=config("wiki_whitelist_url", cfg_type=str))
+                                          url=Config("wiki_whitelist_url", cfg_type=str))
         await msg.finish(prompt)
         return
     if status.available:

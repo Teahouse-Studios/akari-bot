@@ -8,18 +8,18 @@ from khl import MessageTypes, Message
 
 from bots.kook.client import bot
 from bots.kook.info import *
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.database import BotDBUtil
 
-enable_analytics = config('enable_analytics', False)
+enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"
 kook_headers = {
     f'Authorization': f"Bot {
-        config(
+        Config(
             'kook_token',
             cfg_type=str,
             secret=True,

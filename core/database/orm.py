@@ -2,10 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 
-from core.config import config
+from core.config import Config
 from core.database.orm_base import Base
 
-DB_LINK = config('db_path', cfg_type=str, secret=True)
+DB_LINK = Config('db_path', cfg_type=str, secret=True)
 
 
 class DBSession:

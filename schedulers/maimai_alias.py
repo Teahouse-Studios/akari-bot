@@ -1,6 +1,6 @@
 import traceback
 
-from core.config import config
+from core.config import Config
 from core.logger import Logger
 from core.scheduler import Scheduler, CronTrigger
 from modules.maimai.libraries.maimaidx_apidata import update_alias
@@ -12,5 +12,5 @@ async def update_maimai_alias():
     try:
         await update_alias()
     except Exception:
-        if config('debug', False):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())

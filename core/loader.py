@@ -7,7 +7,7 @@ from typing import Dict, Union, Callable
 
 import orjson as json
 
-from core.config import config
+from core.config import Config
 from core.logger import Logger
 from core.types import Module
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
@@ -21,7 +21,7 @@ err_modules = []
 
 
 def load_modules():
-    unloaded_modules = config('unloaded_modules', [])
+    unloaded_modules = Config('unloaded_modules', [])
     err_prompt = []
     if locale_loaded_err:
         err_prompt.append('i18n:')

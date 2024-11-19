@@ -3,10 +3,10 @@ from sqlalchemy.dialects.mysql import LONGTEXT
 
 from core.database.orm import Session, DB_LINK
 from core.database.orm_base import Base
-from core.config import config
+from core.config import Config
 
 is_mysql = DB_LINK.startswith('mysql')
-default_locale = config("default_locale", cfg_type=str)
+default_locale = Config("default_locale", cfg_type=str)
 
 
 class SenderInfo(Base):

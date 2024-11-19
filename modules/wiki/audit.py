@@ -1,7 +1,7 @@
 import re
 from datetime import timezone
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
@@ -16,7 +16,7 @@ aud = module('wiki_audit',
              required_superuser=True,
              alias='wau', doc=True,
              available_for=audit_available_list,
-             load=config('enable_urlmanager', False))
+             load=Config('enable_urlmanager', False))
 
 
 @aud.command(['trust <apilink>',

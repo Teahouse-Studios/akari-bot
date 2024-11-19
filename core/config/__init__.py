@@ -192,7 +192,7 @@ class CFGManager:
                     table_comment_key = 'config.table.secret_bot'
                 else:
                     table_comment_key = 'config.table.config_bot'
-                get_locale = Locale(config('default_locale', default_locale, str))
+                get_locale = Locale(Config('default_locale', default_locale, str))
                 cls.values[target].add(toml_comment(get_locale.t('config.header.line.1')))
                 cls.values[target].add(toml_comment((get_locale.t('config.header.line.2'))))
                 cls.values[target].add(toml_comment((get_locale.t('config.header.line.3'))))
@@ -202,7 +202,7 @@ class CFGManager:
 
             cls.values[target][target].add(q, value)
             qc = 'config.comments.' + q
-            get_locale = Locale(config('default_locale', default_locale, str))
+            get_locale = Locale(Config('default_locale', default_locale, str))
             localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
             if localed_comment != qc:
                 cls.values[target][target].value.item(q).comment(localed_comment)
@@ -245,35 +245,4 @@ class CFGManager:
 
 
 CFGManager.load()
-
-
-class ConfigOption:
-    def __init__(self,
-                 q: str,
-                 default: Union[Any,
-                                None] = None,
-                 cfg_type: Union[type,
-                                 tuple,
-                                 None] = None,
-                 secret: bool = False,
-                 table_name: str = None,
-                 _generate: bool = False):
-        self._cfg = CFGManager
-        self.q = q
-        self.default = default
-        self.cfg_type = cfg_type
-        self.secret = secret
-        self.table_name = table_name
-        self._generate = _generate
-
-    @property
-    def value(self):
-        return self._cfg.get(self.q, self.default, self.cfg_type, self.secret, self.table_name, self._generate)
-
-
-def config(q: str, default: Union[Any, None] = None, cfg_type: Union[type, tuple, None]
-           = None, secret: bool = False, table_name: str = None, _generate: bool = False) -> Any:
-    return ConfigOption(q, default, cfg_type, secret, table_name, _generate).value
-
-
-Config = config
+Config = CFGManager.get

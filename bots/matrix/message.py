@@ -8,7 +8,7 @@ import nio
 
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import *
-from core.config import config
+from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
@@ -16,7 +16,7 @@ from core.types import FetchTarget as FetchedTargetT, FinishedSession as Finishe
 from core.utils.image import image_split
 from core.database import BotDBUtil
 
-enable_analytics = config("enable_analytics", False)
+enable_analytics = Config("enable_analytics", False)
 
 
 class FinishedSession(FinishedSessionT):

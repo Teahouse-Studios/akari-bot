@@ -1,13 +1,13 @@
 import random
 from datetime import datetime
 
-from core.config import config
+from core.config import Config
 from core.utils.http import url_pattern
 
 
 def joke(text: str):
     current_date = datetime.now().date()
-    enable_joke = config('enable_joke', cfg_type=bool)
+    enable_joke = Config('enable_joke', cfg_type=bool)
 #    joke_type = Config('joke_type', cfg_type=str)
 
     if enable_joke or (enable_joke is None and (current_date.month == 4 and current_date.day == 1)):
@@ -16,7 +16,7 @@ def joke(text: str):
 
 
 def shuffle_joke(text: str) -> str:
-    shuffle_rate = config('shuffle_rate', 0.1, (float, int))
+    shuffle_rate = Config('shuffle_rate', 0.1, (float, int))
 
     urls = url_pattern.finditer(text)
     url_positions = [(url.start(), url.end()) for url in urls]

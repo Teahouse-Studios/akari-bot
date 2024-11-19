@@ -3,7 +3,7 @@ import traceback
 
 from mcstatus import JavaServer, BedrockServer
 
-from core.config import config
+from core.config import Config
 from core.builtins import Bot
 from core.logger import Logger
 
@@ -41,7 +41,7 @@ async def query_java_server(msg: Bot.MessageSession, address: str, raw: bool = F
         servers.append(f"{serip}:{port}")
 
     except Exception:
-        if config('debug', False):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())
         return ''
 
@@ -76,7 +76,7 @@ async def query_bedrock_server(msg, address, raw=False):
         servers.append(f"{serip}:{port}")
 
     except Exception:
-        if config('debug', False):
+        if Config('debug', False):
             Logger.error(traceback.format_exc())
         return ''
 
