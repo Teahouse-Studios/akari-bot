@@ -2,7 +2,7 @@ import os
 
 from core.builtins import Bot, Image as BImage, Plain
 from core.component import module
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.utils.http import get_url
 from core.utils.web_render import webrender
 

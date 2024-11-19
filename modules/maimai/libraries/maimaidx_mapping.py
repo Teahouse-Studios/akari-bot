@@ -1,7 +1,7 @@
 import os
 
 from core.config import config
-from core.path import assets_path
+from core.constants.path import assets_path
 
 DEVELOPER_TOKEN = config('diving_fish_developer_token', cfg_type=str, secret=True)
 SONGS_PER_PAGE = 30

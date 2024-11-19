@@ -14,7 +14,7 @@ import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.config import config
-from core.builtins import Bot, EnableDirtyWordCheck
+from core.builtins import Bot
 from core.logger import Logger
 from core.database.local import DirtyWordCache
 
@@ -82,7 +82,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
     access_key_secret = config("check_access_key_secret", cfg_type=str, secret=True)
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
-    if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
+    if not access_key_id or not access_key_secret or not Bot.Info.dirty_word_check:
         Logger.warning('Dirty words filter was disabled, skip.')
         query_list = []
         for t in text:

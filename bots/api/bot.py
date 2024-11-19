@@ -14,7 +14,7 @@ from core.utils.info import Info
 
 sys.path.append(os.getcwd())
 
-from core.bot import init_async  # noqa: E402
+from core.bot_init import init_async  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
@@ -181,7 +181,7 @@ async def get_locale(locale: str, string: str):
             "detail": "Not Found"
         })
 
-if __name__ == "__main__" or Info.subprocess:
+if (__name__ == "__main__" or Info.subprocess) and config("enable", True, cfg_type=bool, table_name='bot_api'):
     while True:
         Info.client_name = client_name
         uvicorn.run(app, port=config('api_port', 5000), log_level="info")

@@ -11,7 +11,7 @@ from core.config import config
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
-from core.path import assets_path, noto_sans_bold_path
+from core.constants.path import assets_path, noto_sans_bold_path
 from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState
 from core.utils.petal import gained_petal

@@ -1,5 +1,4 @@
 import orjson as json
-from marshmallow.utils import timestamp
 from sqlalchemy import text, update
 
 from core.database import BotDBUtil

@@ -1,7 +1,7 @@
 ﻿from core.config import config
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.utils.random import Random
 
 MAX_COIN_NUM = config('coin_limit', 10000)

@@ -9,8 +9,8 @@ from prompt_toolkit.history import FileHistory
 import core.scripts.config_generate  # noqa
 from core.config import config
 from core.logger import Logger
-from core.path import assets_path
-from core.utils.info import Info
+from core.constants.path import assets_path
+from core.constants.info import Info
 
 if not config('db_path', cfg_type=str, secret=True):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
@@ -19,8 +19,8 @@ if not config('db_path', cfg_type=str, secret=True):
                          ' bot will automatically create a SQLite database in the "./database/save.db")')
 
 from bot import init_bot
-from core.bot import init_async
-from core.builtins import PrivateAssets, EnableDirtyWordCheck, Url
+from core.bot_init import init_async
+from core.builtins import PrivateAssets, Url
 from core.console.info import *
 from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers
@@ -43,7 +43,7 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
     print('Database updated successfully! Please restart the program.')
     sys.exit()
 
-EnableDirtyWordCheck.status = True
+Info.dirty_word_check = True
 Url.disable_mm = True
 PrivateAssets.set(os.path.join(assets_path, 'private', 'console'))
 console_history_path = os.path.join(PrivateAssets.path, '.console_history')

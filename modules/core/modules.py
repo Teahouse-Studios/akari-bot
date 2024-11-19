@@ -1,7 +1,7 @@
 from core.config import config, CFGManager
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import InvalidHelpDocTypeError
+from core.constants.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from core.utils.i18n import load_locale_file

@@ -8,7 +8,7 @@ from core.config import config
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.utils.cooldown import CoolDown
 from .petal import count_petal
 

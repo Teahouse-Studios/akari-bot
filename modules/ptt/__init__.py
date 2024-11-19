@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.component import module
 from core.builtins import Bot, Image as BImage
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.utils.cache import random_cache_path
 from core.utils.image import get_fontsize
 

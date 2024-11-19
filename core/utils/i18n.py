@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+import traceback
 from collections.abc import MutableMapping
 from decimal import Decimal, ROUND_HALF_UP
 from string import Template
@@ -8,7 +9,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import orjson as json
 
-from core.path import locales_path, modules_locales_path
+from core.constants.path import locales_path, modules_locales_path
+from core.constants.default import lang_list
 from .text import isint
 
 
@@ -17,7 +19,7 @@ from .text import isint
 # We might change this behavior in the future and read them on demand as
 # locale files get too large
 
-supported_locales = ['zh_cn', 'zh_tw', 'en_us']
+supported_locales = list(lang_list.keys())
 
 
 class LocaleNode:
@@ -83,6 +85,7 @@ def load_locale_file():
             with open(os.path.join(locales_path, l), 'r', encoding='utf-8') as f:
                 locale_dict[l.removesuffix('.json')] = flatten(json.loads(f.read()))
     except Exception as e:
+        traceback.print_exc()
         err_prompt.append(str(e))
 
     for modules_locales_file in glob.glob(modules_locales_path):
@@ -97,6 +100,7 @@ def load_locale_file():
                         else:
                             locale_dict[lang_file.removesuffix('.json')] = flatten(json.loads(f.read()))
                     except Exception as e:
+                        traceback.print_exc()
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
 
     for lang in locale_dict.keys():

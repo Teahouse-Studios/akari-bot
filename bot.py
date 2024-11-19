@@ -12,7 +12,7 @@ from core.config import config, CFGManager
 
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
-from core.path import cache_path
+from core.constants.path import cache_path
 from core.utils.info import Info
 
 ascii_art = r'''
@@ -79,10 +79,10 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
 disabled_bots = []
 processes = []
 
-for t in CFGManager.value.keys():
+for t in CFGManager.values.keys():
     if t.startswith('bot_') and not t.endswith('_secret'):
-        if 'enable' in CFGManager.value[t]:
-            if not CFGManager.value[t]['enable']:
+        if 'enable' in CFGManager.values[t][t]:
+            if not CFGManager.values[t][t]['enable']:
                 disabled_bots.append(t[4:])
 
 

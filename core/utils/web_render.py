@@ -4,14 +4,10 @@ from typing import Union
 from core.config import CFGManager
 from core.logger import Logger
 from core.utils.http import get_url
+from core.constants.info import Info
 
 web_render = CFGManager.get_url('web_render')
 web_render_local = CFGManager.get_url('web_render_local')
-
-
-class WebRender:
-    status = False
-    local = False
 
 
 def webrender(method: str = '', url: str = '', use_local: bool = True) -> Union[str, None]:
@@ -22,15 +18,15 @@ def webrender(method: str = '', url: str = '', use_local: bool = True) -> Union[
     :param use_local: 是否使用本地 WebRender。
     :returns: 生成的 WebRender URL。
     '''
-    if use_local and not WebRender.local:
+    if use_local and not Info.web_render_local_status:
         use_local = False
     if method == 'source':
-        if WebRender.status:
+        if Info.web_render_status:
             return f'{(web_render_local if use_local else web_render)}source?url={url}'
         else:
             return url
     else:
-        if WebRender.status:
+        if Info.web_render_status:
             return (web_render_local if use_local else web_render) + method
         else:
             return None
@@ -41,12 +37,12 @@ async def check_web_render():
         if not web_render:
             Logger.warning('[WebRender] WebRender is not configured.')
         else:
-            WebRender.status = True
+            Info.web_render_status = True
     else:
-        WebRender.local = True
-        WebRender.status = True
+        Info.web_render_local_status = True
+        Info.web_render_status = True
     ping_url = 'http://www.bing.com'
-    if WebRender.status:
+    if Info.web_render_status:
         try:
             Logger.info('[WebRender] Checking WebRender status...')
             await get_url(webrender('source', ping_url), 200, request_private_ip=True)
@@ -54,4 +50,4 @@ async def check_web_render():
         except Exception:
             Logger.error('[WebRender] WebRender is not working as expected.')
             Logger.error(traceback.format_exc())
-            WebRender.status = False
+            Info.web_render_status = False

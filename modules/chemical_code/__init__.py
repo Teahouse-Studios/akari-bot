@@ -10,7 +10,7 @@ from tenacity import retry, stop_after_attempt
 
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState

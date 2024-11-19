@@ -29,7 +29,7 @@ from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.utils.text import isint
 
 

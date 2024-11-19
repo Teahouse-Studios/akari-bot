@@ -6,7 +6,7 @@ from core.config import config
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check, check_bool, rickroll
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.cooldown import CoolDown
 from modules.ask.petal import count_petal

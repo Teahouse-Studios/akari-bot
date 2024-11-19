@@ -11,6 +11,7 @@ from core.types.message import MessageSession, FetchTarget, FetchedSession
 from core.utils.text import isint
 from core.database.orm import Session
 from core.database.tables import *
+from core.constants import database_version
 
 session = Session.session
 
@@ -27,7 +28,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 6
+    database_version = database_version
     time_offset = None
 
     class TargetInfo:

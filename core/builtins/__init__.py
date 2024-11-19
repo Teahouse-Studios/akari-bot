@@ -4,6 +4,7 @@ from typing import Union, List
 from core.config import config
 from core.loader import ModulesManager
 from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
+from core.constants.info import Info
 from core.database import BotDBUtil
 from .message import *
 from .message.chain import *
@@ -14,6 +15,7 @@ from .utils import *
 from ..logger import Logger
 
 
+
 class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
@@ -21,6 +23,7 @@ class Bot:
     FetchedSession = FetchedSessionT
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
+    Info = Info
 
     @staticmethod
     async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],

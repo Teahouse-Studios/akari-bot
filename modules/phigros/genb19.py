@@ -4,7 +4,7 @@ import traceback
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 from core.logger import Logger
-from core.path import assets_path, noto_sans_demilight_path
+from core.constants.path import assets_path, noto_sans_demilight_path
 from core.utils.cache import random_cache_path
 
 pgr_assets_path = os.path.join(assets_path, 'phigros')

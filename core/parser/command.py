@@ -5,7 +5,7 @@ import traceback
 from typing import Dict, Optional, Union
 
 from core.builtins import base_superuser_list
-from core.exceptions import InvalidCommandFormatError
+from core.constants.exceptions import InvalidCommandFormatError
 from core.types import MessageSession, Module
 from core.utils.i18n import Locale
 from .args import parse_argv, Template, templates_to_str, DescPattern

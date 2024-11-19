@@ -1,7 +1,7 @@
 from core.config import config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint

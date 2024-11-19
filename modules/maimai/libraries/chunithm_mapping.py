@@ -1,5 +1,5 @@
 import os
-from core.path import assets_path
+from core.constants.path import assets_path
 
 
 SONGS_PER_PAGE = 30

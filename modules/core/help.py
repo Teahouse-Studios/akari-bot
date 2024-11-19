@@ -11,13 +11,14 @@ from PIL import Image as PILImage
 from core.config import config, CFGManager
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
+from core.constants import Info
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
-from core.path import templates_path
+from core.constants.path import templates_path
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.web_render import WebRender, webrender
+from core.utils.web_render import webrender
 from html import escape
 
 
@@ -112,8 +113,8 @@ async def bot_help(msg: Bot.MessageSession, module: str):
             else:
                 wiki_msg = ''
 
-            if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and WebRender.status:
-                use_local = True if WebRender.local else False
+            if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and Info.web_render_status:
+                use_local = True if Info.web_render_local_status else False
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
@@ -312,9 +313,9 @@ async def help_generator(msg: Bot.MessageSession,
         target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
 
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
 
     dev_module_list = []

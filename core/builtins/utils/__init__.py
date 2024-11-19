@@ -1,12 +1,8 @@
 from core.config import config
-from core.types import PrivateAssets, Secret
+from core.constants import PrivateAssets, Secret, confirm_command, command_prefix
 
-confirm_command = config('confirm_command', ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y'])  # 确认指令
-command_prefix = config('command_prefix', ['~', '～'])  # 指令前缀
-
-
-class EnableDirtyWordCheck:
-    status = False
+confirm_command = config('confirm_command', confirm_command)  # 确认指令
+command_prefix = config('command_prefix', command_prefix)  # 指令前缀
 
 
-__all__ = ["confirm_command", "command_prefix", "EnableDirtyWordCheck", "PrivateAssets", "Secret"]
+__all__ = ["confirm_command", "command_prefix", "PrivateAssets", "Secret"]

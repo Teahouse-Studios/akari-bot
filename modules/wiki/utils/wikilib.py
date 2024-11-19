@@ -12,7 +12,7 @@ import core.utils.html2text as html2text
 from core.config import config
 from core.builtins import Url
 from core.dirty_check import check
-from core.exceptions import AbuseWarning, NoReportException
+from core.constants.exceptions import AbuseWarning, NoReportException
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale

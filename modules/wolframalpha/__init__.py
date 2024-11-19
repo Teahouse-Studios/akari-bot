@@ -7,7 +7,7 @@ from core.config import config
 from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.dirty_check import rickroll
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.utils.http import download, get_url
 from .check import secret_check
 

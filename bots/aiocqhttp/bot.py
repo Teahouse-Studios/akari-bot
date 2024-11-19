@@ -11,18 +11,18 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.config import config
-from core.bot import load_prompt, init_async
-from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
+from core.bot_init import load_prompt, init_async
+from core.builtins import PrivateAssets, Url
 from core.parser.message import parser
-from core.path import assets_path
+from core.constants.path import assets_path
+from core.constants.info import Info
 from core.tos import tos_report
 from core.types import MsgInfo, Session
 from core.utils.i18n import Locale
-from core.utils.info import Info
 from core.database import BotDBUtil
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
-EnableDirtyWordCheck.status = config('enable_dirty_check', False)
+Info.dirty_word_check = config('enable_dirty_check', False)
 Url.disable_mm = not config('enable_urlmanager', False)
 qq_account = str(config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
 enable_listening_self_message = config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
@@ -238,7 +238,7 @@ async def _(event: Event):
 
 
 qq_host = config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp_secret')
-if qq_host:
+if qq_host and config("enable", False, cfg_type=bool, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name
     if 'subprocess' in sys.argv:

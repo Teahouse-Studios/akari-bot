@@ -9,7 +9,8 @@ from core.console.info import client_name as console_client_name, \
     sender_prefix_list as console_sender_prefix, \
     target_prefix_list as console_target_prefix
 from core.logger import Logger
-from core.path import bots_info_path
+from core.constants.path import bots_info_path
+from core.constants.info import Info
 
 
 def get_bot_names(attribute_name, console_name):
@@ -74,14 +75,6 @@ def get_all_sender_prefix():
 
 def get_all_target_prefix():
     return get_bot_names('target_prefix_list', console_target_prefix)
-
-
-class Info:
-    version = None
-    subprocess = False
-    binary_mode = False
-    command_parsed = 0
-    client_name = ''
 
 
 __all__ = ["get_all_clients_name", "get_all_sender_prefix", "get_all_target_prefix", "Info"]

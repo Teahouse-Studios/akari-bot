@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import List, Union, Dict, Coroutine, Awaitable, Any
 
-from core.exceptions import FinishedException
+from core.constants.exceptions import FinishedException
 from .chain import MessageChain
 from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 

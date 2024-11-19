@@ -11,11 +11,11 @@ from bots.discord.client import client
 from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
 from core.config import config
-from core.bot import init_async, load_prompt
+from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
@@ -123,8 +123,9 @@ async def on_message(message):
     await parser(msg, prefix=prefix)
 
 
-Info.client_name = client_name
-if 'subprocess' in sys.argv:
-    Info.subprocess = True
+if config("enable", False, cfg_type=bool, table_name='bot_discord'):
+    Info.client_name = client_name
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
 
-client.run(dc_token)
+    client.run(dc_token)

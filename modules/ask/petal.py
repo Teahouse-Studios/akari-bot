@@ -7,7 +7,7 @@ import orjson as json
 from core.config import config
 from core.builtins import Bot
 from core.logger import Logger
-from core.path import cache_path
+from core.constants.path import cache_path
 from core.utils.http import get_url
 
 ONE_K = Decimal('1000')

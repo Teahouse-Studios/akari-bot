@@ -4,7 +4,7 @@ from typing import Optional, Dict, List, Tuple
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import Bot
-from core.path import noto_sans_demilight_path, noto_sans_symbol_path
+from core.constants.path import noto_sans_demilight_path, noto_sans_symbol_path
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import mai_cover_path, rate_mapping, combo_mapping, sync_mapping, diff_list
 from .maimaidx_music import get_cover_len5_id, TotalList

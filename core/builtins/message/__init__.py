@@ -8,7 +8,7 @@ from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager
 from core.builtins.temp import ExecutionLockList
 from core.builtins.utils import confirm_command
-from core.exceptions import WaitCancelException
+from core.constants.exceptions import WaitCancelException
 from core.types.message import MessageSession as MessageSessionT, MsgInfo, Session
 from core.utils.i18n import Locale
 from core.utils.text import parse_time_string

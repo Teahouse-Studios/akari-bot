@@ -9,9 +9,9 @@ import orjson as json
 
 from core.config import config
 from core.logger import Logger
-from core.types import Module, PrivateAssets
+from core.types import Module
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
-from core.path import modules_path
+from core.constants.path import modules_path, PrivateAssets
 from core.utils.i18n import locale_loaded_err
 from core.utils.info import Info
 

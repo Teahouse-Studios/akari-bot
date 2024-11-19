@@ -8,11 +8,11 @@ from core.builtins import Bot, I18NContext, Image, Voice
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
+from core.constants.info import Info
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
@@ -157,7 +157,7 @@ async def _(msg: Bot.MessageSession):
                                             imgs.append(Image(img))
                                         await msg.send_message(imgs, quote=False)
                             if ((get_page.invalid_section and wiki_.wiki_info.in_allowlist)
-                                    or (get_page.is_talk_page and not get_page.selected_section) and WebRender.status):
+                                    or (get_page.is_talk_page and not get_page.selected_section) and Info.web_render_status):
                                 i_msg_lst = []
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in

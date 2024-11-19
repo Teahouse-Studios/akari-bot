@@ -10,7 +10,7 @@ from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, Fetc
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.console.info import *
-from core.exceptions import WaitCancelException
+from core.constants.exceptions import WaitCancelException
 from core.logger import Logger
 from core.types import Session, MsgInfo, FinishedSession as FinS
 
