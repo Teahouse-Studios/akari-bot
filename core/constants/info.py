@@ -7,6 +7,7 @@ class Secret:
     def add(cls, secret):
         cls.list.append(secret)
 
+
 class Info:
     version = None
     subprocess = False
@@ -16,4 +17,3 @@ class Info:
     dirty_word_check = False
     web_render_status = False
     web_render_local_status = False
-

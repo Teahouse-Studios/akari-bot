@@ -156,16 +156,14 @@ async def _(msg: Bot.MessageSession):
                                         for img in get_infobox:
                                             imgs.append(Image(img))
                                         await msg.send_message(imgs, quote=False)
-                            if ((get_page.invalid_section and wiki_.wiki_info.in_allowlist)
-                                    or (get_page.is_talk_page and not get_page.selected_section) and Info.web_render_status):
+                            if ((get_page.invalid_section and wiki_.wiki_info.in_allowlist) or (
+                                    get_page.is_talk_page and not get_page.selected_section) and Info.web_render_status):
                                 i_msg_lst = []
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in
                                                     range(len(get_page.sections))]
-                                    i_msg_lst.append(
-                                        I18NContext(
-                                            'wiki.message.invalid_section.prompt' if (
-            get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
+                                    i_msg_lst.append( I18NContext( 'wiki.message.invalid_section.prompt' if (
+                                        get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
                                     i_msg_lst += [Image(ii) for ii in await
                                                   image_table_render(
                                         ImageTable(session_data,

@@ -55,7 +55,6 @@ async def load_secret():
                     Secret.add(str(CFGManager.values[x][y]).upper())
 
 
-
 async def load_prompt(bot) -> None:
     author_cache = os.path.join(PrivateAssets.path, 'cache_restart_author')
     loader_cache = os.path.join(PrivateAssets.path, '.cache_loader')

@@ -73,11 +73,19 @@ if 'initialized' not in config.value:
         configs['config'].add(toml_comment(old_locale.t('config.header.line.3', fallback_failed_prompt=False)))
         configs['config'].add(nl())
 
-        configs['config'].add(toml_comment((old_locale.t('config.comments.config_version', fallback_failed_prompt=False))))
+        configs['config'].add(
+            toml_comment(
+                (old_locale.t(
+                    'config.comments.config_version',
+                    fallback_failed_prompt=False))))
         configs['config'].add('config_version', 0)
         configs['config'].add(nl())
 
-        configs['config'].add(toml_comment(old_locale.t('config.comments.default_locale', fallback_failed_prompt=False)))
+        configs['config'].add(
+            toml_comment(
+                old_locale.t(
+                    'config.comments.default_locale',
+                    fallback_failed_prompt=False)))
 
         configs['config'].add('default_locale', get_old_locale)
 
@@ -114,7 +122,11 @@ if 'initialized' not in config.value:
                 table = 'bot_' + cls.table
                 if table not in configs:
                     configs[table] = toml_document()
-                    configs[table].add(toml_comment(old_locale.t('config.table.config_bot', fallback_failed_prompt=False)))
+                    configs[table].add(
+                        toml_comment(
+                            old_locale.t(
+                                'config.table.config_bot',
+                                fallback_failed_prompt=False)))
                     configs[table].add(table, toml_document())
                 configs[table][table].add('enable', True)
                 if 'disabled_bots' in config['cfg']:

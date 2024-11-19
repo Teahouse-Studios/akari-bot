@@ -15,7 +15,6 @@ from .utils import *
 from ..logger import Logger
 
 
-
 class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget

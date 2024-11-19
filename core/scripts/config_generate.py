@@ -13,8 +13,8 @@ if not os.path.exists(cfg_file_path):
     while True:
         i = 1
         lang = input(
-f"""Hello, it seems you are first time to run Akari-bot, what language do you want to use by default?
-{''.join([f"{i}. {lang_list[list(lang_list.keys())[i-1]]}\n" for i in range(1, len(lang_list) + 1)])}
+            f"""Hello, it seems you are first time to run Akari-bot, what language do you want to use by default?
+{''.join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
 Please input the number of the language you want to use:""")
         if (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
@@ -34,13 +34,21 @@ Please input the number of the language you want to use:""")
     # create empty config.toml
 
     with open(cfg_file_path, 'w', encoding='utf-8') as f:
-        f.write(f'default_locale = "{lang}" # {Locale(lang).t('config.comments.default_locale', fallback_failed_prompt=False)}\n')
-        f.write(f'config_version = {str(config_version)} # {Locale(lang).t('config.comments.config_version', fallback_failed_prompt=False)}\n')
+        f.write(
+            f'default_locale = "{lang}" # {
+                Locale(lang).t(
+                    'config.comments.default_locale',
+                    fallback_failed_prompt=False)}\n')
+        f.write(
+            f'config_version = {
+                str(config_version)} # {
+                Locale(lang).t(
+                    'config.comments.config_version',
+                    fallback_failed_prompt=False)}\n')
         f.write('initialized = false\n')
         f.close()
 
     from core.config import config, CFGManager  # noqa
-
 
     for dir in dir_list:
         for root, dirs, files in os.walk(dir):

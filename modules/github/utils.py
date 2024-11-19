@@ -3,6 +3,7 @@ import datetime
 from core import dirty_check as dirty
 from core.constants.info import Info
 
+
 def dark_check(message: str):
     blacklist = [
         'china-dictatorship'

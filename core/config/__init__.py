@@ -33,7 +33,6 @@ class CFGManager:
             if count > 5:
                 ConfigOperationError('Operation timeout.')
 
-
     @classmethod
     def load(cls):
         if not cls._load_lock:
@@ -44,12 +43,17 @@ class CFGManager:
                     cfg_name = cfg
                     if cfg_name.endswith('.toml'):
                         cfg_name = cfg_name.removesuffix('.toml')
-                    cls.values[cfg_name] = toml_parser(open(os.path.join(config_path, cfg), 'r', encoding='utf-8').read())
+                    cls.values[cfg_name] = toml_parser(
+                        open(
+                            os.path.join(
+                                config_path,
+                                cfg),
+                            'r',
+                            encoding='utf-8').read())
                     cls._tss[cfg_name] = os.path.getmtime(os.path.join(config_path, cfg))
             except Exception as e:
                 raise ConfigValueError(e)
             cls._load_lock = False
-
 
     @classmethod
     def save(cls):
@@ -195,7 +199,6 @@ class CFGManager:
                 cls.values[target].add(nl())
                 cls.values[target].add(toml_comment(get_locale.t(table_comment_key)))
                 cls.values[target].add(target, toml_document())
-
 
             cls.values[target][target].add(q, value)
             qc = 'config.comments.' + q
