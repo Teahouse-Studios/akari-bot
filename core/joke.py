@@ -1,5 +1,4 @@
 import random
-import re
 from datetime import datetime
 
 from core.config import config

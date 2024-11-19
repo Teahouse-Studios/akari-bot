@@ -47,7 +47,7 @@ async def pttimg(msg: Bot.MessageSession, ptt: str):
     ptttext = Image.new("RGBA", (119, 119))
     font1 = ImageFont.truetype(os.path.join(arc_assets_path, 'Fonts', 'Exo-SemiBold.ttf'), 49)
     font2 = ImageFont.truetype(os.path.join(arc_assets_path, 'Fonts', 'Exo-SemiBold.ttf'), 33)
-    if ptt >= 0 and ptt <= 99.99:
+    if 0 <= ptt <= 99.99:
         rawptt = str(ptt).split('.')
         if len(rawptt) < 2:
             ptt1 = rawptt[0]

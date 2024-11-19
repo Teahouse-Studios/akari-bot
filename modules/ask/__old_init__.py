@@ -46,7 +46,7 @@ if config('enable_langsmith'):
                 res = await agent_executor.arun(question)
                 tokens = cb.total_tokens
             if not is_superuser:
-                petal = await count_petal(tokens)
+                petal = await count_petal(msg, tokens)
                 msg.data.modify_petal(-petal)
             else:
                 petal = 0

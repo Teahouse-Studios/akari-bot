@@ -14,7 +14,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
     '''
     if config('enable_petal', False) and config('enable_get_petal', False):
         limit = config('gained_petal_limit', 0)
-        amount = limit if amount > limit and limit > 0 else amount
+        amount = limit if amount > limit > 0 else amount
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
             p = [{}]
@@ -53,7 +53,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int):
     '''
     if config('enable_petal', False) and config('enable_get_petal', False):
         limit = config('lost_petal_limit', 0)
-        amount = limit if amount > limit and limit > 0 else amount
+        amount = limit if amount > limit > 0 else amount
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:
             p = [{}]

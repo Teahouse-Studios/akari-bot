@@ -192,7 +192,7 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
 
 
 async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool = False,
-                           use_cache: bool = True) -> Optional[str]:
+                           use_cache: bool = True):
     cache_dir = os.path.join(cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
     url = f"https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload['version'] = versions

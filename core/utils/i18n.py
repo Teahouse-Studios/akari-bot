@@ -151,7 +151,7 @@ class Locale:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-    def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
+    def t(self, key: Union[str, dict], fallback_failed_prompt=True, **kwargs) -> str:
         """获取本地化字符串"""
         if isinstance(key, dict):
             if ft := key.get(self.locale):
@@ -161,7 +161,7 @@ class Locale:
             else:
                 return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
-        return Template(localized).safe_substitute(*args, **kwargs)
+        return Template(localized).safe_substitute(**kwargs)
 
     def t_str(self, text: str, fallback_failed_prompt=False, **kwargs) -> str:
         if locale_str := re.findall(r'\{(.*)}', text):

@@ -22,7 +22,7 @@ class SenderInfo(Base):
     __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
-class TargetInfo(Base):
+class TargetInfoTable(Base):
     __tablename__ = "TargetInfo"
     targetId = Column(String(512), primary_key=True)
     enabledModules = Column(LONGTEXT if is_mysql else Text, default='[]')
@@ -101,5 +101,5 @@ class JobQueueTable(Base):
 
 
 Session.create()
-__all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupBlockList",
+__all__ = ["SenderInfo", "TargetInfoTable", "CommandTriggerTime", "GroupBlockList",
            "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable"]

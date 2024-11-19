@@ -41,13 +41,13 @@ class BotDBUtil:
 
         @property
         def query_data(self):
-            return session.query(TargetInfo).filter_by(targetId=self.target_id).first()
+            return session.query(TargetInfoTable).filter_by(targetId=self.target_id).first()
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def init(self):
             if not self.query:
-                session.add_all([TargetInfo(targetId=self.target_id)])
+                session.add_all([TargetInfoTable(targetId=self.target_id)])
                 session.commit()
                 return self.query_data
             else:
@@ -200,13 +200,13 @@ class BotDBUtil:
             return self.query.locale
 
         @staticmethod
-        def get_target_list(module_name=None, id_prefix=None) -> List[TargetInfo]:
+        def get_target_list(module_name=None, id_prefix=None) -> List[TargetInfoTable]:
             filter_ = []
             if module_name:
-                filter_.append(TargetInfo.enabledModules.like(f'%"{module_name}"%'))
+                filter_.append(TargetInfoTable.enabledModules.like(f'%"{module_name}"%'))
             if id_prefix:
-                filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
-            return session.query(TargetInfo).filter(*filter_).all()
+                filter_.append(TargetInfoTable.targetId.like(f'{id_prefix}%'))
+            return session.query(TargetInfoTable).filter(*filter_).all()
 
     class SenderInfo:
         def __init__(self, sender_id):

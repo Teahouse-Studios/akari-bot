@@ -12,7 +12,7 @@ from .maimaidx_mapping import *
 
 def get_cover_len5_id(mid) -> str:
     mid = int(mid)
-    if mid > 10000 and mid <= 11000:
+    if 10000 < mid <= 11000:
         mid -= 10000
     return f'{mid:05d}'
 
