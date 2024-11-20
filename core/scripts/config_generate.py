@@ -120,5 +120,5 @@ if __name__ == '__main__':
         if not os.path.exists(config_store_path_):
             os.makedirs(config_store_path_)
         generate_config(config_store_path_, lang)
-        zipfile.ZipFile(os.path.join(config_store_packed_path, lang + '.zip'), 'w').write(config_store_path_)
+        zipfile.ZipFile(os.path.join(config_store_packed_path, lang + '.zip'), 'w').write(config_store_path_, lang)
     print('Config files generated successfully.')
