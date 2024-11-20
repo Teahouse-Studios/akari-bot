@@ -106,14 +106,19 @@ Please input the number of the language you want to use:""")
 
 
 if __name__ == '__main__':
+    import zipfile
     config_store_path = os.path.join(assets_path, 'config_store')
+    config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
     shutil.rmtree(config_store_path, ignore_errors=True)
+    shutil.rmtree(config_store_packed_path, ignore_errors=True)
     if not os.path.exists(config_store_path):
         os.makedirs(config_store_path)
+    if not os.path.exists(config_store_packed_path):
+        os.makedirs(config_store_packed_path)
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
         if not os.path.exists(config_store_path_):
             os.makedirs(config_store_path_)
-
         generate_config(config_store_path_, lang)
+        zipfile.ZipFile(os.path.join(config_store_packed_path, lang + '.zip'), 'w').write(config_store_path_)
     print('Config files generated successfully.')
