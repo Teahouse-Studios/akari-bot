@@ -17,6 +17,7 @@ from core.constants import default_locale, config_path
 
 
 class CFGManager:
+    config_path = os.path.abspath(config_path)
     config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
@@ -34,11 +35,11 @@ class CFGManager:
                 ConfigOperationError('Operation timeout.')
 
     @classmethod
-    def load(cls): # Load the config file
+    def load(cls):  # Load the config file
         if not cls._load_lock:
             cls._load_lock = True
             try:
-                cls.config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
+                cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith('.toml')]
                 for cfg in cls.config_file_list:
                     cfg_name = cfg
                     if cfg_name.endswith('.toml'):
@@ -46,11 +47,11 @@ class CFGManager:
                     cls.values[cfg_name] = toml_parser(
                         open(
                             os.path.join(
-                                config_path,
+                                cls.config_path,
                                 cfg),
                             'r',
                             encoding='utf-8').read())
-                    cls._tss[cfg_name] = os.path.getmtime(os.path.join(config_path, cfg))
+                    cls._tss[cfg_name] = os.path.getmtime(os.path.join(cls.config_path, cfg))
             except Exception as e:
                 raise ConfigValueError(e)
             cls._load_lock = False
@@ -64,7 +65,7 @@ class CFGManager:
                     cfg_name = cfg
                     if not cfg_name.endswith('.toml'):
                         cfg_name += '.toml'
-                    with open(os.path.join(config_path, cfg_name), 'w', encoding='utf-8') as f:
+                    with open(os.path.join(cls.config_path, cfg_name), 'w', encoding='utf-8') as f:
                         f.write(toml_dumps(cls.values[cfg], sort_keys=True))
             except Exception as e:
                 raise ConfigValueError(e)
@@ -74,14 +75,14 @@ class CFGManager:
             cls.save()
 
     @classmethod
-    def watch(cls): # Watch for changes in the config file and reload if necessary
+    def watch(cls):  # Watch for changes in the config file and reload if necessary
         if not cls._watch_lock:
             cls._watch_lock = True
             for cfg in cls.values.keys():
                 cfg_file = cfg
                 if not cfg_file.endswith('.toml'):
                     cfg_file += '.toml'
-                file_path = os.path.join(config_path, cfg_file)
+                file_path = os.path.join(cls.config_path, cfg_file)
                 if os.path.exists(file_path):
                     if os.path.getmtime(file_path) != cls._tss[cfg]:
                         logger.warning(f'[Config] Config file has been modified, reloading...')
@@ -96,9 +97,9 @@ class CFGManager:
         q = q.lower()
         value = None
 
-        if not table_name: # if table_name is not provided, search for the value in all tables
+        if not table_name:  # if table_name is not provided, search for the value in all tables
             found = False
-            for t in cls.values.keys(): # search for the value in all tables
+            for t in cls.values.keys():  # search for the value in all tables
                 for tt in cls.values[t].keys():
                     if isinstance(cls.values[t][tt], Table):
                         """
@@ -128,7 +129,7 @@ class CFGManager:
             except (AttributeError, KeyError):
                 pass
 
-        if re.match(r'^<Replace me.*?>$', str(value)): # if we get a placeholder value, return None
+        if re.match(r'^<Replace me.*?>$', str(value)):  # if we get a placeholder value, return None
             return None
 
         if value is None:  # if the value is not found, write the default value to the config file
@@ -180,7 +181,7 @@ class CFGManager:
             logger.warning(f'[Config] Config {q} has no default value, skipped to auto fill.')
             return
         if not table_name:  # if table_name is not provided, search for the value in all tables
-            for t in cls.values.keys(): # search for the value in all tables
+            for t in cls.values.keys():  # search for the value in all tables
                 for tt in cls.values[t].keys():
                     if isinstance(cls.values[t][tt], Table):
                         """
@@ -201,15 +202,15 @@ class CFGManager:
                             cls.values[t][tt] = value
                             found = True
                             break
-        if not found: # if the value is not found, write the default value to the config file
+        if not found:  # if the value is not found, write the default value to the config file
             target = 'config'
             if secret:
                 target = 'secret'
-            if table_name: # if table_name is provided, write the value to the specified table
+            if table_name:  # if table_name is provided, write the value to the specified table
                 target = table_name
-            if target not in cls.values: # if the target table is not found, create a new table
+            if target not in cls.values:  # if the target table is not found, create a new table
                 cls.values[target] = toml_document()
-            if target not in cls.values[target]: # assume the child table name is the same as the parent table name
+            if target not in cls.values[target]:  # assume the child table name is the same as the parent table name
                 if target == 'config':
                     table_comment_key = 'config.table.config'  # i18n comment
                 elif target == 'secret':
@@ -269,6 +270,17 @@ class CFGManager:
             if q[-1] != '/':
                 q += '/'
         return q
+
+    @classmethod
+    def switch_config_path(cls, path: str):
+        cls.config_path = os.path.abspath(path)
+        cls._tss = {}
+        cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith('.toml')]
+        cls.values = {}
+        cls._load_lock = False
+        cls._save_lock = False
+        cls._watch_lock = False
+        cls.load()
 
 
 CFGManager.load()
