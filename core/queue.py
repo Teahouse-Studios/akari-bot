@@ -109,7 +109,10 @@ async def check_job_queue():
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
-            return_val(tsk, {'traceback': f}, status=False)
+            try:
+                return_val(tsk, {'traceback': f}, status=False)
+            except QueueFinished:
+                pass
 
 
 @action('validate_permission')
