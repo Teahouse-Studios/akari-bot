@@ -7,8 +7,8 @@ from core.utils.text import random_string
 
 
 def decrypt_string(text):
-    key = Config('ff3_key', random_string(32), secret=True)
-    tweak = Config('ff3_tweak', random_string(14), secret=True)
+    key = Config('ff3_key', "25FDA29B045EE0034966792BAD5AF1C0", secret=True)
+    tweak = Config('ff3_tweak', "1E915EC4922E78", secret=True)
     c = FF3Cipher.withCustomAlphabet(
         key, tweak, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
     d = []

@@ -10,7 +10,6 @@ if __name__ == '__main__':
 
 from core.constants import *
 from core.utils.i18n import Locale
-from core.utils.text import random_string  # noqa
 
 config_filename = 'config.toml'
 
