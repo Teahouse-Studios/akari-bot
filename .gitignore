@@ -19,6 +19,7 @@ assets/phigros*
 assets/private*
 bots/**/assets
 version*
+!version.py
 .pid_last
 .cache_loader
 .console_history
