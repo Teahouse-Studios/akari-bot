@@ -7,7 +7,7 @@ from modules.wiki.utils.wikilib import WikiLib
 
 async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = int(Config("qq_account", cfg_type=(int, str)))
+    qq_account = int(Config("qq_account", 1234567, cfg_type=(int, str)))
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                 rclimit=99,

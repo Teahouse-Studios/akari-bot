@@ -12,6 +12,7 @@ from .message.internal import *
 from .tasks import *
 from .temp import *
 from .utils import *
+from ..constants import base_superuser_default
 from ..logger import Logger
 
 
@@ -98,7 +99,7 @@ class FetchedSession(FetchedSessionT):
 
 Bot.FetchedSession = FetchedSession
 
-base_superuser_list = Config("base_superuser", cfg_type=(str, list))
+base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
 
 if isinstance(base_superuser_list, str):
     base_superuser_list = [base_superuser_list]

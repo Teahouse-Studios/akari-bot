@@ -13,6 +13,7 @@ from bots.matrix.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.config import Config
+from core.constants import ignored_sender_default
 from core.logger import Logger
 from core.parser.message import parser
 from core.constants.path import assets_path
@@ -21,7 +22,7 @@ from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'matrix'))
 Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
 async def on_sync(resp: nio.SyncResponse):

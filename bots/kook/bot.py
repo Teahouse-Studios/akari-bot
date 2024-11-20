@@ -9,6 +9,7 @@ from bots.kook.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.config import Config
+from core.constants import ignored_sender_default
 from core.parser.message import parser
 from core.constants.path import assets_path
 from core.constants.info import Info
@@ -19,7 +20,7 @@ PrivateAssets.set(os.path.join(assets_path, 'private', 'kook'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Url.disable_mm = not Config('enable_urlmanager', False)
 Url.md_format = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))

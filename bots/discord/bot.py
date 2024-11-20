@@ -13,6 +13,7 @@ from bots.discord.message import MessageSession, FetchTarget
 from core.config import Config
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
+from core.constants import ignored_sender_default
 from core.logger import Logger
 from core.parser.message import parser
 from core.constants.path import assets_path
@@ -21,7 +22,7 @@ from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'discord'))
 Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 count = 0
 

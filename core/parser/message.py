@@ -446,10 +446,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                user_id=int(Config("qq_account", cfg_type=(int, str))))
                         elif qq_frame_type() == 'shamrock':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                               message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                               message=f'[CQ:touch,id={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                         elif qq_frame_type() == 'mirai':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                               message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                               message=f'[CQ:poke,qq={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                         else:
                             pass
                     await msg.send_message(msg.locale.t("error.message.limited"))
@@ -649,13 +649,13 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                            emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
                     elif qq_frame_type() == 'lagrange':
                         await msg.call_api('group_poke', group_id=msg.session.target,
-                                           user_id=int(Config("qq_account", cfg_type=(int, str))))
+                                           user_id=int(Config("qq_account", 1234567, cfg_type=(int, str))))
                     elif qq_frame_type() == 'shamrock':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:touch,id={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                     elif qq_frame_type() == 'mirai':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:poke,qq={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                     else:
                         pass
                 await msg.send_message((msg.locale.t("error.message.limited")))

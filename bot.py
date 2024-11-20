@@ -9,6 +9,7 @@ from time import sleep
 
 import core.scripts.config_generate  # noqa
 from core.config import Config, CFGManager
+from core.constants import base_superuser_default
 
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
@@ -52,7 +53,7 @@ failed_to_start_attempts = {}
 
 
 def init_bot():
-    base_superuser = Config('base_superuser', cfg_type=(str, list))
+    base_superuser = Config('base_superuser', base_superuser_default, cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
