@@ -105,8 +105,22 @@ Please input the number of the language you want to use:""")
     exit(0)
 
 
+
+
 if __name__ == '__main__':
     import zipfile
+    def zip_language_folders(config_store_path, config_store_packed_path):
+        for lang in os.listdir(config_store_path):
+            lang_path = os.path.join(config_store_path, lang)
+            if os.path.isdir(lang_path):
+                zip_path = os.path.join(config_store_packed_path, f'{lang}.zip')
+                with zipfile.ZipFile(zip_path, 'w') as zipf:
+                    for root, _, files in os.walk(lang_path):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, lang_path)
+                            zipf.write(file_path, arcname)
+                            
     config_store_path = os.path.join(assets_path, 'config_store')
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
     shutil.rmtree(config_store_path, ignore_errors=True)
@@ -120,5 +134,5 @@ if __name__ == '__main__':
         if not os.path.exists(config_store_path_):
             os.makedirs(config_store_path_)
         generate_config(config_store_path_, lang)
-        zipfile.ZipFile(os.path.join(config_store_packed_path, lang + '.zip'), 'w').write(config_store_path_, lang)
+    zip_language_folders(config_store_path, config_store_packed_path)
     print('Config files generated successfully.')
