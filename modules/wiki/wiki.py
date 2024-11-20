@@ -6,14 +6,14 @@ import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
 from core.component import module
-from core.exceptions import AbuseWarning
+from core.constants.exceptions import AbuseWarning
 from core.logger import Logger
 from core.types import MessageSession
+from core.constants.info import Info
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from core.utils.web_render import WebRender
 from .utils.dbutils import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist, special_namespace_list, random_title_list
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
@@ -190,7 +190,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
                                                                 redirected_title=display_title))
                     if (r.link and r.selected_section and r.info.in_allowlist and
-                            not r.invalid_section and WebRender.status):
+                            not r.invalid_section and Info.web_render_status):
                         render_section_list.append(
                             {r.link: {'url': r.info.realurl, 'section': r.selected_section,
                                       'in_allowlist': r.info.in_allowlist}})
@@ -215,7 +215,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             'Template:Version disambiguation' in r.templates)) or r.is_forum_topic}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
-                    if WebRender.status:
+                    if Info.web_render_status:
                         if (r.invalid_section and r.info.in_allowlist) or (r.is_talk_page and not r.selected_section):
                             if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
                                 i_msg_lst = []

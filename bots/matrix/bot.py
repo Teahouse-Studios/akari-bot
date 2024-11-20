@@ -10,18 +10,19 @@ from bots.matrix import client
 from bots.matrix.client import bot
 from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
-from core.bot import load_prompt, init_async
+from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.config import Config
+from core.constants import ignored_sender_default
 from core.logger import Logger
 from core.parser.message import parser
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'matrix'))
 Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
 async def on_sync(resp: nio.SyncResponse):
@@ -227,7 +228,7 @@ async def start():
     await bot.set_presence('offline')
 
 
-if bot:
+if bot and Config("enable", False, cfg_type=bool, table_name='bot_matrix'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

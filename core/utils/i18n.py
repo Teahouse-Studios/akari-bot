@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+import traceback
 from collections.abc import MutableMapping
 from decimal import Decimal, ROUND_HALF_UP
 from string import Template
@@ -8,16 +9,17 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import orjson as json
 
-from core.config import Config
-from core.path import locales_path, modules_locales_path
+from core.constants.path import locales_path, modules_locales_path
+from core.constants.default import lang_list
 from .text import isint
 
-default_locale = Config('locale', 'zh_cn')
 
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
 # locale files get too large
+
+supported_locales = list(lang_list.keys())
 
 
 class LocaleNode:
@@ -83,6 +85,7 @@ def load_locale_file():
             with open(os.path.join(locales_path, l), 'r', encoding='utf-8') as f:
                 locale_dict[l.removesuffix('.json')] = flatten(json.loads(f.read()))
     except Exception as e:
+        traceback.print_exc()
         err_prompt.append(str(e))
 
     for modules_locales_file in glob.glob(modules_locales_path):
@@ -97,6 +100,7 @@ def load_locale_file():
                         else:
                             locale_dict[lang_file.removesuffix('.json')] = flatten(json.loads(f.read()))
                     except Exception as e:
+                        traceback.print_exc()
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
 
     for lang in locale_dict.keys():
@@ -114,7 +118,8 @@ class Locale:
     def __init__(self, locale: str, fallback_lng=None):
         """创建一个本地化对象"""
         if not fallback_lng:
-            fallback_lng = ['zh_cn', 'zh_tw', 'en_us']
+            fallback_lng = supported_locales.copy()
+            fallback_lng.remove(locale)
         self.locale = locale
         self.data: LocaleNode = locale_root.query_node(locale)
         self.fallback_lng = fallback_lng
@@ -146,7 +151,7 @@ class Locale:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-    def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
+    def t(self, key: Union[str, dict], fallback_failed_prompt=True, **kwargs) -> str:
         """获取本地化字符串"""
         if isinstance(key, dict):
             if ft := key.get(self.locale):
@@ -156,7 +161,7 @@ class Locale:
             else:
                 return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
-        return Template(localized).safe_substitute(*args, **kwargs)
+        return Template(localized).safe_substitute(**kwargs)
 
     def t_str(self, text: str, fallback_failed_prompt=False, **kwargs) -> str:
         if locale_str := re.findall(r'\{(.*)}', text):
@@ -209,4 +214,7 @@ class Locale:
         return num_str if precision > 0 else str(int(number))
 
 
-__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'default_locale']
+locale_loaded_err = load_locale_file()
+
+
+__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'locale_loaded_err']

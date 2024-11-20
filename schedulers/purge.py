@@ -2,7 +2,7 @@ import os
 import shutil
 
 from core.logger import Logger
-from core.path import cache_path
+from core.constants.path import cache_path
 from core.scheduler import Scheduler, CronTrigger
 
 

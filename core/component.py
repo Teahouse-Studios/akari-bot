@@ -175,7 +175,7 @@ def module(
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param doc: 此命令是否存在线上说明文件。
     :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
-    :param init: 将此命令设置是否加载。
+    :param load: 将此命令设置是否加载。
     :param rss: 将此命令设为RSS命令。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。

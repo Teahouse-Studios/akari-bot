@@ -46,9 +46,7 @@ jobs:
               bots
               schedulers
           include-package-data: |
-              oss2
               langconv
-              aliyunsdkcore
               emoji
 
 

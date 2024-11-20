@@ -13,9 +13,10 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
 from core.logger import Logger
-from core.path import cache_path
+from core.constants.path import cache_path
+from core.constants.info import Info
 from core.utils.http import download
-from core.utils.web_render import WebRender, webrender
+from core.utils.web_render import webrender
 
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
@@ -26,9 +27,9 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
     elements_ = elements.copy()
     if element and isinstance(element, List):
         elements_ += element
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
     if not section:
         if allow_special_page and content_mode:
@@ -93,9 +94,9 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
 
 
 async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[List[PILImage], bool]:
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
     try:
         Logger.info('Starting find infobox/section..')

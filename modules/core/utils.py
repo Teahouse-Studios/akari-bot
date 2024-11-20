@@ -8,14 +8,14 @@ from cpuinfo import get_cpu_info
 from core.config import Config
 from core.builtins import Bot, I18NContext, Url
 from core.component import module
+from core.constants import locale_url_default
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
-from core.utils.web_render import WebRender
 from core.database import BotDBUtil
 
 import subprocess
 
-jwt_secret = Config('jwt_secret', cfg_type=str)
+jwt_secret = Config('jwt_secret', cfg_type=str, secret=True)
 
 ver = module('version', base=True, doc=True)
 
@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
     timediff = str(datetime.now() - started_time).split('.')[0]
     if msg.check_super_user():
         boot_start = msg.ts2strftime(psutil.boot_time())
-        web_render_status = str(WebRender.status)
+        web_render_status = str(Info.web_render_status)
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -155,8 +155,9 @@ async def _(msg: Bot.MessageSession):
     res = msg.locale.t("core.message.locale.prompt", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
-    if Config('locale_url', cfg_type=str):
-        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', cfg_type=str))
+    if Config('locale_url', locale_url_default, cfg_type=str):
+        res += '\n' + msg.locale.t("core.message.locale.contribute",
+                                   url=Config('locale_url', locale_url_default, cfg_type=str))
     await msg.finish(res)
 
 
@@ -197,6 +198,7 @@ async def _(msg: Bot.MessageSession):
 
 
 setup = module('setup', base=True, desc='{core.help.setup.desc}', doc=True, alias='toggle')
+
 
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):

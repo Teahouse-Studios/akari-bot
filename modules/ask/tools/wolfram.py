@@ -3,7 +3,7 @@ from langchain.utilities import WolframAlphaAPIWrapper
 from core.config import Config
 from .utils import to_async_func, AkariTool
 
-appid = Config('wolfram_alpha_appid', cfg_type=str)
+appid = Config('wolfram_alpha_appid', cfg_type=str, secret=True)
 
 if appid:
     wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=appid)

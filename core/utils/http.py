@@ -15,11 +15,11 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.config import Config
 from core.logger import Logger
-from core.path import cache_path
+from core.constants.path import cache_path
 
 logging_resp = False
 debug = Config('debug', False)
-if not (proxy := Config('proxy', cfg_type=str)):
+if not (proxy := Config('proxy', cfg_type=str, secret=True)):
     proxy = ''
 
 url_pattern = re.compile(

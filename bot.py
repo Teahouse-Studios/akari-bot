@@ -7,10 +7,13 @@ import traceback
 from datetime import datetime
 from time import sleep
 
-from core.config import Config
+import core.scripts.config_generate  # noqa
+from core.config import Config, CFGManager
+from core.constants import base_superuser_default
+
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
-from core.path import cache_path
+from core.constants.path import cache_path
 from core.utils.info import Info
 
 ascii_art = r'''
@@ -50,7 +53,7 @@ failed_to_start_attempts = {}
 
 
 def init_bot():
-    base_superuser = Config('base_superuser', cfg_type=(str, list))
+    base_superuser = Config('base_superuser', base_superuser_default, cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
@@ -74,8 +77,14 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
         sys.exit(1)
 
 
-disabled_bots = Config('disabled_bots', [])
+disabled_bots = []
 processes = []
+
+for t in CFGManager.values.keys():
+    if t.startswith('bot_') and not t.endswith('_secret'):
+        if 'enable' in CFGManager.values[t][t]:
+            if not CFGManager.values[t][t]['enable']:
+                disabled_bots.append(t[4:])
 
 
 def restart_process(bot_name: str):

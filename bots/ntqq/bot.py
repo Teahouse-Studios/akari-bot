@@ -7,20 +7,19 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.ntqq.info import *
 from bots.ntqq.message import MessageSession, FetchTarget
-from core.bot import init_async, load_prompt
-from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
+from core.bot_init import init_async, load_prompt
+from core.builtins import PrivateAssets, Url
 from core.config import Config
-from core.logger import Logger
 from core.parser.message import parser
-from core.path import assets_path
+from core.constants.path import assets_path
+from core.constants.info import Info
 from core.types import MsgInfo, Session
-from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
-EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
+Info.dirty_word_check = Config('enable_dirty_check', False)
 Url.disable_mm = False
-qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str)))
-qq_secret = Config("qq_bot_secret", cfg_type=str)
+qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name='bot_ntqq'))
+qq_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name='bot_ntqq_secret')
 
 
 class MyClient(botpy.Client):
@@ -160,17 +159,18 @@ class MyClient(botpy.Client):
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
-intents = botpy.Intents.none()
-intents.public_guild_messages = True
-intents.public_messages = True
-intents.direct_message = True
-if Config('qq_private_bot', False):
-    intents.guild_messages = True
+if Config("enable", False, cfg_type=bool, table_name='bot_ntqq'):
+    intents = botpy.Intents.none()
+    intents.public_guild_messages = True
+    intents.public_messages = True
+    intents.direct_message = True
+    if Config('qq_private_bot', False, table_name='bot_ntqq'):
+        intents.guild_messages = True
 
-client = MyClient(intents=intents)
+    client = MyClient(intents=intents)
 
-Info.client_name = client_name
-if 'subprocess' in sys.argv:
-    Info.subprocess = True
+    Info.client_name = client_name
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
 
-client.run(appid=qq_appid, secret=qq_secret)
+    client.run(appid=qq_appid, secret=qq_secret)

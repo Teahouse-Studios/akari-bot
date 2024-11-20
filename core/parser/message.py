@@ -9,18 +9,20 @@ from bots.aiocqhttp.utils import qq_frame_type
 from core.config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
-from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
+from core.constants import bug_report_url_default
+from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module, Param
-from core.utils.i18n import Locale, default_locale
+from core.utils.i18n import Locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 from core.database import BotDBUtil
 
+default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
 report_targets = Config('report_targets', [])
@@ -444,10 +446,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                user_id=int(Config("qq_account", cfg_type=(int, str))))
                         elif qq_frame_type() == 'shamrock':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                               message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                               message=f'[CQ:touch,id={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                         elif qq_frame_type() == 'mirai':
                             await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                               message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                               message=f'[CQ:poke,qq={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                         else:
                             pass
                     await msg.send_message(msg.locale.t("error.message.limited"))
@@ -486,9 +488,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         timeout = False
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                    if Config('bug_report_url', cfg_type=str):
+                    if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                         errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
+                                                      url=str(Url(Config('bug_report_url', bug_report_url_default, cfg_type=str))))
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:
@@ -627,9 +629,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 timeout = False
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                            if Config('bug_report_url', cfg_type=str):
+                            if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url', cfg_type=str))))
+                                                              url=str(Url(Config('bug_report_url', bug_report_url_default, cfg_type=str))))
                             await msg.send_message(errmsg)
 
                             if not timeout and report_targets:
@@ -647,13 +649,13 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                            emoji_id=str(Config('qq_limited_emoji', '10060', (str, int))))
                     elif qq_frame_type() == 'lagrange':
                         await msg.call_api('group_poke', group_id=msg.session.target,
-                                           user_id=int(Config("qq_account", cfg_type=(int, str))))
+                                           user_id=int(Config("qq_account", 1234567, cfg_type=(int, str))))
                     elif qq_frame_type() == 'shamrock':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:touch,id={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:touch,id={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                     elif qq_frame_type() == 'mirai':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
-                                           message=f'[CQ:poke,qq={int(Config("qq_account", cfg_type=(int, str)))}]')
+                                           message=f'[CQ:poke,qq={int(Config("qq_account", 1234567, cfg_type=(int, str)))}]')
                     else:
                         pass
                 await msg.send_message((msg.locale.t("error.message.limited")))

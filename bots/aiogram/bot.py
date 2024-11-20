@@ -7,17 +7,18 @@ from aiogram import types
 from bots.aiogram.client import dp, bot
 from bots.aiogram.info import *
 from bots.aiogram.message import MessageSession, FetchTarget
-from core.bot import load_prompt, init_async
+from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.config import Config
+from core.constants import ignored_sender_default
 from core.parser.message import parser
-from core.path import assets_path
+from core.constants.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiogram'))
 Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
 @dp.message()
@@ -47,10 +48,11 @@ async def on_startup(dispatcher):
     await load_prompt(FetchTarget)
 
 
-Info.client_name = client_name
-if 'subprocess' in sys.argv:
-    Info.subprocess = True
+if Config("enable", False, cfg_type=bool, table_name='bot_aiogram'):
+    Info.client_name = client_name
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
 
-dp.startup.register(on_startup)
+    dp.startup.register(on_startup)
 
-asyncio.run(dp.start_polling(bot))
+    asyncio.run(dp.start_polling(bot))

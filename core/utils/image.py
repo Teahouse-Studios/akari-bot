@@ -12,10 +12,11 @@ from PIL import Image as PILImage
 
 from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
 from core.logger import Logger
-from core.path import templates_path
+from core.constants.path import templates_path
+from core.constants.info import Info
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.web_render import WebRender, webrender
+from core.utils.web_render import webrender
 
 
 env = Environment(loader=FileSystemLoader(templates_path))
@@ -53,9 +54,9 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
     :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象列表。
     '''
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
     if isinstance(message_chain, List):
         message_chain = MessageChain(message_chain)
@@ -129,9 +130,9 @@ async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bo
     :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象。
     '''
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
 
     with open(file_path, 'r', encoding='utf-8') as file:

@@ -2,7 +2,7 @@ import math
 
 from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
 from .dice import *
 

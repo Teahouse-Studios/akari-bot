@@ -224,34 +224,6 @@ files = [
 frozenlist = ">=1.1.0"
 
 [[package]]
-name = "aliyun-python-sdk-core"
-version = "2.16.0"
-description = "The core module of Aliyun Python SDK."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "aliyun-python-sdk-core-2.16.0.tar.gz", hash = "sha256:651caad597eb39d4fad6cf85133dffe92837d53bdf62db9d8f37dab6508bb8f9"},
-]
-
-[package.dependencies]
-cryptography = ">=3.0.0"
-jmespath = ">=0.9.3,<1.0.0"
-
-[[package]]
-name = "aliyun-python-sdk-kms"
-version = "2.16.5"
-description = "The kms module of Aliyun Python sdk."
-optional = false
-python-versions = "*"
-files = [
-    {file = "aliyun-python-sdk-kms-2.16.5.tar.gz", hash = "sha256:f328a8a19d83ecbb965ffce0ec1e9930755216d104638cd95ecd362753b813b3"},
-    {file = "aliyun_python_sdk_kms-2.16.5-py2.py3-none-any.whl", hash = "sha256:24b6cdc4fd161d2942619479c8d050c63ea9cd22b044fe33b60bbb60153786f0"},
-]
-
-[package.dependencies]
-aliyun-python-sdk-core = ">=2.11.5"
-
-[[package]]
 name = "annotated-types"
 version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -782,16 +754,6 @@ docs = ["furo", "sphinx (>=7.2)", "sphinx-copybutton"]
 mypy = ["contourpy[bokeh,docs]", "docutils-stubs", "mypy (==1.11.1)", "types-Pillow"]
 test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist", "wurlitzer"]
-
-[[package]]
-name = "crcmod"
-version = "1.7"
-description = "CRC Generator"
-optional = false
-python-versions = "*"
-files = [
-    {file = "crcmod-1.7.tar.gz", hash = "sha256:dc7051a0db5f2bd48665a990d3ec1cc305a466a77358ca4492826f41f283601e"},
-]
 
 [[package]]
 name = "cryptography"
@@ -1740,17 +1702,6 @@ files = [
 ]
 
 [[package]]
-name = "jmespath"
-version = "0.10.0"
-description = "JSON Matching Expressions"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-files = [
-    {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
-    {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
-]
-
-[[package]]
 name = "jsonpatch"
 version = "1.33"
 description = "Apply JSON-Patches (RFC 6902)"
@@ -2509,24 +2460,6 @@ files = [
     {file = "orjson-3.10.11-cp39-none-win_amd64.whl", hash = "sha256:10f416b2a017c8bd17f325fb9dee1fb5cdd7a54e814284896b7c3f2763faa017"},
     {file = "orjson-3.10.11.tar.gz", hash = "sha256:e35b6d730de6384d5b2dab5fd23f0d76fae8bbc8c353c2f78210aa5fa4beb3ef"},
 ]
-
-[[package]]
-name = "oss2"
-version = "2.19.1"
-description = "Aliyun OSS (Object Storage Service) SDK"
-optional = false
-python-versions = "*"
-files = [
-    {file = "oss2-2.19.1.tar.gz", hash = "sha256:a8ab9ee7eb99e88a7e1382edc6ea641d219d585a7e074e3776e9dec9473e59c1"},
-]
-
-[package.dependencies]
-aliyun-python-sdk-core = ">=2.13.12"
-aliyun-python-sdk-kms = ">=2.4.1"
-crcmod = ">=1.7"
-pycryptodome = ">=3.4.7"
-requests = "!=2.9.0"
-six = "*"
 
 [[package]]
 name = "packaging"
@@ -3990,14 +3923,14 @@ requests = ">=2.26.0"
 blobfile = ["blobfile (>=2)"]
 
 [[package]]
-name = "toml"
-version = "0.10.2"
-description = "Python Library for Tom's Obvious, Minimal Language"
+name = "tomlkit"
+version = "0.13.2"
+description = "Style preserving TOML library"
 optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+python-versions = ">=3.8"
 files = [
-    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
-    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
+    {file = "tomlkit-0.13.2-py3-none-any.whl", hash = "sha256:7a974427f6e119197f670fbbbeae7bef749a6c14e793db934baefc1b5f03efde"},
+    {file = "tomlkit-0.13.2.tar.gz", hash = "sha256:fff5fe59a87295b278abd31bec92c15d9bc4a06885ab12bcea52c71119392e79"},
 ]
 
 [[package]]
@@ -4576,4 +4509,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "f164ef43ac716e07d94aecd62bb8aafb63156a50f4bc266dd9b86ba2f9aa8db9"
+content-hash = "dbeed32d6c4f0b876659ea7bd1050af2a59a0f2f669ba87d76ecce28e6a7668b"

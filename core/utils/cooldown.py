@@ -3,7 +3,7 @@ from typing import Dict, Union
 
 from core.types import MessageSession
 
-_cd_lst: Dict[str, Dict[Union[MessageSession, str], int]] = {}
+_cd_lst: Dict[str, Dict[Union[MessageSession, str], float]] = {}
 
 
 class CoolDown:

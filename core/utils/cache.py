@@ -1,7 +1,7 @@
 import uuid
 from os.path import join
 
-from core.path import cache_path
+from core.constants.path import cache_path
 
 
 def random_cache_path():

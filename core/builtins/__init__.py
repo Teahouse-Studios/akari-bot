@@ -4,6 +4,7 @@ from typing import Union, List
 from core.config import Config
 from core.loader import ModulesManager
 from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
+from core.constants.info import Info
 from core.database import BotDBUtil
 from .message import *
 from .message.chain import *
@@ -11,6 +12,7 @@ from .message.internal import *
 from .tasks import *
 from .temp import *
 from .utils import *
+from ..constants import base_superuser_default
 from ..logger import Logger
 
 
@@ -21,6 +23,7 @@ class Bot:
     FetchedSession = FetchedSessionT
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
+    Info = Info
 
     @staticmethod
     async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],
@@ -96,7 +99,7 @@ class FetchedSession(FetchedSessionT):
 
 Bot.FetchedSession = FetchedSession
 
-base_superuser_list = Config("base_superuser", cfg_type=(str, list))
+base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
 
 if isinstance(base_superuser_list, str):
     base_superuser_list = [base_superuser_list]

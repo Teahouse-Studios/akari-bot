@@ -12,14 +12,17 @@ import core.utils.html2text as html2text
 from core.config import Config
 from core.builtins import Url
 from core.dirty_check import check
-from core.exceptions import AbuseWarning, NoReportException
+from core.constants.exceptions import AbuseWarning, NoReportException
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.i18n import Locale, default_locale
+from core.utils.i18n import Locale
 from core.utils.web_render import webrender
 from .bot import BotAccount
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from .mapping import *
+
+
+default_locale = Config("default_locale", cfg_type=str)
 
 
 class InvalidPageIDError(Exception):

@@ -1,10 +1,12 @@
 from core.config import Config
 from core.builtins import Bot
-from core.utils.i18n import Locale, default_locale
+from core.constants import issue_url_default
+from core.utils.i18n import Locale
 from core.database import BotDBUtil
 
 report_targets = Config('report_targets', [])
 WARNING_COUNTS = Config('tos_warning_counts', 5)
+default_locale = Config("default_locale", cfg_type=str)
 
 
 async def warn_target(msg: Bot.MessageSession, reason: str):
@@ -25,8 +27,14 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
                     msg.locale.t(
                         'tos.message.warning.prompt',
                         warn_counts=WARNING_COUNTS))
-            if current_warns <= 2 and Config('issue_url', cfg_type=str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
+            if current_warns <= 2 and Config('issue_url', issue_url_default, cfg_type=str):
+                warn_template.append(
+                    msg.locale.t(
+                        'tos.message.appeal',
+                        issue_url=Config(
+                            'issue_url',
+                            issue_url_default,
+                            cfg_type=str)))
         elif current_warns == WARNING_COUNTS:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(msg.locale.t('tos.message.warning.last'))
@@ -34,8 +42,14 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
             msg.info.edit('isInBlockList', True)
             await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
             warn_template.append(msg.locale.t('tos.message.banned'))
-            if Config('issue_url', cfg_type=str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str)))
+            if Config('issue_url', issue_url_default, cfg_type=str):
+                warn_template.append(
+                    msg.locale.t(
+                        'tos.message.appeal',
+                        issue_url=Config(
+                            'issue_url',
+                            issue_url_default,
+                            cfg_type=str)))
         await msg.send_message('\n'.join(warn_template))
 
 
@@ -47,7 +61,7 @@ async def warn_user(user: str, count: int = 1):
     sender_info = BotDBUtil.SenderInfo(user)
     current_warns = int(sender_info.warns) + count
     sender_info.edit('warns', current_warns)
-    if current_warns > WARNING_COUNTS and WARNING_COUNTS >= 1 and not sender_info.is_in_allow_list:
+    if current_warns > WARNING_COUNTS >= 1 and not sender_info.is_in_allow_list:
         sender_info.edit('isInBlockList', True)
     return current_warns
 

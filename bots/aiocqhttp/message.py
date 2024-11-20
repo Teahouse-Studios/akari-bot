@@ -20,7 +20,7 @@ from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext,
     MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
-from core.exceptions import SendMessageFailed
+from core.constants.exceptions import SendMessageFailed
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.image import msgchain2image

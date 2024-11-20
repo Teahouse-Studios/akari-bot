@@ -6,14 +6,14 @@ from core.config import Config
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check, check_bool, rickroll
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.cooldown import CoolDown
 from modules.ask.petal import count_petal
 
 client = AsyncOpenAI(
-    api_key=Config('openai_api_key', cfg_type=str),
-) if Config('openai_api_key') else None
+    api_key=Config('openai_api_key', cfg_type=str, secret=True),
+) if Config('openai_api_key', secret=True) else None
 
 s = module('summary',
            developers=['Dianliang233', 'OasisAkari'],
@@ -24,7 +24,7 @@ s = module('summary',
 @s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
-    if not Config('openai_api_key', cfg_type=str):
+    if not Config('openai_api_key', cfg_type=str, secret=True):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     if Config('enable_petal', False) and not is_superuser and msg.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('petal.message.cost.not_enough'))

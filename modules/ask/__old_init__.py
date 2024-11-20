@@ -8,7 +8,7 @@ from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.exceptions import ConfigValueError
+from core.constants.exceptions import ConfigValueError
 from core.utils.cooldown import CoolDown
 from .petal import count_petal
 
@@ -28,7 +28,7 @@ if Config('enable_langsmith'):
     @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
     async def _(msg: Bot.MessageSession):
         is_superuser = msg.check_super_user()
-        if not Config('openai_api_key'):
+        if not Config('openai_api_key', secret=True):
             raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
         if not is_superuser and msg.petal <= 0:  # refuse
             await msg.finish(msg.locale.t('petal.message.cost.not_enough'))
@@ -46,7 +46,7 @@ if Config('enable_langsmith'):
                 res = await agent_executor.arun(question)
                 tokens = cb.total_tokens
             if not is_superuser:
-                petal = await count_petal(tokens)
+                petal = await count_petal(msg, tokens)
                 msg.data.modify_petal(-petal)
             else:
                 petal = 0
