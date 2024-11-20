@@ -167,7 +167,7 @@ if Config("enable", False, cfg_type=bool, table_name='bot_ntqq'):
     if Config('qq_private_bot', False, table_name='bot_ntqq'):
         intents.guild_messages = True
 
-    client = MyClient(intents=intents)
+    client = MyClient(intents=intents, bot_log=None)
 
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
