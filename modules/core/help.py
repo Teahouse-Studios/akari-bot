@@ -11,11 +11,12 @@ from PIL import Image as PILImage
 from core.config import Config, CFGManager
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
-from core.constants import Info
+from core.constants import Info, donate_url_default
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
 from core.constants.path import templates_path
+from core.constants.default import help_url_default, help_page_url_default
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import webrender
@@ -102,12 +103,12 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     devs_msg = ''
 
             if module_.doc:
-                if Config('help_page_url', cfg_type=str):
+                if help_page_url := Config('help_page_url', help_page_url_default, cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=Config('help_page_url', cfg_type=str).replace('${module}', help_name))
-                elif Config('help_url', cfg_type=str):
+                                                   url=help_page_url.replace('${module}', help_name))
+                elif help_url := CFGManager.get_url('help_url', help_url_default):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=(CFGManager.get_url('help_url') + help_name))
+                                                   url=(help_url + help_name))
                 else:
                     wiki_msg = ''
             else:
@@ -207,12 +208,12 @@ async def _(msg: Bot.MessageSession):
 
             help_msg_list = [I18NContext("core.message.help.all_modules",
                                          prefix=msg.prefixes[0])]
-            if Config('help_url', cfg_type=str):
+            if Config('help_url', help_url_default, cfg_type=str):
                 help_msg_list.append(I18NContext("core.message.help.document",
-                                                 url=Config('help_url', cfg_type=str)))
-            if Config('donate_url', cfg_type=str):
+                                                 url=Config('help_url', help_url_default, cfg_type=str)))
+            if Config('donate_url', donate_url_default, cfg_type=str):
                 help_msg_list.append(I18NContext("core.message.help.donate",
-                                                 url=Config('donate_url', cfg_type=str)))
+                                                 url=Config('donate_url', donate_url_default, cfg_type=str)))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.target.sender_id in base_superuser_list
@@ -245,16 +246,16 @@ async def _(msg: Bot.MessageSession):
             msg.locale.t(
                 "core.message.help.all_modules",
                 prefix=msg.prefixes[0]))
-        if Config('help_url', cfg_type=str):
+        if Config('help_url', help_url_default, cfg_type=str):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.document",
-                    url=Config('help_url', cfg_type=str)))
-        if Config('donate_url', cfg_type=str):
+                    url=Config('help_url', help_url_default, cfg_type=str)))
+        if Config('donate_url', donate_url_default, cfg_type=str):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.donate",
-                    url=Config('donate_url', cfg_type=str)))
+                    url=Config('donate_url', donate_url_default, cfg_type=str)))
         await msg.finish(help_msg)
 
 
@@ -269,10 +270,10 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
                 imgchain.append(Image(img))
 
             help_msg = []
-            if Config('help_url', cfg_type=str):
+            if Config('help_url', help_url_default, cfg_type=str):
                 help_msg.append(I18NContext(
                     "core.message.help.document",
-                                url=Config('help_url', cfg_type=str)))
+                                url=Config('help_url', help_url_default, cfg_type=str)))
             await msg.finish(imgchain + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
@@ -294,11 +295,11 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             msg.locale.t(
                 "core.message.help.detail",
                 prefix=msg.prefixes[0]))
-        if Config('help_url', cfg_type=str):
+        if Config('help_url', help_url_default, cfg_type=str):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.document",
-                    url=Config('help_url', cfg_type=str)))
+                    url=Config('help_url', help_url_default, cfg_type=str)))
         await msg.finish(help_msg)
 
 

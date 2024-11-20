@@ -8,6 +8,7 @@ from cpuinfo import get_cpu_info
 from core.config import Config
 from core.builtins import Bot, I18NContext, Url
 from core.component import module
+from core.constants import locale_url_default
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 from core.database import BotDBUtil
@@ -154,8 +155,8 @@ async def _(msg: Bot.MessageSession):
     res = msg.locale.t("core.message.locale.prompt", lang=msg.locale.t("language")) + '\n' + \
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
-    if Config('locale_url', cfg_type=str):
-        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', cfg_type=str))
+    if Config('locale_url', locale_url_default, cfg_type=str):
+        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', locale_url_default, cfg_type=str))
     await msg.finish(res)
 
 

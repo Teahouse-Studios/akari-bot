@@ -157,11 +157,18 @@ class CFGManager:
         cls.watch()
         q = q.lower()
         found = False
-        if value is None:
+        if value is None and _generate:
             if cfg_type:
-                value = f"<Replace me with a {str(cfg_type)} value>"
+                if isinstance(cfg_type, tuple):
+                    cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
+                else:
+                    cfg_type_str = cfg_type.__name__
+                value = f"<Replace me with a {cfg_type_str} value>"
             else:
                 value = "<Replace me>"
+        if value is None:
+            logger.warning(f'[Config] Config {q} has no default value, skipped to auto fill.')
+            return
         if not table_name:
             for t in cls.values.keys():
                 for tt in cls.values[t].keys():

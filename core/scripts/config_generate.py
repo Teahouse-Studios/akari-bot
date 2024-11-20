@@ -1,8 +1,8 @@
 import re
+import traceback
 from time import sleep
 
 from core.constants import *
-from core.constants.version import config_version
 from core.utils.i18n import Locale
 
 config_filename = 'config.toml'
@@ -29,7 +29,7 @@ Please input the number of the language you want to use:""")
     dir_list = ['bots', 'core', 'modules', 'schedulers']
     exclude_dir_list = [os.path.join('core', 'config'), os.path.join('core', 'scripts')]
 
-    match_code = re.compile(r'(config\()', re.DOTALL)
+    match_code = re.compile(r'(Config\()', re.DOTALL)
 
     # create empty config.toml
 
@@ -78,9 +78,10 @@ Please input the number of the language you want to use:""")
             c = c[:-1]
         c += ', _generate=True'  # Add _generate=True to the end of the config function
         try:
-            eval(f'config({c})')  # Execute the code to generate the config file
-        except NameError:
-            pass
+            eval(f'Config({c})')  # Execute the code to generate the config file
+        except (NameError, TypeError):
+            # traceback.print_exc()
+            ...
 
     CFGManager.write('initialized', True)
 

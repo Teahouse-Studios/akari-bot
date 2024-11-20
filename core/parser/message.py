@@ -9,6 +9,7 @@ from bots.aiocqhttp.utils import qq_frame_type
 from core.config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
+from core.constants import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -487,9 +488,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         timeout = False
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                    if Config('bug_report_url', cfg_type=str):
+                    if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                         errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=str(Url(Config('bug_report_url', cfg_type=str))))
+                                                      url=str(Url(Config('bug_report_url', bug_report_url_default, cfg_type=str))))
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:
@@ -628,9 +629,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 timeout = False
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                            if Config('bug_report_url', cfg_type=str):
+                            if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url', cfg_type=str))))
+                                                              url=str(Url(Config('bug_report_url', bug_report_url_default, cfg_type=str))))
                             await msg.send_message(errmsg)
 
                             if not timeout and report_targets:

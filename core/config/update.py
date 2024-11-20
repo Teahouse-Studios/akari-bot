@@ -141,6 +141,7 @@ if 'initialized' not in config.value:
         Reorganize.reorganize_bot_key("qq_allow_approve_friend")
         Reorganize.reorganize_bot_key("qq_allow_approve_group_invite")
         Reorganize.reorganize_bot_key("qq_host")
+        Reorganize.reorganize_bot_key("qq_frame_type")
 
         # aiogram
 

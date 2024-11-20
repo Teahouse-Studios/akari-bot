@@ -13,6 +13,7 @@ from bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.config import Config
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
+from core.constants import issue_url_default
 from core.parser.message import parser
 from core.constants.path import assets_path
 from core.constants.info import Info
@@ -231,8 +232,8 @@ async def _(event: Event):
     result = BotDBUtil.GroupBlockList.check(target_id)
     if result:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
-        if Config('issue_url', cfg_type=str):
-            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', cfg_type=str))
+        if Config('issue_url', issue_url_default, cfg_type=str):
+            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', issue_url_default, cfg_type=str))
         await bot.send(event=event, message=res)
         await bot.call_action('set_group_leave', group_id=event.group_id)
 

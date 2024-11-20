@@ -25,7 +25,23 @@ ascii_art = r'''
 '''
 encode = 'UTF-8'
 
-bot_list = ['aiocqhttp', 'discord', 'aiogram', 'kook', 'matrix', 'api', 'ntqq']
+bots_and_required_configs = {
+    'aiocqhttp': [
+        'qq_host',
+        'qq_account'],
+    'discord': ['discord_token'],
+    'aiogram': ['telegram_token'],
+    'kook': ['kook_token'],
+    'matrix': [
+        'matrix_homeserver',
+        'matrix_user',
+        'matrix_device_id',
+        'matrix_token'],
+    'api': [],
+    'ntqq': [
+        'qq_bot_appid',
+        'qq_bot_secret'],
+}
 
 
 class RestartBot(Exception):
@@ -101,19 +117,20 @@ def run_bot():
     envs = os.environ.copy()
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
+    lst = bots_and_required_configs.keys()
 
-    for bl in bot_list:
+    for bl in lst:
         if bl in disabled_bots:
             continue
-        # if bl in bots_and_required_configs:
-        #     abort = False
-        #     for c in bots_and_required_configs[bl]:
-        #         if not Config(c):
-        #             Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
-        #             abort = True
-        #             break
-        #     if abort:
-        #         continue
+        if bl in bots_and_required_configs:
+            abort = False
+            for c in bots_and_required_configs[bl]:
+                if not Config(c):
+                    Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
+                    abort = True
+                    break
+            if abort:
+                continue
         p = multiprocessing.Process(
             target=go,
             args=(
