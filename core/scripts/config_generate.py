@@ -59,11 +59,11 @@ Please input the number of the language you want to use:""")
                     file_path = os.path.join(root, file)
                     with open(file_path, 'r', encoding='utf-8') as f:
                         code = f.read()
-                        if f := match_code.finditer(code):
+                        if f := match_code.finditer(code):  # Find all Config() functions in the code
                             for m in f:
                                 left_brackets_count = 0
                                 param_text = ''
-                                for param in code[m.end():]:
+                                for param in code[m.end():]:  # Get the parameters text inside the Config() function by counting brackets
                                     if param == '(':
                                         left_brackets_count += 1
                                     elif param == ')':
@@ -76,9 +76,9 @@ Please input the number of the language you want to use:""")
     for c in config_code_list:
         if c.endswith(','):
             c = c[:-1]
-        c += ', _generate=True'  # Add _generate=True to the end of the config function
+        c += ', _generate=True'  # Add _generate=True param to the end of the config function
         try:
-            eval(f'Config({c})')  # Execute the code to generate the config file
+            eval(f'Config({c})')  # Execute the code to generate the config file, yeah, just stupid but works
         except (NameError, TypeError):
             # traceback.print_exc()
             ...

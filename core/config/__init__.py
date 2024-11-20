@@ -34,7 +34,7 @@ class CFGManager:
                 ConfigOperationError('Operation timeout.')
 
     @classmethod
-    def load(cls):
+    def load(cls): # Load the config file
         if not cls._load_lock:
             cls._load_lock = True
             try:
@@ -56,7 +56,7 @@ class CFGManager:
             cls._load_lock = False
 
     @classmethod
-    def save(cls):
+    def save(cls):  # Save the config file
         if not cls._save_lock:
             cls._save_lock = True
             try:
@@ -74,7 +74,7 @@ class CFGManager:
             cls.save()
 
     @classmethod
-    def watch(cls):
+    def watch(cls): # Watch for changes in the config file and reload if necessary
         if not cls._watch_lock:
             cls._watch_lock = True
             for cfg in cls.values.keys():
@@ -96,16 +96,25 @@ class CFGManager:
         q = q.lower()
         value = None
 
-        if not table_name:
+        if not table_name: # if table_name is not provided, search for the value in all tables
             found = False
-            for t in cls.values.keys():
+            for t in cls.values.keys(): # search for the value in all tables
                 for tt in cls.values[t].keys():
                     if isinstance(cls.values[t][tt], Table):
+                        """
+                        [Config]
+                        xxx = xxx  <- get the value inside the table
+                        """
                         value = cls.values[t][tt].get(q)
                         if value is not None:
                             found = True
                             break
                     else:
+                        """
+                        xxx = xxx <- if the item is not a table, assume it's a key-value pair outside the table
+                        [Config]
+                        xxx = xxx
+                        """
                         if tt == q:
                             value = cls.values[t][tt]
                             found = True
@@ -114,14 +123,15 @@ class CFGManager:
                     break
         else:
             try:
+                # if table_name is provided, get for the value in the specified table directly
                 value = cls.values[table_name].get(table_name).get(q)
             except (AttributeError, KeyError):
                 pass
 
-        if re.match(r'^<Replace me.*?>$', str(value)):
+        if re.match(r'^<Replace me.*?>$', str(value)): # if we get a placeholder value, return None
             return None
 
-        if value is None:
+        if value is None:  # if the value is not found, write the default value to the config file
             logger.warning(f'[Config] Config {q} not found, filled with default value.')
             cls.write(q, default, cfg_type, secret, table_name, _generate)
 
@@ -157,7 +167,7 @@ class CFGManager:
         cls.watch()
         q = q.lower()
         found = False
-        if value is None and _generate:
+        if value is None and _generate:  # if the value is None when generating the config file, fill with a placeholder
             if cfg_type:
                 if isinstance(cfg_type, tuple):
                     cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
@@ -166,33 +176,42 @@ class CFGManager:
                 value = f"<Replace me with a {cfg_type_str} value>"
             else:
                 value = "<Replace me>"
-        if value is None:
+        if value is None:  # if the value is None, skip to autofill
             logger.warning(f'[Config] Config {q} has no default value, skipped to auto fill.')
             return
-        if not table_name:
-            for t in cls.values.keys():
+        if not table_name:  # if table_name is not provided, search for the value in all tables
+            for t in cls.values.keys(): # search for the value in all tables
                 for tt in cls.values[t].keys():
                     if isinstance(cls.values[t][tt], Table):
+                        """
+                        [Config]
+                        xxx = xxx  <- get the value inside the table
+                        """
                         if q in cls.values[t][tt]:
                             cls.values[t][tt][q] = value
                             found = True
                             break
                     else:
+                        """
+                        xxx = xxx <- if the item is not a table, assume it's a key-value pair outside the table
+                        [Config]
+                        xxx = xxx
+                        """
                         if tt == q:
                             cls.values[t][tt] = value
                             found = True
                             break
-        if not found:
+        if not found: # if the value is not found, write the default value to the config file
             target = 'config'
             if secret:
                 target = 'secret'
-            if table_name:
+            if table_name: # if table_name is provided, write the value to the specified table
                 target = table_name
-            if target not in cls.values:
+            if target not in cls.values: # if the target table is not found, create a new table
                 cls.values[target] = toml_document()
-            if target not in cls.values[target]:
+            if target not in cls.values[target]: # assume the child table name is the same as the parent table name
                 if target == 'config':
-                    table_comment_key = 'config.table.config'
+                    table_comment_key = 'config.table.config'  # i18n comment
                 elif target == 'secret':
                     table_comment_key = 'config.table.secret'
                 elif 'secret' in target:
@@ -210,7 +229,7 @@ class CFGManager:
             cls.values[target][target].add(q, value)
             qc = 'config.comments.' + q
             get_locale = Locale(Config('default_locale', default_locale, str))
-            localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
+            localed_comment = get_locale.t(qc, fallback_failed_prompt=False)  # get the comment for the key from locale
             if localed_comment != qc:
                 cls.values[target][target].value.item(q).comment(localed_comment)
 
