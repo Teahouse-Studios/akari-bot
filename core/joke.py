@@ -7,7 +7,7 @@ from core.utils.http import url_pattern
 
 def joke(text: str):
     current_date = datetime.now().date()
-    enable_joke = Config('enable_joke', cfg_type=bool)
+    enable_joke = Config('enable_joke', False, cfg_type=bool)
 #    joke_type = Config('joke_type', cfg_type=str)
 
     if enable_joke or (enable_joke is None and (current_date.month == 4 and current_date.day == 1)):
