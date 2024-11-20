@@ -14,6 +14,7 @@ from core.config import Config
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.constants import issue_url_default, ignored_sender_default
+from core.builtins.utils import command_prefix
 from core.parser.message import parser
 from core.constants.path import assets_path
 from core.constants.info import Info
@@ -87,16 +88,20 @@ async def message_handler(event: Event):
             if match_at.group(1) == qq_account:
                 event.message = match_at.group(2)
                 if event.message in ['', ' ']:
-                    event.message = 'help'
-                    prefix = ['']
+                    event.message = f'{command_prefix[0]}help'
+                    prefix = command_prefix
+            else:
+                return
     else:
         if event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == qq_account:
                 event.message = event.message[1:]
                 if not event.message:
-                    event.message = [{"type": "text", "data": {"text": "help"}}]
-                    prefix = ['']
-
+                    event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
+                    prefix = command_prefix
+            else:
+                return
+                
     msg = MessageSession(
         MsgInfo(
             target_id=target_id,
