@@ -226,16 +226,17 @@ class CFGManager:
         q = q.lower()
         found = False
         for t in cls.values.keys():
-            if isinstance(cls.values[t][t], Table):
-                if q in cls.values[t][t]:
-                    del cls.values[t][t][q]
-                    found = True
-                    break
-            else:
-                if cls.values[t][t] == q:
-                    del cls.values[t][t]
-                    found = True
-                    break
+            for tt in cls.values[t].keys():
+                if isinstance(cls.values[t][tt], Table):
+                    if q in cls.values[t][tt]:
+                        del cls.values[t][tt][q]
+                        found = True
+                        break
+                else:
+                    if cls.values[t][tt] == q:
+                        del cls.values[t][tt]
+                        found = True
+                        break
 
         if not found:
             return False
