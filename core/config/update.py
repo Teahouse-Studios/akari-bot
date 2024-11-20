@@ -100,17 +100,19 @@ if 'initialized' not in config.value:
             table = ''
 
             @classmethod
-            def reorganize_bot_key(cls, key):
+            def reorganize_bot_key(cls, key, secret=False):
                 table = 'bot_' + cls.table
                 c_target = 'cfg'
                 if key in old_config['secret']:
-                    table = table + '_secret'
                     c_target = 'secret'
+                if secret:
+                    table = table + '_secret'
+
                 if key in old_config[c_target]:
                     if table not in configs:
                         configs[table] = toml_document()
                         qk = 'config.table.config_bot'
-                        if c_target == 'secret':
+                        if table.endswith('_secret'):
                             qk = 'config.table.secret_bot'
                         configs[table].add(toml_comment(old_locale.t(qk, fallback_failed_prompt=False)))
                         configs[table].add(table, toml_document())
@@ -140,33 +142,33 @@ if 'initialized' not in config.value:
         Reorganize.reorganize_bot_key("qq_enable_listening_self_message")
         Reorganize.reorganize_bot_key("qq_allow_approve_friend")
         Reorganize.reorganize_bot_key("qq_allow_approve_group_invite")
-        Reorganize.reorganize_bot_key("qq_host")
+        Reorganize.reorganize_bot_key("qq_host", True)
         Reorganize.reorganize_bot_key("qq_frame_type")
 
         # aiogram
 
         Reorganize.table = 'aiogram'
         Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key("telegram_token")
+        Reorganize.reorganize_bot_key("telegram_token", True)
 
         # api
 
         Reorganize.table = 'api'
         Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key('jwt_secret')
-        Reorganize.reorganize_bot_key('api_port')
+        Reorganize.reorganize_bot_key('jwt_secret', True)
+        Reorganize.reorganize_bot_key('api_port', True)
 
         # discord
 
         Reorganize.table = 'discord'
         Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key('discord_token')
+        Reorganize.reorganize_bot_key('discord_token', True)
 
         # kook
 
         Reorganize.table = 'kook'
         Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key('kook_token')
+        Reorganize.reorganize_bot_key('kook_token', True)
 
         # matrix
 
@@ -174,16 +176,16 @@ if 'initialized' not in config.value:
         Reorganize.bot_add_enabled_flag()
         Reorganize.reorganize_bot_key('matrix_homeserver')
         Reorganize.reorganize_bot_key('matrix_user')
-        Reorganize.reorganize_bot_key('matrix_device_id')
-        Reorganize.reorganize_bot_key('matrix_device_name')
-        Reorganize.reorganize_bot_key('matrix_token')
+        Reorganize.reorganize_bot_key('matrix_device_id', True)
+        Reorganize.reorganize_bot_key('matrix_device_name', True)
+        Reorganize.reorganize_bot_key('matrix_token', True)
 
         # ntqq
 
         Reorganize.table = 'ntqq'
         Reorganize.bot_add_enabled_flag()
         Reorganize.reorganize_bot_key("qq_bot_appid")
-        Reorganize.reorganize_bot_key("qq_bot_secret")
+        Reorganize.reorganize_bot_key("qq_bot_secret", True)
         Reorganize.reorganize_bot_key("qq_private_bot")
         Reorganize.reorganize_bot_key("qq_bot_enable_send_url")
 
