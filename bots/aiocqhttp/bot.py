@@ -233,7 +233,8 @@ async def _(event: Event):
     if result:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
         if Config('issue_url', issue_url_default, cfg_type=str):
-            res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=Config('issue_url', issue_url_default, cfg_type=str))
+            res += '\n' + Locale(default_locale).t('tos.message.appeal',
+                                                   issue_url=Config('issue_url', issue_url_default, cfg_type=str))
         await bot.send(event=event, message=res)
         await bot.call_action('set_group_leave', group_id=event.group_id)
 

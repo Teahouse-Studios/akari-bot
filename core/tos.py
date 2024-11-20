@@ -28,7 +28,13 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
                         'tos.message.warning.prompt',
                         warn_counts=WARNING_COUNTS))
             if current_warns <= 2 and Config('issue_url', issue_url_default, cfg_type=str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', issue_url_default, cfg_type=str)))
+                warn_template.append(
+                    msg.locale.t(
+                        'tos.message.appeal',
+                        issue_url=Config(
+                            'issue_url',
+                            issue_url_default,
+                            cfg_type=str)))
         elif current_warns == WARNING_COUNTS:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(msg.locale.t('tos.message.warning.last'))
@@ -37,7 +43,13 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
             await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
             warn_template.append(msg.locale.t('tos.message.banned'))
             if Config('issue_url', issue_url_default, cfg_type=str):
-                warn_template.append(msg.locale.t('tos.message.appeal', issue_url=Config('issue_url', issue_url_default, cfg_type=str)))
+                warn_template.append(
+                    msg.locale.t(
+                        'tos.message.appeal',
+                        issue_url=Config(
+                            'issue_url',
+                            issue_url_default,
+                            cfg_type=str)))
         await msg.send_message('\n'.join(warn_template))
 
 

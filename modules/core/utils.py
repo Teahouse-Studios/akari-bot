@@ -156,7 +156,8 @@ async def _(msg: Bot.MessageSession):
         msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
         msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     if Config('locale_url', locale_url_default, cfg_type=str):
-        res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url', locale_url_default, cfg_type=str))
+        res += '\n' + msg.locale.t("core.message.locale.contribute",
+                                   url=Config('locale_url', locale_url_default, cfg_type=str))
     await msg.finish(res)
 
 
