@@ -105,10 +105,9 @@ Please input the number of the language you want to use:""")
     exit(0)
 
 
-
-
 if __name__ == '__main__':
     import zipfile
+
     def zip_language_folders(config_store_path, config_store_packed_path):
         for lang in os.listdir(config_store_path):
             lang_path = os.path.join(config_store_path, lang)
@@ -120,7 +119,7 @@ if __name__ == '__main__':
                             file_path = os.path.join(root, file)
                             arcname = os.path.relpath(file_path, lang_path)
                             zipf.write(file_path, arcname)
-                            
+
     config_store_path = os.path.join(assets_path, 'config_store')
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
     shutil.rmtree(config_store_path, ignore_errors=True)
