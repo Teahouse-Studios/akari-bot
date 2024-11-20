@@ -8,7 +8,7 @@ from core.config import CFGManager
 from core.background_tasks import init_background_task
 from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
-from core.logger import Logger, bot_name
+from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.constants import PrivateAssets, Secret
@@ -41,7 +41,7 @@ async def init_async(start_scheduler=True) -> None:
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
     asyncio.create_task(check_web_render())
-    Logger.info(f'Hello, {bot_name}!')
+    Logger.info(f'Hello, {Info.client_name}!')
 
 
 async def load_secret():
