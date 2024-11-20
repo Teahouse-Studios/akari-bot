@@ -107,6 +107,7 @@ Please input the number of the language you want to use:""")
 
 if __name__ == '__main__':
     import zipfile
+    import difflib
 
     def zip_language_folders(config_store_path, config_store_packed_path):
         for lang in os.listdir(config_store_path):
@@ -122,8 +123,8 @@ if __name__ == '__main__':
 
     config_store_path = os.path.join(assets_path, 'config_store')
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
-    shutil.rmtree(config_store_path, ignore_errors=True)
-    shutil.rmtree(config_store_packed_path, ignore_errors=True)
+    if os.path.exists(config_store_path):
+        shutil.move(config_store_path, config_store_path + '_bak')
     if not os.path.exists(config_store_path):
         os.makedirs(config_store_path)
     if not os.path.exists(config_store_packed_path):
@@ -133,5 +134,37 @@ if __name__ == '__main__':
         if not os.path.exists(config_store_path_):
             os.makedirs(config_store_path_)
         generate_config(config_store_path_, lang)
-    zip_language_folders(config_store_path, config_store_packed_path)
+    # compare old and new config files
+    repack = False
+    for lang in lang_list:
+        config_store_path_ = os.path.join(config_store_path, lang)
+        config_store_path_bak = config_store_path + '_bak'
+        if not os.path.exists(config_store_path_bak):
+            repack = True
+            break
+        for root, _, files in os.walk(config_store_path_):
+            for file in files:
+                file_path = os.path.join(root, file)
+                file_path_bak = file_path.replace(config_store_path, config_store_path_bak)
+                if not os.path.exists(file_path_bak):
+                    repack = True
+                    break
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    new = f.readlines()
+                with open(file_path_bak, 'r', encoding='utf-8') as f:
+                    old = f.readlines()
+                diff = difflib.unified_diff(old, new, fromfile=file_path_bak, tofile=file_path)
+                for d in diff:
+
+                    if d:
+                        print(d)
+                        repack = True
+                        break
+            if repack:
+                break
+    if repack:
+        zip_language_folders(config_store_path, config_store_packed_path)
+        print('Changes detected, repacked the config files.')
+    shutil.rmtree(config_store_path + '_bak')
+
     print('Config files generated successfully.')
