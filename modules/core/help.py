@@ -8,7 +8,7 @@ import orjson as json
 from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
 
-from core.config import Config, CFGManager
+from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
 from core.constants import Info, donate_url_default
@@ -106,7 +106,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 if help_page_url := Config('help_page_url', help_page_url_default, cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=help_page_url.replace('${module}', help_name))
-                elif help_url := CFGManager.get_url('help_url', help_url_default):
+                elif help_url := Config('help_url', help_url_default, get_url=True):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=(help_url + help_name))
                 else:

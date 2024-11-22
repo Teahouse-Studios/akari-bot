@@ -95,7 +95,7 @@ def restart_process(bot_name: str):
         failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
     failed_to_start_attempts[bot_name]['count'] += 1
     failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
-    if failed_to_start_attempts[bot_name]['count'] > 3:
+    if failed_to_start_attempts[bot_name]['count'] >= 3:
         Logger.error(f'Bot {bot_name} failed to start 3 times, abort to restart, please check the log.')
         return
 

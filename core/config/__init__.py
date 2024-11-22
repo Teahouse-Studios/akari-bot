@@ -1,23 +1,23 @@
 import os
 import re
 from time import sleep
-from typing import Union, Any
+from typing import Optional, Union, Any
 
 from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, \
     document as toml_document, nl
 from loguru import logger
 from tomlkit.items import Table
-
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
-
+from tomlkit.exceptions import KeyAlreadyPresent
 import core.config.update
 from core.utils.i18n import Locale
-
 from core.constants import default_locale, config_path
+
+config_filename = 'config.toml'
 
 
 class CFGManager:
-    config_path = os.path.abspath(config_path)
+    config_path = config_path
     config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
@@ -57,7 +57,7 @@ class CFGManager:
             cls._load_lock = False
 
     @classmethod
-    def save(cls):  # Save the config file
+    def save(cls):  # Save the config files
         if not cls._save_lock:
             cls._save_lock = True
             try:
@@ -91,8 +91,16 @@ class CFGManager:
             cls._watch_lock = False
 
     @classmethod
-    def get(cls, q: str, default: Union[Any, None] = None, cfg_type: Union[type,
-            tuple, None] = None, secret: bool = False, table_name: str = None, _generate: bool = False) -> Any:
+    def get(cls,
+            q: str,
+            default: Union[Any,
+                           None] = None,
+            cfg_type: Union[type,
+                            tuple,
+                            None] = None,
+            secret: bool = False,
+            table_name: Optional[str] = None,
+            _generate: bool = False) -> Any:
         cls.watch()
         q = q.lower()
         value = None
@@ -123,9 +131,10 @@ class CFGManager:
                 if found:
                     break
         else:
+            target = table_name + '_secret' if secret else table_name
             try:
                 # if table_name is provided, get for the value in the specified table directly
-                value = cls.values[table_name].get(table_name).get(q)
+                value = cls.values[table_name].get(target).get(q)
             except (AttributeError, KeyError):
                 pass
 
@@ -133,7 +142,7 @@ class CFGManager:
             return None
 
         if value is None:  # if the value is not found, write the default value to the config file
-            logger.warning(f'[Config] Config {q} not found, filled with default value.')
+            logger.debug(f'[Config] Config {q} not found, filled with default value.')
             cls.write(q, default, cfg_type, secret, table_name, _generate)
 
             return default
@@ -151,8 +160,8 @@ class CFGManager:
                                 cfg_type.__name__}, got {
                                 type(value).__name__}.')
             else:
-                logger.warning(f'[Config] Invalid cfg_type provided in config {
-                               q}. cfg_type should be a type or a tuple of types.')
+                logger.error(f'[Config] Invalid cfg_type provided in config {
+                    q}. cfg_type should be a type or a tuple of types.')
         elif default:
             if not isinstance(value, type(default)):
                 logger.warning(
@@ -164,7 +173,7 @@ class CFGManager:
 
     @classmethod
     def write(cls, q: str, value: Union[Any, None], cfg_type: Union[type, tuple, None] = None, secret: bool = False,
-              table_name: str = None, _generate: bool = False):
+              table_name: Optional[str] = None, _generate: bool = False):
         cls.watch()
         q = q.lower()
         found = False
@@ -174,12 +183,13 @@ class CFGManager:
                     cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
                 else:
                     cfg_type_str = cfg_type.__name__
-                value = f"<Replace me with a {cfg_type_str} value>"
+                value = f"<Replace me with {cfg_type_str} value>"
             else:
                 value = "<Replace me>"
         if value is None:  # if the value is None, skip to autofill
-            logger.warning(f'[Config] Config {q} has no default value, skipped to auto fill.')
+            logger.debug(f'[Config] Config {q} has no default value, skipped to auto fill.')
             return
+
         if not table_name:  # if table_name is not provided, search for the value in all tables
             for t in cls.values.keys():  # search for the value in all tables
                 for tt in cls.values[t].keys():
@@ -203,36 +213,51 @@ class CFGManager:
                             found = True
                             break
         if not found:  # if the value is not found, write the default value to the config file
-            target = 'config'
-            if secret:
-                target = 'secret'
             if table_name:  # if table_name is provided, write the value to the specified table
-                target = table_name
-            if target not in cls.values:  # if the target table is not found, create a new table
-                cls.values[target] = toml_document()
-            if target not in cls.values[target]:  # assume the child table name is the same as the parent table name
+                cfg_name = table_name
+                target = f"{table_name}{'_secret' if secret else ''}"
+            else:
+                cfg_name = 'config'
+                target = 'secret' if secret else 'config'
+
+            get_locale = Locale(Config('default_locale', default_locale, str))
+            if cfg_name not in cls.values:  # if the target table is not found, create a new table
+                cls.values[cfg_name] = toml_document()
+                cls.values[cfg_name].add(
+                    toml_comment(
+                        get_locale.t(
+                            'config.header.line.1',
+                            fallback_failed_prompt=False)))
+                cls.values[cfg_name].add(
+                    toml_comment(
+                        get_locale.t(
+                            'config.header.line.2',
+                            fallback_failed_prompt=False)))
+                cls.values[cfg_name].add(
+                    toml_comment(
+                        get_locale.t(
+                            'config.header.line.3',
+                            fallback_failed_prompt=False)))
+            if target not in cls.values[cfg_name]:  # assume the child table name is the same as the parent table name
                 if target == 'config':
                     table_comment_key = 'config.table.config'  # i18n comment
                 elif target == 'secret':
                     table_comment_key = 'config.table.secret'
-                elif 'secret' in target:
+                elif '_secret' in target:
                     table_comment_key = 'config.table.secret_bot'
                 else:
                     table_comment_key = 'config.table.config_bot'
-                get_locale = Locale(Config('default_locale', default_locale, str))
-                cls.values[target].add(toml_comment(get_locale.t('config.header.line.1')))
-                cls.values[target].add(toml_comment((get_locale.t('config.header.line.2'))))
-                cls.values[target].add(toml_comment((get_locale.t('config.header.line.3'))))
-                cls.values[target].add(nl())
-                cls.values[target].add(toml_comment(get_locale.t(table_comment_key)))
-                cls.values[target].add(target, toml_document())
-
-            cls.values[target][target].add(q, value)
-            qc = 'config.comments.' + q
-            get_locale = Locale(Config('default_locale', default_locale, str))
+                cls.values[cfg_name].add(nl())
+                cls.values[cfg_name].add(target, toml_document())
+                cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))
+            try:
+                cls.values[cfg_name][target].add(q, value)
+            except KeyAlreadyPresent:
+                pass
+            qc = f'config.comments.{q}'
             localed_comment = get_locale.t(qc, fallback_failed_prompt=False)  # get the comment for the key from locale
             if localed_comment != qc:
-                cls.values[target][target].value.item(q).comment(localed_comment)
+                cls.values[cfg_name][target].value.item(q).comment(localed_comment)
 
         if _generate:
             return
@@ -264,14 +289,6 @@ class CFGManager:
         return True
 
     @classmethod
-    def get_url(cls, q: str, default: Union[str, None] = None) -> Union[str, None]:
-        q = cls.get(q, default, str)
-        if q:
-            if q[-1] != '/':
-                q += '/'
-        return q
-
-    @classmethod
     def switch_config_path(cls, path: str):
         cls.config_path = os.path.abspath(path)
         cls._tss = {}
@@ -284,4 +301,23 @@ class CFGManager:
 
 
 CFGManager.load()
-Config = CFGManager.get
+
+
+def Config(q: str,
+           default: Union[Any,
+                          None] = None,
+           cfg_type: Union[type,
+                           tuple,
+                           None] = None,
+           secret: bool = False,
+           table_name: Optional[str] = None,
+           get_url: bool = False,
+           _generate: bool = False):
+    if get_url:
+        v = CFGManager.get(q, default, str, secret, table_name=table_name, _generate=_generate)
+        if v:
+            if v[-1] != '/':
+                v += '/'
+    else:
+        v = CFGManager.get(q, default, cfg_type, secret, table_name, _generate)
+    return v

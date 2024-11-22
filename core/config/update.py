@@ -4,6 +4,7 @@ import shutil
 from time import sleep
 
 from tomlkit import parse as toml_parser, dumps as toml_dumps, document as toml_document, comment as toml_comment, nl
+from tomlkit.exceptions import KeyAlreadyPresent
 from core.constants.path import config_path
 
 from core.constants.exceptions import ConfigFileNotFound
@@ -11,7 +12,6 @@ from core.utils.i18n import Locale
 from core.utils.text import isint, isfloat
 from core.constants import config_version
 from loguru import logger
-
 
 config_filename = 'config.toml'
 
@@ -63,9 +63,9 @@ config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
 if 'initialized' not in config.value:
     if 'config_version' not in config:
         old_config = config
-        logger.warning('Config version not found, regenerating the config file...')
+        logger.info('Config version not found, regenerating the config file...')
         shutil.copy(cfg_file_path, cfg_file_path + '.bak')
-        configs = {'config': toml_document(), 'secret': toml_document()}
+        configs = {'config': toml_document()}
         get_old_locale = old_config['cfg'].get('locale', 'zh_cn')
         old_locale = Locale(get_old_locale)
         configs['config'].add(toml_comment(old_locale.t('config.header.line.1', fallback_failed_prompt=False)))
@@ -73,25 +73,16 @@ if 'initialized' not in config.value:
         configs['config'].add(toml_comment(old_locale.t('config.header.line.3', fallback_failed_prompt=False)))
         configs['config'].add(nl())
 
-        configs['config'].add(
-            toml_comment(
-                (old_locale.t(
-                    'config.comments.config_version',
-                    fallback_failed_prompt=False))))
-        configs['config'].add('config_version', 0)
-        configs['config'].add(nl())
-
-        configs['config'].add(
-            toml_comment(
-                old_locale.t(
-                    'config.comments.default_locale',
-                    fallback_failed_prompt=False)))
-
         configs['config'].add('default_locale', get_old_locale)
+        configs['config'].item('default_locale').comment(old_locale.t(
+            'config.comments.default_locale',
+            fallback_failed_prompt=False))
 
+        configs['config'].add('config_version', 0)
+        configs['config'].item('config_version').comment(old_locale.t(
+            'config.comments.default_locale',
+            fallback_failed_prompt=False))
         configs['config'].add('initialized', True)
-
-        configs['config'].add(nl())
         configs['config'].add(nl())
 
         # reorganize some keys
@@ -101,39 +92,78 @@ if 'initialized' not in config.value:
 
             @classmethod
             def reorganize_bot_key(cls, key, secret=False):
-                table = 'bot_' + cls.table
-                c_target = 'cfg'
-                if key in old_config['secret']:
-                    c_target = 'secret'
-                if secret:
-                    table = table + '_secret'
+                cfg_name = 'bot_' + cls.table
+                c_target = 'secret' if key in old_config['secret'] else 'cfg'
+                table = cfg_name + '_secret' if secret else cfg_name
 
                 if key in old_config[c_target]:
-                    if table not in configs:
-                        configs[table] = toml_document()
-                        qk = 'config.table.config_bot'
-                        if table.endswith('_secret'):
-                            qk = 'config.table.secret_bot'
-                        configs[table].add(toml_comment(old_locale.t(qk, fallback_failed_prompt=False)))
-                        configs[table].add(table, toml_document())
-                    configs[table][table].add(key, old_config[c_target][key])
+                    if cfg_name not in configs.keys():
+                        configs[cfg_name] = toml_document()
+                        configs[cfg_name].add(
+                            toml_comment(
+                                old_locale.t(
+                                    'config.header.line.1',
+                                    fallback_failed_prompt=False)))
+                        configs[cfg_name].add(
+                            toml_comment(
+                                old_locale.t(
+                                    'config.header.line.2',
+                                    fallback_failed_prompt=False)))
+                        configs[cfg_name].add(
+                            toml_comment(
+                                old_locale.t(
+                                    'config.header.line.3',
+                                    fallback_failed_prompt=False)))
+                    if table not in configs[cfg_name].keys():
+                        qk = 'config.table.secret_bot' if table.endswith('_secret') else 'config.table.config_bot'
+                        configs[cfg_name].add(nl())
+                        configs[cfg_name].add(table, toml_document())
+                        configs[cfg_name][table].add(toml_comment(old_locale.t(qk, fallback_failed_prompt=False)))
+                    try:
+                        configs[cfg_name][table].add(key, old_config[c_target][key])
+                    except KeyAlreadyPresent:
+                        pass
+                    qc = f'config.comments.{key}'
+                    # get the comment for the key from locale
+                    localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+                    if localed_comment != qc:
+                        configs[cfg_name][table].value.item(key).comment(localed_comment)
                     old_config[c_target].pop(key)
 
             @classmethod
             def bot_add_enabled_flag(cls):
-                table = 'bot_' + cls.table
-                if table not in configs:
-                    configs[table] = toml_document()
-                    configs[table].add(
+                cfg_name = 'bot_' + cls.table
+                if cfg_name not in configs:
+                    configs[cfg_name] = toml_document()
+                    configs[cfg_name].add(
+                        toml_comment(
+                            old_locale.t(
+                                'config.header.line.1',
+                                fallback_failed_prompt=False)))
+                    configs[cfg_name].add(
+                        toml_comment(
+                            old_locale.t(
+                                'config.header.line.2',
+                                fallback_failed_prompt=False)))
+                    configs[cfg_name].add(
+                        toml_comment(
+                            old_locale.t(
+                                'config.header.line.3',
+                                fallback_failed_prompt=False)))
+                    configs[cfg_name].add(nl())
+                    configs[cfg_name].add(cfg_name, toml_document())
+                    configs[cfg_name][cfg_name].add(
                         toml_comment(
                             old_locale.t(
                                 'config.table.config_bot',
                                 fallback_failed_prompt=False)))
-                    configs[table].add(table, toml_document())
-                configs[table][table].add('enable', True)
+                try:
+                    configs[cfg_name][cfg_name].add('enable', True)
+                except KeyAlreadyPresent:
+                    pass
                 if 'disabled_bots' in config['cfg']:
                     if cls.table in config['cfg']['disabled_bots']:
-                        configs[table][table]['enabled'] = False
+                        configs[cfg_name][cfg_name]['enabled'] = False
 
         # aiocqhttp
         Reorganize.table = 'aiocqhttp'
@@ -189,11 +219,26 @@ if 'initialized' not in config.value:
         Reorganize.reorganize_bot_key("qq_private_bot")
         Reorganize.reorganize_bot_key("qq_bot_enable_send_url")
 
-        configs['secret'].add(toml_comment(old_locale.t('config.table.secret')))
-        configs['secret'].add('secret', config.value['secret'])
+        configs['config'].add('config', toml_document())
+        configs['config']['config'].add(toml_comment(old_locale.t('config.table.config')))
+        if 'cfg' in config:
+            for k, v in config['cfg'].items():
+                configs['config']['config'][k] = v
+                qc = 'config.comments.' + k
+                localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+                if localed_comment != qc:
+                    configs['config']['config'].value.item(k).comment(localed_comment)
+        configs['config'].add(nl())
 
-        configs['config'].add(toml_comment(old_locale.t('config.table.config')))
-        configs['config'].add('config', config.value['cfg'])
+        configs['config'].add('secret', toml_document())
+        configs['config']['secret'].add(toml_comment(old_locale.t('config.table.config')))
+        if 'secret' in config:
+            for k, v in config['secret'].items():
+                configs['config']['secret'][k] = v
+                qc = 'config.comments.' + k
+                localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+                if localed_comment != qc:
+                    configs['config']['secret'].value.item(k).comment(localed_comment)
 
         if 'locale' in configs['config']['config']:
             configs['config']['config'].pop('locale')
@@ -201,26 +246,20 @@ if 'initialized' not in config.value:
             configs['config']['config'].pop('disabled_bots')
 
         for c in configs:
-            for k in configs[c][c]:
-                qc = 'config.comments.' + k
-                localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
-                if localed_comment != qc:
-                    configs[c][c].value.item(k).comment(localed_comment)
-        for c in configs:
             filename = c
             if not c.endswith('.toml'):
                 filename += '.toml'
             with open(os.path.join(config_path, filename), 'w', encoding='utf-8') as f:
                 f.write(toml_dumps(configs[c]))
-        logger.warning('Config file regenerated successfully.')
+        logger.info('Config file regenerated successfully.')
         sleep(3)
     elif config['config_version'] < config_version:
-        logger.warning(f'Updating Config file from {config['config_version']} to {config_version}...')
+        logger.info(f'Updating Config file from {config['config_version']} to {config_version}...')
         # if config['config_version'] < 1:
         #     config['config_version'] = 1
         #     with open(cfg_file_path, 'w', encoding='utf-8') as f:
         #         f.write(toml_dumps(config))
         #     config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
 
-        logger.warning('Config file updated successfully.')
+        logger.info('Config file updated successfully.')
         sleep(3)

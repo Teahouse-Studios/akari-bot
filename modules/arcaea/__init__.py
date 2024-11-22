@@ -18,8 +18,10 @@ async def _(msg: Bot.MessageSession):
     url = 'https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'
     resp = await get_url(webrender('source', url), 200, fmt='json', request_private_ip=True)
     if resp:
+        url = resp.get('value', {}).get('url')
+    if url:
         await msg.finish(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
-                                      url=resp['value']['url']))
+                                      url=url))
     else:
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 

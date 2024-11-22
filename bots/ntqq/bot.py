@@ -19,7 +19,7 @@ PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Url.disable_mm = False
 qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name='bot_ntqq'))
-qq_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name='bot_ntqq_secret')
+qq_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name='bot_ntqq')
 
 
 class MyClient(botpy.Client):

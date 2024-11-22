@@ -23,7 +23,7 @@ kook_headers = {
             'kook_token',
             cfg_type=str,
             secret=True,
-            table_name='bot_kook_secret')}"}
+            table_name='bot_kook')}"}
 
 
 async def direct_msg_delete(msg_id: str):
