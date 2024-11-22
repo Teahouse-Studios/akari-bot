@@ -49,6 +49,7 @@ jobs:
               langconv
               emoji
           low-memory: true
+          lto: yes
 
 
       - name: Copy Assets
