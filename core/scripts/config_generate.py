@@ -10,6 +10,7 @@ if __name__ == '__main__':
 
 from core.constants import *
 from core.utils.i18n import Locale
+from core.utils.text import isint
 
 config_filename = 'config.toml'
 
@@ -24,17 +25,21 @@ def generate_config(file_path, language):
     match_code = re.compile(r'(Config\()', re.DOTALL)
 
     # create empty config.toml
-
+    locale = Locale(language)
     with open(path_, 'w', encoding='utf-8') as f:
+        f.write(f"# {locale.t('config.header.line.1', fallback_failed_prompt=False)}\n")
+        f.write(f"# {locale.t('config.header.line.2', fallback_failed_prompt=False)}\n")
+        f.write(f"# {locale.t('config.header.line.3', fallback_failed_prompt=False)}\n")
+        f.write('\n')
         f.write(
             f'default_locale = "{language}" # {
-                Locale(language).t(
+                locale.t(
                     'config.comments.default_locale',
                     fallback_failed_prompt=False)}\n')
         f.write(
             f'config_version = {
                 str(config_version)} # {
-                Locale(language).t(
+                locale.t(
                     'config.comments.config_version',
                     fallback_failed_prompt=False)}\n')
         f.write('initialized = false\n')
@@ -85,10 +90,12 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
     while True:
         i = 1
         lang = input(
-            f"""Hello, it seems you are first time to run Akari-bot, what language do you want to use by default?
+            f"""Hi, it seems you are first time to run AkariBot, what language do you want to use by default?
 {''.join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
-Please input the number of the language you want to use:""")
-        if (langI := (int(lang) - 1)) in range(len(lang_list)):
+Please input the number of the language you want to use: """)
+        if lang.strip() == '':
+            exit(0)
+        if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
         else:

@@ -1,13 +1,13 @@
 import traceback
 from typing import Union
 
-from core.config import CFGManager
+from core.config import Config
 from core.logger import Logger
 from core.utils.http import get_url
 from core.constants.info import Info
 
-web_render = CFGManager.get_url('web_render')
-web_render_local = CFGManager.get_url('web_render_local')
+web_render = Config('web_render', secret=True, get_url=True)
+web_render_local = Config('web_render_local', get_url=True)
 
 
 def webrender(method: str = '', url: str = '', use_local: bool = True) -> Union[str, None]:

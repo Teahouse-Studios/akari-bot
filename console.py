@@ -8,11 +8,12 @@ from prompt_toolkit.history import FileHistory
 
 import core.scripts.config_generate  # noqa
 from core.config import Config
+from core.constants import db_path_default
 from core.logger import Logger
 from core.constants.path import assets_path
 from core.constants.info import Info
 
-if not Config('db_path', cfg_type=str, secret=True):
+if not Config('db_path', default=db_path_default, secret=True):
     raise AttributeError('Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
                          'Example: \ndb_path = "sqlite:///database/save.db"\n'
                          '(Also you can fill in the above example directly,'

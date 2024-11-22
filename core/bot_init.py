@@ -46,13 +46,10 @@ async def init_async(start_scheduler=True) -> None:
 
 async def load_secret():
     for x in CFGManager.values:
-        if x.endswith('secret'):
-            for y in CFGManager.values[x].keys():
-                if isinstance(y, Table):
-                    for z in CFGManager.values[x][y].keys():
-                        Secret.add(str(CFGManager.values[x][y].get(z)).upper())
-                else:
-                    Secret.add(str(CFGManager.values[x][y]).upper())
+        for y in CFGManager.values[x].keys():
+            if y == 'secret' or y.endswith('_secret'):
+                for z in CFGManager.values[x][y].keys():
+                    Secret.add(str(CFGManager.values[x][y].get(z)).upper())
 
 
 async def load_prompt(bot) -> None:

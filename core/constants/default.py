@@ -4,6 +4,7 @@ confirm_command = ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y']
 command_prefix = ['~', '～']
 lang_list = {'zh_cn': '简体中文', 'zh_tw': '繁體中文', 'en_us': 'English'}
 
+db_path_default = 'sqlite:///database/save.db'
 help_url_default = 'https://bot.teahouse.team'
 help_page_url_default = 'https://bot.teahouse.team/wiki/${module}'
 donate_url_default = 'http://afdian.com/a/teahouse'

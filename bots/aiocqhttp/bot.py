@@ -101,7 +101,7 @@ async def message_handler(event: Event):
                     prefix = command_prefix
             else:
                 return
-                
+
     msg = MessageSession(
         MsgInfo(
             target_id=target_id,
@@ -244,7 +244,7 @@ async def _(event: Event):
         await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
-qq_host = Config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp_secret')
+qq_host = Config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp')
 if qq_host and Config("enable", False, cfg_type=bool, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name
