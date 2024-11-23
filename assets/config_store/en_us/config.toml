@@ -2,7 +2,7 @@
 # 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
 # 例如：TOML 中的布尔值必须是小写。
 
-default_locale = "zh_cn" # 默认的会话语言环境。
+default_locale = "en_us" # 默认的会话语言环境。
 config_version = 0 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
 initialized = true
 
