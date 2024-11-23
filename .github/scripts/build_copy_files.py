@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     remove_py_files('output/modules')
 
-    build_paths = ['launcher-build', 'wrapper-build']
+    build_paths = ['wrapper-build']
     for build_path in build_paths:
         if os.path.exists(build_path):
             for file in os.listdir(build_path):
