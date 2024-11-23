@@ -48,7 +48,7 @@ jobs:
           include-package-data: |
               langconv
               emoji
-          lto: no
+          clang: true
 
 
       - name: Copy Assets
