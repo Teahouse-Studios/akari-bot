@@ -29,3 +29,5 @@ if __name__ == "__main__":
             for file in os.listdir(build_path):
                 if file.endswith('.exe') or file.endswith('.bin') or file.endswith('.app'):
                     shutil.copyfile(os.path.join(build_path, file), os.path.join('output', file))
+
+    os.makedirs('output/database', exist_ok=True)
