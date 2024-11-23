@@ -181,7 +181,7 @@
     "wiki.message.wiki_audit.remove.failed.other": "Failed: ${api} does not exist in whitelist, the whitelist of this wiki may come from other wikis of the same domain.",
     "wiki.message.wiki_audit.remove.success": "Successfully removed from ${list_name}: ${api}",
     "wiki.message.wiki_audit.untrust": "Note: This wiki is not currently in the whitelist, and the returned content will be restricted when querying this wiki.",
-    "wiki.message.wiki_audit.untrust.address": "If you need to remove restrictions, please apply for whitelist here: \n${url}",
+    "wiki.message.wiki_audit.untrust.address": "If you need to remove restrictions, please apply for whitelist here: ${url}",
     "wiki.message.wiki_bot.login.failed": "Login failed:\n${detail}",
     "wiki.message.wiki_bot.login.success": "Login success.",
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
