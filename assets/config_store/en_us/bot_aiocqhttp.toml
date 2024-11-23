@@ -1,17 +1,17 @@
 # https://toml.io/en/v1.0.0
-# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
-# 例如：TOML 中的布尔值必须是小写。
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
 
 [bot_aiocqhttp]
-# 平台协议端的配置信息，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-qq_account = 1234567 # 机器人 QQ 号（使用 Onebot 协议端部署 QQ 机器人时使用）
-qq_enable_listening_self_message = false # 使用 Onebot 协议时，是否启用自身消息监听。
-qq_disable_temp_session = true # 使用 Onebot 协议时，是否启用临时会话。
-qq_allow_approve_friend = false # 使用 Onebot 协议时，是否自动同意好友请求。
-qq_allow_approve_group_invite = false # 使用 Onebot 协议时，是否自动同意群邀请。
-enable = false # 是否启用平台。
-qq_frame_type = "mirai" # Aiocqhttp 对接的 Onebot 协议的框架类型。
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+qq_account = 1234567 # Bot QQ number. (Required when using the Onebot Protocol side to deploy the QQ bot)
+qq_enable_listening_self_message = false # Whether to enable self-message monitoring when using the Onebot protocol.
+qq_disable_temp_session = true # Whether to enable temp sessions when using the Onebot Protocol.
+qq_allow_approve_friend = false # Whether to automatically approve friend requests when using the Onebot protocol.
+qq_allow_approve_group_invite = false # Whether to automatically accept group invitations when using the Onebot protocol.
+enable = false # Whether to enable this platform.
+qq_frame_type = "mirai" # The framework type of the Onebot protocol that Aiocqhttp connects to.
 
 [bot_aiocqhttp_secret]
-# 平台协议端的密钥配置信息，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-qq_host = "<Replace me with str value>" # Aiocqhttp WebSocket 主服务器的地址。（Onebot 协议端请使用反向 Websocket 方式进行连接）
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+qq_host = "<Replace me with str value>" # The address of Aiocqhttp WebSocket main server. (The Onebot protocol end should use the reverse Websocket method to connect)

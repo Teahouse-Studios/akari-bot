@@ -1,16 +1,16 @@
 # https://toml.io/en/v1.0.0
-# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
-# 例如：TOML 中的布尔值必须是小写。
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
 
 [bot_matrix]
-# 平台协议端的配置信息，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-enable = false # 是否启用平台。
-matrix_homeserver = "<Replace me with str value>" # matrix 机器人的家服务器。
-matrix_user = "<Replace me with str value>" # matrix 机器人的完全限定用户 ID。
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+enable = false # Whether to enable this platform.
+matrix_homeserver = "<Replace me with str value>" # Matrix bot homeserver.
+matrix_user = "<Replace me with str value>" # Matrix bot fully restricted user ID.
 
 [bot_matrix_secret]
-# 平台协议端的密钥配置信息，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-matrix_device_id = "<Replace me with str value>" # Matrix 机器人设备 ID。
-matrix_device_name = "<Replace me with str value>" # matrix 机器人的设备名称。
-matrix_token = "<Replace me with str value>" # Matrix 机器人 Token。
-matrix_megolm_backup_passphrase = "<Replace me with str value>" # Matrix 机器人的 Megolm 备份密码短语。
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+matrix_device_id = "<Replace me with str value>" # Matrix bot device ID.
+matrix_device_name = "<Replace me with str value>" # Matrix bot device name.
+matrix_token = "<Replace me with str value>" # Matrix bot token.
+matrix_megolm_backup_passphrase = "<Replace me with str value>" # Matrix bot's Megolm backup passphrase.

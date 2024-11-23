@@ -1,82 +1,83 @@
 # https://toml.io/en/v1.0.0
-# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
-# 例如：TOML 中的布尔值必须是小写。
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
 
-default_locale = "en_us" # 默认的会话语言环境。
-config_version = 0 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
+default_locale = "en_us" # Default session language environment.
+config_version = 0 # Config version number, which will be automatically updated with the features and generally does not need to be modified.
 initialized = true
 
 [config]
-# 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-enable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
-enable_urlmanager = false # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）
-ignored_sender = ["QQ|2854196310"] # 无视的发送者列表，匹配到此列表中的发送者将会被忽略。
-issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
-enable_analytics = false # 是否启用内置的统计功能。
-qq_typing_emoji = "181" # 使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应 emoji id，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
-api_port = 5000 # API 服务的端口号。
-enable_petal = false # 是否启用花瓣功能。
-enable_rickroll = true # 当文字过滤检测失败时，是否 rickroll 对象。
-rickroll_msg = "<Replace me with str value>" # 文字过滤检测失败时的 rickroll 消息。
-enable_joke = true # 是否启用玩笑，启用后将在服务器时间 4 月 1 日时发生。
-shuffle_rate = 0.1 # 玩笑的随机发生率。
+# The basic config section. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+enable_dirty_check = false # Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.
+enable_urlmanager = false # Whether to enable URLManager for URL springboard. (Declare this URL is not an official link, etc.)
+ignored_sender = ["QQ|2854196310"] # Ignore user list. Users matching this list will be ignored.
+issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
+enable_analytics = false # Whether to enable built-in statistics features.
+qq_typing_emoji = "181" # When using QQ related protocol terminals, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+api_port = 5000 # The port number of the API service.
+enable_petal = false # Whether to enable the petal feature.
+enable_rickroll = true # Whether rickroll the user when text filter detection fails.
+rickroll_msg = "<Replace me with str value>" # Rickroll message when text filter check fails.
+enable_joke = true # Whether to enable the joke. It will occur at April 1st server time when enabled.
+shuffle_rate = 0.1 # The random occurrence rate of jokes.
 unloaded_modules = []
-debug = false # 是否启用调试模式，启用后会输出更多的日志信息。
-report_targets = [] # 反馈目标列表，此处填写的值将会被识别为反馈目标。（如：在机器人执行命令出错时，机器人将会把报错信息发送至对象）
-tos_warning_counts = 5 # 违反 Tos 时的警告次数。
-base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
-bug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。
-timezone_offset = "+8" # 机器人的默认时区偏移量。
-no_confirm = false # 是否无需发送者确认消息再执行命令。
-confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
-command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
-enable_tos = true # 是否启用内置的 Tos 检查规则。
-tos_temp_ban_time = 300 # 违反 Tos 时的临时封禁时间。
-qq_limited_emoji = "10060" # 使用 QQ 相关协议端时，消息处理失败时向消息挂上的回应 emoji，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
-allow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）
-enable_get_petal = false # 是否允许获取花瓣。
-gained_petal_limit = 0 # 单日获取花瓣上限。
-lost_petal_limit = 0 # 单日丢失花瓣上限。
-use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
-web_render_local = "<Replace me with str value>" # 本地 WebRender 服务网址。
+debug = false # Whether to enable debug mode, more log information will be output when enabled.
+report_targets = [] # Reporting session list, the value filled in here will be identified as the reporting session. (For example: when the bot executes a command error, the bot will send the error information to the corresponding session)
+tos_warning_counts = 5 # Maximum number of warnings for ToS violations.
+base_superuser = ["QQ|2596322644"] # The bot's base superuser list. The values ​​filled in here will be loaded into the database when the bot starts.
+bug_report_url = "https://s.wd-ljt.com/botreportbug" # Report error URL.
+timezone_offset = "+8" # The bot's default timezone offset.
+no_confirm = false # Whether to execute the command without the sender confirming the message.
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword of the confirmation command. The value filled in here will be recognized as the confirmation command.
+command_prefix = ["~", "～"] # Command prefix. The value filled in here will be recognized as the command prefix.
+enable_tos = true # Whether to enable built-in ToS checking rules.
+tos_temp_ban_time = 300 # Temporary ban duration for ToS violations.
+qq_limited_emoji = "10060" # When using QQ related protocol terminals, the response emoji ID attached to the message when the message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+allow_request_private_ip = false # Whether to allow bot to request local private IP addresses. (Prevent possible leakage)
+enable_get_petal = false # Whether to allow get petals.
+gained_petal_limit = 0 # The maximum number of petals users can get per day.
+lost_petal_limit = 0 # The maximum number of petals users can lose per day.
+use_secrets_random = false # Whether to use the random number generator based on the secrets library.
+web_render_local = "<Replace me with str value>" # The local WebRender service address.
 enable_langsmith = "<Replace me>"
 langsmith_endpoint = "<Replace me>"
 langsmith_project = "<Replace me>"
 langsmith_api_key = "<Replace me>"
-coin_limit = 10000 # coin 模块可抛硬币的上限。
-coin_faceup_rate = 4997 # coin 模块抛硬币时正面的概率。
-coin_facedown_rate = 4997 # coin 模块抛硬币时反面的概率。
-help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。
-help_url = "https://bot.teahouse.team" # 帮助文档网址。
-donate_url = "http://afdian.com/a/teahouse" # 捐赠网址。
-allow_reload_base = false # 是否允许重载基础模块。
-enable_eval = false # 是否启用 eval 模块。
-enable_commit_url = true # 是否在展示版本信息时显示 commit URL。
-locale_url = "https://www.crowdin.com/project/akari-bot" # 本地化项目网址。
-dice_limit = 100 # dice 模块的一次摇动最多的骰子数量。
-dice_output_count = 50 # dice 模块的输出的最多数据量。
-dice_output_len = 200 # dice 模块的输出的最大长度。
-dice_roll_limit = 10 # dice 模块一次命令最多的摇动次数。
-dice_detail_count = 5 # dice 模块的 n 次投掷的骰子的总量超过该值时将不再显示详细信息。
-dice_count_limit = 10 # dice 模块的骰子表达式最多的项数。
-ncmusic_enable_card = false # ncmusic 模块是否启用卡片消息。
-wiki_whitelist_url = "<Replace me with str value>" # Wiki 白名单申请网址。
-wordle_disable_image = false # wordle 模块是否禁用图片。
-slower_schedule = false # 是否启用更慢的计划任务调度器。（减少请求压力用）
+coin_limit = 10000 # The maximum number of coins tossed of coin module.
+coin_faceup_weight = 4997 # The weight of heads of the coins tossed of coin module.
+coin_facedown_weight = 4997 # The weight of tails of the coins tossed of coin module.
+coin_stand_weight = 6 # The weight of stands of the coins tossed of coin module.
+help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
+help_url = "https://bot.teahouse.team" # Help document URL.
+donate_url = "http://afdian.com/a/teahouse" # Donate URL.
+allow_reload_base = false # Whether to allow reloading of the base modules.
+enable_eval = false # Whether to enable eval module.
+enable_commit_url = true # Whether to show the commit URL when displaying version information.
+locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
+dice_limit = 100 # The maximum number of dice rolled at one time of dice module.
+dice_output_count = 50 # The maximum amount of information output of dice module.
+dice_output_len = 200 # The maximum length output of dice module.
+dice_roll_limit = 10 # The maximum number of dice rolled per command of dice module.
+dice_detail_count = 5 # The total number of dice rolled n times of dice module, it will no longer show details when this value is exceeded.
+dice_count_limit = 10 # The maximum number of items in dice expressions of dice module.
+ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ platform)
+wiki_whitelist_url = "<Replace me with str value>" # Wiki whitelist application URL.
+wordle_disable_image = false # Whether to disable images of wordle module.
+slower_schedule = false # Whether to enable a slower scheduled task scheduler. (To reduce request pressure)
 
 [secret]
-# 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-proxy = "<Replace me with str value>" # 代理服务地址。
-check_access_key_id = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey ID。
-check_access_key_secret = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey Secret。
-db_path = "sqlite:///database/save.db" # 数据库连接字符串，请使用 SQLAlchemy 支持的数据库连接字符串格式。
-ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # 用于加密敏感信息的密钥（使用 ff3 算法进行加密，部分场景可能会使用到）。
-ff3_tweak = "1E915EC4922E78" # 用于加密敏感信息的密钥偏移量。
-web_render = "<Replace me with str value>" # WebRender 服务的 URL 地址。
-openai_api_key = "<Replace me with str value>" # openai 的 API Key。（用于 ask 模块，人工智能对话）
-exchange_rate_api_key = "" # exchange_rate 的 API Key。（用于 exchange_rate 模块，计算汇率用）
-wolfram_alpha_appid = "<Replace me with str value>" # wolframalpha 的 AppID。（用于 wolframalpha 模块，查询 WolframAlpha 数据）
-diving_fish_developer_token = "<Replace me with str value>" # Diving Fish 查分器的开发者 Token。（用于 maimai 模块）
-curseforge_api_key = "<Replace me with str value>" # Curseforge 的 API Key。（用于 mod_dl 模块）
-ncmusic_api = "<Replace me with str value>" # ncmusic 的 API 地址。（用于 ncmusic 模块，网易云音乐查询）
-osu_api_key = "<Replace me with str value>" # osu! 的 API Key。（用于 osu 模块，查询 osu! 数据）
+# The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+proxy = "<Replace me with str value>" # Proxy service address.
+check_access_key_id = "<Replace me with str value>" # The AccessKey ID of Alibaba Cloud Content Security Service.
+check_access_key_secret = "<Replace me with str value>" # The AccessKey Secret of Alibaba Cloud Content Security Service.
+db_path = "sqlite:///database/save.db" # Database connection string, use the connection string format supported by SQLAlchemy.
+ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # The key used to encrypt sensitive information. (Encrypted using the ff3 algorithm, which may be used in some scenarios)
+ff3_tweak = "1E915EC4922E78" # The key tweak used to encrypt sensitive information.
+web_render = "<Replace me with str value>" # WebRender service URL.
+openai_api_key = "<Replace me with str value>" # OpenAI API Key. (For ask modules etc.)
+exchange_rate_api_key = "" # API Key for ExchangeRate-API. (For exchange_rate module and exchange rate calculation)
+wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha AppID. (For wolframalpha module)
+diving_fish_developer_token = "<Replace me with str value>" # Developer token for Diving Fish prober. (For maimai module)
+curseforge_api_key = "<Replace me with str value>" # CurseForge API key. (For mod_dl module)
+ncmusic_api = "<Replace me with str value>" # API address of NetEase Cloud Music API. (For ncmusic module)
+osu_api_key = "<Replace me with str value>" # osu! API Key (for osu module)

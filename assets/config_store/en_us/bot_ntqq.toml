@@ -1,14 +1,14 @@
 # https://toml.io/en/v1.0.0
-# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
-# 例如：TOML 中的布尔值必须是小写。
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
 
 [bot_ntqq]
-# 平台协议端的配置信息，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
-qq_bot_appid = "<Replace me with (int, str) value>" # QQ 机器人（官方）的 AppID。
-enable = false # 是否启用平台。
-qq_private_bot = false # 使用 QQ 机器人（官方）时，是否为私域机器人。
-qq_bot_enable_send_url = false # 使用 QQ 机器人（官方）时，是否启用发送 URL。
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+qq_bot_appid = "<Replace me with (int, str) value>" # The QQ official robot AppID.
+enable = false # Whether to enable this platform.
+qq_private_bot = false # Whether it is a private robot when using the QQ official robot.
+qq_bot_enable_send_url = false # Whether to enable sending URLs when using QQ official robot.
 
 [bot_ntqq_secret]
-# 平台协议端的密钥配置信息，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-qq_bot_secret = "<Replace me with str value>" # QQ 机器人（官方）的 AppSecret。
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+qq_bot_secret = "<Replace me with str value>" # The QQ official robot AppSecret.
