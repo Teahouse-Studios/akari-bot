@@ -48,8 +48,7 @@ jobs:
           include-package-data: |
               langconv
               emoji
-          low-memory: true
-          lto: yes
+          lto: no
 
 
       - name: Copy Assets
