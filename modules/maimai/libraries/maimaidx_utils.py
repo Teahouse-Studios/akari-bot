@@ -267,7 +267,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
         else:
             for level, scores in level_scores.items():  # 使用循环输出格式化文本
                 if scores:
-                   output_lines.append(f"Utage {music['level'][level]}")  # 难度字典转换
+                    output_lines.append(f"Utage {music['level'][level]}")  # 难度字典转换
                     for score in scores:
                         level, achievements, score_rank, combo_rank, sync_rank, *dx = score
                         entry_output = f"{achievements:.4f} {score_rank}"
