@@ -66,7 +66,7 @@ wordle_disable_image = false # wordle 模組是否停用圖片。
 slower_schedule = false # 是否啟用更慢的排程任務調度器。（減少請求壓力用）
 
 [secret]
-# 設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+# 金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
 proxy = "<Replace me with str value>" # 代理服務位址。
 check_access_key_id = "<Replace me with str value>" # 阿里雲內容安全服務的 AccessKey ID。
 check_access_key_secret = "<Replace me with str value>" # 阿里雲內容安全服務的 AccessKey Secret。
