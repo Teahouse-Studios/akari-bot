@@ -219,9 +219,6 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
 
 
 async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str, use_cache: bool = True) -> str:
-    if int(input_id) >= 100000:
-        await msg.finish(msg.locale.t("maimai.message.info.utage"))
-
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music['level']))}  # 获取歌曲难度列表
 
@@ -264,22 +261,42 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                 level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
     output_lines = []
-    for level, scores in level_scores.items():  # 使用循环输出格式化文本
-        if scores:
-            output_lines.append(f"{diffs[level]} {music['level'][level]}")  # 难度字典转换
-            for score in scores:
-                level, achievements, score_rank, combo_rank, sync_rank, *dx = score
-                entry_output = f"{achievements:.4f} {score_rank}"
-                if combo_rank and sync_rank:
-                    entry_output += f" {combo_rank} {sync_rank}"
-                elif combo_rank or sync_rank:
-                    entry_output += f" {combo_rank}{sync_rank}"
-                if dx and dx[0]:
-                    entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
-                output_lines.append(entry_output)
+    if int(input_id) >= 100000:
+        if len(level_scores.items()) > 1:
+            await msg.finish(msg.locale.t("maimai.message.info.utage"))
         else:
-            output_lines.append(
-                f"{diffs[level]} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
+            if scores:
+                output_lines.append(f"Utage {music['level'][level]}")  # 难度字典转换
+                for score in scores:
+                    level, achievements, score_rank, combo_rank, sync_rank, *dx = score
+                    entry_output = f"{achievements:.4f} {score_rank}"
+                    if combo_rank and sync_rank:
+                        entry_output += f" {combo_rank} {sync_rank}"
+                    elif combo_rank or sync_rank:
+                        entry_output += f" {combo_rank}{sync_rank}"
+                    if dx and dx[0]:
+                        entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
+                    output_lines.append(entry_output)
+            else:
+                output_lines.append(
+                    f"Utage {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
+    else:
+        for level, scores in level_scores.items():  # 使用循环输出格式化文本
+            if scores:
+                output_lines.append(f"{diffs[level]} {music['level'][level]}")  # 难度字典转换
+                for score in scores:
+                    level, achievements, score_rank, combo_rank, sync_rank, *dx = score
+                    entry_output = f"{achievements:.4f} {score_rank}"
+                    if combo_rank and sync_rank:
+                        entry_output += f" {combo_rank} {sync_rank}"
+                    elif combo_rank or sync_rank:
+                        entry_output += f" {combo_rank}{sync_rank}"
+                    if dx and dx[0]:
+                        entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
+                    output_lines.append(entry_output)
+            else:
+                output_lines.append(
+                    f"{diffs[level]} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
 
     return '\n'.join(output_lines)
 
