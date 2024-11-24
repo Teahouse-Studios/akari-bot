@@ -3,7 +3,7 @@
 
 # 小可 · AkariBot v4
 
-_多平台、多功能、多语言的异步聊天机器人_
+_多功能、多语言、多平台支持的异步聊天机器人_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)<!--![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?include_prereleases)-->
@@ -17,7 +17,7 @@ _多平台、多功能、多语言的异步聊天机器人_
 
 ## 介绍
 
-**小可**是基于 OneBot 11 开发的可扩展、多平台机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
+**小可**是可扩展的多功能、多语言、多平台支持的异步聊天机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
 
 目前小可还正在持续开发中。
 
