@@ -10,7 +10,7 @@ body:
       value: |
         看起来出了些问题……抱歉！请在下方描述一下到底什么出错了。
 
-        另外，此处不接受关于多语言的问题和建议，如有需要请移步 [Crowdin](https://crowdin.com/project/akari-bot/discussions)。
+        另外，此处不接受关于本地化（简体中文除外）的问题和建议，如有需要请移步 [Crowdin](https://crowdin.com/project/akari-bot/discussions)。
   - type: checkboxes
     id: preflight
     attributes:
