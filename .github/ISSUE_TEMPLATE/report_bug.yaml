@@ -17,7 +17,7 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/bot/issues) 中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法。
+        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) 中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法。
           required: true
   - type: dropdown
     id: platform
