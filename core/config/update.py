@@ -156,11 +156,16 @@ if 'initialized' not in config.value:
                                 fallback_failed_prompt=False)))
                 try:
                     configs[cfg_name][cfg_name].add('enable', True)
+                    qc = f'config.comments.enable'
+                    # get the comment for the key from locale
+                    localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+                    if localed_comment != qc:
+                        configs[cfg_name][table].value.item('enable').comment(localed_comment)
                 except KeyAlreadyPresent:
                     pass
                 if 'disabled_bots' in config['cfg']:
                     if cls.table in config['cfg']['disabled_bots']:
-                        configs[cfg_name][cfg_name]['enabled'] = False
+                        configs[cfg_name][cfg_name]['enable'] = False
 
         # aiocqhttp
         Reorganize.table = 'aiocqhttp'
