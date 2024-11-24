@@ -8,6 +8,7 @@ from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, com
     document as toml_document, nl
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
+
 import core.config.update
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
@@ -16,7 +17,6 @@ from core.utils.i18n import Locale
 
 
 class CFGManager:
-    config_path = config_path
     config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
@@ -38,7 +38,7 @@ class CFGManager:
         if not cls._load_lock:
             cls._load_lock = True
             try:
-                cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith('.toml')]
+                cls.config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
                 for cfg in cls.config_file_list:
                     cfg_name = cfg
                     if cfg_name.endswith('.toml'):
@@ -46,11 +46,11 @@ class CFGManager:
                     cls.values[cfg_name] = toml_parser(
                         open(
                             os.path.join(
-                                cls.config_path,
+                                config_path,
                                 cfg),
                             'r',
                             encoding='utf-8').read())
-                    cls._tss[cfg_name] = os.path.getmtime(os.path.join(cls.config_path, cfg))
+                    cls._tss[cfg_name] = os.path.getmtime(os.path.join(config_path, cfg))
             except Exception as e:
                 raise ConfigValueError(e)
             cls._load_lock = False
@@ -64,7 +64,7 @@ class CFGManager:
                     cfg_name = cfg
                     if not cfg_name.endswith('.toml'):
                         cfg_name += '.toml'
-                    with open(os.path.join(cls.config_path, cfg_name), 'w', encoding='utf-8') as f:
+                    with open(os.path.join(config_path, cfg_name), 'w', encoding='utf-8') as f:
                         f.write(toml_dumps(cls.values[cfg], sort_keys=True))
             except Exception as e:
                 raise ConfigValueError(e)
@@ -81,7 +81,7 @@ class CFGManager:
                 cfg_file = cfg
                 if not cfg_file.endswith('.toml'):
                     cfg_file += '.toml'
-                file_path = os.path.join(cls.config_path, cfg_file)
+                file_path = os.path.join(config_path, cfg_file)
                 if os.path.exists(file_path):
                     if os.path.getmtime(file_path) != cls._tss[cfg]:
                         logger.warning(f'[Config] Config file has been modified, reloading...')
@@ -289,9 +289,9 @@ class CFGManager:
 
     @classmethod
     def switch_config_path(cls, path: str):
-        cls.config_path = os.path.abspath(path)
+        config_path = os.path.abspath(path)
         cls._tss = {}
-        cls.config_file_list = [cfg for cfg in os.listdir(cls.config_path) if cfg.endswith('.toml')]
+        cls.config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
         cls.values = {}
         cls._load_lock = False
         cls._save_lock = False
