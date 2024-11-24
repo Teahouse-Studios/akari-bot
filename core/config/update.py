@@ -160,7 +160,7 @@ if 'initialized' not in config.value:
                     # get the comment for the key from locale
                     localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
                     if localed_comment != qc:
-                        configs[cfg_name][table].value.item('enable').comment(localed_comment)
+                        configs[cfg_name][cfg_name].value.item('enable').comment(localed_comment)
                 except KeyAlreadyPresent:
                     pass
                 if 'disabled_bots' in config['cfg']:
