@@ -265,21 +265,22 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
         if len(level_scores.items()) > 1:
             await msg.finish(msg.locale.t("maimai.message.info.utage"))
         else:
-            if scores:
-                output_lines.append(f"Utage {music['level'][level]}")  # 难度字典转换
-                for score in scores:
-                    level, achievements, score_rank, combo_rank, sync_rank, *dx = score
-                    entry_output = f"{achievements:.4f} {score_rank}"
-                    if combo_rank and sync_rank:
-                        entry_output += f" {combo_rank} {sync_rank}"
-                    elif combo_rank or sync_rank:
-                        entry_output += f" {combo_rank}{sync_rank}"
-                    if dx and dx[0]:
-                        entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
-                    output_lines.append(entry_output)
-            else:
-                output_lines.append(
-                    f"Utage {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
+            for level, scores in level_scores.items():  # 使用循环输出格式化文本
+                if scores:
+                   output_lines.append(f"Utage {music['level'][level]}")  # 难度字典转换
+                    for score in scores:
+                        level, achievements, score_rank, combo_rank, sync_rank, *dx = score
+                        entry_output = f"{achievements:.4f} {score_rank}"
+                        if combo_rank and sync_rank:
+                            entry_output += f" {combo_rank} {sync_rank}"
+                        elif combo_rank or sync_rank:
+                            entry_output += f" {combo_rank}{sync_rank}"
+                        if dx and dx[0]:
+                            entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
+                        output_lines.append(entry_output)
+                else:
+                    output_lines.append(
+                        f"Utage {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
     else:
         for level, scores in level_scores.items():  # 使用循环输出格式化文本
             if scores:
