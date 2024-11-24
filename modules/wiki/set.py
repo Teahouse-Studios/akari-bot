@@ -1,8 +1,8 @@
 import orjson as json
 
-from core.config import Config
 from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
+from core.config import Config
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .audit import audit_available_list

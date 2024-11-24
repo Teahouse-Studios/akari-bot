@@ -9,11 +9,10 @@ from time import sleep
 
 import core.scripts.config_generate  # noqa
 from core.config import Config, CFGManager
-from core.constants import base_superuser_default
-
+from core.constants.default import base_superuser_default
+from core.constants.path import cache_path
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
-from core.constants.path import cache_path
 from core.utils.info import Info
 
 ascii_art = r'''

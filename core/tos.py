@@ -1,8 +1,8 @@
-from core.config import Config
 from core.builtins import Bot
-from core.constants import issue_url_default
-from core.utils.i18n import Locale
+from core.config import Config
 from core.database import BotDBUtil
+from core.constants.default import issue_url_default
+from core.utils.i18n import Locale
 
 report_targets = Config('report_targets', [])
 WARNING_COUNTS = Config('tos_warning_counts', 5)

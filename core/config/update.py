@@ -1,19 +1,16 @@
 import os
 import shutil
-
 from time import sleep
 
+from loguru import logger
 from tomlkit import parse as toml_parser, dumps as toml_dumps, document as toml_document, comment as toml_comment, nl
 from tomlkit.exceptions import KeyAlreadyPresent
-from core.constants.path import config_path
 
 from core.constants.exceptions import ConfigFileNotFound
+from core.constants.path import config_path
+from core.constants import config_filename, config_version
 from core.utils.i18n import Locale
 from core.utils.text import isint, isfloat
-from core.constants import config_version
-from loguru import logger
-
-config_filename = 'config.toml'
 
 cfg_file_path = os.path.join(config_path, config_filename)
 old_cfg_file_path = os.path.join(config_path, 'config.cfg')
@@ -207,7 +204,7 @@ if 'initialized' not in config.value:
         Reorganize.reorganize_bot_key('matrix_homeserver')
         Reorganize.reorganize_bot_key('matrix_user')
         Reorganize.reorganize_bot_key('matrix_device_id', True)
-        Reorganize.reorganize_bot_key('matrix_device_name', True)
+        Reorganize.reorganize_bot_key('matrix_device_name')
         Reorganize.reorganize_bot_key('matrix_token', True)
 
         # ntqq

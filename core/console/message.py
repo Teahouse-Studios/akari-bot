@@ -1,14 +1,14 @@
 import asyncio
 from typing import List, Union
 
-from PIL import Image as PILImage
 from inputimeout import inputimeout, TimeoutOccurred
+from PIL import Image as PILImage
 
-from core.config import Config
 from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.config import Config
 from core.console.info import *
 from core.constants.exceptions import WaitCancelException
 from core.logger import Logger

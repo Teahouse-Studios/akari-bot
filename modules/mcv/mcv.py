@@ -5,9 +5,9 @@ from google_play_scraper import app as google_play_scraper
 import orjson as json
 
 from core.builtins import Bot, ErrorMessage
+from core.constants.info import Secret
 from core.logger import Logger
 from core.utils.http import get_url, post_url
-from core.constants.info import Secret
 
 
 async def mcv(msg: Bot.MessageSession):

@@ -6,9 +6,9 @@ import filetype
 
 from core.builtins import Bot, I18NContext, Image, Voice
 from core.component import module
+from core.constants.info import Info
 from core.dirty_check import check
 from core.logger import Logger
-from core.constants.info import Info
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable

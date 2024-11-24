@@ -7,11 +7,11 @@ import orjson as json
 from sqlalchemy import func
 from tenacity import retry, stop_after_attempt
 
-from core.types.message import MessageSession, FetchTarget, FetchedSession
-from core.utils.text import isint
+from core.constants import database_version
 from core.database.orm import Session
 from core.database.tables import *
-from core.constants import database_version
+from core.utils.text import isint
+from core.types.message import MessageSession, FetchTarget, FetchedSession
 
 session = Session.session
 

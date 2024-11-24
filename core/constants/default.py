@@ -4,6 +4,10 @@ confirm_command = ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y']
 command_prefix = ['~', '～']
 lang_list = {'zh_cn': '简体中文', 'zh_tw': '繁體中文', 'en_us': 'English'}
 
+qq_account_default = 2314163511
+matrix_homeserver_default = 'https://matrix.org'
+matrix_user_default = '@akaribot:matrix.org'
+
 db_path_default = 'sqlite:///database/save.db'
 help_url_default = 'https://bot.teahouse.team'
 help_page_url_default = 'https://bot.teahouse.team/wiki/${module}'

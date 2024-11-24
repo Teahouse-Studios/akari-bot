@@ -2,9 +2,9 @@ import re
 
 import orjson as json
 
-from core.config import Config
 from core.builtins import Bot
 from core.component import module
+from core.config import Config
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib
 from .dbutils import WikiLogUtil

@@ -7,3 +7,5 @@ from .default import *
 from .exceptions import *
 from .info import *
 from .version import *
+
+config_filename = 'config.toml'

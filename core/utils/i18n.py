@@ -9,8 +9,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import orjson as json
 
-from core.constants.path import locales_path, modules_locales_path
 from core.constants.default import lang_list
+from core.constants.path import locales_path, modules_locales_path
 from .text import isint
 
 

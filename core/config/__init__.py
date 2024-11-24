@@ -3,17 +3,16 @@ import re
 from time import sleep
 from typing import Optional, Union, Any
 
+from loguru import logger
 from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, \
     document as toml_document, nl
-from loguru import logger
-from tomlkit.items import Table
-from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from tomlkit.exceptions import KeyAlreadyPresent
+from tomlkit.items import Table
 import core.config.update
+from core.constants.default import default_locale
+from core.constants.exceptions import ConfigValueError, ConfigOperationError
+from core.constants.path import config_path
 from core.utils.i18n import Locale
-from core.constants import default_locale, config_path
-
-config_filename = 'config.toml'
 
 
 class CFGManager:

@@ -13,10 +13,10 @@ from bots.discord.message import MessageSession, FetchTarget
 from core.config import Config
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
-from core.constants import ignored_sender_default
+from core.constants.default import ignored_sender_default
+from core.constants.path import assets_path
 from core.logger import Logger
 from core.parser.message import parser
-from core.constants.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 

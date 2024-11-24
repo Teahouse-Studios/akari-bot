@@ -1,4 +1,5 @@
 import os
+
 from core.constants.path import assets_path
 
 

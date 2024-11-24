@@ -10,23 +10,23 @@ from aiocqhttp import Event
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
-from core.config import Config
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
-from core.constants import issue_url_default, ignored_sender_default
 from core.builtins.utils import command_prefix
-from core.parser.message import parser
-from core.constants.path import assets_path
+from core.config import Config
+from core.constants.default import issue_url_default, ignored_sender_default, qq_account_default
 from core.constants.info import Info
+from core.constants.path import assets_path
+from core.database import BotDBUtil
+from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
 from core.utils.i18n import Locale
-from core.database import BotDBUtil
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Url.disable_mm = not Config('enable_urlmanager', False)
-qq_account = str(Config("qq_account", 1234567, cfg_type=(int, str), table_name='bot_aiocqhttp'))
+qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
@@ -195,7 +195,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
-    if event.user_id == int(qq_account):
+    if event.user_id == qq_account:
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
         target_id = f'{target_group_prefix}|{event.group_id}'

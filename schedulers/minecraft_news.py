@@ -3,8 +3,8 @@ from urllib.parse import quote
 
 import orjson as json
 
-from core.config import Config
 from core.builtins import Url, I18NContext
+from core.config import Config
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger

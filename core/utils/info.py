@@ -8,9 +8,9 @@ import orjson as json
 from core.console.info import client_name as console_client_name, \
     sender_prefix_list as console_sender_prefix, \
     target_prefix_list as console_target_prefix
-from core.logger import Logger
-from core.constants.path import bots_info_path
 from core.constants.info import Info
+from core.constants.path import bots_info_path
+from core.logger import Logger
 
 
 def get_bot_names(attribute_name, console_name):

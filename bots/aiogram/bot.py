@@ -10,9 +10,9 @@ from bots.aiogram.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets, Url
 from core.config import Config
-from core.constants import ignored_sender_default
-from core.parser.message import parser
+from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
+from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 

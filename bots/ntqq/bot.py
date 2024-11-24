@@ -10,9 +10,9 @@ from bots.ntqq.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets, Url
 from core.config import Config
-from core.parser.message import parser
 from core.constants.path import assets_path
 from core.constants.info import Info
+from core.parser.message import parser
 from core.types import MsgInfo, Session
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))

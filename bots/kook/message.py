@@ -8,12 +8,12 @@ from khl import MessageTypes, Message
 
 from bots.kook.client import bot
 from bots.kook.info import *
-from core.config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
 from core.builtins.message.chain import MessageChain
+from core.config import Config
+from core.database import BotDBUtil
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
-from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"

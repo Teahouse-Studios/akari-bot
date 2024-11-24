@@ -4,14 +4,14 @@ import os
 
 import orjson as json
 
-from core.config import CFGManager
 from core.background_tasks import init_background_task
+from core.config import CFGManager
+from core.constants import PrivateAssets, Secret
 from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler
-from core.constants import PrivateAssets, Secret
 from core.utils.info import Info
 from core.utils.web_render import check_web_render
 

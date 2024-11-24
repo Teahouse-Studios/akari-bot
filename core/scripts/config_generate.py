@@ -12,9 +12,6 @@ from core.constants import *
 from core.utils.i18n import Locale
 from core.utils.text import isint
 
-config_filename = 'config.toml'
-
-
 def generate_config(file_path, language):
     config_code_list = {}
     path_ = os.path.join(file_path, config_filename)

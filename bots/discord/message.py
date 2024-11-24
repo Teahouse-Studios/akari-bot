@@ -8,14 +8,14 @@ import filetype
 
 from bots.discord.client import client
 from bots.discord.info import *
-from core.config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Embed, Voice
+from core.config import Config
+from core.database import BotDBUtil
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download
-from core.database import BotDBUtil
 
 enable_analytics = Config('enable_analytics', False)
 

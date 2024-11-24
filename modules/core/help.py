@@ -5,22 +5,22 @@ import traceback
 
 import aiohttp
 import orjson as json
+from html import escape
 from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
 
 from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
-from core.constants import Info, donate_url_default
+from core.constants.default import donate_url_default, help_url_default, help_page_url_default
+from core.constants.info import Info
+from core.constants.path import templates_path
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
-from core.constants.path import templates_path
-from core.constants.default import help_url_default, help_page_url_default
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import webrender
-from html import escape
 
 
 env = Environment(loader=FileSystemLoader(templates_path))

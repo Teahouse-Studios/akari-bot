@@ -7,8 +7,8 @@ from langconv.language.zh import zh_cn
 
 from core.builtins import Bot, Image, MessageChain, Plain
 from core.constants.exceptions import ConfigValueError
-from core.logger import Logger
 from core.constants.path import cache_path
+from core.logger import Logger
 from core.utils.http import download, get_url, post_url
 from core.utils.text import isint
 from .maimaidx_mapping import *

@@ -12,7 +12,7 @@ from PIL import Image as PILImage
 from tenacity import retry, stop_after_attempt
 
 from core.config import Config
-from core.constants import bug_report_url_default
+from core.constants.default import bug_report_url_default
 from core.joke import joke
 from core.types.message import MessageSession
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,

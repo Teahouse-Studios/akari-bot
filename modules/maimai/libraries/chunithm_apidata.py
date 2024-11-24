@@ -4,8 +4,8 @@ from typing import Optional
 import orjson as json
 
 from core.builtins import Bot, Image, MessageChain, Plain
-from core.logger import Logger
 from core.constants.path import cache_path
+from core.logger import Logger
 from core.utils.http import post_url
 from .chunithm_mapping import *
 from .chunithm_music import Music
