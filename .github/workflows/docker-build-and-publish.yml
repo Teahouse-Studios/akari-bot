@@ -1,9 +1,9 @@
-name: "Docker Build Nightly (3:00, UTC+8)"
+name: Docker Build and Publish
 
 on:
-  schedule:
-    - cron: "00 19 * * *"
-  workflow_dispatch:
+  push:
+    branches: [master]
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
