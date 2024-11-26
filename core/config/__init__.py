@@ -252,11 +252,13 @@ class CFGManager:
             try:
                 cls.values[cfg_name][target].add(q, value)
             except KeyAlreadyPresent:
-                pass
-            qc = f'config.comments.{q}'
-            localed_comment = get_locale.t(qc, fallback_failed_prompt=False)  # get the comment for the key from locale
-            if localed_comment != qc:
-                cls.values[cfg_name][target].value.item(q).comment(localed_comment)
+                cls.values[cfg_name][target][q] = value
+            finally:
+                qc = f'config.comments.{q}'
+                # get the comment for the key from locale
+                localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
+                if localed_comment != qc:
+                    cls.values[cfg_name][target].value.item(q).comment(localed_comment)
 
         if _generate:
             return
@@ -265,25 +267,34 @@ class CFGManager:
         cls.load()
 
     @classmethod
-    def delete(cls, q: str) -> bool:
+    def delete(cls, q: str, table_name: Optional[str] = None) -> bool:
         cls.watch()
         q = q.lower()
         found = False
-        for t in cls.values.keys():
-            for tt in cls.values[t].keys():
-                if isinstance(cls.values[t][tt], Table):
-                    if q in cls.values[t][tt]:
-                        del cls.values[t][tt][q]
-                        found = True
-                        break
-                else:
-                    if cls.values[t][tt] == q:
-                        del cls.values[t][tt]
+        if not table_name:  # if table_name is not provided, search for the value in all tables
+            for t in cls.values.keys():
+                for tt in cls.values[t].keys():
+                    if isinstance(cls.values[t][tt], Table):
+                        if q in cls.values[t][tt]:
+                            del cls.values[t][tt][q]
+                            found = True
+                            break
+                    else:
+                        if cls.values[t][tt] == q:
+                            del cls.values[t][tt]
+                            found = True
+                            break
+        else:
+            for t in cls.values[table_name].keys():
+                if isinstance(cls.values[table_name][t], Table):
+                    if q in cls.values[table_name][t]:
+                        del cls.values[table_name][t][q]
                         found = True
                         break
 
         if not found:
             return False
+
         cls.save()
         return True
 
@@ -313,7 +324,7 @@ def Config(q: str,
            get_url: bool = False,
            _generate: bool = False):
     if get_url:
-        v = CFGManager.get(q, default, str, secret, table_name=table_name, _generate=_generate)
+        v = CFGManager.get(q, default, str, secret, table_name, _generate)
         if v:
             if v[-1] != '/':
                 v += '/'

@@ -119,12 +119,13 @@ if 'initialized' not in config.value:
                     try:
                         configs[cfg_name][table].add(key, old_config[c_target][key])
                     except KeyAlreadyPresent:
-                        pass
-                    qc = f'config.comments.{key}'
-                    # get the comment for the key from locale
-                    localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
-                    if localed_comment != qc:
-                        configs[cfg_name][table].value.item(key).comment(localed_comment)
+                        configs[cfg_name][table][key] = old_config[c_target][key]
+                    finally:
+                        qc = f'config.comments.{key}'
+                        # get the comment for the key from locale
+                        localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
+                        if localed_comment != qc:
+                            configs[cfg_name][table].value.item(key).comment(localed_comment)
                     old_config[c_target].pop(key)
 
             @classmethod
@@ -156,13 +157,15 @@ if 'initialized' not in config.value:
                                 fallback_failed_prompt=False)))
                 try:
                     configs[cfg_name][cfg_name].add('enable', True)
+                except KeyAlreadyPresent:
+                    configs[cfg_name][cfg_name]['enable'] = True
+                finally:
                     qc = f'config.comments.enable'
                     # get the comment for the key from locale
                     localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
                     if localed_comment != qc:
                         configs[cfg_name][cfg_name].value.item('enable').comment(localed_comment)
-                except KeyAlreadyPresent:
-                    pass
+
                 if 'disabled_bots' in config['cfg']:
                     if cls.table in config['cfg']['disabled_bots']:
                         configs[cfg_name][cfg_name]['enable'] = False

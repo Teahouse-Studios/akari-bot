@@ -519,13 +519,14 @@ async def _(msg: Bot.MessageSession, post_msg: str):
 cfg_ = module('config', required_superuser=True, alias='cfg', base=True, doc=True)
 
 
-@cfg_.command('get <k>')
-async def _(msg: Bot.MessageSession, k: str):
-    await msg.finish(str(Config(k)))
+@cfg_.command('get <k> [<table_name>]')
+async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
+    table_name = 'config' if not table_name else table_name
+    await msg.finish(str(Config(k, table_name=table_name)))
 
 
-@cfg_.command('write <k> <v> [-s]')
-async def _(msg: Bot.MessageSession, k: str, v: str):
+@cfg_.command('write <k> <v> [<table_name>] [-s]')
+async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
     if v.lower() == 'true':
         v = True
     elif v.lower() == 'false':
@@ -541,13 +542,13 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
         except json.JSONDecodeError as e:
             Logger.error(str(e))
             await msg.finish(msg.locale.t("message.failed"))
-    CFGManager.write(k, v, msg.parsed_msg['-s'])
+    CFGManager.write(k, v, secret=msg.parsed_msg['-s'], table_name=table_name)
     await msg.finish(msg.locale.t("message.success"))
 
 
-@cfg_.command('delete <k>')
-async def _(msg: Bot.MessageSession, k: str):
-    if CFGManager.delete(k):
+@cfg_.command('delete <k> [<table_name>]')
+async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
+    if CFGManager.delete(k, table_name):
         await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("message.failed"))
