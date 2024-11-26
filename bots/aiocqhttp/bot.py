@@ -85,7 +85,7 @@ async def message_handler(event: Event):
     prefix = None
     if string_post:
         if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
-            if match_at.group(1) == qq_account:
+            if match_at.group(1) == str(qq_account):
                 event.message = match_at.group(2)
                 if event.message in ['', ' ']:
                     event.message = f'{command_prefix[0]}help'
@@ -94,7 +94,7 @@ async def message_handler(event: Event):
                 return
     else:
         if event.message[0]["type"] == "at":
-            if event.message[0]["data"]["qq"] == qq_account:
+            if event.message[0]["data"]["qq"] == str(qq_account):
                 event.message = event.message[1:]
                 if not event.message:
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
