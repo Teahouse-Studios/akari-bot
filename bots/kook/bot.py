@@ -55,7 +55,7 @@ async def _(b: bot):
     await init_async()
     await load_prompt(FetchTarget)
 
-if Config("enable", False, cfg_type=bool, table_name='bot_kook'):
+if Config("enable", False, table_name='bot_kook'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

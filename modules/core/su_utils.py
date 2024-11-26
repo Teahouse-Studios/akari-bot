@@ -521,12 +521,12 @@ cfg_ = module('config', required_superuser=True, alias='cfg', base=True, doc=Tru
 
 @cfg_.command('get <k> [<table_name>]')
 async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
-    table_name = 'config' if not table_name else table_name
     await msg.finish(str(Config(k, table_name=table_name)))
 
 
 @cfg_.command('write <k> <v> [<table_name>] [-s]')
 async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
+    secret = bool(msg.parsed_msg['-s'])
     if v.lower() == 'true':
         v = True
     elif v.lower() == 'false':
@@ -542,7 +542,10 @@ async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
         except json.JSONDecodeError as e:
             Logger.error(str(e))
             await msg.finish(msg.locale.t("message.failed"))
-    CFGManager.write(k, v, secret=msg.parsed_msg['-s'], table_name=table_name)
+    if (not table_name and secret) or (table_name and table_name.lower() == 'secret'):
+        table_name = 'config'
+        secret = True
+    CFGManager.write(k, v, secret=secret, table_name=table_name)
     await msg.finish(msg.locale.t("message.success"))
 
 

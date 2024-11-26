@@ -104,33 +104,39 @@ class CFGManager:
         q = q.lower()
         value = None
 
-        if not table_name:  # if table_name is not provided, search for the value in all tables
-            found = False
-            for t in cls.values.keys():  # search for the value in all tables
-                for tt in cls.values[t].keys():
-                    if isinstance(cls.values[t][tt], Table):
-                        """
-                        [Config]
-                        xxx = xxx  <- get the value inside the table
-                        """
-                        value = cls.values[t][tt].get(q)
+        if not table_name:  # if table_name is not provided, search for the value in config.toml tables
+            for t in cls.values['config'].keys():
+                if isinstance(cls.values['config'][t], Table):
+                    """
+                    [config]
+                    foo = bar  <- get the value inside the table
+                    """
+                    if secret:
+                        value = cls.values['config']['secret'].get(q)
                         if value is not None:
                             found = True
                             break
                     else:
-                        """
-                        xxx = xxx <- if the item is not a table, assume it's a key-value pair outside the table
-                        [Config]
-                        xxx = xxx
-                        """
-                        if tt == q:
-                            value = cls.values[t][tt]
+                        value = cls.values['config']['config'].get(q)
+                        if value is not None:
                             found = True
                             break
-                if found:
-                    break
+                else:
+                    """
+                    foo = bar <- if the item is not a table, assume it's a key-value pair outside the table
+                    [config]
+                    foo = bar
+                    """
+                    if t == q:
+                        value = cls.values['config'][t]
+                        found = True
+                        break
         else:
-            target = table_name + '_secret' if secret else table_name
+            # if table_name is provided, write the value to the specified table
+            if table_name != 'config':
+                target = f"{table_name}{'_secret' if secret else ''}"
+            else:
+                target = 'secret' if secret else 'config'
             try:
                 # if table_name is provided, get for the value in the specified table directly
                 value = cls.values[table_name].get(target).get(q)
@@ -189,30 +195,48 @@ class CFGManager:
             logger.debug(f'[Config] Config {q} has no default value, skipped to auto fill.')
             return
 
-        if not table_name:  # if table_name is not provided, search for the value in all tables
-            for t in cls.values.keys():  # search for the value in all tables
-                for tt in cls.values[t].keys():
-                    if isinstance(cls.values[t][tt], Table):
-                        """
-                        [Config]
-                        xxx = xxx  <- get the value inside the table
-                        """
-                        if q in cls.values[t][tt]:
-                            cls.values[t][tt][q] = value
+        if not table_name:  # if table_name is not provided, search for the value in config.toml tables
+            for t in cls.values['config'].keys():
+                if isinstance(cls.values['config'][t], Table):
+                    """
+                    [config]
+                    foo = bar  <- get the value inside the table
+                    """
+                    if secret:
+                        if q in cls.values['config']['secret']:
+                            cls.values['config']['secret'][q] = value
                             found = True
                             break
                     else:
-                        """
-                        xxx = xxx <- if the item is not a table, assume it's a key-value pair outside the table
-                        [Config]
-                        xxx = xxx
-                        """
-                        if tt == q:
-                            cls.values[t][tt] = value
+                        if q in cls.values['config']['config']:
+                            cls.values['config']['config'][q] = value
                             found = True
                             break
+                else:
+                    """
+                    foo = bar <- if the item is not a table, assume it's a key-value pair outside the table
+                    [config]
+                    foo = bar
+                    """
+                    if t == q:
+                        cls.values['config'][t] = value
+                        found = True
+                        break
+        else:
+            # if table_name is provided, write the value to the specified table
+            if table_name != 'config':
+                target = f"{table_name}{'_secret' if secret else ''}"
+            else:
+                target = 'secret' if secret else 'config'
+            try:
+                # if table_name is provided, get for the value in the specified table directly
+                cls.values[table_name][target][q] = value
+                found = True
+            except (AttributeError, KeyError):
+                pass
+
         if not found:  # if the value is not found, write the default value to the config file
-            if table_name:  # if table_name is provided, write the value to the specified table
+            if table_name and not table_name == 'config':  # if table_name is provided, write the value to the specified table
                 cfg_name = table_name
                 target = f"{table_name}{'_secret' if secret else ''}"
             else:
@@ -271,26 +295,15 @@ class CFGManager:
         cls.watch()
         q = q.lower()
         found = False
-        if not table_name:  # if table_name is not provided, search for the value in all tables
-            for t in cls.values.keys():
-                for tt in cls.values[t].keys():
-                    if isinstance(cls.values[t][tt], Table):
-                        if q in cls.values[t][tt]:
-                            del cls.values[t][tt][q]
-                            found = True
-                            break
-                    else:
-                        if cls.values[t][tt] == q:
-                            del cls.values[t][tt]
-                            found = True
-                            break
-        else:
+        table_name = 'config' if not table_name else table_name
+        try:
             for t in cls.values[table_name].keys():
                 if isinstance(cls.values[table_name][t], Table):
                     if q in cls.values[table_name][t]:
                         del cls.values[table_name][t][q]
                         found = True
-                        break
+        except (AttributeError, KeyError):
+            pass
 
         if not found:
             return False

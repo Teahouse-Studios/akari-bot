@@ -228,7 +228,7 @@ async def start():
     await bot.set_presence('offline')
 
 
-if bot and Config("enable", False, cfg_type=bool, table_name='bot_matrix'):
+if bot and Config("enable", False, table_name='bot_matrix'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

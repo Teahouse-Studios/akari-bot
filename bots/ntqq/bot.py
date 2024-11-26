@@ -159,7 +159,7 @@ class MyClient(botpy.Client):
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
-if Config("enable", False, cfg_type=bool, table_name='bot_ntqq'):
+if Config("enable", False, table_name='bot_ntqq'):
     intents = botpy.Intents.none()
     intents.public_guild_messages = True
     intents.public_messages = True

@@ -48,7 +48,7 @@ async def on_startup(dispatcher):
     await load_prompt(FetchTarget)
 
 
-if Config("enable", False, cfg_type=bool, table_name='bot_aiogram'):
+if Config("enable", False, table_name='bot_aiogram'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

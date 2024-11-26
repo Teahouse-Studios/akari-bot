@@ -181,10 +181,10 @@ async def get_locale(locale: str, string: str):
             "detail": "Not Found"
         })
 
-if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, cfg_type=bool, table_name='bot_api'):
+if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, table_name='bot_api'):
     while True:
         Info.client_name = client_name
-        uvicorn.run(app, port=Config('api_port', 5000), log_level="info")
+        uvicorn.run(app, port=Config('api_port', 5000, table_name='bot_api'), log_level="info")
         Logger.error('API Server crashed, is the port occupied?')
         Logger.error('Retrying in 5 seconds...')
         time.sleep(5)

@@ -245,7 +245,7 @@ async def _(event: Event):
 
 
 qq_host = Config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp')
-if qq_host and Config("enable", False, cfg_type=bool, table_name='bot_aiocqhttp'):
+if qq_host and Config("enable", False, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name
     if 'subprocess' in sys.argv:

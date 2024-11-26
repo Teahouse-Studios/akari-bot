@@ -22,7 +22,7 @@ from core.utils.i18n import Locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
-qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str)))
+qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config('enable_tos', True)

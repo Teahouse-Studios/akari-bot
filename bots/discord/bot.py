@@ -124,7 +124,7 @@ async def on_message(message):
     await parser(msg, prefix=prefix)
 
 
-if Config("enable", False, cfg_type=bool, table_name='bot_discord'):
+if Config("enable", False, table_name='bot_discord'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True
