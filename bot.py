@@ -125,7 +125,7 @@ def run_bot():
         if bl in bots_and_required_configs:
             abort = False
             for c in bots_and_required_configs[bl]:
-                if not Config(c):
+                if not Config(c, _global=True):
                     Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
                     break
