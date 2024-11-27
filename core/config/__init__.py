@@ -14,6 +14,7 @@ from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
 from core.utils.i18n import Locale
+from core.exports import add_export
 
 
 class CFGManager:
@@ -360,3 +361,7 @@ def Config(q: str,
     else:
         v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v
+
+
+add_export(Config)
+add_export(CFGManager)

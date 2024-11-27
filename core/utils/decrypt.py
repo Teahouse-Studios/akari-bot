@@ -3,7 +3,6 @@ import re
 from ff3 import FF3Cipher
 
 from core.config import Config
-from core.utils.text import random_string
 
 
 def decrypt_string(text):

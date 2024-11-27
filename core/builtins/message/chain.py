@@ -5,6 +5,11 @@ from urllib.parse import urlparse
 
 import orjson as json
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.builtins.message import MessageSession
+
 from core.builtins.message.internal import (
     Plain,
     Image,
@@ -17,7 +22,8 @@ from core.builtins.message.internal import (
 )
 from core.builtins.utils import Secret
 from core.logger import Logger
-from core.types.message import MessageChain as MessageChainT, MessageSession
+from core.types.message import MessageChain as MessageChainT
+
 from core.utils.http import url_pattern
 
 
@@ -175,7 +181,7 @@ class MessageChain(MessageChainT):
                             return False
         return True
 
-    def as_sendable(self, msg: MessageSession = None, embed=True):
+    def as_sendable(self, msg: 'MessageSession' = None, embed=True):
         locale = None
         if msg:
             locale = msg.locale.locale
@@ -216,7 +222,7 @@ class MessageChain(MessageChainT):
             )
         return value
 
-    def to_list(self, locale="zh_cn", embed=True, msg: MessageSession = None):
+    def to_list(self, locale="zh_cn", embed=True, msg: 'MessageSession' = None):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:

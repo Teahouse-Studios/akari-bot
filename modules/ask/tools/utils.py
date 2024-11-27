@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable, Optional
 import orjson as json
 from langchain.tools import StructuredTool
 
-from core.types.message import MessageSession, MsgInfo, Session
+from core.builtins import MessageSession, MsgInfo, Session
 from core.utils.i18n import Locale
 
 

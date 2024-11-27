@@ -10,11 +10,14 @@ import aiohttp
 import filetype
 from PIL import Image as PILImage
 from tenacity import retry, stop_after_attempt
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.builtins import MessageSession
 
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.joke import joke
-from core.types.message import MessageSession
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
@@ -75,7 +78,7 @@ class FormattedTime(FormattedTimeT):
         self.seconds = seconds
         self.timezone = timezone
 
-    def to_str(self, msg: MessageSession = None):
+    def to_str(self, msg: 'MessageSession' = None):
         ftime_template = []
         if msg:
             if self.date:
@@ -277,7 +280,7 @@ class Embed(EmbedT):
                 else:
                     raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
-    def to_message_chain(self, msg: MessageSession = None):
+    def to_message_chain(self, msg: 'MessageSession' = None):
         text_lst = []
         if self.title:
             text_lst.append(self.title)
