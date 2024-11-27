@@ -12,6 +12,7 @@ from core.constants import *
 from core.utils.i18n import Locale
 from core.utils.text import isint
 
+
 def generate_config(dir_path, language):
     config_code_list = {}
     path_ = os.path.join(dir_path, config_filename)
