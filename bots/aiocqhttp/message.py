@@ -16,14 +16,13 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, \
-    MessageTaskManager
+    MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 
@@ -532,9 +531,6 @@ class FetchTarget(FetchTargetT):
                 asyncio.create_task(post_not_in_whitelist(else_))
                 Logger.info(f"The task of posting messages to whitelisted groups is complete. "
                             f"Posting message to {len(else_)} groups not in whitelist.")
-
-    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

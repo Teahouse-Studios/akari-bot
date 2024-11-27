@@ -12,9 +12,10 @@ from core.constants import *
 from core.utils.i18n import Locale
 from core.utils.text import isint
 
-def generate_config(file_path, language):
+
+def generate_config(dir_path, language):
     config_code_list = {}
-    path_ = os.path.join(file_path, config_filename)
+    path_ = os.path.join(dir_path, config_filename)
 
     dir_list = ['bots', 'core', 'modules', 'schedulers']
     exclude_dir_list = [os.path.join('core', 'config'), os.path.join('core', 'scripts')]
@@ -44,7 +45,7 @@ def generate_config(file_path, language):
 
     from core.config import Config, CFGManager  # noqa
 
-    CFGManager.switch_config_path(file_path)
+    CFGManager.switch_config_path(dir_path)
 
     for dir in dir_list:
         for root, dirs, files in os.walk(dir):

@@ -3,13 +3,12 @@ from typing import Union, List
 
 from core.config import Config
 from core.constants.info import Info
-from core.database import BotDBUtil
 from core.loader import ModulesManager
-from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
+from core.types.message import MsgInfo, Session, ModuleHookContext
+from core.exports import exports
 from .message import *
 from .message.chain import *
 from .message.internal import *
-from .tasks import *
 from .temp import *
 from .utils import *
 from ..constants import base_superuser_default
@@ -20,13 +19,13 @@ class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
-    FetchedSession = FetchedSessionT
+    FetchedSession = FetchedSession
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
     Info = Info
 
     @staticmethod
-    async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],
+    async def send_message(target: Union[FetchedSession, MessageSession, str], msg: Union[MessageChain, list],
                            disable_secret_check=False, enable_parse_message=True,
                            enable_split_image=True):
         if isinstance(target, str):
@@ -43,8 +42,8 @@ class Bot:
         return Bot.FetchTarget.fetch_target(target)
 
     @staticmethod
-    async def get_enabled_this_module(module: str) -> List[FetchedSessionT]:
-        lst = BotDBUtil.TargetInfo.get_target_list(module)
+    async def get_enabled_this_module(module: str) -> List[FetchedSession]:
+        lst = exports.get("BotDBUtil").TargetInfo.get_target_list(module)
         fetched = []
         for x in lst:
             x = Bot.FetchTarget.fetch_target(x)
@@ -77,7 +76,7 @@ class Bot:
                 raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 
-class FetchedSession(FetchedSessionT):
+class FetchedSession(FetchedSession):
     def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
         if not sender_from:
             sender_from = target_from
@@ -94,10 +93,19 @@ class FetchedSession(FetchedSessionT):
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
         if sender_id:
-            self.parent.target.sender_info = BotDBUtil.SenderInfo(f'{sender_from}|{sender_id}')
+            self.parent.target.sender_info = exports.get("BotDBUtil").SenderInfo(f'{sender_from}|{sender_id}')
 
 
 Bot.FetchedSession = FetchedSession
+
+
+class FetchTarget(FetchTarget):
+    @staticmethod
+    async def post_global_message(message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+        await Bot.FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
+
+
+Bot.FetchTarget = FetchTarget
 
 base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
 

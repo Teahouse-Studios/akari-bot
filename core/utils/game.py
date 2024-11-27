@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Optional, Union
 
 from core.logger import Logger
-from core.types import MessageSession
+from core.builtins import MessageSession
 
 playstate_lst = defaultdict(lambda: defaultdict(dict))
 GAME_EXPIRED = 3600

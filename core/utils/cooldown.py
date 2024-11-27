@@ -1,7 +1,7 @@
 import datetime
 from typing import Dict, Union
 
-from core.types import MessageSession
+from core.builtins import MessageSession
 
 _cd_lst: Dict[str, Dict[Union[MessageSession, str], float]] = {}
 

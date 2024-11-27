@@ -15,8 +15,6 @@ from core.scheduler import Scheduler
 from core.utils.info import Info
 from core.utils.web_render import check_web_render
 
-from tomlkit.items import Table
-
 
 async def init_async(start_scheduler=True) -> None:
     try:

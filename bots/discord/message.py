@@ -8,13 +8,13 @@ import filetype
 
 from bots.discord.client import client
 from bots.discord.info import *
-from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
+from core.builtins import (Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager,
+                           FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Embed, Voice
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download
 
 enable_analytics = Config('enable_analytics', False)
@@ -254,9 +254,6 @@ class FetchTarget(FetchTargetT):
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
-
-    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

@@ -11,7 +11,8 @@ from core.constants import database_version
 from core.database.orm import Session
 from core.database.tables import *
 from core.utils.text import isint
-from core.types.message import MessageSession, FetchTarget, FetchedSession
+from core.builtins import MessageSession, FetchTarget, FetchedSession
+from core.exports import add_export
 
 session = Session.session
 
@@ -506,4 +507,5 @@ class BotDBUtil:
             return True
 
 
+add_export(BotDBUtil)
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

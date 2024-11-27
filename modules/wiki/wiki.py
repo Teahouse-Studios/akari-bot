@@ -9,7 +9,7 @@ from core.component import module
 from core.constants.exceptions import AbuseWarning
 from core.constants.info import Info
 from core.logger import Logger
-from core.types import MessageSession
+from core.builtins import MessageSession
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
