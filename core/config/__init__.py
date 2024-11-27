@@ -105,8 +105,8 @@ class CFGManager:
         q = q.lower()
         value = None
 
-        if not table_name:  # if table_name is not provided, search for the value in config.toml tables
-            if not _global:
+        if not table_name:
+            if not _global:  # if table_name is not provided, search for the value in config.toml tables
                 for t in cls.values['config'].keys():
                     if isinstance(cls.values['config'][t], Table):
                         """
@@ -130,9 +130,9 @@ class CFGManager:
                         if t == q:
                             value = cls.values['config'][t]
                             break
-            else:
+            else:  # search for the value in all tables
                 found = False
-                for t in cls.values.keys():  # search for the value in all tables
+                for t in cls.values.keys():
                     for tt in cls.values[t].keys():
                         if isinstance(cls.values[t][tt], Table):
                             value = cls.values[t][tt].get(q)
