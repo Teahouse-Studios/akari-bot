@@ -8,8 +8,8 @@ import nio
 
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import *
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager,\
-                            FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
+    FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain
 from core.config import Config
 from core.database import BotDBUtil

@@ -8,7 +8,6 @@ if TYPE_CHECKING:
     from core.builtins.message import FetchTarget
 
 
-
 def get_stored_list(bot: Union['FetchTarget', str], name: str) -> list:
     get = BotDBUtil.Data(bot).get(name=name)
     if not get:

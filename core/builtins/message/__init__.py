@@ -219,8 +219,6 @@ class MessageSession:
         await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message,
                                 enable_split_image=enable_split_image, callback=callback)
 
-
-
     def as_display(self, text_only=False) -> str:
         """
         用于将消息转换为一般文本格式。
@@ -269,7 +267,6 @@ class MessageSession:
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
-
 
     async def call_api(self, action, **params):
         raise NotImplementedError
@@ -474,7 +471,6 @@ class MessageSession:
             self.timezone_offset).strftime(
             ' '.join(ftime_template))
 
-
     class Feature:
         """
         此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断（如QQ支持消息类型的语音而Discord不支持）
@@ -564,5 +560,10 @@ class FetchTarget:
     postGlobalMessage = post_global_message
 
 
-
-__all__ = ["MessageSession", "ExecutionLockList", "MessageTaskManager", "FetchTarget", "FetchedSession", "FinishedSession"]
+__all__ = [
+    "MessageSession",
+    "ExecutionLockList",
+    "MessageTaskManager",
+    "FetchTarget",
+    "FetchedSession",
+    "FinishedSession"]

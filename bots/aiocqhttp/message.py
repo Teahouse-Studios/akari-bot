@@ -535,4 +535,3 @@ class FetchTarget(FetchTargetT):
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
-

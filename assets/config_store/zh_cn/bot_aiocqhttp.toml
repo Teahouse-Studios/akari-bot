@@ -5,12 +5,12 @@
 [bot_aiocqhttp]
 # 平台端的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 qq_account = 2314163511 # 机器人 QQ 号。（使用 Onebot 协议端部署 QQ 机器人时需要）
-qq_enable_listening_self_message = false # 使用 Onebot 协议时，是否启用自身消息监听。
-qq_disable_temp_session = true # 使用 Onebot 协议时，是否启用临时会话。
-qq_allow_approve_friend = false # 使用 Onebot 协议时，是否自动同意好友请求。
-qq_allow_approve_group_invite = false # 使用 Onebot 协议时，是否自动同意群邀请。
-enable = false # 是否启用此平台。
-qq_frame_type = "mirai" # Aiocqhttp 对接的 Onebot 协议的框架类型。
+qq_enable_listening_self_message = false
+qq_disable_temp_session = true
+qq_allow_approve_friend = false
+qq_allow_approve_group_invite = false
+enable = false
+qq_frame_type = "mirai"
 
 [bot_aiocqhttp_secret]
 # 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

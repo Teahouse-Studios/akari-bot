@@ -98,6 +98,7 @@ class FetchedSession(FetchedSession):
 
 Bot.FetchedSession = FetchedSession
 
+
 class FetchTarget(FetchTarget):
     @staticmethod
     async def post_global_message(message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
