@@ -237,7 +237,7 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_guild_prefix:
-                emoji_id = str(Config('qq_typing_emoji', 181, (str, int)))
+                emoji_id = str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_ntqq'))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
                 from bots.ntqq.bot import client  # noqa
                 await client.api.put_reaction(channel_id=self.msg.target.target_id.split('|')[-1],

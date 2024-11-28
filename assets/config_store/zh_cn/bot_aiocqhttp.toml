@@ -10,7 +10,9 @@ qq_disable_temp_session = true # 使用 Onebot 协议时，是否启用临时会
 qq_allow_approve_friend = false # 使用 Onebot 协议时，是否自动同意好友请求。
 qq_allow_approve_group_invite = false # 使用 Onebot 协议时，是否自动同意群邀请。
 enable = false # 是否启用此平台。
+qq_typing_emoji = 181 # 使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
 qq_frame_type = "mirai" # Aiocqhttp 对接的 Onebot 协议的框架类型。
+qq_limited_emoji = 10060 # 使用 QQ 相关协议端时，消息处理失败时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
 
 [bot_aiocqhttp_secret]
 # 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

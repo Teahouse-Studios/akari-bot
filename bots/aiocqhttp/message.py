@@ -330,7 +330,7 @@ class MessageSession(MessageSessionT):
             if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
                 if qq_frame_type() == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
-                                          emoji_id=str(Config('qq_typing_emoji', 181, (str, int))))
+                                          emoji_id=str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_aiocqhttp')))
                 else:
                     if self.msg.session.sender in last_send_typing_time:
                         if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
