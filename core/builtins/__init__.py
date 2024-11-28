@@ -88,8 +88,7 @@ class FetchedSession(FetchedSession):
                               sender_from=sender_from,
                               sender_prefix='',
                               client_name=Bot.client_name,
-                              message_id=0,
-                              reply_id=None)
+                              message_id=0)
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
         if sender_id:

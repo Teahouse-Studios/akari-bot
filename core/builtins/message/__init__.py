@@ -497,7 +497,7 @@ class FetchedSession:
                               sender_id=f'{target_from}|{sender_id}',
                               target_from=target_from,
                               sender_from=sender_from,
-                              sender_prefix='', client_name='', reply_id=None, message_id=0)
+                              sender_prefix='', client_name='', message_id=0)
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = MessageSession(self.target, self.session)
 

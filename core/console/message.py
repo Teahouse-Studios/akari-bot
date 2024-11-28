@@ -119,8 +119,7 @@ class MessageSession(MessageSessionT):
                                              target_from=target_prefix,
                                              sender_from=sender_prefix,
                                              client_name=client_name,
-                                             message_id=0,
-                                             reply_id=None),
+                                             message_id=0),
                               session=Session(message=c, target=f'{target_prefix}|0', sender=f'{sender_prefix}|0'))
 
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
