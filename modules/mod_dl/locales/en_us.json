@@ -13,5 +13,6 @@
     "mod_dl.message.prompt": "请回复编号来选择 Mod。",
     "mod_dl.message.version": "此 Mod 拥有以下版本：",
     "mod_dl.message.version.not_found": "未找到指定版本。",
-    "mod_dl.message.version.prompt": "请回复版本号来选择版本。"
+    "mod_dl.message.version.prompt": "请回复版本号来选择版本。",
+    "config.comments.curseforge_api_key": "CurseForge 的 API Key。（用于 mod_dl 模块）"
 }
