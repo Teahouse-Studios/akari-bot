@@ -9,11 +9,11 @@ from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, com
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
-import core.config.update
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
 
+import core.config.update
 from core.utils.i18n import Locale
 from core.exports import add_export
 

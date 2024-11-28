@@ -14,17 +14,17 @@ debug = Config('debug', False)
 if not os.path.exists(logs_path):
     os.mkdir(logs_path)
 
-bot_name = re.split(r'[/\\]', sys.path[0])[-1].title()
+bot_name = re.split(r'[/\\]', sys.path[0])[-1]
 
 args = sys.argv
 if 'subprocess' in args:
-    bot_name = args[-1].title()
+    bot_name = args[-1]
 if args[0].lower() == 'console.py':
-    bot_name = 'Console'
+    bot_name = 'console'
 
 
 def basic_logger_format(bot_name: str):
-    return f"<cyan>[{bot_name.title()}]</cyan>"\
+    return f"<cyan>[{bot_name.upper()}]</cyan>"\
         "<yellow>[{name}:{function}:{line}]</yellow>"\
         "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"\
         "<level>[{level}]:{message}</level>"

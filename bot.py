@@ -178,7 +178,7 @@ if __name__ == '__main__':
         while True:
             try:
                 run_bot()  # Process will block here so
-                Logger.critical('All bots exited unexpectedly, please check the output')
+                Logger.critical('All bots exited unexpectedly, please check the output.')
                 break
             except RestartBot:
                 for ps in processes:

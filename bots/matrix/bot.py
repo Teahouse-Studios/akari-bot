@@ -121,7 +121,7 @@ async def on_verify(event: nio.KeyVerificationEvent):
 async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown):
     if event.msgtype == 'm.key.verification.request':
         Logger.info(f"Cancelling in-room verification in {room.room_id}")
-        msg = 'You are requesting a in-room verification to akari-bot. But I does not support in-room-verification at this time, please use to-device verification!'
+        msg = 'You are requesting a in-room verification to AkariBot. But I does not support in-room-verification at this time, please use to-device verification!'
         await bot.room_send(room.room_id, 'm.room.message', {
             'msgtype': 'm.notice',
             'body': msg
@@ -206,7 +206,7 @@ async def start():
     await load_prompt(FetchTarget)
 
     Logger.info(f"starting sync loop...")
-    await bot.set_presence('online', f"akari-bot {Info.version}")
+    await bot.set_presence('online', f"AkariBot {Info.version}")
     await bot.sync_forever(timeout=30000, full_state=False)
     Logger.info(f"sync loop stopped.")
 
