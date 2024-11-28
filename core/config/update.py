@@ -116,6 +116,7 @@ if 'initialized' not in config.value:
                         configs[cfg_name].add(nl())
                         configs[cfg_name].add(table, toml_document())
                         configs[cfg_name][table].add(toml_comment(old_locale.t(qk, fallback_failed_prompt=False)))
+
                     try:
                         configs[cfg_name][table].add(key, old_config[c_target][key])
                     except KeyAlreadyPresent:

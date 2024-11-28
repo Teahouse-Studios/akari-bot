@@ -152,6 +152,7 @@ class CFGManager:
                     if found:
                         break
         else:
+            table_name = table_name.lower()
             # if table_name is provided, write the value to the specified table
             if table_name != 'config':
                 target = f"{table_name}{'_secret' if secret else ''}"
@@ -193,7 +194,6 @@ class CFGManager:
                     f'[Config] Config {q} has a wrong type, expected {
                         type(default).__name__}, got {
                         type(value).__name__}.')
-                return default
         return value
 
     @classmethod
@@ -201,20 +201,21 @@ class CFGManager:
               table_name: Optional[str] = None, _generate: bool = False):
         cls.watch()
         q = q.lower()
-        found = False
-        if value is None and _generate:  # if the value is None when generating the config file, fill with a placeholder
-            if cfg_type:
-                if isinstance(cfg_type, tuple):
-                    cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
+        if value is None:
+            if _generate:  # if the value is None when generating the config file, fill with a placeholder
+                if cfg_type:
+                    if isinstance(cfg_type, tuple):
+                        cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
+                    else:
+                        cfg_type_str = cfg_type.__name__
+                    value = f"<Replace me with {cfg_type_str} value>"
                 else:
-                    cfg_type_str = cfg_type.__name__
-                value = f"<Replace me with {cfg_type_str} value>"
-            else:
-                value = "<Replace me>"
-        if value is None:  # if the value is None, skip to autofill
-            logger.info(f'[Config] Config {q} has no default value, skipped to auto fill.')
-            return
+                    value = "<Replace me>"
+            else:  # if the value is None, skip to autofill
+                logger.info(f'[Config] Config {q} has no default value, skipped to auto fill.')
+                return
 
+        found = False
         if not table_name:  # if table_name is not provided, search for the value in config.toml tables
             for t in cls.values['config'].keys():
                 if isinstance(cls.values['config'][t], Table):
@@ -245,20 +246,29 @@ class CFGManager:
                         found = True
                         break
         else:
+            table_name = table_name.lower()
             # if table_name is provided, write the value to the specified table
+            if table_name == 'secret':
+                table_name = 'config'
+                secret = True
+            if table_name.endswith('_secret'):
+                table_name = table_name.removesuffix('_secret')
+                secret = True
+
             if table_name != 'config':
                 target = f"{table_name}{'_secret' if secret else ''}"
             else:
                 target = 'secret' if secret else 'config'
             try:
                 # if table_name is provided, get for the value in the specified table directly
-                cls.values[table_name][target][q] = value
-                found = True
+                if cls.values[table_name][target][q]:
+                    cls.values[table_name][target][q] = value
+                    found = True
             except (AttributeError, KeyError):
                 pass
 
         if not found:  # if the value is not found, write the default value to the config file
-            if table_name and not table_name == 'config':  # if table_name is provided, write the value to the specified table
+            if table_name and table_name != 'config':  # if table_name is provided, write the value to the specified table
                 cfg_name = table_name
                 target = f"{table_name}{'_secret' if secret else ''}"
             else:
@@ -295,6 +305,7 @@ class CFGManager:
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))
+
             try:
                 cls.values[cfg_name][target].add(q, value)
             except KeyAlreadyPresent:
@@ -317,7 +328,7 @@ class CFGManager:
         cls.watch()
         q = q.lower()
         found = False
-        table_name = 'config' if not table_name else table_name
+        table_name = 'config' if not table_name else table_name.lower()
         try:
             for t in cls.values[table_name].keys():
                 if isinstance(cls.values[table_name][t], Table):
