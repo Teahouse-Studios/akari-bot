@@ -220,7 +220,7 @@ if 'initialized' not in config.value:
 
         # ntqq
 
-        Reorganize.table = 'ntqq'
+        Reorganize.table = 'qqbot'
         Reorganize.bot_add_enabled_flag()
         Reorganize.reorganize_bot_key("qq_bot_appid")
         Reorganize.reorganize_bot_key("qq_bot_secret", True)

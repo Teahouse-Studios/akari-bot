@@ -6,7 +6,7 @@ import filetype
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Reference
 
-from bots.ntqq.info import *
+from bots.qqbot.info import *
 from core.builtins import (Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, Url, MessageTaskManager,
                            FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
@@ -16,14 +16,14 @@ from core.logger import Logger
 from core.utils.http import download, url_pattern
 
 enable_analytics = Config('enable_analytics', False)
-enable_send_url = Config('qq_bot_enable_send_url', False, table_name='bot_ntqq')
+enable_send_url = Config('qq_bot_enable_send_url', False, table_name='bot_qqbot')
 
 
 class FinishedSession(FinishedSessionT):
     async def delete(self):
         if self.session.target.target_from == target_guild_prefix:
             try:
-                from bots.ntqq.bot import client  # noqa
+                from bots.qqbot.bot import client  # noqa
                 for x in self.message_id:
                     await client.api.recall_message(channel_id=self.session.target.target_id.split('|')[-1], message_id=x, hidetip=True)
             except Exception:
@@ -237,9 +237,9 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_guild_prefix:
-                emoji_id = str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_ntqq'))
+                emoji_id = str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_qqbot'))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
-                from bots.ntqq.bot import client  # noqa
+                from bots.qqbot.bot import client  # noqa
                 await client.api.put_reaction(channel_id=self.msg.target.target_id.split('|')[-1],
                                               message_id=self.msg.target.message_id,
                                               emoji_type=emoji_type,
@@ -252,7 +252,7 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
-        from bots.ntqq.bot import client
+        from bots.qqbot.bot import client
         if self.target.target_from == target_guild_prefix:
             self.session.message = Message(api=client.api, event_id=None, data={
                                            "channel_id": self.target.target_id.split('|')[-1]})
