@@ -1,7 +1,7 @@
 import re
 from datetime import timezone
 
-from core.builtins import Bot, I18NContext, Image
+from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.config import Config
 from core.database.tables import is_mysql
@@ -9,14 +9,11 @@ from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
-audit_available_list = ["KOOK|Group", "KOOK|Person", "QQ|Group", "QQ|Guild", "QQ|Private",]
-
 
 aud = module('wiki_audit',
              required_superuser=True,
              alias='wau', doc=True,
-             available_for=audit_available_list,
-             load=Config('enable_urlmanager', False))
+             load=(not Url.disable_mm))
 
 
 @aud.command(['trust <apilink>',

@@ -2,14 +2,13 @@ import re
 
 import orjson as json
 
-from core.builtins import Bot
+from core.builtins import Bot, Url
 from core.component import module
 from core.config import Config
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib
 from .dbutils import WikiLogUtil
 from .utils import convert_data_to_text
-from ..wiki import audit_available_list
 from ..wiki.utils.ab import convert_ab_to_detailed_format
 from ..wiki.utils.rc import convert_rc_to_detailed_format
 
@@ -43,11 +42,10 @@ async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     in_allowlist = True
-    if msg.target.target_from in audit_available_list:
+    if not Url.disable_mm:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
             await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=status.value.name))
-            return
     if not in_allowlist:
         prompt = msg.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
         if Config("wiki_whitelist_url", cfg_type=str):
