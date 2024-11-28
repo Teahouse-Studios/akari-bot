@@ -70,7 +70,16 @@ def generate_config(dir_path, language):
                                         break
                                     param_text += param
                                 config_code_list[param_text] = file_path
-
+    # filtered_config_code_map = {}
+    # for c in config_code_list:
+    #     opt = c.split(',')[0]
+    #     if opt not in filtered_config_code_map:
+    #         filtered_config_code_map[opt] = c
+    #     else:
+    #         if len(c) > len(filtered_config_code_map[opt]):
+    #             print(f'Conflict found: {filtered_config_code_map[opt]}')
+    #             filtered_config_code_map[opt] = c
+    # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
     for c in config_code_list:
         if c.endswith(','):
             c = c[:-1]

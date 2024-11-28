@@ -15,7 +15,7 @@ from core.utils.info import Info
 
 import subprocess
 
-jwt_secret = Config('jwt_secret', cfg_type=str, secret=True)
+jwt_secret = Config('jwt_secret', cfg_type=str, secret=True, table_name='bot_api')
 
 ver = module('version', base=True, doc=True)
 
