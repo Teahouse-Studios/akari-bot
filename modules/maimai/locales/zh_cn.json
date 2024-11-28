@@ -96,5 +96,6 @@
     "maimai.message.use_cache": "获取玩家分数失败，已使用缓存数据。",
     "maimai.message.user_not_found": "未找到用户，请确保此玩家的用户名和查分器中的用户名相同。",
     "maimai.message.user_unbound": "未绑定用户，请使用“${prefix}maimai bind”绑定一个用户。",
-    "maimai.message.user_unbound.qq": "未绑定用户，请前往查分器并绑定你的 QQ 号。\n查分器地址：https://www.diving-fish.com/maimaidx/prober"
+    "maimai.message.user_unbound.qq": "未绑定用户，请前往查分器并绑定你的 QQ 号。\n查分器地址：https://www.diving-fish.com/maimaidx/prober",
+    "config.comments.diving_fish_developer_token": "Diving Fish 查分器的开发者令牌。（用于 maimai 模块）"
 }
