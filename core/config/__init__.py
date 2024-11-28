@@ -252,8 +252,9 @@ class CFGManager:
                 target = 'secret' if secret else 'config'
             try:
                 # if table_name is provided, get for the value in the specified table directly
-                cls.values[table_name][target][q] = value
-                found = True
+                if q in cls.values[table_name][target]:
+                    cls.values[table_name][target][q] = value
+                    found = True
             except (AttributeError, KeyError):
                 pass
 

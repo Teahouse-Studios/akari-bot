@@ -11,5 +11,6 @@
     "wordle.message.start": "游戏开始，你需要猜一个由 5 个字母组成的单词，你有 6 次机会。\n绿色表示字母和位置都正确，黄色代表字母正确但位置不正确，灰色代表单词中没有这个字母。",
     "wordle.message.stop": "已停止，答案为：${answer}。\n查询词典：https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.theme.disable": "已关闭深色主题。",
-    "wordle.message.theme.enable": "已开启深色主题。"
+    "wordle.message.theme.enable": "已开启深色主题。",
+    "config.comments.wordle_disable_image": "wordle 模块是否禁用图片。"
 }

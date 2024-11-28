@@ -16,5 +16,9 @@
     "coin.message.single.head": "…是正面！",
     "coin.message.single.prompt": "你抛了 1 枚硬币…",
     "coin.message.single.stand": "…它立起来了！",
-    "coin.message.single.tail": "…是反面！"
+    "coin.message.single.tail": "…是反面！",
+    "config.comments.coin_facedown_weight": "coin 模块抛硬币时反面的权重。",
+    "config.comments.coin_faceup_weight": "coin 模块抛硬币时正面的权重。",
+    "config.comments.coin_limit": "coin 模块可抛硬币的上限。",
+    "config.comments.coin_stand_weight": "coin 模块抛硬币时立起的权重。"
 }
