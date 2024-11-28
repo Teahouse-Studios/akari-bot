@@ -30,5 +30,11 @@
     "dice.message.rule.enable": "判定規則已更改為反向。",
     "dice.message.set.clear": "成功清除預設骰子面數。",
     "dice.message.set.success": "成功設定預設骰子面數為 ${sides}。",
-    "dice.message.too_long": "輸出過長……"
+    "dice.message.too_long": "輸出過長……",
+    "config.comments.dice_count_limit": "dice 模块骰子表达式项数上限。",
+    "config.comments.dice_detail_count": "dice 模块 n 次投掷的骰子的总量超过该值时将不再显示详细信息。",
+    "config.comments.dice_limit": "dice 模块一次投掷骰子数量上限。",
+    "config.comments.dice_output_count": "dice 模块输出数据量上限。",
+    "config.comments.dice_output_len": "dice 模块输出最大长度。",
+    "config.comments.dice_roll_limit": "dice 模块一次命令投掷次数上限。"
 }
