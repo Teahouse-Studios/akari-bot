@@ -52,7 +52,7 @@ class CQCodeHandler:
         if 'type' in data and 'data' in data:
             cq_type = data['type']
             params = data['data']
-            param_str = [f"{key}={CQCodeHandler.escape_special_char(value)}"
+            param_str = [f"{key}={CQCodeHandler.escape_special_char(str(value))}"
                          for key, value in params.items()]
             cq_code = f"[CQ:{cq_type}," + ",".join(param_str) + "]"
             return cq_code
