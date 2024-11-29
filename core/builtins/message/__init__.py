@@ -132,7 +132,7 @@ class FinishedSession:
         """
         用于删除这条消息。
         """
-        ...
+        raise NotImplementedError
 
     def __str__(self):
         return f"FinishedSession(message_id={self.message_id}, result={self.result})"
@@ -298,7 +298,7 @@ class MessageSession:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
-        send = await self.send_message(message_chain, quote)
+            send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -338,7 +338,7 @@ class MessageSession:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
-        send = await self.send_message(message_chain, quote)
+            send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
