@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Union, Any
 
-from .chain import MessageChain
 from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 
 from attrs import define
@@ -39,4 +38,4 @@ class ModuleHookContext:
 
 
 __all__ = ["MsgInfo", "Session",
-           "ModuleHookContext", "MessageChain"]
+           "ModuleHookContext"]
