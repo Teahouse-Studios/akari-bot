@@ -2,7 +2,7 @@ import mimetypes
 import os
 import re
 import traceback
-from typing import List
+from typing import List, Union
 
 import nio
 
@@ -368,7 +368,7 @@ class FetchTarget(FetchedTargetT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
+    async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
         target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr"^({target_pattern})\|(.*)", target_id)
         if match_target:
@@ -387,7 +387,7 @@ class FetchTarget(FetchedTargetT):
             return session
 
     @staticmethod
-    async def fetch_target_list(target_list: list) -> List[FetchedSession]:
+    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
         lst = []
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
@@ -396,7 +396,7 @@ class FetchTarget(FetchedTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=[], i18n=False, **kwargs):
         module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:

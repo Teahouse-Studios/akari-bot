@@ -93,6 +93,7 @@ class FormattedTime:
     """
     格式化时间消息。
     """
+
     def __init__(self,
                  timestamp: float,
                  date: bool = True,
@@ -115,7 +116,7 @@ class FormattedTime:
         self.seconds = seconds
         self.timezone = timezone
 
-    def to_str(self, msg: 'MessageSession' = None):
+    def to_str(self, msg: Optional['MessageSession'] = None):
         ftime_template = []
         if msg:
             if self.date:
@@ -386,9 +387,9 @@ class Embed:
                 elif isinstance(f, dict):
                     self.fields.append(EmbedField(f['data']['name'], f['data']['value'], f['data']['inline']))
                 else:
-                    raise TypeError(f"Invalid type {type(f)} for EmbedField")
+                    raise TypeError(f"Invalid type {type(f)} for EmbedField.")
 
-    def to_message_chain(self, msg: 'MessageSession' = None):
+    def to_message_chain(self, msg: Optional['MessageSession'] = None):
         """
         将Embed转换为消息链。
         """
@@ -401,9 +402,15 @@ class Embed:
             text_lst.append(self.url)
         if self.fields:
             for f in self.fields:
-                text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
+                if msg:
+                    text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
+                else:
+                    text_lst.append(f"{f.name}: {f.value}")
         if self.author:
-            text_lst.append(f"{msg.locale.t('message.embed.author')}{self.author}")
+            if msg:
+                text_lst.append(f"{msg.locale.t('message.embed.author')}{self.author}")
+            else:
+                text_lst.append(f"Author: {self.author}")
         if self.footer:
             text_lst.append(self.footer)
         message_chain = []

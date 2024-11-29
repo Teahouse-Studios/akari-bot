@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, UTC as datetimeUTC
-from typing import Coroutine, List, Optional, Union
+from typing import Any, Coroutine, Dict, List, Optional, Union
 
 from core.builtins.message.chain import *
 from core.builtins.message.internal import *
@@ -572,9 +572,9 @@ class FetchTarget:
     @staticmethod
     async def post_message(module_name: str,
                            message: str,
-                           user_list: Optional[List[FetchedSession]] = None,
+                           user_list: List[FetchedSession] = [],
                            i18n: bool = False,
-                           **kwargs):
+                           **kwargs: Dict[str, Any]):
         """
         尝试向开启此模块的对象发送一条消息。
         :param module_name: 模块名
@@ -586,7 +586,7 @@ class FetchTarget:
 
     @staticmethod
     async def post_global_message(message: str,
-                                  user_list: Optional[List[FetchedSession]] = None,
+                                  user_list: List[FetchedSession] = [],
                                   i18n: bool = False,
                                   **kwargs):
         """

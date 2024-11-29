@@ -1,6 +1,6 @@
 import base64
 import re
-from typing import Union, List, Tuple
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import orjson as json
@@ -33,7 +33,7 @@ class MessageChain:
 
     def __init__(
         self,
-        elements: Union[
+        elements: Optional[Union[
             str,
             List[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
             Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
@@ -44,7 +44,7 @@ class MessageChain:
             Url,
             FormattedTime,
             I18NContext,
-        ] = None,
+        ]] = None,
     ):
         """
         :param elements: 消息链元素

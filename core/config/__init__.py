@@ -369,7 +369,7 @@ def Config(q: str,
            table_name: Optional[str] = None,
            get_url: bool = False,
            _global: bool = False,
-           _generate: bool = False):
+           _generate: bool = False) -> Any:
     if get_url:
         v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
         if v:

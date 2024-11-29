@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union, Any
+from typing import Any, Optional, Union
 
 from attrs import define
 
@@ -14,7 +14,7 @@ class MsgInfo:
     sender_from: str
     client_name: str
     message_id: Union[int, str]
-    reply_id: Union[int, str] = None
+    reply_id: Optional[Union[int, str]] = None
 
 
 @define

@@ -296,7 +296,7 @@ class FetchTarget(FetchTargetT):
             return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
-    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
+    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
         lst = []
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
@@ -305,7 +305,7 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=[], i18n=False, **kwargs):
         module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:

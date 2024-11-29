@@ -1,5 +1,5 @@
 import asyncio
-from typing import Union, List
+from typing import Any, Dict, List, Optional, Union
 
 from core.config import Config
 from core.constants.info import Info
@@ -25,9 +25,11 @@ class Bot:
     Info = Info
 
     @staticmethod
-    async def send_message(target: Union[FetchedSession, MessageSession, str], msg: Union[MessageChain, list],
-                           disable_secret_check=False, enable_parse_message=True,
-                           enable_split_image=True):
+    async def send_message(target: Union[FetchedSession, MessageSession, str],
+                           msg: Union[MessageChain, list],
+                           disable_secret_check: bool = False,
+                           enable_parse_message: bool = True,
+                           enable_split_image: bool = True):
         if isinstance(target, str):
             target = await Bot.FetchTarget.fetch_target(target)
             if not target:
@@ -77,7 +79,11 @@ class Bot:
 
 
 class FetchedSession(FetchedSession):
-    def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
+    def __init__(self,
+                 target_from: str,
+                 target_id: Union[int, str],
+                 sender_from: Optional[str] = None,
+                 sender_id: Optional[Union[int, str]] = None):
         if not sender_from:
             sender_from = target_from
         if not sender_id:
@@ -100,7 +106,10 @@ Bot.FetchedSession = FetchedSession
 
 class FetchTarget(FetchTarget):
     @staticmethod
-    async def post_global_message(message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_global_message(message: str,
+                                  user_list: List[FetchedSession] = [],
+                                  i18n: bool = False,
+                                  **kwargs: Dict[str, Any]):
         await Bot.FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
