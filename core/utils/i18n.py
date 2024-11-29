@@ -38,7 +38,7 @@ class LocaleNode:
     def _query_node(self, path: List[str]):
         """通过路径队列查询本地化树节点"""
         if len(path) == 0:
-            return None
+            return self
         nxt_node = path[0]
         if nxt_node in self.children.keys():
             return self.children[nxt_node]._query_node(path[1:])
