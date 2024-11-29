@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
-from attr import define, field
+from attrs import define, field
 
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
