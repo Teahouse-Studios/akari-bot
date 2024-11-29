@@ -30,6 +30,7 @@ class MessageChain:
     """
     消息链。
     """
+
     def __init__(
         self,
         elements: Union[
