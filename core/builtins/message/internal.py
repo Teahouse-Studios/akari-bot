@@ -18,15 +18,19 @@ if TYPE_CHECKING:
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.joke import joke
-from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
-                                         FormattedTime as FormattedTimeT, I18NContext as I18NContextT,
-                                         EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
 
 
-class Plain(PlainT):
+class Plain:
+    """
+    文本消息。
+    """
     def __init__(self, text, *texts, disable_joke: bool = False):
+        """
+        :param text: 文本内容
+        :param disable_joke: 是否禁用愚人节功能
+        """
         self.text = str(text)
         for t in texts:
             self.text += str(t)
@@ -43,12 +47,20 @@ class Plain(PlainT):
         return {'type': 'plain', 'data': {'text': self.text}}
 
 
-class Url(UrlT):
+class Url:
+    """
+    URL消息。
+    """
     mm = False
     disable_mm = False
     md_format = False
 
     def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
+        """
+        :param url: URL
+        :param use_mm: 是否使用链接跳板，覆盖全局设置
+        :param disable_mm: 是否禁用链接跳板，覆盖全局设置
+        """
         self.url = url
         if (Url.mm and not disable_mm) or (use_mm and not Url.disable_mm):
             mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
@@ -69,8 +81,16 @@ class Url(UrlT):
         return {'type': 'url', 'data': {'url': self.url}}
 
 
-class FormattedTime(FormattedTimeT):
+class FormattedTime:
     def __init__(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
+        """
+        :param timestamp: 时间戳（UTC时间）
+        :param date: 是否显示日期
+        :param iso: 是否以ISO格式显示
+        :param time: 是否显示时间
+        :param seconds: 是否显示秒
+        :param timezone: 是否显示时区
+        """
         self.timestamp = timestamp
         self.date = date
         self.iso = iso
@@ -118,8 +138,15 @@ class FormattedTime(FormattedTimeT):
             'type': 'formatted_time', 'data': {'timestamp': self.timestamp}}
 
 
-class I18NContext(I18NContextT):
+class I18NContext:
+    """
+    带有多语言的消息。
+    """
     def __init__(self, key, **kwargs):
+        """
+        :param key: 多语言的键名
+        :param kwargs: 多语言中的变量
+        """
         self.key = key
         self.kwargs = kwargs
 
@@ -133,8 +160,18 @@ class I18NContext(I18NContextT):
         return {'type': 'i18n', 'data': {'key': self.key, 'kwargs': self.kwargs}}
 
 
-class ErrorMessage(EMsg):
+class ErrorMessage:
+    """
+    错误消息。
+    """
+
     def __init__(self, error_message, locale=None, enable_report=True, **kwargs):
+        """
+        :param error_message: 错误信息文本
+        :param locale: 多语言
+        :param enable_report: 是否添加错误汇报部分
+        :param kwargs: 多语言中的变量
+        """
         self.error_message = error_message
 
         if locale:
@@ -155,9 +192,16 @@ class ErrorMessage(EMsg):
         return {'type': 'error', 'data': {'error': self.error_message}}
 
 
-class Image(ImageT):
+class Image:
+    """
+    图片消息。
+    """
     def __init__(self,
                  path, headers=None):
+        """
+        :param path: 图片路径或PIL.Image对象
+        :param headers: 获取图片时的请求头
+        """
         self.need_get = False
         self.path = path
         self.headers = headers
@@ -169,12 +213,18 @@ class Image(ImageT):
             self.need_get = True
 
     async def get(self):
+        """
+        获取图片。
+        """
         if self.need_get:
             return os.path.abspath(await self.get_image())
         return os.path.abspath(self.path)
 
     @retry(stop=stop_after_attempt(3))
     async def get_image(self):
+        """
+        从网络下载图片。
+        """
         url = self.path
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -215,9 +265,15 @@ class Image(ImageT):
         return Image(save)
 
 
-class Voice(VoiceT):
+class Voice:
+    """
+    语音消息。
+    """
     def __init__(self,
                  path=None):
+        """
+        :param path: 语音文件路径。
+        """
         self.path = path
 
     def __str__(self):
@@ -230,14 +286,23 @@ class Voice(VoiceT):
         return {'type': 'voice', 'data': {'path': self.path}}
 
 
-class EmbedField(EmbedFieldT):
+class EmbedField:
+    """
+    Embed消息的字段。
+    """
     def __init__(self,
                  name: str = None,
                  value: str = None,
                  inline: bool = False):
+        """
+        :param name: 字段名
+        :param value: 字段值
+        :param inline: 是否为行内字段
+        """
         self.name = name
         self.value = value
         self.inline = inline
+
 
     def __str__(self):
         return f'{self.name}: {self.value}'
@@ -249,7 +314,10 @@ class EmbedField(EmbedFieldT):
         return {'type': 'field', 'data': {'name': self.name, 'value': self.value, 'inline': self.inline}}
 
 
-class Embed(EmbedT):
+class Embed:
+    """
+    Embed消息。
+    """
     def __init__(self,
                  title: str = None,
                  description: str = None,
@@ -261,6 +329,18 @@ class Embed(EmbedT):
                  author: str = None,
                  footer: str = None,
                  fields: List[EmbedField] = None):
+        """
+        :param title: 标题
+        :param description: 描述
+        :param url: 跳转链接
+        :param timestamp: 时间戳
+        :param color: 颜色
+        :param image: 图片
+        :param thumbnail: 缩略图
+        :param author: 作者
+        :param footer: 页脚
+        :param fields: 字段
+        """
         self.title = title
         self.description = description
         self.url = url
@@ -281,6 +361,9 @@ class Embed(EmbedT):
                     raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
     def to_message_chain(self, msg: 'MessageSession' = None):
+        """
+        将Embed转换为消息链。
+        """
         text_lst = []
         if self.title:
             text_lst.append(self.title)

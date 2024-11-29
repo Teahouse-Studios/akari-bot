@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Union, Any
 
-from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
-
 from attrs import define
 
 
