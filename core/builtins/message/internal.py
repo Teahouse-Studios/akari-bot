@@ -26,6 +26,7 @@ class Plain:
     """
     文本消息。
     """
+
     def __init__(self, text, *texts, disable_joke: bool = False):
         """
         :param text: 文本内容
@@ -142,6 +143,7 @@ class I18NContext:
     """
     带有多语言的消息。
     """
+
     def __init__(self, key, **kwargs):
         """
         :param key: 多语言的键名
@@ -196,6 +198,7 @@ class Image:
     """
     图片消息。
     """
+
     def __init__(self,
                  path, headers=None):
         """
@@ -269,6 +272,7 @@ class Voice:
     """
     语音消息。
     """
+
     def __init__(self,
                  path=None):
         """
@@ -290,6 +294,7 @@ class EmbedField:
     """
     Embed消息的字段。
     """
+
     def __init__(self,
                  name: str = None,
                  value: str = None,
@@ -302,7 +307,6 @@ class EmbedField:
         self.name = name
         self.value = value
         self.inline = inline
-
 
     def __str__(self):
         return f'{self.name}: {self.value}'
@@ -318,6 +322,7 @@ class Embed:
     """
     Embed消息。
     """
+
     def __init__(self,
                  title: str = None,
                  description: str = None,
