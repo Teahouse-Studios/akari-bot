@@ -11,6 +11,7 @@ from core.database.tables import JobQueueTable
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
+from core.utils.web_render import check_web_render
 
 _queue_tasks = {}
 queue_actions = {}
@@ -133,6 +134,12 @@ async def _(tsk: JobQueueTable, args: dict):
 @action('secret_append_ip')
 async def _(tsk: JobQueueTable, args: dict):
     append_ip(args)
+    return_val(tsk, {})
+
+
+@action('web_render_status')
+async def _(tsk: JobQueueTable, args: dict):
+    await check_web_render()
     return_val(tsk, {})
 
 
