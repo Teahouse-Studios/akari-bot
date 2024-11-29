@@ -5,7 +5,7 @@ from core.config import Config
 from core.utils.http import url_pattern
 
 
-def joke(text: str):
+def joke(text: str) -> str:
     current_date = datetime.now().date()
     enable_joke = Config('enable_joke', True, cfg_type=bool)
 

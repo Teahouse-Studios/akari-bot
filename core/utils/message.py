@@ -22,6 +22,7 @@ def remove_duplicate_space(text: str) -> str:
 
 def convert_discord_embed(embed: Union[DiscordEmbed, dict]) -> Embed:
     '''将DiscordEmbed转换为Embed。
+
     :param embed: DiscordEmbed。
     :returns: Embed。'''
     embed_ = Embed()

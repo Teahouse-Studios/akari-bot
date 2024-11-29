@@ -9,7 +9,7 @@ from core.logger import Logger
 
 
 async def query_java_server(msg: Bot.MessageSession, address: str, raw: bool = False, showplayer: bool = False) -> str:
-    match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
+    match_object = re.match(r'(.*)[\s:](\d*)', address, re.M | re.I)
     serip = match_object.group(1) if match_object else address
     port = int(match_object.group(2)) if match_object else 25565
     servers = []
@@ -51,7 +51,7 @@ async def query_java_server(msg: Bot.MessageSession, address: str, raw: bool = F
 
 
 async def query_bedrock_server(msg, address, raw=False):
-    match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
+    match_object = re.match(r'(.*)[\s:](\d*)', address, re.M | re.I)
     serip = match_object.group(1) if match_object else address
     port = int(match_object.group(2)) if match_object else 19132
     servers = []

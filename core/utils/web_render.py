@@ -51,3 +51,5 @@ async def check_web_render():
             Logger.error('[WebRender] WebRender is not working as expected.')
             Logger.error(traceback.format_exc())
             Info.web_render_status = False
+
+__all__ = ['webrender']

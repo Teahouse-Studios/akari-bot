@@ -215,9 +215,9 @@ class MessageSession(MessageSessionT):
             m = html.unescape(self.session.message.message)
             if text_only:
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
-                m = re.sub(CQCodeHandler.pattern, '', m)
+                m = CQCodeHandler.pattern.sub('', m)
             else:
-                m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
+                m = CQCodeHandler.filter_cq(m)
                 m = re.sub(r'\[CQ:at,qq=(.*?)]', fr'{sender_prefix}|\1', m)
                 m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m).replace("\\/", "/")
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)

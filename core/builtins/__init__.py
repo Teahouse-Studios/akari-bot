@@ -92,7 +92,7 @@ class FetchedSession(FetchedSession):
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
         if sender_id:
-            self.parent.target.sender_info = exports.get("BotDBUtil").SenderInfo(f'{sender_from}|{sender_id}')
+            self.parent.target.sender_id = exports.get("BotDBUtil").SenderInfo(f'{sender_from}|{sender_id}')
 
 
 Bot.FetchedSession = FetchedSession

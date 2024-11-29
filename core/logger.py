@@ -34,12 +34,12 @@ class LoggingLogger:
     def __init__(self, name):
         self.log = logger
         self.log.remove()
-        self.info = None
-        self.error = None
-        self.debug = None
-        self.warning = None
-        self.exception = None
-        self.critical = None
+        self.info = logger.info
+        self.error = logger.error
+        self.debug = logger.debug
+        self.warning = logger.warning
+        self.exception = logger.exception
+        self.critical = logger.critical
 
         self.rename(name)
 

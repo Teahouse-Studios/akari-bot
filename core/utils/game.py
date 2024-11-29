@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from core.logger import Logger
 from core.builtins import MessageSession
@@ -10,7 +10,7 @@ GAME_EXPIRED = 3600
 
 
 class PlayState:
-    def __init__(self, game: str, msg: Union[MessageSession, str], all: bool = False):
+    def __init__(self, game: str, msg: MessageSession, all: bool = False):
         self.game = game
         self.msg = msg
         self.all = all
@@ -26,6 +26,9 @@ class PlayState:
             return sender_dict.setdefault(self.game, {'_status': False, '_timestamp': 0.0})
 
     def enable(self) -> None:
+        '''
+        开启游戏事件。
+        '''
         game_dict = self._get_game_dict()
         game_dict['_status'] = True
         game_dict['_timestamp'] = datetime.now().timestamp()
@@ -35,6 +38,9 @@ class PlayState:
             Logger.info(f'[{self.sender_id}]: Enabled {self.game} at {self.target_id}.')
 
     def disable(self, auto=False) -> None:
+        '''
+        关闭游戏事件。
+        '''
         if self.target_id not in playstate_lst:
             return
         target_dict = playstate_lst[self.target_id]
@@ -60,6 +66,9 @@ class PlayState:
                 Logger.info(f'[{self.sender_id}]: Disabled {self.game} at {self.target_id}.')
 
     def update(self, **kwargs) -> None:
+        '''
+        更新游戏事件中需要的值。
+        '''
         game_dict = self._get_game_dict()
         game_dict.update(kwargs)
         if self.all:
@@ -68,6 +77,9 @@ class PlayState:
             Logger.debug(f'[{self.game}]: Updated {str(kwargs)} at {self.sender_id} ({self.target_id}).')
 
     def check(self) -> bool:
+        '''
+        检查游戏事件状态，若超过时间则自动关闭。
+        '''
         if self.target_id not in playstate_lst:
             return False
         target_dict = playstate_lst[self.target_id]
@@ -83,6 +95,9 @@ class PlayState:
         return status
 
     def get(self, key: str) -> Optional[Any]:
+        '''
+        获取游戏事件中需要的值。
+        '''
         if self.target_id not in playstate_lst:
             return None
         target_dict = playstate_lst[self.target_id]

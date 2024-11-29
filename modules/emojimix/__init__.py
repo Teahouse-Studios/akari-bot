@@ -1,5 +1,4 @@
 import os
-import random
 from typing import List, Optional, Tuple
 
 import emoji
@@ -9,6 +8,7 @@ from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.random import Random
 
 data_path = os.path.join(assets_path, 'emojimix', 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
@@ -42,9 +42,9 @@ class EmojimixGenerator:
             for key in self.data:
                 if emoji_code in key:
                     emoji_combo_list.append(key)
-            combo = random.choice(emoji_combo_list)
+            combo = Random.choice(emoji_combo_list)
         else:
-            combo = random.choice(list(self.data.keys()))
+            combo = Random.choice(list(self.data.keys()))
         combo = tuple(i.strip() for i in combo[1:-1].split(","))
         return combo
 

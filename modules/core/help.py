@@ -87,8 +87,9 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                         if pattern:
                             rdesc = regex.desc
                             if rdesc:
+                                rdesc = msg.locale.t_str(rdesc)
                                 mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.detail",
-                                                                       msg=msg.locale.t_str(rdesc))}')
+                                                                       msg=rdesc)}')
                             else:
                                 mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.no_information")}')
                 doc = '\n'.join(mdocs)

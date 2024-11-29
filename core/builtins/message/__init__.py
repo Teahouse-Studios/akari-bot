@@ -1,7 +1,6 @@
 import asyncio
-from collections.abc import Coroutine
 from datetime import datetime, UTC as datetimeUTC
-from typing import List, Union, Awaitable
+from typing import Coroutine, List, Optional, Union
 
 from core.builtins.message.chain import *
 from core.builtins.message.internal import *
@@ -146,6 +145,8 @@ class MessageSession:
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
+        self.parsed_msg: Optional[dict] = None
+        self.trigger_msg: Optional[str] = None
         self.prefixes: List[str] = []
         self.data = exports.get("BotDBUtil").TargetInfo(self.target.target_id)
         self.info = exports.get("BotDBUtil").SenderInfo(self.target.sender_id)
@@ -163,11 +164,11 @@ class MessageSession:
 
     async def send_message(self,
                            message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
-                           quote=True,
-                           disable_secret_check=False,
-                           enable_parse_message=True,
-                           enable_split_image=True,
-                           callback: Coroutine = None) -> FinishedSession:
+                           quote: bool = True,
+                           disable_secret_check: bool = False,
+                           enable_parse_message: bool = True,
+                           enable_split_image: bool = True,
+                           callback: Optional[Coroutine] = None) -> FinishedSession:
         """
         用于向消息发送者返回消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
@@ -181,12 +182,12 @@ class MessageSession:
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage] = None,
+                     message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
                      quote: bool = True,
                      disable_secret_check: bool = False,
-                     enable_parse_message=True,
+                     enable_parse_message: bool = True,
                      enable_split_image: bool = True,
-                     callback: Union[Awaitable, None] = None):
+                     callback: Optional[Coroutine] = None):
         """
         用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
@@ -204,9 +205,12 @@ class MessageSession:
                                         enable_parse_message=enable_parse_message, enable_split_image=enable_split_image, callback=callback)
         raise FinishedException(f)
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False,
-                                  enable_parse_message=True, enable_split_image=True,
-                                  callback: Coroutine = None):
+    async def send_direct_message(self,
+                                  message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                                  disable_secret_check: bool = False,
+                                  enable_parse_message: bool = True,
+                                  enable_split_image: bool = True,
+                                  callback: Optional[Coroutine] = None):
         """
         用于向消息发送者直接发送消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
@@ -219,7 +223,7 @@ class MessageSession:
         await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message,
                                 enable_split_image=enable_split_image, callback=callback)
 
-    def as_display(self, text_only=False) -> str:
+    def as_display(self, text_only: bool = False) -> str:
         """
         用于将消息转换为一般文本格式。
         :param text_only: 是否只保留纯文本（默认为False）
@@ -257,7 +261,7 @@ class MessageSession:
         raise NotImplementedError
 
     class Typing:
-        def __init__(self, msg):
+        def __init__(self, msg: 'MessageSession'):
             """
             :param msg: 本条消息，由于此class需要被一同传入下游方便调用，所以作为子class存在，将来可能会有其他的解决办法。
             """
@@ -271,8 +275,12 @@ class MessageSession:
     async def call_api(self, action, **params):
         raise NotImplementedError
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True) \
-            -> bool:
+    async def wait_confirm(self,
+                           message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                           quote: bool = True,
+                           delete: bool = True,
+                           timeout: int = 120,
+                           append_instruction: bool = True) -> bool:
         """
         一次性模板，用于等待触发对象确认。
         :param message_chain: 需要发送的确认消息，可不填
@@ -290,18 +298,18 @@ class MessageSession:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
-            send = await self.send_message(message_chain, quote)
+        send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
+            if send and delete:
                 await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if result:
-            if message_chain and delete:
+            if send and delete:
                 await send.delete()
             if result.as_display(text_only=True) in confirm_command:
                 return True
@@ -309,8 +317,12 @@ class MessageSession:
         else:
             raise WaitCancelException
 
-    async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
-                                append_instruction=True) -> 'MessageSession':
+    async def wait_next_message(self,
+                                message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                                quote: bool = True,
+                                delete: bool = False,
+                                timeout: int = 120,
+                                append_instruction: bool = True) -> 'MessageSession':
         """
         一次性模板，用于等待对象的下一条消息。
         :param message_chain: 需要发送的确认消息，可不填
@@ -326,28 +338,33 @@ class MessageSession:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
-            send = await self.send_message(message_chain, quote)
+        send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
+            if send and delete:
                 await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if message_chain and delete:
+        if send and delete:
             await send.delete()
         if result:
             return result
         else:
             raise WaitCancelException
 
-    async def wait_reply(self, message_chain, quote=True, delete=False, timeout=120,
-                         all_=False, append_instruction=True) -> 'MessageSession':
+    async def wait_reply(self,
+                         message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                         quote: bool = True,
+                         delete: bool = False,
+                         timeout: int = 120,
+                         all_: bool = False,
+                         append_instruction: bool = True) -> 'MessageSession':
         """
         一次性模板，用于等待触发对象回复消息。
-        :param message_chain: 需要发送的确认消息，可不填
+        :param message_chain: 需要发送的确认消息
         :param quote: 是否引用传入dict中的消息（默认为True）
         :param delete: 是否在触发后删除消息（默认为False）
         :param timeout: 超时时间
@@ -367,18 +384,22 @@ class MessageSession:
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
+            if send and delete:
                 await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if message_chain and delete:
+        if send and delete:
             await send.delete()
         if result:
             return result
         else:
             raise WaitCancelException
 
-    async def wait_anyone(self, message_chain=None, quote=False, delete=False, timeout=120) -> 'MessageSession':
+    async def wait_anyone(self,
+                          message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                          quote: bool = False,
+                          delete: bool = False,
+                          timeout: int = 120) -> 'MessageSession':
         """
         一次性模板，用于等待触发对象所属对话内任意成员确认。
         :param message_chain: 需要发送的确认消息，可不填
@@ -397,7 +418,7 @@ class MessageSession:
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
+            if send and delete:
                 await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get()[self.target.target_id]['all'][self]
@@ -408,7 +429,7 @@ class MessageSession:
         else:
             raise WaitCancelException
 
-    async def sleep(self, s):
+    async def sleep(self, s: float):
         ExecutionLockList.remove(self)
         await asyncio.sleep(s)
 
@@ -438,7 +459,13 @@ class MessageSession:
     toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
-    def ts2strftime(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
+    def ts2strftime(self,
+                    timestamp: float,
+                    date: bool = True,
+                    iso: bool = False,
+                    time: bool = True,
+                    seconds: bool = True,
+                    timezone: bool = True):
         """
         用于将时间戳转换为可读的时间格式。
         :param timestamp: 时间戳（UTC时间）
@@ -473,7 +500,7 @@ class MessageSession:
 
     class Feature:
         """
-        此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断（如QQ支持消息类型的语音而Discord不支持）
+        此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断。（如QQ支持消息类型的语音而Discord不支持）
         """
         image = False
         voice = False
@@ -488,7 +515,11 @@ class MessageSession:
 
 
 class FetchedSession:
-    def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
+    def __init__(self,
+                 target_from: str,
+                 target_id: Union[str, int],
+                 sender_from: Optional[str] = None,
+                 sender_id: Optional[Union[str, int]] = None):
         if not sender_from:
             sender_from = target_from
         if not sender_id:
@@ -501,8 +532,11 @@ class FetchedSession:
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = MessageSession(self.target, self.session)
 
-    async def send_direct_message(self, message_chain, disable_secret_check=False,
-                                  enable_parse_message=True, enable_split_image=True):
+    async def send_direct_message(self,
+                                  message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                                  disable_secret_check: bool = False,
+                                  enable_parse_message: bool = True,
+                                  enable_split_image: bool = True):
         """
         用于向获取对象发送消息。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
@@ -522,21 +556,25 @@ class FetchTarget:
     name = ''
 
     @staticmethod
-    async def fetch_target(target_id: str, sender_id=None) -> FetchedSession:
+    async def fetch_target(target_id: str, sender_id: Optional[Union[int, str]] = None) -> FetchedSession:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         raise NotImplementedError
 
     @staticmethod
-    async def fetch_target_list(target_list: list) -> List[FetchedSession]:
+    async def fetch_target_list(target_list: List[Union[int, str]]) -> List[FetchedSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         raise NotImplementedError
 
     @staticmethod
-    async def post_message(module_name: str, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name: str,
+                           message: str,
+                           user_list: Optional[List[FetchedSession]] = None,
+                           i18n: bool = False,
+                           **kwargs):
         """
         尝试向开启此模块的对象发送一条消息。
         :param module_name: 模块名
@@ -547,7 +585,10 @@ class FetchTarget:
         raise NotImplementedError
 
     @staticmethod
-    async def post_global_message(message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_global_message(message: str,
+                                  user_list: Optional[List[FetchedSession]] = None,
+                                  i18n: bool = False,
+                                  **kwargs):
         """
         尝试向所有对象发送一条消息。
         :param message: 消息文本
