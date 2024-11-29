@@ -71,7 +71,7 @@ def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=Non
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, additional_text=None) -> List[Dict]:
-    '''检查字符串是否合规
+    '''检查字符串。
 
     :param text: 字符串（List/Union）。
     :param msg: 消息会话，若指定则本地化返回的消息。
@@ -179,6 +179,11 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
 
 
 async def check_bool(*text: Union[str, List[str]]) -> bool:
+    '''检查字符串是否合规。
+
+    :param text: 字符串（List/Union）。
+    :returns: 字符串是否合规。
+    '''
     chk = await check(*text)
     for x in chk:
         if not x['status']:
@@ -186,7 +191,12 @@ async def check_bool(*text: Union[str, List[str]]) -> bool:
     return False
 
 
-def rickroll(msg: Bot.MessageSession):
+def rickroll(msg: Bot.MessageSession) -> str:
+    '''合规检查失败时输出的Rickroll消息。
+
+    :param msg: 消息会话。
+    :returns: Rickroll消息。
+    '''
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
         return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
     else:

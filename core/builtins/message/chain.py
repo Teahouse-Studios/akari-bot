@@ -136,7 +136,7 @@ class MessageChain:
             Logger.error(f"Unexpected message type: {elements}")
 
     @property
-    def is_safe(self):
+    def is_safe(self) -> bool:
         """
         检查消息链是否安全。
         """
@@ -190,7 +190,7 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, msg: 'MessageSession' = None, embed=True):
+    def as_sendable(self, msg: 'MessageSession' = None, embed: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """
@@ -234,7 +234,7 @@ class MessageChain:
             )
         return value
 
-    def to_list(self, locale="zh_cn", embed=True, msg: 'MessageSession' = None):
+    def to_list(self, locale: str = "zh_cn", embed: bool = True, msg: 'MessageSession' = None) -> list:
         """
         将消息链转换为列表。
         """
@@ -322,7 +322,7 @@ class MessageChain:
         return self
 
 
-def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
+def match_kecode(text: str) -> List[Union[Plain, Image, Voice]]:
     split_all = re.split(r"(\[Ke:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []

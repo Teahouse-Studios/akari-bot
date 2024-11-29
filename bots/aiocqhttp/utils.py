@@ -1,5 +1,6 @@
 import html
 import re
+from typing import Any, Dict, Optional, Union
 
 import orjson as json
 
@@ -31,21 +32,17 @@ class CQCodeHandler:
     pattern = re.compile(r'\[CQ:(\w+),[^\]]*\]')
 
     @staticmethod
-    def filter_cq(match: str):
+    def filter_cq(s: str) -> str:
         """
         过滤CQ码，返回支持的CQ码。
 
-        :param match: 正则匹配对象，包含CQ码的字符串消息。
+        :param s: 正则匹配对象，包含CQ码的字符串消息。
         :return: 如果CQ类型在支持列表中，返回原CQ码；否则返回空字符串。
         """
-        cq_type = match.group(1)
-        if cq_type in CQCodeHandler.get_supported:
-            return match.group(0)
-        else:
-            return ''
+        return CQCodeHandler.pattern.sub(lambda m: m.group(0) if m.group(1) in CQCodeHandler.get_supported else '', s)
 
     @staticmethod
-    def generate_cq(data: dict):
+    def generate_cq(data: Dict[str, Any]) -> Optional[str]:
         """
         生成CQ码字符串。
 
@@ -63,7 +60,7 @@ class CQCodeHandler:
             return None
 
     @staticmethod
-    def parse_cq(cq_code: str):
+    def parse_cq(cq_code: str) -> Optional[Dict[str, Union[str, Dict[str, Any]]]]:
         """
         解析CQ码字符串，返回包含类型和参数的字典。
 
@@ -96,7 +93,7 @@ class CQCodeHandler:
         return data
 
     @staticmethod
-    def escape_special_char(s, escape_comma: bool = True):
+    def escape_special_char(s: str, escape_comma: bool = True) -> str:
         """
         转义CQ码中的特殊字符。
 

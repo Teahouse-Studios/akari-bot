@@ -5,7 +5,7 @@ from core.config import Config
 from core.utils.storedata import get_stored_list, update_stored_list
 
 
-async def gained_petal(msg: Bot.MessageSession, amount: int):
+async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
     '''增加花瓣。
 
     :param msg: 消息会话。
@@ -44,7 +44,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
         return msg.locale.t('petal.message.gained.success', amount=amount)
 
 
-async def lost_petal(msg: Bot.MessageSession, amount: int):
+async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
     '''减少花瓣。
 
     :param msg: 消息会话。
