@@ -204,7 +204,7 @@ class FetchTarget(FetchTargetT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "Telegram")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
