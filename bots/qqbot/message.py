@@ -212,7 +212,7 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         msg = self.session.message.content
         if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
-            msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|Tiny|\1', msg)
+            msg = re.sub(r'<@(.*?)>', fr'{sender_tiny_prefix}|\1', msg)
         else:
             msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|\1', msg)
         return msg
