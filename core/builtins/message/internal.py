@@ -3,7 +3,7 @@ import os
 import random
 import re
 from datetime import datetime, timezone
-from typing import List, Self, Union
+from typing import Any, Dict, List, Optional, Self, Tuple, Union
 from urllib import parse
 
 import aiohttp
@@ -27,16 +27,20 @@ class Plain:
     文本消息。
     """
 
-    def __init__(self, text, *texts, disable_joke: bool = False):
+    def __init__(self,
+                 text: str,
+                 disable_joke: bool = False,
+                 *texts: Tuple[str]):
         """
         :param text: 文本内容
         :param disable_joke: 是否禁用愚人节功能
+        :param texts: 额外的文本内容
         """
         self.text = str(text)
-        for t in texts:
-            self.text += str(t)
         if not disable_joke:
             self.text = joke(self.text)
+        for t in texts:
+            self.text += str(t)
 
     def __str__(self):
         return self.text
@@ -56,7 +60,10 @@ class Url:
     disable_mm = False
     md_format = False
 
-    def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
+    def __init__(self,
+                 url: str,
+                 use_mm: bool = False,
+                 disable_mm: bool = False):
         """
         :param url: URL
         :param use_mm: 是否使用链接跳板，覆盖全局设置
@@ -83,7 +90,16 @@ class Url:
 
 
 class FormattedTime:
-    def __init__(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
+    """
+    格式化时间消息。
+    """
+    def __init__(self,
+                 timestamp: float,
+                 date: bool = True,
+                 iso: bool = False,
+                 time: bool = True,
+                 seconds: bool = True,
+                 timezone: bool = True):
         """
         :param timestamp: 时间戳（UTC时间）
         :param date: 是否显示日期
@@ -144,7 +160,9 @@ class I18NContext:
     带有多语言的消息。
     """
 
-    def __init__(self, key, **kwargs):
+    def __init__(self,
+                 key: str,
+                 **kwargs: Dict[str, Any]):
         """
         :param key: 多语言的键名
         :param kwargs: 多语言中的变量
@@ -167,7 +185,11 @@ class ErrorMessage:
     错误消息。
     """
 
-    def __init__(self, error_message, locale=None, enable_report=True, **kwargs):
+    def __init__(self,
+                 error_message: str,
+                 locale: Optional[str] = None,
+                 enable_report: bool = True,
+                 **kwargs: Dict[str, Any]):
         """
         :param error_message: 错误信息文本
         :param locale: 多语言
@@ -200,7 +222,8 @@ class Image:
     """
 
     def __init__(self,
-                 path: Union[str, PILImage], headers=None):
+                 path: Union[str, PILImage.Image],
+                 headers: Optional[Dict[str, Any]] = None):
         """
         :param path: 图片路径或PIL.Image对象
         :param headers: 获取图片时的请求头
@@ -274,7 +297,7 @@ class Voice:
     """
 
     def __init__(self,
-                 path=None):
+                 path: Optional[str] = None):
         """
         :param path: 语音文件路径。
         """
@@ -296,8 +319,8 @@ class EmbedField:
     """
 
     def __init__(self,
-                 name: str = None,
-                 value: str = None,
+                 name: Optional[str] = None,
+                 value: Optional[str] = None,
                  inline: bool = False):
         """
         :param name: 字段名
@@ -324,16 +347,16 @@ class Embed:
     """
 
     def __init__(self,
-                 title: str = None,
-                 description: str = None,
-                 url: str = None,
+                 title: Optional[str] = None,
+                 description: Optional[str] = None,
+                 url: Optional[str] = None,
                  timestamp: float = datetime.now().timestamp(),
                  color: int = 0x0091ff,
-                 image: Image = None,
-                 thumbnail: Image = None,
-                 author: str = None,
-                 footer: str = None,
-                 fields: List[EmbedField] = None):
+                 image: Optional[Image] = None,
+                 thumbnail: Optional[Image] = None,
+                 author: Optional[str] = None,
+                 footer: Optional[str] = None,
+                 fields: List[EmbedField] = []):
         """
         :param title: 标题
         :param description: 描述
