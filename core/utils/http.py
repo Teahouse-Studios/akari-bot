@@ -241,19 +241,20 @@ async def download(url: str,
     return await download_()
 
 
-async def dowanload_to_cache(url: str,
-                             filename: Optional[str] = None,
-                             status_code: int = False,
-                             method: str = "GET",
-                             post_data: Any = None,
-                             headers: Optional[Dict[str, Any]] = None,
-                             timeout: int = 20,
-                             attempt: int = 3,
-                             request_private_ip: bool = False,
-                             logging_err_resp: bool = True) -> Union[str, bool]:
+async def download_to_cache(url: str,
+                            filename: Optional[str] = None,
+                            status_code: int = False,
+                            method: str = "GET",
+                            post_data: Any = None,
+                            headers: Optional[Dict[str, Any]] = None,
+                            timeout: int = 20,
+                            attempt: int = 3,
+                            request_private_ip: bool = False,
+                            logging_err_resp: bool = True) -> Union[str, bool]:
     '''
     下载内容到缓存目录，仅作兼容用。
     '''
+    Logger.warning(f'Func `download_to_cache()` has benn deprecated, please use `download()` instead.')
     await download(url=url, filename=filename, path=cache_path, status_code=status_code, method=method, post_data=post_data,
                    headers=headers, timeout=timeout, attempt=attempt, request_private_ip=request_private_ip,
                    logging_err_resp=logging_err_resp)

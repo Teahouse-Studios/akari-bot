@@ -408,7 +408,7 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list=[], i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
         module_name = None if module_name == '*' else module_name

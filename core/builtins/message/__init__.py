@@ -572,7 +572,7 @@ class FetchTarget:
     @staticmethod
     async def post_message(module_name: str,
                            message: str,
-                           user_list: List[FetchedSession] = [],
+                           user_list: Optional[List[FetchedSession]] = None,
                            i18n: bool = False,
                            **kwargs: Dict[str, Any]):
         """
@@ -586,7 +586,7 @@ class FetchTarget:
 
     @staticmethod
     async def post_global_message(message: str,
-                                  user_list: List[FetchedSession] = [],
+                                  user_list: Optional[List[FetchedSession]] = None,
                                   i18n: bool = False,
                                   **kwargs):
         """

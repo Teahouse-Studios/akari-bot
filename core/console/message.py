@@ -212,7 +212,7 @@ class FetchTarget(FetchTargetT):
                               sender_id='0')
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         fetch = await FetchTarget.fetch_target('0')
         if i18n:
             await fetch.send_message(fetch.parent.locale.t(message, **kwargs))

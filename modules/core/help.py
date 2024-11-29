@@ -41,11 +41,8 @@ async def bot_help(msg: Bot.MessageSession, module: str):
     if msg.parsed_msg:
         mdocs = []
         malias = []
-        if module in alias:
-            help_name = alias[module].split()[0]
-        else:
-            help_name = module.split()[0]
 
+        help_name = alias[module].split()[0] if module in alias else module.split()[0]
         if help_name in current_unloaded_modules:
             await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
