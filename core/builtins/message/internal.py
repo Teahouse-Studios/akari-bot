@@ -3,7 +3,7 @@ import os
 import random
 import re
 from datetime import datetime, timezone
-from typing import List, Self
+from typing import List, Self, Union
 from urllib import parse
 
 import aiohttp
@@ -200,7 +200,7 @@ class Image:
     """
 
     def __init__(self,
-                 path, headers=None):
+                 path: Union[str, PILImage], headers=None):
         """
         :param path: 图片路径或PIL.Image对象
         :param headers: 获取图片时的请求头
