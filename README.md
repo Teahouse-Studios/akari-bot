@@ -43,6 +43,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 <div align="left">
   <img width="200" src="./assets/qqbot_qr_guild.png" alt="guild qr">
   <img width="200" src="./assets/qqbot_qr_group.png" alt="group qr">
+</div>
 
 ##### 第三方协议
 由于腾讯风控问题，请[在此提交](https://github.com/Teahouse-Studios/akari-bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+)入群申请。
