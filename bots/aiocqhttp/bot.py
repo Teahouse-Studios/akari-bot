@@ -11,7 +11,7 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets, Url
+from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_account_default
@@ -25,7 +25,7 @@ from core.utils.i18n import Locale
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
-Url.disable_mm = not Config('enable_urlmanager', False)
+Info.use_url_manager = Config('enable_urlmanager', False)
 qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)

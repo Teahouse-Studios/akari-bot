@@ -52,7 +52,7 @@ async def get_url(url: str,
                   attempt: int = 3,
                   request_private_ip: bool = False,
                   logging_err_resp: bool = True,
-                  cookies: Optional[Dict[str, Any]] = None) -> Optional[str]:
+                  cookies: Optional[Dict[str, Any]] = None) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -120,7 +120,7 @@ async def post_url(url: str,
                    attempt: int = 3,
                    request_private_ip: bool = False,
                    logging_err_resp: bool = True,
-                   cookies: Optional[Dict[str, Any]] = None) -> Optional[str]:
+                   cookies: Optional[Dict[str, Any]] = None) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
     '''利用AioHttp发送POST请求。
 
     :param url: 需要发送的url。
@@ -241,22 +241,7 @@ async def download(url: str,
     return await download_()
 
 
-async def dowanload_to_cache(url: str,
-                             filename: Optional[str] = None,
-                             status_code: int = False,
-                             method: str = "GET",
-                             post_data: Any = None,
-                             headers: Optional[Dict[str, Any]] = None,
-                             timeout: int = 20,
-                             attempt: int = 3,
-                             request_private_ip: bool = False,
-                             logging_err_resp: bool = True) -> Union[str, bool]:
-    '''
-    下载内容到缓存目录，仅作兼容用。
-    '''
-    await download(url=url, filename=filename, path=cache_path, status_code=status_code, method=method, post_data=post_data,
-                   headers=headers, timeout=timeout, attempt=attempt, request_private_ip=request_private_ip,
-                   logging_err_resp=logging_err_resp)
+download_to_cache = download
 
 
-__all__ = ['get_url', 'post_url', 'download', 'url_pattern']
+__all__ = ['get_url', 'post_url', 'download', 'url_pattern', 'download_to_cache']

@@ -3,7 +3,7 @@ from urllib.parse import quote
 
 import orjson as json
 
-from core.builtins import Url, I18NContext
+from core.builtins import Url, I18NContext, MessageChain
 from core.config import Config
 from core.logger import Logger
 from core.queue import JobQueue
@@ -59,8 +59,8 @@ async def start_check_news():
                 desc = default_tile['sub_header']
                 link = baseurl + o_article['article_url']
                 if title not in alist:
-                    await JobQueue.trigger_hook_all('minecraft_news', message=[I18NContext('minecraft_news.message.minecraft_news',
-                                                                                           title=title, desc=desc, link=link).to_dict()])
+                    await JobQueue.trigger_hook_all('minecraft_news', message=MessageChain([I18NContext('minecraft_news.message.minecraft_news',
+                                                                                           title=title, desc=desc, link=link)]))
                     alist.append(title)
                     update_stored_list('scheduler', 'mcnews', alist)
     except Exception:
@@ -88,8 +88,8 @@ async def feedback_news():
                     link = article['html_url']
                     Logger.info(f'Huh, we find {name}.')
                     await JobQueue.trigger_hook_all('feedback_news',
-                                                    message=[I18NContext('minecraft_news.message.feedback_news',
-                                                                         name=name, link=str(Url(link))).to_dict()])
+                                                    message=MessageChain([I18NContext('minecraft_news.message.feedback_news',
+                                                                         name=name, link=str(Url(link)))]))
                     alist.append(name)
                     update_stored_list('scheduler', 'mcfeedbacknews', alist)
         except Exception:

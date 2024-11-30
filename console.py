@@ -45,7 +45,6 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
     sys.exit()
 
 Info.dirty_word_check = True
-Url.disable_mm = True
 PrivateAssets.set(os.path.join(assets_path, 'private', 'console'))
 console_history_path = os.path.join(PrivateAssets.path, '.console_history')
 if os.path.exists(console_history_path):

@@ -10,6 +10,7 @@ from bots.qqbot.info import *
 from core.builtins import (Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, Url, MessageTaskManager,
                            FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -49,13 +50,13 @@ class MessageSession(MessageSessionT):
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
 
-        plains: List[Plain] = []
-        images: List[Image] = []
+        plains: List[PlainElement] = []
+        images: List[ImageElement] = []
 
         for x in message_chain.as_sendable(self, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 plains.append(x)
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 images.append(x)
         sends = []
         if len(plains + images) != 0:

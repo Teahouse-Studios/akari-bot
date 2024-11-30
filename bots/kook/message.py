@@ -11,6 +11,7 @@ from bots.kook.info import *
 from core.builtins import (Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager,
                            FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -82,21 +83,21 @@ class MessageSession(MessageSessionT):
         count = 0
         send = []
         for x in message_chain.as_sendable(self, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 send_ = await self.session.message.reply(x.text, quote=quote if quote
                                                          and count == 0 and self.session.message else None)
 
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
                 send.append(send_)
                 count += 1
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 url = await bot.create_asset(open(await x.get(), 'rb'))
                 send_ = await self.session.message.reply(url, type=MessageTypes.IMG, quote=quote if quote
                                                          and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
                 send.append(send_)
                 count += 1
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 url = await bot.create_asset(open(x.path), 'rb')
                 send_ = await self.session.message.reply(url, type=MessageTypes.AUDIO, quote=quote if quote
                                                          and count == 0 and self.session.message else None)
@@ -195,15 +196,15 @@ class FetchedSession(Bot.FetchedSession):
         if not message_chain.is_safe and not disable_secret_check:
             await self.send_direct_message(I18NContext("error.message.chain.unsafe"))
         for x in message_chain.as_sendable(self.parent, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 await get_channel.send(x.text)
 
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 url = await bot.create_asset(open(await x.get(), 'rb'))
                 await get_channel.send(url, type=MessageTypes.IMG)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 url = await bot.create_asset(open(x.path), 'rb')
                 await get_channel.send(url, type=MessageTypes.AUDIO)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')

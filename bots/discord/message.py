@@ -11,6 +11,7 @@ from bots.discord.info import *
 from core.builtins import (Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager,
                            FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
 from core.builtins.message.internal import I18NContext, Embed, Voice
 from core.config import Config
 from core.database import BotDBUtil
@@ -20,8 +21,8 @@ from core.utils.http import download
 enable_analytics = Config('enable_analytics', False)
 
 
-async def convert_embed(embed: Embed):
-    if isinstance(embed, Embed):
+async def convert_embed(embed: EmbedElement):
+    if isinstance(embed, EmbedElement):
         files = []
         embeds = discord.Embed(title=embed.title if embed.title else None,
                                description=embed.description if embed.description else None,
@@ -79,23 +80,23 @@ class MessageSession(MessageSessionT):
         count = 0
         send = []
         for x in message_chain.as_sendable(self):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 send_ = await self.session.target.send(x.text,
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 send_ = await self.session.target.send(file=discord.File(await x.get()),
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 send_ = await self.session.target.send(file=discord.File(x.path),
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
 
-            elif isinstance(x, Embed):
+            elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x)
                 send_ = await self.session.target.send(embed=embeds,
                                                        reference=self.session.message if quote and count == 0

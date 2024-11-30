@@ -5,6 +5,7 @@ import orjson as json
 from core.builtins import Bot, Url
 from core.component import module
 from core.config import Config
+from core.constants import Info
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib
 from .dbutils import WikiLogUtil
@@ -42,7 +43,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     in_allowlist = True
-    if not Url.disable_mm:
+    if Info.use_url_manager:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
             await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=status.value.name))

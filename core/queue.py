@@ -52,6 +52,9 @@ class JobQueue:
 
     @classmethod
     async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
+        for k in kwargs:
+            if isinstance(kwargs[k], MessageChain):
+                kwargs[k] = kwargs[k].to_list()
         return await cls.add_job(target_client, 'trigger_hook',
                                  {'module_or_hook_name': module_or_hook_name, 'args': kwargs}, wait=False)
 

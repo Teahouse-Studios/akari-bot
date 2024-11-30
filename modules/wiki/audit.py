@@ -4,6 +4,7 @@ from datetime import timezone
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.config import Config
+from core.constants import Info
 from core.database.tables import is_mysql
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
@@ -13,7 +14,7 @@ from modules.wiki.utils.wikilib import WikiLib
 aud = module('wiki_audit',
              required_superuser=True,
              alias='wau', doc=True,
-             load=(not Url.disable_mm))
+             load=Info.use_url_manager)
 
 
 @aud.command(['trust <apilink>',

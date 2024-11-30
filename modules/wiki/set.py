@@ -1,6 +1,7 @@
 import orjson as json
 
 from core.builtins import Bot, Plain, Image, Url
+from core.constants import Info
 from core.utils.image_table import image_table_render, ImageTable
 from core.config import Config
 from modules.wiki.utils.dbutils import WikiTargetInfo
@@ -16,7 +17,7 @@ async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
         in_allowlist = True
-        if not Url.disable_mm:
+        if Info.use_url_manager:
             in_allowlist = check.value.in_allowlist
             if check.value.in_blocklist and not in_allowlist:
                 await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
@@ -40,7 +41,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     target = WikiTargetInfo(msg)
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
-        if not Url.disable_mm:
+        if Info.use_url_manager:
             if check.value.in_blocklist and not check.value.in_allowlist:
                 await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
         result = target.config_interwikis(interwiki, check.value.api, let_it=True)

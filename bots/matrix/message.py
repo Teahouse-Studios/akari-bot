@@ -11,6 +11,7 @@ from bots.matrix.info import *
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
     FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -129,11 +130,11 @@ class MessageSession(MessageSessionT):
                 reply_to = None
                 reply_to_user = None
 
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 await sendMsg(content)
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 split = [x]
                 if enable_split_image:
                     Logger.info(f"Split image: {str(x.__dict__)}")
@@ -186,7 +187,7 @@ class MessageSession(MessageSessionT):
                             f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
                         )
                         await sendMsg(content)
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 path = x.path
                 filename = os.path.basename(path)
                 filesize = os.path.getsize(path)

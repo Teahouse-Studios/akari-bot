@@ -3,6 +3,7 @@ from datetime import datetime, UTC as datetimeUTC
 from typing import Any, Coroutine, Dict, List, Optional, Union
 
 from core.builtins.message.chain import *
+from core.builtins.message.elements import MessageElement
 from core.builtins.message.internal import *
 from core.builtins.utils import confirm_command
 from core.config import Config
@@ -163,7 +164,7 @@ class MessageSession:
         self.timezone_offset = parse_time_string(self._tz_offset)
 
     async def send_message(self,
-                           message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                           message_chain: Union[MessageChain, str, list, MessageElement],
                            quote: bool = True,
                            disable_secret_check: bool = False,
                            enable_parse_message: bool = True,
@@ -182,7 +183,7 @@ class MessageSession:
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                     message_chain: Union[MessageChain, str, list, MessageElement] = None,
                      quote: bool = True,
                      disable_secret_check: bool = False,
                      enable_parse_message: bool = True,
@@ -206,7 +207,7 @@ class MessageSession:
         raise FinishedException(f)
 
     async def send_direct_message(self,
-                                  message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                                  message_chain: Union[MessageChain, str, list, MessageElement],
                                   disable_secret_check: bool = False,
                                   enable_parse_message: bool = True,
                                   enable_split_image: bool = True,
@@ -276,7 +277,7 @@ class MessageSession:
         raise NotImplementedError
 
     async def wait_confirm(self,
-                           message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                           message_chain: Union[MessageChain, str, list, MessageElement] = None,
                            quote: bool = True,
                            delete: bool = True,
                            timeout: int = 120,
@@ -318,7 +319,7 @@ class MessageSession:
             raise WaitCancelException
 
     async def wait_next_message(self,
-                                message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                                message_chain: Union[MessageChain, str, list, MessageElement] = None,
                                 quote: bool = True,
                                 delete: bool = False,
                                 timeout: int = 120,
@@ -356,7 +357,7 @@ class MessageSession:
             raise WaitCancelException
 
     async def wait_reply(self,
-                         message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                         message_chain: Union[MessageChain, str, list, MessageElement],
                          quote: bool = True,
                          delete: bool = False,
                          timeout: int = 120,
@@ -396,7 +397,7 @@ class MessageSession:
             raise WaitCancelException
 
     async def wait_anyone(self,
-                          message_chain: Optional[Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage]] = None,
+                          message_chain: Union[MessageChain, str, list, MessageElement] = None,
                           quote: bool = False,
                           delete: bool = False,
                           timeout: int = 120) -> 'MessageSession':
@@ -533,7 +534,7 @@ class FetchedSession:
         self.parent = MessageSession(self.target, self.session)
 
     async def send_direct_message(self,
-                                  message_chain: Union[MessageChain, str, list, Plain, Image, Voice, Embed, Url, ErrorMessage],
+                                  message_chain: Union[MessageChain, str, list, MessageElement],
                                   disable_secret_check: bool = False,
                                   enable_parse_message: bool = True,
                                   enable_split_image: bool = True):
