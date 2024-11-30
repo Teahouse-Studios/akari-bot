@@ -181,9 +181,8 @@ def templates_to_str(templates: List[Template], with_desc=False, simplify=True) 
                 has_desc = True
                 sub_arg_text_ = ' '.join(sub_arg_text)
                 sub_arg_text.clear()
-                if simplify:
-                    if last_desc == arg.text:
-                        continue
+                if simplify and last_desc == arg.text:
+                    continue
                 if with_desc:
                     if sub_arg_text_:
                         arg_text.append(sub_arg_text_ + ' - ' + arg.text)
