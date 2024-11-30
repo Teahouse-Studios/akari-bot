@@ -318,7 +318,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         if enable_tos:
                             await tos_msg_counter(msg, msg.trigger_msg)
                         else:
-                            Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
+                            Logger.debug('Tos is disabled, check the configuration if it is not work as expected.')
 
                     none_doc = True  # 检查模块绑定的命令是否有文档
                     for func in module.command_list.get(msg.target.target_from):
@@ -582,7 +582,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                         await tos_msg_counter(msg, msg.trigger_msg)
                                     else:
                                         Logger.debug(
-                                            f'Tos is disabled, check the configuration if it is not work as expected.')
+                                            'Tos is disabled, check the configuration if it is not work as expected.')
 
                                 if not ExecutionLockList.check(msg):
                                     ExecutionLockList.add(msg)

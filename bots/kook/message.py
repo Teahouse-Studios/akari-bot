@@ -18,7 +18,7 @@ from core.logger import Logger
 enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"
 kook_headers = {
-    f'Authorization': f"Bot {
+    'Authorization': f"Bot {
         Config(
             'kook_token',
             cfg_type=str,

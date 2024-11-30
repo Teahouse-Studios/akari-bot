@@ -172,7 +172,7 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
 async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = True):
     time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 
-    url = f"https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
+    url = "https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt='json')
     rank_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
 

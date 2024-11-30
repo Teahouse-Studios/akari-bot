@@ -290,7 +290,7 @@ async def update_bot(msg: Bot.MessageSession):
             if pull_repo_result:
                 await msg.send_message(pull_repo_result)
             else:
-                Logger.warning(f'Failed to get Git repository result.')
+                Logger.warning('Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
         await msg.finish(update_dependencies())
     else:
@@ -360,7 +360,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
                 if pull_repo_result != '':
                     await msg.send_message(pull_repo_result)
                 else:
-                    Logger.warning(f'Failed to get Git repository result.')
+                    Logger.warning('Failed to get Git repository result.')
                     await msg.send_message(msg.locale.t("core.message.update.failed"))
             await msg.send_message(update_dependencies())
             restart()

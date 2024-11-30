@@ -87,7 +87,7 @@ class CFGManager:
                 file_path = os.path.join(cls.config_path, cfg_file)
                 if os.path.exists(file_path):
                     if os.path.getmtime(file_path) != cls._tss[cfg]:
-                        logger.warning(f'[Config] Config file has been modified, reloading...')
+                        logger.warning('[Config] Config file has been modified, reloading...')
                         cls.load()
                         break
             cls._watch_lock = False
