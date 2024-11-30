@@ -1,7 +1,7 @@
 <div align="center">
   <img width="512" src="./assets/character_marked.png" alt="logo">
 
-# 小可 · AkariBot v4
+# 小可 · AkariBot
 
 _多功能、多语言、多平台支持的异步聊天机器人_
 
@@ -19,7 +19,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 **小可**是可扩展的多功能、多语言、多平台支持的异步聊天机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
 
-目前小可还正在持续开发中。
+目前小可正在进行快速开发中，特性可能会随时发生变化。
 
 ## 平台
 
