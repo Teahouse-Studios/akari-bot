@@ -31,8 +31,7 @@ def remove_punctuations(text):
 
 async def update_assets():
     illustration_path = os.path.join(pgr_assets_path, 'illustration')
-    if not os.path.exists(illustration_path):
-        os.makedirs(illustration_path, exist_ok=True)
+    os.makedirs(illustration_path, exist_ok=True)
     illustration_list = os.listdir(illustration_path)
     file_path = f'{random_cache_path()}.json'
     data = {}

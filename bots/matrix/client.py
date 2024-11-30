@@ -25,13 +25,10 @@ store_path_megolm_backup = os.path.join(store_path, 'megolm_backup')
 store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
 
 if homeserver and user and device_id and token:
-    if not os.path.exists(store_path):
-        os.mkdir(store_path)
-    if not os.path.exists(store_path_nio):
-        os.mkdir(store_path_nio)
+    os.makedirs(store_path, exist_ok=True)
+    os.makedirs(store_path_nio, exist_ok=True)
     if megolm_backup_passphrase:
-        if not os.path.exists(store_path_megolm_backup):
-            os.mkdir(store_path_megolm_backup)
+        os.makedirs(store_path_megolm_backup, exist_ok=True)
         if len(megolm_backup_passphrase) <= 10:
             Logger.warning("matrix_megolm_backup_passphrase is too short. It is insecure.")
     else:

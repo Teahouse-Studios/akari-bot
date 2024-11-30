@@ -84,7 +84,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 
         result = await client.execute_async(query)
         workdir = random_cache_path()
-        os.mkdir(workdir)
+        os.makedirs(workdir)
         best_records = result['profile'][query_type]
         rank = 0
         resources = []
@@ -220,11 +220,8 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 async def download_cover_thumb(uid):
     try:
         d = os.path.join(assets_path, 'cytoid-cover', uid)
-        if not os.path.exists(d):
-            os.makedirs(d)
+        os.makedirs(d, exist_ok=True)
         path = os.path.join(d, 'thumbnail.png')
-        if not os.path.exists(d):
-            os.mkdir(d)
         if not os.path.exists(path):
             level_url = 'http://services.cytoid.io/levels/' + uid
             get_level = json.loads(await get_url(level_url))
@@ -245,11 +242,8 @@ async def download_avatar_thumb(link, id):
     Logger.debug(f'Downloading avatar for {str(id)}')
     try:
         d = os.path.join(assets_path, 'cytoid-avatar')
-        if not os.path.exists(d):
-            os.makedirs(d)
+        os.makedirs(d, exist_ok=True)
         path = os.path.join(d, f'{id}.png')
-        if not os.path.exists(d):
-            os.mkdir(d)
         if os.path.exists(path):
             os.remove(path)
         async with aiohttp.ClientSession() as session:

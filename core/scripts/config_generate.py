@@ -15,8 +15,7 @@ from core.utils.text import isint
 
 def generate_config(dir_path, language):
     config_code_list = {}
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
+    os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
 
     dir_list = ['bots', 'core', 'modules', 'schedulers']
@@ -141,14 +140,11 @@ if __name__ == '__main__':
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
     if os.path.exists(config_store_path):
         shutil.move(config_store_path, config_store_path + '_bak')
-    if not os.path.exists(config_store_path):
-        os.makedirs(config_store_path)
-    if not os.path.exists(config_store_packed_path):
-        os.makedirs(config_store_packed_path)
+    os.makedirs(config_store_path, exist_ok=True)
+    os.makedirs(config_store_packed_path, exist_ok=True)
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
-        if not os.path.exists(config_store_path_):
-            os.makedirs(config_store_path_)
+        os.makedirs(config_store_path_, exist_ok=True)
         generate_config(config_store_path_, lang)
     # compare old and new config files
     repack = False

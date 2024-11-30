@@ -21,8 +21,7 @@ async def update_cover() -> bool:
     id_list = ['00000', '01000']
     for song in (await total_list.get()):
         id_list.append(song['id'])
-    if not os.path.exists(mai_cover_path):
-        os.makedirs(mai_cover_path)
+    os.makedirs(mai_cover_path, exist_ok=True)
     for id in id_list:
         cover_path = os.path.join(mai_cover_path, f'{get_cover_len5_id(id)}.png')
         if not os.path.exists(cover_path):

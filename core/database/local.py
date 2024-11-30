@@ -8,9 +8,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt
 
+from core.constants.path import database_path
+
 Base = declarative_base()
 
-os.makedirs("database", exist_ok=True)
+os.makedirs(database_path, exist_ok=True)
 
 DB_LINK = 'sqlite:///database/local.db'
 

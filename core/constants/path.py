@@ -5,6 +5,7 @@ assets_path = os.path.abspath('./assets')
 bots_path = os.path.abspath('./bots')
 cache_path = os.path.abspath('./cache')
 config_path = os.path.abspath('./config')
+database_path = os.path.abspath('./database')
 locales_path = os.path.abspath('./core/locales')
 logs_path = os.path.abspath('./logs')
 modules_path = os.path.abspath('./modules')
@@ -29,8 +30,7 @@ bots_info_path = os.path.join(bots_path, '*', 'info.py')
 
 class PrivateAssets:
     path = os.path.join(assets_path, 'private', 'default')
-    if not os.path.exists(path):
-        os.makedirs(path)
+    os.makedirs(path, exist_ok=True)
 
     @classmethod
     def set(cls, path):
