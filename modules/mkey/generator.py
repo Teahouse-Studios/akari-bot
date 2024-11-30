@@ -175,7 +175,8 @@ class MkeyGenerator:
             raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
 
     # CRC-32 implementation (v0).
-    def _calculate_crc(self, poly, xorout, addout, inbuf):
+    @staticmethod
+    def _calculate_crc(poly, xorout, addout, inbuf):
         crc = 0xFFFFFFFF
 
         for byte in inbuf:

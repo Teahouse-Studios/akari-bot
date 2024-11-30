@@ -116,7 +116,8 @@ class DrawBest:
         """把字符串全角转半角"""
         return "".join([self._Q2B(uchar) for uchar in ustring])
 
-    def _Q2B(self, uchar):
+    @staticmethod
+    def _Q2B(uchar):
         """单个字符 全角转半角"""
         inside_code = ord(uchar)
         if inside_code == 0x3000:
@@ -127,7 +128,8 @@ class DrawBest:
             return uchar
         return chr(inside_code)
 
-    def _resizePic(self, img, time):
+    @staticmethod
+    def _resizePic(img, time):
         return img.resize((int(img.size[0] * time), int(img.size[1] * time)))
 
     def _drawBestList(self, img: Image.Image, sdBest: BestList, dxBest: BestList):
@@ -241,7 +243,8 @@ class DrawBest:
             self.img.paste(recBase, (self.COLOUMS_IMG[j + 1] + 5, self.ROWS_IMG[i + 7] + 5))
             self.img.paste(temp, (self.COLOUMS_IMG[j + 1] + 4, self.ROWS_IMG[i + 7] + 4))
 
-    def _coloumWidth(self, arg_str):
+    @staticmethod
+    def _coloumWidth(arg_str):
         count = 0
         for str_ in arg_str:
             inside_code = ord(str_)
@@ -253,7 +256,8 @@ class DrawBest:
                 count += 2
         return count
 
-    def _changeColumnWidth(self, arg_str, arg_len):
+    @staticmethod
+    def _changeColumnWidth(arg_str, arg_len):
         count = 0
         list_str = []
         for str_ in arg_str:
