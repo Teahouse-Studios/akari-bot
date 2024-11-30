@@ -1,17 +1,17 @@
 import base64
 import re
-from io import BytesIO
 import traceback
+from html import escape
+from io import BytesIO
 
 import aiohttp
 import orjson as json
-from html import escape
-from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
+from jinja2 import FileSystemLoader, Environment
 
-from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
+from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
 from core.constants.info import Info
 from core.constants.path import templates_path
@@ -21,7 +21,6 @@ from core.parser.command import CommandParser
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import webrender
-
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
 

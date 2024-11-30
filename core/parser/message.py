@@ -10,7 +10,8 @@ from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, Messa
     base_superuser_list
 from core.config import Config
 from core.constants.default import bug_report_url_default, qq_account_default
-from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
+from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
+    InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.database import BotDBUtil
 from core.loader import ModulesManager, current_unloaded_modules, err_modules

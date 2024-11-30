@@ -22,7 +22,7 @@ if not Config('db_path', default=db_path_default, secret=True):
 
 from bot import init_bot
 from core.bot_init import init_async
-from core.builtins import PrivateAssets, Url
+from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
 from core.extra.scheduler import load_extra_schedulers

@@ -17,9 +17,9 @@ from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Temp, \
     MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT, Plain, Image, Voice
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
 from core.database import BotDBUtil

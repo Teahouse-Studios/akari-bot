@@ -1,9 +1,9 @@
 import orjson as json
 
 from core.builtins import Bot, Plain, Image, Url
+from core.config import Config
 from core.constants import Info
 from core.utils.image_table import image_table_render, ImageTable
-from core.config import Config
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki

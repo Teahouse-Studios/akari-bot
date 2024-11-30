@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.component import module
-from core.constants.exceptions import InvalidHelpDocTypeError
 from core.config import Config, CFGManager
+from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database import BotDBUtil
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser

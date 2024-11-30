@@ -1,7 +1,7 @@
+import os
 import re
 import shutil
 import sys
-import os
 import traceback  # noqa
 from time import sleep
 

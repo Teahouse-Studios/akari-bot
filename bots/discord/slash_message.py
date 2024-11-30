@@ -3,10 +3,10 @@ import traceback
 import discord
 
 from bots.discord.message import convert_embed, MessageSession as MessageSessionT, FinishedSession as FinS
-from core.builtins import Plain, Image, MessageTaskManager
+from core.builtins import MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
-from core.builtins.message.internal import Embed, I18NContext
+from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.logger import Logger
 
