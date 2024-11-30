@@ -25,6 +25,7 @@ class MessageChain:
     """
     消息链。
     """
+
     def __init__(
         self,
         elements: Optional[Union[
@@ -199,7 +200,7 @@ class MessageChain:
         """
         将消息链序列化为列表。
         """
-        return [{x.__name__() : unstructure(x)} for x in self.value]
+        return [{x.__name__(): unstructure(x)} for x in self.value]
 
     def from_list(self, lst: list) -> None:
         """

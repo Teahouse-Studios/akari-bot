@@ -405,15 +405,15 @@ class EmbedElement(MessageElement):
 
 elements_map = {
     x.__name__: x for x in [PlainElement,
-                        URLElement,
-                        FormattedTimeElement,
-                        I18NContextElement,
-                        ErrorMessageElement,
-                        ImageElement,
-                        VoiceElement,
-                        EmbedFieldElement,
-                        EmbedElement
-                        ]
+                            URLElement,
+                            FormattedTimeElement,
+                            I18NContextElement,
+                            ErrorMessageElement,
+                            ImageElement,
+                            VoiceElement,
+                            EmbedFieldElement,
+                            EmbedElement
+                            ]
 }
 __all__ = [
     'MessageElement',
