@@ -13,7 +13,6 @@ from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
 from .text import isint
 
-
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as

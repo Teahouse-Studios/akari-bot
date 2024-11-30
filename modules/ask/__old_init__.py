@@ -4,9 +4,9 @@ import re
 
 from PIL import Image as PILImage
 
-from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
+from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check_bool, rickroll
 from core.utils.cooldown import CoolDown

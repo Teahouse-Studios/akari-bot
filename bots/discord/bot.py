@@ -10,9 +10,9 @@ import orjson as json
 from bots.discord.client import client
 from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
-from core.config import Config
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
+from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
 from core.logger import Logger

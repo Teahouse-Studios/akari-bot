@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.config import Config
-from core.database import BotDBUtil
 from core.constants.default import issue_url_default
+from core.database import BotDBUtil
 from core.utils.i18n import Locale
 
 report_targets = Config('report_targets', [])

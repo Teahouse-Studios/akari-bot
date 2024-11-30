@@ -1,9 +1,9 @@
 import io
 import re
 
+import tiktoken
 from PIL import Image as PILImage
 from openai import OpenAI, AsyncOpenAI
-import tiktoken
 
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module

@@ -1,22 +1,21 @@
 import base64
 import os
+import random
 import re
 from datetime import datetime, timezone
 from typing import Tuple, Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
 import aiohttp
+from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
 from core.config import Config
 from core.constants import bug_report_url_default
-from core.joke import joke
 from core.constants.info import Info
-from PIL import Image as PILImage
-
-import random
+from core.joke import joke
 from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
 

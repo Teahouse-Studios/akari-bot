@@ -12,7 +12,7 @@ from core.builtins import (Bot, Plain, Image, MessageSession as MessageSessionT,
                            FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
-from core.builtins.message.internal import I18NContext, Embed, Voice
+from core.builtins.message.internal import I18NContext, Voice
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger

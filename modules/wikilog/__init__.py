@@ -2,7 +2,7 @@ import re
 
 import orjson as json
 
-from core.builtins import Bot, Url
+from core.builtins import Bot
 from core.component import module
 from core.config import Config
 from core.constants import Info

@@ -10,8 +10,8 @@ from bots.qqbot.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
 from core.config import Config
-from core.constants.path import assets_path
 from core.constants.info import Info
+from core.constants.path import assets_path
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 

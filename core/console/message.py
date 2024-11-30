@@ -1,10 +1,10 @@
 import asyncio
-from typing import List, Union
+from typing import Union
 
-from inputimeout import inputimeout, TimeoutOccurred
 from PIL import Image as PILImage
+from inputimeout import inputimeout, TimeoutOccurred
 
-from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
+from core.builtins import (Plain, I18NContext, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT, FinishedSession as FinS)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain

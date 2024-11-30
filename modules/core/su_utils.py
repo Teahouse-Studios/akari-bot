@@ -23,7 +23,6 @@ from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint
 
-
 target_list = get_all_target_prefix()
 sender_list = get_all_sender_prefix()
 

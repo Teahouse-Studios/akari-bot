@@ -21,7 +21,6 @@ from .bot import BotAccount
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from .mapping import *
 
-
 default_locale = Config("default_locale", cfg_type=str)
 
 

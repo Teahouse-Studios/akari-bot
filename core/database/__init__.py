@@ -7,12 +7,12 @@ import orjson as json
 from sqlalchemy import func
 from tenacity import retry, stop_after_attempt
 
+from core.builtins import MessageSession, FetchTarget, FetchedSession
 from core.constants import database_version
 from core.database.orm import Session
 from core.database.tables import *
-from core.utils.text import isint
-from core.builtins import MessageSession, FetchTarget, FetchedSession
 from core.exports import add_export
+from core.utils.text import isint
 
 session = Session.session
 

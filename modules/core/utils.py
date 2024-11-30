@@ -1,4 +1,5 @@
 import platform
+import subprocess
 from datetime import datetime, timedelta, UTC
 
 import jwt
@@ -12,8 +13,6 @@ from core.constants import locale_url_default
 from core.database import BotDBUtil
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
-
-import subprocess
 
 jwt_secret = Config('jwt_secret', cfg_type=str, secret=True, table_name='bot_api')
 

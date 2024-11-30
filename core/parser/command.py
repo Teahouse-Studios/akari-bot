@@ -12,7 +12,6 @@ from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..config import Config
 from ..logger import Logger
 
-
 default_locale = Config("default_locale", cfg_type=str)
 
 

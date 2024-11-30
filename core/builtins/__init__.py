@@ -3,9 +3,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from core.config import Config
 from core.constants.info import Info
+from core.exports import exports
 from core.loader import ModulesManager
 from core.types.message import MsgInfo, Session, ModuleHookContext
-from core.exports import exports
 from .message import *
 from .message.chain import *
 from .message.internal import *
