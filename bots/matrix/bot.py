@@ -11,7 +11,7 @@ from bots.matrix.client import bot
 from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets, Url
+from core.builtins import PrivateAssets
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -21,7 +21,6 @@ from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'matrix'))
-Url.disable_mm = True
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 

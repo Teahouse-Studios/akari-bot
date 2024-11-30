@@ -6,6 +6,7 @@ from uuid import uuid4
 import orjson as json
 
 from core.builtins import Bot, MessageChain
+from core.constants import Info
 from core.database import BotDBUtil
 from core.database.tables import JobQueueTable
 from core.logger import Logger
@@ -52,6 +53,9 @@ class JobQueue:
 
     @classmethod
     async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
+        for k in kwargs:
+            if isinstance(kwargs[k], MessageChain):
+                kwargs[k] = kwargs[k].to_list()
         return await cls.add_job(target_client, 'trigger_hook',
                                  {'module_or_hook_name': module_or_hook_name, 'args': kwargs}, wait=False)
 
@@ -65,6 +69,12 @@ class JobQueue:
         ip_info = await fetch_ip_info()
         for target in get_all_clients_name():
             await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
+
+    @classmethod
+    async def web_render_status(cls, web_render_status: bool, web_render_local_status: bool):
+        for target in get_all_clients_name():
+            await cls.add_job(target, 'web_render_status', {'web_render_status': web_render_status,
+                                                          'web_render_local_status': web_render_local_status})
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):
@@ -139,7 +149,8 @@ async def _(tsk: JobQueueTable, args: dict):
 
 @action('web_render_status')
 async def _(tsk: JobQueueTable, args: dict):
-    await check_web_render()
+    Info.web_render_status = args['web_render_status']
+    Info.web_render_local_status = args['web_render_local_status']
     return_val(tsk, {})
 
 

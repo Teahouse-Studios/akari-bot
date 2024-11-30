@@ -9,6 +9,7 @@ from bots.aiogram.info import *
 from core.builtins import (Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager,
                            FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -49,14 +50,14 @@ class MessageSession(MessageSessionT):
         count = 0
         send = []
         for x in message_chain.as_sendable(self, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 send_ = await bot.send_message(self.session.target, x.text,
                                                reply_to_message_id=self.session.message.message_id if quote
                                                and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
                 send.append(send_)
                 count += 1
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 if enable_split_image:
                     split = await image_split(x)
                     for xs in split:
@@ -77,7 +78,7 @@ class MessageSession(MessageSessionT):
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
                     send.append(send_)
                     count += 1
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 send_ = await bot.send_audio(self.session.target, FSInputFile(x.path),
                                              reply_to_message_id=self.session.message.message_id if quote
                                              and count == 0 and self.session.message else None)

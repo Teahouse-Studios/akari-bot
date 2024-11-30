@@ -17,3 +17,5 @@ class Info:
     dirty_word_check = False
     web_render_status = False
     web_render_local_status = False
+    use_url_manager = False
+    use_url_md_format = False

@@ -152,7 +152,7 @@ class Locale:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-    def t(self, key: Union[str, dict], fallback_failed_prompt: bool = True, **kwargs: Dict[str, Any]) -> str:
+    def t(self, key: Union[str, dict], fallback_failed_prompt: bool = True, **kwargs: Any) -> str:
         """
         获取本地化字符串。
 

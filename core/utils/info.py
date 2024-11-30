@@ -18,7 +18,7 @@ def get_bot_names(attribute_name, console_name) -> List[str]:
     names = []
     if not Info.binary_mode:
         for info_file in glob.glob(bots_info_path):
-            module_name = os.path.splitext(os.path.relpath(info_file, './'))[0].replace('/', '.')
+            module_name = os.path.splitext(os.path.relpath(info_file, './'))[0].replace('/', '.').replace('\\', '.')
             try:
                 module = importlib.import_module(module_name)
                 if hasattr(module, attribute_name):
@@ -34,7 +34,7 @@ def get_bot_names(attribute_name, console_name) -> List[str]:
                                 module,
                                 attribute_name)])
             except Exception:
-                continue
+                traceback.print_exc()
     else:
         try:
             Logger.warning('Binary mode detected, trying to load pre-built bots list...')
@@ -58,7 +58,6 @@ def get_bot_names(attribute_name, console_name) -> List[str]:
                                         attribute_name)])
                     except Exception:
                         traceback.print_exc()
-                        continue
         except Exception:
             Logger.error('Failed to load pre-built bots list...')
             return []

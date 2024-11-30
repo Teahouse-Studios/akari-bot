@@ -15,8 +15,9 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
-from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, \
-    MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
+from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Temp, \
+    MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT, Plain, Image, Voice
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.config import Config
@@ -104,7 +105,7 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 if enable_parse_message:
                     parts = re.split(r'(\[CQ:[^\]]+\])', x.text)
                     parts = [part for part in parts if part]
@@ -139,9 +140,9 @@ class MessageSession(MessageSessionT):
                 else:
                     convert_msg_segments = convert_msg_segments + \
                         MessageSegment.text(('\n' if count != 0 else '') + x.text)
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 if self.target.target_from != target_guild_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
@@ -430,7 +431,7 @@ class FetchTarget(FetchTargetT):
                     msgchain = MessageChain(msgchain)
                     new_msgchain = []
                     for v in msgchain.value:
-                        if isinstance(v, Image):
+                        if isinstance(v, ImageElement):
                             new_msgchain.append(await v.add_random_noise())
                         else:
                             new_msgchain.append(v)

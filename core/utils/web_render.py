@@ -52,4 +52,4 @@ async def check_web_render():
             Logger.error(traceback.format_exc())
             Info.web_render_status = False
 
-__all__ = ['webrender']
+__all__ = ['webrender', 'check_web_render']
