@@ -46,7 +46,7 @@ class DiceItemBase:
         return self.detail
 
     def Roll(self, msg):
-        pass
+        raise NotImplementedError()
 
 
 class Dice(DiceItemBase):
