@@ -357,7 +357,7 @@ class Embed:
                  thumbnail: Optional[Image] = None,
                  author: Optional[str] = None,
                  footer: Optional[str] = None,
-                 fields: List[EmbedField] = None):
+                 fields: Optional[List[EmbedField]] = None):
         """
         :param title: 标题
         :param description: 描述
@@ -370,8 +370,6 @@ class Embed:
         :param footer: 页脚
         :param fields: 字段
         """
-        if fields is None:
-            fields = []
         self.title = title
         self.description = description
         self.url = url

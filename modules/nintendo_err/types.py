@@ -11,9 +11,9 @@ class Module:
     """
 
     def __init__(self, name, data=None, summaries=None):
-        if data is None:
+        if not data:
             data = {}
-        if summaries is None:
+        if not summaries:
             summaries = {}
         self.name = name
         self.data = data
