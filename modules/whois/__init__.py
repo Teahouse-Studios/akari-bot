@@ -9,7 +9,7 @@ from core.logger import Logger
 
 def format(input_):
     if isinstance(input_, list):
-        input_list = list(set([i.lower() for i in input_]))
+        input_list = list({i.lower() for i in input_})
         return ', '.join(input_list)
     else:
         return input_
