@@ -25,8 +25,6 @@ class MessageChain:
     """
     消息链。
     """
-    value = []
-
     def __init__(
         self,
         elements: Optional[Union[
@@ -39,6 +37,10 @@ class MessageChain:
         """
         :param elements: 消息链元素
         """
+        self.value = []
+        if isinstance(elements, MessageChain):
+            self.value = elements.value
+            return
         if isinstance(elements, str):
             elements = match_kecode(elements)
         if isinstance(
@@ -49,21 +51,30 @@ class MessageChain:
                     elements = match_kecode(elements.text)
             else:
                 elements = [elements]
+        if isinstance(elements, dict):
+            for key in elements:
+                if key in elements_map:
+                    elements = [structure(elements[key], elements_map[key])]
+                else:
+                    Logger.error(f"Unexpected message type {key}: {elements}")
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 if isinstance(e, str):
                     if e != "":
                         self.value += match_kecode(e)
-                if isinstance(e, dict):
-                    if e['type'] in elements_map:
-                        tmp_e = structure(e, elements_map[e['type']])
-                        if isinstance(tmp_e, PlainElement):
-                            if tmp_e.text != "":
-                                self.value += match_kecode(tmp_e.text)
-                    else:
-                        Logger.error(f"Unexpected message type: {elements}")
+                elif isinstance(e, dict):
+                    for key in e:
+                        if key in elements_map:
+                            tmp_e = structure(e[key], elements_map[key])
+                            if isinstance(tmp_e, PlainElement):
+                                if tmp_e.text != "":
+                                    self.value += match_kecode(tmp_e.text)
+                            else:
+                                self.value.append(tmp_e)
+                        else:
+                            Logger.error(f"Unexpected message type {key}: {e}")
 
-                if isinstance(e, PlainElement):
+                elif isinstance(e, PlainElement):
                     if isinstance(e, PlainElement):
                         if e.text != "":
                             self.value += match_kecode(e.text)
@@ -71,13 +82,13 @@ class MessageChain:
                 elif isinstance(e, MessageElement):
                     self.value.append(e)
                 else:
-                    Logger.error(f"Unexpected message type: {elements}")
-        elif isinstance(elements, MessageChain):
-            self.value = elements.value
+                    Logger.error(f"Unexpected message type: {e}")
         elif not elements:
             pass
         else:
             Logger.error(f"Unexpected message type: {elements}")
+        Logger.debug(f"MessageChain: {self.value}")
+        Logger.debug("Elements: " + str(elements))
 
     @property
     def is_safe(self) -> bool:
@@ -188,7 +199,7 @@ class MessageChain:
         """
         将消息链序列化为列表。
         """
-        return [unstructure(x) for x in self.value]
+        return [{x.__name__() : unstructure(x)} for x in self.value]
 
     def from_list(self, lst: list) -> None:
         """
@@ -196,10 +207,11 @@ class MessageChain:
         """
         converted = []
         for x in lst:
-            if x['type'] in elements_map:
-                converted.append(structure(x, elements_map[x['type']]))
-            else:
-                Logger.error(f"Unexpected message type: {x}")
+            for elem in x:
+                if elem in elements_map:
+                    converted.append(structure(x[elem], elements_map[elem]))
+                else:
+                    Logger.error(f"Unexpected message type: {elem}")
         self.value = converted
 
     def append(self, element):

@@ -26,7 +26,10 @@ if TYPE_CHECKING:
 
 
 class MessageElement:
-    type: str = 'base'
+
+    @classmethod
+    def __name__(cls):
+        return cls.__name__
 
 
 @define
@@ -36,7 +39,6 @@ class PlainElement(MessageElement):
     :param text: 文本
     """
     text: str
-    type: str = 'plain'
 
     @classmethod
     def assign(cls, text: str,
@@ -63,7 +65,6 @@ class URLElement(MessageElement):
     """
     url: str
     md_format = Info.use_url_md_format
-    type: str = 'url'
 
     @classmethod
     def assign(cls, url: str, use_mm: bool = False, disable_mm: bool = False):
@@ -98,7 +99,6 @@ class FormattedTimeElement(MessageElement):
     time: bool = True
     seconds: bool = True
     timezone: bool = True
-    type: str = 'formatted_time'
 
     def to_str(self, msg: Optional['MessageSession'] = None):
         ftime_template = []
@@ -157,7 +157,6 @@ class I18NContextElement(MessageElement):
     """
     key: str
     kwargs: Dict[str, Any]
-    type: str = 'i18n'
 
     @classmethod
     def assign(cls,
@@ -177,7 +176,6 @@ class ErrorMessageElement(MessageElement):
     :param error_message: 错误文本
     """
     error_message: str
-    type: str = 'error'
 
     @classmethod
     def assign(cls,
@@ -215,7 +213,6 @@ class ImageElement(MessageElement):
     path: str
     need_get: bool = False
     headers: Optional[Dict[str, Any]] = None
-    type: str = 'image'
 
     @classmethod
     def assign(cls, path: Union[str, PILImage.Image],
@@ -284,7 +281,6 @@ class VoiceElement(MessageElement):
     :param path: 语音路径
     """
     path: str
-    type: str = 'voice'
 
     @classmethod
     def assign(cls, path: str):
@@ -295,7 +291,7 @@ class VoiceElement(MessageElement):
 
 
 @define
-class EmbedFieldElement:
+class EmbedFieldElement(MessageElement):
     """
     Embed字段。
     :param name: 字段名
@@ -305,7 +301,6 @@ class EmbedFieldElement:
     name: str
     value: str
     inline: bool = False
-    type: str = 'embed_field'
 
     @classmethod
     def assign(cls, name: str, value: str, inline: bool = False):
@@ -340,7 +335,6 @@ class EmbedElement(MessageElement):
     author: Optional[str] = None,
     footer: Optional[str] = None,
     fields: List[EmbedFieldElement] = None
-    type: str = 'embed'
 
     @classmethod
     def assign(cls, title: Optional[str] = None,
@@ -410,7 +404,7 @@ class EmbedElement(MessageElement):
 
 
 elements_map = {
-    x.type: x for x in [PlainElement,
+    x.__name__: x for x in [PlainElement,
                         URLElement,
                         FormattedTimeElement,
                         I18NContextElement,
