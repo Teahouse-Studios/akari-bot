@@ -474,7 +474,7 @@ _eval = module('eval', required_superuser=True, base=True, doc=True, load=Config
 @_eval.command('<display_msg>')
 async def _(msg: Bot.MessageSession, display_msg: str):
     try:
-        await msg.finish(str(eval(display_msg, {'msg': msg}))) # skipci
+        await msg.finish(str(eval(display_msg, {'msg': msg})))  # skipcq
     except Exception as e:
         Logger.error(str(e))
         raise NoReportException(e)
