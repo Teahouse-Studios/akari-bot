@@ -117,10 +117,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                     t = playtime
                     dw = 's'
             playtime = str(int(t)) + dw
-            if thumbpath:
-                havecover = True
-            else:
-                havecover = False
+            havecover = bool(thumbpath)
             songcards.append(
                 make_songcard(thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
                               havecover))

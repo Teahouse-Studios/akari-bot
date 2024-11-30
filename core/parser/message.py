@@ -101,10 +101,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
 
 async def check_target_cooldown(msg: Bot.MessageSession):
     cooldown_time = int(msg.options.get('cooldown_time', 0))
-    if await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user():
-        neutralized = True
-    else:
-        neutralized = False
+    neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
     if cooldown_time and not neutralized:
         if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
