@@ -69,11 +69,19 @@ async def get_whois(msg, domain):
             expiration_date = expiration_date[0]
         expiration_date = expiration_date.replace(tzinfo=timezone.utc)
 
-    res = [f"{msg.locale.t('whois.message.domain_name')}{format(domain_name).lower()}", f"{msg.locale.t('whois.message.registrar')}{registrar}" if registrar else '', f"{msg.locale.t('whois.message.whois_server')}{whois_server}" if whois_server else '', f"{msg.locale.t('whois.message.updated_date')}{
-               msg.ts2strftime(updated_date.timestamp())}" if updated_date else '', f"{msg.locale.t('whois.message.creation_date')}{
-               msg.ts2strftime(creation_date.timestamp())}" if creation_date else '', f"{msg.locale.t('whois.message.expiration_date')}{
-               msg.ts2strftime(expiration_date.timestamp())}" if expiration_date else '', f"{msg.locale.t('whois.message.name_servers')}{format(name_servers)}" if name_servers else '', f"{msg.locale.t('whois.message.email')}{format(emails)}" if emails else '', f"{msg.locale.t('whois.message.dnssec')}{format(dnssec)}" if dnssec else '', f"{msg.locale.t('whois.message.name')}{format(name)}" if name else '', f"{msg.locale.t('whois.message.organization')}{format(org)}" if org else '', f"{msg.locale.t('whois.message.location')}{f'{format(address)}, ' if address else ''}{
-               f'{format(city)}, ' if city else ''}{f'{format(state)}, ' if state else ''}{format(country)}" if country else '', f"{msg.locale.t('whois.message.postal_code')}{format(
-        registrant_postal_code)}" if registrant_postal_code else '']
+    res = [f"{msg.locale.t('whois.message.domain_name')}{format(domain_name).lower()}",
+           f"{msg.locale.t('whois.message.registrar')}{registrar}" if registrar else '',
+           f"{msg.locale.t('whois.message.whois_server')}{whois_server}" if whois_server else '',
+           f"{msg.locale.t('whois.message.updated_date')}{msg.ts2strftime(updated_date.timestamp())}" if updated_date else '',
+           f"{msg.locale.t('whois.message.creation_date')}{msg.ts2strftime(creation_date.timestamp())}" if creation_date else '',
+           f"{msg.locale.t('whois.message.expiration_date')}{msg.ts2strftime(expiration_date.timestamp())}" if expiration_date else '',
+           f"{msg.locale.t('whois.message.name_servers')}{format(name_servers)}" if name_servers else '',
+           f"{msg.locale.t('whois.message.email')}{format(emails)}" if emails else '',
+           f"{msg.locale.t('whois.message.dnssec')}{format(dnssec)}" if dnssec else '',
+           f"{msg.locale.t('whois.message.name')}{format(name)}" if name else '',
+           f"{msg.locale.t('whois.message.organization')}{format(org)}" if org else '',
+           f"{msg.locale.t('whois.message.location')}{f'{format(address)}, ' if address else ''}{
+               f'{format(city)}, ' if city else ''}{f'{format(state)}, ' if state else ''}{format(country)}" if country else '',
+           f"{msg.locale.t('whois.message.postal_code')}{format(registrant_postal_code)}" if registrant_postal_code else '']
 
     return '\n'.join([x for x in res if x])
