@@ -40,7 +40,7 @@ class LocaleNode:
         if len(path) == 0:
             return self
         nxt_node = path[0]
-        if nxt_node in self.children.keys():
+        if nxt_node in self.children:
             return self.children[nxt_node]._query_node(path[1:])
         else:
             return None
@@ -55,7 +55,7 @@ class LocaleNode:
             self.value = write_value
             return
         nxt_node = path[0]
-        if nxt_node not in self.children.keys():
+        if nxt_node not in self.children:
             self.children[nxt_node] = LocaleNode()
         self.children[nxt_node]._update_node(path[1:], write_value)
 
@@ -104,7 +104,7 @@ def load_locale_file() -> Optional[List[str]]:
                         traceback.print_exc()
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
 
-    for lang in locale_dict.keys():
+    for lang in locale_dict:
         for k in locale_dict[lang].keys():
             locale_root.update_node(f'{lang}.{k}', locale_dict[lang][k])
 
