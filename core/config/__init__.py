@@ -372,9 +372,8 @@ def Config(q: str,
            _generate: bool = False) -> Any:
     if get_url:
         v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
-        if v:
-            if v[-1] != '/':
-                v += '/'
+        if v and v[-1] != '/':
+            v += '/'
     else:
         v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v

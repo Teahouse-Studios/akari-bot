@@ -111,9 +111,8 @@ async def config_gu(msg: Bot.MessageSession):
             confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"))
             if not confirm:
                 await msg.finish()
-        if user:
-            if msg.data.remove_custom_admin(user):
-                await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
+        if user and msg.data.remove_custom_admin(user):
+            await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
 @admin.command('ban <user> {{core.help.admin.ban}}',
