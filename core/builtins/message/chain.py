@@ -162,10 +162,8 @@ class MessageChain:
                     value.append(x)
                 else:
                     value.append(
-                        PlainElement(
-                            str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
-                                                           locale=locale))
-                        )
+                        PlainElement.assign(str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
+                                                           locale=locale)))
                     )
             elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(msg=msg)
@@ -178,7 +176,7 @@ class MessageChain:
             elif isinstance(x, I18NContextElement):
                 t_value = msg.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
-                    value.append(PlainElement(t_value))
+                    value.append(PlainElement.assign(t_value))
                 else:
                     value += MessageChain(t_value).as_sendable(msg)
             elif isinstance(x, URLElement):
@@ -307,7 +305,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
                             if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                                img = ImageElement(path=ma.group(2))
+                                img = ImageElement.assign(path=ma.group(2))
                         if ma.group(1) == "headers":
                             img.headers = json.loads(
                                 str(base64.b64decode(ma.group(2)), "UTF-8")

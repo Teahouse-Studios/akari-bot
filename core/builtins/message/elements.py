@@ -271,7 +271,7 @@ class ImageElement(MessageElement):
 
         save = f'{random_cache_path()}.png'
         image.save(save)
-        return ImageElement(save)
+        return ImageElement.assign(save)
 
 
 @define
@@ -394,7 +394,7 @@ class EmbedElement(MessageElement):
             text_lst.append(self.footer)
         message_chain = []
         if text_lst:
-            message_chain.append(PlainElement('\n'.join(text_lst)))
+            message_chain.append(PlainElement.assign('\n'.join(text_lst)))
         if self.image:
             message_chain.append(self.image)
         return message_chain
