@@ -12,8 +12,6 @@ from tomlkit.items import Table
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
-
-import core.config.update
 from core.utils.i18n import Locale
 from core.exports import add_export
 
