@@ -11,7 +11,7 @@ from core.parser.args import Template
 
 class Meta:
     def __init__(self, **kwargs):
-        ...
+        raise NotImplementedError
 
 
 class CommandMeta:
