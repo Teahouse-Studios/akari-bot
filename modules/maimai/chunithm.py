@@ -188,9 +188,9 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
             combo=chart['combo'],
             charter=chart['charter']))
     else:
-        for diff in range(len(music['ds'])):
+        for diff, item in enumerate(music['ds']):
             chart = music['charts'][diff]
-            ds = music['ds'][diff]
+            ds = item
             level = music['level'][diff]
             res.append(msg.locale.t(
                 "chunithm.message.chart",

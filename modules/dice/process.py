@@ -135,19 +135,19 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 def insert_multiply(msg: Bot.MessageSession, lst: list):
     result = []
     asterisk = '\\*' if msg.Feature.markdown else '*'
-    for i in range(len(lst)):
+    for i, item in enumerate(lst):
         if i == 0:
-            result.append(lst[i])
+            result.append(item)
         else:
-            if isint(lst[i - 1][-1]) and isint(lst[i][0]):
+            if isint(lst[i - 1][-1]) and isint(item[0]):
                 result.append(asterisk)
-            elif lst[i - 1][-1] == ')' and lst[i][0] == '(':
+            elif lst[i - 1][-1] == ')' and item[0] == '(':
                 result.append(asterisk)
-            elif isint(lst[i - 1][-1]) and lst[i][0] == '(':
+            elif isint(lst[i - 1][-1]) and item[0] == '(':
                 result.append(asterisk)
-            elif lst[i - 1][-1] == ')' and isint(lst[i][0]):
+            elif lst[i - 1][-1] == ')' and isint(item[0]):
                 result.append(asterisk)
-            result.append(lst[i])
+            result.append(item)
     return result
 
 # 开始投掷并生成消息
