@@ -38,8 +38,6 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     Logger.info(f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}")
-    if event.sender == client.user or event.prev_membership == event.membership:
-        pass
     # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == 'invite'
     # if not is_direct:
     #     resp = await bot.room_get_state_event(room.room_id, 'm.room.member', client.user)
