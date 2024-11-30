@@ -29,8 +29,6 @@ def time_diff(time: str):
     datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
     now = datetime.datetime.now().timestamp()
     diff = now - datetimed
-
-    diff = diff
     t = diff / 60 / 60 / 24
     dw = ' day(s)'
     if t < 1:
