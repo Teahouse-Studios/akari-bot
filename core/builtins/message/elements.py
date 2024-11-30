@@ -194,7 +194,13 @@ class ErrorMessageElement(MessageElement):
             locale = Locale(locale)
             error_message = locale.t_str(error_message, **kwargs)
             error_message = locale.t('message.error') + error_message
-            if enable_report and (report_url := URLElement.assign(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)):
+            if enable_report and (
+                report_url := URLElement.assign(
+                    Config(
+                        'bug_report_url',
+                        bug_report_url_default,
+                        cfg_type=str),
+                    use_mm=False)):
                 error_message += '\n' + \
                     locale.t('error.prompt.address', url=str(report_url))
 

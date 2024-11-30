@@ -163,7 +163,7 @@ class MessageChain:
                 else:
                     value.append(
                         PlainElement.assign(str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
-                                                           locale=locale)))
+                                                                           locale=locale)))
                     )
             elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(msg=msg)
