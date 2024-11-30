@@ -20,10 +20,7 @@ def dark_check(message: str):
         'programthink'
     ]
     if Info.dirty_word_check:
-        for i in blacklist:
-            if message.find(i) != -1:
-                return True
-        return False
+        return any(message.find(i) != -1 for i in blacklist)
     else:
         return False
 
