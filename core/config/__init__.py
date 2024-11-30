@@ -173,7 +173,7 @@ class CFGManager:
 
             return default
         if cfg_type:
-            if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
+            if isinstance(cfg_type, (type, tuple)):
                 if isinstance(cfg_type, tuple):
                     cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
                     if value is not None and not isinstance(value, cfg_type):
