@@ -63,7 +63,7 @@ class CFGManager:
         if not cls._save_lock:
             cls._save_lock = True
             try:
-                for cfg in cls.values.keys():
+                for cfg in cls.values:
                     cfg_name = cfg
                     if not cfg_name.endswith('.toml'):
                         cfg_name += '.toml'
@@ -80,7 +80,7 @@ class CFGManager:
     def watch(cls):  # Watch for changes in the config file and reload if necessary
         if not cls._watch_lock:
             cls._watch_lock = True
-            for cfg in cls.values.keys():
+            for cfg in cls.values:
                 cfg_file = cfg
                 if not cfg_file.endswith('.toml'):
                     cfg_file += '.toml'
@@ -137,7 +137,7 @@ class CFGManager:
                             break
             else:  # search for the value in all tables
                 found = False
-                for t in cls.values.keys():
+                for t in cls.values:
                     for tt in cls.values[t].keys():
                         if isinstance(cls.values[t][tt], Table):
                             value = cls.values[t][tt].get(q)

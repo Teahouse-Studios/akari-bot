@@ -79,7 +79,7 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
 disabled_bots = []
 processes = []
 
-for t in CFGManager.values.keys():
+for t in CFGManager.values:
     if t.startswith('bot_') and not t.endswith('_secret'):
         if 'enable' in CFGManager.values[t][t]:
             if not CFGManager.values[t][t]['enable']:

@@ -94,7 +94,7 @@ if 'initialized' not in config.value:
                 table = cfg_name + '_secret' if secret else cfg_name
 
                 if key in old_config[c_target]:
-                    if cfg_name not in configs.keys():
+                    if cfg_name not in configs:
                         configs[cfg_name] = toml_document()
                         configs[cfg_name].add(
                             toml_comment(
