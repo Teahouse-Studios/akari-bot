@@ -101,7 +101,7 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
 {''.join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
 Please input the number of the language you want to use: """)
         if lang.strip() == '':
-            exit(0)
+            sys.exit(0)
         if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
@@ -116,7 +116,7 @@ Please input the number of the language you want to use: """)
     print('Please restart the bot after modifying the config file.')
     print('Press enter to exit.')
     input()
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
