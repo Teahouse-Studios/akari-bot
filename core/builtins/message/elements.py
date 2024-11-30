@@ -36,12 +36,12 @@ class PlainElement(MessageElement):
     :param text: 文本
     """
     text: str
-    type = 'plain'
+    type: str = 'plain'
 
     @classmethod
     def assign(cls, text: str,
-                 *texts: Tuple[str],
-                 disable_joke: bool = False):
+               *texts: Tuple[str],
+               disable_joke: bool = False):
         """
         :param text: 文本内容
         :param texts: 额外的文本内容
@@ -63,7 +63,7 @@ class URLElement(MessageElement):
     """
     url: str
     md_format = Info.use_url_md_format
-    type = 'url'
+    type: str = 'url'
 
     @classmethod
     def assign(cls, url: str, use_mm: bool = False, disable_mm: bool = False):
@@ -80,7 +80,6 @@ class URLElement(MessageElement):
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
         return cls(url=url)
-
 
     def __str__(self):
         if self.md_format:
@@ -99,6 +98,7 @@ class FormattedTimeElement(MessageElement):
     time: bool = True
     seconds: bool = True
     timezone: bool = True
+    type: str = 'formatted_time'
 
     def to_str(self, msg: Optional['MessageSession'] = None):
         ftime_template = []
@@ -132,14 +132,13 @@ class FormattedTimeElement(MessageElement):
     def __str__(self):
         return self.to_str()
 
-
     @classmethod
     def assign(cls, timestamp: float,
-                 date: bool = True,
-                 iso: bool = False,
-                 time: bool = True,
-                 seconds: bool = True,
-                 timezone: bool = True):
+               date: bool = True,
+               iso: bool = False,
+               time: bool = True,
+               seconds: bool = True,
+               timezone: bool = True):
         """
         :param timestamp: 时间戳（UTC时间）
         :param date: 是否显示日期
@@ -158,12 +157,12 @@ class I18NContextElement(MessageElement):
     """
     key: str
     kwargs: Dict[str, Any]
-    type = 'i18n'
+    type: str = 'i18n'
 
     @classmethod
     def assign(cls,
-                 key: str,
-                 **kwargs: Any):
+               key: str,
+               **kwargs: Any):
         """
         :param key: 多语言的键名
         :param kwargs: 多语言中的变量
@@ -178,14 +177,14 @@ class ErrorMessageElement(MessageElement):
     :param error_message: 错误文本
     """
     error_message: str
-    type = 'error'
+    type: str = 'error'
 
     @classmethod
     def assign(cls,
-                 error_message: str,
-                 locale: Optional[str] = None,
-                 enable_report: bool = True,
-                 **kwargs: Dict[str, Any]):
+               error_message: str,
+               locale: Optional[str] = None,
+               enable_report: bool = True,
+               **kwargs: Dict[str, Any]):
         """
         :param error_message: 错误信息文本
         :param locale: 多语言
@@ -216,11 +215,11 @@ class ImageElement(MessageElement):
     path: str
     need_get: bool = False
     headers: Optional[Dict[str, Any]] = None
-    type = 'image'
+    type: str = 'image'
 
     @classmethod
     def assign(cls, path: Union[str, PILImage.Image],
-                 headers: Optional[Dict[str, Any]] = None):
+               headers: Optional[Dict[str, Any]] = None):
         """
         :param path: 图片路径
         :param headers: 获取图片时的请求头
@@ -242,7 +241,6 @@ class ImageElement(MessageElement):
             return os.path.abspath(await self.get_image())
         return os.path.abspath(self.path)
 
-
     @retry(stop=stop_after_attempt(3))
     async def get_image(self):
         """
@@ -258,12 +256,10 @@ class ImageElement(MessageElement):
                     image_cache.write(raw)
                 return img_path
 
-
     async def get_base64(self):
         file = await self.get()
         with open(file, 'rb') as f:
             return str(base64.b64encode(f.read()), "UTF-8")
-
 
     async def add_random_noise(self) -> 'ImageElement':
         image = PILImage.open(await self.get())
@@ -288,7 +284,7 @@ class VoiceElement(MessageElement):
     :param path: 语音路径
     """
     path: str
-    type = 'voice'
+    type: str = 'voice'
 
     @classmethod
     def assign(cls, path: str):
@@ -309,7 +305,7 @@ class EmbedFieldElement:
     name: str
     value: str
     inline: bool = False
-    type = 'embed_field'
+    type: str = 'embed_field'
 
     @classmethod
     def assign(cls, name: str, value: str, inline: bool = False):
@@ -344,19 +340,19 @@ class EmbedElement(MessageElement):
     author: Optional[str] = None,
     footer: Optional[str] = None,
     fields: List[EmbedFieldElement] = None
-    type = 'embed'
+    type: str = 'embed'
 
     @classmethod
     def assign(cls, title: Optional[str] = None,
-                 description: Optional[str] = None,
-                 url: Optional[str] = None,
-                 timestamp: float = datetime.now().timestamp(),
-                 color: int = 0x0091ff,
-                 image: Optional[ImageElement] = None,
-                 thumbnail: Optional[ImageElement] = None,
-                 author: Optional[str] = None,
-                 footer: Optional[str] = None,
-                 fields: List[EmbedFieldElement] = None):
+               description: Optional[str] = None,
+               url: Optional[str] = None,
+               timestamp: float = datetime.now().timestamp(),
+               color: int = 0x0091ff,
+               image: Optional[ImageElement] = None,
+               thumbnail: Optional[ImageElement] = None,
+               author: Optional[str] = None,
+               footer: Optional[str] = None,
+               fields: List[EmbedFieldElement] = None):
         fields_ = []
         if fields:
             for f in fields:
@@ -366,7 +362,17 @@ class EmbedElement(MessageElement):
                     fields_.append(structure(f, EmbedFieldElement))
                 else:
                     raise TypeError(f"Invalid type {type(f)} for EmbedField.")
-        return cls(title=title, description=description, url=url, timestamp=timestamp, color=color, image=image, thumbnail=thumbnail, author=author, footer=footer, fields=fields_)
+        return cls(
+            title=title,
+            description=description,
+            url=url,
+            timestamp=timestamp,
+            color=color,
+            image=image,
+            thumbnail=thumbnail,
+            author=author,
+            footer=footer,
+            fields=fields_)
 
     def to_message_chain(self, msg: Optional['MessageSession'] = None):
         """
@@ -415,4 +421,15 @@ elements_map = {
                         EmbedElement
                         ]
 }
-__all__ = ['MessageElement', 'PlainElement', 'URLElement', 'FormattedTimeElement', 'I18NContextElement', 'ErrorMessageElement', 'ImageElement', 'VoiceElement', 'EmbedFieldElement', 'EmbedElement', 'elements_map']
+__all__ = [
+    'MessageElement',
+    'PlainElement',
+    'URLElement',
+    'FormattedTimeElement',
+    'I18NContextElement',
+    'ErrorMessageElement',
+    'ImageElement',
+    'VoiceElement',
+    'EmbedFieldElement',
+    'EmbedElement',
+    'elements_map']

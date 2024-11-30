@@ -190,7 +190,6 @@ class MessageChain:
         """
         return [unstructure(x) for x in self.value]
 
-
     def from_list(self, lst: list) -> None:
         """
         从列表构造消息链，替换原有的消息链。

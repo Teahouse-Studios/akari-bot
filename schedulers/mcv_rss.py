@@ -83,8 +83,8 @@ async def mcv_rss():
             await JobQueue.trigger_hook_all('mcv_rss',
                                             message=MessageChain([I18NContext('mcv_rss.message.mcv_rss.release',
                                                                  version=release),
-                                                     FormattedTime(time_release)
-                                                     ]))
+                                                                  FormattedTime(time_release)
+                                                                  ]))
             verlist.append(release)
             update_stored_list('scheduler', 'mcv_rss', verlist)
             article = await get_article(release)
@@ -102,7 +102,7 @@ async def mcv_rss():
             await JobQueue.trigger_hook_all('mcv_rss', message=MessageChain([I18NContext('mcv_rss.message.mcv_rss.snapshot',
                                                                             version=file['latest'][
                                                                                 'snapshot']),
-                                                                FormattedTime(time_snapshot)]))
+                                                                             FormattedTime(time_snapshot)]))
             verlist.append(snapshot)
             update_stored_list('scheduler', 'mcv_rss', verlist)
             article = await get_article(snapshot)
