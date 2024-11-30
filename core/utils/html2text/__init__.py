@@ -442,7 +442,6 @@ class HTML2Text(html.parser.HTMLParser):
                     self.abbr_title = attrs["title"]
             else:
                 if self.abbr_title is not None:
-                    assert self.abbr_data is not None
                     self.abbr_list[self.abbr_data] = self.abbr_title
                     self.abbr_title = None
                 self.abbr_data = None
@@ -479,8 +478,6 @@ class HTML2Text(html.parser.HTMLParser):
                     if self.maybe_automatic_link and not self.empty_link:
                         self.maybe_automatic_link = None
                     elif a:
-                        if a["href"] is None:
-                            raise AssertionError
                         if self.empty_link:
                             self.o("[")
                             self.empty_link = False
@@ -501,8 +498,6 @@ class HTML2Text(html.parser.HTMLParser):
 
         if tag == "img" and start and not self.ignore_images:
             if "src" in attrs:
-                if attrs["src"] is None:
-                    raise AssertionError
                 if not self.images_to_alt:
                     attrs["href"] = attrs["src"]
                 alt = attrs.get("alt") or self.default_image_alt
@@ -514,12 +509,8 @@ class HTML2Text(html.parser.HTMLParser):
                 ):
                     self.o("<img src='" + attrs["src"] + "' ")
                     if "width" in attrs:
-                        if attrs["width"] is None:
-                            raise AssertionError
                         self.o("width='" + attrs["width"] + "' ")
                     if "height" in attrs:
-                        if attrs["height"] is None:
-                            raise AssertionError
                         self.o("height='" + attrs["height"] + "' ")
                     if alt:
                         self.o("alt='" + alt + "' ")
@@ -783,8 +774,6 @@ class HTML2Text(html.parser.HTMLParser):
                             + str(Url(urlparse.urljoin(self.baseurl, link.attrs["href"])))
                         )
                         if "title" in link.attrs:
-                            if link.attrs["title"] is None:
-                                raise AssertionError
                             self.out(" (" + link.attrs["title"] + ")")
                         self.out("\n")
                     else:
