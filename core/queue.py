@@ -74,7 +74,7 @@ class JobQueue:
     async def web_render_status(cls, web_render_status: bool, web_render_local_status: bool):
         for target in get_all_clients_name():
             await cls.add_job(target, 'web_render_status', {'web_render_status': web_render_status,
-                                                          'web_render_local_status': web_render_local_status})
+                                                            'web_render_local_status': web_render_local_status})
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):

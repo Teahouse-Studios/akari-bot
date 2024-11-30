@@ -30,9 +30,10 @@ class MessageChain:
         self,
         elements: Optional[Union[
             str,
-            List[Union[MessageElement]],
-            Tuple[Union[MessageElement]],
-            MessageElement
+            List[MessageElement],
+            Tuple[MessageElement],
+            MessageElement,
+            'MessageChain'
         ]] = None,
     ):
         """
