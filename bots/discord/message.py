@@ -217,7 +217,9 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list=[], i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
+        if user_list is None:
+            user_list = []
         module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:
