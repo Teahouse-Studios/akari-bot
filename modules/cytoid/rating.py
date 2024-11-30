@@ -226,11 +226,9 @@ async def download_cover_thumb(uid):
             level_url = 'http://services.cytoid.io/levels/' + uid
             get_level = json.loads(await get_url(level_url))
             cover_thumbnail = get_level['cover']['original'] + "?h=240&w=384"
-            async with aiohttp.ClientSession() as session:
-                async with session.get(cover_thumbnail) as resp:
-                    async with async_open(path, 'wb+') as jpg:
-                        await jpg.write(await resp.read())
-                        return path
+            async with aiohttp.ClientSession() as session, session.get(cover_thumbnail) as resp, async_open(path, 'wb+') as jpg:
+                await jpg.write(await resp.read())
+                return path
         else:
             return path
     except BaseException:
@@ -246,11 +244,9 @@ async def download_avatar_thumb(link, id):
         path = os.path.join(d, f'{id}.png')
         if os.path.exists(path):
             os.remove(path)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link, timeout=aiohttp.ClientTimeout(total=20)) as resp:
-                async with async_open(path, 'wb+') as jpg:
-                    await jpg.write(await resp.read())
-                    return path
+        async with aiohttp.ClientSession() as session, session.get(link, timeout=aiohttp.ClientTimeout(total=20)) as resp, async_open(path, 'wb+') as jpg:
+            await jpg.write(await resp.read())
+            return path
     except BaseException:
         Logger.error(traceback.format_exc())
         return False

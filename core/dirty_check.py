@@ -157,19 +157,18 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
         headers['Authorization'] = sign
         # 'Authorization': "acs {}:{}".format(access_key_id, sign)
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    Logger.debug(result)
-                    for item in result['data']:
-                        content = item['content']
-                        for n in call_api_list[content]:
-                            query_list.update(
-                                {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
-                        DirtyWordCache(content).update(item)
-                else:
-                    raise ValueError(await resp.text())
+        async with aiohttp.ClientSession(headers=headers) as session, session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                Logger.debug(result)
+                for item in result['data']:
+                    content = item['content']
+                    for n in call_api_list[content]:
+                        query_list.update(
+                            {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
+                    DirtyWordCache(content).update(item)
+            else:
+                raise ValueError(await resp.text())
     results = []
     Logger.debug(query_list)
     for x in query_list:
