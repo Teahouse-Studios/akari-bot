@@ -103,9 +103,8 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
         if link[-1] != '/':
             link += '/'
         try:
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                    html = await req.read()
+            async with aiohttp.ClientSession(headers=headers) as session, session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                html = await req.read()
         except BaseException:
             Logger.error(traceback.format_exc())
             return False
@@ -346,8 +345,22 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
         Logger.info('Start rendering...')
         img_lst = []
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(webrender(), headers={
+            async with aiohttp.ClientSession() as session, session.post(webrender(), headers={
+                'Content-Type': 'application/json',
+            }, data=json.dumps(html)) as resp:
+                if resp.status != 200:
+                    Logger.info(f'Failed to render: {await resp.text()}')
+                    return False
+                imgs_data = json.loads(await resp.read())
+                for img in imgs_data:
+                    b = base64.b64decode(img)
+                    bio = BytesIO(b)
+                    bimg = PILImage.open(bio)
+                    img_lst.append(bimg)
+
+        except aiohttp.ClientConnectorError:
+            if use_local:
+                async with aiohttp.ClientSession() as session, session.post(webrender(use_local=False), headers={
                     'Content-Type': 'application/json',
                 }, data=json.dumps(html)) as resp:
                     if resp.status != 200:
@@ -359,22 +372,6 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                         bio = BytesIO(b)
                         bimg = PILImage.open(bio)
                         img_lst.append(bimg)
-
-        except aiohttp.ClientConnectorError:
-            if use_local:
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(webrender(use_local=False), headers={
-                        'Content-Type': 'application/json',
-                    }, data=json.dumps(html)) as resp:
-                        if resp.status != 200:
-                            Logger.info(f'Failed to render: {await resp.text()}')
-                            return False
-                        imgs_data = json.loads(await resp.read())
-                        for img in imgs_data:
-                            b = base64.b64decode(img)
-                            bio = BytesIO(b)
-                            bimg = PILImage.open(bio)
-                            img_lst.append(bimg)
 
         return img_lst
     except Exception:
