@@ -184,7 +184,8 @@ async def start():
         megolm_backup_path = os.path.join(client.store_path_megolm_backup, f"restore.txt")
         if os.path.exists(megolm_backup_path):
             pass_path = os.path.join(client.store_path_megolm_backup, f"restore-passphrase.txt")
-            assert os.path.exists(pass_path)
+            if not os.path.exists(pass_path):
+                raise AssertionError
             Logger.info(f"Importing megolm keys backup from {megolm_backup_path}")
             with open(pass_path) as f:
                 passphrase = f.read()
