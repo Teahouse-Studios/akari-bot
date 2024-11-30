@@ -80,8 +80,7 @@ async def search_csr(id=None):
     for element in elements:
         value += elements[element]
     wh = 500 * value // 100
-    if wh < 500:
-        wh = 500
+    wh = max(wh, 500)
     return {'id': answer_id,
             'answer': name,
             'image': f'{csr_link}/ImagesHandler.ashx?id={answer_id}' +
@@ -171,8 +170,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         image.save(newpath)
 
     set_timeout = play_state.get('length') // 30
-    if set_timeout < 2:
-        set_timeout = 2
+    set_timeout = max(set_timeout, 2)
 
     async def ans(msg: Bot.MessageSession, random_mode):
         wait = await msg.wait_next_message(timeout=None)
