@@ -88,8 +88,8 @@ class MessageChain:
             pass
         else:
             Logger.error(f"Unexpected message type: {elements}")
-        Logger.debug(f"MessageChain: {self.value}")
-        Logger.debug("Elements: " + str(elements))
+        # Logger.debug(f"MessageChain: {self.value}")
+        # Logger.debug("Elements: " + str(elements))
 
     @property
     def is_safe(self) -> bool:
