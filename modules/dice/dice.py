@@ -45,8 +45,8 @@ class DiceItemBase:
     def GetDetail(self):
         return self.detail
 
-    def Roll(self, msg):
-        raise NotImplementedError()
+    def Roll(self, msg: Bot.MessageSession):
+        raise NotImplementedError
 
 
 class Dice(DiceItemBase):
