@@ -409,7 +409,7 @@ class BotDBUtil:
                 AnalyticsData.moduleName, func.count(
                     AnalyticsData.id)).group_by(
                 AnalyticsData.moduleName).all()
-            modules_count = {module_name: count for module_name, count in results}
+            modules_count = dict(results)
             return modules_count
 
     class UnfriendlyActions:

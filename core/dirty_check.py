@@ -112,7 +112,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
                 if pq not in call_api_list:
                     call_api_list.update({pq: []})
                 call_api_list[pq].append(q)
-    call_api_list_ = [x for x in call_api_list]
+    call_api_list_ = list(call_api_list)
     Logger.debug(call_api_list_)
     if call_api_list_:
         body = {
