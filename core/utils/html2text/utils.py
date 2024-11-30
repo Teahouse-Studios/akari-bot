@@ -136,7 +136,7 @@ def google_fixed_width_font(style: Dict[str, str]) -> bool:
     font_family = ""
     if "font-family" in style:
         font_family = style["font-family"]
-    return "courier new" == font_family or "consolas" == font_family
+    return font_family in ("courier new", "consolas")
 
 
 def list_numbering_start(attrs: Dict[str, Optional[str]]) -> int:
