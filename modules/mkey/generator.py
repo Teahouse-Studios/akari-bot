@@ -463,9 +463,9 @@ class MkeyGenerator:
         # Perform calculation of master key.
         if algorithm == "v0":
             output = self._generate_v0(props, inquiry, month, day)
-        elif algorithm == "v1" or algorithm == "v2":
+        elif algorithm in ("v1", "v2"):
             output = self._generate_v1_v2(props, inquiry, month, day)
-        elif algorithm == "v3" or algorithm == "v4":
+        elif algorithm in ("v3", "v4"):
             output = self._generate_v3_v4(props, inquiry, aux)
 
         return output
