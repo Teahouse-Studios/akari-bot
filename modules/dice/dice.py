@@ -97,7 +97,7 @@ class Dice(DiceItemBase):
             dice_sides = midstrs[0]
             dice_adv = midstrs[2]
             positive = -1
-        if positive and not len(dice_adv):
+        if positive and not dice_adv:
             dice_adv = '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not isint(dice_count):
