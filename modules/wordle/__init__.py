@@ -63,7 +63,8 @@ class WordleBoard:
         self.board.append(word)
         return self.test_board()
 
-    def verify_word(self, word: str):
+    @staticmethod
+    def verify_word(word: str):
         return word in word_list
 
     def test_board(self):

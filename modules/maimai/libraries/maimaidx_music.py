@@ -195,7 +195,8 @@ class TotalList:
             Logger.error(traceback.format_exc())
             return False
 
-    async def dl_cache(self):
+    @staticmethod
+    async def dl_cache():
         try:
             url = "https://www.diving-fish.com/api/maimaidxprober/music_data"
             data = await get_url(url, 200, fmt='json')

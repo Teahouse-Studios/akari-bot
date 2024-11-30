@@ -209,7 +209,8 @@ class Locale:
         fmted_num = self._fmt_num(number / scale, precision)
         return self.t_str(f"{fmted_num} {{i18n.unit.{unit}}}", fallback_failed_prompt)
 
-    def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+    @staticmethod
+    def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e11'):
             return 3, Decimal('10e11')
         elif number >= Decimal('10e7'):
@@ -219,7 +220,8 @@ class Locale:
         else:
             return None
 
-    def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+    @staticmethod
+    def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e8'):
             return 3, Decimal('10e8')
         elif number >= Decimal('10e5'):
@@ -229,7 +231,8 @@ class Locale:
         else:
             return None
 
-    def _fmt_num(self, number: Decimal, precision: int) -> str:
+    @staticmethod
+    def _fmt_num(number: Decimal, precision: int) -> str:
         number = number.quantize(Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP)
         num_str = f"{number:.{precision}f}".rstrip('0').rstrip('.')
         return num_str if precision > 0 else str(int(number))
