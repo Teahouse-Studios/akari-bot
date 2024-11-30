@@ -13,7 +13,7 @@ from .maimaidx_utils import compute_rating, calc_dxstar
 total_list = TotalList()
 
 
-class ChartInfo(object):
+class ChartInfo:
     def __init__(self, idNum: str, diff: int, tp: str, ra: int, achievement: float, dxScore: int, dxScoreMax: int,
                  combo: int, sync: int, rate: int, title: str, ds: float, lv: str):
         self.idNum = idNum
@@ -60,7 +60,7 @@ class ChartInfo(object):
         )
 
 
-class BestList(object):
+class BestList:
 
     def __init__(self, size: int):
         self.data = []
@@ -88,7 +88,7 @@ class BestList(object):
         return self.data[index]
 
 
-class DrawBest(object):
+class DrawBest:
 
     def __init__(self, sdBest: List[ChartInfo], dxBest: List[ChartInfo], userName: str):
         self.sdBest = sdBest
