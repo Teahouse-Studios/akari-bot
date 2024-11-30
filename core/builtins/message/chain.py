@@ -172,7 +172,7 @@ class MessageChain:
                         value[-1].text += "\n"
                     value[-1].text += x
                 else:
-                    value.append(PlainElement(x))
+                    value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
                 t_value = msg.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
@@ -187,7 +187,7 @@ class MessageChain:
                 value.append(x)
         if not value:
             value.append(
-                PlainElement(
+                PlainElement.assign(
                     str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
                                                    locale=locale))
                 )
