@@ -31,7 +31,7 @@ class DiceValueError(Exception):
 
 
 # 类定义
-class DiceItemBase(object):
+class DiceItemBase:
     """骰子项的基类"""
 
     def __init__(self, dice_code: str):
