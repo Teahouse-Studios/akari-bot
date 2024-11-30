@@ -268,7 +268,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()
 
-            mute = True if command_first_word == 'mute' else False
+            mute = command_first_word == 'mute'
 
             in_mute = msg.muted
             if in_mute and not mute:

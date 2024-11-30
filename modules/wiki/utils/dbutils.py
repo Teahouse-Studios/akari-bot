@@ -145,15 +145,15 @@ class Audit:
     def inAllowList(self) -> bool:
         session.expire_all()
         apilink = urlparse(self.api_link).netloc
-        return True if session.query(WikiAllowList).filter(
-            WikiAllowList.apiLink.like(f'%{apilink}%')).first() else False
+        return bool(session.query(WikiAllowList).filter(
+            WikiAllowList.apiLink.like(f'%{apilink}%')).first())
 
     @property
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def inBlockList(self) -> bool:
         session.expire_all()
-        return True if session.query(WikiBlockList).filter_by(apiLink=self.api_link).first() else False
+        return bool(session.query(WikiBlockList).filter_by(apiLink=self.api_link).first())
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error

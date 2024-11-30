@@ -113,7 +113,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 wiki_msg = ''
 
             if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and Info.web_render_status:
-                use_local = True if Info.web_render_local_status else False
+                use_local = bool(Info.web_render_local_status)
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
