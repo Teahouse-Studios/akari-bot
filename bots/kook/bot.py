@@ -18,8 +18,8 @@ from core.types import MsgInfo, Session
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'kook'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
-Url.disable_mm = not Config('enable_urlmanager', False)
-Url.md_format = True
+Info.use_url_manager = Config('enable_urlmanager', False)
+Info.use_url_md_format = True
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
