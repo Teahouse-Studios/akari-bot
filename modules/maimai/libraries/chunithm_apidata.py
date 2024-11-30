@@ -23,7 +23,7 @@ async def get_info(music: Music, *details) -> MessageChain:
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     cache_dir = os.path.join(cache_path, f'{msg.target.sender_id.replace('|', '_')}_maimai_record.json')
-    url = f"https://www.diving-fish.com/api/chunithmprober/query/player"
+    url = "https://www.diving-fish.com/api/chunithmprober/query/player"
     if 'username' in payload:
         use_cache = False
     try:

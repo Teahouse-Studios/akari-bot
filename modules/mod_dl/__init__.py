@@ -36,7 +36,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         if ver:
             url += f'&facets=[["versions:{ver}"],["project_type:mod"]]'
         else:
-            url += f'&facets=[["project_type:mod"]]'
+            url += '&facets=[["project_type:mod"]]'
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3)
         if resp:
             results = []

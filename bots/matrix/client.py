@@ -36,10 +36,10 @@ if homeserver and user and device_id and token:
             Logger.warning("matrix_megolm_backup_passphrase is too short. It is insecure.")
     else:
         Logger.warning(
-            f"Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
+            "Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
 
     if homeserver.endswith('/'):
-        Logger.warning(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
+        Logger.warning("The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
     homeserver_host = urllib3.util.parse_url(homeserver).host
     bot: AsyncClient = AsyncClient(homeserver,
                                    user,
@@ -47,8 +47,8 @@ if homeserver and user and device_id and token:
                                    config=AsyncClientConfig(store_sync_tokens=True))
     bot.restore_login(user, device_id, token)
     if bot.olm:
-        Logger.info(f"Matrix E2E encryption support is available.")
+        Logger.info("Matrix E2E encryption support is available.")
     else:
-        Logger.info(f"Matrix E2E encryption support is not available.")
+        Logger.info("Matrix E2E encryption support is not available.")
 else:
     bot = False

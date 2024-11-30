@@ -71,7 +71,7 @@ class Url:
         """
         self.url = url
         if (Url.mm and not disable_mm) or (use_mm and not Url.disable_mm):
-            mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
+            mm_url = 'https://mm.teahouse.team/?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")
