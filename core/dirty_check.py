@@ -25,7 +25,7 @@ def hash_hmac(key, code, sha1):
 
 
 def computeMD5hash(my_string):
-    m = hashlib.md5()
+    m = hashlib.md5(usedforsecurity=False)
     m.update(my_string.encode('gb2312'))
     return m.hexdigest()
 
@@ -131,7 +131,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
-        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body)).digest()).decode('utf-8')
+        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body), usedforsecurity=False).digest()).decode('utf-8')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',

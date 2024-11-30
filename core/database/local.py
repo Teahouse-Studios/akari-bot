@@ -86,7 +86,7 @@ class CrowdinActivityRecords:
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
     def check(txt: str):
-        query_hash = hashlib.md5(txt.encode(encoding='UTF-8')).hexdigest()
+        query_hash = hashlib.md5(txt.encode(encoding='UTF-8'), usedforsecurity=False).hexdigest()
         query = session.query(CrowdinActivityRecordsTable).filter_by(hash_id=query_hash).first()
         if not query:
             session.add_all([CrowdinActivityRecordsTable(hash_id=query_hash)])

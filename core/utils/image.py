@@ -19,7 +19,7 @@ from core.utils.http import download
 from core.utils.web_render import webrender
 
 
-env = Environment(loader=FileSystemLoader(templates_path))
+env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
 
 
 async def image_split(i: Image) -> List[Image]:
