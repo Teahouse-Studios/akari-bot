@@ -1,5 +1,5 @@
 import traceback
-from typing import Union
+from typing import Tuple, Union
 
 from core.config import Config
 from core.constants.info import Info
@@ -32,17 +32,19 @@ def webrender(method: str = '', url: str = '', use_local: bool = True) -> Union[
             return None
 
 
-async def check_web_render():
+async def check_web_render() -> Tuple[bool, bool]:
+    web_render_status = False
+    web_render_local_status = False
     if not web_render_local:
         if not web_render:
             Logger.warning('[WebRender] WebRender is not configured.')
         else:
-            Info.web_render_status = True
+            web_render_status = True
     else:
-        Info.web_render_local_status = True
-        Info.web_render_status = True
+        web_render_status = True
+        web_render_local_status = True
     ping_url = 'http://www.bing.com'
-    if Info.web_render_status:
+    if web_render_status:
         try:
             Logger.info('[WebRender] Checking WebRender status...')
             await get_url(webrender('source', ping_url), 200, request_private_ip=True)
@@ -50,6 +52,7 @@ async def check_web_render():
         except Exception:
             Logger.error('[WebRender] WebRender is not working as expected.')
             Logger.error(traceback.format_exc())
-            Info.web_render_status = False
+            web_render_status = False
+    return web_render_status, web_render_local_status
 
 __all__ = ['webrender', 'check_web_render']

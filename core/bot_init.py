@@ -34,6 +34,7 @@ async def init_async(start_scheduler=True) -> None:
         if not Info.subprocess:
             load_extra_schedulers()
         await JobQueue.secret_append_ip()
+        await JobQueue.web_render_status()
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()

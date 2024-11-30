@@ -12,6 +12,7 @@ from core.database.tables import JobQueueTable
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
+from core.utils.web_render import check_web_render
 
 _queue_tasks = {}
 queue_actions = {}
@@ -70,10 +71,11 @@ class JobQueue:
             await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
 
     @classmethod
-    async def web_render_status(cls, web_render_status: bool, web_render_local_status: bool):
+    async def web_render_status(cls):
+        web_render_status, web_render_local_status = await check_web_render()
         for target in get_all_clients_name():
             await cls.add_job(target, 'web_render_status', {'web_render_status': web_render_status,
-                                                            'web_render_local_status': web_render_local_status})
+                                                            'web_render_local_status': web_render_local_status}, wait=False)
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):

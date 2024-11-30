@@ -34,6 +34,7 @@ async def startup_event():
     load_extra_schedulers()
     Scheduler.start()
     await JobQueue.secret_append_ip()
+    await JobQueue.web_render_status()
 
 
 @app.get('/auth/{token}')
