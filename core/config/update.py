@@ -161,7 +161,7 @@ if 'initialized' not in config.value:
                 except KeyAlreadyPresent:
                     configs[cfg_name][cfg_name]['enable'] = True
                 finally:
-                    qc = f'config.comments.enable'
+                    qc = 'config.comments.enable'
                     # get the comment for the key from locale
                     localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
                     if localed_comment != qc:

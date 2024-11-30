@@ -254,7 +254,7 @@ async def download_to_cache(url: str,
     '''
     下载内容到缓存目录，仅作兼容用。
     '''
-    Logger.warning(f'Func `download_to_cache()` has benn deprecated, please use `download()` instead.')
+    Logger.warning('Func `download_to_cache()` has benn deprecated, please use `download()` instead.')
     await download(url=url, filename=filename, path=cache_path, status_code=status_code, method=method, post_data=post_data,
                    headers=headers, timeout=timeout, attempt=attempt, request_private_ip=request_private_ip,
                    logging_err_resp=logging_err_resp)

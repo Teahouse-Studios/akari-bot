@@ -113,4 +113,4 @@ async def result(msg: Bot.MessageSession):
             embed.add_field(name=field.field_name, value=field.message, inline=False)
         await msg.finish(convert_discord_embed(embed))
     else:
-        await msg.finish(f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
+        await msg.finish('你输入的代码是无效的，或者此功能不支持你使用的主机。')
