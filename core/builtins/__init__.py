@@ -107,7 +107,7 @@ Bot.FetchedSession = FetchedSession
 class FetchTarget(FetchTarget):
     @staticmethod
     async def post_global_message(message: str,
-                                  user_list: List[FetchedSession] = [],
+                                  user_list: Optional[List[FetchedSession]] = None,
                                   i18n: bool = False,
                                   **kwargs: Dict[str, Any]):
         await Bot.FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)

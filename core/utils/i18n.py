@@ -187,7 +187,7 @@ class Locale:
         """
         格式化数字。
 
-        :param text: 数字。
+        :param number: 数字。
         :param precision: 保留小数点位数。
         :param fallback_failed_prompt: 是否添加本地化失败提示。
         :returns: 本地化后的数字。
