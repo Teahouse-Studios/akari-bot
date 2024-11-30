@@ -15,6 +15,8 @@ from core.utils.text import isint
 
 def generate_config(dir_path, language):
     config_code_list = {}
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
     path_ = os.path.join(dir_path, config_filename)
 
     dir_list = ['bots', 'core', 'modules', 'schedulers']
