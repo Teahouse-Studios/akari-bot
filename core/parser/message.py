@@ -119,7 +119,7 @@ async def check_target_cooldown(msg: Bot.MessageSession):
 
 
 def transform_alias(msg, command: str):
-    aliases = {k: v for k, v in msg.options.get('command_alias').items()}
+    aliases = dict(msg.options.get('command_alias').items())
     command_split = msg.trigger_msg.split(' ')  # 切割消息
     for pattern, replacement in aliases.items():
         if re.search(r'\${[^}]*}', pattern):
