@@ -83,7 +83,7 @@ class MessageTaskManager:
                                 cls._list[target][sender][session].get('timeout', 3600)):
                             cls._list[target][sender][session]['active'] = False
                             cls._list[target][sender][session]['flag'].set()  # no result = cancel
-        for message_id in cls._callback_list:
+        for message_id in cls._callback_list.copy():
             if datetime.now().timestamp() - cls._callback_list[message_id]['ts'] > 3600:
                 del cls._callback_list[message_id]
 
