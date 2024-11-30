@@ -559,7 +559,7 @@ class WikiLib:
         else:
             return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
                             interwiki_prefix=_prefix, templates=[])
-        use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
+        use_textextracts = 'TextExtracts' in self.wiki_info.extensions
         if use_textextracts and not selected_section:
             query_props += ['extracts', 'pageprops']
             query_string.update({'prop': "|".join(query_props),

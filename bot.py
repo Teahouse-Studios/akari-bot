@@ -104,7 +104,7 @@ def restart_process(bot_name: str):
         args=(
             bot_name,
             True,
-            True if not sys.argv[0].endswith('.py') else False),
+            bool(not sys.argv[0].endswith('.py'))),
         name=bot_name)
     p.start()
     processes.append(p)
@@ -136,7 +136,7 @@ def run_bot():
             args=(
                 bl,
                 True,
-                True if not sys.argv[0].endswith('.py') else False),
+                bool(not sys.argv[0].endswith('.py'))),
             name=bl)
         p.start()
         processes.append(p)
