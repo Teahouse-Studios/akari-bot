@@ -67,13 +67,13 @@ class URLElement(MessageElement):
     md_format = Info.use_url_md_format
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool = False, disable_mm: bool = False):
+    def assign(cls, url: str, use_mm: bool = True):
         """
         :param url: URL
         :param use_mm: 是否使用链接跳板，覆盖全局设置
         :param disable_mm: 是否禁用链接跳板，覆盖全局设置
         """
-        if (Info.use_url_manager and not disable_mm) or (use_mm and not Info.use_url_manager):
+        if Info.use_url_manager and use_mm:
             mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -194,9 +194,9 @@ class ErrorMessageElement(MessageElement):
             locale = Locale(locale)
             error_message = locale.t_str(error_message, **kwargs)
             error_message = locale.t('message.error') + error_message
-            if enable_report and (report_url := Config('bug_report_url', bug_report_url_default, cfg_type=str)):
+            if enable_report and (report_url := URLElement.assign(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)):
                 error_message += '\n' + \
-                    locale.t('error.prompt.address', url=report_url)
+                    locale.t('error.prompt.address', url=str(report_url))
 
         return cls(error_message)
 
