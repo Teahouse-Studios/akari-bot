@@ -14,9 +14,9 @@ oba = module('oba', desc='{oba.help.desc}', developers='WorldHim')
 def size_convert(value):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
     size = 1024.0
-    for i in range(len(units)):
+    for _, unit in enumerate(units):
         if (value / size) < 1:
-            return '%.2f%s' % (value, ' ' + units[i])
+            return '%.2f%s' % (value, ' ' + unit)
         value /= size
 
 

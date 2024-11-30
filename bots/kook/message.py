@@ -19,7 +19,7 @@ from core.logger import Logger
 enable_analytics = Config('enable_analytics', False)
 kook_base = "https://www.kookapp.cn"
 kook_headers = {
-    f'Authorization': f"Bot {
+    'Authorization': f"Bot {
         Config(
             'kook_token',
             cfg_type=str,
@@ -31,9 +31,8 @@ async def direct_msg_delete(msg_id: str):
     """删除私聊消息"""
     url = kook_base + "/api/v3/direct-message/delete"
     params = {"msg_id": msg_id}
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=params, headers=kook_headers) as response:
-            res = json.loads(await response.text())
+    async with aiohttp.ClientSession() as session, session.post(url, data=params, headers=kook_headers) as response:
+        res = json.loads(await response.text())
     return res
 
 
@@ -41,9 +40,8 @@ async def channel_msg_delete(msg_id: str):
     """删除普通消息"""
     url = kook_base + "/api/v3/message/delete"
     params = {"msg_id": msg_id}
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=params, headers=kook_headers) as response:
-            res = json.loads(await response.text())
+    async with aiohttp.ClientSession() as session, session.post(url, data=params, headers=kook_headers) as response:
+        res = json.loads(await response.text())
     return res
 
 

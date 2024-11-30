@@ -31,7 +31,7 @@ class DiceValueError(Exception):
 
 
 # 类定义
-class DiceItemBase(object):
+class DiceItemBase:
     """骰子项的基类"""
 
     def __init__(self, dice_code: str):
@@ -45,8 +45,8 @@ class DiceItemBase(object):
     def GetDetail(self):
         return self.detail
 
-    def Roll(self, msg):
-        pass
+    def Roll(self, msg: Bot.MessageSession):
+        raise NotImplementedError
 
 
 class Dice(DiceItemBase):
@@ -97,7 +97,7 @@ class Dice(DiceItemBase):
             dice_sides = midstrs[0]
             dice_adv = midstrs[2]
             positive = -1
-        if positive and not len(dice_adv):
+        if positive and not dice_adv:
             dice_adv = '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not isint(dice_count):

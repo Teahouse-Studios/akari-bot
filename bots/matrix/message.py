@@ -355,8 +355,6 @@ class FetchedSession(Bot.FetchedSession):
                 preset=nio.RoomPreset.trusted_private_chat,
                 invite=[target_id],
             )
-            if resp is nio.ErrorResponse:
-                pass
             room = resp.room_id
             Logger.info(f"Created private messaging room for {target_id}: {room}")
             self.session.target = room

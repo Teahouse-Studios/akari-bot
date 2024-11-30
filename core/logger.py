@@ -11,8 +11,7 @@ from core.constants.path import logs_path
 
 debug = Config('debug', False)
 
-if not os.path.exists(logs_path):
-    os.mkdir(logs_path)
+os.makedirs(logs_path, exist_ok=True)
 
 bot_name = re.split(r'[/\\]', sys.path[0])[-1]
 

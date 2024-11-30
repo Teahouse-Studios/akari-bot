@@ -15,6 +15,7 @@ from core.utils.text import isint
 
 def generate_config(dir_path, language):
     config_code_list = {}
+    os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
 
     dir_list = ['bots', 'core', 'modules', 'schedulers']
@@ -101,7 +102,7 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
 {''.join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
 Please input the number of the language you want to use: """)
         if lang.strip() == '':
-            exit(0)
+            sys.exit(0)
         if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
@@ -116,7 +117,7 @@ Please input the number of the language you want to use: """)
     print('Please restart the bot after modifying the config file.')
     print('Press enter to exit.')
     input()
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
@@ -139,14 +140,11 @@ if __name__ == '__main__':
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
     if os.path.exists(config_store_path):
         shutil.move(config_store_path, config_store_path + '_bak')
-    if not os.path.exists(config_store_path):
-        os.makedirs(config_store_path)
-    if not os.path.exists(config_store_packed_path):
-        os.makedirs(config_store_packed_path)
+    os.makedirs(config_store_path, exist_ok=True)
+    os.makedirs(config_store_packed_path, exist_ok=True)
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
-        if not os.path.exists(config_store_path_):
-            os.makedirs(config_store_path_)
+        os.makedirs(config_store_path_, exist_ok=True)
         generate_config(config_store_path_, lang)
     # compare old and new config files
     repack = False

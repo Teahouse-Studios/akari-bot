@@ -198,7 +198,7 @@ async def config_modules(msg: Bot.MessageSession):
                     else:
                         await msg.finish(msg.locale.t("core.message.module.reload.base.failed", module=module_))
 
-                elif len(extra_reload_modules):
+                elif extra_reload_modules:
                     confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
                                                                   modules='\n'.join(extra_reload_modules)), append_instruction=False)
                     if not confirm:

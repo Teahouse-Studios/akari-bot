@@ -61,7 +61,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
 
 def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     dice_item_list = []
-    math_func_pattern = '(' + '|'.join(re.escape(func) for func in math_funcs.keys()) + ')'  # 数学函数
+    math_func_pattern = '(' + '|'.join(re.escape(func) for func in math_funcs) + ')'  # 数学函数
     errmsg = None
 
     # 切分骰子表达式
@@ -77,7 +77,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     dice_expr_list = re.split(f'{math_func_pattern}|' + '|'.join(dice_patterns), dices, flags=re.I)
     dice_expr_list = [item for item in dice_expr_list if item]  # 清除空白元素
     for item in range(len(dice_expr_list)):
-        if dice_expr_list[item][-1].upper() == 'D' and dice_expr_list[item] not in math_funcs.keys()\
+        if dice_expr_list[item][-1].upper() == 'D' and dice_expr_list[item] not in math_funcs\
                 and msg.data.options.get('dice_default_sides'):
             dice_expr_list[item] += str(msg.data.options.get('dice_default_sides'))
 
@@ -102,7 +102,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     # 初始化骰子序列
     for j, item in enumerate(dice_expr_list):
         try:
-            if any(item.lower() == func for func in math_funcs.keys()):
+            if any(item.lower() == func for func in math_funcs):
                 continue
             elif 'A' in item:
                 dice_count += 1
@@ -135,19 +135,19 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 def insert_multiply(msg: Bot.MessageSession, lst: list):
     result = []
     asterisk = '\\*' if msg.Feature.markdown else '*'
-    for i in range(len(lst)):
+    for i, item in enumerate(lst):
         if i == 0:
-            result.append(lst[i])
+            result.append(item)
         else:
-            if isint(lst[i - 1][-1]) and isint(lst[i][0]):
+            if isint(lst[i - 1][-1]) and isint(item[0]):
                 result.append(asterisk)
-            elif lst[i - 1][-1] == ')' and lst[i][0] == '(':
+            elif lst[i - 1][-1] == ')' and item[0] == '(':
                 result.append(asterisk)
-            elif isint(lst[i - 1][-1]) and lst[i][0] == '(':
+            elif isint(lst[i - 1][-1]) and item[0] == '(':
                 result.append(asterisk)
-            elif lst[i - 1][-1] == ')' and isint(lst[i][0]):
+            elif lst[i - 1][-1] == ')' and isint(item[0]):
                 result.append(asterisk)
-            result.append(lst[i])
+            result.append(item)
     return result
 
 # 开始投掷并生成消息

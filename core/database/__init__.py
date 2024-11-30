@@ -61,7 +61,7 @@ class BotDBUtil:
             return json.loads(self.query.enabledModules)
 
         def check_target_enabled_module(self, module_name) -> bool:
-            return True if module_name in self.enabled_modules else False
+            return module_name in self.enabled_modules
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -409,7 +409,7 @@ class BotDBUtil:
                 AnalyticsData.moduleName, func.count(
                     AnalyticsData.id)).group_by(
                 AnalyticsData.moduleName).all()
-            modules_count = {module_name: count for module_name, count in results}
+            modules_count = dict(results)
             return modules_count
 
     class UnfriendlyActions:

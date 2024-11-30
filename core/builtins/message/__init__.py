@@ -32,7 +32,7 @@ class ExecutionLockList:
     @staticmethod
     def check(msg: 'MessageSession'):
         target_id = msg.target.sender_id
-        return True if target_id in ExecutionLockList._list else False
+        return target_id in ExecutionLockList._list
 
     @staticmethod
     def get():
@@ -84,7 +84,7 @@ class MessageTaskManager:
                                 cls._list[target][sender][session].get('timeout', 3600)):
                             cls._list[target][sender][session]['active'] = False
                             cls._list[target][sender][session]['flag'].set()  # no result = cancel
-        for message_id in cls._callback_list:
+        for message_id in cls._callback_list.copy():
             if datetime.now().timestamp() - cls._callback_list[message_id]['ts'] > 3600:
                 del cls._callback_list[message_id]
 
@@ -438,7 +438,7 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
-        return True if self.info.is_super_user else False
+        return bool(self.info.is_super_user)
 
     async def check_permission(self):
         """

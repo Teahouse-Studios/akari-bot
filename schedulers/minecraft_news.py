@@ -42,7 +42,7 @@ from core.utils.web_render import webrender
 async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
-        f'https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json')
+        'https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json')
     try:
         get_webrender = webrender('source', url)
         if get_webrender == url:

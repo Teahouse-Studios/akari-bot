@@ -94,7 +94,7 @@ if 'initialized' not in config.value:
                 table = cfg_name + '_secret' if secret else cfg_name
 
                 if key in old_config[c_target]:
-                    if cfg_name not in configs.keys():
+                    if cfg_name not in configs:
                         configs[cfg_name] = toml_document()
                         configs[cfg_name].add(
                             toml_comment(
@@ -161,7 +161,7 @@ if 'initialized' not in config.value:
                 except KeyAlreadyPresent:
                     configs[cfg_name][cfg_name]['enable'] = True
                 finally:
-                    qc = f'config.comments.enable'
+                    qc = 'config.comments.enable'
                     # get the comment for the key from locale
                     localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
                     if localed_comment != qc:

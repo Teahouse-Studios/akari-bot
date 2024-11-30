@@ -442,7 +442,6 @@ class HTML2Text(html.parser.HTMLParser):
                     self.abbr_title = attrs["title"]
             else:
                 if self.abbr_title is not None:
-                    assert self.abbr_data is not None
                     self.abbr_list[self.abbr_data] = self.abbr_title
                     self.abbr_title = None
                 self.abbr_data = None
@@ -479,7 +478,6 @@ class HTML2Text(html.parser.HTMLParser):
                     if self.maybe_automatic_link and not self.empty_link:
                         self.maybe_automatic_link = None
                     elif a:
-                        assert a["href"] is not None
                         if self.empty_link:
                             self.o("[")
                             self.empty_link = False
@@ -500,7 +498,6 @@ class HTML2Text(html.parser.HTMLParser):
 
         if tag == "img" and start and not self.ignore_images:
             if "src" in attrs:
-                assert attrs["src"] is not None
                 if not self.images_to_alt:
                     attrs["href"] = attrs["src"]
                 alt = attrs.get("alt") or self.default_image_alt
@@ -512,10 +509,8 @@ class HTML2Text(html.parser.HTMLParser):
                 ):
                     self.o("<img src='" + attrs["src"] + "' ")
                     if "width" in attrs:
-                        assert attrs["width"] is not None
                         self.o("width='" + attrs["width"] + "' ")
                     if "height" in attrs:
-                        assert attrs["height"] is not None
                         self.o("height='" + attrs["height"] + "' ")
                     if alt:
                         self.o("alt='" + alt + "' ")
@@ -779,7 +774,6 @@ class HTML2Text(html.parser.HTMLParser):
                             + str(Url(urlparse.urljoin(self.baseurl, link.attrs["href"])))
                         )
                         if "title" in link.attrs:
-                            assert link.attrs["title"] is not None
                             self.out(" (" + link.attrs["title"] + ")")
                         self.out("\n")
                     else:

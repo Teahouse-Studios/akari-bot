@@ -40,7 +40,7 @@ class LocaleNode:
         if len(path) == 0:
             return self
         nxt_node = path[0]
-        if nxt_node in self.children.keys():
+        if nxt_node in self.children:
             return self.children[nxt_node]._query_node(path[1:])
         else:
             return None
@@ -55,7 +55,7 @@ class LocaleNode:
             self.value = write_value
             return
         nxt_node = path[0]
-        if nxt_node not in self.children.keys():
+        if nxt_node not in self.children:
             self.children[nxt_node] = LocaleNode()
         self.children[nxt_node]._update_node(path[1:], write_value)
 
@@ -104,7 +104,7 @@ def load_locale_file() -> Optional[List[str]]:
                         traceback.print_exc()
                         err_prompt.append(f'Failed to load {lang_file_path}: {e}')
 
-    for lang in locale_dict.keys():
+    for lang in locale_dict:
         for k in locale_dict[lang].keys():
             locale_root.update_node(f'{lang}.{k}', locale_dict[lang][k])
 
@@ -209,7 +209,8 @@ class Locale:
         fmted_num = self._fmt_num(number / scale, precision)
         return self.t_str(f"{fmted_num} {{i18n.unit.{unit}}}", fallback_failed_prompt)
 
-    def _get_cjk_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+    @staticmethod
+    def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e11'):
             return 3, Decimal('10e11')
         elif number >= Decimal('10e7'):
@@ -219,7 +220,8 @@ class Locale:
         else:
             return None
 
-    def _get_unit(self, number: Decimal) -> Optional[Tuple[int, Decimal]]:
+    @staticmethod
+    def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e8'):
             return 3, Decimal('10e8')
         elif number >= Decimal('10e5'):
@@ -229,7 +231,8 @@ class Locale:
         else:
             return None
 
-    def _fmt_num(self, number: Decimal, precision: int) -> str:
+    @staticmethod
+    def _fmt_num(number: Decimal, precision: int) -> str:
         number = number.quantize(Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP)
         num_str = f"{number:.{precision}f}".rstrip('0').rstrip('.')
         return num_str if precision > 0 else str(int(number))

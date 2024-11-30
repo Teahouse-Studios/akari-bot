@@ -39,9 +39,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
             c = qc.check(150)
         if c == 0:
             img = await get_rating(msg, query_id, query)
-            if msg.target.client_name != 'TEST':
-                if img['status']:
-                    qc.reset()
+            if msg.target.client_name != 'TEST' and img['status']:
+                qc.reset()
             if 'path' in img:
                 await msg.finish([Image(path=img['path'])], enable_split_image=False)
             elif 'text' in img:

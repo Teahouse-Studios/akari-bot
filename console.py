@@ -1,5 +1,6 @@
 import asyncio
 import os
+import shutil
 import sys
 import traceback
 
@@ -10,7 +11,7 @@ import core.scripts.config_generate  # noqa
 from core.config import Config
 from core.constants.default import db_path_default
 from core.constants.info import Info
-from core.constants.path import assets_path
+from core.constants.path import assets_path, cache_path
 from core.logger import Logger
 
 if not Config('db_path', default=db_path_default, secret=True):
@@ -49,6 +50,10 @@ PrivateAssets.set(os.path.join(assets_path, 'private', 'console'))
 console_history_path = os.path.join(PrivateAssets.path, '.console_history')
 if os.path.exists(console_history_path):
     os.remove(console_history_path)
+
+if os.path.exists(cache_path):
+    shutil.rmtree(cache_path)
+os.makedirs(cache_path, exist_ok=True)
 
 
 async def console_scheduler():

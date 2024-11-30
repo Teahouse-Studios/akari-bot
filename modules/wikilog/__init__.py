@@ -64,7 +64,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
 @wikilog.handle('enable <apilink> <logtype> {{wikilog.help.enable.logtype}}',
                 'disable <apilink> <logtype> {{wikilog.help.disable.logtype}}')
 async def _(msg: Bot.MessageSession, apilink, logtype: str):
-    logtype = type_map.get(logtype, None)
+    logtype = type_map.get(logtype)
     if logtype:
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
@@ -106,7 +106,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
     infos = json.loads(t.query.infos)
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
-    logtype = type_map.get(logtype, None)
+    logtype = type_map.get(logtype)
     if status.available:
         if status.value.api in infos:
             if logtype == "RecentChanges":
@@ -132,7 +132,7 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     else:
         filters = msg.parsed_msg.get('...')
     if filters:
-        logtype = type_map.get(logtype, None)
+        logtype = type_map.get(logtype)
         if logtype:
             t = WikiLogUtil(msg)
             infos = json.loads(t.query.infos)

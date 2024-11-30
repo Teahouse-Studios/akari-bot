@@ -12,8 +12,6 @@ from tomlkit.items import Table
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
-
-import core.config.update
 from core.utils.i18n import Locale
 from core.exports import add_export
 
@@ -63,7 +61,7 @@ class CFGManager:
         if not cls._save_lock:
             cls._save_lock = True
             try:
-                for cfg in cls.values.keys():
+                for cfg in cls.values:
                     cfg_name = cfg
                     if not cfg_name.endswith('.toml'):
                         cfg_name += '.toml'
@@ -80,14 +78,14 @@ class CFGManager:
     def watch(cls):  # Watch for changes in the config file and reload if necessary
         if not cls._watch_lock:
             cls._watch_lock = True
-            for cfg in cls.values.keys():
+            for cfg in cls.values:
                 cfg_file = cfg
                 if not cfg_file.endswith('.toml'):
                     cfg_file += '.toml'
                 file_path = os.path.join(cls.config_path, cfg_file)
                 if os.path.exists(file_path):
                     if os.path.getmtime(file_path) != cls._tss[cfg]:
-                        logger.warning(f'[Config] Config file has been modified, reloading...')
+                        logger.warning('[Config] Config file has been modified, reloading...')
                         cls.load()
                         break
             cls._watch_lock = False
@@ -137,7 +135,7 @@ class CFGManager:
                             break
             else:  # search for the value in all tables
                 found = False
-                for t in cls.values.keys():
+                for t in cls.values:
                     for tt in cls.values[t].keys():
                         if isinstance(cls.values[t][tt], Table):
                             value = cls.values[t][tt].get(q)
@@ -173,7 +171,7 @@ class CFGManager:
 
             return default
         if cfg_type:
-            if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
+            if isinstance(cfg_type, (type, tuple)):
                 if isinstance(cfg_type, tuple):
                     cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
                     if value is not None and not isinstance(value, cfg_type):
@@ -372,9 +370,8 @@ def Config(q: str,
            _generate: bool = False) -> Any:
     if get_url:
         v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
-        if v:
-            if v[-1] != '/':
-                v += '/'
+        if v and v[-1] != '/':
+            v += '/'
     else:
         v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v

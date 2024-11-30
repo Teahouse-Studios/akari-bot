@@ -3,7 +3,6 @@ from datetime import timezone
 
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
-from core.config import Config
 from core.constants import Info
 from core.database.tables import is_mysql
 from core.utils.image_table import image_table_render, ImageTable

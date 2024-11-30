@@ -27,7 +27,8 @@ class MyClient(botpy.Client):
         await init_async()
         await load_prompt(FetchTarget)
 
-    async def on_at_message_create(self, message: Message):
+    @staticmethod
+    async def on_at_message_create(message: Message):
         message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
         reply_id = None
         if message.message_reference:
@@ -55,7 +56,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_message_create(self, message: Message):
+    @staticmethod
+    async def on_message_create(message: Message):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -80,7 +82,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_group_at_message_create(self, message: GroupMessage):
+    @staticmethod
+    async def on_group_at_message_create(message: GroupMessage):
         message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
         reply_id = None
         if message.message_reference:
@@ -108,7 +111,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_direct_message_create(self, message: DirectMessage):
+    @staticmethod
+    async def on_direct_message_create(message: DirectMessage):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -133,7 +137,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_c2c_message_create(self, message: C2CMessage):
+    @staticmethod
+    async def on_c2c_message_create(message: C2CMessage):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id

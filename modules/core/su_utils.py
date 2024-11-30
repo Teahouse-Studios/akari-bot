@@ -61,12 +61,12 @@ async def _(msg: Bot.MessageSession):
     if os.path.exists(cache_path):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
-            os.mkdir(cache_path)
+            os.makedirs(cache_path)
             await msg.finish(msg.locale.t("core.message.purge.success"))
         else:
             await msg.finish(msg.locale.t("core.message.purge.empty"))
     else:
-        os.mkdir(cache_path)
+        os.makedirs(cache_path)
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
@@ -290,7 +290,7 @@ async def update_bot(msg: Bot.MessageSession):
             if pull_repo_result:
                 await msg.send_message(pull_repo_result)
             else:
-                Logger.warning(f'Failed to get Git repository result.')
+                Logger.warning('Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
         await msg.finish(update_dependencies())
     else:
@@ -360,7 +360,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
                 if pull_repo_result != '':
                     await msg.send_message(pull_repo_result)
                 else:
-                    Logger.warning(f'Failed to get Git repository result.')
+                    Logger.warning('Failed to get Git repository result.')
                     await msg.send_message(msg.locale.t("core.message.update.failed"))
             await msg.send_message(update_dependencies())
             restart()
@@ -474,7 +474,7 @@ _eval = module('eval', required_superuser=True, base=True, doc=True, load=Config
 @_eval.command('<display_msg>')
 async def _(msg: Bot.MessageSession, display_msg: str):
     try:
-        await msg.finish(str(eval(display_msg, {'msg': msg})))
+        await msg.finish(str(eval(display_msg, {'msg': msg})))  # skipcq
     except Exception as e:
         Logger.error(str(e))
         raise NoReportException(e)

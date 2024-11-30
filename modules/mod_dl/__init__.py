@@ -15,11 +15,7 @@ mod_dl = module(
     alias='moddl')
 
 x_api_key = Config("curseforge_api_key", cfg_type=str, secret=True)
-if not x_api_key:
-    # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
-    enable_mirror = True
-else:
-    enable_mirror = False
+enable_mirror = bool(not x_api_key)  # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
 
 
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
@@ -36,7 +32,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         if ver:
             url += f'&facets=[["versions:{ver}"],["project_type:mod"]]'
         else:
-            url += f'&facets=[["project_type:mod"]]'
+            url += '&facets=[["project_type:mod"]]'
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3)
         if resp:
             results = []

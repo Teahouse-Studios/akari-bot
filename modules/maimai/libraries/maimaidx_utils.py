@@ -172,7 +172,7 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
 async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = True):
     time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 
-    url = f"https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
+    url = "https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt='json')
     rank_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
 
@@ -440,7 +440,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
     elif version in ['覇', '舞']:  # 霸者和舞牌需要全版本
-        payload['version'] = list(set(ver for ver in list(sd_plate_mapping.values())))
+        payload['version'] = list(set(list(sd_plate_mapping.values())))
     elif version in plate_mapping and version != '初':  # “初”不是版本名称
         payload['version'] = [plate_mapping[version]]
     else:

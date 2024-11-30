@@ -159,9 +159,10 @@ class TotalList:
             Logger.error(traceback.format_exc())
             return False
 
-    async def dl_cache(self):
+    @staticmethod
+    async def dl_cache():
         try:
-            url = f"https://www.diving-fish.com/api/chunithmprober/music_data"
+            url = "https://www.diving-fish.com/api/chunithmprober/music_data"
             data = await get_url(url, 200, fmt='json')
             if data:
                 with open(chu_song_info_path, 'wb') as f:

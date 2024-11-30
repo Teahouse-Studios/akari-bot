@@ -504,9 +504,8 @@ class WikiLib:
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
-        if _tried > 5:
-            if Config('enable_tos', True):
-                raise AbuseWarning('{tos.message.reason.too_many_redirects}')
+        if _tried > 5 and Config('enable_tos', True):
+            raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         selected_section = None
         query_props = ['info', 'imageinfo', 'langlinks', 'templates']
         if self.wiki_info.api.find('moegirl.org.cn') != -1:
@@ -559,7 +558,7 @@ class WikiLib:
         else:
             return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
                             interwiki_prefix=_prefix, templates=[])
-        use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
+        use_textextracts = 'TextExtracts' in self.wiki_info.extensions
         if use_textextracts and not selected_section:
             query_props += ['extracts', 'pageprops']
             query_string.update({'prop': "|".join(query_props),

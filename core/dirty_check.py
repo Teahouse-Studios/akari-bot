@@ -25,7 +25,7 @@ def hash_hmac(key, code, sha1):
 
 
 def computeMD5hash(my_string):
-    m = hashlib.md5()
+    m = hashlib.md5(usedforsecurity=False)
     m.update(my_string.encode('gb2312'))
     return m.hexdigest()
 
@@ -112,7 +112,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
                 if pq not in call_api_list:
                     call_api_list.update({pq: []})
                 call_api_list[pq].append(q)
-    call_api_list_ = [x for x in call_api_list]
+    call_api_list_ = list(call_api_list)
     Logger.debug(call_api_list_)
     if call_api_list_:
         body = {
@@ -131,7 +131,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
-        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body)).digest()).decode('utf-8')
+        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body), usedforsecurity=False).digest()).decode('utf-8')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -157,19 +157,18 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
         headers['Authorization'] = sign
         # 'Authorization': "acs {}:{}".format(access_key_id, sign)
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    Logger.debug(result)
-                    for item in result['data']:
-                        content = item['content']
-                        for n in call_api_list[content]:
-                            query_list.update(
-                                {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
-                        DirtyWordCache(content).update(item)
-                else:
-                    raise ValueError(await resp.text())
+        async with aiohttp.ClientSession(headers=headers) as session, session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                Logger.debug(result)
+                for item in result['data']:
+                    content = item['content']
+                    for n in call_api_list[content]:
+                        query_list.update(
+                            {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
+                    DirtyWordCache(content).update(item)
+            else:
+                raise ValueError(await resp.text())
     results = []
     Logger.debug(query_list)
     for x in query_list:

@@ -37,8 +37,6 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     Logger.info(f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}")
-    if event.sender == client.user or event.prev_membership == event.membership:
-        pass
     # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == 'invite'
     # if not is_direct:
     #     resp = await bot.room_get_state_event(room.room_id, 'm.room.member', client.user)
@@ -162,7 +160,7 @@ async def start():
     # E2EE setup
     if bot.olm:
         if bot.should_upload_keys:
-            Logger.info(f"Uploading matrix E2E encryption keys...")
+            Logger.info("Uploading matrix E2E encryption keys...")
             resp = await bot.keys_upload()
             if isinstance(
                     resp,
@@ -180,22 +178,21 @@ async def start():
                     if not isinstance(resp, nio.KeysUploadError):
                         Logger.info(f"Successfully uploaded matrix OTK keys after {keys} claims.")
                         break
-        megolm_backup_path = os.path.join(client.store_path_megolm_backup, f"restore.txt")
+        megolm_backup_path = os.path.join(client.store_path_megolm_backup, "restore.txt")
         if os.path.exists(megolm_backup_path):
-            pass_path = os.path.join(client.store_path_megolm_backup, f"restore-passphrase.txt")
-            assert os.path.exists(pass_path)
+            pass_path = os.path.join(client.store_path_megolm_backup, "restore-passphrase.txt")
             Logger.info(f"Importing megolm keys backup from {megolm_backup_path}")
             with open(pass_path) as f:
                 passphrase = f.read()
             await bot.import_keys(megolm_backup_path, passphrase)
-            Logger.info(f"Megolm backup imported.")
+            Logger.info("Megolm backup imported.")
 
     # set device name
     if client.device_name:
         asyncio.create_task(bot.update_device(client.device_id, {"display_name": client.device_name}))
 
     # sync joined room state
-    Logger.info(f"Starting sync room full state...")
+    Logger.info("Starting sync room full state...")
     # bot.upload_filter(presence={'limit':1},room={'timeline':{'limit':1}})
     resp = await bot.sync(timeout=10000, since=bot.next_batch, full_state=True, set_presence='unavailable')
     await bot._handle_invited_rooms(resp)
@@ -204,10 +201,10 @@ async def start():
     await init_async()
     await load_prompt(FetchTarget)
 
-    Logger.info(f"starting sync loop...")
+    Logger.info("starting sync loop...")
     await bot.set_presence('online', f"AkariBot {Info.version}")
     await bot.sync_forever(timeout=30000, full_state=False)
-    Logger.info(f"sync loop stopped.")
+    Logger.info("sync loop stopped.")
 
     if bot.olm:
         if client.megolm_backup_passphrase:
@@ -222,7 +219,7 @@ async def start():
                 os.rename(backup_path, old_backup_path)
             Logger.info(f"Saving megolm keys backup to {backup_path}")
             await bot.export_keys(backup_path, client.megolm_backup_passphrase)
-            Logger.info(f"Megolm backup exported.")
+            Logger.info("Megolm backup exported.")
 
     await bot.set_presence('offline')
 
