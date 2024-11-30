@@ -260,7 +260,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
-                            async def _callback(msg: Bot.MessageSession):
+                            async def _callback(msg: Bot.MessageSession, forum_data=forum_data, r=r):
                                 display = msg.as_display(text_only=True)
                                 if isint(display) and int(display) <= len(forum_data) - 1:
                                     await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)

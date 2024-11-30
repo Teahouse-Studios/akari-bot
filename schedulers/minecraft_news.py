@@ -41,10 +41,9 @@ from core.utils.web_render import webrender
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule', False) else 180))
 async def start_check_news():
     baseurl = 'https://www.minecraft.net'
-    url = quote(
-        'https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json')
+    url = 'https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json'
     try:
-        get_webrender = webrender('source', url)
+        get_webrender = webrender('source', quote(url))
         if get_webrender == url:
             Logger.debug('WebRender is not working, skip check minecraft news.')
             return

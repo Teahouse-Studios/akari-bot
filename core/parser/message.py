@@ -116,7 +116,7 @@ async def check_target_cooldown(msg: Bot.MessageSession):
 
 
 def transform_alias(msg, command: str):
-    aliases = dict(msg.options.get('command_alias').items())
+    aliases = dict(msg.options.get('command_alias', {}).items())
     command_split = msg.trigger_msg.split(' ')  # 切割消息
     for pattern, replacement in aliases.items():
         if re.search(r'\${[^}]*}', pattern):
@@ -484,7 +484,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                     if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                         errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=str(Url(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)))
+                                                      url=str(Url(Config('bug_report_url',
+                                                                         bug_report_url_default,
+                                                                         cfg_type=str),
+                                                                  use_mm=False)))
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:
@@ -625,7 +628,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                             if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                                 errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)))
+                                                              url=str(Url(Config('bug_report_url',
+                                                                                 bug_report_url_default,
+                                                                                 cfg_type=str),
+                                                                          use_mm=False)))
                             await msg.send_message(errmsg)
 
                             if not timeout and report_targets:

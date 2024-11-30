@@ -61,12 +61,12 @@ async def _(msg: Bot.MessageSession):
     if os.path.exists(cache_path):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
-            os.makedirs(cache_path)
+            os.makedirs(cache_path, exist_ok=True)
             await msg.finish(msg.locale.t("core.message.purge.success"))
         else:
             await msg.finish(msg.locale.t("core.message.purge.empty"))
     else:
-        os.makedirs(cache_path)
+        os.makedirs(cache_path, exist_ok=True)
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 

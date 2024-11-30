@@ -23,6 +23,7 @@ from .mapping import *
 
 
 default_locale = Config("default_locale", cfg_type=str)
+enable_tos = Config('enable_tos', True)
 
 
 class InvalidPageIDError(Exception):
@@ -504,7 +505,7 @@ class WikiLib:
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
-        if _tried > 5 and Config('enable_tos', True):
+        if _tried > 5 and enable_tos:
             raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         selected_section = None
         query_props = ['info', 'imageinfo', 'langlinks', 'templates']

@@ -19,7 +19,7 @@ class ChartInfo:
         self.idNum = idNum
         self.diff = diff
         self.tp = tp
-        self.ra = compute_rating(ds, achievement),
+        self.ra = compute_rating(ds, achievement)
         self.achievement = achievement
         self.dxScore = dxScore
         self.dxScoreMax = dxScoreMax

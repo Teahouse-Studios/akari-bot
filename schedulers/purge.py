@@ -11,4 +11,4 @@ async def auto_purge():
     Logger.info('Start purging cache...')
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-    os.makedirs(cache_path)
+    os.makedirs(cache_path, exist_ok=True)

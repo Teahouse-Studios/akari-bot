@@ -84,7 +84,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 
         result = await client.execute_async(query)
         workdir = random_cache_path()
-        os.makedirs(workdir)
+        os.makedirs(workdir, exist_ok=True)
         best_records = result['profile'][query_type]
         rank = 0
         resources = []
