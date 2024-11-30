@@ -307,14 +307,14 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 brkL=chartL['notes'][4],
                 brkR=chartR['notes'][4]))
     else:
-        for diff in range(len(music['ds'])):
+        for diff, ds in enumerate(music['ds']):
             chart = music['charts'][diff]
             if len(chart['notes']) == 4:
                 res.append(msg.locale.t(
                     "maimai.message.chart.sd",
                     diff=diff_list[diff],
                     level=music['level'][diff],
-                    ds=music['ds'][diff],
+                    ds=ds,
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
@@ -326,7 +326,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     "maimai.message.chart.dx",
                     diff=diff_list[diff],
                     level=music['level'][diff],
-                    ds=music['ds'][diff],
+                    ds=ds,
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
