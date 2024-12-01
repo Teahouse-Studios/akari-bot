@@ -48,10 +48,10 @@ class PlainElement(MessageElement):
         :param texts: 额外的文本内容
         """
         text = str(text)
-        for t in texts:
-            text += str(t)
         if not disable_joke:
             text = joke(text)
+        for t in texts:
+            text += str(t)
         return cls(text=text)
 
 
