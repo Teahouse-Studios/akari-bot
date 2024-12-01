@@ -16,5 +16,9 @@
     "coin.message.single.head": "It is heads!",
     "coin.message.single.prompt": "You toss a coin...",
     "coin.message.single.stand": "It is standing up!",
-    "coin.message.single.tail": "It is tails!"
+    "coin.message.single.tail": "It is tails!",
+    "config.comments.coin_facedown_weight": "coin 模块抛硬币时反面的权重。",
+    "config.comments.coin_faceup_weight": "coin 模块抛硬币时正面的权重。",
+    "config.comments.coin_limit": "coin 模块可抛硬币的上限。",
+    "config.comments.coin_stand_weight": "coin 模块抛硬币时立起的权重。"
 }
