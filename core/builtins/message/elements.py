@@ -40,12 +40,12 @@ class PlainElement(MessageElement):
 
     @classmethod
     def assign(cls, text: str,
-               *texts: Tuple[str],
-               disable_joke: bool = False):
+               disable_joke: bool = False,
+               *texts: Tuple[str]):
         """
         :param text: 文本内容
-        :param texts: 额外的文本内容
         :param disable_joke: 是否禁用愚人节功能
+        :param texts: 额外的文本内容
         """
         text = str(text)
         for t in texts:
