@@ -65,7 +65,7 @@ class URLElement(MessageElement):
     md_format = Info.use_url_md_format
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool = True):
+    def assign(cls, url: str, use_mm: bool = False):
         """
         :param url: URL
         :param use_mm: 是否使用链接跳板，覆盖全局设置
