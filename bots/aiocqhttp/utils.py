@@ -93,7 +93,7 @@ class CQCodeHandler:
         转义CQ码中的特殊字符。
 
         :param s: 要转义的字符串。
-        :param escape_comma`` 是否转义逗号（``,``）。
+        :param escape_comma: 是否转义逗号（`,`）。
         :return: 转义后的字符串。
         """
         s = s.replace('&', '&amp;').replace('[', '&#91;').replace(']', '&#93;')

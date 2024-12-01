@@ -164,6 +164,7 @@ def module(
     support_languages: Union[str, list, tuple, None] = None
 ):
     """
+    绑定一个模块。
 
     :param bind_prefix: 绑定的命令前缀。
     :param alias: 此命令的别名。
@@ -172,17 +173,16 @@ def module(
     :param recommend_modules: 推荐打开的其他模块。
     :param developers: 模块作者。
     :param required_admin: 此命令是否需要群组管理员权限。
-    :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
-    :param doc: 此命令是否存在线上说明文件。
-    :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。
-    :param load: 将此命令设置是否加载。
-    :param rss: 将此命令设为RSS命令。
-    :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
-    :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
-    :param available_for: 此命令支持的平台列表。
+    :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。（默认为False）
+    :param doc: 此命令是否存在线上说明文件。（默认为False）
+    :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。（默认为False）
+    :param load: 将此命令设置是否加载。（默认为True）
+    :param rss: 将此命令设为 RSS 命令。（默认为False）
+    :param required_superuser: 将此命令设为机器人的超级管理员才可执行。（默认为False）
+    :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。（默认为False）
+    :param available_for: 此命令支持的平台列表。（默认为`*`）
     :param exclude_from: 此命令排除的平台列表。
     :param support_languages: 此命令支持的语言列表。
-    :return: 此类型的模块。
     """
     module = Module(alias=alias,
                     bind_prefix=bind_prefix,

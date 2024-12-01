@@ -478,16 +478,15 @@ class WikiLib:
     async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, lang=None, _doc=False,
                               _tried=0, _prefix='', _iw=False, _search=False) -> PageInfo:
         """
-        :param title: 页面标题，如果为None，则使用pageid
-        :param pageid: 页面id
-        :param inline: 是否为inline模式
-        :param lang: 所需的对应语言版本
-        :param _doc: 是否为文档模式，仅用作内部递归调用判断
-        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断
-        :param _prefix: iw前缀，仅用作内部递归调用判断
-        :param _iw: 是否为iw模式，仅用作内部递归调用判断
-        :param _search: 是否为搜索模式，仅用作内部递归调用判断
-        :return:
+        :param title: 页面标题，如果为None，则使用pageid。
+        :param pageid: 页面id。
+        :param inline: 是否为inline模式。
+        :param lang: 所需的对应语言版本。
+        :param _doc: 是否为文档模式，仅用作内部递归调用判断。
+        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断。
+        :param _prefix: iw前缀，仅用作内部递归调用判断。
+        :param _iw: 是否为iw模式，仅用作内部递归调用判断。
+        :param _search: 是否为搜索模式，仅用作内部递归调用判断。
         """
         if title:
             if m := re.match(r'w:c:.*?:(.*)', title) and self.wiki_info.api.find('fandom.com') != -1:

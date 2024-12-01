@@ -195,6 +195,7 @@ class FetchedSession(FetchedSessionT):
     async def send_message(self, message_chain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
+
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链

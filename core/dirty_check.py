@@ -76,7 +76,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
     :param text: 字符串（List/Union）。
     :param msg: 消息会话，若指定则本地化返回的消息。
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<REDACTED:原因>，全部不合规则是'<ALL REDACTED:原因>'。
+    :returns: 经过审核后的字符串。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
     '''
     access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
     access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)

@@ -34,18 +34,20 @@ class MessageElement:
 class PlainElement(MessageElement):
     """
     文本元素。
-    :param text: 文本
+
+    :param text: 文本。
     """
     text: str
 
     @classmethod
-    def assign(cls, *texts,
+    def assign(cls,
+               *texts: Tuple[str],
                disable_joke: bool = False,
-               comment: str = None):
+               comment: Optional[str] = None):
         """
-        :param texts: 文本内容
-        :param disable_joke: 是否禁用愚人节功能
-        :param comment: 注释
+        :param texts: 文本内容。
+        :param disable_joke: 是否禁用玩笑功能。（默认为False）
+        :param comment: 注释文本，不受玩笑功能影响。
         """
         text = ''.join([str(x) for x in texts])
         if not disable_joke:
@@ -59,7 +61,8 @@ class PlainElement(MessageElement):
 class URLElement(MessageElement):
     """
     URL元素。
-    :param url: URL
+
+    :param url: URL。
     """
     url: str
     md_format = Info.use_url_md_format
@@ -67,8 +70,8 @@ class URLElement(MessageElement):
     @classmethod
     def assign(cls, url: str, use_mm: bool = False):
         """
-        :param url: URL
-        :param use_mm: 是否使用链接跳板，覆盖全局设置
+        :param url: URL。
+        :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为False）
         """
         if Info.use_url_manager and use_mm:
             mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
@@ -89,6 +92,8 @@ class URLElement(MessageElement):
 class FormattedTimeElement(MessageElement):
     """
     格式化时间消息。
+
+    :param timestamp: UTC时间戳。
     """
     timestamp: float
     date: bool = True
@@ -137,12 +142,12 @@ class FormattedTimeElement(MessageElement):
                seconds: bool = True,
                timezone: bool = True):
         """
-        :param timestamp: 时间戳（UTC时间）
-        :param date: 是否显示日期
-        :param iso: 是否以ISO格式显示
-        :param time: 是否显示时间
-        :param seconds: 是否显示秒
-        :param timezone: 是否显示时区
+        :param timestamp: UTC时间戳。
+        :param date: 是否显示日期。（默认为True）
+        :param iso: 是否以ISO格式显示。（默认为False）
+        :param time: 是否显示时间。（默认为True）
+        :param seconds: 是否显示秒。（默认为True）
+        :param timezone: 是否显示时区。（默认为True）
         """
         return cls(timestamp=timestamp, date=date, iso=iso, time=time, seconds=seconds, timezone=timezone)
 
@@ -160,8 +165,8 @@ class I18NContextElement(MessageElement):
                key: str,
                **kwargs: Any):
         """
-        :param key: 多语言的键名
-        :param kwargs: 多语言中的变量
+        :param key: 多语言的键名。
+        :param kwargs: 多语言中的变量。
         """
         return cls(key=key, kwargs=kwargs)
 
@@ -170,7 +175,8 @@ class I18NContextElement(MessageElement):
 class ErrorMessageElement(MessageElement):
     """
     错误消息。
-    :param error_message: 错误文本
+
+    :param error_message: 错误信息文本。
     """
     error_message: str
 
@@ -181,10 +187,10 @@ class ErrorMessageElement(MessageElement):
                enable_report: bool = True,
                **kwargs: Dict[str, Any]):
         """
-        :param error_message: 错误信息文本
-        :param locale: 多语言
-        :param enable_report: 是否添加错误汇报部分
-        :param kwargs: 多语言中的变量
+        :param error_message: 错误信息文本。
+        :param locale: 多语言。
+        :param enable_report: 是否添加错误汇报部分。（默认为True）
+        :param kwargs: 多语言中的变量。
         """
 
         if locale:
@@ -211,7 +217,8 @@ class ErrorMessageElement(MessageElement):
 class ImageElement(MessageElement):
     """
     图片消息。
-    :param path: 图片路径
+
+    :param path: 图片路径。
     """
     path: str
     need_get: bool = False
@@ -221,8 +228,8 @@ class ImageElement(MessageElement):
     def assign(cls, path: Union[str, PILImage.Image],
                headers: Optional[Dict[str, Any]] = None):
         """
-        :param path: 图片路径
-        :param headers: 获取图片时的请求头
+        :param path: 图片路径。
+        :param headers: 获取图片时的请求头。
         """
         need_get = False
         if isinstance(path, PILImage.Image):
@@ -281,14 +288,15 @@ class ImageElement(MessageElement):
 class VoiceElement(MessageElement):
     """
     语音消息。
-    :param path: 语音路径
+
+    :param path: 语音路径。
     """
     path: str
 
     @classmethod
     def assign(cls, path: str):
         """
-        :param path: 语音路径
+        :param path: 语音路径。
         """
         return cls(path)
 
@@ -297,9 +305,10 @@ class VoiceElement(MessageElement):
 class EmbedFieldElement(MessageElement):
     """
     Embed字段。
-    :param name: 字段名
-    :param value: 字段值
-    :param inline: 是否内联
+
+    :param name: 字段名。
+    :param value: 字段值。
+    :param inline: 是否内联。（默认为False）
     """
     name: str
     value: str
@@ -308,9 +317,9 @@ class EmbedFieldElement(MessageElement):
     @classmethod
     def assign(cls, name: str, value: str, inline: bool = False):
         """
-        :param name: 字段名
-        :param value: 字段值
-        :param inline: 是否内联
+        :param name: 字段名。
+        :param value: 字段值。
+        :param inline: 是否内联。（默认为False）
         """
         return cls(name=name, value=value, inline=inline)
 
@@ -319,14 +328,14 @@ class EmbedFieldElement(MessageElement):
 class EmbedElement(MessageElement):
     """
     Embed消息。
-    :param title: 标题
-    :param description: 描述
-    :param color: 颜色
-    :param fields: 字段
-    :param image: 图片
-    :param thumbnail: 缩略图
-    :param author: 作者
-    :param footer: 页脚
+    :param title: 标题。
+    :param description: 描述。
+    :param color: 颜色。
+    :param fields: 字段。
+    :param image: 图片。
+    :param thumbnail: 缩略图。
+    :param author: 作者。
+    :param footer: 页脚。
     """
     title: Optional[str] = None,
     description: Optional[str] = None,
@@ -337,7 +346,7 @@ class EmbedElement(MessageElement):
     thumbnail: Optional[ImageElement] = None,
     author: Optional[str] = None,
     footer: Optional[str] = None,
-    fields: List[EmbedFieldElement] = None
+    fields: Optional[List[EmbedFieldElement]] = None
 
     @classmethod
     def assign(cls, title: Optional[str] = None,
@@ -349,7 +358,7 @@ class EmbedElement(MessageElement):
                thumbnail: Optional[ImageElement] = None,
                author: Optional[str] = None,
                footer: Optional[str] = None,
-               fields: List[EmbedFieldElement] = None):
+               fields: Optional[List[EmbedFieldElement]] = None):
         return cls(
             title=title,
             description=description,

@@ -36,7 +36,7 @@ class MessageChain:
         ]] = None,
     ):
         """
-        :param elements: 消息链元素
+        :param elements: 消息链元素。
         """
         self.value = []
         if isinstance(elements, MessageChain):
