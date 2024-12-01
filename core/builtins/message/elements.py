@@ -47,7 +47,7 @@ class PlainElement(MessageElement):
         :param disable_joke: 是否禁用愚人节功能
         :param comment: 注释
         """
-        text = ''.join(texts)
+        text = ''.join([str(x) for x in texts])
         if not disable_joke:
             text = joke(text)
         if comment:
