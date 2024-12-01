@@ -178,7 +178,6 @@ if 'initialized' not in config.value:
         Reorganize.reorganize_bot_key("qq_allow_approve_friend")
         Reorganize.reorganize_bot_key("qq_allow_approve_group_invite")
         Reorganize.reorganize_bot_key("qq_enable_listening_self_message")
-        Reorganize.reorganize_bot_key("qq_frame_type")
         Reorganize.reorganize_bot_key("qq_host", True)
         Reorganize.reorganize_bot_key("qq_limited_emoji")
         Reorganize.reorganize_bot_key("qq_typing_emoji")

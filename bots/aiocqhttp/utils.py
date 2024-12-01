@@ -4,27 +4,22 @@ from typing import Any, Dict, Optional, Union
 
 import orjson as json
 
-from core.config import Config
+from bots.aiocqhttp.client import bot
+from core.logger import Logger
 
 
-def qq_frame_type() -> str:
-    '''获取正在使用的QQ机器人框架'''
-    frame_type = Config('qq_frame_type', 'mirai', table_name='bot_aiocqhttp').lower()
-    ntqq_lst = ['ntqq', 'llonebot', 'napcat', 'napcatqq', ]
-    shamrock_lst = ['shamrock', 'openshamrock', ]
-    lagrange_lst = ['lagrange', ]
-    mirai_lst = ['mirai', 'gocq', 'gocqhttp', 'go-cqhttp', ]
+async def get_onebot_implementation() -> Optional[str]:
+    '''获取正在使用的OneBot实现。'''
+    data = await bot.call_action('get_version_info')
+    Logger.debug(str(data))
+    app_name = data.get('app_name')
 
-    if frame_type in ntqq_lst:
-        return 'ntqq'
-    elif frame_type in lagrange_lst:
-        return 'lagrange'
-    elif frame_type in shamrock_lst:
-        return 'shamrock'
-    elif frame_type in mirai_lst:
-        return 'mirai'
-    else:
-        return ''
+    if app_name in ['NapCat.Onebot', 'LLOneBot']:
+        app_name = 'ntqq'
+    elif app_name == 'Lagrange.OneBot':
+        app_name = 'lagrange'
+
+    return app_name.lower()
 
 
 class CQCodeHandler:

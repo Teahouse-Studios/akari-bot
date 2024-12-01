@@ -11,7 +11,6 @@ qq_allow_approve_friend = false # 使用 Onebot 協定時，是否自動同意�
 qq_allow_approve_group_invite = false # 使用 Onebot 協定時，是否自動同意群組邀請。
 enable = false # 是否啟用此平台。
 qq_typing_emoji = 181 # 使用 QQ 相關協定端時，正在處理訊息時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
-qq_frame_type = "mirai" # Aiocqhttp 對接的 Onebot 協定的框架類型。
 qq_limited_emoji = 10060 # 使用 QQ 相關協定端時，訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
 
 [bot_aiocqhttp_secret]

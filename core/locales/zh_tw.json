@@ -72,7 +72,6 @@
     "config.comments.qq_bot_secret": "QQ 機器人（官方）的 AppSecret。",
     "config.comments.qq_disable_temp_session": "使用 Onebot 協定時，是否啟用臨時會話。",
     "config.comments.qq_enable_listening_self_message": "使用 Onebot 協定時，是否啟用自身訊息監聽。",
-    "config.comments.qq_frame_type": "Aiocqhttp 對接的 Onebot 協定的框架類型。",
     "config.comments.qq_host": "Aiocqhttp WebSocket 主伺服器的位址。（Onebot 協定端請使用反向 Websocket 方式連線）",
     "config.comments.qq_limited_emoji": "使用 QQ 相關協定端時，訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
     "config.comments.qq_private_bot": "使用 QQ 機器人（官方）時，是否為私域機器人。",

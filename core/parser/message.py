@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
-from bots.aiocqhttp.utils import qq_frame_type
+from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
 from core.config import Config
@@ -444,14 +444,15 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except SendMessageFailed:
                     if msg.target.target_from == qq_group_prefix:  # wtf onebot 11
-                        if qq_frame_type() == 'ntqq':
+                        obi = await get_onebot_implementation()
+                        if obi == 'ntqq':
                             await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
                                                emoji_id=str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp')))
-                        elif qq_frame_type() == 'lagrange':
+                        elif obi == 'lagrange':
                             await msg.call_api('group_poke', group_id=msg.session.target, user_id=qq_account)
-                        elif qq_frame_type() == 'shamrock':
+                        elif obi == 'shamrock':
                             await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:touch,id={qq_account}]')
-                        elif qq_frame_type() == 'mirai':
+                        elif obi == 'go-cqhttp':
                             await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:poke,qq={qq_account}]')
                         else:
                             pass
@@ -645,14 +646,15 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
             except SendMessageFailed:
                 if msg.target.target_from == qq_group_prefix:  # wtf onebot 11
-                    if qq_frame_type() == 'ntqq':
+                    obi = await get_onebot_implementation()
+                    if obi == 'ntqq':
                         await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
                                            emoji_id=str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp')))
-                    elif qq_frame_type() == 'lagrange':
+                    elif obi == 'lagrange':
                         await msg.call_api('group_poke', group_id=msg.session.target, user_id=qq_account)
-                    elif qq_frame_type() == 'shamrock':
+                    elif obi == 'shamrock':
                         await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:touch,id={qq_account}]')
-                    elif qq_frame_type() == 'mirai':
+                    elif obi == 'go-cqhttp':
                         await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:poke,qq={qq_account}]')
                     else:
                         pass

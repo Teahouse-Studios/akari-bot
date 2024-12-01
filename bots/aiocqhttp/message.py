@@ -14,7 +14,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
+from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Temp, \
     MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT, Plain, Image, Voice
 from core.builtins.message import MessageSession as MessageSessionT
@@ -285,7 +285,8 @@ class MessageSession(MessageSessionT):
                         if cq_data['type'] == 'text':
                             lst.append(Plain(cq_data['data'].get('text')))
                         elif cq_data['type'] == 'image':
-                            if qq_frame_type() == 'lagrange':
+                            obi = await get_onebot_implementation()
+                            if obi == 'lagrange':
                                 img_src = cq_data['data'].get('file')
                             else:
                                 img_src = cq_data['data'].get('url')
@@ -304,7 +305,8 @@ class MessageSession(MessageSessionT):
                 if item["type"] == "text":
                     lst.append(Plain(item["data"]["text"]))
                 elif item["type"] == "image":
-                    if qq_frame_type() == 'lagrange':
+                    obi = await get_onebot_implementation()
+                    if obi == 'lagrange':
                         lst.append(Image(item["data"]["file"]))
                     else:
                         lst.append(Image(item["data"]["url"]))
@@ -329,7 +331,8 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
-                if qq_frame_type() == 'ntqq':
+                obi = await get_onebot_implementation()
+                if obi == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
                                           emoji_id=str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_aiocqhttp')))
                 else:
@@ -338,13 +341,13 @@ class MessageSession(MessageSessionT):
                             return
                     last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
 
-                    if qq_frame_type() == 'lagrange':
+                    if obi == 'lagrange':
                         await bot.call_action('group_poke', group_id=self.msg.session.target,
                                               user_id=self.msg.session.sender)
-                    elif qq_frame_type() == 'shamrock':
+                    elif obi == 'shamrock':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:touch,id={self.msg.session.sender}]')
-                    elif qq_frame_type() == 'mirai':
+                    elif obi == 'go-cqhttp':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:poke,qq={self.msg.session.sender}]')
                     else:
@@ -475,7 +478,8 @@ class FetchTarget(FetchTargetT):
             friend_list = [f['user_id'] for f in friend_list_raw]
 
             guild_list = []
-            if qq_frame_type() == 'mirai':
+            obi = await get_onebot_implementation()
+            if obi == 'go-cqhttp':
                 guild_list_raw = await bot.call_action('get_guild_list')
                 for g in guild_list_raw:
                     try:

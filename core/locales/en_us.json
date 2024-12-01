@@ -72,7 +72,6 @@
     "config.comments.qq_bot_secret": "The QQ official robot AppSecret.",
     "config.comments.qq_disable_temp_session": "Whether to enable temp sessions when using the Onebot Protocol.",
     "config.comments.qq_enable_listening_self_message": "Whether to enable self-message monitoring when using the Onebot protocol.",
-    "config.comments.qq_frame_type": "The framework type of the Onebot protocol that Aiocqhttp connects to.",
     "config.comments.qq_host": "The address of Aiocqhttp WebSocket main server. (The Onebot protocol end should use the reverse Websocket method to connect)",
     "config.comments.qq_limited_emoji": "When using QQ related protocol terminals, the response emoji ID attached to the message when the message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
     "config.comments.qq_private_bot": "Whether it is a private robot when using the QQ official robot.",
