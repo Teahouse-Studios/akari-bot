@@ -39,19 +39,19 @@ class PlainElement(MessageElement):
     text: str
 
     @classmethod
-    def assign(cls, text: str,
+    def assign(cls, *texts,
                disable_joke: bool = False,
-               *texts: Tuple[str]):
+               comment: str = None):
         """
-        :param text: 文本内容
+        :param texts: 文本内容
         :param disable_joke: 是否禁用愚人节功能
-        :param texts: 额外的文本内容
+        :param comment: 注释
         """
-        text = str(text)
+        text = ''.join(texts)
         if not disable_joke:
             text = joke(text)
-        for t in texts:
-            text += str(t)
+        if comment:
+            text += '\n' + comment
         return cls(text=text)
 
 
