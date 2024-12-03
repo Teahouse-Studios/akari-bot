@@ -26,7 +26,7 @@ from core.utils.i18n import Locale
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
-qq_account = int(Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
+qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
@@ -195,7 +195,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
-    if event.user_id == qq_account:
+    if event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
