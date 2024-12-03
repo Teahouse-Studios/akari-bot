@@ -1,0 +1,62 @@
+name: "Binary Build Nightly x64 Executables (3:00, UTC+8)"
+
+on:
+  schedule:
+    - cron: "00 19 * * *"
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+          cache: 'pip'
+          cache-dependency-path: |
+              **/requirements*.txt
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Prepare Build
+        run: |
+          python .github/scripts/pre_build.py
+
+
+      - name: Build Wrapper Executable
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: bot.py
+          mode: onefile
+          output-dir: wrapper-build
+          include-plugin-directory: |
+              modules
+              bots
+              schedulers
+          include-package-data: |
+              langconv
+              emoji
+          clang: true
+
+
+      - name: Copy Assets
+        run: |
+          python .github/scripts/build_copy_files.py
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} Build
+          path: |
+            output/**
