@@ -56,6 +56,7 @@
     "config.comments.qq_disable_temp_session": "使用 Onebot 协议时，是否启用临时会话。",
     "config.comments.qq_enable_listening_self_message": "使用 Onebot 协议时，是否启用自身消息监听。",
     "config.comments.qq_host": "Aiocqhttp WebSocket 主服务器的地址。（Onebot 协议端请使用反向 Websocket 方式进行连接）",
+    "config.comments.qq_access_token": "使用 Onebot 协议时，连接 WebSocket 服务器的 Access Token。",
     "config.comments.qq_limited_emoji": "使用 QQ 相关协议端时，消息处理失败时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
     "config.comments.qq_private_bot": "使用 QQ 机器人（官方）时，是否为私域机器人。",
     "config.comments.qq_typing_emoji": "使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
