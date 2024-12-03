@@ -10,7 +10,7 @@ from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
     base_superuser_list
 from core.config import Config
-from core.constants.default import bug_report_url_default, qq_account_default
+from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
     InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
@@ -24,7 +24,7 @@ from core.utils.i18n import Locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
-qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
+qq_account = int(Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config('enable_tos', True)

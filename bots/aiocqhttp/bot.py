@@ -14,7 +14,7 @@ from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_account_default
+from core.constants.default import issue_url_default, ignored_sender_default
 from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database import BotDBUtil
@@ -26,7 +26,7 @@ from core.utils.i18n import Locale
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
-qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
+qq_account = int(Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
@@ -244,7 +244,7 @@ async def _(event: Event):
         await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
-qq_host = Config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp')
+qq_host = Config("qq_host", cfg_type=str, table_name='bot_aiocqhttp')
 if qq_host and Config("enable", False, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name

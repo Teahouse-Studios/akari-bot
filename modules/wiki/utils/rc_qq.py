@@ -1,6 +1,5 @@
 from core.builtins import MessageSession
 from core.config import Config
-from core.constants import qq_account_default
 from core.logger import Logger
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
@@ -8,7 +7,7 @@ from modules.wiki.utils.wikilib import WikiLib
 
 async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
+    qq_account = int(Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp'))
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                 rclimit=99,

@@ -175,10 +175,11 @@ if 'initialized' not in config.value:
         Reorganize.table = 'aiocqhttp'
         Reorganize.bot_add_enabled_flag()
         Reorganize.reorganize_bot_key("qq_account")
+        Reorganize.reorganize_bot_key("qq_access_token", True)
         Reorganize.reorganize_bot_key("qq_allow_approve_friend")
         Reorganize.reorganize_bot_key("qq_allow_approve_group_invite")
         Reorganize.reorganize_bot_key("qq_enable_listening_self_message")
-        Reorganize.reorganize_bot_key("qq_host", True)
+        Reorganize.reorganize_bot_key("qq_host")
         Reorganize.reorganize_bot_key("qq_limited_emoji")
         Reorganize.reorganize_bot_key("qq_typing_emoji")
 
@@ -192,8 +193,8 @@ if 'initialized' not in config.value:
 
         Reorganize.table = 'api'
         Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key('jwt_secret', True)
         Reorganize.reorganize_bot_key('api_port')
+        Reorganize.reorganize_bot_key('jwt_secret', True)
 
         # discord
 
