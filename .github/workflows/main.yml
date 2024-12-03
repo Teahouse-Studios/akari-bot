@@ -1,0 +1,66 @@
+name: Sync Directories and Files to ABC
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  sync-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AB repository
+        uses: actions/checkout@v3
+        with:
+          repository: Teahouse-Studios/akari-bot
+          path: akari-bot
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync directories and files
+        run: |
+          mkdir -p akari-bot-core
+          rsync -av --exclude='api/' akari-bot/bots/ akari-bot-core/bots/
+          rsync -av akari-bot/core/ akari-bot-core/core/
+          rsync -av akari-bot/modules/core/ akari-bot-core/modules/core/
+          rsync -av akari-bot/schedulers/ akari-bot-core/schedulers/
+          cp akari-bot/bot.py akari-bot-core/bot.py
+          cp akari-bot/console.py akari-bot-core/console.py
+
+      - name: Checkout ABC repository
+        uses: actions/checkout@v3
+        with:
+          repository: Teahouse-Studios/akari-bot-core
+          path: akari-bot-core
+
+      - name: Commit changes
+        run: |
+          cd akari-bot-core
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes detected, skipping commit."
+            exit 0
+          fi
+          git commit -m "Sync from AB repository on $(date +'%Y-%m-%d')"
+
+      # Push changes to a new branch
+      - name: Push changes to new branch
+        run: |
+          cd abc-repo
+          branch_name="sync-$(date +'%Y%m%d')"
+          git checkout -b $branch_name
+          git push origin $branch_name
+
+      # Create a pull request
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.push-changes.outputs.branch_name }}
+          title: "Sync from AB repository on $(date +'%Y-%m-%d')"
+          body: |
+            This pull request contains changes synchronized from the AB repository.
+            Please review and merge.
