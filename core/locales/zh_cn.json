@@ -116,7 +116,6 @@
     "i18n.unit.1": "万",
     "i18n.unit.2": "亿",
     "i18n.unit.3": "兆",
-    "joke.prompt.1": "【你道知吗】研表究明，汉字的序顺并不定一能影阅响读。",
     "language": "简体中文",
     "loader.load.failed": "加载模块中发生了以下错误，对应模块未加载：\n${detail}",
     "loader.load.success": "所有模块已正常加载。",
