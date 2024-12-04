@@ -59,6 +59,8 @@ def init_bot():
         for bu in base_superuser:
             BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
+    else:
+        Logger.warning("The base superuser was not found, please setup it in the config file.")
     print(ascii_art)
 
 

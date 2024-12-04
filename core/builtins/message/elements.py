@@ -42,18 +42,14 @@ class PlainElement(MessageElement):
     @classmethod
     def assign(cls,
                *texts: Tuple[str],
-               disable_joke: bool = False,
-               comment: Optional[str] = None):
+               disable_joke: bool = False):
         """
         :param texts: 文本内容。
         :param disable_joke: 是否禁用玩笑功能。（默认为False）
-        :param comment: 注释文本，不受玩笑功能影响。
         """
         text = ''.join([str(x) for x in texts])
         if not disable_joke:
             text = joke(text)
-        if comment:
-            text += '\n' + comment
         return cls(text=text)
 
 

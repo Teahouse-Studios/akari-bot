@@ -114,7 +114,7 @@ class CFGManager:
         :param _generate: 是否标记为生成配置文件，仅内部使用。（默认为False）
 
         :return: 配置文件中对应配置项的值。
-    '''
+        '''
         cls.watch()
         q = q.lower()
         value = None
@@ -351,7 +351,7 @@ class CFGManager:
 
         :param q: 配置项键名。
         :param table_name: 配置项表名。
-    '''
+        '''
         cls.watch()
         q = q.lower()
         found = False
