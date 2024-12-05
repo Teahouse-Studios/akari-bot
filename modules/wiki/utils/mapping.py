@@ -1,6 +1,19 @@
 request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
     # re.compile(r'.*runescape\.wiki'),
+
 ]
+infobox_elements = ['.arcaeabox',
+                    '.infobox',
+                    '.infoboxborder',
+                    '.infoboxtable',
+                    '.infotemplatebox',
+                    '.moe-infobox',
+                    '.notaninfobox',
+                    '.portable-infobox',
+                    '.rotable',
+                    '.skin-infobox',
+                    '.tpl-infobox',
+                    ]
 
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 

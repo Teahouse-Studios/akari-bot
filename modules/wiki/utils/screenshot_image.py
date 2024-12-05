@@ -17,14 +17,12 @@ from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.web_render import webrender
-
-elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
-            '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
+from .mapping import infobox_elements
 
 
 async def generate_screenshot_v2(page_link: str, section: str = None, allow_special_page=False, content_mode=False, use_local=True,
                                  element=None) -> Union[List[PILImage], bool]:
-    elements_ = elements.copy()
+    elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
     if not Info.web_render_status:
