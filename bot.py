@@ -52,6 +52,7 @@ failed_to_start_attempts = {}
 
 
 def init_bot():
+    print(ascii_art)
     base_superuser = Config('base_superuser', base_superuser_default, cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
@@ -61,7 +62,6 @@ def init_bot():
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
     else:
         Logger.warning("The base superuser was not found, please setup it in the config file.")
-    print(ascii_art)
 
 
 def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
