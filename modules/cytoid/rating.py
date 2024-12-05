@@ -224,10 +224,10 @@ async def download_cover_thumb(uid):
         os.makedirs(d, exist_ok=True)
         path = os.path.join(d, filename)
         if not os.path.exists(path):
-            level_url = 'http://services.cytoid.io/levels/{uid}'
+            level_url = f'http://services.cytoid.io/levels/{uid}'
             get_level = json.loads(await get_url(level_url))
             cover_thumbnail = f"{get_level['cover']['original']}?h=240&w=384"
-            path = await download(cover_thumbnail, filename, d, logging_err_resp=False)
+            path = await download(cover_thumbnail, filename=filename, path=d, logging_err_resp=False)
         return path
     except Exception:
         Logger.error(traceback.format_exc())
@@ -237,10 +237,9 @@ async def download_cover_thumb(uid):
 async def download_avatar_thumb(link, id):
     Logger.debug(f'Downloading avatar for {id}')
     try:
-        filename = f'{id}.png'
         d = os.path.join(cache_path, 'cytoid-avatar')
         os.makedirs(d, exist_ok=True)
-        path = await download(link, filename, d, logging_err_resp=False)
+        path = await download(link, filename=f'{id}.png', path=d, logging_err_resp=False)
         return path
     except Exception:
         Logger.error(traceback.format_exc())
