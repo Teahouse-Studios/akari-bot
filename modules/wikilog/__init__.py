@@ -2,7 +2,7 @@ import re
 
 import orjson as json
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
 from core.constants import Info
@@ -154,6 +154,8 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
 
 @wikilog.handle('bot enable <apilink> {{wikilog.help.bot.enable}}', required_superuser=True)
 @wikilog.handle('bot disable <apilink> {{wikilog.help.bot.disable}}', required_superuser=True)
+@wikilog.handle('keepalive enable <apilink> {{wikilog.help.keepalive}}', required_superuser=True)
+@wikilog.handle('keepalive disable <apilink> {{wikilog.help.keepalive}}', required_superuser=True)
 async def _(msg: Bot.MessageSession, apilink: str):
     t = WikiLogUtil(msg)
     infos = json.loads(t.query.infos)
@@ -161,7 +163,11 @@ async def _(msg: Bot.MessageSession, apilink: str):
     status = await wiki_info.check_wiki_available()
     if status.available:
         if status.value.api in infos:
-            if t.set_use_bot(status.value.api, 'enable' in msg.parsed_msg):
+            if 'keepalive' in msg.parsed_msg:
+                r = t.set_keep_alive(status.value.api, 'enable' in msg.parsed_msg)
+            else:
+                r = t.set_use_bot(status.value.api, 'enable' in msg.parsed_msg)
+            if r:
                 await msg.finish(msg.locale.t('wikilog.message.config.wiki.success', wiki=status.value.name))
             else:
                 await msg.finish(msg.locale.t('wikilog.message.filter.set.failed'))
@@ -238,3 +244,23 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
                     for x in rc:
                         await ft.send_direct_message(f'{wiki_info.name}\n{x}' if len(matched[id_]) > 1 else x)
+
+
+@wikilog.hook('keepalive')
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+    data_ = WikiLogUtil.return_all_data()
+    for target in data_:
+        for wiki in data_[target]:
+            if 'keep_alive' in data_[target][wiki] and data_[target][wiki]['keep_alive']:
+                fetch_target = await fetch.fetch_target(target)
+                if fetch_target:
+                    try:
+                        wiki_ = WikiLib(wiki)
+                        await wiki_.fixup_wiki_info()
+                        get_user_info = await wiki_.get_json(action='query', meta='userinfo')
+                        if n := get_user_info['query']['userinfo']['name']:
+                            await fetch_target.send_direct_message(I18NContext('wikilog.message.keepalive', name=n,
+                                                                               wiki=wiki_.wiki_info.name))
+                    except Exception as e:
+                        Logger.error(f'Keep alive failed: {e}')
+                        await fetch_target.send_direct_message(I18NContext('wikilog.message.keepalive.failed', link=wiki))
