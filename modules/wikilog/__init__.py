@@ -259,8 +259,8 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
                         await wiki_.fixup_wiki_info()
                         get_user_info = await wiki_.get_json(action='query', meta='userinfo')
                         if n := get_user_info['query']['userinfo']['name']:
-                            await fetch_target.send_direct_message(fetch_target.parent.locale.t('wikilog.message.keepalive.logged.as', name=n,
+                            await fetch_target.send_direct_message(I18NContext('wikilog.message.keepalive.logged.as', name=n,
                                                                                wiki=wiki_.wiki_info.name))
                     except Exception as e:
                         Logger.error(f'Keep alive failed: {e}')
-                        await fetch_target.send_direct_message(fetch_target.parent.locale.t('wikilog.message.keepalive.failed', link=wiki))
+                        await fetch_target.send_direct_message(I18NContext('wikilog.message.keepalive.failed', link=wiki))
