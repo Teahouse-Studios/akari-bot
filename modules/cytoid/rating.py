@@ -223,7 +223,7 @@ async def download_cover_thumb(uid):
         d = os.path.join(cache_path, 'cytoid-cover', uid)
         os.makedirs(d, exist_ok=True)
         path = os.path.join(d, filename)
-        if not path:
+        if not os.path.exists(path):
             level_url = 'http://services.cytoid.io/levels/{uid}'
             get_level = json.loads(await get_url(level_url))
             cover_thumbnail = f"{get_level['cover']['original']}?h=240&w=384"
