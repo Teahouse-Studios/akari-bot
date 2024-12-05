@@ -10,7 +10,7 @@ from core.utils.random import Random
 from .maimaidx_mapping import *
 
 
-def get_cover_len5_id(mid) -> str:
+def get_cover_len5_id(mid: Union[int, str]) -> str:
     mid = int(mid)
     if 10000 < mid <= 11000:
         mid -= 10000

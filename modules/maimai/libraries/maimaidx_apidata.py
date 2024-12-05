@@ -19,21 +19,21 @@ total_list = TotalList()
 
 
 async def update_cover() -> bool:
-    id_list = ['00000', '01000']
+    id_list = ['0', '1000']
     for song in (await total_list.get()):
         id_list.append(song['id'])
     os.makedirs(mai_cover_path, exist_ok=True)
     for id in id_list:
-        cover_path = os.path.join(mai_cover_path, f'{get_cover_len5_id(id)}.png')
+        cover_path = os.path.join(mai_cover_path, f'{id}.png')
         if not os.path.exists(cover_path):
             try:
                 url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(id)}.png"
-                await download(url, status_code=200, path=mai_cover_path, filename=f'{get_cover_len5_id(id)}.png', attempt=1, logging_err_resp=False)
-                Logger.debug(f'Successfully download {get_cover_len5_id(id)}.png')
+                await download(url, status_code=200, path=mai_cover_path, filename=f'{id}.png', attempt=1, logging_err_resp=False)
+                Logger.debug(f'Successfully download {id}.png')
             except Exception as e:
                 if str(e).startswith('404'):
                     if Config('debug', False):
-                        Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
+                        Logger.error(f'Failed to download {id}.png')
                     continue
                 else:
                     Logger.error(traceback.format_exc())
@@ -56,11 +56,11 @@ async def update_alias() -> bool:
 
 async def get_info(music: Music, *details) -> MessageChain:
     info = [Plain(f"{music.id} - {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
-    cover_path = os.path.join(mai_cover_path, f'{get_cover_len5_id(music.id)}.png')
+    cover_path = os.path.join(mai_cover_path, f'{music.id}.png')
     if os.path.exists(cover_path):
         info.append(Image(cover_path))
     else:
-        cover_path = os.path.join(mai_cover_path, '00000.png')
+        cover_path = os.path.join(mai_cover_path, '0.png')
         if os.path.exists(cover_path):
             info.append(Image(cover_path))
     if details:
@@ -107,7 +107,9 @@ async def search_by_alias(input_: str) -> list:
 
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
-    cache_dir = os.path.join(cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json")
+    dir = os.path.join(cache_path, 'maimai-record')
+    os.makedirs(dir, exist_ok=True)
+    cache_dir = os.path.join(dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json")
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
         data = await post_url(url,
@@ -148,7 +150,9 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
 async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str, list[str]],
                           use_cache: bool = True) -> Optional[str]:
     if DEVELOPER_TOKEN:
-        cache_dir = os.path.join(cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
+        dir = os.path.join(cache_path, 'maimai-record')
+        os.makedirs(dir, exist_ok=True)
+        cache_dir = os.path.join(dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json")
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
             payload.update({'music_id': sid})
@@ -193,7 +197,9 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
 
 async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool = False,
                            use_cache: bool = True):
-    cache_dir = os.path.join(cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
+    dir = os.path.join(cache_path, 'maimai-record')
+    os.makedirs(dir, exist_ok=True)
+    cache_dir = os.path.join(dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json")
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload['version'] = versions
     try:
@@ -237,7 +243,9 @@ async def get_total_record(msg: Bot.MessageSession, payload: dict, utage: bool =
 
 async def get_plate(msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True) -> Optional[str]:
     version = '舞' if version == '覇' else version  # “覇者”属于舞代
-    cache_dir = os.path.join(cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json")
+    dir = os.path.join(cache_path, 'maimai-record')
+    os.makedirs(dir, exist_ok=True)
+    cache_dir = os.path.join(dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json")
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
         data = await post_url(url,
