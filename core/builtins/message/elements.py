@@ -41,7 +41,7 @@ class PlainElement(MessageElement):
 
     @classmethod
     def assign(cls,
-               *texts: Tuple[str],
+               *texts: Any,
                disable_joke: bool = False):
         """
         :param texts: 文本内容。
