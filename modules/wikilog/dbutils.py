@@ -29,16 +29,13 @@ class WikiLogUtil:
     @auto_rollback_error
     def conf_wiki(self, apilink: dict, add=False, reset=False):
         infos = json.loads(self.query.infos)
-        if apilink not in infos or reset:
-            infos[apilink] = {}
-        infos[apilink].setdefault('AbuseLog', {'enable': False, 'filters': ['*']})
-        infos[apilink].setdefault('RecentChanges', {'enable': False, 'filters': ['*'], 'rcshow': ['!bot']})
-        infos[apilink].setdefault('use_bot', False)
-        infos[apilink].setdefault('keep_alive', False)
-
-
         if add or reset:
             if apilink not in infos or reset:
+                infos[apilink] = {}
+                infos[apilink].setdefault('AbuseLog', {'enable': False, 'filters': ['*']})
+                infos[apilink].setdefault('RecentChanges', {'enable': False, 'filters': ['*'], 'rcshow': ['!bot']})
+                infos[apilink].setdefault('use_bot', False)
+                infos[apilink].setdefault('keep_alive', False)
                 self.query.infos = json.dumps(infos)
                 session.commit()
                 session.expire_all()
@@ -126,7 +123,7 @@ class WikiLogUtil:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def set_keep_alive(self, apilink: str, keep_alive: bool): # oh no it smells shit, will rewrite it in the future
+    def set_keep_alive(self, apilink: str, keep_alive: bool):  # oh no it smells shit, will rewrite it in the future
         infos = json.loads(self.query.infos)
         if apilink in infos:
             infos[apilink]['keep_alive'] = keep_alive
