@@ -71,6 +71,7 @@ mcstatus = "^11.1.1"
 qq-botpy = "^1.2.1"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 mail-gw = "^0.5"
+marshmallow = "^3.23.1"
 
 
 [tool.poetry.group.dev.dependencies]
