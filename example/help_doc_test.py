@@ -11,3 +11,6 @@ c = CommandParser(('~wiki <PageName> {搜索一个Wiki页面}',
                    '~wiki headers reset {重置headers}'), command_prefixes=command_prefix)
 
 print(c.parse('~wiki iw'))
+# Note：向指定群发送消息
+f = await Bot.FetchTarget.fetch_target('QQ|Group|群号')
+await f.sendDirectMessage('xxx')
