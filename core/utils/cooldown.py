@@ -1,50 +1,65 @@
-import datetime
-from typing import Dict
+from collections import defaultdict
+from datetime import datetime
 
 from core.builtins import MessageSession
 
-_cd_lst: Dict[str, Dict[MessageSession, float]] = {}
+_cd_lst = defaultdict(lambda: defaultdict(dict))
 
 
 class CoolDown:
+    '''
+    冷却事件构造器。
+
+    :param key: 冷却事件名称。
+    :param msg: 消息会话。
+    :param all: 是否应用至全对话。（默认为False）
+    '''
 
     def __init__(self, key: str, msg: MessageSession, all: bool = False):
         self.key = key
         self.msg = msg
-        self.sender_id = self.msg
-        if isinstance(self.sender_id, MessageSession):
-            if all:
-                self.sender_id = self.msg.target.target_id
-            else:
-                self.sender_id = self.sender_id.target.sender_id
+        self.all = all
+        self.target_id = self.msg.target.target_id
+        self.sender_id = self.msg.target.sender_id
+
+    def _get_cd_dict(self):
+        target_dict = _cd_lst[self.target_id]
+        if self.all:
+            return target_dict.setdefault(self.key, {'_timestamp': 0.0})
+        else:
+            sender_dict = target_dict.setdefault(self.sender_id, {})
+            return sender_dict.setdefault(self.key, {'_timestamp': 0.0})
 
     def add(self):
         '''
         添加冷却事件。
         '''
-        if self.key not in _cd_lst:
-            _cd_lst[self.key] = {}
-        _cd_lst[self.key][self.sender_id] = datetime.datetime.now().timestamp()
+        cooldown_dict = self._get_cd_dict()
+        cooldown_dict['_timestamp'] = datetime.now().timestamp()
 
-    def check(self, delay: int) -> float:
+    def check(self, delay: float) -> float:
         '''
         检查冷却事件剩余冷却时间。
+
+        :param delay: 设定的冷却时间。
+        :return: 剩余的冷却时间。
         '''
         if self.key not in _cd_lst:
             return 0
-        if self.sender_id in _cd_lst[self.key]:
-            if (d := (datetime.datetime.now().timestamp() - _cd_lst[self.key][self.sender_id])) > delay:
-                return 0
-            else:
-                return d
+        target_dict = _cd_lst[self.target_id]
+        if self.all:
+            ts = target_dict.get(self.key, {}).get('_timestamp', 0.0)
         else:
+            sender_dict = target_dict.get(self.sender_id, {})
+            ts = sender_dict.get(self.key, {}).get('_timestamp', 0.0)
+
+        if (d := (datetime.now().timestamp() - ts)) > delay:
             return 0
+        else:
+            return d
 
     def reset(self):
         '''
         重置冷却事件。
         '''
-        if self.key in _cd_lst:
-            if self.sender_id in _cd_lst[self.key]:
-                _cd_lst[self.key].pop(self.sender_id)
         self.add()

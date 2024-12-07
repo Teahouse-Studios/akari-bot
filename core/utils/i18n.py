@@ -115,8 +115,11 @@ def get_available_locales() -> List[str]:
 
 
 class Locale:
+    """
+    创建一个本地化对象。
+    """
+
     def __init__(self, locale: str, fallback_lng: Optional[List[str]] = None):
-        """创建一个本地化对象。"""
         if not fallback_lng:
             fallback_lng = supported_locales.copy()
             fallback_lng.remove(locale)

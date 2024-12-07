@@ -16,6 +16,9 @@ from core.utils.text import parse_time_string
 
 
 class ExecutionLockList:
+    """
+    执行锁。
+    """
     _list = set()
 
     @staticmethod
@@ -146,14 +149,18 @@ class FinishedSession:
 
 
 class MessageSession:
+    """
+    消息会话。
+    """
+
     def __init__(self,
                  target: MsgInfo,
                  session: Session):
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
-        self.parsed_msg: Optional[dict] = None
         self.trigger_msg: Optional[str] = None
+        self.parsed_msg: Optional[dict] = None
         self.prefixes: List[str] = []
         self.data = exports.get("BotDBUtil").TargetInfo(self.target.target_id)
         self.info = exports.get("BotDBUtil").SenderInfo(self.target.sender_id)
@@ -537,6 +544,10 @@ class MessageSession:
 
 
 class FetchedSession:
+    """
+    获取消息会话。
+    """
+
     def __init__(self,
                  target_from: str,
                  target_id: Union[str, int],
@@ -576,6 +587,9 @@ class FetchedSession:
 
 
 class FetchTarget:
+    """
+    获取消息会话对象。
+    """
     name = ''
 
     @staticmethod
