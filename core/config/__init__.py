@@ -14,6 +14,9 @@ from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
 from core.exports import add_export
 from core.utils.i18n import Locale
+import sys
+sys.setrecursionlimit(5000)  # 增加递归深度限制到5000
+
 
 
 class CFGManager:
