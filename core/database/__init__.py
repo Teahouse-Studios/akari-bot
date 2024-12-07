@@ -7,10 +7,12 @@ import orjson as json
 from sqlalchemy import func
 from tenacity import retry, stop_after_attempt
 
-from core.types.message import MessageSession, FetchTarget, FetchedSession
-from core.utils.text import isint
+from core.builtins import MessageSession, FetchTarget, FetchedSession
+from core.constants import database_version
 from core.database.orm import Session
 from core.database.tables import *
+from core.exports import add_export
+from core.utils.text import isint
 
 session = Session.session
 
@@ -27,7 +29,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 6
+    database_version = database_version
     time_offset = None
 
     class TargetInfo:
@@ -40,13 +42,13 @@ class BotDBUtil:
 
         @property
         def query_data(self):
-            return session.query(TargetInfo).filter_by(targetId=self.target_id).first()
+            return session.query(TargetInfoTable).filter_by(targetId=self.target_id).first()
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def init(self):
             if not self.query:
-                session.add_all([TargetInfo(targetId=self.target_id)])
+                session.add_all([TargetInfoTable(targetId=self.target_id)])
                 session.commit()
                 return self.query_data
             else:
@@ -59,7 +61,7 @@ class BotDBUtil:
             return json.loads(self.query.enabledModules)
 
         def check_target_enabled_module(self, module_name) -> bool:
-            return True if module_name in self.enabled_modules else False
+            return module_name in self.enabled_modules
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -199,13 +201,13 @@ class BotDBUtil:
             return self.query.locale
 
         @staticmethod
-        def get_target_list(module_name=None, id_prefix=None) -> List[TargetInfo]:
+        def get_target_list(module_name=None, id_prefix=None) -> List[TargetInfoTable]:
             filter_ = []
             if module_name:
-                filter_.append(TargetInfo.enabledModules.like(f'%"{module_name}"%'))
+                filter_.append(TargetInfoTable.enabledModules.like(f'%"{module_name}"%'))
             if id_prefix:
-                filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
-            return session.query(TargetInfo).filter(*filter_).all()
+                filter_.append(TargetInfoTable.targetId.like(f'{id_prefix}%'))
+            return session.query(TargetInfoTable).filter(*filter_).all()
 
     class SenderInfo:
         def __init__(self, sender_id):
@@ -478,7 +480,7 @@ class BotDBUtil:
                 AnalyticsData.moduleName, func.count(
                     AnalyticsData.id)).group_by(
                 AnalyticsData.moduleName).all()
-            modules_count = {module_name: count for module_name, count in results}
+            modules_count = dict(results)
             return modules_count
 
     class UnfriendlyActions:
@@ -576,4 +578,5 @@ class BotDBUtil:
             return True
 
 
+add_export(BotDBUtil)
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

@@ -1,0 +1,12 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[bot_api_secret]
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+jwt_secret = "<Replace me with str value>" # The authentication key for the built-in API, it can be filled in at will.
+
+[bot_api]
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+enable = true # Whether to enable this platform.
+api_port = 5000 # The port number of the API service.

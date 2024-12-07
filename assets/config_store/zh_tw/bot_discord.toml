@@ -1,0 +1,11 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[bot_discord_secret]
+# 平台端的金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+discord_token = "<Replace me with str value>" # Discord 機器人令牌。
+
+[bot_discord]
+# 平台端的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+enable = false # 是否啟用此平台。

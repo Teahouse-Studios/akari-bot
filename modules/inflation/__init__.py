@@ -5,7 +5,7 @@ import pandas as pd
 
 from core.builtins import Bot
 from core.component import module
-from core.path import assets_path
+from core.constants.path import assets_path
 
 csv_file = os.path.join(assets_path, 'inflaction', 'consumer_price_index.csv')
 cpi = pd.read_csv(csv_file)

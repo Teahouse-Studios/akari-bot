@@ -1,0 +1,80 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+default_locale = "zh_cn" # 默认的会话语言环境。
+config_version = 0 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
+initialized = true
+
+[config]
+# 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+enable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
+enable_urlmanager = false # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）
+ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。
+issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
+enable_analytics = false # 是否启用内置的统计功能。
+enable_petal = false # 是否启用花瓣功能。
+enable_rickroll = true # 当文字过滤检测失败时，是否 Rickroll 用户。
+rickroll_msg = "<Replace me with str value>" # 文字过滤检测失败时的 Rickroll 消息。
+enable_joke = true # 是否启用玩笑，启用后将在服务器时间 4 月 1 日时发生。
+shuffle_rate = 0.1 # 玩笑的随机发生率。
+unloaded_modules = [] # 不加载的模块列表，匹配到此列表中的模块将不会被加载。
+debug = false # 是否启用调试模式，启用后会输出更多的日志信息。
+report_targets = [] # 上报会话列表，此处填写的值将会被识别为上报会话。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应会话）
+tos_warning_counts = 5 # 违反 ToS 时的警告次数。
+base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
+bug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。
+timezone_offset = "+8" # 机器人的默认时区偏移量。
+no_confirm = false # 是否无需发送者确认消息后再执行命令。
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
+command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
+enable_tos = true # 是否启用内置的 ToS 检查规则。
+tos_temp_ban_time = 300 # 违反 ToS 时的临时封禁时间。
+allow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）
+enable_get_petal = false # 是否允许获取花瓣。
+gained_petal_limit = 0 # 单日获取花瓣上限。
+lost_petal_limit = 0 # 单日失去花瓣上限。
+use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
+web_render_local = "<Replace me with str value>" # 本地 WebRender 服务地址。
+enable_langsmith = "<Replace me>"
+langsmith_endpoint = "<Replace me>"
+langsmith_project = "<Replace me>"
+langsmith_api_key = "<Replace me>"
+coin_limit = 10000 # coin 模块可抛硬币的上限。
+coin_faceup_weight = 4997 # coin 模块抛硬币时正面的权重。
+coin_facedown_weight = 4997 # coin 模块抛硬币时反面的权重。
+coin_stand_weight = 6 # coin 模块抛硬币时立起的权重。
+help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。
+help_url = "https://bot.teahouse.team" # 帮助文档网址。
+donate_url = "http://afdian.com/a/teahouse" # 捐赠网址。
+allow_reload_base = false # 是否允许重载基础模块。
+enable_eval = false # 是否启用 eval 模块。
+enable_commit_url = true # 是否在展示版本信息时显示 commit URL。
+locale_url = "https://www.crowdin.com/project/akari-bot" # 本地化项目网址。
+dice_limit = 100 # dice 模块一次投掷骰子数量上限。
+dice_output_count = 50 # dice 模块输出数据量上限。
+dice_output_len = 200 # dice 模块输出最大长度。
+dice_roll_limit = 10 # dice 模块一次命令投掷次数上限。
+dice_detail_count = 5 # dice 模块 n 次投掷的骰子的总量超过该值时将不再显示详细信息。
+dice_count_limit = 10 # dice 模块骰子表达式项数上限。
+ncmusic_enable_card = false # ncmusic 模块是否启用卡片消息。（仅在 QQ 平台有效）
+wiki_whitelist_url = "<Replace me with str value>" # Wiki 白名单申请网址。
+wordle_disable_image = false # wordle 模块是否禁用图片。
+slower_schedule = false # 是否启用更慢的计划任务调度器。（减少请求压力用）
+
+[secret]
+# 密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+proxy = "<Replace me with str value>" # 代理服务地址。
+check_access_key_id = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey ID。
+check_access_key_secret = "<Replace me with str value>" # 阿里云内容安全服务的 AccessKey Secret。
+db_path = "sqlite:///database/save.db" # 数据库连接字符串，请使用 SQLAlchemy 支持的数据库连接字符串格式。
+ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
+ff3_tweak = "1E915EC4922E78" # 用于加密敏感信息的密钥偏移量。
+web_render = "<Replace me with str value>" # WebRender 服务的 URL 地址。
+openai_api_key = "<Replace me with str value>" # OpenAI 的 API Key。（用于 ask 等模块）
+exchange_rate_api_key = "<Replace me with str value>" # ExchangeRate-API 的 API Key。（用于 exchange_rate 模块与计算汇率用）
+wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha 的 AppID。（用于 wolframalpha 模块）
+diving_fish_developer_token = "<Replace me with str value>" # Diving Fish 查分器的开发者令牌。（用于 maimai 模块）
+curseforge_api_key = "<Replace me with str value>" # CurseForge 的 API Key。（用于 mod_dl 模块）
+ncmusic_api = "<Replace me with str value>" # 网易云音乐 API 的 API 地址。（用于 ncmusic 模块）
+osu_api_key = "<Replace me with str value>" # osu! 的 API Key。（用于 osu 模块）

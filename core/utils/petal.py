@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
-from core.config import Config
 from core.builtins import Bot
+from core.config import Config
 from core.utils.storedata import get_stored_list, update_stored_list
 
 
-async def gained_petal(msg: Bot.MessageSession, amount: int):
+async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
     '''增加花瓣。
 
     :param msg: 消息会话。
@@ -14,7 +14,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
     '''
     if Config('enable_petal', False) and Config('enable_get_petal', False):
         limit = Config('gained_petal_limit', 0)
-        amount = limit if amount > limit and limit > 0 else amount
+        amount = limit if amount > limit > 0 else amount
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
             p = [{}]
@@ -44,7 +44,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
         return msg.locale.t('petal.message.gained.success', amount=amount)
 
 
-async def lost_petal(msg: Bot.MessageSession, amount: int):
+async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
     '''减少花瓣。
 
     :param msg: 消息会话。
@@ -53,7 +53,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int):
     '''
     if Config('enable_petal', False) and Config('enable_get_petal', False):
         limit = Config('lost_petal_limit', 0)
-        amount = limit if amount > limit and limit > 0 else amount
+        amount = limit if amount > limit > 0 else amount
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:
             p = [{}]

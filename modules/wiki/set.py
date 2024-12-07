@@ -1,14 +1,14 @@
 import orjson as json
 
-from core.config import Config
 from core.builtins import Bot, Plain, Image, Url
+from core.config import Config
+from core.constants import Info
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
-from .audit import audit_available_list
 from .wiki import wiki
 
-enable_urlmanager = Config('enable_urlmanager')
+enable_urlmanager = Config('enable_urlmanager', False)
 
 
 @wiki.command('set <wikiurl> {{wiki.help.set}}', required_admin=True)
@@ -17,11 +17,10 @@ async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
         in_allowlist = True
-        if msg.target.target_from in audit_available_list:
+        if Info.use_url_manager:
             in_allowlist = check.value.in_allowlist
             if check.value.in_blocklist and not in_allowlist:
                 await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
-                return
         result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
         if result and enable_urlmanager and not in_allowlist:
             prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")
@@ -42,10 +41,8 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     target = WikiTargetInfo(msg)
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
-        if msg.target.target_from in audit_available_list:
-            if check.value.in_blocklist and not check.value.in_allowlist:
-                await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
-                return
+        if Info.use_url_manager and check.value.in_blocklist and not check.value.in_allowlist:
+            await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=check.value.name))
         result = target.config_interwikis(interwiki, check.value.api, let_it=True)
         if result and enable_urlmanager and not check.value.in_allowlist:
             prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust")

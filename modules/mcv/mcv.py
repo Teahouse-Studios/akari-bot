@@ -1,13 +1,13 @@
-from datetime import datetime
 import re
+from datetime import datetime
 
-from google_play_scraper import app as google_play_scraper
 import orjson as json
+from google_play_scraper import app as google_play_scraper
 
 from core.builtins import Bot, ErrorMessage
+from core.constants.info import Secret
 from core.logger import Logger
 from core.utils.http import get_url, post_url
-from core.utils.ip import IP
 
 
 async def mcv(msg: Bot.MessageSession):
@@ -46,7 +46,7 @@ async def mcv(msg: Bot.MessageSession):
 
 async def mcbv(msg: Bot.MessageSession):
     play_store_version = None
-    if IP.country != 'China':
+    if Secret.ip_country != 'China':
         try:  # play store
             play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
         except Exception:
@@ -83,7 +83,7 @@ async def mcbv(msg: Bot.MessageSession):
     return \
         (f"""{msg.locale.t("mcv.message.mcbv.play_store")}
 {play_store_version if play_store_version else msg.locale.t('mcv.message.mcbv.get_failed')}
-""" if IP.country != 'China' else '') + \
+""" if Secret.ip_country != 'China' else '') + \
         f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
 {ms_store_version if ms_store_version else msg.locale.t('mcv.message.mcbv.get_failed')}
 """ + \

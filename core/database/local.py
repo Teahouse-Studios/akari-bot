@@ -8,9 +8,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt
 
+from core.constants.path import database_path
+
 Base = declarative_base()
 
-os.makedirs("database", exist_ok=True)
+os.makedirs(database_path, exist_ok=True)
 
 DB_LINK = 'sqlite:///database/local.db'
 
@@ -86,7 +88,7 @@ class CrowdinActivityRecords:
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
     def check(txt: str):
-        query_hash = hashlib.md5(txt.encode(encoding='UTF-8')).hexdigest()
+        query_hash = hashlib.md5(txt.encode(encoding='UTF-8'), usedforsecurity=False).hexdigest()
         query = session.query(CrowdinActivityRecordsTable).filter_by(hash_id=query_hash).first()
         if not query:
             session.add_all([CrowdinActivityRecordsTable(hash_id=query_hash)])

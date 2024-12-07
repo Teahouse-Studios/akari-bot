@@ -38,17 +38,17 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, use_e
     else:
         pages = ''
 
-    stat_view = msg.locale.int(stat['view'], 1)
-    stat_danmaku = msg.locale.int(stat['danmaku'], 1)
-    stat_reply = msg.locale.int(stat['reply'], 1)
-    stat_favorite = msg.locale.int(stat['favorite'], 1)
-    stat_coin = msg.locale.int(stat['coin'], 1)
-    stat_share = msg.locale.int(stat['share'], 1)
-    stat_like = msg.locale.int(stat['like'], 1)
+    stat_view = msg.locale.num(stat['view'], 1)
+    stat_danmaku = msg.locale.num(stat['danmaku'], 1)
+    stat_reply = msg.locale.num(stat['reply'], 1)
+    stat_favorite = msg.locale.num(stat['favorite'], 1)
+    stat_coin = msg.locale.num(stat['coin'], 1)
+    stat_share = msg.locale.num(stat['share'], 1)
+    stat_like = msg.locale.num(stat['like'], 1)
 
     owner = view['owner']['name']
     avatar = view['owner']['face']
-    fans = msg.locale.int(res['data']['Card']['card']['fans'], 1)
+    fans = msg.locale.num(res['data']['Card']['card']['fans'], 1)
 
     if use_embed:
         await msg.send_message(Embed(title=f'{title}{pages}',

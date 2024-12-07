@@ -5,8 +5,8 @@ import orjson as json
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
+from core.constants.path import assets_path
 from core.logger import Logger
-from core.path import assets_path
 
 levels = {'EZ': 1, 'HD': 2, 'IN': 4, 'AT': 8, }
 secret = bytes([232, 150, 154, 210, 165, 64, 37, 155, 151, 145, 144, 139, 136, 230, 191, 3, 30, 109, 33, 149, 110, 250,

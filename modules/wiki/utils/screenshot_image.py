@@ -12,23 +12,22 @@ import orjson as json
 from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
+from core.constants.info import Info
+from core.constants.path import cache_path
 from core.logger import Logger
-from core.path import cache_path
 from core.utils.http import download
-from core.utils.web_render import WebRender, webrender
-
-elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
-            '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
+from core.utils.web_render import webrender
+from .mapping import infobox_elements
 
 
 async def generate_screenshot_v2(page_link: str, section: str = None, allow_special_page=False, content_mode=False, use_local=True,
                                  element=None) -> Union[List[PILImage], bool]:
-    elements_ = elements.copy()
+    elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
     if not section:
         if allow_special_page and content_mode:
@@ -93,18 +92,17 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
 
 
 async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[List[PILImage], bool]:
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
     try:
         Logger.info('Starting find infobox/section..')
         if link[-1] != '/':
             link += '/'
         try:
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                    html = await req.read()
+            async with aiohttp.ClientSession(headers=headers) as session, session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                html = await req.read()
         except BaseException:
             Logger.error(traceback.format_exc())
             return False
@@ -345,8 +343,22 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
         Logger.info('Start rendering...')
         img_lst = []
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(webrender(), headers={
+            async with aiohttp.ClientSession() as session, session.post(webrender(), headers={
+                'Content-Type': 'application/json',
+            }, data=json.dumps(html)) as resp:
+                if resp.status != 200:
+                    Logger.info(f'Failed to render: {await resp.text()}')
+                    return False
+                imgs_data = json.loads(await resp.read())
+                for img in imgs_data:
+                    b = base64.b64decode(img)
+                    bio = BytesIO(b)
+                    bimg = PILImage.open(bio)
+                    img_lst.append(bimg)
+
+        except aiohttp.ClientConnectorError:
+            if use_local:
+                async with aiohttp.ClientSession() as session, session.post(webrender(use_local=False), headers={
                     'Content-Type': 'application/json',
                 }, data=json.dumps(html)) as resp:
                     if resp.status != 200:
@@ -358,22 +370,6 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                         bio = BytesIO(b)
                         bimg = PILImage.open(bio)
                         img_lst.append(bimg)
-
-        except aiohttp.ClientConnectorError:
-            if use_local:
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(webrender(use_local=False), headers={
-                        'Content-Type': 'application/json',
-                    }, data=json.dumps(html)) as resp:
-                        if resp.status != 200:
-                            Logger.info(f'Failed to render: {await resp.text()}')
-                            return False
-                        imgs_data = json.loads(await resp.read())
-                        for img in imgs_data:
-                            b = base64.b64decode(img)
-                            bio = BytesIO(b)
-                            bimg = PILImage.open(bio)
-                            img_lst.append(bimg)
 
         return img_lst
     except Exception:

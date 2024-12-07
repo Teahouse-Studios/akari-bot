@@ -1,0 +1,80 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+default_locale = "en_us" # Default session language environment.
+config_version = 0 # Config version number, which will be automatically updated with the features and generally does not need to be modified.
+initialized = true
+
+[config]
+# The basic config section. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+enable_dirty_check = false # Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.
+enable_urlmanager = false # Whether to enable URLManager for URL springboard. (Declare this URL is not an official link, etc.)
+ignored_sender = ["QQ|2854196310"] # Ignore user list. Users matching this list will be ignored.
+issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
+enable_analytics = false # Whether to enable built-in statistics features.
+enable_petal = false # Whether to enable the petal feature.
+enable_rickroll = true # Whether rickroll the user when text filter detection fails.
+rickroll_msg = "<Replace me with str value>" # Rickroll message when text filter check fails.
+enable_joke = true # Whether to enable the joke. It will occur at April 1st server time when enabled.
+shuffle_rate = 0.1 # The random occurrence rate of jokes.
+unloaded_modules = [] # Unloaded modules list. Modules matching this list will not be loaded.
+debug = false # Whether to enable debug mode, more log information will be output when enabled.
+report_targets = [] # Reporting session list, the value filled in here will be identified as the reporting session. (For example: when the bot executes a command error, the bot will send the error information to the corresponding session)
+tos_warning_counts = 5 # Maximum number of warnings for ToS violations.
+base_superuser = ["QQ|2596322644"] # The bot's base superuser list. The values ​​filled in here will be loaded into the database when the bot starts.
+bug_report_url = "https://s.wd-ljt.com/botreportbug" # Report error URL.
+timezone_offset = "+8" # The bot's default timezone offset.
+no_confirm = false # Whether to execute the command without the sender confirming the message.
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword of the confirmation command. The value filled in here will be recognized as the confirmation command.
+command_prefix = ["~", "～"] # Command prefix. The value filled in here will be recognized as the command prefix.
+enable_tos = true # Whether to enable built-in ToS checking rules.
+tos_temp_ban_time = 300 # Temporary ban duration for ToS violations.
+allow_request_private_ip = false # Whether to allow bot to request local private IP addresses. (Prevent possible leakage)
+enable_get_petal = false # Whether to allow get petals.
+gained_petal_limit = 0 # The maximum number of petals users can get per day.
+lost_petal_limit = 0 # The maximum number of petals users can lose per day.
+use_secrets_random = false # Whether to use the random number generator based on the secrets library.
+web_render_local = "<Replace me with str value>" # The local WebRender service address.
+enable_langsmith = "<Replace me>"
+langsmith_endpoint = "<Replace me>"
+langsmith_project = "<Replace me>"
+langsmith_api_key = "<Replace me>"
+coin_limit = 10000 # The maximum number of coins tossed of coin module.
+coin_faceup_weight = 4997 # The weight of heads of the coins tossed of coin module.
+coin_facedown_weight = 4997 # The weight of tails of the coins tossed of coin module.
+coin_stand_weight = 6 # The weight of stands of the coins tossed of coin module.
+help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.
+help_url = "https://bot.teahouse.team" # Help document URL.
+donate_url = "http://afdian.com/a/teahouse" # Donate URL.
+allow_reload_base = false # Whether to allow reloading of the base modules.
+enable_eval = false # Whether to enable eval module.
+enable_commit_url = true # Whether to show the commit URL when displaying version information.
+locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
+dice_limit = 100 # The maximum number of dice rolled at one time of dice module.
+dice_output_count = 50 # The maximum amount of information output of dice module.
+dice_output_len = 200 # The maximum length output of dice module.
+dice_roll_limit = 10 # The maximum number of dice rolled per command of dice module.
+dice_detail_count = 5 # The total number of dice rolled n times of dice module, it will no longer show details when this value is exceeded.
+dice_count_limit = 10 # The maximum number of items in dice expressions of dice module.
+ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ platform)
+wiki_whitelist_url = "<Replace me with str value>" # Wiki whitelist application URL.
+wordle_disable_image = false # Whether to disable images of wordle module.
+slower_schedule = false # Whether to enable a slower scheduled task scheduler. (To reduce request pressure)
+
+[secret]
+# The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+proxy = "<Replace me with str value>" # Proxy service address.
+check_access_key_id = "<Replace me with str value>" # The AccessKey ID of Alibaba Cloud Content Security Service.
+check_access_key_secret = "<Replace me with str value>" # The AccessKey Secret of Alibaba Cloud Content Security Service.
+db_path = "sqlite:///database/save.db" # Database connection string, use the connection string format supported by SQLAlchemy.
+ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # The key used to encrypt sensitive information. (Encrypted using the ff3 algorithm, which may be used in some scenarios)
+ff3_tweak = "1E915EC4922E78" # The key tweak used to encrypt sensitive information.
+web_render = "<Replace me with str value>" # WebRender service URL.
+openai_api_key = "<Replace me with str value>" # OpenAI API Key. (For ask modules etc.)
+exchange_rate_api_key = "<Replace me with str value>" # API Key for ExchangeRate-API. (For exchange_rate module and exchange rate calculation)
+wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha AppID. (For wolframalpha module)
+diving_fish_developer_token = "<Replace me with str value>" # Developer token for Diving Fish prober. (For maimai module)
+curseforge_api_key = "<Replace me with str value>" # CurseForge API key. (For mod_dl module)
+ncmusic_api = "<Replace me with str value>" # API address of NetEase Cloud Music API. (For ncmusic module)
+osu_api_key = "<Replace me with str value>" # osu! API Key (for osu module)

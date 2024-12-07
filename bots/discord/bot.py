@@ -10,22 +10,22 @@ import orjson as json
 from bots.discord.client import client
 from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
+from core.bot_init import init_async, load_prompt
+from core.builtins import PrivateAssets
 from core.config import Config
-from core.bot import init_async, load_prompt
-from core.builtins import PrivateAssets, Url
+from core.constants.default import ignored_sender_default
+from core.constants.path import assets_path
 from core.logger import Logger
 from core.parser.message import parser
-from core.path import assets_path
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'discord'))
-Url.disable_mm = True
-ignored_sender = Config("ignored_sender", [])
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 count = 0
 
-dc_token = Config('discord_token', cfg_type=str)
+dc_token = Config('discord_token', cfg_type=str, secret=True, table_name='bot_discord')
 
 
 @client.event
@@ -123,8 +123,9 @@ async def on_message(message):
     await parser(msg, prefix=prefix)
 
 
-Info.client_name = client_name
-if 'subprocess' in sys.argv:
-    Info.subprocess = True
+if Config("enable", False, table_name='bot_discord'):
+    Info.client_name = client_name
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
 
-client.run(dc_token)
+    client.run(dc_token)

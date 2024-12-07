@@ -2,7 +2,7 @@ from core.builtins import Bot
 from core.component import module
 from aiohttp import ClientSession
 import asyncio
-import ujson as json
+import orjson as json
 
 
 async def hitokoto_():

@@ -2,14 +2,14 @@ import re
 
 import orjson as json
 
-from core.config import Config
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
+from core.config import Config
+from core.constants import Info
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib
 from .dbutils import WikiLogUtil
 from .utils import convert_data_to_text
-from ..wiki import audit_available_list
 from ..wiki.utils.ab import convert_ab_to_detailed_format
 from ..wiki.utils.rc import convert_rc_to_detailed_format
 
@@ -43,11 +43,10 @@ async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     in_allowlist = True
-    if msg.target.target_from in audit_available_list:
+    if Info.use_url_manager:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
             await msg.finish(msg.locale.t("wiki.message.invalid.blocked", name=status.value.name))
-            return
     if not in_allowlist:
         prompt = msg.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
         if Config("wiki_whitelist_url", cfg_type=str):
@@ -65,7 +64,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
 @wikilog.handle('enable <apilink> <logtype> {{wikilog.help.enable.logtype}}',
                 'disable <apilink> <logtype> {{wikilog.help.disable.logtype}}')
 async def _(msg: Bot.MessageSession, apilink, logtype: str):
-    logtype = type_map.get(logtype, None)
+    logtype = type_map.get(logtype)
     if logtype:
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
@@ -107,7 +106,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
     infos = json.loads(t.query.infos)
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
-    logtype = type_map.get(logtype, None)
+    logtype = type_map.get(logtype)
     if status.available:
         if status.value.api in infos:
             if logtype == "RecentChanges":
@@ -133,7 +132,7 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     else:
         filters = msg.parsed_msg.get('...')
     if filters:
-        logtype = type_map.get(logtype, None)
+        logtype = type_map.get(logtype)
         if logtype:
             t = WikiLogUtil(msg)
             infos = json.loads(t.query.infos)
@@ -155,6 +154,8 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
 
 @wikilog.handle('bot enable <apilink> {{wikilog.help.bot.enable}}', required_superuser=True)
 @wikilog.handle('bot disable <apilink> {{wikilog.help.bot.disable}}', required_superuser=True)
+@wikilog.handle('keepalive enable <apilink> {{wikilog.help.keepalive}}', required_superuser=True)
+@wikilog.handle('keepalive disable <apilink> {{wikilog.help.keepalive}}', required_superuser=True)
 async def _(msg: Bot.MessageSession, apilink: str):
     t = WikiLogUtil(msg)
     infos = json.loads(t.query.infos)
@@ -162,7 +163,11 @@ async def _(msg: Bot.MessageSession, apilink: str):
     status = await wiki_info.check_wiki_available()
     if status.available:
         if status.value.api in infos:
-            if t.set_use_bot(status.value.api, 'enable' in msg.parsed_msg):
+            if 'keepalive' in msg.parsed_msg:
+                r = t.set_keep_alive(status.value.api, 'enable' in msg.parsed_msg)
+            else:
+                r = t.set_use_bot(status.value.api, 'enable' in msg.parsed_msg)
+            if r:
                 await msg.finish(msg.locale.t('wikilog.message.config.wiki.success', wiki=status.value.name))
             else:
                 await msg.finish(msg.locale.t('wikilog.message.filter.set.failed'))
@@ -239,3 +244,23 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
                     for x in rc:
                         await ft.send_direct_message(f'{wiki_info.name}\n{x}' if len(matched[id_]) > 1 else x)
+
+
+@wikilog.hook('keepalive')
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+    data_ = WikiLogUtil.return_all_data()
+    for target in data_:
+        for wiki in data_[target]:
+            if 'keep_alive' in data_[target][wiki] and data_[target][wiki]['keep_alive']:
+                fetch_target = await fetch.fetch_target(target)
+                if fetch_target:
+                    try:
+                        wiki_ = WikiLib(wiki)
+                        await wiki_.fixup_wiki_info()
+                        get_user_info = await wiki_.get_json(action='query', meta='userinfo')
+                        if n := get_user_info['query']['userinfo']['name']:
+                            await fetch_target.send_direct_message(I18NContext('wikilog.message.keepalive.logged.as', name=n,
+                                                                               wiki=wiki_.wiki_info.name))
+                    except Exception as e:
+                        Logger.error(f'Keep alive failed: {e}')
+                        await fetch_target.send_direct_message(I18NContext('wikilog.message.keepalive.failed', link=wiki))

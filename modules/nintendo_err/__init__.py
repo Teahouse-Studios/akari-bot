@@ -12,7 +12,8 @@ class Results:
     Parses game console result codes.
     """
 
-    def fetch(self, error):
+    @staticmethod
+    def fetch(error):
         if ctr_support.is_valid(error):
             return ctr_support.get(error)
         if ctr_results.is_valid(error):
@@ -48,7 +49,8 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         if not suppress_error:
             return 'This isn\'t a hexadecimal value!'
 
-    def fixup_input(self, user_input):
+    @staticmethod
+    def fixup_input(user_input):
         # Truncate input to 16 chars so as not to create a huge embed or do
         # eventual regex on a huge string. If we add support for consoles that
         # that have longer error codes, adjust accordingly.
@@ -62,14 +64,16 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
 
         return user_input
 
-    def is_hex(self, user_input):
+    @staticmethod
+    def is_hex(user_input):
         try:
             user_input = hex(int(user_input, 16))
         except ValueError:
             return False
         return True
 
-    def check_meme(self, err: str) -> str:
+    @staticmethod
+    def check_meme(err: str) -> str:
         memes = {
             '0xdeadbeef': '都坏掉了，不能吃了。',
             '0xdeadbabe': '我觉得你有问题。',
@@ -113,4 +117,4 @@ async def result(msg: Bot.MessageSession):
             embed.add_field(name=field.field_name, value=field.message, inline=False)
         await msg.finish(convert_discord_embed(embed))
     else:
-        await msg.finish(f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
+        await msg.finish('你输入的代码是无效的，或者此功能不支持你使用的主机。')

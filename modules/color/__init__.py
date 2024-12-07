@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins import Bot, Embed, EmbedField, Image as BImage
 from core.component import module
-from core.path import assets_path, noto_sans_demilight_path
+from core.constants.path import assets_path, noto_sans_demilight_path
 
 c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}', doc=True)
 

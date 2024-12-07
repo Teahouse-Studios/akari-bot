@@ -5,9 +5,10 @@ import aiohttp
 import orjson as json
 from PIL import Image as PILImage
 
+from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import download, get_url
-from core.utils.web_render import WebRender, webrender
+from core.utils.web_render import webrender
 
 elements = ['div#descriptionmodule']
 
@@ -16,9 +17,9 @@ spx_cache = {}
 
 async def make_screenshot(page_link, use_local=True):
     elements_ = elements.copy()
-    if not WebRender.status:
+    if not Info.web_render_status:
         return False
-    elif not WebRender.local:
+    elif not Info.web_render_local_status:
         use_local = False
     Logger.info('[WebRender] Generating element screenshot...')
     try:

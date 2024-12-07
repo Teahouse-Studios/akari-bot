@@ -3,15 +3,15 @@ import urllib.parse
 
 from PIL import Image as PILImage
 
-from core.config import Config
 from core.builtins import Bot, Image as BImage
 from core.component import module
+from core.config import Config
+from core.constants.exceptions import ConfigValueError
 from core.dirty_check import rickroll
-from core.exceptions import ConfigValueError
 from core.utils.http import download, get_url
 from .check import secret_check
 
-appid = Config('wolfram_alpha_appid', cfg_type=str)
+appid = Config('wolfram_alpha_appid', cfg_type=str, secret=True)
 
 w = module(
     'wolframalpha',

@@ -3,8 +3,8 @@ import os
 import orjson as json
 from PIL import Image as PILImage
 
+from core.constants.path import cache_path
 from core.logger import Logger
-from core.path import cache_path
 from core.utils.http import get_url, download
 
 

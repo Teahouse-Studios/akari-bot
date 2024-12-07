@@ -1,12 +1,13 @@
-﻿from core.config import Config
-from core.builtins import Bot
+﻿from core.builtins import Bot
 from core.component import module
-from core.exceptions import ConfigValueError
+from core.config import Config
+from core.constants.exceptions import ConfigValueError
 from core.utils.random import Random
 
 MAX_COIN_NUM = Config('coin_limit', 10000)
-FACE_UP_RATE = Config('coin_faceup_rate', 4997)  # n/10000
-FACE_DOWN_RATE = Config('coin_facedown_rate', 4997)
+FACE_UP_WEIGHT = Config('coin_faceup_weight', 4997)  # n/10000
+FACE_DOWN_WEIGHT = Config('coin_facedown_weight', 4997)
+STAND_WEIGHT = Config('coin_stand_weight', 6)
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}', doc=True)
 
@@ -17,9 +18,8 @@ async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flip_coins(amount, msg))
 
 
-async def flip_coins(count: int, msg):
-    if not all([FACE_UP_RATE + FACE_DOWN_RATE <= MAX_COIN_NUM, FACE_UP_RATE >= 0,
-                FACE_DOWN_RATE >= 0, MAX_COIN_NUM > 0]):
+async def flip_coins(count: int, msg: Bot.MessageSession):
+    if not all([STAND_WEIGHT >= 0, FACE_UP_WEIGHT >= 0, FACE_DOWN_WEIGHT >= 0, MAX_COIN_NUM > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
     elif count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.invalid.out_of_range", max=MAX_COIN_NUM)
@@ -28,14 +28,15 @@ async def flip_coins(count: int, msg):
     elif count == 0:
         return msg.locale.t("coin.message.nocoin")
 
+    coin_total_weight = FACE_UP_WEIGHT + FACE_DOWN_WEIGHT + STAND_WEIGHT
     face_up = 0
     face_down = 0
     stand = 0
     for i in range(count):
-        rand_num = Random.randint(1, MAX_COIN_NUM)
-        if rand_num < FACE_UP_RATE:
+        rand_num = Random.randint(1, coin_total_weight)
+        if rand_num < FACE_UP_WEIGHT:
             face_up += 1
-        elif rand_num < FACE_UP_RATE + FACE_DOWN_RATE:
+        elif rand_num < FACE_UP_WEIGHT + FACE_DOWN_WEIGHT:
             face_down += 1
         else:
             stand += 1

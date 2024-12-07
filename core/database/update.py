@@ -1,10 +1,9 @@
 import orjson as json
-from marshmallow.utils import timestamp
 from sqlalchemy import text, update
 
 from core.database import BotDBUtil
 from core.database.orm import Session
-from core.database.tables import DBVersion, TargetInfo, is_mysql, AnalyticsData
+from core.database.tables import DBVersion, TargetInfoTable, is_mysql, AnalyticsData
 
 
 def update_database():
@@ -13,8 +12,8 @@ def update_database():
     version = session.query(DBVersion).first()
     value = int(version.value)
     if value < 2:
-        TargetInfo.__table__.drop(engine)
-        TargetInfo.__table__.create(engine)
+        TargetInfoTable.__table__.drop(engine)
+        TargetInfoTable.__table__.create(engine)
         q = session.execute(text("SELECT * FROM enabledModules"))
         for v in q.fetchall():
             data = BotDBUtil.TargetInfo(v[0]).init()
