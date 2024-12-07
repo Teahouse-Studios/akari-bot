@@ -3,7 +3,8 @@ import re
 import asyncio
 from ast import literal_eval
 
-from core.builtins import Bot, BotDBUtil
+from core.builtins import Bot
+from core.database import BotDBUtil
 from core.component import module
 from .server import query_java_server, query_bedrock_server
 

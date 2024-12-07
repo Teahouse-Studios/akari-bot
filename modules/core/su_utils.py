@@ -6,7 +6,6 @@ from datetime import datetime
 
 import orjson as json
 
-from core.config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.config import Config, CFGManager
@@ -23,7 +22,6 @@ from core.utils.i18n import Locale
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint
-from core.utils.text import isfloat, isint, decrypt_string
 from core.database import BotDBUtil
 
 target_list = get_all_target_prefix()
@@ -637,21 +635,21 @@ async def ckframe_(msg: Bot.MessageSession):
     for frame in all_frames_:
         try:
             if frame == 'lagrange':
-                await bot.call_action('group_poke', group_id=msg.session.target,
+                await msg.call_action('group_poke', group_id=msg.session.target,
                                       user_id=msg.session.sender)
             elif frame == 'shamrock':
-                await bot.send_group_msg(group_id=msg.session.target,
+                await msg.send_group_msg(group_id=msg.session.target,
                                          message=f'[CQ:touch,id={msg.session.sender}]')
             elif frame == 'mirai':
-                await bot.send_group_msg(group_id=msg.session.target,
+                await msg.send_group_msg(group_id=msg.session.target,
                                          message=f'[CQ:poke,qq={msg.session.sender}]')
             if frame == 'ntqq':
-                await bot.call_action('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                await msg.call_action('set_msg_emoji_like', message_id=msg.session.message.message_id,
                                       emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
         except Exception:
             unsupported_.append(frame)
     support_frame = list(set(all_frames_) - set(unsupported_))
-    CFG.write('qq_frame_type',support_frame[0])
+    CFGManager.write('qq_frame_type',support_frame[0])
     await msg.sendMessage(f"已自动设置框架为：{support_frame[0]}")
     # confirm = await msg.wait_confirm('要重启吗?(yes?)', append_instruction=False)
     # if confirm:

@@ -1,10 +1,9 @@
 from core.config import Config
 from aiohttp import ClientSession
-from retrying import retry
-from core.exceptions import FaildToQueryWeather
+from core.constants.exceptions import FaildToQueryWeather
 
 import asyncio
-import ujson as json
+import orjson as json
 
 key = Config('qweather_api_key',cfg_type=str)
 # key = "a5e3446eeec3419e91a08fdcfc19fb52"
@@ -12,7 +11,6 @@ key = Config('qweather_api_key',cfg_type=str)
 
 class QweatherApi():
     @staticmethod
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10)
     async def query_url(url:str):
         async with ClientSession() as session:
             async with session.get(url) as response_:
