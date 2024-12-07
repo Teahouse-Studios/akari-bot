@@ -8,7 +8,7 @@ from core.component import module
 from .server import query_java_server, query_bedrock_server
 
 inf = module('info',
-             alias={'s': 'info url', 'server': 'info url', 'info':'info list'},
+             alias={'s': 'info url', 'server': 'info url'},
              developers=['haoye_qwq', '_LittleC_', 'OasisAkari', 'DoroWolf'],
              desc='Minecraft服务器信息模块')
 
@@ -76,7 +76,7 @@ async def _____(msg: Bot.MessageSession):
     else:
         await msg.sendMessage('已取消')
 
-
+@inf.handle('{查看已绑定服务器列表}')
 @inf.handle('list {查看已绑定服务器列表}')
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.target_id
