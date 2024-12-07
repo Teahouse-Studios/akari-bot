@@ -124,7 +124,7 @@ class WordleBoard:
         return '\n'.join(''.join(row) for row in formatted)
 
     def is_game_over(self):
-        return bool(len(self.board) != 0 and self.word == self.board[-1])
+        return bool(len(self.board) != 0 and (self.word == self.board[-1]) or (len(self.board) > 5))
 
     @staticmethod
     def from_random_word():
@@ -231,11 +231,7 @@ async def _(msg: Bot.MessageSession):
     await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
-        if not play_state.check():
-            return
         wait = await msg.wait_next_message(timeout=None)
-        if not play_state.check():
-            return
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue

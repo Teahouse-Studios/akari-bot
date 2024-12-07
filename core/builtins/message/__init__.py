@@ -40,66 +40,72 @@ class ExecutionLockList:
 
 
 class MessageTaskManager:
-    _list = {}
+    _task_list = {}
     _callback_list = {}
 
     @classmethod
-    def add_task(cls, session: 'MessageSession', flag, all_=False, reply=None, timeout=120):
+    def add_task(
+            cls,
+            session: 'MessageSession',
+            flag: asyncio.Event,
+            all_: bool = False,
+            reply: Optional[Union[List[int], List[str], int, str]] = None,
+            timeout: Optional[float] = 120):
         sender = session.target.sender_id
         task_type = 'reply' if reply else 'wait'
         if all_:
             sender = 'all'
 
-        if session.target.target_id not in cls._list:
-            cls._list[session.target.target_id] = {}
-        if sender not in cls._list[session.target.target_id]:
-            cls._list[session.target.target_id][sender] = {}
-        cls._list[session.target.target_id][sender][session] = {
+        if session.target.target_id not in cls._task_list:
+            cls._task_list[session.target.target_id] = {}
+        if sender not in cls._task_list[session.target.target_id]:
+            cls._task_list[session.target.target_id][sender] = {}
+        cls._task_list[session.target.target_id][sender][session] = {
             'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp(),
             'timeout': timeout}
-        Logger.debug(cls._list)
+        Logger.debug(cls._task_list)
 
     @classmethod
-    def add_callback(cls, message_id, callback):
+    def add_callback(cls, message_id: Union[List[int], List[str], int, str], callback: Optional[Coroutine]):
         cls._callback_list[message_id] = {'callback': callback, 'ts': datetime.now().timestamp()}
 
     @classmethod
     def get_result(cls, session: 'MessageSession'):
-        if 'result' in cls._list[session.target.target_id][session.target.sender_id][session]:
-            return cls._list[session.target.target_id][session.target.sender_id][session]['result']
+        if 'result' in cls._task_list[session.target.target_id][session.target.sender_id][session]:
+            return cls._task_list[session.target.target_id][session.target.sender_id][session]['result']
         else:
             return None
 
     @classmethod
     def get(cls):
-        return cls._list
+        return cls._task_list
 
     @classmethod
     async def bg_check(cls):
-        for target in cls._list:
-            for sender in cls._list[target]:
-                for session in cls._list[target][sender]:
-                    if cls._list[target][sender][session]['active']:
-                        if (datetime.now().timestamp() - cls._list[target][sender][session]['ts'] >
-                                cls._list[target][sender][session].get('timeout', 3600)):
-                            cls._list[target][sender][session]['active'] = False
-                            cls._list[target][sender][session]['flag'].set()  # no result = cancel
+        for target in cls._task_list:
+            for sender in cls._task_list[target]:
+                for session in cls._task_list[target][sender]:
+                    if cls._task_list[target][sender][session]['active']:
+                        if (datetime.now().timestamp() - cls._task_list[target][sender][session]['ts'] >
+                                cls._task_list[target][sender][session].get('timeout', 3600)):
+                            cls._task_list[target][sender][session]['active'] = False
+                            cls._task_list[target][sender][session]['flag'].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
             if datetime.now().timestamp() - cls._callback_list[message_id]['ts'] > 3600:
                 del cls._callback_list[message_id]
 
     @classmethod
     async def check(cls, session: 'MessageSession'):
-        if session.target.target_id in cls._list:
+        if session.target.target_id in cls._task_list:
             senders = []
-            if session.target.sender_id in cls._list[session.target.target_id]:
+            if session.target.sender_id in cls._task_list[session.target.target_id]:
                 senders.append(session.target.sender_id)
-            if 'all' in cls._list[session.target.target_id]:
+            if 'all' in cls._task_list[session.target.target_id]:
                 senders.append('all')
             if senders:
                 for sender in senders:
-                    for s in cls._list[session.target.target_id][sender]:
-                        get_ = cls._list[session.target.target_id][sender][s]
+                    for s in cls._task_list[session.target.target_id][sender]:
+                        get_ = cls._task_list[session.target.target_id][sender][s]
                         if get_['type'] == 'wait':
                             get_['result'] = session
                             get_['active'] = False
@@ -184,7 +190,7 @@ class MessageSession:
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain: Union[MessageChain, str, list, MessageElement] = None,
+                     message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
                      quote: bool = True,
                      disable_secret_check: bool = False,
                      enable_parse_message: bool = True,
@@ -193,7 +199,7 @@ class MessageSession:
         """
         用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
 
-        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链。
+        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链，可不填。
         :param quote: 是否引用传入dict中的消息。（默认为True）
         :param disable_secret_check: 是否禁用消息检查。（默认为False）
         :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
@@ -259,6 +265,8 @@ class MessageSession:
     async def fake_forward_msg(self, nodelist: List[Dict[str, Union[str, Any]]]):
         """
         用于发送假转发消息（QQ）。
+
+        :param nodelist: 消息段列表，即`type`键名为`node`的字典列表，详情参考OneBot文档。
         """
         raise NotImplementedError
 
@@ -287,7 +295,7 @@ class MessageSession:
                            message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
                            quote: bool = True,
                            delete: bool = True,
-                           timeout: int = 120,
+                           timeout: Optional[float] = 120,
                            append_instruction: bool = True) -> bool:
         """
         一次性模板，用于等待触发对象确认。
@@ -330,7 +338,7 @@ class MessageSession:
                                 message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
                                 quote: bool = True,
                                 delete: bool = False,
-                                timeout: int = 120,
+                                timeout: Optional[float] = 120,
                                 append_instruction: bool = True) -> 'MessageSession':
         """
         一次性模板，用于等待对象的下一条消息。
@@ -369,7 +377,7 @@ class MessageSession:
                          message_chain: Union[MessageChain, str, list, MessageElement],
                          quote: bool = True,
                          delete: bool = False,
-                         timeout: int = 120,
+                         timeout: Optional[float] = 120,
                          all_: bool = False,
                          append_instruction: bool = True) -> 'MessageSession':
         """
@@ -410,7 +418,7 @@ class MessageSession:
                           message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
                           quote: bool = False,
                           delete: bool = False,
-                          timeout: int = 120) -> 'MessageSession':
+                          timeout: Optional[float] = 120) -> 'MessageSession':
         """
         一次性模板，用于等待触发对象所属对话内任意成员确认。
 
