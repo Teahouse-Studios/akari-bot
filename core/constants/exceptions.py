@@ -10,6 +10,10 @@ class ConfigValueError(Exception):
     pass
 
 
+class ConfigOperationError(Exception):
+    pass
+
+
 class InvalidHelpDocTypeError(Exception):
     pass
 

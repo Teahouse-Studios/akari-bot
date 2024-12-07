@@ -121,7 +121,7 @@
                     {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
                                   command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
                     {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
-                    <div class="module-name">{{ value.bind_prefix }}</div>
+                    <div class="module-name">{{ value.bind_prefix | e }}</div>
                     {% if len(help_.args) > 0 %}
                     <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
                     {%- endif %}

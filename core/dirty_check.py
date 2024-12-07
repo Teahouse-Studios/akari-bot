@@ -6,17 +6,17 @@ import base64
 import datetime
 import hashlib
 import hmac
-import orjson as json
 import time
 from typing import Union, List, Dict
 
 import aiohttp
+import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
+from core.builtins import Bot
 from core.config import Config
-from core.builtins import Bot, EnableDirtyWordCheck
-from core.logger import Logger
 from core.database.local import DirtyWordCache
+from core.logger import Logger
 
 
 def hash_hmac(key, code, sha1):
@@ -25,7 +25,7 @@ def hash_hmac(key, code, sha1):
 
 
 def computeMD5hash(my_string):
-    m = hashlib.md5()
+    m = hashlib.md5(usedforsecurity=False)
     m.update(my_string.encode('gb2312'))
     return m.hexdigest()
 
@@ -71,18 +71,18 @@ def parse_data(result: dict, msg: Bot.MessageSession = None, additional_text=Non
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, additional_text=None) -> List[Dict]:
-    '''检查字符串是否合规
+    '''检查字符串。
 
     :param text: 字符串（List/Union）。
     :param msg: 消息会话，若指定则本地化返回的消息。
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<REDACTED:原因>，全部不合规则是'<ALL REDACTED:原因>'。
+    :returns: 经过审核后的字符串。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
     '''
-    access_key_id = Config("check_access_key_id", cfg_type=str)
-    access_key_secret = Config("check_access_key_secret", cfg_type=str)
+    access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
+    access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
-    if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
+    if not access_key_id or not access_key_secret or not Bot.Info.dirty_word_check:
         Logger.warning('Dirty words filter was disabled, skip.')
         query_list = []
         for t in text:
@@ -112,7 +112,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
                 if pq not in call_api_list:
                     call_api_list.update({pq: []})
                 call_api_list[pq].append(q)
-    call_api_list_ = [x for x in call_api_list]
+    call_api_list_ = list(call_api_list)
     Logger.debug(call_api_list_)
     if call_api_list_:
         body = {
@@ -131,7 +131,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         gmt_format = '%a, %d %b %Y %H:%M:%S GMT'
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
         nonce = 'LittleC sb {}'.format(time.time())
-        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body)).digest()).decode('utf-8')
+        content_md5 = base64.b64encode(hashlib.md5(json.dumps(body), usedforsecurity=False).digest()).decode('utf-8')
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -157,19 +157,18 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
         headers['Authorization'] = sign
         # 'Authorization': "acs {}:{}".format(access_key_id, sign)
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
-                if resp.status == 200:
-                    result = await resp.json()
-                    Logger.debug(result)
-                    for item in result['data']:
-                        content = item['content']
-                        for n in call_api_list[content]:
-                            query_list.update(
-                                {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
-                        DirtyWordCache(content).update(item)
-                else:
-                    raise ValueError(await resp.text())
+        async with aiohttp.ClientSession(headers=headers) as session, session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                Logger.debug(result)
+                for item in result['data']:
+                    content = item['content']
+                    for n in call_api_list[content]:
+                        query_list.update(
+                            {n: {content: parse_data(item, msg=msg, additional_text=additional_text)}})
+                    DirtyWordCache(content).update(item)
+            else:
+                raise ValueError(await resp.text())
     results = []
     Logger.debug(query_list)
     for x in query_list:
@@ -179,6 +178,11 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
 
 
 async def check_bool(*text: Union[str, List[str]]) -> bool:
+    '''检查字符串是否合规。
+
+    :param text: 字符串（List/Union）。
+    :returns: 字符串是否合规。
+    '''
     chk = await check(*text)
     for x in chk:
         if not x['status']:
@@ -186,7 +190,12 @@ async def check_bool(*text: Union[str, List[str]]) -> bool:
     return False
 
 
-def rickroll(msg: Bot.MessageSession):
+def rickroll(msg: Bot.MessageSession) -> str:
+    '''合规检查失败时输出的Rickroll消息。
+
+    :param msg: 消息会话。
+    :returns: Rickroll消息。
+    '''
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
         return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
     else:

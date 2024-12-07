@@ -9,17 +9,20 @@ import orjson as json
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
-from core.config import Config
 from core.builtins import Url
+from core.config import Config
+from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
-from core.exceptions import AbuseWarning, NoReportException
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.i18n import Locale, default_locale
+from core.utils.i18n import Locale
 from core.utils.web_render import webrender
 from .bot import BotAccount
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from .mapping import *
+
+default_locale = Config("default_locale", cfg_type=str)
+enable_tos = Config('enable_tos', True)
 
 
 class InvalidPageIDError(Exception):
@@ -367,9 +370,9 @@ class WikiLib:
         h.ignore_tables = True
         h.single_line_break = True
         parse_text = get_parse['parse']['text']['*']
-        if len(parse_text) > 65535:
+        t = h.handle(parse_text)
+        if len(t) > 65535:
             return self.locale.t("wiki.message.utils.wikilib.error.text_too_long")
-        t = h.handle(get_parse['parse']['text']['*'])
         if section:
             for i in range(1, 7):
                 s = re.split(r'(.*' + '#' * i + r'[^#].*\[.*?])', t, re.M | re.S)
@@ -475,16 +478,15 @@ class WikiLib:
     async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, lang=None, _doc=False,
                               _tried=0, _prefix='', _iw=False, _search=False) -> PageInfo:
         """
-        :param title: 页面标题，如果为None，则使用pageid
-        :param pageid: 页面id
-        :param inline: 是否为inline模式
-        :param lang: 所需的对应语言版本
-        :param _doc: 是否为文档模式，仅用作内部递归调用判断
-        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断
-        :param _prefix: iw前缀，仅用作内部递归调用判断
-        :param _iw: 是否为iw模式，仅用作内部递归调用判断
-        :param _search: 是否为搜索模式，仅用作内部递归调用判断
-        :return:
+        :param title: 页面标题，如果为None，则使用pageid。
+        :param pageid: 页面id。
+        :param inline: 是否为inline模式。
+        :param lang: 所需的对应语言版本。
+        :param _doc: 是否为文档模式，仅用作内部递归调用判断。
+        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断。
+        :param _prefix: iw前缀，仅用作内部递归调用判断。
+        :param _iw: 是否为iw模式，仅用作内部递归调用判断。
+        :param _search: 是否为搜索模式，仅用作内部递归调用判断。
         """
         if title:
             if m := re.match(r'w:c:.*?:(.*)', title) and self.wiki_info.api.find('fandom.com') != -1:
@@ -501,9 +503,8 @@ class WikiLib:
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
-        if _tried > 5:
-            if Config('enable_tos', True):
-                raise AbuseWarning('{tos.message.reason.too_many_redirects}')
+        if _tried > 5 and enable_tos:
+            raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         selected_section = None
         query_props = ['info', 'imageinfo', 'langlinks', 'templates']
         if self.wiki_info.api.find('moegirl.org.cn') != -1:
@@ -556,7 +557,7 @@ class WikiLib:
         else:
             return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
                             interwiki_prefix=_prefix, templates=[])
-        use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
+        use_textextracts = 'TextExtracts' in self.wiki_info.extensions
         if use_textextracts and not selected_section:
             query_props += ['extracts', 'pageprops']
             query_string.update({'prop': "|".join(query_props),

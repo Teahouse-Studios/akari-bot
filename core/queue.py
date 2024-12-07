@@ -1,16 +1,18 @@
 import asyncio
-import traceback
 import datetime
+import traceback
 from uuid import uuid4
 
 import orjson as json
 
 from core.builtins import Bot, MessageChain
+from core.constants import Info
+from core.database import BotDBUtil
+from core.database.tables import JobQueueTable
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
-from core.database import BotDBUtil
-from core.database.tables import JobQueueTable
+from core.utils.web_render import check_web_render
 
 _queue_tasks = {}
 queue_actions = {}
@@ -51,6 +53,9 @@ class JobQueue:
 
     @classmethod
     async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
+        for k in kwargs:
+            if isinstance(kwargs[k], MessageChain):
+                kwargs[k] = kwargs[k].to_list()
         return await cls.add_job(target_client, 'trigger_hook',
                                  {'module_or_hook_name': module_or_hook_name, 'args': kwargs}, wait=False)
 
@@ -64,6 +69,13 @@ class JobQueue:
         ip_info = await fetch_ip_info()
         for target in get_all_clients_name():
             await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
+
+    @classmethod
+    async def web_render_status(cls):
+        web_render_status, web_render_local_status = await check_web_render()
+        for target in get_all_clients_name():
+            await cls.add_job(target, 'web_render_status', {'web_render_status': web_render_status,
+                                                            'web_render_local_status': web_render_local_status}, wait=False)
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):
@@ -105,11 +117,14 @@ async def check_job_queue():
                 Logger.warning(f'Unknown action {tsk.action}, skip.')
             return_val(tsk, {}, status=False)
         except QueueFinished:
-            Logger.info(f'Task {tsk.action}({tsk.taskid}) finished.')
+            Logger.debug(f'Task {tsk.action}({tsk.taskid}) finished.')
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
-            return_val(tsk, {'traceback': f}, status=False)
+            try:
+                return_val(tsk, {'traceback': f}, status=False)
+            except QueueFinished:
+                pass
 
 
 @action('validate_permission')
@@ -130,6 +145,13 @@ async def _(tsk: JobQueueTable, args: dict):
 @action('secret_append_ip')
 async def _(tsk: JobQueueTable, args: dict):
     append_ip(args)
+    return_val(tsk, {})
+
+
+@action('web_render_status')
+async def _(tsk: JobQueueTable, args: dict):
+    Info.web_render_status = args['web_render_status']
+    Info.web_render_local_status = args['web_render_local_status']
     return_val(tsk, {})
 
 

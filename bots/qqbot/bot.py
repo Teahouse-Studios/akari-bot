@@ -5,22 +5,21 @@ import sys
 import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from bots.ntqq.info import *
-from bots.ntqq.message import MessageSession, FetchTarget
-from core.bot import init_async, load_prompt
-from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
+from bots.qqbot.info import *
+from bots.qqbot.message import MessageSession, FetchTarget
+from core.bot_init import init_async, load_prompt
+from core.builtins import PrivateAssets
 from core.config import Config
-from core.logger import Logger
+from core.constants.info import Info
+from core.constants.path import assets_path
 from core.parser.message import parser
-from core.path import assets_path
 from core.types import MsgInfo, Session
-from core.utils.info import Info
 
-PrivateAssets.set(os.path.join(assets_path, 'private', 'ntqq'))
-EnableDirtyWordCheck.status = Config('enable_dirty_check', False)
-Url.disable_mm = False
-qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str)))
-qq_secret = Config("qq_bot_secret", cfg_type=str)
+PrivateAssets.set(os.path.join(assets_path, 'private', 'qqbot'))
+Info.dirty_word_check = Config('enable_dirty_check', False)
+Info.use_url_manager = Config('enable_urlmanager', False)
+qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name='bot_qqbot'))
+qq_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name='bot_qqbot')
 
 
 class MyClient(botpy.Client):
@@ -28,7 +27,8 @@ class MyClient(botpy.Client):
         await init_async()
         await load_prompt(FetchTarget)
 
-    async def on_at_message_create(self, message: Message):
+    @staticmethod
+    async def on_at_message_create(message: Message):
         message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
         reply_id = None
         if message.message_reference:
@@ -56,7 +56,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_message_create(self, message: Message):
+    @staticmethod
+    async def on_message_create(message: Message):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -81,7 +82,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_group_at_message_create(self, message: GroupMessage):
+    @staticmethod
+    async def on_group_at_message_create(message: GroupMessage):
         message.content = re.sub(r'<@(.*?)>', '', message.content).strip()
         reply_id = None
         if message.message_reference:
@@ -109,7 +111,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_direct_message_create(self, message: DirectMessage):
+    @staticmethod
+    async def on_direct_message_create(message: DirectMessage):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -134,7 +137,8 @@ class MyClient(botpy.Client):
             require_enable_modules = False
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
-    async def on_c2c_message_create(self, message: C2CMessage):
+    @staticmethod
+    async def on_c2c_message_create(message: C2CMessage):
         reply_id = None
         if message.message_reference:
             reply_id = message.message_reference.message_id
@@ -160,17 +164,18 @@ class MyClient(botpy.Client):
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
-intents = botpy.Intents.none()
-intents.public_guild_messages = True
-intents.public_messages = True
-intents.direct_message = True
-if Config('qq_private_bot', False):
-    intents.guild_messages = True
+if Config("enable", False, table_name='bot_qqbot'):
+    intents = botpy.Intents.none()
+    intents.public_guild_messages = True
+    intents.public_messages = True
+    intents.direct_message = True
+    if Config('qq_private_bot', False, table_name='bot_qqbot'):
+        intents.guild_messages = True
 
-client = MyClient(intents=intents)
+    client = MyClient(intents=intents, bot_log=None)
 
-Info.client_name = client_name
-if 'subprocess' in sys.argv:
-    Info.subprocess = True
+    Info.client_name = client_name
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
 
-client.run(appid=qq_appid, secret=qq_secret)
+    client.run(appid=qq_appid, secret=qq_secret)

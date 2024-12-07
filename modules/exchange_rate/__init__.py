@@ -1,12 +1,12 @@
 import datetime
 
-from core.config import Config
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import ConfigValueError
+from core.config import Config
+from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 
-api_key = Config('exchange_rate_api_key', cfg_type=str)
+api_key = Config('exchange_rate_api_key', cfg_type=str, secret=True)
 
 excr = module('exchange_rate',
               desc='{exchange_rate.help.desc}',

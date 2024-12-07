@@ -2,14 +2,14 @@ import random
 import re
 import traceback
 
+from core.builtins import Embed, EmbedField, MessageChain
 from core.config import Config
-from core.builtins import Embed, EmbedField
+from core.database.local import CrowdinActivityRecords
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.html2text import html2text
 from core.utils.http import get_url
-from core.database.local import CrowdinActivityRecords
 
 first = True
 
@@ -23,7 +23,7 @@ async def check_crowdin():
     randstr = 'abcdefghijklmnopqrstuvwxyz'
     random_string = ''.join(random.sample(randstr, 16))
     headers = {'cookie': f'csrf_token={random_string}', 'x-csrf-token': random_string}
-    url = f"https://crowdin.com/backend/project_actions/activity_stream?date_from=&date_to=&user_id=0&project_id=3579&language_id=0&type=0&translation_id=0&after_build=0&before_build=0&request=1"
+    url = "https://crowdin.com/backend/project_actions/activity_stream?date_from=&date_to=&user_id=0&project_id=3579&language_id=0&type=0&translation_id=0&after_build=0&before_build=0&request=1"
     try:
         get_json: dict = await get_url(url, 200, attempt=1, headers=headers,
                                        fmt='json')
@@ -47,7 +47,7 @@ async def check_crowdin():
                 if act['count'] == 1:
                     identify = f'{act["user_id"]}{str(act['timestamp'])}{m}'
                     if not first and not CrowdinActivityRecords.check(identify):
-                        await JobQueue.trigger_hook_all('mc_crowdin', message=[Embed(title='New Crowdin Updates', description=m).to_dict()])
+                        await JobQueue.trigger_hook_all('mc_crowdin', message=MessageChain([Embed(title='New Crowdin Updates', description=m)]))
                 else:
                     detail_url = f"https://crowdin.com/backend/project_actions/activity_stream_details?request_type=project&type={
                         act["type"]}&timestamp={
@@ -78,7 +78,7 @@ async def check_crowdin():
                                 "\n".join(f'{i}: {identify_[i]}' for i in identify_)}'
 
                             if not first and not CrowdinActivityRecords.check(identify):
-                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Embed(title='New Crowdin Updates', description=m, color=0x00ff00, fields=[EmbedField(name=k, value=v, inline=True) for k, v in identify_.items()]).to_dict()])
+                                await JobQueue.trigger_hook_all('mc_crowdin', message=MessageChain([Embed(title='New Crowdin Updates', description=m, color=0x00ff00, fields=[EmbedField(name=k, value=v, inline=True) for k, v in identify_.items()])]))
     except Exception:
         if Config('debug', False):
             Logger.error(traceback.format_exc())

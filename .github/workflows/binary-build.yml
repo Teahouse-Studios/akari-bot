@@ -1,4 +1,4 @@
-name: "Build Nightly x64 Executables (3:00, UTC+8)"
+name: "Binary Build Nightly x64 Executables (3:00, UTC+8)"
 
 on:
   schedule:
@@ -39,18 +39,16 @@ jobs:
         with:
           nuitka-version: main
           script-name: bot.py
-          onefile: true
-          standalone: true
+          mode: onefile
           output-dir: wrapper-build
           include-plugin-directory: |
               modules
               bots
               schedulers
           include-package-data: |
-              oss2
               langconv
-              aliyunsdkcore
               emoji
+          clang: true
 
 
       - name: Copy Assets

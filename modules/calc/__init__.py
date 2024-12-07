@@ -5,7 +5,7 @@ import sys
 
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import NoReportException
+from core.constants.exceptions import NoReportException
 from core.logger import Logger
 from core.utils.info import Info
 

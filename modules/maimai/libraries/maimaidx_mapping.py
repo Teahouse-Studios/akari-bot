@@ -1,9 +1,9 @@
 import os
 
 from core.config import Config
-from core.path import assets_path
+from core.constants.path import assets_path
 
-DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str)
+DEVELOPER_TOKEN = Config('diving_fish_developer_token', cfg_type=str, secret=True)
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 

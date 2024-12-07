@@ -1,22 +1,17 @@
-import base64
 import traceback
-import urllib.parse
 from datetime import datetime, timedelta, timezone
 from typing import Tuple
 
 import matplotlib.pyplot as plt
-import oss2
-import orjson as json
-import zipfile
 from dateutil.relativedelta import relativedelta
 
-from core.config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
+from core.config import Config
+from core.database import BotDBUtil
+from core.database.tables import is_mysql
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.database import session, BotDBUtil
-from core.database.tables import AnalyticsData, is_mysql
 
 
 def get_first_record(msg: Bot.MessageSession):
@@ -176,82 +171,84 @@ async def _(msg: Bot.MessageSession, rank: int = None):
 
 @ana.command('export')
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics', False):
-        await msg.send_message(msg.locale.t("core.message.analytics.export.waiting"))
-        expires = Config('analytics_expires', 600)
-        url = export_analytics(expires=expires)
-        url_b64 = base64.b64encode(url.encode()).decode()
-        await msg.finish(msg.locale.t("core.message.analytics.export",
-                                      url=Config('analytics_url') + '?data_input=' + url_b64, expires=expires))
-    else:
-        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+    # if config('enable_analytics', False):
+    #     await msg.send_message(msg.locale.t("core.message.analytics.export.waiting"))
+    #     expires = config('analytics_expires', 600)
+    #     url = export_analytics(expires=expires)
+    #     url_b64 = base64.b64encode(url.encode()).decode()
+    #     await msg.finish(msg.locale.t("core.message.analytics.export",
+    #                                   url=config('analytics_url') + '?data_input=' + url_b64, expires=expires))
+    # else:
+    #     await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+    ...
 
 
 def export_analytics(
     from_to: Tuple[datetime, datetime] = None,
     commands: bool = False, expires: int = 600
 ):
-    oss_ak = Config('oss_ak')
-    oss_sk = Config('oss_sk')
-    oss_endpoint = Config('oss_endpoint')
-    oss_bucket = Config('oss_bucket')
-    if not oss_ak or not oss_sk or not oss_endpoint or not oss_bucket:
-        raise ValueError('Aliyun OSS credentials not found.')
-    analytics_data = {}
-    modules_list = []
-    if from_to:
-        query = session.query(AnalyticsData).filter(
-            AnalyticsData.timestamp >= from_to[0],
-            AnalyticsData.timestamp <= from_to[1])
-    else:
-        query = session.query(AnalyticsData)
-    query_count = query.count()
-    queried = 0
-    while query_count:
-        if query_count > 1000:
-            queried_next = queried + 1000
-            query_count -= 1000
-        else:
-            queried_next = queried + query_count
-            query_count = 0
-        query_slice = query.slice(queried, queried_next).all()
-        for data in query_slice:
-            time_key = data.timestamp.strftime("%Y-%m-%d")
-            if time_key not in analytics_data:
-                analytics_data[time_key] = {}
-            if data.senderId not in analytics_data[time_key]:
-                analytics_data[time_key][data.senderId] = {}
-            if data.targetId not in analytics_data[time_key][data.senderId]:
-                analytics_data[time_key][data.senderId][data.targetId] = {}
-            if data.moduleName not in analytics_data[time_key][data.senderId][data.targetId]:
-                analytics_data[time_key][data.senderId][data.targetId][data.moduleName] = {}
-            if 'commands' not in analytics_data[time_key][data.senderId][data.targetId][data.moduleName] and commands:
-                analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['commands'] = []
-            if 'count' not in analytics_data[time_key][data.senderId][data.targetId][data.moduleName]:
-                analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['count'] = 0
-            if 'type' not in analytics_data[time_key][data.senderId][data.targetId][data.moduleName]:
-                analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['type'] = data.moduleType
-            if commands:
-                analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['commands'].append(data.command)
-            analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['count'] += 1
-            if data.moduleName not in modules_list:
-                modules_list.append(data.moduleName)
-
-        queried = queried_next
-    j = {'data': analytics_data, 'modules': modules_list, 'timestamp': datetime.now().timestamp(), 'version': 0}
-    if from_to:
-        j['from'] = from_to[0].timestamp()
-        j['to'] = from_to[1].timestamp()
-    rnd_path = random_cache_path()
-    with open(f'{rnd_path}.json', 'wb') as f:
-        f.write(json.dumps(j))
-    with zipfile.ZipFile(f'{rnd_path}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
-        z.write(f'{rnd_path}.json', 'analytics.json')
-    auth = oss2.Auth(oss_ak, oss_sk)
-    bucket = oss2.Bucket(auth, oss_endpoint, oss_bucket)
-    bucket.put_object_from_file('analytics.zip', f'{rnd_path}.zip')
-    url = bucket.sign_url('GET', 'analytics.zip', expires=expires)
-    if custom_domain := Config('oss_custom_domain'):
-        url = urllib.parse.urlparse(url)
-        url = f'{url.scheme}://{urllib.parse.urlparse(custom_domain).netloc}{url.path}?{url.query}'
-    return url
+    # oss_ak = config('oss_ak', secret=True)
+    # oss_sk = config('oss_sk', secret=True)
+    # oss_endpoint = config('oss_endpoint')
+    # oss_bucket = config('oss_bucket')
+    # if not oss_ak or not oss_sk or not oss_endpoint or not oss_bucket:
+    #     raise ValueError('Aliyun OSS credentials not found.')
+    # analytics_data = {}
+    # modules_list = []
+    # if from_to:
+    #     query = session.query(AnalyticsData).filter(
+    #         AnalyticsData.timestamp >= from_to[0],
+    #         AnalyticsData.timestamp <= from_to[1])
+    # else:
+    #     query = session.query(AnalyticsData)
+    # query_count = query.count()
+    # queried = 0
+    # while query_count:
+    #     if query_count > 1000:
+    #         queried_next = queried + 1000
+    #         query_count -= 1000
+    #     else:
+    #         queried_next = queried + query_count
+    #         query_count = 0
+    #     query_slice = query.slice(queried, queried_next).all()
+    #     for data in query_slice:
+    #         time_key = data.timestamp.strftime("%Y-%m-%d")
+    #         if time_key not in analytics_data:
+    #             analytics_data[time_key] = {}
+    #         if data.senderId not in analytics_data[time_key]:
+    #             analytics_data[time_key][data.senderId] = {}
+    #         if data.targetId not in analytics_data[time_key][data.senderId]:
+    #             analytics_data[time_key][data.senderId][data.targetId] = {}
+    #         if data.moduleName not in analytics_data[time_key][data.senderId][data.targetId]:
+    #             analytics_data[time_key][data.senderId][data.targetId][data.moduleName] = {}
+    #         if 'commands' not in analytics_data[time_key][data.senderId][data.targetId][data.moduleName] and commands:
+    #             analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['commands'] = []
+    #         if 'count' not in analytics_data[time_key][data.senderId][data.targetId][data.moduleName]:
+    #             analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['count'] = 0
+    #         if 'type' not in analytics_data[time_key][data.senderId][data.targetId][data.moduleName]:
+    #             analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['type'] = data.moduleType
+    #         if commands:
+    #             analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['commands'].append(data.command)
+    #         analytics_data[time_key][data.senderId][data.targetId][data.moduleName]['count'] += 1
+    #         if data.moduleName not in modules_list:
+    #             modules_list.append(data.moduleName)
+    #
+    #     queried = queried_next
+    # j = {'data': analytics_data, 'modules': modules_list, 'timestamp': datetime.now().timestamp(), 'version': 0}
+    # if from_to:
+    #     j['from'] = from_to[0].timestamp()
+    #     j['to'] = from_to[1].timestamp()
+    # rnd_path = random_cache_path()
+    # with open(f'{rnd_path}.json', 'wb') as f:
+    #     f.write(json.dumps(j))
+    # with zipfile.ZipFile(f'{rnd_path}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
+    #     z.write(f'{rnd_path}.json', 'analytics.json')
+    # auth = oss2.Auth(oss_ak, oss_sk)
+    # bucket = oss2.Bucket(auth, oss_endpoint, oss_bucket)
+    # bucket.put_object_from_file('analytics.zip', f'{rnd_path}.zip')
+    # url = bucket.sign_url('GET', 'analytics.zip', expires=expires)
+    # if custom_domain := config('oss_custom_domain'):
+    #     url = urllib.parse.urlparse(url)
+    #     url = f'{url.scheme}://{urllib.parse.urlparse(custom_domain).netloc}{url.path}?{url.query}'
+    # return url
+    ...

@@ -6,13 +6,13 @@ import filetype
 
 from core.builtins import Bot, I18NContext, Image, Voice
 from core.component import module
+from core.constants.info import Info
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from core.utils.web_render import WebRender
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
@@ -156,16 +156,14 @@ async def _(msg: Bot.MessageSession):
                                         for img in get_infobox:
                                             imgs.append(Image(img))
                                         await msg.send_message(imgs, quote=False)
-                            if ((get_page.invalid_section and wiki_.wiki_info.in_allowlist)
-                                    or (get_page.is_talk_page and not get_page.selected_section) and WebRender.status):
+                            if ((get_page.invalid_section and wiki_.wiki_info.in_allowlist) or (
+                                    get_page.is_talk_page and not get_page.selected_section) and Info.web_render_status):
                                 i_msg_lst = []
                                 if get_page.sections:
                                     session_data = [[str(i + 1), get_page.sections[i]] for i in
                                                     range(len(get_page.sections))]
-                                    i_msg_lst.append(
-                                        I18NContext(
-                                            'wiki.message.invalid_section.prompt' if (
-            get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
+                                    i_msg_lst.append( I18NContext( 'wiki.message.invalid_section.prompt' if (
+                                        get_page.invalid_section and wiki_.wiki_info.in_allowlist) else 'wiki.message.talk_page.prompt'))
                                     i_msg_lst += [Image(ii) for ii in await
                                                   image_table_render(
                                         ImageTable(session_data,
@@ -203,12 +201,11 @@ async def _(msg: Bot.MessageSession):
                                 i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                 i_msg_lst.append(I18NContext('message.reply.prompt'))
 
-                                async def _callback(msg: Bot.MessageSession):
+                                async def _callback(msg: Bot.MessageSession, forum_data=forum_data, get_page=get_page):
                                     display = msg.as_display(text_only=True)
-                                    if isint(display):
-                                        if int(display) <= len(forum_data) - 1:
-                                            await query_pages(msg, title=forum_data[display]['text'],
-                                                              start_wiki_api=get_page.info.api)
+                                    if isint(display) and int(display) <= len(forum_data) - 1:
+                                        await query_pages(msg, title=forum_data[display]['text'],
+                                                          start_wiki_api=get_page.info.api)
 
                                 await msg.send_message(i_msg_lst, callback=_callback)
                 if len(query_list) == 1 and img_send:

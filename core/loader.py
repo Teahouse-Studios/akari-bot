@@ -8,11 +8,11 @@ from typing import Dict, Union, Callable
 import orjson as json
 
 from core.config import Config
+from core.constants.path import modules_path, PrivateAssets
 from core.logger import Logger
-from core.types import Module, PrivateAssets
+from core.types import Module
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
-from core.path import modules_path
-from core.utils.i18n import load_locale_file
+from core.utils.i18n import locale_loaded_err
 from core.utils.info import Info
 
 all_modules = []
@@ -22,13 +22,10 @@ err_modules = []
 
 def load_modules():
     unloaded_modules = Config('unloaded_modules', [])
-    if not unloaded_modules:
-        unloaded_modules = []
     err_prompt = []
-    locale_err = load_locale_file()
-    if locale_err:
-        locale_err.append('i18n:')
-        err_prompt.append('\n'.join(locale_err))
+    if locale_loaded_err:
+        err_prompt.append('i18n:')
+        err_prompt.append('\n'.join(locale_loaded_err))
     fun_file = None
     if not Info.binary_mode:
         dir_list = os.listdir(modules_path)
@@ -46,8 +43,6 @@ def load_modules():
 
     for file_name in dir_list:
         try:
-            if file_name == 'secret' and not Config('enable_secret_module', False):
-                continue
             file_path = os.path.join(modules_path, file_name)
             fun_file = None
             if not Info.binary_mode:

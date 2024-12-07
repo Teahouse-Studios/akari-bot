@@ -9,3 +9,13 @@ repos:
       rev: "v2.0.4"
       hooks:
           - id: autopep8
+
+    - repo: local
+      hooks:
+          - id: auto-generate-config
+            name: Auto-generate config
+            entry: poetry run python ./core/scripts/config_generate.py
+            language: python
+            pass_filenames: false
+
+

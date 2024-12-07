@@ -1,5 +1,4 @@
 import os
-import random
 from typing import List, Optional, Tuple
 
 import emoji
@@ -7,8 +6,9 @@ import orjson as json
 
 from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
+from core.constants.path import assets_path
 from core.logger import Logger
-from core.path import assets_path
+from core.utils.random import Random
 
 data_path = os.path.join(assets_path, 'emojimix', 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
@@ -20,7 +20,7 @@ class EmojimixGenerator:
             data = json.loads(f.read())
         self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
-        self.date_mapping: dict = {idx: date for idx, date in enumerate(data["date"])}
+        self.date_mapping: dict = dict(enumerate(data["date"]))
 
     @staticmethod
     def str2emoji(emoji_str):
@@ -42,9 +42,9 @@ class EmojimixGenerator:
             for key in self.data:
                 if emoji_code in key:
                     emoji_combo_list.append(key)
-            combo = random.choice(emoji_combo_list)
+            combo = Random.choice(emoji_combo_list)
         else:
-            combo = random.choice(list(self.data.keys()))
+            combo = Random.choice(list(self.data.keys()))
         combo = tuple(i.strip() for i in combo[1:-1].split(","))
         return combo
 

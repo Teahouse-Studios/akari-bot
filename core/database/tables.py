@@ -1,11 +1,12 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
-from core.utils.i18n import default_locale
+from core.config import Config
 from core.database.orm import Session, DB_LINK
 from core.database.orm_base import Base
 
 is_mysql = DB_LINK.startswith('mysql')
+default_locale = Config("default_locale", cfg_type=str)
 
 
 class SenderInfo(Base):
@@ -21,7 +22,7 @@ class SenderInfo(Base):
     __table_args__ = {'mysql_charset': 'utf8mb4'}
 
 
-class TargetInfo(Base):
+class TargetInfoTable(Base):
     __tablename__ = "TargetInfo"
     targetId = Column(String(512), primary_key=True)
     enabledModules = Column(LONGTEXT if is_mysql else Text, default='[]')
@@ -113,6 +114,6 @@ class HaofsAccount(Base):
 
 
 Session.create()
-__all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupBlockList",
+__all__ = ["SenderInfo", "TargetInfoTable", "CommandTriggerTime", "GroupBlockList",
            "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable",
            "JobQueueTable", "InfoServers","HaofsAccount"]

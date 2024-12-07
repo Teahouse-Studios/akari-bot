@@ -1,16 +1,17 @@
 import asyncio
-from typing import Union, List
+from typing import Any, Dict, List, Optional, Union
 
 from core.config import Config
+from core.constants.info import Info
+from core.exports import exports
 from core.loader import ModulesManager
-from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
-from core.database import BotDBUtil
+from core.types.message import MsgInfo, Session, ModuleHookContext
 from .message import *
 from .message.chain import *
 from .message.internal import *
-from .tasks import *
 from .temp import *
 from .utils import *
+from ..constants import base_superuser_default
 from ..logger import Logger
 
 
@@ -18,14 +19,17 @@ class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
-    FetchedSession = FetchedSessionT
+    FetchedSession = FetchedSession
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
+    Info = Info
 
     @staticmethod
-    async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],
-                           disable_secret_check=False, enable_parse_message=True,
-                           enable_split_image=True):
+    async def send_message(target: Union[FetchedSession, MessageSession, str],
+                           msg: Union[MessageChain, list],
+                           disable_secret_check: bool = False,
+                           enable_parse_message: bool = True,
+                           enable_split_image: bool = True):
         if isinstance(target, str):
             target = await Bot.FetchTarget.fetch_target(target)
             if not target:
@@ -40,8 +44,8 @@ class Bot:
         return Bot.FetchTarget.fetch_target(target)
 
     @staticmethod
-    async def get_enabled_this_module(module: str) -> List[FetchedSessionT]:
-        lst = BotDBUtil.TargetInfo.get_target_list(module)
+    async def get_enabled_this_module(module: str) -> List[FetchedSession]:
+        lst = exports.get("BotDBUtil").TargetInfo.get_target_list(module)
         fetched = []
         for x in lst:
             x = Bot.FetchTarget.fetch_target(x)
@@ -74,8 +78,12 @@ class Bot:
                 raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 
-class FetchedSession(FetchedSessionT):
-    def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
+class FetchedSession(FetchedSession):
+    def __init__(self,
+                 target_from: str,
+                 target_id: Union[int, str],
+                 sender_from: Optional[str] = None,
+                 sender_id: Optional[Union[int, str]] = None):
         if not sender_from:
             sender_from = target_from
         if not sender_id:
@@ -86,17 +94,28 @@ class FetchedSession(FetchedSessionT):
                               sender_from=sender_from,
                               sender_prefix='',
                               client_name=Bot.client_name,
-                              message_id=0,
-                              reply_id=None)
+                              message_id=0)
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
         if sender_id:
-            self.parent.target.sender_info = BotDBUtil.SenderInfo(f'{sender_from}|{sender_id}')
+            self.parent.target.sender_id = exports.get("BotDBUtil").SenderInfo(f'{sender_from}|{sender_id}')
 
 
 Bot.FetchedSession = FetchedSession
 
-base_superuser_list = Config("base_superuser", cfg_type=(str, list))
+
+class FetchTarget(FetchTarget):
+    @staticmethod
+    async def post_global_message(message: str,
+                                  user_list: Optional[List[FetchedSession]] = None,
+                                  i18n: bool = False,
+                                  **kwargs: Dict[str, Any]):
+        await Bot.FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
+
+
+Bot.FetchTarget = FetchTarget
+
+base_superuser_list = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
 
 if isinstance(base_superuser_list, str):
     base_superuser_list = [base_superuser_list]

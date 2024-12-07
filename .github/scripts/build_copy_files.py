@@ -4,9 +4,8 @@ import shutil
 if __name__ == "__main__":
     os.makedirs('output', exist_ok=True)
     shutil.copytree('assets', 'output/assets')
-    os.makedirs('output/config', exist_ok=True)
-    shutil.copyfile('config/config.toml.example', 'output/config/config.toml.example')
-    shutil.copytree('locales', 'output/locales')
+    shutil.copytree('assets/config_store/zh_cn', 'output/config')
+    shutil.copytree('core/locales', 'output/core/locales')
     shutil.copytree('modules', 'output/modules')
 
     def remove_py_files(path):
@@ -24,9 +23,11 @@ if __name__ == "__main__":
 
     remove_py_files('output/modules')
 
-    build_paths = ['launcher-build', 'wrapper-build']
+    build_paths = ['wrapper-build']
     for build_path in build_paths:
         if os.path.exists(build_path):
             for file in os.listdir(build_path):
                 if file.endswith('.exe') or file.endswith('.bin') or file.endswith('.app'):
                     shutil.copyfile(os.path.join(build_path, file), os.path.join('output', file))
+
+    os.makedirs('output/database', exist_ok=True)

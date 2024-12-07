@@ -1,19 +1,14 @@
 import traceback
 
+from core.constants import Secret
 from core.logger import Logger
-from core.types import Secret
 from core.utils.http import get_url
-
-
-class IP:
-    address = None
-    country = None
 
 
 def append_ip(ip_info: dict):
     Secret.add(ip_info['ip'])
-    IP.country = ip_info['country']
-    IP.address = ip_info['ip']
+    Secret.ip_address = ip_info['country']
+    Secret.ip_country = ip_info['ip']
 
 
 async def fetch_ip_info() -> dict:

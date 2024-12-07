@@ -1,0 +1,15 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[bot_qqbot]
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+qq_bot_appid = "<Replace me with (int, str) value>" # The QQ official robot AppID.
+enable = false # Whether to enable this platform.
+qq_private_bot = false # Whether it is a private robot when using the QQ official robot.
+qq_bot_enable_send_url = false # Whether to enable sending URLs when using QQ official robot.
+qq_typing_emoji = 181 # When using QQ related protocol terminals, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+
+[bot_qqbot_secret]
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+qq_bot_secret = "<Replace me with str value>" # The QQ official robot AppSecret.

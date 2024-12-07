@@ -10,14 +10,14 @@ body:
       value: |
         想要让小可做更多事情？欢迎提出建议！
 
-        另外，此处不接受关于多语言的问题和建议，如有需要请移步 [Crowdin](https://crowdin.com/project/akari-bot/discussions)。
+        另外，此处不接受关于本地化（简体中文除外）的问题和建议，如有需要请移步 [Crowdin](https://crowdin.com/project/akari-bot/discussions)。
   - type: checkboxes
     id: preflight
     attributes:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/bot/issues) 中搜索过我的建议，确定没有人提出过此建议。
+        - label: 我已在 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues) 中搜索过我的建议，确定没有人提出过此建议。
           required: true
   - type: textarea
     id: description

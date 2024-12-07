@@ -7,20 +7,22 @@ from datetime import datetime
 import orjson as json
 
 from core.config import Config, CFG
-from core.config import Config, CFG
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
-from core.builtins.message.chain import MessageChain
 from core.component import module
-from core.exceptions import NoReportException, TestException
-from core.utils.i18n import Locale
+from core.config import Config, CFGManager
+from core.constants.exceptions import NoReportException, TestException
+from core.constants.path import cache_path
+from core.database import BotDBUtil
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.path import cache_path
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.types import Param
+from core.utils.decrypt import decrypt_string
+from core.utils.i18n import Locale
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
+from core.utils.text import isfloat, isint
 from core.utils.text import isfloat, isint, decrypt_string
 from core.database import BotDBUtil
 
@@ -61,12 +63,12 @@ async def _(msg: Bot.MessageSession):
     if os.path.exists(cache_path):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
-            os.mkdir(cache_path)
+            os.makedirs(cache_path, exist_ok=True)
             await msg.finish(msg.locale.t("core.message.purge.success"))
         else:
             await msg.finish(msg.locale.t("core.message.purge.empty"))
     else:
-        os.mkdir(cache_path)
+        os.makedirs(cache_path, exist_ok=True)
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
@@ -290,7 +292,7 @@ async def update_bot(msg: Bot.MessageSession):
             if pull_repo_result:
                 await msg.send_message(pull_repo_result)
             else:
-                Logger.warning(f'Failed to get Git repository result.')
+                Logger.warning('Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
         await msg.finish(update_dependencies())
     else:
@@ -360,7 +362,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
                 if pull_repo_result != '':
                     await msg.send_message(pull_repo_result)
                 else:
-                    Logger.warning(f'Failed to get Git repository result.')
+                    Logger.warning('Failed to get Git repository result.')
                     await msg.send_message(msg.locale.t("core.message.update.failed"))
             await msg.send_message(update_dependencies())
             restart()
@@ -445,18 +447,10 @@ async def _(msg: Bot.MessageSession):
 
 echo = module('echo', required_superuser=True, base=True, doc=True)
 
-if Bot.client_name == 'QQ':
-    @echo.command()
-    @echo.command('[<display_msg>]')
-    async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str) = None):
-        if not dis:
-            msg = await msg.wait_next_message(msg.locale.t("core.message.echo.prompt"), delete=True, append_instruction=False)
-            dis = msg.as_display()
-        await msg.finish(dis, enable_parse_message=False)
-else:
-    @echo.command('<display_msg>')
-    async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str) = None):
-        await msg.finish(dis)
+
+@echo.command('<display_msg>')
+async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
+    await msg.finish(dis, enable_parse_message=False)
 
 
 say = module('say', required_superuser=True, base=True, doc=True)
@@ -482,7 +476,7 @@ _eval = module('eval', required_superuser=True, base=True, doc=True, load=Config
 @_eval.command('<display_msg>')
 async def _(msg: Bot.MessageSession, display_msg: str):
     try:
-        await msg.finish(str(eval(display_msg, {'msg': msg})))
+        await msg.finish(str(eval(display_msg, {'msg': msg})))  # skipcq
     except Exception as e:
         Logger.error(str(e))
         raise NoReportException(e)
@@ -495,7 +489,7 @@ post_ = module('post', required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f'{msg.target.client_name}|'):
         await msg.finish(msg.locale.t('message.id.invalid.target', target=msg.target.target_from))
-    post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    post_msg = f'{Locale(Config('default_locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
     session = await Bot.FetchTarget.fetch_target(target)
     confirm = await msg.wait_confirm(msg.locale.t("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False)
     if confirm:
@@ -507,7 +501,7 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 
 @post_.command('global <post_msg>')
 async def _(msg: Bot.MessageSession, post_msg: str):
-    post_msg = f'{Locale(Config('locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    post_msg = f'{Locale(Config('default_locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
     confirm = await msg.wait_confirm(msg.locale.t("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False)
     if confirm:
         await Bot.FetchTarget.post_global_message(post_msg)
@@ -519,13 +513,14 @@ async def _(msg: Bot.MessageSession, post_msg: str):
 cfg_ = module('config', required_superuser=True, alias='cfg', base=True, doc=True)
 
 
-@cfg_.command('get <k>')
-async def _(msg: Bot.MessageSession, k: str):
-    await msg.finish(str(Config(k)))
+@cfg_.command('get <k> [<table_name>]')
+async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
+    await msg.finish(str(Config(k, table_name=table_name)))
 
 
-@cfg_.command('write <k> <v> [-s]')
-async def _(msg: Bot.MessageSession, k: str, v: str):
+@cfg_.command('write <k> <v> [<table_name>] [-s]')
+async def _(msg: Bot.MessageSession, k: str, v: str, table_name: str = None):
+    secret = bool(msg.parsed_msg['-s'])
     if v.lower() == 'true':
         v = True
     elif v.lower() == 'false':
@@ -541,13 +536,16 @@ async def _(msg: Bot.MessageSession, k: str, v: str):
         except json.JSONDecodeError as e:
             Logger.error(str(e))
             await msg.finish(msg.locale.t("message.failed"))
-    CFG.write(k, v, msg.parsed_msg['-s'])
+    if (not table_name and secret) or (table_name and table_name.lower() == 'secret'):
+        table_name = 'config'
+        secret = True
+    CFGManager.write(k, v, secret=secret, table_name=table_name)
     await msg.finish(msg.locale.t("message.success"))
 
 
-@cfg_.command('delete <k>')
-async def _(msg: Bot.MessageSession, k: str):
-    if CFG.delete(k):
+@cfg_.command('delete <k> [<table_name>]')
+async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
+    if CFGManager.delete(k, table_name):
         await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("message.failed"))

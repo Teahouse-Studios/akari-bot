@@ -1,7 +1,7 @@
 *.env
 __pycache__/
-config/*.cfg
-config/*.toml
+config/*.cfg*
+config/*.toml*
 .idea
 .DS_Store
 .vscode
@@ -11,8 +11,6 @@ test*
 cache/*
 assets/arc.apk
 assets/arcaea
-assets/cytoid-avatar/
-assets/cytoid-cover/
 assets/maimai*
 !assets/maimai/mai_utage_info.json
 !assets/maimai/mai_grade_info.json
@@ -20,6 +18,7 @@ assets/phigros*
 assets/private*
 bots/**/assets
 version*
+!version.py
 .pid_last
 .cache_loader
 .console_history

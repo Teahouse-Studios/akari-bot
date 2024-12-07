@@ -4,8 +4,8 @@ from typing import Optional
 import orjson as json
 
 from core.builtins import Bot, Image, MessageChain, Plain
+from core.constants.path import cache_path
 from core.logger import Logger
-from core.path import cache_path
 from core.utils.http import post_url
 from .chunithm_mapping import *
 from .chunithm_music import Music
@@ -22,8 +22,10 @@ async def get_info(music: Music, *details) -> MessageChain:
 
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
-    cache_dir = os.path.join(cache_path, f'{msg.target.sender_id.replace('|', '_')}_maimai_record.json')
-    url = f"https://www.diving-fish.com/api/chunithmprober/query/player"
+    dir = os.path.join(cache_path, 'maimai-record')
+    os.makedirs(dir, exist_ok=True)
+    cache_dir = os.path.join(dir, f'{msg.target.sender_id.replace('|', '_')}_chunithm_record.json')
+    url = "https://www.diving-fish.com/api/chunithmprober/query/player"
     if 'username' in payload:
         use_cache = False
     try:

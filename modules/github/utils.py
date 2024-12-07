@@ -1,7 +1,7 @@
 import datetime
 
 from core import dirty_check as dirty
-from core.builtins import EnableDirtyWordCheck
+from core.constants.info import Info
 
 
 def dark_check(message: str):
@@ -19,11 +19,8 @@ def dark_check(message: str):
         'zhao',
         'programthink'
     ]
-    if EnableDirtyWordCheck.status:
-        for i in blacklist:
-            if message.find(i) != -1:
-                return True
-        return False
+    if Info.dirty_word_check:
+        return any(message.find(i) != -1 for i in blacklist)
     else:
         return False
 
@@ -32,8 +29,6 @@ def time_diff(time: str):
     datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
     now = datetime.datetime.now().timestamp()
     diff = now - datetimed
-
-    diff = diff
     t = diff / 60 / 60 / 24
     dw = ' day(s)'
     if t < 1:

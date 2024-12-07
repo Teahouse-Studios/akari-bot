@@ -4,12 +4,15 @@ import os
 import shutil
 import sys
 import traceback
+from datetime import datetime
 from time import sleep
 
-from core.config import Config
+import core.scripts.config_generate  # noqa
+from core.config import Config, CFGManager
+from core.constants.default import base_superuser_default
+from core.constants.path import cache_path
 from core.database import BotDBUtil, session, DBVersion
 from core.logger import Logger
-from core.path import cache_path
 from core.utils.info import Info
 
 ascii_art = r'''
@@ -35,7 +38,7 @@ bots_and_required_configs = {
         'matrix_device_id',
         'matrix_token'],
     'api': [],
-    'ntqq': [
+    'qqbot': [
         'qq_bot_appid',
         'qq_bot_secret'],
 }
@@ -45,15 +48,20 @@ class RestartBot(Exception):
     pass
 
 
+failed_to_start_attempts = {}
+
+
 def init_bot():
-    base_superuser = Config('base_superuser', cfg_type=(str, list))
+    print(ascii_art)
+    base_superuser = Config('base_superuser', base_superuser_default, cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
         for bu in base_superuser:
             BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit('isSuperUser', True)
-    print(ascii_art)
+    else:
+        Logger.warning("The base superuser was not found, please setup it in the config file.")
 
 
 def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
@@ -70,8 +78,38 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
         sys.exit(1)
 
 
-disabled_bots = Config('disabled_bots', [])
+disabled_bots = []
 processes = []
+
+for t in CFGManager.values:
+    if t.startswith('bot_') and not t.endswith('_secret'):
+        if 'enable' in CFGManager.values[t][t]:
+            if not CFGManager.values[t][t]['enable']:
+                disabled_bots.append(t[4:])
+
+
+def restart_process(bot_name: str):
+    if bot_name not in failed_to_start_attempts or datetime.now(
+    ).timestamp() - failed_to_start_attempts[bot_name]['timestamp'] > 60:
+        failed_to_start_attempts[bot_name] = {}
+        failed_to_start_attempts[bot_name]['count'] = 0
+        failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
+    failed_to_start_attempts[bot_name]['count'] += 1
+    failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
+    if failed_to_start_attempts[bot_name]['count'] >= 3:
+        Logger.error(f'Bot {bot_name} failed to start 3 times, abort to restart, please check the log.')
+        return
+
+    Logger.warning(f'Restarting bot {bot_name}...')
+    p = multiprocessing.Process(
+        target=go,
+        args=(
+            bot_name,
+            True,
+            bool(not sys.argv[0].endswith('.py'))),
+        name=bot_name)
+    p.start()
+    processes.append(p)
 
 
 def run_bot():
@@ -89,13 +127,19 @@ def run_bot():
         if bl in bots_and_required_configs:
             abort = False
             for c in bots_and_required_configs[bl]:
-                if not Config(c):
+                if not Config(c, _global=True):
                     Logger.error(f'Bot {bl} requires config {c} but not found, abort to launch.')
                     abort = True
                     break
             if abort:
                 continue
-        p = multiprocessing.Process(target=go, args=(bl, True, True if not sys.argv[0].endswith('.py') else False))
+        p = multiprocessing.Process(
+            target=go,
+            args=(
+                bl,
+                True,
+                bool(not sys.argv[0].endswith('.py'))),
+            name=bl)
         p.start()
         processes.append(p)
     while True:
@@ -104,11 +148,14 @@ def run_bot():
                 continue
             else:
                 if p.exitcode == 233:
-                    Logger.warning(f'{p.pid} exited with code 233, restart all bots.')
+                    Logger.warning(f'{p.pid} ({p.name}) exited with code 233, restart all bots.')
                     raise RestartBot
                 else:
-                    Logger.critical(f'Process {p.pid} exited with code {p.exitcode}, please check the log.')
+                    Logger.critical(f'Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.')
                     processes.remove(p)
+                    p.terminate()
+                    p.join()
+                    restart_process(p.name)
                 break
 
         if not processes:
@@ -133,7 +180,7 @@ if __name__ == '__main__':
         while True:
             try:
                 run_bot()  # Process will block here so
-                Logger.critical('All bots exited unexpectedly, please check the output')
+                Logger.critical('All bots exited unexpectedly, please check the output.')
                 break
             except RestartBot:
                 for ps in processes:

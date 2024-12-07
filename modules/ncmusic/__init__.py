@@ -1,12 +1,12 @@
-from core.config import Config
 from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
-from core.exceptions import ConfigValueError
+from core.config import Config
+from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 
-API = Config('ncmusic_api', cfg_type=str)
+API = Config('ncmusic_api', cfg_type=str, secret=True)
 SEARCH_LIMIT = 10
 
 ncmusic = module('ncmusic',
