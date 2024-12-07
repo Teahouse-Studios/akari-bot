@@ -121,8 +121,8 @@ async def _(msg: Bot.MessageSession):
                     for im in block_image:
                         send_msgs.append(Image(im))
         if send_msgs:
-            await msg.finish(send_msgs)
             legacy = False
+            await msg.finish(send_msgs)
     if legacy:
         wikis = []
         if allow_list:

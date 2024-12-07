@@ -2,7 +2,7 @@ import base64
 import re
 from html import escape
 from io import BytesIO
-from typing import List, Union
+from typing import Any, List, Union
 
 import aiohttp
 import orjson as json
@@ -18,12 +18,27 @@ from core.utils.web_render import webrender
 
 
 class ImageTable:
-    def __init__(self, data, headers):
+    '''
+    图片表格。
+    :param data: 表格内容，表格行数需与表格标头的数量相符。
+    :param headers: 表格表头。
+    '''
+    def __init__(self, data: List[List[Any]], headers: List[str]):
         self.data = data
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True) -> Union[List[PILImage], bool]:
+async def image_table_render(table: Union[ImageTable, List[ImageTable]],
+                             save_source: bool = True,
+                             use_local: bool = True) -> Union[List[PILImage.Image], bool]:
+    '''
+    使用WebRender渲染图片表格。
+
+    :param table: 要渲染的表格。
+    :param save_source: 是否保存源文件。
+    :param use_local: 是否使用本地WebRender渲染。
+    :return: 图片的PIL对象。
+    '''
     if not Info.web_render_status:
         return False
     elif not Info.web_render_local_status:

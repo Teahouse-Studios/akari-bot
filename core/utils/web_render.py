@@ -10,7 +10,7 @@ web_render = Config('web_render', secret=True, get_url=True)
 web_render_local = Config('web_render_local', get_url=True)
 
 
-def webrender(method: str = '', url: str = '', use_local: bool = True, ignore_status=False) -> Union[str, None]:
+def webrender(method: str = '', url: str = '', use_local: bool = True, ignore_status=False) -> str:
     '''根据请求方法生成 WebRender URL。
 
     :param method: API 方法。
@@ -29,7 +29,7 @@ def webrender(method: str = '', url: str = '', use_local: bool = True, ignore_st
         if Info.web_render_status or ignore_status:
             return (web_render_local if use_local else web_render) + method
         else:
-            return None
+            return ''
 
 
 async def check_web_render() -> Tuple[bool, bool]:
