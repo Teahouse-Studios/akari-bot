@@ -9,6 +9,7 @@ from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, com
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
+from . import update  # noqa
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
