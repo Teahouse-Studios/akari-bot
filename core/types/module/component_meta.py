@@ -30,7 +30,6 @@ class CommandMeta(ModuleMeta):
     priority: int = 1
 
 
-
 @define
 class RegexMeta(ModuleMeta):
     function: Callable = None

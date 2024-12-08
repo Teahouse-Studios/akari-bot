@@ -18,6 +18,7 @@ class BaseMatches:
     def init(cls):
         return deepcopy(cls())
 
+
 @define
 class CommandMatches(BaseMatches):
     set: List[CommandMeta] = []
@@ -39,7 +40,6 @@ class CommandMatches(BaseMatches):
         return metas
 
 
-
 @define
 class RegexMatches(BaseMatches):
     set: List[RegexMeta] = []
@@ -59,7 +59,6 @@ class RegexMatches(BaseMatches):
             if target_from in meta.available_for or '*' in meta.available_for:
                 metas.append(meta)
         return metas
-
 
 
 @define

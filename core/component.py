@@ -185,21 +185,21 @@ def module(
     :param support_languages: 此命令支持的语言列表。
     """
     module = Module.assign(alias=alias,
-                    bind_prefix=bind_prefix,
-                    desc=desc,
-                    recommend_modules=recommend_modules,
-                    developers=developers,
-                    base=base,
-                    doc=doc,
-                    hidden=hidden,
-                    load=load,
-                    rss=rss,
-                    required_admin=required_admin,
-                    required_superuser=required_superuser,
-                    required_base_superuser=required_base_superuser,
-                    available_for=available_for,
-                    exclude_from=exclude_from,
-                    support_languages=support_languages)
+                           bind_prefix=bind_prefix,
+                           desc=desc,
+                           recommend_modules=recommend_modules,
+                           developers=developers,
+                           base=base,
+                           doc=doc,
+                           hidden=hidden,
+                           load=load,
+                           rss=rss,
+                           required_admin=required_admin,
+                           required_superuser=required_superuser,
+                           required_base_superuser=required_base_superuser,
+                           available_for=available_for,
+                           exclude_from=exclude_from,
+                           support_languages=support_languages)
     frame = inspect.currentframe()
     ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
     return Bind.Module(bind_prefix)
