@@ -183,6 +183,7 @@ def run_bot():
                     processes.remove(p)
                     p.terminate()
                     p.join()
+                    p.close()
                     restart_process(p.name)
                 break
 
@@ -203,6 +204,7 @@ if __name__ == '__main__':
                 for ps in processes:
                     ps.terminate()
                     ps.join()
+                    ps.close()
                 processes.clear()
                 continue
             except Exception:
@@ -213,4 +215,5 @@ if __name__ == '__main__':
         for ps in processes:
             ps.terminate()
             ps.join()
+            ps.close()
         processes.clear()
