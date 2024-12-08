@@ -50,11 +50,10 @@ processes = []
 
 def init_bot():
     import core.scripts.config_generate  # noqa
-    from core.config import Config, CFGManager # noqa
-    from core.constants.default import base_superuser_default # noqa
-    from core.database import BotDBUtil, session, DBVersion # noqa
-    from core.logger import Logger # noqa
-
+    from core.config import Config, CFGManager  # noqa
+    from core.constants.default import base_superuser_default  # noqa
+    from core.database import BotDBUtil, session, DBVersion  # noqa
+    from core.logger import Logger  # noqa
 
     query_dbver = session.query(DBVersion).first()
     if not query_dbver:
@@ -97,10 +96,9 @@ def multiprocess_run_until_complete(func):
         sleep(1)
 
 
-
 def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
-    from core.logger import Logger # noqa
-    from core.utils.info import Info # noqa
+    from core.logger import Logger  # noqa
+    from core.utils.info import Info  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
@@ -115,11 +113,10 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
         sys.exit(1)
 
 
-
 def run_bot():
-    from core.constants.path import cache_path # noqa
-    from core.config import Config # noqa
-    from core.logger import Logger # noqa
+    from core.constants.path import cache_path  # noqa
+    from core.config import Config  # noqa
+    from core.logger import Logger  # noqa
 
     def restart_process(bot_name: str):
         if bot_name not in failed_to_start_attempts or datetime.now(
@@ -143,7 +140,6 @@ def run_bot():
             name=bot_name)
         p.start()
         processes.append(p)
-
 
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
