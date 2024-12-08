@@ -168,7 +168,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo],
                     .parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)))
             query = await asyncio.gather(*tasks)
             for result in query:
-                Logger.debug(result.__dict__)
+                Logger.debug(result)
                 r: PageInfo = result
                 display_title = None
                 display_before_title = None
@@ -262,12 +262,12 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo],
                                 i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section.select')))
                                 i_msg_lst.append(Plain(session.locale.t('message.reply.prompt')))
 
-                            async def _callback(msg: Bot.MessageSession, forum_data=forum_data, r=r):
-                                display = msg.as_display(text_only=True)
-                                if isint(display) and int(display) <= len(forum_data) - 1:
-                                    await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)
+                                async def _callback(msg: Bot.MessageSession):
+                                    display = msg.as_display(text_only=True)
+                                    if isint(display) and int(display) <= len(forum_data) - 1:
+                                        await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)
 
-                            await session.send_message(i_msg_lst, callback=_callback)
+                                await session.send_message(i_msg_lst, callback=_callback)
 
                 else:
                     plain_slice = []
