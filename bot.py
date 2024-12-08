@@ -94,6 +94,9 @@ def multiprocess_run_until_complete(func):
         if not p.is_alive():
             break
         sleep(1)
+    p.terminate()
+    p.join()
+    p.close()
 
 
 def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
