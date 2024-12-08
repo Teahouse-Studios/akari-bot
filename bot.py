@@ -7,13 +7,8 @@ import traceback
 from datetime import datetime
 from time import sleep
 
-import core.scripts.config_generate  # noqa
-from core.config import Config, CFGManager
-from core.constants.default import base_superuser_default
-from core.constants.path import cache_path
-from core.database import BotDBUtil, session, DBVersion
-from core.logger import Logger
-from core.utils.info import Info
+from loguru import logger as loggerFallback
+
 
 ascii_art = r'''
           ._.             _  .____       ._.
@@ -49,9 +44,29 @@ class RestartBot(Exception):
 
 
 failed_to_start_attempts = {}
+disabled_bots = []
+processes = []
 
 
 def init_bot():
+    import core.scripts.config_generate  # noqa
+    from core.config import Config, CFGManager # noqa
+    from core.constants.default import base_superuser_default # noqa
+    from core.database import BotDBUtil, session, DBVersion # noqa
+    from core.logger import Logger # noqa
+
+
+    query_dbver = session.query(DBVersion).first()
+    if not query_dbver:
+        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
+        session.commit()
+        query_dbver = session.query(DBVersion).first()
+    if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
+        Logger.info(f'Updating database from {current_ver} to {target_ver}...')
+        from core.database.update import update_database
+
+        update_database()
+        Logger.info('Database updated successfully!')
     print(ascii_art)
     base_superuser = Config('base_superuser', base_superuser_default, cfg_type=(str, list))
     if base_superuser:
@@ -63,8 +78,30 @@ def init_bot():
     else:
         Logger.warning("The base superuser was not found, please setup it in the config file.")
 
+    disabled_bots.clear()
+    for t in CFGManager.values:
+        if t.startswith('bot_') and not t.endswith('_secret'):
+            if 'enable' in CFGManager.values[t][t]:
+                if not CFGManager.values[t][t]['enable']:
+                    disabled_bots.append(t[4:])
+
+
+def multiprocess_run_until_complete(func):
+    p = multiprocessing.Process(
+        target=func,)
+    p.start()
+
+    while True:
+        if not p.is_alive():
+            break
+        sleep(1)
+
+
 
 def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
+    from core.logger import Logger # noqa
+    from core.utils.info import Info # noqa
+
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
@@ -78,41 +115,36 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
         sys.exit(1)
 
 
-disabled_bots = []
-processes = []
-
-for t in CFGManager.values:
-    if t.startswith('bot_') and not t.endswith('_secret'):
-        if 'enable' in CFGManager.values[t][t]:
-            if not CFGManager.values[t][t]['enable']:
-                disabled_bots.append(t[4:])
-
-
-def restart_process(bot_name: str):
-    if bot_name not in failed_to_start_attempts or datetime.now(
-    ).timestamp() - failed_to_start_attempts[bot_name]['timestamp'] > 60:
-        failed_to_start_attempts[bot_name] = {}
-        failed_to_start_attempts[bot_name]['count'] = 0
-        failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
-    failed_to_start_attempts[bot_name]['count'] += 1
-    failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
-    if failed_to_start_attempts[bot_name]['count'] >= 3:
-        Logger.error(f'Bot {bot_name} failed to start 3 times, abort to restart, please check the log.')
-        return
-
-    Logger.warning(f'Restarting bot {bot_name}...')
-    p = multiprocessing.Process(
-        target=go,
-        args=(
-            bot_name,
-            True,
-            bool(not sys.argv[0].endswith('.py'))),
-        name=bot_name)
-    p.start()
-    processes.append(p)
-
 
 def run_bot():
+    from core.constants.path import cache_path # noqa
+    from core.config import Config # noqa
+    from core.logger import Logger # noqa
+
+    def restart_process(bot_name: str):
+        if bot_name not in failed_to_start_attempts or datetime.now(
+        ).timestamp() - failed_to_start_attempts[bot_name]['timestamp'] > 60:
+            failed_to_start_attempts[bot_name] = {}
+            failed_to_start_attempts[bot_name]['count'] = 0
+            failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
+        failed_to_start_attempts[bot_name]['count'] += 1
+        failed_to_start_attempts[bot_name]['timestamp'] = datetime.now().timestamp()
+        if failed_to_start_attempts[bot_name]['count'] >= 3:
+            Logger.error(f'Bot {bot_name} failed to start 3 times, abort to restart, please check the log.')
+            return
+
+        Logger.warning(f'Restarting bot {bot_name}...')
+        p = multiprocessing.Process(
+            target=go,
+            args=(
+                bot_name,
+                True,
+                bool(not sys.argv[0].endswith('.py'))),
+            name=bot_name)
+        p.start()
+        processes.append(p)
+
+
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     os.makedirs(cache_path, exist_ok=True)
@@ -161,26 +193,15 @@ def run_bot():
         if not processes:
             break
         sleep(1)
+    Logger.critical('All bots exited unexpectedly, please check the output.')
 
 
 if __name__ == '__main__':
-    query_dbver = session.query(DBVersion).first()
-    if not query_dbver:
-        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
-        session.commit()
-        query_dbver = session.query(DBVersion).first()
-    if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
-        Logger.info(f'Updating database from {current_ver} to {target_ver}...')
-        from core.database.update import update_database
-
-        update_database()
-        Logger.info('Database updated successfully!')
-    init_bot()
     try:
         while True:
             try:
+                multiprocess_run_until_complete(init_bot)
                 run_bot()  # Process will block here so
-                Logger.critical('All bots exited unexpectedly, please check the output.')
                 break
             except RestartBot:
                 for ps in processes:
@@ -189,7 +210,7 @@ if __name__ == '__main__':
                 processes.clear()
                 continue
             except Exception:
-                Logger.critical('An error occurred, please check the output.')
+                loggerFallback.critical('An error occurred, please check the output.')
                 traceback.print_exc()
                 break
     except (KeyboardInterrupt, SystemExit):
