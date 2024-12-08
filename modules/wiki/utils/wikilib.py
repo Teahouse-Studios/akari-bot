@@ -48,12 +48,12 @@ class PageNotFound(Exception):
 class QueryInfo:
     api: str
     headers: Dict[str, str] = {
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
     prefix: str = ''
     locale: Locale = Locale(default_locale)
 
     @classmethod
-    def assign(cls, api: str, headers: Dict[str, str], prefix: str='', locale: str=default_locale):
+    def assign(cls, api: str, headers: Dict[str, str], prefix: str = '', locale: str = default_locale):
         return deepcopy(cls(api=api, headers=headers, prefix=prefix, locale=Locale(locale)))
 
 
