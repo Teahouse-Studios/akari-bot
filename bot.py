@@ -11,7 +11,7 @@ from loguru import logger as loggerFallback
 
 
 ascii_art = r'''
-          ._.             _  .____       ._.
+           _              _   ____        _
      /\   | |            (_) |  _ \      | |
     /  \  | | ____ _ _ __ _  | |_) | ___ | |_
    / /\ \ | |/ / _` | '__| | |  _ < / _ \| __|
