@@ -7,8 +7,8 @@ from attrs import define
 
 @define
 class MsgInfo:
-    target_id: Union[int, str]
-    sender_id: Union[int, str]
+    target_id: str
+    sender_id: str
     sender_prefix: str
     target_from: str
     sender_from: str

@@ -184,7 +184,7 @@ def module(
     :param exclude_from: 此命令排除的平台列表。
     :param support_languages: 此命令支持的语言列表。
     """
-    module = Module(alias=alias,
+    module = Module.assign(alias=alias,
                     bind_prefix=bind_prefix,
                     desc=desc,
                     recommend_modules=recommend_modules,
