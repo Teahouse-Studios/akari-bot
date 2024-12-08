@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from datetime import datetime, UTC as datetimeUTC
 from typing import Any, Coroutine, Dict, List, Optional, Union
@@ -22,18 +24,18 @@ class ExecutionLockList:
     _list = set()
 
     @staticmethod
-    def add(msg: 'MessageSession'):
+    def add(msg: MessageSession):
         target_id = msg.target.sender_id
         ExecutionLockList._list.add(target_id)
 
     @staticmethod
-    def remove(msg: 'MessageSession'):
+    def remove(msg: MessageSession):
         target_id = msg.target.sender_id
         if target_id in ExecutionLockList._list:
             ExecutionLockList._list.remove(target_id)
 
     @staticmethod
-    def check(msg: 'MessageSession'):
+    def check(msg: MessageSession):
         target_id = msg.target.sender_id
         return target_id in ExecutionLockList._list
 
@@ -49,7 +51,7 @@ class MessageTaskManager:
     @classmethod
     def add_task(
             cls,
-            session: 'MessageSession',
+            session: MessageSession,
             flag: asyncio.Event,
             all_: bool = False,
             reply: Optional[Union[List[int], List[str], int, str]] = None,
@@ -73,7 +75,7 @@ class MessageTaskManager:
         cls._callback_list[message_id] = {'callback': callback, 'ts': datetime.now().timestamp()}
 
     @classmethod
-    def get_result(cls, session: 'MessageSession'):
+    def get_result(cls, session: MessageSession):
         if 'result' in cls._task_list[session.target.target_id][session.target.sender_id][session]:
             return cls._task_list[session.target.target_id][session.target.sender_id][session]['result']
         else:
@@ -98,7 +100,7 @@ class MessageTaskManager:
                 del cls._callback_list[message_id]
 
     @classmethod
-    async def check(cls, session: 'MessageSession'):
+    async def check(cls, session: MessageSession):
         if session.target.target_id in cls._task_list:
             senders = []
             if session.target.sender_id in cls._task_list[session.target.target_id]:
@@ -284,7 +286,7 @@ class MessageSession:
         raise NotImplementedError
 
     class Typing:
-        def __init__(self, msg: 'MessageSession'):
+        def __init__(self, msg: MessageSession):
             """
             :param msg: 本条消息，由于此class需要被一同传入下游方便调用，所以作为子class存在，将来可能会有其他的解决办法。
             """
@@ -346,7 +348,7 @@ class MessageSession:
                                 quote: bool = True,
                                 delete: bool = False,
                                 timeout: Optional[float] = 120,
-                                append_instruction: bool = True) -> 'MessageSession':
+                                append_instruction: bool = True) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。
 
@@ -386,7 +388,7 @@ class MessageSession:
                          delete: bool = False,
                          timeout: Optional[float] = 120,
                          all_: bool = False,
-                         append_instruction: bool = True) -> 'MessageSession':
+                         append_instruction: bool = True) -> MessageSession:
         """
         一次性模板，用于等待触发对象回复消息。
 
@@ -425,7 +427,7 @@ class MessageSession:
                           message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
                           quote: bool = False,
                           delete: bool = False,
-                          timeout: Optional[float] = 120) -> 'MessageSession':
+                          timeout: Optional[float] = 120) -> MessageSession:
         """
         一次性模板，用于等待触发对象所属对话内任意成员确认。
 
