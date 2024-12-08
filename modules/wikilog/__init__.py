@@ -154,8 +154,8 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
 
 @wikilog.handle('bot enable <apilink> {{wikilog.help.bot.enable}}', required_superuser=True)
 @wikilog.handle('bot disable <apilink> {{wikilog.help.bot.disable}}', required_superuser=True)
-@wikilog.handle('keepalive enable <apilink> {{wikilog.help.keepalive}}', required_superuser=True)
-@wikilog.handle('keepalive disable <apilink> {{wikilog.help.keepalive}}', required_superuser=True)
+@wikilog.handle('keepalive enable <apilink> {{wikilog.help.keepalive.enable}}', required_superuser=True)
+@wikilog.handle('keepalive disable <apilink> {{wikilog.help.keepalive.disable}}', required_superuser=True)
 async def _(msg: Bot.MessageSession, apilink: str):
     t = WikiLogUtil(msg)
     infos = json.loads(t.query.infos)

@@ -23,6 +23,7 @@ class Bot:
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
     Info = Info
+    Temp = Temp
 
     @staticmethod
     async def send_message(target: Union[FetchedSession, MessageSession, str],
