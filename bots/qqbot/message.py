@@ -226,6 +226,8 @@ class MessageSession(MessageSessionT):
             except Exception:
                 Logger.error(traceback.format_exc())
                 return False
+        else:
+            return False
 
     sendMessage = send_message
     asDisplay = as_display
@@ -253,7 +255,7 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
-        from bots.qqbot.bot import client
+        from bots.qqbot.bot import client  # noqa
         if self.target.target_from == target_guild_prefix:
             self.session.message = Message(api=client.api, event_id=None, data={
                                            "channel_id": self.target.target_id.split('|')[-1]})
