@@ -111,8 +111,6 @@ class CFGManager:
         :param cfg_type: 配置项类型。
         :param secret: 是否为密钥配置项。（默认为False）
         :param table_name: 配置项表名。
-        :param _global: 是否搜索所有表的配置项，仅内部使用。（默认为False）
-        :param _generate: 是否标记为生成配置文件，仅内部使用。（默认为False）
 
         :return: 配置文件中对应配置项的值。
         '''
@@ -219,7 +217,6 @@ class CFGManager:
         :param cfg_type: 配置项类型。
         :param secret: 是否为密钥配置项。（默认为False）
         :param table_name: 配置项表名。
-        :param _generate: 是否标记为生成配置文件，仅内部使用。（默认为False）
         '''
         cls.watch()
         q = q.lower()
@@ -407,8 +404,6 @@ def Config(q: str,
     :param secret: 是否为密钥配置项。（默认为False）
     :param table_name: 配置项表名。
     :param get_url: 是否为URL配置项。（默认为False）
-    :param _global: 是否搜索所有表的配置项，仅内部使用。（默认为False）
-    :param _generate: 是否标记为生成配置文件，仅内部使用。（默认为False）
 
     :return: 配置文件中对应配置项的值。
     '''

@@ -45,6 +45,9 @@ class ExecutionLockList:
 
 
 class MessageTaskManager:
+    """
+    消息计划管理器。
+    """
     _task_list = {}
     _callback_list = {}
 
@@ -133,6 +136,9 @@ class MessageTaskManager:
 
 
 class FinishedSession:
+    """
+    结束会话。
+    """
     def __init__(self, session, message_id: Union[List[int], List[str], int, str], result):
         self.session = session
         if isinstance(message_id, (int, str)):
