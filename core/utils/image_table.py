@@ -23,6 +23,7 @@ class ImageTable:
     :param data: 表格内容，表格行数需与表格标头的数量相符。
     :param headers: 表格表头。
     '''
+
     def __init__(self, data: List[List[Any]], headers: List[str]):
         self.data = data
         self.headers = headers
@@ -96,7 +97,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]],
         except aiohttp.ClientConnectorError:
             if use_local:
                 pic = await download(
-                    webrender(use_local=use_local, method=''),
+                    webrender(use_local=False, method=''),
                     method='POST',
                     post_data=json.dumps(html),
                     request_private_ip=True,
