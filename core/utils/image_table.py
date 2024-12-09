@@ -85,7 +85,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]],
 
         try:
             pic = await download(
-                webrender(use_local=use_local),
+                webrender(use_local=use_local, method=''),
                 method='POST',
                 post_data=json.dumps(html),
                 request_private_ip=True,
@@ -96,7 +96,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]],
         except aiohttp.ClientConnectorError:
             if use_local:
                 pic = await download(
-                    webrender(use_local=False),
+                    webrender(use_local=use_local, method=''),
                     method='POST',
                     post_data=json.dumps(html),
                     request_private_ip=True,
