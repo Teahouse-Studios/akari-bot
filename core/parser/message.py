@@ -489,10 +489,10 @@ async def parser(msg: Bot.MessageSession,
 
                     if Config('bug_report_url', bug_report_url_default, cfg_type=str):
                         errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=str(Url(Config('bug_report_url',
-                                                                         bug_report_url_default,
-                                                                         cfg_type=str),
-                                                                  use_mm=False)))
+                                                      url=Url(Config('bug_report_url',
+                                                                     bug_report_url_default,
+                                                                     cfg_type=str),
+                                                              use_mm=False))
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:

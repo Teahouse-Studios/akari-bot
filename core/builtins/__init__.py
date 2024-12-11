@@ -23,6 +23,7 @@ class Bot:
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
     Info = Info
+    Temp = Temp
 
     @staticmethod
     async def send_message(target: Union[FetchedSession, MessageSession, str],
@@ -37,7 +38,10 @@ class Bot:
         if isinstance(msg, list):
             msg = MessageChain(msg)
         Logger.info(target.__dict__)
-        await target.send_direct_message(msg, disable_secret_check, enable_split_image)
+        await target.send_direct_message(message_chain=msg,
+                                         disable_secret_check=disable_secret_check,
+                                         enable_parse_message=enable_parse_message,
+                                         enable_split_image=enable_split_image)
 
     @staticmethod
     async def fetch_target(target: str):

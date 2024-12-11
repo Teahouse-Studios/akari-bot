@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 import re
 from typing import List, Optional, Tuple, Union, Any
@@ -32,7 +34,7 @@ class MessageChain:
             List[MessageElement],
             Tuple[MessageElement],
             MessageElement,
-            'MessageChain'
+            MessageChain
         ]] = None,
     ):
         """
@@ -146,7 +148,7 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, msg: 'MessageSession' = None, embed: bool = True) -> list:
+    def as_sendable(self, msg: MessageSession = None, embed: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """

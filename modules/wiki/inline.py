@@ -201,7 +201,7 @@ async def _(msg: Bot.MessageSession):
                                 i_msg_lst.append(I18NContext('wiki.message.invalid_section.select'))
                                 i_msg_lst.append(I18NContext('message.reply.prompt'))
 
-                                async def _callback(msg: Bot.MessageSession, forum_data=forum_data, get_page=get_page):
+                                async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
                                     if isint(display) and int(display) <= len(forum_data) - 1:
                                         await query_pages(msg, title=forum_data[display]['text'],

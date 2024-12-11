@@ -361,13 +361,13 @@ reference = "mirrors"
 
 [[package]]
 name = "attrs"
-version = "23.2.0"
+version = "24.2.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
-    {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
+    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
+    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
 ]
 
 [package.extras]
@@ -377,11 +377,6 @@ docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-
 tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-mypy = ["mypy (>=1.6)", "pytest-mypy-plugins"]
 tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist[psutil]"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "mirrors"
 
 [[package]]
 name = "autopep8"
@@ -2310,7 +2305,7 @@ name = "langconv"
 version = "0.3.0"
 description = "A Python library for conversion between Traditional and Simplified Chinese, inspired by MediaWiki's LanguageConverter."
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = "<4.0,>=3.9"
 files = [
     {file = "langconv-0.3.0-py3-none-any.whl", hash = "sha256:dfd3484e0373a07ed8271ab60293648e9d216ef460c58ff7dda80315292d0566"},
     {file = "langconv-0.3.0.tar.gz", hash = "sha256:816bedf81db368a410959293a31aeebe4cd75de516427b50370727003f3bd3ce"},
@@ -2319,11 +2314,6 @@ files = [
 [package.dependencies]
 attrs = ">=23.2.0,<24.0.0"
 iso639-lang = ">=2.2.3,<3.0.0"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "mirrors"
 
 [[package]]
 name = "langsmith"
@@ -5226,4 +5216,4 @@ reference = "mirrors"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "19547117268ee2fe218d17e60805e9b54053615d82c5d49f534197ae5d9b367f"
+content-hash = "da8ebfb92146be8808b96bfbf4e259908ebfdd98702bac00070595d29010fda3"

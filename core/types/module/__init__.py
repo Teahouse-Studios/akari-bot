@@ -7,57 +7,47 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from .component_matches import *
 
+from .utils import convert2lst
 
-def convert2lst(elements: Union[str, list, tuple]) -> list:
-    if isinstance(elements, str):
-        return [elements]
-    elif isinstance(elements, tuple):
-        return list(elements)
-    return elements
+from attrs import define, field, Converter
+
+from copy import deepcopy
 
 
+def alias_converter(value, _self) -> dict:
+    if isinstance(value, str):
+        return {value: _self.bind_prefix}
+    elif isinstance(value, (tuple, list)):
+        return {x: _self.bind_prefix for x in value}
+    return value
+
+
+@define
 class Module:
-    def __init__(self,
-                 bind_prefix: str,
-                 alias: Union[str, list, tuple, dict, None] = None,
-                 desc: str = None,
-                 recommend_modules: Union[str, list, tuple, None] = None,
-                 developers: Union[str, list, tuple, None] = None,
-                 required_admin: bool = False,
-                 base: bool = False,
-                 doc: bool = False,
-                 hidden: bool = False,
-                 load: bool = True,
-                 rss: bool = False,
-                 required_superuser: bool = False,
-                 required_base_superuser: bool = False,
-                 available_for: Union[str, list, tuple, None] = '*',
-                 exclude_from: Union[str, list, tuple, None] = '',
-                 support_languages: Union[str, list, tuple, None] = None):
-        self.bind_prefix: str = bind_prefix
-        if isinstance(alias, str):
-            alias = {alias: bind_prefix}
-        elif isinstance(alias, (tuple, list)):
-            alias = {x: bind_prefix for x in alias}
-        self.alias: Dict[str, str] = alias
-        self.desc: str = desc
-        self.recommend_modules: List[str] = convert2lst(recommend_modules)
-        self.developers: List[str] = convert2lst(developers)
-        self.required_admin: bool = required_admin
-        self.base: bool = base
-        self.doc: bool = doc
-        self.hidden: bool = hidden
-        self.load: bool = load
-        self.rss: bool = rss
-        self.required_superuser: bool = required_superuser
-        self.required_base_superuser: bool = required_base_superuser
-        self.available_for: List[str] = convert2lst(available_for)
-        self.exclude_from: List[str] = convert2lst(exclude_from)
-        self.support_languages: List[str] = convert2lst(support_languages)
-        self.command_list = CommandMatches()
-        self.regex_list = RegexMatches()
-        self.schedule_list = ScheduleMatches()
-        self.hooks_list = HookMatches()
+    bind_prefix: str
+    alias: dict = field(converter=Converter(alias_converter, takes_self=True))
+    recommend_modules: list = field(converter=convert2lst)
+    developers: list = field(converter=convert2lst)
+    available_for: list = field(default=['*'], converter=convert2lst)
+    exclude_from: list = field(default=[], converter=convert2lst)
+    support_languages: list = field(default=None, converter=convert2lst)
+    desc: Union[str] = ''
+    required_admin: bool = False
+    base: bool = False
+    doc: bool = False
+    hidden: bool = False
+    load: bool = True
+    rss: bool = False
+    required_superuser: bool = False
+    required_base_superuser: bool = False
+    command_list: CommandMatches = CommandMatches.init()
+    regex_list: RegexMatches = RegexMatches.init()
+    schedule_list: ScheduleMatches = ScheduleMatches.init()
+    hooks_list: HookMatches = HookMatches.init()
+
+    @classmethod
+    def assign(cls, **kwargs):
+        return deepcopy(cls(**kwargs))
 
 
 __all__ = ["Module", "AndTrigger", "OrTrigger", "DateTrigger",

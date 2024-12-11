@@ -22,13 +22,16 @@ enable_send_url = Config('qq_bot_enable_send_url', False, table_name='bot_qqbot'
 
 class FinishedSession(FinishedSessionT):
     async def delete(self):
-        if self.session.target.target_from == target_guild_prefix:
-            try:
-                from bots.qqbot.bot import client  # noqa
+        try:
+            from bots.qqbot.bot import client  # noqa
+            if self.session.target.target_from == target_guild_prefix:
                 for x in self.message_id:
                     await client.api.recall_message(channel_id=self.session.target.target_id.split('|')[-1], message_id=x, hidetip=True)
-            except Exception:
-                Logger.error(traceback.format_exc())
+            elif self.session.target.target_from == target_group_prefix:
+                for x in self.message_id:
+                    await client.api.recall_group_message(group_openid=self.session.target.target_id.split('|')[-1], message_id=x)
+        except Exception:
+            Logger.error(traceback.format_exc())
 
 
 class MessageSession(MessageSessionT):
@@ -226,6 +229,8 @@ class MessageSession(MessageSessionT):
             except Exception:
                 Logger.error(traceback.format_exc())
                 return False
+        else:
+            return False
 
     sendMessage = send_message
     asDisplay = as_display
@@ -253,7 +258,7 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
-        from bots.qqbot.bot import client
+        from bots.qqbot.bot import client  # noqa
         if self.target.target_from == target_guild_prefix:
             self.session.message = Message(api=client.api, event_id=None, data={
                                            "channel_id": self.target.target_id.split('|')[-1]})

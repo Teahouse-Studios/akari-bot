@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import base64
 import os
 import random
 import re
 from datetime import datetime, timezone
-from typing import Tuple, Optional, TYPE_CHECKING, Dict, Any, Union, List
+from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
 import aiohttp
@@ -18,6 +20,8 @@ from core.constants.info import Info
 from core.joke import joke
 from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
+
+from copy import deepcopy
 
 if TYPE_CHECKING:
     from core.builtins import MessageSession
@@ -50,7 +54,7 @@ class PlainElement(MessageElement):
         text = ''.join([str(x) for x in texts])
         if not disable_joke:
             text = joke(text)
-        return cls(text=text)
+        return deepcopy(cls(text=text))
 
 
 @define
@@ -76,7 +80,7 @@ class URLElement(MessageElement):
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
-        return cls(url=url)
+        return deepcopy(cls(url=url))
 
     def __str__(self):
         if self.md_format:
@@ -98,7 +102,7 @@ class FormattedTimeElement(MessageElement):
     seconds: bool = True
     timezone: bool = True
 
-    def to_str(self, msg: Optional['MessageSession'] = None):
+    def to_str(self, msg: Optional[MessageSession] = None):
         ftime_template = []
         if msg:
             if self.date:
@@ -145,7 +149,7 @@ class FormattedTimeElement(MessageElement):
         :param seconds: 是否显示秒。（默认为True）
         :param timezone: 是否显示时区。（默认为True）
         """
-        return cls(timestamp=timestamp, date=date, iso=iso, time=time, seconds=seconds, timezone=timezone)
+        return deepcopy(cls(timestamp=timestamp, date=date, iso=iso, time=time, seconds=seconds, timezone=timezone))
 
 
 @define
@@ -164,7 +168,7 @@ class I18NContextElement(MessageElement):
         :param key: 多语言的键名。
         :param kwargs: 多语言中的变量。
         """
-        return cls(key=key, kwargs=kwargs)
+        return deepcopy(cls(key=key, kwargs=kwargs))
 
 
 @define
@@ -203,7 +207,7 @@ class ErrorMessageElement(MessageElement):
                 error_message += '\n' + \
                     locale.t('error.prompt.address', url=str(report_url))
 
-        return cls(error_message)
+        return deepcopy(cls(error_message))
 
     def __str__(self):
         return self.error_message
@@ -234,7 +238,7 @@ class ImageElement(MessageElement):
             path = save
         elif re.match('^https?://.*', path):
             need_get = True
-        return cls(path, need_get, headers)
+        return deepcopy(cls(path, need_get, headers))
 
     async def get(self):
         """
@@ -294,7 +298,7 @@ class VoiceElement(MessageElement):
         """
         :param path: 语音路径。
         """
-        return cls(path)
+        return deepcopy(cls(path))
 
 
 @define
@@ -317,7 +321,7 @@ class EmbedFieldElement(MessageElement):
         :param value: 字段值。
         :param inline: 是否内联。（默认为False）
         """
-        return cls(name=name, value=value, inline=inline)
+        return deepcopy(cls(name=name, value=value, inline=inline))
 
 
 @define
@@ -355,7 +359,7 @@ class EmbedElement(MessageElement):
                author: Optional[str] = None,
                footer: Optional[str] = None,
                fields: Optional[List[EmbedFieldElement]] = None):
-        return cls(
+        return deepcopy(cls(
             title=title,
             description=description,
             url=url,
@@ -365,9 +369,9 @@ class EmbedElement(MessageElement):
             thumbnail=thumbnail,
             author=author,
             footer=footer,
-            fields=fields)
+            fields=fields))
 
-    def to_message_chain(self, msg: Optional['MessageSession'] = None):
+    def to_message_chain(self, msg: Optional[MessageSession] = None):
         """
         将Embed转换为消息链。
         """
