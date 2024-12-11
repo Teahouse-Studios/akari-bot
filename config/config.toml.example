@@ -1,0 +1,96 @@
+# https://toml.io/en/v1.0.0
+# REMEMBER: TOML is not like Python. Do not use Python syntax here.
+# Note: Boolean values in TOML must be lowercase.
+# If you don't need some functions, please delete the corresponding keys.
+
+[secret]
+db_path = "sqlite:///database/save.db"
+check_access_key_id =
+check_access_key_secret =
+web_render =
+proxy =
+qq_bot_appid =
+qq_bot_secret =
+discord_token =
+telegram_token =
+kook_token =
+matrix_device_id =
+matrix_token =
+matrix_megolm_backup_passphrase =
+curseforge_api_key =
+diving_fish_developer_token =
+exchange_rate_api_key =
+ncmusic_api = 
+openai_api_key =
+osu_api_key =
+wolfram_alpha_appid =
+jwt_secret =
+qweather_api_key =
+ff3_key = 0AF6C4788B86F4E2FB97215E6E4A5EB0
+ff3_tweak = 6520BD033E2928
+
+[cfg]
+api_port = 5000
+base_superuser = ["QQ|2596322644",]
+debug = false
+command_prefix = ["~", "～",]
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y",]
+ignored_sender = ["QQ|2854196310",]
+disabled_bots = ["",]
+report_targets = ["",]
+locale = "zh_cn"
+timezone_offset = "+8"
+bug_report_url = "https://s.wd-ljt.com/botreportbug"
+donate_url = "https://afdian.com/a/teahouse"
+help_url = "https://bot.teahouse.team"
+help_page_url = "https://bot.teahouse.team/wiki/${module}"
+issue_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new/choose"
+locale_url = "https://www.crowdin.com/project/akari-bot"
+wiki_whitelist_url = "https://s.wd-ljt.com/botwhitelist"
+qq_account = 2314163511
+qq_host = "127.0.0.1:11451"
+qq_frame_type = "go-cqhttp"
+qq_disable_temp_session = false
+qq_allow_approve_friend = true
+qq_allow_approve_group_invite = true
+qq_enable_listening_self_message = false
+qq_limited_emoji = 10060
+qq_typing_emoji = 181
+qq_bot_enable_send_url = false
+qq_bot_private = false
+allow_request_private_ip = false
+allow_reload_base = false
+no_confirm = false
+slower_schedule = false
+use_secrets_random = true
+enable_commit_url = true
+enable_dirty_check = true
+enable_rickroll = true
+rickroll_msg = "https://wdf.ink/6OUp"
+enable_joke = false
+shuffle_rate = 0.1
+enable_urlmanager = true
+enable_tos = false
+tos_warning_counts = 5
+tos_temp_ban_time = 300
+enable_analytics = true
+enable_eval = true
+enable_petal = true
+enable_get_petal = true
+gained_petal_limit = 10
+lost_petal_limit = 5
+coin_limit = 10000
+coin_faceup_rate = 4997
+coin_facedown_rate = 4997
+dice_limit = 100
+dice_roll_limit = 10
+dice_output_count = 50
+dice_output_len = 200
+dice_detail_count = 5
+dice_count_limit = 10
+ncmusic_enable_card = false
+wordle_disable_image = false
+matrix_device_name =
+matrix_homeserver =
+matrix_user = "@akaribot:matrix.org"
+web_render_local =
