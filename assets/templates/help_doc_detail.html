@@ -171,6 +171,10 @@
             help_alias_layout.style.setProperty('padding', '0')
             const help_commands = document.querySelector('.help-commands')
             help_alias_layout.style.setProperty('width', help_commands.getBoundingClientRect().width + 'px')
+            if (layout.getBoundingClientRect().width <= 500){
+                const authors = document.querySelector('.authors')
+                authors.style.setProperty('position', 'initial')
+            }
         }
     }
 </script>
