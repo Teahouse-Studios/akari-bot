@@ -246,7 +246,7 @@ class MessageSession(MessageSessionT):
             get_ = get_stored_list(Bot.FetchTarget, 'forward_msg')
             if not get_['status']:
                 await self.send_message(self.locale.t("core.message.forward_msg.disabled"))
-                raise
+                raise ValueError
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def delete(self):

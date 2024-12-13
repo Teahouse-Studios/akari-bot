@@ -166,9 +166,9 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                         f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
         else:  # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
-            for version in version_index:
-                if version["gameVersion"] not in ver_list:
-                    ver_list.append(version["gameVersion"])
+            for version_ in version_index:
+                if version_["gameVersion"] not in ver_list:
+                    ver_list.append(version_["gameVersion"])
             if version_index:
                 if not ver:
                     reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +

@@ -31,9 +31,9 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
     rating = profile['rating']
     grade: dict = profile['grade']
     grade_t = []
-    max = grade.get('MAX')
-    if max:
-        grade_t.append(f'MAX: {max}')
+    max_ = grade.get('MAX')
+    if max_:
+        grade_t.append(f'MAX: {max_}')
     sss = grade.get('SSS')
     if sss:
         grade_t.append(f'SSS: {sss}')

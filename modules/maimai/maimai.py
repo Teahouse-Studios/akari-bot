@@ -584,14 +584,14 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 
         if level == "":
             if diff == "*":
-                music_data = (await total_list.get()).filter(type=dx_type)
+                music_data = (await total_list.get()).filter(dxtype=dx_type)
             else:
                 raise ValueError
         else:
             if diff == "":
-                music_data = (await total_list.get()).filter(level=level, type=dx_type)
+                music_data = (await total_list.get()).filter(level=level, dxtype=dx_type)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)], type=dx_type)
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)], dxtype=dx_type)
 
         if len(music_data) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))

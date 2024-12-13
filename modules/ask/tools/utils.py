@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, List, Union, Awaitable, Callable, Optional
 
 import orjson as json
 from langchain.tools import StructuredTool
@@ -31,11 +31,11 @@ def with_args(func: Callable, *args, **kwargs):
     return wrapper
 
 
-def parse_input(input: str):
-    if isinstance(input, list):  # wat hell it is appeared in here
-        vals = input
+def parse_input(input_: Union[str, List[str]]):
+    if isinstance(input_, list):  # wat hell it is appeared in here
+        vals = input_
     else:
-        vals = input.split(',')
+        vals = input_.split(',')
     parsed = []
     for v in vals:
         parsed.append(v.strip().strip('"'.strip("'")))

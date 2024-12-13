@@ -19,7 +19,7 @@ from core.database.local import DirtyWordCache
 from core.logger import Logger
 
 
-def hash_hmac(key, code, sha1):
+def hash_hmac(key, code):
     hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1)
     return base64.b64encode(hmac_code.digest()).decode('utf-8')
 

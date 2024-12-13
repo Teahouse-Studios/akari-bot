@@ -79,9 +79,9 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         await msg.finish(msg.locale.t('wikilog.message.enable.log.invalid_logtype', logtype=logtype))
 
 
-@wikilog.handle('filter test <filter> <example> {{wikilog.help.filter.test}}')
-async def _(msg: Bot.MessageSession, filter: str, example: str):
-    f = re.compile(filter)
+@wikilog.handle('filter test <filters> <example> {{wikilog.help.filter.test}}')
+async def _(msg: Bot.MessageSession, filters: str, example: str):
+    f = re.compile(filters)
     if m := f.search(example):
         await msg.finish(msg.locale.t('wikilog.message.filter.test.success', start=m.start(), end=m.end(),
                                       string=example[m.start():m.end()]))

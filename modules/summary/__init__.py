@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession):
     <|ctx_start|>{prev}<|ctx_end|>""" if nth != 0 else ""}'''
             len_prompt = len(prompt)
             post_texts = ''
-            for t in texts[nth:]:
+            for _ in texts[nth:]:
                 if len(post_texts) + len_prompt < 1970:
                     post_texts += texts[nth]
                     nth += 1
