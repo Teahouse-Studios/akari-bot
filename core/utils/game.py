@@ -1,11 +1,11 @@
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
-from core.builtins import MessageSession
 from core.logger import Logger
+from core.builtins import MessageSession
 
-_ps_lst = defaultdict(lambda: defaultdict(dict))
+playstate_lst = defaultdict(lambda: defaultdict(dict))
 GAME_EXPIRED = 3600
 
 
@@ -45,11 +45,11 @@ class PlayState:
         else:
             Logger.info(f'[{self.sender_id}]: Enabled {self.game} at {self.target_id}.')
 
-    def disable(self, _auto=False) -> None:
+    def disable(self, auto=False) -> None:
         '''
         关闭游戏事件。
         '''
-        if self.target_id not in _ps_lst:
+        if self.target_id not in playstate_lst:
             return
         target_dict = _ps_lst[self.target_id]
         if self.whole_target:
@@ -73,11 +73,9 @@ class PlayState:
             else:
                 Logger.info(f'[{self.sender_id}]: Disabled {self.game} at {self.target_id}.')
 
-    def update(self, **kwargs: Dict[str, Any]) -> None:
+    def update(self, **kwargs) -> None:
         '''
         更新游戏事件中需要的值。
-
-        :param kwargs: 键值对。
         '''
         playstate_dict = self._get_ps_dict()
         playstate_dict.update(kwargs)
@@ -90,7 +88,7 @@ class PlayState:
         '''
         检查游戏事件状态，若超过时间则自动关闭。
         '''
-        if self.target_id not in _ps_lst:
+        if self.target_id not in playstate_lst:
             return False
         target_dict = _ps_lst[self.target_id]
         if self.whole_target:
@@ -101,17 +99,14 @@ class PlayState:
             status = sender_dict.get(self.game, {}).get('_status', False)
             ts = sender_dict.get(self.game, {}).get('_timestamp', 0.0)
         if datetime.now().timestamp() - ts >= GAME_EXPIRED:
-            self.disable(_auto=True)
+            self.disable(auto=True)
         return status
 
     def get(self, key: str) -> Optional[Any]:
         '''
         获取游戏事件中需要的值。
-
-        :param key: 键名。
-        :return: 值。
         '''
-        if self.target_id not in _ps_lst:
+        if self.target_id not in playstate_lst:
             return None
         target_dict = _ps_lst[self.target_id]
         if self.whole_target:

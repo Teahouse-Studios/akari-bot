@@ -8,6 +8,7 @@ from loguru import logger
 from core.config import Config
 from core.constants.path import logs_path
 
+
 debug = Config('debug', False)
 
 os.makedirs(logs_path, exist_ok=True)

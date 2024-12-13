@@ -13,6 +13,7 @@ from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
 from .text import isint
 
+
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
@@ -115,11 +116,8 @@ def get_available_locales() -> List[str]:
 
 
 class Locale:
-    """
-    创建一个本地化对象。
-    """
-
     def __init__(self, locale: str, fallback_lng: Optional[List[str]] = None):
+        """创建一个本地化对象"""
         if not fallback_lng:
             fallback_lng = supported_locales.copy()
             fallback_lng.remove(locale)
@@ -134,7 +132,7 @@ class Locale:
         return key in self.data
 
     def get_locale_node(self, path: str):
-        """获取本地化节点。"""
+        """获取本地化节点"""
         return self.data.query_node(path)
 
     def get_string_with_fallback(self, key: str, fallback_failed_prompt: bool = True) -> str:
@@ -159,7 +157,7 @@ class Locale:
         获取本地化字符串。
 
         :param key: 本地化键名。
-        :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为True）
+        :param fallback_failed_prompt: 是否添加本地化失败提示。
         :returns: 本地化字符串。
         """
         if isinstance(key, dict):
@@ -177,7 +175,7 @@ class Locale:
         替换字符串中的本地化键名。
 
         :param text: 字符串。
-        :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
+        :param fallback_failed_prompt: 是否添加本地化失败提示。
         :returns: 本地化后的字符串。
         """
         if locale_str := re.findall(r'\{(.*)}', text):
@@ -191,7 +189,7 @@ class Locale:
 
         :param number: 数字。
         :param precision: 保留小数点位数。
-        :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
+        :param fallback_failed_prompt: 是否添加本地化失败提示。
         :returns: 本地化后的数字。
         """
         if isint(number):

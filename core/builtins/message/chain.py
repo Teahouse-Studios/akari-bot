@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 import base64
 import re
 from typing import List, Optional, Tuple, Union, Any
-from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson as json
+
+from typing import TYPE_CHECKING
 
 from core.builtins.message.elements import elements_map, MessageElement, PlainElement, EmbedElement, \
     ErrorMessageElement, FormattedTimeElement, I18NContextElement, URLElement, ImageElement, VoiceElement
@@ -31,14 +30,13 @@ class MessageChain:
         self,
         elements: Optional[Union[
             str,
-            List[MessageElement],
-            Tuple[MessageElement],
-            MessageElement,
-            MessageChain
+            List[Union[MessageElement]],
+            Tuple[Union[MessageElement]],
+            MessageElement
         ]] = None,
     ):
         """
-        :param elements: 消息链元素。
+        :param elements: 消息链元素
         """
         self.value = []
         if isinstance(elements, MessageChain):
@@ -148,7 +146,7 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, msg: MessageSession = None, embed: bool = True) -> list:
+    def as_sendable(self, msg: 'MessageSession' = None, embed: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """

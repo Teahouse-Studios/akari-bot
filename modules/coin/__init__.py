@@ -5,7 +5,7 @@ from core.constants.exceptions import ConfigValueError
 from core.utils.random import Random
 
 MAX_COIN_NUM = Config('coin_limit', 10000)
-FACE_UP_WEIGHT = Config('coin_faceup_weight', 4997)
+FACE_UP_WEIGHT = Config('coin_faceup_weight', 4997)  # n/10000
 FACE_DOWN_WEIGHT = Config('coin_facedown_weight', 4997)
 STAND_WEIGHT = Config('coin_stand_weight', 6)
 
@@ -32,7 +32,7 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
     face_up = 0
     face_down = 0
     stand = 0
-    for _ in range(count):
+    for i in range(count):
         rand_num = Random.randint(1, coin_total_weight)
         if rand_num < FACE_UP_WEIGHT:
             face_up += 1

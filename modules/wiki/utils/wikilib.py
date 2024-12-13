@@ -3,7 +3,6 @@ import datetime
 import re
 import traceback
 import urllib.parse
-from copy import deepcopy
 from typing import Union, Dict, List
 
 import orjson as json
@@ -22,10 +21,8 @@ from .bot import BotAccount
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from .mapping import *
 
-from attrs import define
 
 default_locale = Config("default_locale", cfg_type=str)
-enable_tos = Config('enable_tos', True)
 
 
 class InvalidPageIDError(Exception):
@@ -44,70 +41,107 @@ class PageNotFound(Exception):
     pass
 
 
-@define
 class QueryInfo:
-    api: str
-    headers: Dict[str, str] = {
-        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
-    prefix: str = ''
-    locale: Locale = Locale(default_locale)
-
-    @classmethod
-    def assign(cls, api: str, headers: Dict[str, str], prefix: str = '', locale: str = default_locale):
-        return deepcopy(cls(api=api, headers=headers, prefix=prefix, locale=Locale(locale)))
+    def __init__(self, api, headers=None, prefix=None, locale=None):
+        self.api = api
+        self.headers = headers if headers else {
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
+        self.prefix = prefix
+        self.locale = Locale(locale if locale else default_locale)
 
 
-@define
 class WikiInfo:
-    api: str = ''
-    articlepath: str = ''
-    extensions: List[str] = []
-    interwiki: Dict[str, str] = {}
-    realurl: str = ''
-    name: str = ''
-    namespaces: Dict[str, int] = {}
-    namespaces_local: Dict[str, str] = {}
-    namespacealiases: Dict[str, str] = {}
-    in_allowlist: bool = False
-    in_blocklist: bool = False
-    script: str = ''
-    logo_url: str = ''
+    def __init__(self,
+                 api: str = '',
+                 articlepath: str = '',
+                 extensions=None,
+                 interwiki=None,
+                 realurl: str = '',
+                 name: str = '',
+                 namespaces=None,
+                 namespaces_local=None,
+                 namespacealiases=None,
+                 in_allowlist=False,
+                 in_blocklist=False,
+                 script: str = '',
+                 logo_url: str = ''):
+        if not extensions:
+            extensions = []
+        if not interwiki:
+            interwiki = {}
+        self.api = api
+        self.articlepath = articlepath
+        self.extensions = extensions
+        self.interwiki = interwiki
+        self.realurl = realurl
+        self.name = name
+        self.namespaces = namespaces
+        self.namespaces_local = namespaces_local
+        self.namespacealiases = namespacealiases
+        self.in_allowlist = in_allowlist
+        self.in_blocklist = in_blocklist
+        self.script = script
+        self.logo_url = logo_url
 
 
-@define
 class WikiStatus:
-    available: bool
-    value: Union[WikiInfo, bool]
-    message: str
+    def __init__(self,
+                 available: bool,
+                 value: Union[WikiInfo, bool],
+                 message: str):
+        self.available = available
+        self.value = value
+        self.message = message
 
 
-@define
 class PageInfo:
-    info: WikiInfo
-    title: str
-    id: int = -1
-    before_title: str = None
-    link: str = None
-    edit_link: str = None
-    file: str = None
-    desc: str = None
-    args: str = None
-    selected_section: str = None
-    sections: List[str] = None
-    interwiki_prefix: str = ''
-    status: bool = True
-    templates: List[str] = None
-    before_page_property: str = 'page'
-    page_property: str = 'page'
-    has_template_doc: bool = False
-    invalid_namespace: Union[str, bool] = False
-    possible_research_title: List[str] = None
-    body_class: List[str] = None
-    invalid_section: bool = False
-    is_talk_page: bool = False
-    is_forum: bool = False
-    is_forum_topic: bool = False
-    forum_data: dict = {}
+    def __init__(self,
+                 info: WikiInfo,
+                 title: str,
+                 id: int = -1,
+                 before_title: str = None,
+                 link: str = None,
+                 edit_link: str = None,
+                 file: str = None,
+                 desc: str = None,
+                 args: str = None,
+                 selected_section: str = None,
+                 sections: List[str] = None,
+                 interwiki_prefix: str = '',
+                 status: bool = True,
+                 templates: List[str] = None,
+                 before_page_property: str = 'page',
+                 page_property: str = 'page',
+                 has_template_doc: bool = False,
+                 invalid_namespace: Union[str, bool] = False,
+                 possible_research_title: List[str] = None,
+                 body_class: List[str] = None
+                 ):
+        self.info = info
+        self.id = id
+        self.title = title
+        self.before_title = before_title
+        self.link = link
+        self.edit_link = edit_link
+        self.file = file
+        self.desc = desc
+        self.args = args
+        self.selected_section = selected_section
+        self.sections = sections
+        self.interwiki_prefix = interwiki_prefix
+        self.templates = templates
+        self.status = status
+        self.before_page_property = before_page_property
+        self.page_property = page_property
+        self.has_template_doc = has_template_doc
+        self.invalid_namespace = invalid_namespace
+        self.possible_research_title = possible_research_title
+        self.invalid_section = False
+        self.body_class = body_class
+        self.is_talk_page = False
+        self.is_forum = False
+        self.forum_data = {}
+        self.is_forum_topic = False
 
 
 class WikiLib:
@@ -336,9 +370,9 @@ class WikiLib:
         h.ignore_tables = True
         h.single_line_break = True
         parse_text = get_parse['parse']['text']['*']
-        t = h.handle(parse_text)
-        if len(t) > 65535:
+        if len(parse_text) > 65535:
             return self.locale.t("wiki.message.utils.wikilib.error.text_too_long")
+        t = h.handle(get_parse['parse']['text']['*'])
         if section:
             for i in range(1, 7):
                 s = re.split(r'(.*' + '#' * i + r'[^#].*\[.*?])', t, re.M | re.S)
@@ -444,15 +478,16 @@ class WikiLib:
     async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, lang=None, _doc=False,
                               _tried=0, _prefix='', _iw=False, _search=False) -> PageInfo:
         """
-        :param title: 页面标题，如果为None，则使用pageid。
-        :param pageid: 页面id。
-        :param inline: 是否为inline模式。
-        :param lang: 所需的对应语言版本。
-        :param _doc: 是否为文档模式，仅用作内部递归调用判断。
-        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断。
-        :param _prefix: iw前缀，仅用作内部递归调用判断。
-        :param _iw: 是否为iw模式，仅用作内部递归调用判断。
-        :param _search: 是否为搜索模式，仅用作内部递归调用判断。
+        :param title: 页面标题，如果为None，则使用pageid
+        :param pageid: 页面id
+        :param inline: 是否为inline模式
+        :param lang: 所需的对应语言版本
+        :param _doc: 是否为文档模式，仅用作内部递归调用判断
+        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断
+        :param _prefix: iw前缀，仅用作内部递归调用判断
+        :param _iw: 是否为iw模式，仅用作内部递归调用判断
+        :param _search: 是否为搜索模式，仅用作内部递归调用判断
+        :return:
         """
         if title:
             if m := re.match(r'w:c:.*?:(.*)', title) and self.wiki_info.api.find('fandom.com') != -1:
@@ -469,7 +504,7 @@ class WikiLib:
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
-        if _tried > 5 and enable_tos:
+        if _tried > 5 and Config('enable_tos', True):
             raise AbuseWarning('{tos.message.reason.too_many_redirects}')
         selected_section = None
         query_props = ['info', 'imageinfo', 'langlinks', 'templates']
@@ -532,7 +567,7 @@ class WikiLib:
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
         if not query:
-            return PageInfo(title=title, desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
+            return PageInfo(title=title, link=None, desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                             info=self.wiki_info)
 
         redirects_: List[Dict[str, str]] = query.get('redirects')

@@ -9,12 +9,11 @@ from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, com
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
-from . import update  # noqa
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
-from core.exports import add_export
 from core.utils.i18n import Locale
+from core.exports import add_export
 
 
 class CFGManager:
@@ -103,17 +102,6 @@ class CFGManager:
             table_name: Optional[str] = None,
             _global: bool = False,
             _generate: bool = False) -> Any:
-        '''
-        获取配置文件中的配置项。
-
-        :param q: 配置项键名。
-        :param default: 默认值。
-        :param cfg_type: 配置项类型。
-        :param secret: 是否为密钥配置项。（默认为False）
-        :param table_name: 配置项表名。
-
-        :return: 配置文件中对应配置项的值。
-        '''
         cls.watch()
         q = q.lower()
         value = None
@@ -209,15 +197,6 @@ class CFGManager:
     @classmethod
     def write(cls, q: str, value: Union[Any, None], cfg_type: Union[type, tuple, None] = None, secret: bool = False,
               table_name: Optional[str] = None, _generate: bool = False):
-        '''
-        修改配置文件中的配置项。
-
-        :param q: 配置项键名。
-        :param value: 修改值。
-        :param cfg_type: 配置项类型。
-        :param secret: 是否为密钥配置项。（默认为False）
-        :param table_name: 配置项表名。
-        '''
         cls.watch()
         q = q.lower()
         if value is None:
@@ -344,12 +323,6 @@ class CFGManager:
 
     @classmethod
     def delete(cls, q: str, table_name: Optional[str] = None) -> bool:
-        '''
-        删除配置文件中的配置项。
-
-        :param q: 配置项键名。
-        :param table_name: 配置项表名。
-        '''
         cls.watch()
         q = q.lower()
         found = False
@@ -395,18 +368,6 @@ def Config(q: str,
            get_url: bool = False,
            _global: bool = False,
            _generate: bool = False) -> Any:
-    '''
-    获取配置文件中的配置项。
-
-    :param q: 配置项键名。
-    :param default: 默认值。
-    :param cfg_type: 配置项类型。
-    :param secret: 是否为密钥配置项。（默认为False）
-    :param table_name: 配置项表名。
-    :param get_url: 是否为URL配置项。（默认为False）
-
-    :return: 配置文件中对应配置项的值。
-    '''
     if get_url:
         v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
         if v and v[-1] != '/':

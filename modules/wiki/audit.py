@@ -1,13 +1,14 @@
 import re
 from datetime import timezone
 
-from core.builtins import Bot, I18NContext, Image
+from core.builtins import Bot, I18NContext, Image, Url
 from core.component import module
 from core.constants import Info
 from core.database.tables import is_mysql
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
+
 
 aud = module('wiki_audit',
              required_superuser=True,
@@ -121,8 +122,8 @@ async def _(msg: Bot.MessageSession):
                     for im in block_image:
                         send_msgs.append(Image(im))
         if send_msgs:
-            legacy = False
             await msg.finish(send_msgs)
+            legacy = False
     if legacy:
         wikis = []
         if allow_list:

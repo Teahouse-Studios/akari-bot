@@ -5,23 +5,13 @@ from .component_meta import *
 from attrs import define
 from copy import deepcopy
 
-
-@define
-class BaseMatches:
-    set: List[ModuleMeta] = []
+class CommandMatches:
+    def __init__(self):
+        self.set: List[CommandMeta] = []
 
     def add(self, meta):
         self.set.append(meta)
         return self.set
-
-    @classmethod
-    def init(cls):
-        return deepcopy(cls())
-
-
-@define
-class CommandMatches(BaseMatches):
-    set: List[CommandMeta] = []
 
     def get(self, target_from: str, show_required_superuser: bool = False,
             show_required_base_superuser: bool = False) -> List[CommandMeta]:
@@ -40,9 +30,13 @@ class CommandMatches(BaseMatches):
         return metas
 
 
-@define
-class RegexMatches(BaseMatches):
-    set: List[RegexMeta] = []
+class RegexMatches:
+    def __init__(self):
+        self.set: List[RegexMeta] = []
+
+    def add(self, meta):
+        self.set.append(meta)
+        return self.set
 
     def get(self, target_from: str, show_required_superuser: bool = False,
             show_required_base_superuser: bool = False) -> List[RegexMeta]:
@@ -61,14 +55,22 @@ class RegexMatches(BaseMatches):
         return metas
 
 
-@define
-class ScheduleMatches(BaseMatches):
-    set: List[ScheduleMeta] = []
+class ScheduleMatches:
+    def __init__(self):
+        self.set: List[ScheduleMeta] = []
+
+    def add(self, meta):
+        self.set.append(meta)
+        return self.set
 
 
-@define
-class HookMatches(BaseMatches):
-    set: List[HookMeta] = []
+class HookMatches:
+    def __init__(self):
+        self.set: List[HookMeta] = []
+
+    def add(self, meta):
+        self.set.append(meta)
+        return self.set
 
 
 __all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches", "HookMatches"]

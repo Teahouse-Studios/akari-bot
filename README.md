@@ -1,7 +1,7 @@
 <div align="center">
   <img width="512" src="./assets/character_marked.png" alt="logo">
 
-# 小可 · AkariBot
+# 小可 · AkariBot v4
 
 _多功能、多语言、多平台支持的异步聊天机器人_
 
@@ -19,13 +19,13 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 **小可**是可扩展的多功能、多语言、多平台支持的异步聊天机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
 
-目前小可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
+目前小可还正在持续开发中。
 
 ## 平台
 
 小可目前支持以下平台：
 
--   QQ（官方/第三方）
+-   QQ
 -   Discord
 -   Telegram
 -   KOOK
@@ -68,7 +68,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 ### 自搭建
 
-推荐前往[此项目](https://github.com/Teahouse-Studios/akari-bot-core)通过小可核心版进行搭建，你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
+你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 

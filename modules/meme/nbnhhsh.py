@@ -7,7 +7,6 @@ from core.utils.i18n import Locale
 
 async def nbnhhsh(term: str, locale: Locale):
     '''查询nbnhhsh。
-
     :param term: 需要查询的term。
     :returns: 查询结果。'''
     try:

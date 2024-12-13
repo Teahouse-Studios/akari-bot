@@ -4,10 +4,6 @@ from typing import Dict, Any, Optional
 from aiocqhttp import CQHttp
 from aiocqhttp.event import Event
 
-from core.config import Config
-
-access_token = Config('qq_access_token', cfg_type=str, secret=True, table_name='bot_aiocqhttp')
-
 
 class EventModded(Event):
     @staticmethod
@@ -53,4 +49,4 @@ class CQHttpModded(CQHttp):
         return results[0] if results else None
 
 
-bot = CQHttpModded(access_token=access_token)
+bot = CQHttpModded()

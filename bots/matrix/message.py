@@ -349,19 +349,15 @@ class FetchedSession(Bot.FetchedSession):
             Logger.info(
                 f"Could not find any exist private room for {target_id}, trying to create one."
             )
-            try:
-                resp = await bot.room_create(
-                    visibility=nio.RoomVisibility.private,
-                    is_direct=True,
-                    preset=nio.RoomPreset.trusted_private_chat,
-                    invite=[target_id],
-                )
-                room = resp.room_id
-                Logger.info(f"Created private messaging room for {target_id}: {room}")
-                self.session.target = room
-            except Exception as e:
-                Logger.error(f"Failed to create room for {target_id}: {e}")
-                return
+            resp = await bot.room_create(
+                visibility=nio.RoomVisibility.private,
+                is_direct=True,
+                preset=nio.RoomPreset.trusted_private_chat,
+                invite=[target_id],
+            )
+            room = resp.room_id
+            Logger.info(f"Created private messaging room for {target_id}: {room}")
+            self.session.target = room
 
 
 Bot.FetchedSession = FetchedSession

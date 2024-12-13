@@ -1,19 +1,12 @@
-from collections import defaultdict
-from datetime import datetime
+import datetime
+from typing import Dict
 
 from core.builtins import MessageSession
 
-_cd_lst = defaultdict(lambda: defaultdict(dict))
+_cd_lst: Dict[str, Dict[MessageSession, float]] = {}
 
 
 class CoolDown:
-    '''
-    冷却事件构造器。
-
-    :param key: 冷却事件名称。
-    :param msg: 消息会话。
-    :param all: 是否应用至全对话。（默认为False）
-    '''
 
     def __init__(self, key: str, msg: MessageSession, whole_target: bool = False):
         self.key = key
@@ -34,15 +27,13 @@ class CoolDown:
         '''
         添加冷却事件。
         '''
-        cooldown_dict = self._get_cd_dict()
-        cooldown_dict['_timestamp'] = datetime.now().timestamp()
+        if self.key not in _cd_lst:
+            _cd_lst[self.key] = {}
+        _cd_lst[self.key][self.sender_id] = datetime.datetime.now().timestamp()
 
-    def check(self, delay: float) -> float:
+    def check(self, delay: int) -> float:
         '''
         检查冷却事件剩余冷却时间。
-
-        :param delay: 设定的冷却时间。
-        :return: 剩余的冷却时间。
         '''
         if self.key not in _cd_lst:
             return 0
@@ -50,16 +41,13 @@ class CoolDown:
         if self.whole_target:
             ts = target_dict.get(self.key, {}).get('_timestamp', 0.0)
         else:
-            sender_dict = target_dict.get(self.sender_id, {})
-            ts = sender_dict.get(self.key, {}).get('_timestamp', 0.0)
-
-        if (d := (datetime.now().timestamp() - ts)) > delay:
             return 0
-        else:
-            return d
 
     def reset(self):
         '''
         重置冷却事件。
         '''
+        if self.key in _cd_lst:
+            if self.sender_id in _cd_lst[self.key]:
+                _cd_lst[self.key].pop(self.sender_id)
         self.add()

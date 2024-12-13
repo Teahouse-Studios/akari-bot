@@ -11,11 +11,11 @@ from gql.transport.aiohttp import AIOHTTPTransport
 
 from core.builtins import Bot
 from core.config import Config
-from core.constants.path import assets_path, cache_path, noto_sans_demilight_path, nunito_regular_path, nunito_light_path
+from core.constants.path import assets_path, noto_sans_demilight_path, nunito_regular_path, nunito_light_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.html2text import html2text
-from core.utils.http import get_url, download
+from core.utils.http import get_url
 from core.utils.image import get_fontsize
 from core.utils.text import parse_time_string
 
@@ -26,7 +26,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             query_type = 'bestRecords'
         elif query_type == 'r30':
             query_type = 'recentRecords'
-        profile_url = f'http://services.cytoid.io/profile/{uid}'
+        profile_url = 'http://services.cytoid.io/profile/' + uid
         profile_json = json.loads(await get_url(profile_url, 200))
         if 'statusCode' in profile_json:
             if profile_json['statusCode'] == 404:
@@ -82,7 +82,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 
         result = await client.execute_async(query)
         workdir = random_cache_path()
-        os.makedirs(workdir, exist_ok=True)
+        os.makedirs(workdir)
         best_records = result['profile'][query_type]
         rank = 0
         resources = []
@@ -217,29 +217,35 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 
 async def download_cover_thumb(uid):
     try:
-        filename = 'thumbnail.png'
-        d = os.path.join(cache_path, 'cytoid-cover', uid)
+        d = os.path.join(assets_path, 'cytoid-cover', uid)
         os.makedirs(d, exist_ok=True)
-        path = os.path.join(d, filename)
+        path = os.path.join(d, 'thumbnail.png')
         if not os.path.exists(path):
-            level_url = f'http://services.cytoid.io/levels/{uid}'
+            level_url = 'http://services.cytoid.io/levels/' + uid
             get_level = json.loads(await get_url(level_url))
-            cover_thumbnail = f"{get_level['cover']['original']}?h=240&w=384"
-            path = await download(cover_thumbnail, filename=filename, path=d, logging_err_resp=False)
-        return path
-    except Exception:
+            cover_thumbnail = get_level['cover']['original'] + "?h=240&w=384"
+            async with aiohttp.ClientSession() as session, session.get(cover_thumbnail) as resp, async_open(path, 'wb+') as jpg:
+                await jpg.write(await resp.read())
+                return path
+        else:
+            return path
+    except BaseException:
         Logger.error(traceback.format_exc())
         return False
 
 
 async def download_avatar_thumb(link, id):
-    Logger.debug(f'Downloading avatar for {id}')
+    Logger.debug(f'Downloading avatar for {str(id)}')
     try:
-        d = os.path.join(cache_path, 'cytoid-avatar')
+        d = os.path.join(assets_path, 'cytoid-avatar')
         os.makedirs(d, exist_ok=True)
-        path = await download(link, filename=f'{id}.png', path=d, logging_err_resp=False)
-        return path
-    except Exception:
+        path = os.path.join(d, f'{id}.png')
+        if os.path.exists(path):
+            os.remove(path)
+        async with aiohttp.ClientSession() as session, session.get(link, timeout=aiohttp.ClientTimeout(total=20)) as resp, async_open(path, 'wb+') as jpg:
+            await jpg.write(await resp.read())
+            return path
+    except BaseException:
         Logger.error(traceback.format_exc())
         return False
 

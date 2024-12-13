@@ -14,12 +14,12 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
+from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
 from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Temp, \
     MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT, Plain, Image, Voice
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
 from core.database import BotDBUtil
@@ -285,8 +285,7 @@ class MessageSession(MessageSessionT):
                         if cq_data['type'] == 'text':
                             lst.append(Plain(cq_data['data'].get('text')))
                         elif cq_data['type'] == 'image':
-                            obi = await get_onebot_implementation()
-                            if obi == 'lagrange':
+                            if qq_frame_type() == 'lagrange':
                                 img_src = cq_data['data'].get('file')
                             else:
                                 img_src = cq_data['data'].get('url')
@@ -305,8 +304,7 @@ class MessageSession(MessageSessionT):
                 if item["type"] == "text":
                     lst.append(Plain(item["data"]["text"]))
                 elif item["type"] == "image":
-                    obi = await get_onebot_implementation()
-                    if obi == 'lagrange':
+                    if qq_frame_type() == 'lagrange':
                         lst.append(Image(item["data"]["file"]))
                     else:
                         lst.append(Image(item["data"]["url"]))
@@ -331,8 +329,7 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
-                obi = await get_onebot_implementation()
-                if obi == 'ntqq':
+                if qq_frame_type() == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
                                           emoji_id=str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_aiocqhttp')))
                 else:
@@ -341,13 +338,13 @@ class MessageSession(MessageSessionT):
                             return
                     last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
 
-                    if obi == 'lagrange':
+                    if qq_frame_type() == 'lagrange':
                         await bot.call_action('group_poke', group_id=self.msg.session.target,
                                               user_id=self.msg.session.sender)
-                    elif obi == 'shamrock':
+                    elif qq_frame_type() == 'shamrock':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:touch,id={self.msg.session.sender}]')
-                    elif obi == 'go-cqhttp':
+                    elif qq_frame_type() == 'mirai':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:poke,qq={self.msg.session.sender}]')
                     else:
@@ -478,8 +475,7 @@ class FetchTarget(FetchTargetT):
             friend_list = [f['user_id'] for f in friend_list_raw]
 
             guild_list = []
-            obi = await get_onebot_implementation()
-            if obi == 'go-cqhttp':
+            if qq_frame_type() == 'mirai':
                 guild_list_raw = await bot.call_action('get_guild_list')
                 for g in guild_list_raw:
                     try:

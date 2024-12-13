@@ -312,22 +312,22 @@ test = ["black (>=20.8b1)", "flake8 (>=3.8.3)", "mypy (>=0.812)", "mypy-extensio
 
 [[package]]
 name = "attrs"
-version = "24.2.0"
+version = "23.2.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
-    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
+    {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
+    {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
 ]
 
 [package.extras]
-benchmark = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-cov = ["cloudpickle", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
-tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
+cov = ["attrs[tests]", "coverage[toml] (>=5.3)"]
+dev = ["attrs[tests]", "pre-commit"]
+docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier", "zope-interface"]
+tests = ["attrs[tests-no-zope]", "zope-interface"]
+tests-mypy = ["mypy (>=1.6)", "pytest-mypy-plugins"]
+tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist[psutil]"]
 
 [[package]]
 name = "autopep8"
@@ -1989,19 +1989,15 @@ name = "langconv"
 version = "0.3.0"
 description = "A Python library for conversion between Traditional and Simplified Chinese, inspired by MediaWiki's LanguageConverter."
 optional = false
-python-versions = ">=3.9"
-files = []
-develop = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "langconv-0.3.0-py3-none-any.whl", hash = "sha256:dfd3484e0373a07ed8271ab60293648e9d216ef460c58ff7dda80315292d0566"},
+    {file = "langconv-0.3.0.tar.gz", hash = "sha256:816bedf81db368a410959293a31aeebe4cd75de516427b50370727003f3bd3ce"},
+]
 
 [package.dependencies]
-attrs = "^24.2.0"
-iso639-lang = "^2.2.3"
-
-[package.source]
-type = "git"
-url = "https://github.com/OasisAkari/langconv.py.git"
-reference = "HEAD"
-resolved_reference = "975ee0896096b63148f0930db762607a5a2113df"
+attrs = ">=23.2.0,<24.0.0"
+iso639-lang = ">=2.2.3,<3.0.0"
 
 [[package]]
 name = "langsmith"
@@ -4537,4 +4533,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "78bd3610a1b3fc1005ea68cf7bf4f181df6a14bc9cfacef8ede379835fc559c5"
+content-hash = "da8ebfb92146be8808b96bfbf4e259908ebfdd98702bac00070595d29010fda3"

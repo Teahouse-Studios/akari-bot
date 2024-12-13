@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 from datetime import datetime, UTC as datetimeUTC
 from typing import Any, Coroutine, Dict, List, Optional, Union
@@ -10,32 +8,29 @@ from core.builtins.message.internal import *
 from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
-from core.exports import exports
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
 from core.utils.i18n import Locale
 from core.utils.text import parse_time_string
+from core.exports import exports
 
 
 class ExecutionLockList:
-    """
-    执行锁。
-    """
     _list = set()
 
     @staticmethod
-    def add(msg: MessageSession):
+    def add(msg: 'MessageSession'):
         target_id = msg.target.sender_id
         ExecutionLockList._list.add(target_id)
 
     @staticmethod
-    def remove(msg: MessageSession):
+    def remove(msg: 'MessageSession'):
         target_id = msg.target.sender_id
         if target_id in ExecutionLockList._list:
             ExecutionLockList._list.remove(target_id)
 
     @staticmethod
-    def check(msg: MessageSession):
+    def check(msg: 'MessageSession'):
         target_id = msg.target.sender_id
         return target_id in ExecutionLockList._list
 
@@ -45,75 +40,66 @@ class ExecutionLockList:
 
 
 class MessageTaskManager:
-    """
-    消息计划管理器。
-    """
-    _task_list = {}
+    _list = {}
     _callback_list = {}
 
     @classmethod
-    def add_task(
-            cls,
-            session: MessageSession,
-            flag: asyncio.Event,
-            all_: bool = False,
-            reply: Optional[Union[List[int], List[str], int, str]] = None,
-            timeout: Optional[float] = 120):
+    def add_task(cls, session: 'MessageSession', flag, all_=False, reply=None, timeout=120):
         sender = session.target.sender_id
         task_type = 'reply' if reply else 'wait'
         if all_:
             sender = 'all'
 
-        if session.target.target_id not in cls._task_list:
-            cls._task_list[session.target.target_id] = {}
-        if sender not in cls._task_list[session.target.target_id]:
-            cls._task_list[session.target.target_id][sender] = {}
-        cls._task_list[session.target.target_id][sender][session] = {
+        if session.target.target_id not in cls._list:
+            cls._list[session.target.target_id] = {}
+        if sender not in cls._list[session.target.target_id]:
+            cls._list[session.target.target_id][sender] = {}
+        cls._list[session.target.target_id][sender][session] = {
             'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp(),
             'timeout': timeout}
-        Logger.debug(cls._task_list)
+        Logger.debug(cls._list)
 
     @classmethod
-    def add_callback(cls, message_id: Union[List[int], List[str], int, str], callback: Optional[Coroutine]):
+    def add_callback(cls, message_id, callback):
         cls._callback_list[message_id] = {'callback': callback, 'ts': datetime.now().timestamp()}
 
     @classmethod
-    def get_result(cls, session: MessageSession):
-        if 'result' in cls._task_list[session.target.target_id][session.target.sender_id][session]:
-            return cls._task_list[session.target.target_id][session.target.sender_id][session]['result']
+    def get_result(cls, session: 'MessageSession'):
+        if 'result' in cls._list[session.target.target_id][session.target.sender_id][session]:
+            return cls._list[session.target.target_id][session.target.sender_id][session]['result']
         else:
             return None
 
     @classmethod
     def get(cls):
-        return cls._task_list
+        return cls._list
 
     @classmethod
     async def bg_check(cls):
-        for target in cls._task_list:
-            for sender in cls._task_list[target]:
-                for session in cls._task_list[target][sender]:
-                    if cls._task_list[target][sender][session]['active']:
-                        if (datetime.now().timestamp() - cls._task_list[target][sender][session]['ts'] >
-                                cls._task_list[target][sender][session].get('timeout', 3600)):
-                            cls._task_list[target][sender][session]['active'] = False
-                            cls._task_list[target][sender][session]['flag'].set()  # no result = cancel
+        for target in cls._list:
+            for sender in cls._list[target]:
+                for session in cls._list[target][sender]:
+                    if cls._list[target][sender][session]['active']:
+                        if (datetime.now().timestamp() - cls._list[target][sender][session]['ts'] >
+                                cls._list[target][sender][session].get('timeout', 3600)):
+                            cls._list[target][sender][session]['active'] = False
+                            cls._list[target][sender][session]['flag'].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
             if datetime.now().timestamp() - cls._callback_list[message_id]['ts'] > 3600:
                 del cls._callback_list[message_id]
 
     @classmethod
-    async def check(cls, session: MessageSession):
-        if session.target.target_id in cls._task_list:
+    async def check(cls, session: 'MessageSession'):
+        if session.target.target_id in cls._list:
             senders = []
-            if session.target.sender_id in cls._task_list[session.target.target_id]:
+            if session.target.sender_id in cls._list[session.target.target_id]:
                 senders.append(session.target.sender_id)
-            if 'all' in cls._task_list[session.target.target_id]:
+            if 'all' in cls._list[session.target.target_id]:
                 senders.append('all')
             if senders:
                 for sender in senders:
-                    for s in cls._task_list[session.target.target_id][sender]:
-                        get_ = cls._task_list[session.target.target_id][sender][s]
+                    for s in cls._list[session.target.target_id][sender]:
+                        get_ = cls._list[session.target.target_id][sender][s]
                         if get_['type'] == 'wait':
                             get_['result'] = session
                             get_['active'] = False
@@ -158,18 +144,14 @@ class FinishedSession:
 
 
 class MessageSession:
-    """
-    消息会话。
-    """
-
     def __init__(self,
                  target: MsgInfo,
                  session: Session):
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
-        self.trigger_msg: Optional[str] = None
         self.parsed_msg: Optional[dict] = None
+        self.trigger_msg: Optional[str] = None
         self.prefixes: List[str] = []
         self.data = exports.get("BotDBUtil").TargetInfo(self.target.target_id)
         self.info = exports.get("BotDBUtil").SenderInfo(self.target.sender_id)
@@ -194,19 +176,18 @@ class MessageSession:
                            callback: Optional[Coroutine] = None) -> FinishedSession:
         """
         用于向消息发送者返回消息。
-
-        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链。
-        :param quote: 是否引用传入dict中的消息。（默认为True）
-        :param disable_secret_check: 是否禁用消息检查。（默认为False）
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅telegram平台使用，默认为True）
-        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
-        :return: 被发送的消息链。
+        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param quote: 是否引用传入dict中的消息（默认为True）
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅QQ平台使用）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用）
+        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
+        :return: 被发送的消息链
         """
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+                     message_chain: Union[MessageChain, str, list, MessageElement] = None,
                      quote: bool = True,
                      disable_secret_check: bool = False,
                      enable_parse_message: bool = True,
@@ -214,14 +195,13 @@ class MessageSession:
                      callback: Optional[Coroutine] = None):
         """
         用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
-
-        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链，可不填。
-        :param quote: 是否引用传入dict中的消息。（默认为True）
-        :param disable_secret_check: 是否禁用消息检查。（默认为False）
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅telegram平台使用，默认为True）
-        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
-        :return: 被发送的消息链。
+        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param quote: 是否引用传入dict中的消息（默认为True）
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅QQ平台使用）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用）
+        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
+        :return: 被发送的消息链
         """
         ...
         f = None
@@ -238,13 +218,12 @@ class MessageSession:
                                   callback: Optional[Coroutine] = None):
         """
         用于向消息发送者直接发送消息。
-
-        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链。
-        :param disable_secret_check: 是否禁用消息检查。（默认为False）
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅Telegram平台使用，默认为True）
-        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
-        :return: 被发送的消息链。
+        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅QQ平台使用）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅Telegram平台使用）
+        :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数
+        :return: 被发送的消息链
         """
         await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message,
                                 enable_split_image=enable_split_image, callback=callback)
@@ -252,17 +231,13 @@ class MessageSession:
     def as_display(self, text_only: bool = False) -> str:
         """
         用于将消息转换为一般文本格式。
-
-        :param text_only: 是否只保留纯文本。（默认为False）
-        :return: 转换后的字符串。
+        :param text_only: 是否只保留纯文本（默认为False）
         """
         raise NotImplementedError
 
     async def to_message_chain(self) -> MessageChain:
         """
         用于将session.message中的消息文本转换为MessageChain。
-
-        :return: MessageChain消息。
         """
         raise NotImplementedError
 
@@ -272,28 +247,26 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    async def check_native_permission(self) -> bool:
+    async def check_native_permission(self):
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
         """
         raise NotImplementedError
 
-    async def fake_forward_msg(self, nodelist: List[Dict[str, Union[str, Any]]]):
+    async def fake_forward_msg(self, nodelist):
         """
         用于发送假转发消息（QQ）。
-
-        :param nodelist: 消息段列表，即`type`键名为`node`的字典列表，详情参考OneBot文档。
         """
         raise NotImplementedError
 
-    async def get_text_channel_list(self) -> List[str]:
+    async def get_text_channel_list(self):
         """
         用于获取子文字频道列表（QQ）。
         """
         raise NotImplementedError
 
     class Typing:
-        def __init__(self, msg: MessageSession):
+        def __init__(self, msg: 'MessageSession'):
             """
             :param msg: 本条消息，由于此class需要被一同传入下游方便调用，所以作为子class存在，将来可能会有其他的解决办法。
             """
@@ -308,20 +281,19 @@ class MessageSession:
         raise NotImplementedError
 
     async def wait_confirm(self,
-                           message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+                           message_chain: Union[MessageChain, str, list, MessageElement] = None,
                            quote: bool = True,
                            delete: bool = True,
-                           timeout: Optional[float] = 120,
+                           timeout: int = 120,
                            append_instruction: bool = True) -> bool:
         """
         一次性模板，用于等待触发对象确认。
-
-        :param message_chain: 需要发送的确认消息，可不填。
-        :param quote: 是否引用传入dict中的消息。（默认为True）
-        :param delete: 是否在触发后删除消息。（默认为True）
-        :param timeout: 超时时间。（默认为120）
-        :param append_instruction: 是否在发送的消息中附加提示。
-        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False。
+        :param message_chain: 需要发送的确认消息，可不填
+        :param quote: 是否引用传入dict中的消息（默认为True）
+        :param delete: 是否在触发后删除消息（默认为True）
+        :param timeout: 超时时间
+        :param append_instruction: 是否在发送的消息中附加提示
+        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         send = None
         ExecutionLockList.remove(self)
@@ -351,20 +323,19 @@ class MessageSession:
             raise WaitCancelException
 
     async def wait_next_message(self,
-                                message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+                                message_chain: Union[MessageChain, str, list, MessageElement] = None,
                                 quote: bool = True,
                                 delete: bool = False,
-                                timeout: Optional[float] = 120,
-                                append_instruction: bool = True) -> MessageSession:
+                                timeout: int = 120,
+                                append_instruction: bool = True) -> 'MessageSession':
         """
         一次性模板，用于等待对象的下一条消息。
-
-        :param message_chain: 需要发送的确认消息，可不填。
-        :param quote: 是否引用传入dict中的消息。（默认为True）
-        :param delete: 是否在触发后删除消息。（默认为False）
-        :param timeout: 超时时间。（默认为120）
-        :param append_instruction: 是否在发送的消息中附加提示。
-        :return: 下一条消息的MessageChain对象。
+        :param message_chain: 需要发送的确认消息，可不填
+        :param quote: 是否引用传入dict中的消息（默认为True）
+        :param delete: 是否在触发后删除消息（默认为False）
+        :param timeout: 超时时间
+        :param append_instruction: 是否在发送的消息中附加提示
+        :return: 下一条消息的MessageChain对象
         """
         send = None
         ExecutionLockList.remove(self)
@@ -393,19 +364,18 @@ class MessageSession:
                          message_chain: Union[MessageChain, str, list, MessageElement],
                          quote: bool = True,
                          delete: bool = False,
-                         timeout: Optional[float] = 120,
+                         timeout: int = 120,
                          all_: bool = False,
-                         append_instruction: bool = True) -> MessageSession:
+                         append_instruction: bool = True) -> 'MessageSession':
         """
         一次性模板，用于等待触发对象回复消息。
-
-        :param message_chain: 需要发送的确认消息。
-        :param quote: 是否引用传入dict中的消息。（默认为True）
-        :param delete: 是否在触发后删除消息。（默认为False）
-        :param timeout: 超时时间。（默认为120）
-        :param all_: 是否设置触发对象为对象内的所有人。（默认为False）
-        :param append_instruction: 是否在发送的消息中附加提示。
-        :return: 回复消息的MessageChain对象。
+        :param message_chain: 需要发送的确认消息
+        :param quote: 是否引用传入dict中的消息（默认为True）
+        :param delete: 是否在触发后删除消息（默认为False）
+        :param timeout: 超时时间
+        :param all_: 是否设置触发对象为对象内的所有人（默认为False）
+        :param append_instruction: 是否在发送的消息中附加提示
+        :return: 回复消息的MessageChain对象
         """
         self.tmp['enforce_send_by_master_client'] = True
         send = None
@@ -431,18 +401,17 @@ class MessageSession:
             raise WaitCancelException
 
     async def wait_anyone(self,
-                          message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+                          message_chain: Union[MessageChain, str, list, MessageElement] = None,
                           quote: bool = False,
                           delete: bool = False,
-                          timeout: Optional[float] = 120) -> MessageSession:
+                          timeout: int = 120) -> 'MessageSession':
         """
         一次性模板，用于等待触发对象所属对话内任意成员确认。
-
-        :param message_chain: 需要发送的确认消息，可不填。
-        :param quote: 是否引用传入dict中的消息。（默认为False）
-        :param delete: 是否在触发后删除消息。（默认为False）
-        :param timeout: 超时时间。（默认为120）
-        :return: 任意人的MessageChain对象。
+        :param message_chain: 需要发送的确认消息，可不填
+        :param quote: 是否引用传入dict中的消息（默认为False）
+        :param delete: 是否在触发后删除消息（默认为False）
+        :param timeout: 超时时间
+        :return: 任意人的MessageChain对象
         """
         send = None
         ExecutionLockList.remove(self)
@@ -469,13 +438,13 @@ class MessageSession:
         ExecutionLockList.remove(self)
         await asyncio.sleep(s)
 
-    def check_super_user(self) -> bool:
+    def check_super_user(self):
         """
         用于检查消息发送者是否为超级用户。
         """
         return bool(self.info.is_super_user)
 
-    async def check_permission(self) -> bool:
+    async def check_permission(self):
         """
         用于检查消息发送者在对话内的权限。
         """
@@ -501,17 +470,15 @@ class MessageSession:
                     iso: bool = False,
                     time: bool = True,
                     seconds: bool = True,
-                    timezone: bool = True) -> str:
+                    timezone: bool = True):
         """
         用于将时间戳转换为可读的时间格式。
-
-        :param timestamp: UTC时间戳。
-        :param date: 是否显示日期。（默认为True）
-        :param iso: 是否以ISO格式显示。（默认为False）
-        :param time: 是否显示时间。（默认为True）
-        :param seconds: 是否显示秒。（默认为True）
-        :param timezone: 是否显示时区。（默认为True）
-        :return: 格式化后的时间格式。
+        :param timestamp: 时间戳（UTC时间）
+        :param date: 是否显示日期
+        :param iso: 是否以ISO格式显示
+        :param time: 是否显示时间
+        :param seconds: 是否显示秒
+        :param timezone: 是否显示时区
         """
         ftime_template = []
         if date:
@@ -538,7 +505,7 @@ class MessageSession:
 
     class Feature:
         """
-        此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断。
+        此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断。（如QQ支持消息类型的语音而Discord不支持）
         """
         image = False
         voice = False
@@ -553,10 +520,6 @@ class MessageSession:
 
 
 class FetchedSession:
-    """
-    获取消息会话。
-    """
-
     def __init__(self,
                  target_from: str,
                  target_id: Union[str, int],
@@ -583,12 +546,11 @@ class FetchedSession:
                                   enable_split_image: bool = True):
         """
         用于向获取对象发送消息。
-
-        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链。
-        :param disable_secret_check: 是否禁用消息检查。（默认为False）
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅Telegram平台使用，默认为True）
-        :return: 被发送的消息链。
+        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :param enable_parse_message: 是否允许解析消息（此参数作接口兼容用，仅QQ平台使用）
+        :param enable_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅Telegram平台使用）
+        :return: 被发送的消息链
         """
         return await self.parent.send_direct_message(message_chain, disable_secret_check,
                                                      enable_parse_message=enable_parse_message,
@@ -598,9 +560,6 @@ class FetchedSession:
 
 
 class FetchTarget:
-    """
-    获取消息会话对象。
-    """
     name = ''
 
     @staticmethod
@@ -625,11 +584,10 @@ class FetchTarget:
                            **kwargs: Dict[str, Any]):
         """
         尝试向开启此模块的对象发送一条消息。
-
-        :param module_name: 模块名称。
-        :param message: 消息文本。
-        :param user_list: 用户列表。
-        :param i18n: 是否使用i18n。若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
+        :param module_name: 模块名
+        :param message: 消息文本
+        :param user_list: 用户列表
+        :param i18n: 是否使用i18n，若为True则message为i18n的key（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
 
@@ -639,11 +597,10 @@ class FetchTarget:
                                   i18n: bool = False,
                                   **kwargs):
         """
-        尝试向客户端内的任意对象发送一条消息。
-
-        :param message: 消息文本。
-        :param user_list: 用户列表。
-        :param i18n: 是否使用i18n，若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
+        尝试向所有对象发送一条消息。
+        :param message: 消息文本
+        :param user_list: 用户列表
+        :param i18n: 是否使用i18n，若为True则message为i18n的key（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
 

@@ -44,18 +44,18 @@ def private_ip_check(url: str):
 
 
 async def get_url(url: str,
-                  status_code: int = 200,
+                  status_code: int = False,
                   headers: Optional[Dict[str, Any]] = None,
                   params: Optional[Dict[str, Any]] = None,
                   fmt: Optional[str] = None,
-                  timeout: Optional[float] = 20,
+                  timeout: int = 20,
                   attempt: int = 3,
                   request_private_ip: bool = False,
                   logging_err_resp: bool = True,
                   cookies: Optional[Dict[str, Any]] = None) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
-    '''利用AioHttp获取指定URL的内容。
+    """利用AioHttp获取指定url的内容。
 
-    :param url: 需要获取的URL。
+    :param url: 需要获取的url。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
     :param headers: 请求时使用的http头。
     :param params: 请求时使用的参数。
@@ -65,8 +65,8 @@ async def get_url(url: str,
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的cookies。
-    :returns: 指定URL的内容。（字符串）
-    '''
+    :returns: 指定url的内容（字符串）。
+    """
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def get_():
@@ -113,17 +113,17 @@ async def get_url(url: str,
 
 async def post_url(url: str,
                    data: Any = None,
-                   status_code: int = 200,
+                   status_code: int = False,
                    headers: Optional[Dict[str, Any]] = None,
                    fmt: Optional[str] = None,
-                   timeout: Optional[float] = 20,
+                   timeout: int = 20,
                    attempt: int = 3,
                    request_private_ip: bool = False,
                    logging_err_resp: bool = True,
                    cookies: Optional[Dict[str, Any]] = None) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
     '''利用AioHttp发送POST请求。
 
-    :param url: 需要发送的URL。
+    :param url: 需要发送的url。
     :param data: 需要发送的数据。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
     :param headers: 请求时使用的http头。
@@ -133,8 +133,7 @@ async def post_url(url: str,
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
     :param cookies: 使用的 cookies。
-    :returns: 指定URL的内容。（字符串）
-    '''
+    :returns: 指定url的内容（字符串）。'''
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _post():
@@ -182,17 +181,17 @@ async def post_url(url: str,
 async def download(url: str,
                    filename: Optional[str] = None,
                    path: Optional[str] = None,
-                   status_code: int = 200,
+                   status_code: int = False,
                    method: str = "GET",
                    post_data: Any = None,
                    headers: Optional[Dict[str, Any]] = None,
-                   timeout: Optional[float] = 20,
+                   timeout: int = 20,
                    attempt: int = 3,
                    request_private_ip: bool = False,
                    logging_err_resp: bool = True) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到指定目录。
 
-    :param url: 需要获取的URL。
+    :param url: 需要获取的url。
     :param filename: 指定保存的文件名，默认为随机文件名。
     :param path: 指定目录，默认为缓存目录。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。

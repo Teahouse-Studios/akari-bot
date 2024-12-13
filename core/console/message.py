@@ -1,10 +1,10 @@
 import asyncio
-from typing import Union
+from typing import List, Union
 
-from PIL import Image as PILImage
 from inputimeout import inputimeout, TimeoutOccurred
+from PIL import Image as PILImage
 
-from core.builtins import (Plain, I18NContext, confirm_command, Bot, FetchTarget as FetchTargetT,
+from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT, FinishedSession as FinS)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
@@ -30,7 +30,7 @@ class MessageSession(MessageSessionT):
         embed = False
         forward = False
         delete = False
-        markdown = False
+        markdown = True
         quote = False
         rss = True
         typing = True
@@ -195,7 +195,6 @@ class FetchedSession(FetchedSessionT):
     async def send_message(self, message_chain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
-
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链

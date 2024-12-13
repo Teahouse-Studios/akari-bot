@@ -1,27 +1,25 @@
-from __future__ import annotations
-
 import base64
 import os
-import random
 import re
 from datetime import datetime, timezone
-from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
+from typing import Tuple, Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
 import aiohttp
-from PIL import Image as PILImage
 from attrs import define
+from cattrs import structure
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
 from core.config import Config
 from core.constants import bug_report_url_default
-from core.constants.info import Info
 from core.joke import joke
+from core.constants.info import Info
+from PIL import Image as PILImage
+
+import random
 from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
-
-from copy import deepcopy
 
 if TYPE_CHECKING:
     from core.builtins import MessageSession
@@ -38,40 +36,42 @@ class MessageElement:
 class PlainElement(MessageElement):
     """
     文本元素。
-
-    :param text: 文本。
+    :param text: 文本
     """
     text: str
 
     @classmethod
-    def assign(cls,
-               *texts: Any,
+    def assign(cls, text: str,
+               *texts: Tuple[str],
                disable_joke: bool = False):
         """
-        :param texts: 文本内容。
-        :param disable_joke: 是否禁用玩笑功能。（默认为False）
+        :param text: 文本内容
+        :param texts: 额外的文本内容
+        :param disable_joke: 是否禁用愚人节功能
         """
-        text = ''.join([str(x) for x in texts])
+        text = str(text)
+        for t in texts:
+            text += str(t)
         if not disable_joke:
             text = joke(text)
-        return deepcopy(cls(text=text))
+        return cls(text=text)
 
 
 @define
 class URLElement(MessageElement):
     """
     URL元素。
-
-    :param url: URL。
+    :param url: URL
     """
     url: str
     md_format = Info.use_url_md_format
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool = False):
+    def assign(cls, url: str, use_mm: bool = True):
         """
-        :param url: URL。
-        :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为False）
+        :param url: URL
+        :param use_mm: 是否使用链接跳板，覆盖全局设置
+        :param disable_mm: 是否禁用链接跳板，覆盖全局设置
         """
         if Info.use_url_manager and use_mm:
             mm_url = 'https://mm.teahouse.team/?source=akaribot&rot13=%s'
@@ -80,7 +80,7 @@ class URLElement(MessageElement):
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
-        return deepcopy(cls(url=url))
+        return cls(url=url)
 
     def __str__(self):
         if self.md_format:
@@ -92,8 +92,6 @@ class URLElement(MessageElement):
 class FormattedTimeElement(MessageElement):
     """
     格式化时间消息。
-
-    :param timestamp: UTC时间戳。
     """
     timestamp: float
     date: bool = True
@@ -102,7 +100,7 @@ class FormattedTimeElement(MessageElement):
     seconds: bool = True
     timezone: bool = True
 
-    def to_str(self, msg: Optional[MessageSession] = None):
+    def to_str(self, msg: Optional['MessageSession'] = None):
         ftime_template = []
         if msg:
             if self.date:
@@ -142,14 +140,14 @@ class FormattedTimeElement(MessageElement):
                seconds: bool = True,
                timezone: bool = True):
         """
-        :param timestamp: UTC时间戳。
-        :param date: 是否显示日期。（默认为True）
-        :param iso: 是否以ISO格式显示。（默认为False）
-        :param time: 是否显示时间。（默认为True）
-        :param seconds: 是否显示秒。（默认为True）
-        :param timezone: 是否显示时区。（默认为True）
+        :param timestamp: 时间戳（UTC时间）
+        :param date: 是否显示日期
+        :param iso: 是否以ISO格式显示
+        :param time: 是否显示时间
+        :param seconds: 是否显示秒
+        :param timezone: 是否显示时区
         """
-        return deepcopy(cls(timestamp=timestamp, date=date, iso=iso, time=time, seconds=seconds, timezone=timezone))
+        return cls(timestamp=timestamp, date=date, iso=iso, time=time, seconds=seconds, timezone=timezone)
 
 
 @define
@@ -165,18 +163,17 @@ class I18NContextElement(MessageElement):
                key: str,
                **kwargs: Any):
         """
-        :param key: 多语言的键名。
-        :param kwargs: 多语言中的变量。
+        :param key: 多语言的键名
+        :param kwargs: 多语言中的变量
         """
-        return deepcopy(cls(key=key, kwargs=kwargs))
+        return cls(key=key, kwargs=kwargs)
 
 
 @define
 class ErrorMessageElement(MessageElement):
     """
     错误消息。
-
-    :param error_message: 错误信息文本。
+    :param error_message: 错误文本
     """
     error_message: str
 
@@ -187,10 +184,10 @@ class ErrorMessageElement(MessageElement):
                enable_report: bool = True,
                **kwargs: Dict[str, Any]):
         """
-        :param error_message: 错误信息文本。
-        :param locale: 多语言。
-        :param enable_report: 是否添加错误汇报部分。（默认为True）
-        :param kwargs: 多语言中的变量。
+        :param error_message: 错误信息文本
+        :param locale: 多语言
+        :param enable_report: 是否添加错误汇报部分
+        :param kwargs: 多语言中的变量
         """
 
         if locale:
@@ -207,7 +204,7 @@ class ErrorMessageElement(MessageElement):
                 error_message += '\n' + \
                     locale.t('error.prompt.address', url=str(report_url))
 
-        return deepcopy(cls(error_message))
+        return cls(error_message)
 
     def __str__(self):
         return self.error_message
@@ -217,8 +214,7 @@ class ErrorMessageElement(MessageElement):
 class ImageElement(MessageElement):
     """
     图片消息。
-
-    :param path: 图片路径。
+    :param path: 图片路径
     """
     path: str
     need_get: bool = False
@@ -228,8 +224,8 @@ class ImageElement(MessageElement):
     def assign(cls, path: Union[str, PILImage.Image],
                headers: Optional[Dict[str, Any]] = None):
         """
-        :param path: 图片路径。
-        :param headers: 获取图片时的请求头。
+        :param path: 图片路径
+        :param headers: 获取图片时的请求头
         """
         need_get = False
         if isinstance(path, PILImage.Image):
@@ -238,7 +234,7 @@ class ImageElement(MessageElement):
             path = save
         elif re.match('^https?://.*', path):
             need_get = True
-        return deepcopy(cls(path, need_get, headers))
+        return cls(path, need_get, headers)
 
     async def get(self):
         """
@@ -288,27 +284,25 @@ class ImageElement(MessageElement):
 class VoiceElement(MessageElement):
     """
     语音消息。
-
-    :param path: 语音路径。
+    :param path: 语音路径
     """
     path: str
 
     @classmethod
     def assign(cls, path: str):
         """
-        :param path: 语音路径。
+        :param path: 语音路径
         """
-        return deepcopy(cls(path))
+        return cls(path)
 
 
 @define
 class EmbedFieldElement(MessageElement):
     """
     Embed字段。
-
-    :param name: 字段名。
-    :param value: 字段值。
-    :param inline: 是否内联。（默认为False）
+    :param name: 字段名
+    :param value: 字段值
+    :param inline: 是否内联
     """
     name: str
     value: str
@@ -317,25 +311,25 @@ class EmbedFieldElement(MessageElement):
     @classmethod
     def assign(cls, name: str, value: str, inline: bool = False):
         """
-        :param name: 字段名。
-        :param value: 字段值。
-        :param inline: 是否内联。（默认为False）
+        :param name: 字段名
+        :param value: 字段值
+        :param inline: 是否内联
         """
-        return deepcopy(cls(name=name, value=value, inline=inline))
+        return cls(name=name, value=value, inline=inline)
 
 
 @define
 class EmbedElement(MessageElement):
     """
     Embed消息。
-    :param title: 标题。
-    :param description: 描述。
-    :param color: 颜色。
-    :param fields: 字段。
-    :param image: 图片。
-    :param thumbnail: 缩略图。
-    :param author: 作者。
-    :param footer: 页脚。
+    :param title: 标题
+    :param description: 描述
+    :param color: 颜色
+    :param fields: 字段
+    :param image: 图片
+    :param thumbnail: 缩略图
+    :param author: 作者
+    :param footer: 页脚
     """
     title: Optional[str] = None,
     description: Optional[str] = None,
@@ -346,7 +340,7 @@ class EmbedElement(MessageElement):
     thumbnail: Optional[ImageElement] = None,
     author: Optional[str] = None,
     footer: Optional[str] = None,
-    fields: Optional[List[EmbedFieldElement]] = None
+    fields: List[EmbedFieldElement] = None
 
     @classmethod
     def assign(cls, title: Optional[str] = None,
@@ -358,8 +352,17 @@ class EmbedElement(MessageElement):
                thumbnail: Optional[ImageElement] = None,
                author: Optional[str] = None,
                footer: Optional[str] = None,
-               fields: Optional[List[EmbedFieldElement]] = None):
-        return deepcopy(cls(
+               fields: List[EmbedFieldElement] = None):
+        fields_ = []
+        if fields:
+            for f in fields:
+                if isinstance(f, EmbedFieldElement):
+                    fields_.append(f)
+                elif isinstance(f, dict):
+                    fields_.append(structure(f, EmbedFieldElement))
+                else:
+                    raise TypeError(f"Invalid type {type(f)} for EmbedField.")
+        return cls(
             title=title,
             description=description,
             url=url,
@@ -369,9 +372,9 @@ class EmbedElement(MessageElement):
             thumbnail=thumbnail,
             author=author,
             footer=footer,
-            fields=fields))
+            fields=fields_)
 
-    def to_message_chain(self, msg: Optional[MessageSession] = None):
+    def to_message_chain(self, msg: Optional['MessageSession'] = None):
         """
         将Embed转换为消息链。
         """

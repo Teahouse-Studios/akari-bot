@@ -1,6 +1,6 @@
 import asyncio
-import datetime
 import traceback
+import datetime
 from uuid import uuid4
 
 import orjson as json
@@ -71,11 +71,10 @@ class JobQueue:
             await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
 
     @classmethod
-    async def web_render_status(cls):
-        web_render_status, web_render_local_status = await check_web_render()
+    async def web_render_status(cls, web_render_status: bool, web_render_local_status: bool):
         for target in get_all_clients_name():
             await cls.add_job(target, 'web_render_status', {'web_render_status': web_render_status,
-                                                            'web_render_local_status': web_render_local_status}, wait=False)
+                                                          'web_render_local_status': web_render_local_status})
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):

@@ -7,7 +7,7 @@ from core.builtins import Bot
 from core.constants.path import noto_sans_demilight_path, noto_sans_symbol_path
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import mai_cover_path, rate_mapping, combo_mapping, sync_mapping, diff_list
-from .maimaidx_music import TotalList
+from .maimaidx_music import get_cover_len5_id, TotalList
 from .maimaidx_utils import compute_rating, calc_dxstar
 
 total_list = TotalList()
@@ -19,7 +19,7 @@ class ChartInfo:
         self.idNum = idNum
         self.diff = diff
         self.tp = tp
-        self.ra = compute_rating(ds, achievement)
+        self.ra = compute_rating(ds, achievement),
         self.achievement = achievement
         self.dxScore = dxScore
         self.dxScoreMax = dxScoreMax
@@ -146,9 +146,9 @@ class DrawBest:
             i = num // 5
             j = num % 5
             chartInfo = sdBest[num]
-            pngPath = os.path.join(mai_cover_path, f'{chartInfo.idNum}.png')
+            pngPath = os.path.join(mai_cover_path, f'{get_cover_len5_id(chartInfo.idNum)}.png')
             if not os.path.exists(pngPath):
-                pngPath = os.path.join(mai_cover_path, '0.png')
+                pngPath = os.path.join(mai_cover_path, '01000.png')
 
             if os.path.exists(pngPath):
                 temp = Image.open(pngPath).convert('RGB')
@@ -198,9 +198,9 @@ class DrawBest:
             i = num // 5
             j = num % 5
             chartInfo = dxBest[num]
-            pngPath = os.path.join(mai_cover_path, f'{chartInfo.idNum}.png')
+            pngPath = os.path.join(mai_cover_path, f'{get_cover_len5_id(chartInfo.idNum)}.png')
             if not os.path.exists(pngPath):
-                pngPath = os.path.join(mai_cover_path, '0.png')
+                pngPath = os.path.join(mai_cover_path, '01000.png')
 
             if os.path.exists(pngPath):
                 temp = Image.open(pngPath).convert('RGB')
