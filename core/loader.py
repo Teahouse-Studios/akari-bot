@@ -145,15 +145,13 @@ class ModulesManager:
             if not include_self:
                 modules.remove(module)
             return modules
-        else:
-            raise ValueError(f'Could not find "{module}" in modules_origin dict')
+        raise ValueError(f'Could not find "{module}" in modules_origin dict')
 
     @classmethod
     def return_py_module(cls, module):
         if module in cls.modules_origin:
             return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', cls.modules_origin[module]).group()
-        else:
-            return None
+        return None
 
     @classmethod
     def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta]):

@@ -51,8 +51,7 @@ class BotDBUtil:
                 session.add_all([TargetInfoTable(targetId=self.target_id)])
                 session.commit()
                 return self.query_data
-            else:
-                return self.query
+            return self.query
 
         @property
         def enabled_modules(self) -> list:
@@ -123,13 +122,11 @@ class BotDBUtil:
             if not self.query:
                 if not k:
                     return {}
-                else:
-                    return default
+                return default
             else:
                 if not k:
                     return self.options
-                else:
-                    return self.options.get(k, default)
+                return self.options.get(k, default)
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -225,8 +222,7 @@ class BotDBUtil:
                 session.add_all([SenderInfo(id=self.sender_id)])
                 session.commit()
                 return self.query_SenderInfo
-            else:
-                return self.query
+            return self.query
 
         @property
         def is_in_block_list(self):
@@ -334,8 +330,7 @@ class BotDBUtil:
                 session.delete(entry)
                 session.commit()
                 return True
-            else:
-                return False
+            return False
 
     class Data:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):

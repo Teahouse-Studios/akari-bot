@@ -43,8 +43,7 @@ class JobQueue:
             result = _queue_tasks[taskid]['result']
             del _queue_tasks[taskid]
             return result
-        else:
-            return taskid
+        return taskid
 
     @classmethod
     async def validate_permission(cls, target_client: str, target_id: str, sender_id: str):

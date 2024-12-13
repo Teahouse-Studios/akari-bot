@@ -80,8 +80,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     if not st:
         return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}\n{
             msg.locale.t("wiki.message.utils.redacted")}'
-    else:
-        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}'
+    return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}'
 
 
 def compare_groups(old_groups, new_groups):

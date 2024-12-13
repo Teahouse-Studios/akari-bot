@@ -12,8 +12,7 @@ def get_stored_list(bot: Union['FetchTarget', str], name: str) -> list:
     get = BotDBUtil.Data(bot).get(name=name)
     if not get:
         return []
-    else:
-        return json.loads(get.value)
+    return json.loads(get.value)
 
 
 def update_stored_list(bot: Union['FetchTarget', str], name: str, value: list):
