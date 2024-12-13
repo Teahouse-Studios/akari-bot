@@ -107,7 +107,6 @@ class MessageSession(MessageSessionT):
                                 "is_falling_back": False,
                                 "m.in_reply_to": {"event_id": reply_to},
                             }
-                            pass
                         else:
                             # reply in thread
                             content["m.relates_to"] = {
@@ -319,11 +318,9 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             await bot.room_typing(self.msg.session.target, True)
-            pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             await bot.room_typing(self.msg.session.target, False)
-            pass
 
 
 class FetchedSession(Bot.FetchedSession):
