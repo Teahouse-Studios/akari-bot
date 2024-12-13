@@ -147,12 +147,11 @@ def run_bot():
             if p.exitcode == 233:
                 Logger.warning(f'{p.pid} ({p.name}) exited with code 233, restart all bots.')
                 raise RestartBot
-            else:
-                Logger.critical(f'Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.')
-                processes.remove(p)
-                p.terminate()
-                p.join()
-                restart_process(p.name)
+            Logger.critical(f'Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log.')
+            processes.remove(p)
+            p.terminate()
+            p.join()
+            restart_process(p.name)
             break
 
         if not processes:

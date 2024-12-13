@@ -173,8 +173,7 @@ async def get_song_record(msg: Bot.MessageSession, payload: dict, sid: Union[str
         except Exception as e:
             if str(e).startswith('400'):
                 raise ConfigValueError(msg.locale.t('error.config.invalid'))
-            else:
-                Logger.error(traceback.format_exc())
+            Logger.error(traceback.format_exc())
             if use_cache and os.path.exists(cache_dir):
                 try:
                     with open(cache_dir, 'r', encoding='utf-8') as f:

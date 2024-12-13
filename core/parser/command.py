@@ -90,9 +90,8 @@ class CommandParser:
                         if len(arg.args) == 1 and isinstance(arg.args[0], DescPattern):
                             return self.args[arg]['meta'], None
                     raise InvalidCommandFormatError
-                else:
-                    base_match = parse_argv(split_command[1:], [args for args in self.args if args != ''])
-                    return self.args[base_match.original_template]['meta'], base_match.args
+                base_match = parse_argv(split_command[1:], [args for args in self.args if args != ''])
+                return self.args[base_match.original_template]['meta'], base_match.args
 
         except InvalidCommandFormatError:
             traceback.print_exc()
