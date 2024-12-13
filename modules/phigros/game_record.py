@@ -27,7 +27,7 @@ def parse_game_record(file_path):
     with open(file_path, 'rb+') as rd:
         data = decrypt_bytes(rd.read())
         pos = int(data[0] < 0) + 1
-        while (pos < len(data)):
+        while pos < len(data):
             name_length = data[pos]
             pos += 1
             if name_length == 1:

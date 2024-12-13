@@ -118,7 +118,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
 def is_move_left(board: GameBoard):
     for i in range(3):
         for j in range(3):
-            if (board[i][j] == 0):
+            if board[i][j] == 0:
                 return True
     return False
 
@@ -134,17 +134,17 @@ def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
     player = 2
     opponent = 1
 
-    if (score == 10):
+    if score == 10:
         return score
 
-    if (score == -10):
+    if score == -10:
         return score
 
-    if (not is_move_left(board)):
+    if not is_move_left(board):
         return 0
 
     # If this maximizer's move
-    if (is_max):
+    if is_max:
         best = -1000
 
         # Traverse all cells
@@ -152,7 +152,7 @@ def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
             for j in range(3):
 
                 # Check if cell is empty
-                if (board[i][j] == 0):
+                if board[i][j] == 0:
 
                     # Make the move
                     board[i][j] = player
@@ -176,7 +176,7 @@ def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
             for j in range(3):
 
                 # Check if cell is empty
-                if (board[i][j] == 0):
+                if board[i][j] == 0:
 
                     # Make the move
                     board[i][j] = opponent
@@ -203,7 +203,7 @@ def find_best_move(board, worst=False):
         for j in range(3):
 
             # Check if cell is empty
-            if (board[i][j] == 0):
+            if board[i][j] == 0:
 
                 # Make the move
                 board[i][j] = player
@@ -217,7 +217,7 @@ def find_best_move(board, worst=False):
                 # If the value of the current move is
                 # more than the best value, then update
                 # best/
-                if (move_val > best_val):
+                if move_val > best_val:
                     best_move = (i, j)
                     best_val = move_val
 

@@ -75,7 +75,7 @@ class BestList:
         self.data.append(elem)
         self.data.sort()
         self.data.reverse()
-        while (len(self.data) > self.size):
+        while len(self.data) > self.size:
             del self.data[-1]
 
     def pop(self):
