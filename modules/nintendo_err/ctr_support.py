@@ -78,7 +78,7 @@ internet = Module('internet', {
 
 # Yet another nim hack. Why does this category have so many redundant errors?
 NIM_4069 = ResultInfo('这个错误可能会在eShop不可用时出现。如果此问题一直出现，则可能你需要为主机更换一张内存卡。',
-                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14413'),
+                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14413')
 
 # 005: nim
 nim = Module('nim', {
