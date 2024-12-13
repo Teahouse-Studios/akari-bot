@@ -10,7 +10,7 @@ web_render = Config('web_render', secret=True, get_url=True)
 web_render_local = Config('web_render_local', get_url=True)
 
 
-def webrender(method: str = 'source', url: Optional[str] = None, use_local: bool = True, _ignore_status=False) -> str:
+def webrender(method: str = '', url: Optional[str] = None, use_local: bool = True, _ignore_status=False) -> str:
     '''根据请求方法生成 WebRender URL。
 
     :param method: API 方法。
