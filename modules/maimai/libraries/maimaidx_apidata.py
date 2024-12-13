@@ -34,9 +34,8 @@ async def update_cover() -> bool:
                     if Config('debug', False):
                         Logger.error(f'Failed to download {get_cover_len5_id(id)}.png')
                     continue
-                else:
-                    Logger.error(traceback.format_exc())
-                    return False
+                Logger.error(traceback.format_exc())
+                return False
     return True
 
 
