@@ -21,7 +21,7 @@ async def ab_qq(msg: MessageSession, wiki_url):
         }
     }]
 
-    ablist = await convert_ab_to_detailed_format(query["query"]["abuselog"], wiki.wiki_info, msg)
+    ablist = await convert_ab_to_detailed_format(query["query"]["abuselog"], wiki.wiki_info)
     for x in ablist:
         nodelist.append(
             {
