@@ -36,5 +36,9 @@
   "wikilog.help.rcshow.reset": "重置最近更改日志设置的筛选条件。",
   "wikilog.help.list": "列出所有已设置的内容。",
   "wikilog.help.api.get": "获取指定 Wiki 的指定 API 数据链接。",
-  "wikilog.message.untrust.wiki": "Failed: This wiki is not currently exist in whitelist."
+  "wikilog.help.keepalive.enable": "启用机器人登录状态检查。",
+  "wikilog.help.keepalive.disable": "禁用机器人登录状态检查。",
+  "wikilog.message.untrust.wiki": "Failed: This wiki is not currently exist in whitelist.",
+  "wikilog.message.keepalive.logged.as": "[Keep alive] 以 ${name} 的身份登录：${wiki}",
+  "wikilog.message.keepalive.failed": "[Keep alive] 登录状态检查失败：${link}"
 }
