@@ -106,8 +106,7 @@ Please input the number of the language you want to use: """)
         if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
-        else:
-            print('Invalid input, please try again.')
+        print('Invalid input, please try again.')
 
     generate_config(config_path, lang)
 
