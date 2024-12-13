@@ -236,7 +236,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
                 if matched[id_][wiki]['AbuseLog']:
-                    ab = await convert_ab_to_detailed_format(matched[id_][wiki]['AbuseLog'], wiki_info, ft.parent)
+                    ab = await convert_ab_to_detailed_format(matched[id_][wiki]['AbuseLog'], ft.parent)
                     for x in ab:
                         await ft.send_direct_message(f'{wiki_info.name}\n{x}' if len(matched[id_]) > 1 else x)
                 if matched[id_][wiki]['RecentChanges']:
