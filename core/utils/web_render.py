@@ -23,13 +23,11 @@ def webrender(method: str = '', url: str = '', use_local: bool = True) -> Union[
     if method == 'source':
         if Info.web_render_status:
             return f'{(web_render_local if use_local else web_render)}source?url={url}'
-        else:
-            return url
+        return url
     else:
         if Info.web_render_status:
             return (web_render_local if use_local else web_render) + method
-        else:
-            return None
+        return None
 
 
 async def check_web_render():

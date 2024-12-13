@@ -88,5 +88,4 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
     img = await msgchain2image([Plain(html)])
     if img:
         return img
-    else:
-        await msg.finish(msg.locale.t("error.config.webrender.invalid"))
+    await msg.finish(msg.locale.t("error.config.webrender.invalid"))

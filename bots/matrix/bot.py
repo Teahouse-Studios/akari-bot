@@ -74,7 +74,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
             relType = relatesTo['rel_type']
             if relType == 'm.replace':  # skip edited message
                 return
-            elif relType == 'm.thread':  # reply in thread
+            if relType == 'm.thread':  # reply in thread
                 # https://spec.matrix.org/v1.9/client-server-api/#fallback-for-unthreaded-clients
                 if 'is_falling_back' in relatesTo and relatesTo['is_falling_back']:
                     # we regard thread roots as reply target rather than last message in threads

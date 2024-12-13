@@ -17,14 +17,13 @@ def qq_frame_type() -> str:
 
     if frame_type in ntqq_lst:
         return 'ntqq'
-    elif frame_type in lagrange_lst:
+    if frame_type in lagrange_lst:
         return 'lagrange'
-    elif frame_type in shamrock_lst:
+    if frame_type in shamrock_lst:
         return 'shamrock'
-    elif frame_type in mirai_lst:
+    if frame_type in mirai_lst:
         return 'mirai'
-    else:
-        return ''
+    return ''
 
 
 class CQCodeHandler:
@@ -56,8 +55,7 @@ class CQCodeHandler:
                          for key, value in params.items()]
             cq_code = f"[CQ:{cq_type}," + ",".join(param_str) + "]"
             return cq_code
-        else:
-            return None
+        return None
 
     @staticmethod
     def parse_cq(cq_code: str) -> Optional[Dict[str, Union[str, Dict[str, Any]]]]:

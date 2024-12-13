@@ -31,16 +31,15 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
             msg.info.modify_petal(amount)
             update_stored_list(msg.target.client_name, 'gainedpetal', p)
             return msg.locale.t('petal.message.gained.success', amount=amount)
-        else:
-            if limit > 0:
-                if p[msg.target.sender_id]['amount'] >= limit:
-                    return msg.locale.t('petal.message.gained.limit')
-                elif p[msg.target.sender_id]['amount'] + amount > limit:
-                    amount = limit - p[msg.target.sender_id]['amount']
-            p[msg.target.sender_id]['amount'] += amount
-            p = [p]
-            msg.info.modify_petal(amount)
-            update_stored_list(msg.target.client_name, 'gainedpetal', p)
+        if limit > 0:
+            if p[msg.target.sender_id]['amount'] >= limit:
+                return msg.locale.t('petal.message.gained.limit')
+            if p[msg.target.sender_id]['amount'] + amount > limit:
+                amount = limit - p[msg.target.sender_id]['amount']
+        p[msg.target.sender_id]['amount'] += amount
+        p = [p]
+        msg.info.modify_petal(amount)
+        update_stored_list(msg.target.client_name, 'gainedpetal', p)
         return msg.locale.t('petal.message.gained.success', amount=amount)
 
 
@@ -70,16 +69,15 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
             msg.info.modify_petal(-amount)
             update_stored_list(msg.target.client_name, 'lostpetal', p)
             return msg.locale.t('petal.message.lost.success', amount=amount)
-        else:
-            if limit > 0:
-                if p[msg.target.sender_id]['amount'] >= limit:
-                    return msg.locale.t('petal.message.lost.limit')
-                elif p[msg.target.sender_id]['amount'] + amount > limit:
-                    amount = limit - p[msg.target.sender_id]['amount']
-            p[msg.target.sender_id]['amount'] += amount
-            p = [p]
-            msg.info.modify_petal(-amount)
-            update_stored_list(msg.target.client_name, 'lostpetal', p)
+        if limit > 0:
+            if p[msg.target.sender_id]['amount'] >= limit:
+                return msg.locale.t('petal.message.lost.limit')
+            if p[msg.target.sender_id]['amount'] + amount > limit:
+                amount = limit - p[msg.target.sender_id]['amount']
+        p[msg.target.sender_id]['amount'] += amount
+        p = [p]
+        msg.info.modify_petal(-amount)
+        update_stored_list(msg.target.client_name, 'lostpetal', p)
         return msg.locale.t('petal.message.lost.success', amount=amount)
 
 
@@ -94,8 +92,7 @@ async def cost_petal(msg: Bot.MessageSession, amount: int) -> bool:
         if amount > msg.petal:
             await msg.send_message(msg.locale.t('petal.message.cost.not_enough'))
             return False
-        else:
-            msg.info.modify_petal(-amount)
-            return True
+        msg.info.modify_petal(-amount)
+        return True
     else:
         return True

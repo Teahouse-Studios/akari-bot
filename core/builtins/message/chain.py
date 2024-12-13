@@ -249,18 +249,16 @@ class MessageChain:
     def __add__(self, other):
         if isinstance(other, MessageChain):
             return MessageChain(self.value + other.value)
-        elif isinstance(other, list):
+        if isinstance(other, list):
             return MessageChain(self.value + other)
-        else:
-            raise TypeError(f"Unsupported operand type(s) for +: 'MessageChain' and '{type(other).__name__}'")
+        raise TypeError(f"Unsupported operand type(s) for +: 'MessageChain' and '{type(other).__name__}'")
 
     def __radd__(self, other):
         if isinstance(other, MessageChain):
             return MessageChain(other.value + self.value)
-        elif isinstance(other, list):
+        if isinstance(other, list):
             return MessageChain(other + self.value)
-        else:
-            raise TypeError(f"Unsupported operand type(s) for +: '{type(other).__name__}' and 'MessageChain'")
+        raise TypeError(f"Unsupported operand type(s) for +: '{type(other).__name__}' and 'MessageChain'")
 
     def __iadd__(self, other):
         if isinstance(other, MessageChain):

@@ -96,8 +96,7 @@ async def get_url(url: str,
                     if fmt:
                         if hasattr(req, fmt):
                             return await getattr(req, fmt)()
-                        else:
-                            raise ValueError(f"NoSuchMethod: {fmt}")
+                        raise ValueError(f"NoSuchMethod: {fmt}")
                     else:
                         text = await req.text()
                         return text
@@ -163,8 +162,7 @@ async def post_url(url: str,
                     if fmt:
                         if hasattr(req, fmt):
                             return await getattr(req, fmt)()
-                        else:
-                            raise ValueError(f"NoSuchMethod: {fmt}")
+                        raise ValueError(f"NoSuchMethod: {fmt}")
                     else:
                         text = await req.text()
                         return text

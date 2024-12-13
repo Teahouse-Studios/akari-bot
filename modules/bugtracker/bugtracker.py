@@ -19,7 +19,7 @@ async def make_screenshot(page_link, use_local=True):
     elements_ = elements.copy()
     if not Info.web_render_status:
         return False
-    elif not Info.web_render_local_status:
+    if not Info.web_render_local_status:
         use_local = False
     Logger.info('[WebRender] Generating element screenshot...')
     try:
@@ -44,14 +44,12 @@ async def make_screenshot(page_link, use_local=True):
                 bimg = PILImage.open(bio)
                 img_lst.append(bimg)
             return img_lst
-        else:
-            Logger.info('[WebRender] Generation Failed.')
-            return False
+        Logger.info('[WebRender] Generation Failed.')
+        return False
     except aiohttp.ClientConnectorError:
         if use_local:
             return await make_screenshot(page_link, use_local=False)
-        else:
-            return False
+        return False
     except ValueError:
         Logger.info('[WebRender] Generation Failed.')
         return False
@@ -66,8 +64,7 @@ async def bugtracker_get(msg, mojira_id: str):
     except ValueError as e:
         if str(e).startswith('401'):
             return msg.locale.t("bugtracker.message.get_failed"), None
-        else:
-            raise e
+        raise e
     if mojira_id not in spx_cache:
         get_spx = await get_url('https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json', 200)
         if get_spx:

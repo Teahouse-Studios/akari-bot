@@ -67,8 +67,7 @@ class MessageTaskManager:
     def get_result(cls, session: 'MessageSession'):
         if 'result' in cls._list[session.target.target_id][session.target.sender_id][session]:
             return cls._list[session.target.target_id][session.target.sender_id][session]['result']
-        else:
-            return None
+        return None
 
     @classmethod
     def get(cls):
@@ -319,8 +318,7 @@ class MessageSession:
             if result.as_display(text_only=True) in confirm_command:
                 return True
             return False
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
     async def wait_next_message(self,
                                 message_chain: Union[MessageChain, str, list, MessageElement] = None,
@@ -357,8 +355,7 @@ class MessageSession:
             await send.delete()
         if result:
             return result
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
     async def wait_reply(self,
                          message_chain: Union[MessageChain, str, list, MessageElement],
@@ -397,8 +394,7 @@ class MessageSession:
             await send.delete()
         if result:
             return result
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
     async def wait_anyone(self,
                           message_chain: Union[MessageChain, str, list, MessageElement] = None,
@@ -431,8 +427,7 @@ class MessageSession:
             if send and delete:
                 await send.delete()
             return MessageTaskManager.get()[self.target.target_id]['all'][self]['result']
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
     async def sleep(self, s: float):
         ExecutionLockList.remove(self)

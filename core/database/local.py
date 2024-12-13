@@ -78,8 +78,7 @@ class DirtyWordCache:
     def get(self):
         if not self.need_insert:
             return json.loads(self.query.result)
-        else:
-            return False
+        return False
 
 
 class CrowdinActivityRecords:
@@ -94,5 +93,4 @@ class CrowdinActivityRecords:
             session.add_all([CrowdinActivityRecordsTable(hash_id=query_hash)])
             session.commit()
             return False
-        else:
-            return True
+        return True

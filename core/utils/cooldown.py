@@ -19,9 +19,8 @@ class CoolDown:
         target_dict = _cd_lst[self.target_id]
         if self.whole_target:
             return target_dict.setdefault(self.key, {'_timestamp': 0.0})
-        else:
-            sender_dict = target_dict.setdefault(self.sender_id, {})
-            return sender_dict.setdefault(self.key, {'_timestamp': 0.0})
+        sender_dict = target_dict.setdefault(self.sender_id, {})
+        return sender_dict.setdefault(self.key, {'_timestamp': 0.0})
 
     def add(self):
         '''

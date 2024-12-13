@@ -198,5 +198,4 @@ def rickroll(msg: Bot.MessageSession) -> str:
     '''
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
         return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
-    else:
-        return msg.locale.t("error.message.chain.unsafe")
+    return msg.locale.t("error.message.chain.unsafe")

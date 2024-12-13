@@ -91,8 +91,7 @@ class ConsoleErrorInfo:
     def get_title(self):
         if self.secondary_error:
             return f"{self.error}/{self.secondary_error} ({self.console_name})"
-        else:
-            return f"{self.error} ({self.console_name})"
+        return f"{self.error} ({self.console_name})"
 
     def add_field(self, field: ConsoleErrorField):
         self.fields.append(field)

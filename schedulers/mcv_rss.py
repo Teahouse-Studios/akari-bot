@@ -50,8 +50,7 @@ async def get_article(version):
         title = soup.find('h1')
         if title.text == 'WE’RE SSSSSSSORRY':
             return '', ''
-        else:
-            return link, title.text
+        return link, title.text
     except Exception:
         if Config('debug', False):
             Logger.error(traceback.format_exc())

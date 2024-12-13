@@ -180,8 +180,7 @@ class MessageSession(MessageSessionT):
             except aiocqhttp.exceptions.ActionFailed as e:
                 if self.session.message.detail_type == 'private' and self.session.message.sub_type == 'group':
                     return FinishedSession(self, 0, [{}])
-                else:
-                    raise e
+                raise e
         if callback:
             MessageTaskManager.add_callback(send['message_id'], callback)
         return FinishedSession(self, send['message_id'], [send])
@@ -191,7 +190,7 @@ class MessageSession(MessageSessionT):
         async def _check():
             if self.target.target_from == target_private_prefix:
                 return True
-            elif self.target.target_from == target_group_prefix:
+            if self.target.target_from == target_group_prefix:
                 get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
                                                         user_id=self.session.sender)
                 if get_member_info['role'] in ['owner', 'admin']:
@@ -223,23 +222,22 @@ class MessageSession(MessageSessionT):
                 m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m).replace("\\/", "/")
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
             return m.strip()
-        else:
-            m = []
-            for item in self.session.message.message:
-                if text_only:
-                    if item["type"] == "text":
-                        m.append(item["data"]["text"])
-                else:
-                    if item["type"] == "at":
-                        m.append(fr'{sender_prefix}|{item["data"]["qq"]}')
-                    elif item["type"] == "json":
-                        m.append(html.unescape(str(item["data"]["data"])).replace("\\/", "/"))
-                    elif item["type"] == "text":
-                        m.append(item["data"]["text"])
-                    elif item["type"] in CQCodeHandler.get_supported:
-                        m.append(CQCodeHandler.generate_cq(item))
+        m = []
+        for item in self.session.message.message:
+            if text_only:
+                if item["type"] == "text":
+                    m.append(item["data"]["text"])
+            else:
+                if item["type"] == "at":
+                    m.append(fr'{sender_prefix}|{item["data"]["qq"]}')
+                elif item["type"] == "json":
+                    m.append(html.unescape(str(item["data"]["data"])).replace("\\/", "/"))
+                elif item["type"] == "text":
+                    m.append(item["data"]["text"])
+                elif item["type"] in CQCodeHandler.get_supported:
+                    m.append(CQCodeHandler.generate_cq(item))
 
-            return ''.join(m).strip()
+        return ''.join(m).strip()
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == target_group_prefix:

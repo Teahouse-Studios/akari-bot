@@ -33,8 +33,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
     if not st:
         return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}\n{
             msg.locale.t("wiki.message.utils.redacted")}'
-    else:
-        return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}'
+    return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}'
 
 
 async def convert_ab_to_detailed_format(abl: list, msg: Bot.MessageSession):
