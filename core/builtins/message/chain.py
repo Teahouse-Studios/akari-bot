@@ -294,7 +294,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "text":
-                            elements.append(PlainElement.assign(a))
+                            elements.append(PlainElement.assign(ma.group(2)))
                         else:
                             elements.append(PlainElement.assign(a))
                     else:

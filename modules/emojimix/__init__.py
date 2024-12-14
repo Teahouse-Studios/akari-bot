@@ -51,11 +51,11 @@ class EmojimixGenerator:
     def check_supported(self, emoji_tuple: Tuple[str, str]) -> List[str]:
         unsupported_emojis: List[str] = []
         checked: set = set()
-        for emoji in emoji_tuple:
-            if emoji not in self.known_supported_emoji and emoji not in checked:
-                emoji_symbol = ''.join(chr(int(segment, 16)) for segment in emoji.split('-'))
+        for emoji_ in emoji_tuple:
+            if emoji_ not in self.known_supported_emoji and emoji_ not in checked:
+                emoji_symbol = ''.join(chr(int(segment, 16)) for segment in emoji_.split('-'))
                 unsupported_emojis.append(emoji_symbol)
-                checked.add(emoji)
+                checked.add(emoji_)
         return unsupported_emojis
 
     def mix_emoji(self, emoji_tuple: Tuple[str, str]) -> Optional[str]:
@@ -154,8 +154,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         await msg.finish(msg.locale.t("emojimix.message.not_found"))
 
 
-def check_valid_emoji(str):
-    return emoji.is_emoji(str)
+def check_valid_emoji(emoji_str):
+    return emoji.is_emoji(emoji_str)
 
 
 @emojimix.handle('list [<emoji>] {{emojimix.help.list}}')

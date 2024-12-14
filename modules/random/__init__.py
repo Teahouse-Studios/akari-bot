@@ -8,12 +8,12 @@ r = module('random', alias=['rand', 'rng'],
            developers=['Dianliang233'], desc='{random.help.desc}', doc=True)
 
 
-@r.command('number <min> <max> {{random.help.number}}')
-async def _(msg: Bot.MessageSession, min: int, max: int):
-    if min > max:
-        random = Random.randint(max, min)
+@r.command('number <minimum> <maximum> {{random.help.number}}')
+async def _(msg: Bot.MessageSession, minimum: int, maximum: int):
+    if minimum > maximum:
+        random = Random.randint(maximum, minimum)
     else:
-        random = Random.randint(min, max)
+        random = Random.randint(minimum, maximum)
 
     await msg.finish('' + str(random))
 

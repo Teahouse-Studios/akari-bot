@@ -39,6 +39,9 @@ class ChartInfo:
     def __lt__(self, other):
         return self.ra < other.ra
 
+    def __hash__(self):
+        return hash(self.ra)
+
     @classmethod
     async def from_json(cls, data):
         music = (await total_list.get()).by_id(str(data["song_id"]))
@@ -137,7 +140,7 @@ class DrawBest:
         itemH = 100
         Color = [(69, 193, 36), (255, 186, 1), (255, 90, 102), (134, 49, 200), (217, 197, 233)]
         levelTriagle = [(itemW, 0), (itemW - 27, 0), (itemW, 27)]
-        imgDraw = ImageDraw.Draw(img)
+        ImageDraw.Draw(img)
 
         for num in range(min(len(self.sdBest), 35)):
             i = num // 5

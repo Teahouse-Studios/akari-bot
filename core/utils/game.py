@@ -18,16 +18,16 @@ class PlayState:
     :param all: 是否应用至全对话。（默认为False）
     '''
 
-    def __init__(self, game: str, msg: MessageSession, all: bool = False):
+    def __init__(self, game: str, msg: MessageSession, whole_target: bool = False):
         self.game = game
         self.msg = msg
-        self.all = all
+        self.whole_target = whole_target
         self.target_id = self.msg.target.target_id
         self.sender_id = self.msg.target.sender_id
 
     def _get_ps_dict(self):
         target_dict = _ps_lst[self.target_id]
-        if self.all:
+        if self.whole_target:
             return target_dict.setdefault(self.game, {'_status': False, '_timestamp': 0.0})
         else:
             sender_dict = target_dict.setdefault(self.sender_id, {})
@@ -40,7 +40,7 @@ class PlayState:
         playstate_dict = self._get_ps_dict()
         playstate_dict['_status'] = True
         playstate_dict['_timestamp'] = datetime.now().timestamp()
-        if self.all:
+        if self.whole_target:
             Logger.info(f'[{self.target_id}]: Enabled {self.game} by {self.sender_id}.')
         else:
             Logger.info(f'[{self.sender_id}]: Enabled {self.game} at {self.target_id}.')
@@ -52,7 +52,7 @@ class PlayState:
         if self.target_id not in _ps_lst:
             return
         target_dict = _ps_lst[self.target_id]
-        if self.all:
+        if self.whole_target:
             game_dict = target_dict.get(self.game)
             if game_dict:
                 game_dict['_status'] = False
@@ -63,12 +63,12 @@ class PlayState:
                 if game_dict:
                     game_dict['_status'] = False
         if _auto:
-            if self.all:
+            if self.whole_target:
                 Logger.info(f'[{self.target_id}]: Disabled {self.game} automatically.')
             else:
                 Logger.info(f'[{self.sender_id}]: Disabled {self.game} at {self.target_id} automatically.')
         else:
-            if self.all:
+            if self.whole_target:
                 Logger.info(f'[{self.target_id}]: Disabled {self.game} by {self.sender_id}.')
             else:
                 Logger.info(f'[{self.sender_id}]: Disabled {self.game} at {self.target_id}.')
@@ -81,7 +81,7 @@ class PlayState:
         '''
         playstate_dict = self._get_ps_dict()
         playstate_dict.update(kwargs)
-        if self.all:
+        if self.whole_target:
             Logger.debug(f'[{self.game}]: Updated {str(kwargs)} at {self.target_id}.')
         else:
             Logger.debug(f'[{self.game}]: Updated {str(kwargs)} at {self.sender_id} ({self.target_id}).')
@@ -93,7 +93,7 @@ class PlayState:
         if self.target_id not in _ps_lst:
             return False
         target_dict = _ps_lst[self.target_id]
-        if self.all:
+        if self.whole_target:
             status = target_dict.get(self.game, {}).get('_status', False)
             ts = target_dict.get(self.game, {}).get('_timestamp', 0.0)
         else:
@@ -114,7 +114,7 @@ class PlayState:
         if self.target_id not in _ps_lst:
             return None
         target_dict = _ps_lst[self.target_id]
-        if self.all:
+        if self.whole_target:
             return target_dict.get(self.game, {}).get(key, None)
         else:
             sender_dict = target_dict.get(self.sender_id, {})

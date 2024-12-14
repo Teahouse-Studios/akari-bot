@@ -187,7 +187,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                     open_file.write(str(find_diff))
                     w = 2000
             if not find_diff:
-                infoboxes = elements.copy()
+                infoboxes = infobox_elements.copy()
                 find_infobox = None
                 for i in infoboxes:
                     find_infobox = soup.find(class_=i[1:])

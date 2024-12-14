@@ -79,9 +79,9 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         await msg.finish(msg.locale.t('wikilog.message.enable.log.invalid_logtype', logtype=logtype))
 
 
-@wikilog.handle('filter test <filter> <example> {{wikilog.help.filter.test}}')
-async def _(msg: Bot.MessageSession, filter: str, example: str):
-    f = re.compile(filter)
+@wikilog.handle('filter test <filters> <example> {{wikilog.help.filter.test}}')
+async def _(msg: Bot.MessageSession, filters: str, example: str):
+    f = re.compile(filters)
     if m := f.search(example):
         await msg.finish(msg.locale.t('wikilog.message.filter.test.success', start=m.start(), end=m.end(),
                                       string=example[m.start():m.end()]))
@@ -236,7 +236,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
                 if matched[id_][wiki]['AbuseLog']:
-                    ab = await convert_ab_to_detailed_format(matched[id_][wiki]['AbuseLog'], wiki_info, ft.parent)
+                    ab = await convert_ab_to_detailed_format(matched[id_][wiki]['AbuseLog'], ft.parent)
                     for x in ab:
                         await ft.send_direct_message(f'{wiki_info.name}\n{x}' if len(matched[id_]) > 1 else x)
                 if matched[id_][wiki]['RecentChanges']:

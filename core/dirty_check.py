@@ -19,7 +19,7 @@ from core.database.local import DirtyWordCache
 from core.logger import Logger
 
 
-def hash_hmac(key, code, sha1):
+def hash_hmac(key, code):
     hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1)
     return base64.b64encode(hmac_code.digest()).decode('utf-8')
 
@@ -154,7 +154,7 @@ async def check(*text: Union[str, List[str]], msg: Bot.MessageSession = None, ad
         step3 = "POST\napplication/json\n{contentMd5}\napplication/json\n{date}\n{step1}\n{step2}".format(
             contentMd5=content_md5,
             date=headers['Date'], step1=step1, step2=step2)
-        sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3, hashlib.sha1))
+        sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3))
         headers['Authorization'] = sign
         # 'Authorization': "acs {}:{}".format(access_key_id, sign)
         async with aiohttp.ClientSession(headers=headers) as session, session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:

@@ -4,10 +4,8 @@ import time
 import traceback
 from datetime import datetime
 
-import aiohttp
 import orjson as json
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
-from aiofile import async_open
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 

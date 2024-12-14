@@ -139,6 +139,7 @@ class FinishedSession:
     """
     结束会话。
     """
+
     def __init__(self, session, message_id: Union[List[int], List[str], int, str], result):
         self.session = session
         if isinstance(message_id, (int, str)):
@@ -566,10 +567,12 @@ class FetchedSession:
         if not sender_id:
             sender_id = target_id
         self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
-                              sender_id=f'{target_from}|{sender_id}',
+                              sender_id=f'{sender_from}|{sender_id}',
                               target_from=target_from,
                               sender_from=sender_from,
-                              sender_prefix='', client_name='', message_id=0)
+                              sender_prefix='',
+                              client_name='',
+                              message_id=0)
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = MessageSession(self.target, self.session)
 

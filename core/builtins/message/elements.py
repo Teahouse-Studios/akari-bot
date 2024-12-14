@@ -74,7 +74,7 @@ class URLElement(MessageElement):
         :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为False）
         """
         if Info.use_url_manager and use_mm:
-            mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
+            mm_url = 'https://mm.teahouse.team/?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")

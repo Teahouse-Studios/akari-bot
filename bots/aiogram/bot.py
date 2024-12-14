@@ -42,7 +42,7 @@ async def msg_handler(message: types.Message):
     await parser(msg)
 
 
-async def on_startup(dispatcher):
+async def on_startup():
     await init_async()
     await load_prompt(FetchTarget)
 

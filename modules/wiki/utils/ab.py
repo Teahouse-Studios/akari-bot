@@ -37,7 +37,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
         return f'{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}'
 
 
-async def convert_ab_to_detailed_format(abl: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
+async def convert_ab_to_detailed_format(abl: list, msg: Bot.MessageSession):
     ablist = []
     userlist = []
     titlelist = []

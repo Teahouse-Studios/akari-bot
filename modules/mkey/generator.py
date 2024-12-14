@@ -185,7 +185,7 @@ class MkeyGenerator:
 
             crc = crc ^ byte
 
-            for i in range(8):
+            for _ in range(8):
                 mask = -(crc & 1)
                 crc = (crc >> 1) ^ (poly & mask)
 
@@ -341,7 +341,6 @@ class MkeyGenerator:
 
     def _generate_v3_v4(self, props, inquiry, aux=None):
         algorithm = props["algorithm"]
-        traits = props["traits"]
 
         if self._data_path and not os.path.isdir(self._data_path):
             self._data_path = None
@@ -397,7 +396,7 @@ class MkeyGenerator:
             outbuf = HMAC.new(mkey_hmac_key, inbuf, digestmod=SHA256).digest()
             tmpbuf = outbuf
 
-            for i in range(1, 10000):
+            for _ in range(1, 10000):
                 tmpbuf = HMAC.new(mkey_hmac_key, tmpbuf, digestmod=SHA256).digest()
                 outbuf = strxor(outbuf, tmpbuf)
         else:
