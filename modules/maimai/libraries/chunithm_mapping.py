@@ -2,7 +2,6 @@ import os
 
 from core.constants.path import assets_path
 
-
 SONGS_PER_PAGE = 30
 
 mai_assets_path = os.path.join(assets_path, 'maimai')

@@ -25,8 +25,9 @@ async def rc_loader(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward:
-        from bots.aiocqhttp.utils import qq_frame_type
-        if qq_frame_type() == 'ntqq':
+        from bots.aiocqhttp.utils import get_onebot_implementation
+        obi = await get_onebot_implementation()
+        if obi == 'ntqq':
             try:
                 await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending'))
                 nodelist = await rc_qq(msg, start_wiki)
@@ -35,7 +36,6 @@ async def rc_loader(msg: Bot.MessageSession):
                 await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.timeout'))
             legacy = False
         else:
-
             try:
                 nodelist = await rc_qq(msg, start_wiki)
                 await msg.fake_forward_msg(nodelist)
@@ -79,8 +79,9 @@ async def ab_loader(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward:
-        from bots.aiocqhttp.utils import qq_frame_type
-        if qq_frame_type() == 'ntqq':
+        from bots.aiocqhttp.utils import get_onebot_implementation
+        obi = await get_onebot_implementation()
+        if obi == 'ntqq':
             try:
                 await msg.send_message(msg.locale.t('wiki.message.ntqq.forward.sending'))
                 nodelist = await ab_qq(msg, start_wiki)

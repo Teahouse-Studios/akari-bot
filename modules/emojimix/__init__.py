@@ -1,5 +1,4 @@
 import os
-import random
 from typing import List, Optional, Tuple
 
 import emoji
@@ -9,6 +8,7 @@ from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.random import Random
 
 data_path = os.path.join(assets_path, 'emojimix', 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
@@ -20,7 +20,7 @@ class EmojimixGenerator:
             data = json.loads(f.read())
         self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
-        self.date_mapping: dict = {idx: date for idx, date in enumerate(data["date"])}
+        self.date_mapping: dict = dict(enumerate(data["date"]))
 
     @staticmethod
     def str2emoji(emoji_str):
@@ -42,20 +42,20 @@ class EmojimixGenerator:
             for key in self.data:
                 if emoji_code in key:
                     emoji_combo_list.append(key)
-            combo = random.choice(emoji_combo_list)
+            combo = Random.choice(emoji_combo_list)
         else:
-            combo = random.choice(list(self.data.keys()))
+            combo = Random.choice(list(self.data.keys()))
         combo = tuple(i.strip() for i in combo[1:-1].split(","))
         return combo
 
     def check_supported(self, emoji_tuple: Tuple[str, str]) -> List[str]:
         unsupported_emojis: List[str] = []
         checked: set = set()
-        for emoji in emoji_tuple:
-            if emoji not in self.known_supported_emoji and emoji not in checked:
-                emoji_symbol = ''.join(chr(int(segment, 16)) for segment in emoji.split('-'))
+        for emoji_ in emoji_tuple:
+            if emoji_ not in self.known_supported_emoji and emoji_ not in checked:
+                emoji_symbol = ''.join(chr(int(segment, 16)) for segment in emoji_.split('-'))
                 unsupported_emojis.append(emoji_symbol)
-                checked.add(emoji)
+                checked.add(emoji_)
         return unsupported_emojis
 
     def mix_emoji(self, emoji_tuple: Tuple[str, str]) -> Optional[str]:
@@ -154,8 +154,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         await msg.finish(msg.locale.t("emojimix.message.not_found"))
 
 
-def check_valid_emoji(str):
-    return emoji.is_emoji(str)
+def check_valid_emoji(emoji_str):
+    return emoji.is_emoji(emoji_str)
 
 
 @emojimix.handle('list [<emoji>] {{emojimix.help.list}}')

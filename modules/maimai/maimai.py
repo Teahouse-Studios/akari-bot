@@ -307,14 +307,14 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 brkL=chartL['notes'][4],
                 brkR=chartR['notes'][4]))
     else:
-        for diff in range(len(music['ds'])):
+        for diff, ds in enumerate(music['ds']):
             chart = music['charts'][diff]
             if len(chart['notes']) == 4:
                 res.append(msg.locale.t(
                     "maimai.message.chart.sd",
                     diff=diff_list[diff],
                     level=music['level'][diff],
-                    ds=music['ds'][diff],
+                    ds=ds,
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
@@ -326,7 +326,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     "maimai.message.chart.dx",
                     diff=diff_list[diff],
                     level=music['level'][diff],
-                    ds=music['ds'][diff],
+                    ds=ds,
                     tap=chart['notes'][0],
                     hold=chart['notes'][1],
                     slide=chart['notes'][2],
@@ -584,14 +584,14 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 
         if level == "":
             if diff == "*":
-                music_data = (await total_list.get()).filter(type=dx_type)
+                music_data = (await total_list.get()).filter(dxtype=dx_type)
             else:
                 raise ValueError
         else:
             if diff == "":
-                music_data = (await total_list.get()).filter(level=level, type=dx_type)
+                music_data = (await total_list.get()).filter(level=level, dxtype=dx_type)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)], type=dx_type)
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)], dxtype=dx_type)
 
         if len(music_data) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))

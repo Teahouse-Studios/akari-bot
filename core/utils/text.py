@@ -1,9 +1,11 @@
-import random
 from datetime import timedelta
-from typing import TypeVar, Union
+from typing import Any
 
 
-def isfloat(num_str: Union[str, float]) -> bool:
+def isfloat(num_str: Any) -> bool:
+    '''
+    检查字符串是否符合float。
+    '''
     try:
         float(num_str)
         return True
@@ -11,15 +13,15 @@ def isfloat(num_str: Union[str, float]) -> bool:
         return False
 
 
-def isint(num_str: Union[str, int]) -> bool:
+def isint(num_str: Any) -> bool:
+    '''
+    检查字符串是否符合int。
+    '''
     try:
         int(num_str)
         return True
     except ValueError:
         return False
-
-
-T = TypeVar("T", str, bytes, bytearray)
 
 
 def parse_time_string(time_str: str) -> timedelta:
@@ -43,8 +45,4 @@ def parse_time_string(time_str: str) -> timedelta:
         return timedelta()
 
 
-def random_string(length: int) -> str:
-    return ''.join(random.choices("0123456789ABCDEF", k=length))
-
-
-__all__ = ["parse_time_string", "random_string", "isint", "isfloat"]
+__all__ = ["isint", "isfloat"]

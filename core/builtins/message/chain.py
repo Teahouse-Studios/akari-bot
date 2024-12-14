@@ -1,142 +1,115 @@
+from __future__ import annotations
+
 import base64
 import re
-from typing import Union, List, Tuple
+from typing import List, Optional, Tuple, Union, Any
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson as json
 
-from core.builtins.message.internal import (
-    Plain,
-    Image,
-    Voice,
-    Embed,
-    Url,
-    ErrorMessage,
-    FormattedTime,
-    I18NContext,
-)
+from core.builtins.message.elements import elements_map, MessageElement, PlainElement, EmbedElement, \
+    ErrorMessageElement, FormattedTimeElement, I18NContextElement, URLElement, ImageElement, VoiceElement
+
+if TYPE_CHECKING:
+    from core.builtins.message import MessageSession
+
 from core.builtins.utils import Secret
 from core.logger import Logger
-from core.types.message import MessageChain as MessageChainT, MessageSession
+
 from core.utils.http import url_pattern
 
+from cattrs import structure, unstructure
 
-class MessageChain(MessageChainT):
+
+class MessageChain:
+    """
+    消息链。
+    """
+
     def __init__(
         self,
-        elements: Union[
+        elements: Optional[Union[
             str,
-            List[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
-            Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
-            Plain,
-            Image,
-            Voice,
-            Embed,
-            Url,
-            FormattedTime,
-            I18NContext,
-        ] = None,
+            List[MessageElement],
+            Tuple[MessageElement],
+            MessageElement,
+            MessageChain
+        ]] = None,
     ):
+        """
+        :param elements: 消息链元素。
+        """
         self.value = []
-        if isinstance(elements, ErrorMessage):
-            elements = str(elements)
+        if isinstance(elements, MessageChain):
+            self.value = elements.value
+            return
         if isinstance(elements, str):
-            elements = Plain(elements)
+            elements = match_kecode(elements)
         if isinstance(
-            elements, (Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext)
+            elements, MessageElement
         ):
-            if isinstance(elements, Plain):
+            if isinstance(elements, PlainElement):
                 if elements.text != "":
                     elements = match_kecode(elements.text)
             else:
                 elements = [elements]
+        if isinstance(elements, dict):
+            for key in elements:
+                if key in elements_map:
+                    elements = [structure(elements[key], elements_map[key])]
+                else:
+                    Logger.error(f"Unexpected message type {key}: {elements}")
         if isinstance(elements, (list, tuple)):
             for e in elements:
-                if isinstance(e, ErrorMessage):
-                    self.value.append(Plain(str(e)))
-                elif isinstance(e, Url):
-                    self.value.append(Plain(e, disable_joke=True))
-                elif isinstance(
-                    e, (Plain, Image, Voice, Embed, FormattedTime, I18NContext)
-                ):
-                    if isinstance(e, Plain):
-                        if e.text != "":
-                            self.value += match_kecode(e.text)
-                    else:
-                        self.value.append(e)
-                elif isinstance(e, dict):
-                    if e["type"] in ["plain", "text"]:
-                        self.value.append(Plain(e["data"]["text"]))
-                    elif e["type"] == "image":
-                        self.value.append(Image(e["data"]["path"]))
-                    elif e["type"] == "voice":
-                        self.value.append(Voice(e["data"]["path"]))
-                    elif e["type"] == "embed":
-                        self.value.append(
-                            Embed(
-                                e["data"]["title"],
-                                e["data"]["description"],
-                                e["data"]["url"],
-                                e["data"]["timestamp"],
-                                e["data"]["color"],
-                                (
-                                    Image(e["data"]["image"])
-                                    if e["data"]["image"]
-                                    else None
-                                ),
-                                (
-                                    Image(e["data"]["thumbnail"])
-                                    if e["data"]["thumbnail"]
-                                    else None
-                                ),
-                                e["data"]["author"],
-                                e["data"]["footer"],
-                                e["data"]["fields"],
-                            )
-                        )
-                    elif e["type"] == "url":
-                        self.value.append(Url(e["data"]["url"]))
-                    elif e["type"] == "formatted_time":
-                        self.value.append(
-                            FormattedTime(
-                                e["data"]["timestamp"],
-                                e["data"]["date"],
-                                e["data"]["iso"],
-                                e["data"]["time"],
-                                e["data"]["seconds"],
-                                e["data"]["timezone"],
-                            )
-                        )
-                    elif e["type"] == "i18n":
-                        self.value.append(
-                            I18NContext(e["data"]["key"], **e["data"]["kwargs"])
-                        )
-                elif isinstance(e, str):
+                if isinstance(e, str):
                     if e != "":
                         self.value += match_kecode(e)
+                elif isinstance(e, dict):
+                    for key in e:
+                        if key in elements_map:
+                            tmp_e = structure(e[key], elements_map[key])
+                            if isinstance(tmp_e, PlainElement):
+                                if tmp_e.text != "":
+                                    self.value += match_kecode(tmp_e.text)
+                            else:
+                                self.value.append(tmp_e)
+                        else:
+                            Logger.error(f"Unexpected message type {key}: {e}")
+
+                elif isinstance(e, PlainElement):
+                    if isinstance(e, PlainElement):
+                        if e.text != "":
+                            self.value += match_kecode(e.text)
+
+                elif isinstance(e, MessageElement):
+                    self.value.append(e)
                 else:
-                    Logger.error(f"Unexpected message type: {elements}")
-        elif isinstance(elements, MessageChain):
-            self.value = elements.value
+                    Logger.error(f"Unexpected message type: {e}")
         elif not elements:
             pass
         else:
             Logger.error(f"Unexpected message type: {elements}")
+        # Logger.debug(f"MessageChain: {self.value}")
+        # Logger.debug("Elements: " + str(elements))
 
     @property
-    def is_safe(self):
+    def is_safe(self) -> bool:
+        """
+        检查消息链是否安全。
+        """
         def unsafeprompt(name, secret, text):
             return f'{name} contains unsafe text "{secret}": {text}'
 
         for v in self.value:
-            if isinstance(v, Plain):
+            if isinstance(v, PlainElement):
                 for secret in Secret.list:
                     if secret in ["", None, True, False]:
                         continue
                     if v.text.upper().find(secret.upper()) != -1:
                         Logger.warning(unsafeprompt("Plain", secret, v.text))
                         return False
-            elif isinstance(v, Embed):
+            elif isinstance(v, EmbedElement):
                 for secret in Secret.list:
                     if secret in ["", None, True, False]:
                         continue
@@ -175,83 +148,95 @@ class MessageChain(MessageChainT):
                             return False
         return True
 
-    def as_sendable(self, msg: MessageSession = None, embed=True):
+    def as_sendable(self, msg: MessageSession = None, embed: bool = True) -> list:
+        """
+        将消息链转换为可发送的格式。
+        """
         locale = None
         if msg:
             locale = msg.locale.locale
         value = []
         for x in self.value:
-            if isinstance(x, Embed) and not embed:
+            if isinstance(x, EmbedElement) and not embed:
                 value += x.to_message_chain(msg)
-            elif isinstance(x, Plain):
+            elif isinstance(x, PlainElement):
                 if x.text != "":
                     value.append(x)
                 else:
                     value.append(
-                        Plain(
-                            ErrorMessage(
-                                "{error.message.chain.plain.empty}", locale=locale
-                            )
-                        )
+                        PlainElement.assign(str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
+                                                                           locale=locale)))
                     )
-            elif isinstance(x, FormattedTime):
+            elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(msg=msg)
-                if value and isinstance(value[-1], Plain):
+                if value and isinstance(value[-1], PlainElement):
                     if not value[-1].text.endswith("\n"):
                         value[-1].text += "\n"
                     value[-1].text += x
                 else:
-                    value.append(Plain(x))
-            elif isinstance(x, I18NContext):
+                    value.append(PlainElement.assign(x))
+            elif isinstance(x, I18NContextElement):
                 t_value = msg.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
-                    value.append(Plain(t_value))
+                    value.append(PlainElement.assign(t_value))
                 else:
                     value += MessageChain(t_value).as_sendable(msg)
+            elif isinstance(x, URLElement):
+                value.append(PlainElement.assign(x.url, disable_joke=True))
+            elif isinstance(x, ErrorMessageElement):
+                value.append(PlainElement.assign(str(x)))
             else:
                 value.append(x)
         if not value:
             value.append(
-                Plain(ErrorMessage("{error.message.chain.empty}", locale=locale))
+                PlainElement.assign(
+                    str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
+                                                   locale=locale))
+                )
             )
         return value
 
-    def to_list(self, locale="zh_cn", embed=True, msg: MessageSession = None):
-        value = []
-        for x in self.value:
-            if isinstance(x, Embed) and not embed:
-                value += x.to_message_chain(msg).to_list()
-            elif isinstance(x, Plain):
-                if x.text != "":
-                    value.append(x.to_dict())
+    def to_list(self) -> list[dict[str, Any]]:
+        """
+        将消息链序列化为列表。
+        """
+        return [{x.__name__(): unstructure(x)} for x in self.value]
+
+    def from_list(self, lst: list) -> None:
+        """
+        从列表构造消息链，替换原有的消息链。
+        """
+        converted = []
+        for x in lst:
+            for elem in x:
+                if elem in elements_map:
+                    converted.append(structure(x[elem], elements_map[elem]))
                 else:
-                    value.append(
-                        Plain(
-                            ErrorMessage(
-                                "{error.message.chain.plain.empty}", locale=locale
-                            )
-                        ).to_dict()
-                    )
-            else:
-                value.append(x.to_dict())
-        if not value:
-            value.append(
-                Plain(
-                    ErrorMessage("{error.message.chain.empty}", locale=locale)
-                ).to_dict()
-            )
-        return value
+                    Logger.error(f"Unexpected message type: {elem}")
+        self.value = converted
 
     def append(self, element):
+        """
+        添加一个消息链元素到末尾。
+        """
         self.value.append(element)
 
     def remove(self, element):
+        """
+        删除一个消息链元素。
+        """
         self.value.remove(element)
 
     def insert(self, index, element):
+        """
+        在指定位置插入一个消息链元素。
+        """
         self.value.insert(index, element)
 
     def copy(self):
+        """
+        复制一个消息链。
+        """
         return MessageChain(self.value.copy())
 
     def __str__(self):
@@ -260,8 +245,36 @@ class MessageChain(MessageChainT):
     def __repr__(self):
         return self.__str__()
 
+    def __iter__(self):
+        return iter(self.value)
 
-def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
+    def __add__(self, other):
+        if isinstance(other, MessageChain):
+            return MessageChain(self.value + other.value)
+        elif isinstance(other, list):
+            return MessageChain(self.value + other)
+        else:
+            raise TypeError(f"Unsupported operand type(s) for +: 'MessageChain' and '{type(other).__name__}'")
+
+    def __radd__(self, other):
+        if isinstance(other, MessageChain):
+            return MessageChain(other.value + self.value)
+        elif isinstance(other, list):
+            return MessageChain(other + self.value)
+        else:
+            raise TypeError(f"Unsupported operand type(s) for +: '{type(other).__name__}' and 'MessageChain'")
+
+    def __iadd__(self, other):
+        if isinstance(other, MessageChain):
+            self.value += other.value
+        elif isinstance(other, list):
+            self.value += other
+        else:
+            raise TypeError(f"Unsupported operand type(s) for +=: 'MessageChain' and '{type(other).__name__}'")
+        return self
+
+
+def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceElement]]:
     split_all = re.split(r"(\[Ke:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
@@ -269,7 +282,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
         match = re.match(r"\[Ke:(.*?),(.*)]", e)
         if not match:
             if e != "":
-                elements.append(Plain(e))
+                elements.append(PlainElement.assign(e))
         else:
             element_type = match.group(1).lower()
             args = re.split(r",|,.\s", match.group(2))
@@ -281,11 +294,11 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "text":
-                            elements.append(Plain(ma.group(2)))
+                            elements.append(PlainElement.assign(ma.group(2)))
                         else:
-                            elements.append(Plain(a))
+                            elements.append(PlainElement.assign(a))
                     else:
-                        elements.append(Plain(a))
+                        elements.append(PlainElement.assign(a))
             elif element_type == "image":
                 for a in args:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -294,7 +307,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
                             if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                                img = Image(path=ma.group(2))
+                                img = ImageElement.assign(path=ma.group(2))
                         if ma.group(1) == "headers":
                             img.headers = json.loads(
                                 str(base64.b64decode(ma.group(2)), "UTF-8")
@@ -302,7 +315,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                         if img:
                             elements.append(img)
                     else:
-                        elements.append(Image(a))
+                        elements.append(ImageElement.assign(a))
             elif element_type == "voice":
                 for a in args:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -310,11 +323,11 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
                             if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
-                                elements.append(Voice(path=ma.group(2)))
+                                elements.append(VoiceElement.assign(ma.group(2)))
                         else:
-                            elements.append(Voice(a))
+                            elements.append(VoiceElement.assign(a))
                     else:
-                        elements.append(Voice(a))
+                        elements.append(VoiceElement.assign(a))
     return elements
 
 

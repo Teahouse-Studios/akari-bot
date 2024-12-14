@@ -6,12 +6,13 @@ from aiogram.types import FSInputFile
 
 from bots.aiogram.client import bot, token
 from bots.aiogram.info import *
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
+from core.builtins import (Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager,
+                           FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download
 from core.utils.image import image_split
 
@@ -49,14 +50,14 @@ class MessageSession(MessageSessionT):
         count = 0
         send = []
         for x in message_chain.as_sendable(self, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 send_ = await bot.send_message(self.session.target, x.text,
                                                reply_to_message_id=self.session.message.message_id if quote
                                                and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
                 send.append(send_)
                 count += 1
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 if enable_split_image:
                     split = await image_split(x)
                     for xs in split:
@@ -77,7 +78,7 @@ class MessageSession(MessageSessionT):
                     Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
                     send.append(send_)
                     count += 1
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 send_ = await bot.send_audio(self.session.target, FSInputFile(x.path),
                                              reply_to_message_id=self.session.message.message_id if quote
                                              and count == 0 and self.session.message else None)
@@ -186,7 +187,7 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:
@@ -204,7 +205,7 @@ class FetchTarget(FetchTargetT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "Telegram")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
@@ -223,9 +224,6 @@ class FetchTarget(FetchTargetT):
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
-
-    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

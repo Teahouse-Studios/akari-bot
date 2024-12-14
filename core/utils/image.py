@@ -1,28 +1,28 @@
 import base64
 import traceback
 from io import BytesIO
-from typing import List, Union
+from typing import List, Optional, Union
 
 import aiohttp
 import filetype as ft
 import orjson as json
+from PIL import Image as PILImage
 from aiofile import async_open
 from jinja2 import FileSystemLoader, Environment
-from PIL import Image as PILImage
 
-from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
-from core.constants.path import templates_path
+from core.builtins import Image, MessageChain, MessageSession
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
 from core.constants.info import Info
+from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import webrender
 
+env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
 
-env = Environment(loader=FileSystemLoader(templates_path))
 
-
-async def image_split(i: Image) -> List[Image]:
+async def image_split(i: ImageElement) -> List[ImageElement]:
     i = PILImage.open(await i.get())
     iw, ih = i.size
     if ih <= 1500:
@@ -47,7 +47,9 @@ def get_fontsize(font, text):
 save_source = True
 
 
-async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True) -> Union[List[PILImage], bool]:
+async def msgchain2image(message_chain: Union[List, MessageChain],
+                         msg: Optional[MessageSession] = None,
+                         use_local: bool = True) -> Union[List[PILImage.Image], bool]:
     '''使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
@@ -64,9 +66,9 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
     lst = []
 
     for m in message_chain.as_sendable(msg=msg, embed=False):
-        if isinstance(m, Plain):
+        if isinstance(m, PlainElement):
             lst.append('<div>' + m.text.replace('\n', '<br>') + '</div>')
-        elif isinstance(m, Image):
+        elif isinstance(m, ImageElement):
             async with async_open(await m.get(), 'rb') as fi:
                 data = await fi.read()
                 try:
@@ -75,9 +77,9 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                                (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
                 except Exception:
                     Logger.error(traceback.format_exc())
-        elif isinstance(m, Voice):
+        elif isinstance(m, VoiceElement):
             lst.append('<div>[Voice]</div>')
-        elif isinstance(m, Embed):
+        elif isinstance(m, EmbedElement):
             lst.append('<div>[Embed]</div>')
 
     html_content = env.get_template('msgchain_to_image.html').render(content='\n'.join(lst))
@@ -123,7 +125,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
     return img_lst
 
 
-async def svg_render(file_path: str, use_local=True) -> Union[List[PILImage], bool]:
+async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILImage.Image], bool]:
     '''使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。

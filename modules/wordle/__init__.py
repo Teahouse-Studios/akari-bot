@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import unicodedata
 from PIL import Image, ImageDraw, ImageFont
-from attr import define, field
+from attrs import define, field
 
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
@@ -63,8 +63,9 @@ class WordleBoard:
         self.board.append(word)
         return self.test_board()
 
-    def verify_word(self, word: str):
-        return True if word in word_list else False
+    @staticmethod
+    def verify_word(word: str):
+        return word in word_list
 
     def test_board(self):
         state: List[List[WordleState]] = []
@@ -123,7 +124,7 @@ class WordleBoard:
         return '\n'.join(''.join(row) for row in formatted)
 
     def is_game_over(self):
-        return True if len(self.board) != 0 and self.word == self.board[-1] else False
+        return bool(len(self.board) != 0 and (self.word == self.board[-1] or len(self.board) >= 6))
 
     @staticmethod
     def from_random_word():
@@ -212,7 +213,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('message.cooldown', time=int(150 - c)))
 
     board = WordleBoard.from_random_word()
-    hard_mode = True if msg.parsed_msg else False
+    hard_mode = bool(msg.parsed_msg)
     last_word = None
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
@@ -230,11 +231,7 @@ async def _(msg: Bot.MessageSession):
     await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
-        if not play_state.check():
-            return
         wait = await msg.wait_next_message(timeout=None)
-        if not play_state.check():
-            return
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue

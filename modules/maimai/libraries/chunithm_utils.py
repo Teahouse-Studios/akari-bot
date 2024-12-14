@@ -34,9 +34,13 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
     html += "Best30\n"
     for idx, chart in enumerate(b30_records, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()
-        rank = next(
-            rank for interval, rank in score_to_rate.items() if interval[0] <= chart["score"] < interval[1]  # 根据成绩获得等级
-        )
+        try:
+            rank = next(
+                # 根据成绩获得等级
+                rank for interval, rank in score_to_rate.items() if interval[0] <= chart["score"] < interval[1]
+            )
+        except StopIteration:
+            continue
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
         line = "#{:<2} {:>4} {:<3} {:>7} {:<4} {:<2} {:>4}->{:<5.2f} {:<20}\n".format(
@@ -54,9 +58,13 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
     html += "Recent10\n"
     for idx, chart in enumerate(r10_records, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()
-        rank = next(
-            rank for interval, rank in score_to_rate.items() if interval[0] <= chart["score"] < interval[1]  # 根据成绩获得等级
-        )
+        try:
+            rank = next(
+                # 根据成绩获得等级
+                rank for interval, rank in score_to_rate.items() if interval[0] <= chart["score"] < interval[1]
+            )
+        except StopIteration:
+            continue
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
         line = "#{:<2} {:>4} {:<3} {:>7} {:<4} {:<2} {:>4}->{:<5.2f} {:<20}\n".format(

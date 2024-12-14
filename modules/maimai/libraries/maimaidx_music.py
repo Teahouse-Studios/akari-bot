@@ -10,7 +10,7 @@ from core.utils.random import Random
 from .maimaidx_mapping import *
 
 
-def get_cover_len5_id(mid) -> str:
+def get_cover_len5_id(mid: Union[int, str]) -> str:
     mid = int(mid)
     if 10000 < mid <= 11000:
         mid -= 10000
@@ -144,7 +144,7 @@ class MusicList(List[Music]):
                title_search: Optional[str] = ...,
                genre: Optional[Union[str, List[str]]] = ...,
                bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-               type: Optional[Union[str, List[str]]] = ...,
+               dxtype: Optional[Union[str, List[str]]] = ...,
                diff: List[int] = ...,
                ):
         new_list = MusicList()
@@ -159,7 +159,7 @@ class MusicList(List[Music]):
                 continue
             if not in_or_equal(music.genre, genre):
                 continue
-            if not in_or_equal(music.type, type):
+            if not in_or_equal(music.type, dxtype):
                 continue
             if not in_or_equal(music.bpm, bpm):
                 continue
@@ -195,9 +195,10 @@ class TotalList:
             Logger.error(traceback.format_exc())
             return False
 
-    async def dl_cache(self):
+    @staticmethod
+    async def dl_cache():
         try:
-            url = f"https://www.diving-fish.com/api/maimaidxprober/music_data"
+            url = "https://www.diving-fish.com/api/maimaidxprober/music_data"
             data = await get_url(url, 200, fmt='json')
             if data:
                 with open(mai_song_info_path, 'wb') as f:

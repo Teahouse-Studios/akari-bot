@@ -11,10 +11,10 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets, Url
+from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_account_default
+from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database import BotDBUtil
@@ -25,8 +25,8 @@ from core.utils.i18n import Locale
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
-Url.disable_mm = not Config('enable_urlmanager', False)
-qq_account = int(Config("qq_account", qq_account_default, cfg_type=(int, str), table_name='bot_aiocqhttp'))
+Info.use_url_manager = Config('enable_urlmanager', False)
+qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
@@ -85,7 +85,7 @@ async def message_handler(event: Event):
     prefix = None
     if string_post:
         if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
-            if match_at.group(1) == qq_account:
+            if match_at.group(1) == str(qq_account):
                 event.message = match_at.group(2)
                 if event.message in ['', ' ']:
                     event.message = f'{command_prefix[0]}help'
@@ -94,7 +94,7 @@ async def message_handler(event: Event):
                 return
     else:
         if event.message[0]["type"] == "at":
-            if event.message[0]["data"]["qq"] == qq_account:
+            if event.message[0]["data"]["qq"] == str(qq_account):
                 event.message = event.message[1:]
                 if not event.message:
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
@@ -195,7 +195,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
-    if event.user_id == qq_account:
+    if event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
@@ -244,8 +244,8 @@ async def _(event: Event):
         await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
-qq_host = Config("qq_host", cfg_type=str, secret=True, table_name='bot_aiocqhttp')
-if qq_host and Config("enable", False, cfg_type=bool, table_name='bot_aiocqhttp'):
+qq_host = Config("qq_host", default=qq_host_default, table_name='bot_aiocqhttp')
+if qq_host and Config("enable", False, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name
     if 'subprocess' in sys.argv:

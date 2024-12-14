@@ -8,15 +8,17 @@ from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, com
     document as toml_document, nl
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
-import core.config.update
+
+from . import update  # noqa
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
+from core.exports import add_export
 from core.utils.i18n import Locale
 
 
 class CFGManager:
-    config_path = config_path
+    config_path = config_path  # don't change this plzzzzz it will break switch_config_path
     config_file_list = [cfg for cfg in os.listdir(config_path) if cfg.endswith('.toml')]
     values: dict[str, TOMLDocument] = {}
     _tss: dict[str, float] = {}
@@ -60,7 +62,7 @@ class CFGManager:
         if not cls._save_lock:
             cls._save_lock = True
             try:
-                for cfg in cls.values.keys():
+                for cfg in cls.values:
                     cfg_name = cfg
                     if not cfg_name.endswith('.toml'):
                         cfg_name += '.toml'
@@ -77,14 +79,14 @@ class CFGManager:
     def watch(cls):  # Watch for changes in the config file and reload if necessary
         if not cls._watch_lock:
             cls._watch_lock = True
-            for cfg in cls.values.keys():
+            for cfg in cls.values:
                 cfg_file = cfg
                 if not cfg_file.endswith('.toml'):
                     cfg_file += '.toml'
                 file_path = os.path.join(cls.config_path, cfg_file)
                 if os.path.exists(file_path):
                     if os.path.getmtime(file_path) != cls._tss[cfg]:
-                        logger.warning(f'[Config] Config file has been modified, reloading...')
+                        logger.warning('[Config] Config file has been modified, reloading...')
                         cls.load()
                         break
             cls._watch_lock = False
@@ -99,38 +101,73 @@ class CFGManager:
                             None] = None,
             secret: bool = False,
             table_name: Optional[str] = None,
+            _global: bool = False,
             _generate: bool = False) -> Any:
+        '''
+        获取配置文件中的配置项。
+
+        :param q: 配置项键名。
+        :param default: 默认值。
+        :param cfg_type: 配置项类型。
+        :param secret: 是否为密钥配置项。（默认为False）
+        :param table_name: 配置项表名。
+
+        :return: 配置文件中对应配置项的值。
+        '''
         cls.watch()
         q = q.lower()
         value = None
 
-        if not table_name:  # if table_name is not provided, search for the value in all tables
-            found = False
-            for t in cls.values.keys():  # search for the value in all tables
-                for tt in cls.values[t].keys():
-                    if isinstance(cls.values[t][tt], Table):
+        if not table_name:
+            if not _global:  # if table_name is not provided, search for the value in config.toml tables
+                for t in cls.values['config'].keys():
+                    if isinstance(cls.values['config'][t], Table):
                         """
-                        [Config]
-                        xxx = xxx  <- get the value inside the table
+                        [config]
+                        foo = bar  <- get the value inside the table
                         """
-                        value = cls.values[t][tt].get(q)
-                        if value is not None:
-                            found = True
-                            break
+                        if secret:
+                            if 'secret' in cls.values['config']:
+                                value = cls.values['config']['secret'].get(q)
+                                if value is not None:
+                                    break
+                        else:
+                            if 'config' in cls.values['config']:
+                                value = cls.values['config']['config'].get(q)
+                                if value is not None:
+                                    break
                     else:
                         """
-                        xxx = xxx <- if the item is not a table, assume it's a key-value pair outside the table
-                        [Config]
-                        xxx = xxx
+                        foo = bar <- if the item is not a table, assume it's a key-value pair outside the table
+                        [config]
+                        foo = bar
                         """
-                        if tt == q:
-                            value = cls.values[t][tt]
-                            found = True
+                        if t == q:
+                            value = cls.values['config'][t]
                             break
-                if found:
-                    break
+            else:  # search for the value in all tables
+                found = False
+                for t in cls.values:
+                    for tt in cls.values[t].keys():
+                        if isinstance(cls.values[t][tt], Table):
+                            value = cls.values[t][tt].get(q)
+                            if value is not None:
+                                found = True
+                                break
+                        else:
+                            if tt == q:
+                                value = cls.values[t][tt]
+                                found = True
+                                break
+                    if found:
+                        break
         else:
-            target = table_name + '_secret' if secret else table_name
+            table_name = table_name.lower()
+            # if table_name is provided, write the value to the specified table
+            if table_name != 'config':
+                target = f"{table_name}{'_secret' if secret else ''}"
+            else:
+                target = 'secret' if secret else 'config'
             try:
                 # if table_name is provided, get for the value in the specified table directly
                 value = cls.values[table_name].get(target).get(q)
@@ -146,7 +183,7 @@ class CFGManager:
 
             return default
         if cfg_type:
-            if isinstance(cfg_type, type) or isinstance(cfg_type, tuple):
+            if isinstance(cfg_type, (type, tuple)):
                 if isinstance(cfg_type, tuple):
                     cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
                     if value is not None and not isinstance(value, cfg_type):
@@ -167,52 +204,90 @@ class CFGManager:
                     f'[Config] Config {q} has a wrong type, expected {
                         type(default).__name__}, got {
                         type(value).__name__}.')
-                return default
         return value
 
     @classmethod
     def write(cls, q: str, value: Union[Any, None], cfg_type: Union[type, tuple, None] = None, secret: bool = False,
               table_name: Optional[str] = None, _generate: bool = False):
+        '''
+        修改配置文件中的配置项。
+
+        :param q: 配置项键名。
+        :param value: 修改值。
+        :param cfg_type: 配置项类型。
+        :param secret: 是否为密钥配置项。（默认为False）
+        :param table_name: 配置项表名。
+        '''
         cls.watch()
         q = q.lower()
-        found = False
-        if value is None and _generate:  # if the value is None when generating the config file, fill with a placeholder
-            if cfg_type:
-                if isinstance(cfg_type, tuple):
-                    cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
-                else:
-                    cfg_type_str = cfg_type.__name__
-                value = f"<Replace me with {cfg_type_str} value>"
-            else:
-                value = "<Replace me>"
-        if value is None:  # if the value is None, skip to autofill
-            logger.debug(f'[Config] Config {q} has no default value, skipped to auto fill.')
-            return
-
-        if not table_name:  # if table_name is not provided, search for the value in all tables
-            for t in cls.values.keys():  # search for the value in all tables
-                for tt in cls.values[t].keys():
-                    if isinstance(cls.values[t][tt], Table):
-                        """
-                        [Config]
-                        xxx = xxx  <- get the value inside the table
-                        """
-                        if q in cls.values[t][tt]:
-                            cls.values[t][tt][q] = value
-                            found = True
-                            break
+        if value is None:
+            if _generate:  # if the value is None when generating the config file, fill with a placeholder
+                if cfg_type:
+                    if isinstance(cfg_type, tuple):
+                        cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
                     else:
-                        """
-                        xxx = xxx <- if the item is not a table, assume it's a key-value pair outside the table
-                        [Config]
-                        xxx = xxx
-                        """
-                        if tt == q:
-                            cls.values[t][tt] = value
-                            found = True
-                            break
+                        cfg_type_str = cfg_type.__name__
+                    value = f"<Replace me with {cfg_type_str} value>"
+                else:
+                    value = "<Replace me>"
+            else:  # if the value is None, skip to autofill
+                logger.info(f'[Config] Config {q} has no default value, skipped to auto fill.')
+                return
+
+        found = False
+        if not table_name:  # if table_name is not provided, search for the value in config.toml tables
+            for t in cls.values['config'].keys():
+                if isinstance(cls.values['config'][t], Table):
+                    """
+                    [config]
+                    foo = bar  <- get the value inside the table
+                    """
+                    if secret:
+                        if 'secret' in cls.values['config']:
+                            if q in cls.values['config']['secret']:
+                                cls.values['config']['secret'][q] = value
+                                found = True
+                                break
+                    else:
+                        if 'config' in cls.values['config']:
+                            if q in cls.values['config']['config']:
+                                cls.values['config']['config'][q] = value
+                                found = True
+                                break
+                else:
+                    """
+                    foo = bar <- if the item is not a table, assume it's a key-value pair outside the table
+                    [config]
+                    foo = bar
+                    """
+                    if t == q:
+                        cls.values['config'][t] = value
+                        found = True
+                        break
+        else:
+            table_name = table_name.lower()
+            # if table_name is provided, write the value to the specified table
+            if table_name == 'secret':
+                table_name = 'config'
+                secret = True
+            if table_name.endswith('_secret'):
+                table_name = table_name.removesuffix('_secret')
+                secret = True
+
+            if table_name != 'config':
+                target = f"{table_name}{'_secret' if secret else ''}"
+            else:
+                target = 'secret' if secret else 'config'
+            try:
+                # if table_name is provided, get for the value in the specified table directly
+                if cls.values[table_name][target][q]:
+                    cls.values[table_name][target][q] = value
+                    found = True
+            except (AttributeError, KeyError):
+                pass
+
         if not found:  # if the value is not found, write the default value to the config file
-            if table_name:  # if table_name is provided, write the value to the specified table
+            if table_name and table_name != 'config':  # if table_name is provided, write the value to the specified table
                 cfg_name = table_name
                 target = f"{table_name}{'_secret' if secret else ''}"
             else:
@@ -249,14 +324,17 @@ class CFGManager:
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))
+
             try:
                 cls.values[cfg_name][target].add(q, value)
             except KeyAlreadyPresent:
-                pass
-            qc = f'config.comments.{q}'
-            localed_comment = get_locale.t(qc, fallback_failed_prompt=False)  # get the comment for the key from locale
-            if localed_comment != qc:
-                cls.values[cfg_name][target].value.item(q).comment(localed_comment)
+                cls.values[cfg_name][target][q] = value
+            finally:
+                qc = f'config.comments.{q}'
+                # get the comment for the key from locale
+                localed_comment = get_locale.t(qc, fallback_failed_prompt=False)
+                if localed_comment != qc:
+                    cls.values[cfg_name][target].value.item(q).comment(localed_comment)
 
         if _generate:
             return
@@ -265,25 +343,29 @@ class CFGManager:
         cls.load()
 
     @classmethod
-    def delete(cls, q: str) -> bool:
+    def delete(cls, q: str, table_name: Optional[str] = None) -> bool:
+        '''
+        删除配置文件中的配置项。
+
+        :param q: 配置项键名。
+        :param table_name: 配置项表名。
+        '''
         cls.watch()
         q = q.lower()
         found = False
-        for t in cls.values.keys():
-            for tt in cls.values[t].keys():
-                if isinstance(cls.values[t][tt], Table):
-                    if q in cls.values[t][tt]:
-                        del cls.values[t][tt][q]
+        table_name = 'config' if not table_name else table_name.lower()
+        try:
+            for t in cls.values[table_name].keys():
+                if isinstance(cls.values[table_name][t], Table):
+                    if q in cls.values[table_name][t]:
+                        del cls.values[table_name][t][q]
                         found = True
-                        break
-                else:
-                    if cls.values[t][tt] == q:
-                        del cls.values[t][tt]
-                        found = True
-                        break
+        except (AttributeError, KeyError):
+            pass
 
         if not found:
             return False
+
         cls.save()
         return True
 
@@ -311,12 +393,28 @@ def Config(q: str,
            secret: bool = False,
            table_name: Optional[str] = None,
            get_url: bool = False,
-           _generate: bool = False):
+           _global: bool = False,
+           _generate: bool = False) -> Any:
+    '''
+    获取配置文件中的配置项。
+
+    :param q: 配置项键名。
+    :param default: 默认值。
+    :param cfg_type: 配置项类型。
+    :param secret: 是否为密钥配置项。（默认为False）
+    :param table_name: 配置项表名。
+    :param get_url: 是否为URL配置项。（默认为False）
+
+    :return: 配置文件中对应配置项的值。
+    '''
     if get_url:
-        v = CFGManager.get(q, default, str, secret, table_name=table_name, _generate=_generate)
-        if v:
-            if v[-1] != '/':
-                v += '/'
+        v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
+        if v and v[-1] != '/':
+            v += '/'
     else:
-        v = CFGManager.get(q, default, cfg_type, secret, table_name, _generate)
+        v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v
+
+
+add_export(Config)
+add_export(CFGManager)

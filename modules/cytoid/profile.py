@@ -5,15 +5,14 @@ from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
 
 
-async def cytoid_profile(msg: Bot.MessageSession):
-    pat = msg.parsed_msg.get('<UserID>', False)
-    if pat:
-        query_id = pat.lower()
+async def cytoid_profile(msg: Bot.MessageSession, username):
+    if username:
+        query_id = username.lower()
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if not query_id:
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
-    profile_url = 'http://services.cytoid.io/profile/' + query_id
+    profile_url = f'http://services.cytoid.io/profile/{query_id}'
     try:
         profile = json.loads(await get_url(profile_url, 200))
     except ValueError as e:
@@ -32,9 +31,9 @@ async def cytoid_profile(msg: Bot.MessageSession):
     rating = profile['rating']
     grade: dict = profile['grade']
     grade_t = []
-    max = grade.get('MAX')
-    if max:
-        grade_t.append(f'MAX: {max}')
+    max_ = grade.get('MAX')
+    if max_:
+        grade_t.append(f'MAX: {max_}')
     sss = grade.get('SSS')
     if sss:
         grade_t.append(f'SSS: {sss}')

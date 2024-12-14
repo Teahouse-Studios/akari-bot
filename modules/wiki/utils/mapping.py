@@ -2,11 +2,20 @@ request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
     # re.compile(r'.*runescape\.wiki'),
 ]
 
+infobox_elements = ['div#infoboxborder',
+                    '.arcaeabox',
+                    '.infobox',
+                    '.infoboxtable',
+                    '.infotemplatebox',
+                    '.moe-infobox',
+                    '.notaninfobox',
+                    '.portable-infobox',
+                    '.rotable',
+                    '.skin-infobox',
+                    '.tpl-infobox',
+                    ]
+
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
-
-special_namespace_list = ['special', '特殊']
-
-random_title_list = ['random', '随机页面', '隨機頁面']
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
                  'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then

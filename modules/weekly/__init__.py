@@ -58,7 +58,7 @@ async def get_weekly(with_img=False, zh_tw=False):
 
 
 async def get_weekly_img(with_img=False, zh_tw=False):
-    locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
+    # locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
     img = await generate_screenshot_v2('https://zh.minecraft.wiki/wiki/Minecraft_Wiki/' +
                                        ('?variant=zh-tw' if zh_tw else ''), content_mode=False, allow_special_page=True,
                                        element=['div#fp-section-weekly'])
@@ -84,15 +84,15 @@ wky = module('weekly', developers=['Dianliang233'], support_languages=['zh_cn', 
 
 @wky.handle('{{weekly.help}}')
 async def _(msg: Bot.MessageSession):
-    weekly = await get_weekly(True if msg.target.client_name in ['QQ', 'TEST'] else False,
-                              zh_tw=True if msg.locale.locale == 'zh_tw' else False)
+    weekly = await get_weekly(msg.target.client_name in ['QQ', 'TEST'],
+                              zh_tw=msg.locale.locale == 'zh_tw')
     await msg.finish(weekly)
 
 
 @wky.handle('image {{weekly.help.image}}')
 async def _(msg: Bot.MessageSession):
-    await msg.finish(await get_weekly_img(True if msg.target.client_name in ['QQ', 'TEST'] else False,
-                                          zh_tw=True if msg.locale.locale == 'zh_tw' else False))
+    await msg.finish(await get_weekly_img(msg.target.client_name in ['QQ', 'TEST'],
+                                          zh_tw=msg.locale.locale == 'zh_tw'))
 
 
 @wky.handle('teahouse {{weekly.help.teahouse}}')

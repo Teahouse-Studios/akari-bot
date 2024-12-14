@@ -125,7 +125,7 @@
                         {% if doc == msg.locale.t("core.help.options") %}
                             <div class="available-options-header">{{ msg.locale.t("core.help.options") }}</div>
                         {% else %}
-                            <div class="help-detail">{{ escape(doc) }}</div>
+                            <div class="help-detail">{{ escape(doc) | safe }}</div>
                         {% endif %}
                     {% endfor %}
                     </div>
@@ -147,7 +147,7 @@
                     {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
                 (regex.pattern.pattern if isinstance(regex.pattern, repattern) else None) %}
                     {% if pattern %}
-                        <div class="help-detail">{{ escape(pattern) }} {{ msg.locale.t("core.message.help.regex.detail",
+                        <div class="help-detail">{{ escape(pattern) | safe }} {{ msg.locale.t("core.message.help.regex.detail",
                                                                       msg=msg.locale.t_str(regex.desc)) if regex.desc else
                                                                        msg.locale.t("core.message.help.regex.no_information") }}</div>
                     {%- endif %}
@@ -171,7 +171,13 @@
             help_alias_layout.style.setProperty('padding', '0')
             const help_commands = document.querySelector('.help-commands')
             help_alias_layout.style.setProperty('width', help_commands.getBoundingClientRect().width + 'px')
+
         }
+        if (layout.getBoundingClientRect().width <= 500){
+                console.log(layout.getBoundingClientRect().width)
+                const authors = document.querySelector('.help-shard .authors')
+                authors.style.position = 'static'
+            }
     }
 </script>
 </body>

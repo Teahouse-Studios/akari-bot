@@ -1,24 +1,23 @@
 import asyncio
 import re
-from typing import Union
+from typing import Optional, Union
 
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.builtins import MessageSession
 from core.component import module
 from core.constants.exceptions import AbuseWarning
 from core.constants.info import Info
 from core.logger import Logger
-from core.types import MessageSession
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 from .utils.dbutils import WikiTargetInfo
-from .utils.mapping import generate_screenshot_v2_blocklist, special_namespace_list, random_title_list
+from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
-
 
 wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
@@ -58,10 +57,17 @@ async def _(msg: Bot.MessageSession, pageid: str):
     await query_pages(msg, pageid=pageid, iw=iw, lang=lang)
 
 
-async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
-                      pageid: str = None, iw: str = None, lang: str = None,
-                      template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None,
-                      start_wiki_api=None):
+async def query_pages(session: Union[Bot.MessageSession, QueryInfo],
+                      title: Optional[Union[str, list, tuple]] = None,
+                      pageid: Optional[str] = None,
+                      iw: Optional[str] = None,
+                      lang: Optional[str] = None,
+                      preset_message: Optional[str] = None,
+                      start_wiki_api: Optional[str] = None,
+                      template: bool = False,
+                      mediawiki: bool = False,
+                      use_prefix: bool = True,
+                      inline_mode: bool = False):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
@@ -149,24 +155,20 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd.split(":")[0].lower() in special_namespace_list and rd.split(":")[1].lower() in random_title_list:
-                    tasks.append(asyncio.create_task(
-                        WikiLib(q, headers, locale=session.locale.locale).random_page()))
-                else:
-                    if template:
-                        rd = f'Template:{rd}'
-                    if mediawiki:
-                        rd = f'MediaWiki:{rd}'
-                    tasks.append(asyncio.ensure_future(
-                        WikiLib(q, headers, locale=session.locale.locale)
-                        .parse_page_info(title=rd, inline=inline_mode, lang=lang)))
+                if template:
+                    rd = f'Template:{rd}'
+                if mediawiki:
+                    rd = f'MediaWiki:{rd}'
+                tasks.append(asyncio.ensure_future(
+                    WikiLib(q, headers, locale=session.locale.locale)
+                    .parse_page_info(title=rd, inline=inline_mode, lang=lang)))
             for rdp in ready_for_query_ids:
                 tasks.append(asyncio.ensure_future(
                     WikiLib(q, headers, locale=session.locale.locale)
                     .parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)))
             query = await asyncio.gather(*tasks)
             for result in query:
-                Logger.debug(result.__dict__)
+                Logger.debug(result)
                 r: PageInfo = result
                 display_title = None
                 display_before_title = None
@@ -262,9 +264,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
-                                    if isint(display):
-                                        if int(display) <= len(forum_data) - 1:
-                                            await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)
+                                    if isint(display) and int(display) <= len(forum_data) - 1:
+                                        await query_pages(session, title=forum_data[display]['text'], start_wiki_api=r.info.api)
 
                                 await session.send_message(i_msg_lst, callback=_callback)
 

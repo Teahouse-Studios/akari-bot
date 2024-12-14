@@ -13,16 +13,13 @@ from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
-from core.utils.web_render import check_web_render
-
-from tomlkit.items import Table
 
 
 async def init_async(start_scheduler=True) -> None:
     try:
         Info.version = os.popen('git rev-parse HEAD', 'r').read()
     except Exception:
-        Logger.warning(f'Failed to get Git commit hash, is it a Git repository?')
+        Logger.warning('Failed to get Git commit hash, is it a Git repository?')
     load_modules()
     gather_list = []
     modules = ModulesManager.return_modules_list()
@@ -37,10 +34,10 @@ async def init_async(start_scheduler=True) -> None:
         if not Info.subprocess:
             load_extra_schedulers()
         await JobQueue.secret_append_ip()
+        await JobQueue.web_render_status()
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
-    asyncio.create_task(check_web_render())
     Logger.info(f'Hello, {Info.client_name}!')
 
 

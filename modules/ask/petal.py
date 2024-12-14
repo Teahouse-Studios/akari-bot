@@ -45,7 +45,7 @@ async def load_or_refresh_cache():
 
     exchanged_petal_data = await get_petal_exchange_rate()
     if exchanged_petal_data:
-        Logger.info(f'Petal exchange rate is expired or cannot be found. Updating...')
+        Logger.info('Petal exchange rate is expired or cannot be found. Updating...')
         with open(file_path, 'wb') as file:
             exchanged_petal_data["update_time"] = datetime.now().strftime("%Y-%m-%d")
             file.write(json.dumps(exchanged_petal_data))

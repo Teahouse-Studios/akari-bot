@@ -2,13 +2,13 @@ import traceback
 
 import discord
 
-from bots.discord.message import convert_embed, MessageSession as MessageSessionT
-from core.builtins import Plain, Image, MessageTaskManager
+from bots.discord.message import convert_embed, MessageSession as MessageSessionT, FinishedSession as FinS
+from core.builtins import MessageTaskManager
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed, I18NContext
+from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
+from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.logger import Logger
-from core.types import FinishedSession as FinS
 
 enable_analytics = Config('enable_analytics', False)
 
@@ -50,19 +50,19 @@ class MessageSession(MessageSessionT):
         send = []
         first_send = True
         for x in message_chain.as_sendable(self):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 if first_send:
                     send_ = await self.session.message.respond(x.text)
                 else:
                     send_ = await self.session.message.send(x.text)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 if first_send:
                     send_ = await self.session.message.respond(file=discord.File(await x.get()))
                 else:
                     send_ = await self.session.message.send(file=discord.File(await x.get()))
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
-            elif isinstance(x, Embed):
+            elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x)
                 if first_send:
                     send_ = await self.session.message.respond(embed=embeds)

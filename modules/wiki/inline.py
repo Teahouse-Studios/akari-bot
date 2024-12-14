@@ -203,10 +203,9 @@ async def _(msg: Bot.MessageSession):
 
                                 async def _callback(msg: Bot.MessageSession):
                                     display = msg.as_display(text_only=True)
-                                    if isint(display):
-                                        if int(display) <= len(forum_data) - 1:
-                                            await query_pages(msg, title=forum_data[display]['text'],
-                                                              start_wiki_api=get_page.info.api)
+                                    if isint(display) and int(display) <= len(forum_data) - 1:
+                                        await query_pages(msg, title=forum_data[display]['text'],
+                                                          start_wiki_api=get_page.info.api)
 
                                 await msg.send_message(i_msg_lst, callback=_callback)
                 if len(query_list) == 1 and img_send:

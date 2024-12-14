@@ -1,9 +1,9 @@
 <div align="center">
   <img width="512" src="./assets/character_marked.png" alt="logo">
 
-# 小可 · AkariBot v4
+# 小可 · AkariBot
 
-_基于 OneBot 11 开发的可扩展、多平台机器人_
+_多功能、多语言、多平台支持的异步聊天机器人_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)<!--![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?include_prereleases)-->
@@ -17,15 +17,15 @@ _基于 OneBot 11 开发的可扩展、多平台机器人_
 
 ## 介绍
 
-**小可**是基于 OneBot 11 开发的可扩展、多平台机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
+**小可**是可扩展的多功能、多语言、多平台支持的异步聊天机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
 
-目前小可还正在持续开发中。
+目前小可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
 
 ## 平台
 
 小可目前支持以下平台：
 
--   QQ
+-   QQ（官方/第三方）
 -   Discord
 -   Telegram
 -   KOOK
@@ -43,6 +43,7 @@ _基于 OneBot 11 开发的可扩展、多平台机器人_
 <div align="left">
   <img width="200" src="./assets/qqbot_qr_guild.png" alt="guild qr">
   <img width="200" src="./assets/qqbot_qr_group.png" alt="group qr">
+</div>
 
 ##### 第三方协议
 由于腾讯风控问题，请[在此提交](https://github.com/Teahouse-Studios/akari-bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+)入群申请。
@@ -67,13 +68,13 @@ _基于 OneBot 11 开发的可扩展、多平台机器人_
 
 ### 自搭建
 
-你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
+推荐前往[此项目](https://github.com/Teahouse-Studios/akari-bot-core)通过小可核心版进行搭建，你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 
-### 多语言
+### 本地化
 
-你可以前往 [Crowdin](https://crowdin.com/project/akari-bot) 参与改进小可的多语言支持。
+你可以前往 [Crowdin](https://crowdin.com/project/akari-bot) 参与改进小可的本地化支持。
 
 ### 贡献
 

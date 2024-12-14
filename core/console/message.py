@@ -1,18 +1,19 @@
 import asyncio
-from typing import List, Union
+from typing import Union
 
-from inputimeout import inputimeout, TimeoutOccurred
 from PIL import Image as PILImage
+from inputimeout import inputimeout, TimeoutOccurred
 
-from core.builtins import (Plain, I18NContext, Image, confirm_command, Bot, FetchTarget as FetchTargetT,
-                           FetchedSession as FetchedSessionT)
+from core.builtins import (Plain, I18NContext, confirm_command, Bot, FetchTarget as FetchTargetT,
+                           FetchedSession as FetchedSessionT, FinishedSession as FinS)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement
 from core.config import Config
 from core.console.info import *
 from core.constants.exceptions import WaitCancelException
 from core.logger import Logger
-from core.types import Session, MsgInfo, FinishedSession as FinS
+from core.types import Session, MsgInfo
 
 
 class FinishedSession(FinS):
@@ -29,7 +30,7 @@ class MessageSession(MessageSessionT):
         embed = False
         forward = False
         delete = False
-        markdown = True
+        markdown = False
         quote = False
         rss = True
         typing = True
@@ -40,10 +41,10 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
         for x in message_chain.as_sendable(self, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 print(x.text)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 image_path = await x.get()
                 img = PILImage.open(image_path)
                 img.show()
@@ -119,8 +120,7 @@ class MessageSession(MessageSessionT):
                                              target_from=target_prefix,
                                              sender_from=sender_prefix,
                                              client_name=client_name,
-                                             message_id=0,
-                                             reply_id=None),
+                                             message_id=0),
                               session=Session(message=c, target=f'{target_prefix}|0', sender=f'{sender_prefix}|0'))
 
     async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
@@ -195,6 +195,7 @@ class FetchedSession(FetchedSessionT):
     async def send_message(self, message_chain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
+
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
@@ -213,7 +214,7 @@ class FetchTarget(FetchTargetT):
                               sender_id='0')
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         fetch = await FetchTarget.fetch_target('0')
         if i18n:
             await fetch.send_message(fetch.parent.locale.t(message, **kwargs))

@@ -13,8 +13,6 @@ enable_urlmanager = false # 是否啟用 URLManager，用於 URL 跳板用。（
 ignored_sender = ["QQ|2854196310"] # 無視的使用者列表，匹配到此列表中的使用者將會被忽略。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 問題報告網址。
 enable_analytics = false # 是否啟用內建的統計功能。
-qq_typing_emoji = 181 # 使用 QQ 相關協定端時，正在處理訊息時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
-api_port = 5000 # API 服務的連接埠號。
 enable_petal = false # 是否啟用花瓣功能。
 enable_rickroll = true # 當文字過濾偵測失敗時，是否 Rickroll 使用者。
 rickroll_msg = "<Replace me with str value>" # 文字過濾偵測失敗時的 Rickroll 訊息。
@@ -32,7 +30,6 @@ confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認�
 command_prefix = ["~", "～"] # 指令前綴，此處填入的值將會被辨識為指令前綴。
 enable_tos = true # 是否啟用內建的 ToS 檢查規則。
 tos_temp_ban_time = 300 # 違反 ToS 時的暫時封鎖時間。
-qq_limited_emoji = 10060 # 使用 QQ 相關協定端時，訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
 allow_request_private_ip = false # 是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）
 enable_get_petal = false # 是否允許取得花瓣。
 gained_petal_limit = 0 # 單日取得花瓣上限。
@@ -66,7 +63,7 @@ wordle_disable_image = false # wordle 模組是否停用圖片。
 slower_schedule = false # 是否啟用更慢的排程任務調度器。（減少請求壓力用）
 
 [secret]
-# 設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+# 金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
 proxy = "<Replace me with str value>" # 代理服務位址。
 check_access_key_id = "<Replace me with str value>" # 阿里雲內容安全服務的 AccessKey ID。
 check_access_key_secret = "<Replace me with str value>" # 阿里雲內容安全服務的 AccessKey Secret。

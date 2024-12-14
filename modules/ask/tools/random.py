@@ -5,13 +5,13 @@ from core.utils.random import Random
 from .utils import AkariTool, parse_input
 
 
-async def random_number(max: int, min: int):
-    random = Random.randint(min, max)
+async def random_number(mininum: int, maxinum: int):
+    random = Random.randint(mininum, maxinum)
     return random
 
 
-async def random_choice(input: List[str]):
-    parsed = parse_input(input)
+async def random_choice(input_: List[str]):
+    parsed = parse_input(input_)
     return Random.choice(parsed)
 
 

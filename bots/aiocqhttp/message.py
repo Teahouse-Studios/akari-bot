@@ -14,16 +14,16 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import CQCodeHandler, qq_frame_type
-from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Image, Plain, Temp, Voice, \
-    MessageTaskManager
+from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
+from core.builtins import Bot, base_superuser_list, command_prefix, I18NContext, Temp, \
+    MessageTaskManager, FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT, Plain, Image, Voice
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 
@@ -105,7 +105,7 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         count = 0
         for x in message_chain_assendable:
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 if enable_parse_message:
                     parts = re.split(r'(\[CQ:[^\]]+\])', x.text)
                     parts = [part for part in parts if part]
@@ -140,9 +140,9 @@ class MessageSession(MessageSessionT):
                 else:
                     convert_msg_segments = convert_msg_segments + \
                         MessageSegment.text(('\n' if count != 0 else '') + x.text)
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 convert_msg_segments = convert_msg_segments + MessageSegment.image('base64://' + await x.get_base64())
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 if self.target.target_from != target_guild_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
@@ -216,9 +216,9 @@ class MessageSession(MessageSessionT):
             m = html.unescape(self.session.message.message)
             if text_only:
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
-                m = re.sub(CQCodeHandler.pattern, '', m)
+                m = CQCodeHandler.pattern.sub('', m)
             else:
-                m = CQCodeHandler.pattern.sub(CQCodeHandler.filter_cq, m)
+                m = CQCodeHandler.filter_cq(m)
                 m = re.sub(r'\[CQ:at,qq=(.*?)]', fr'{sender_prefix}|\1', m)
                 m = re.sub(r'\[CQ:json,data=(.*?)]', r'\1', m).replace("\\/", "/")
                 m = re.sub(r'\[CQ:text,qq=(.*?)]', r'\1', m)
@@ -246,7 +246,7 @@ class MessageSession(MessageSessionT):
             get_ = get_stored_list(Bot.FetchTarget, 'forward_msg')
             if not get_['status']:
                 await self.send_message(self.locale.t("core.message.forward_msg.disabled"))
-                raise
+                raise ValueError
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def delete(self):
@@ -285,7 +285,8 @@ class MessageSession(MessageSessionT):
                         if cq_data['type'] == 'text':
                             lst.append(Plain(cq_data['data'].get('text')))
                         elif cq_data['type'] == 'image':
-                            if qq_frame_type() == 'lagrange':
+                            obi = await get_onebot_implementation()
+                            if obi == 'lagrange':
                                 img_src = cq_data['data'].get('file')
                             else:
                                 img_src = cq_data['data'].get('url')
@@ -304,7 +305,8 @@ class MessageSession(MessageSessionT):
                 if item["type"] == "text":
                     lst.append(Plain(item["data"]["text"]))
                 elif item["type"] == "image":
-                    if qq_frame_type() == 'lagrange':
+                    obi = await get_onebot_implementation()
+                    if obi == 'lagrange':
                         lst.append(Image(item["data"]["file"]))
                     else:
                         lst.append(Image(item["data"]["url"]))
@@ -329,22 +331,23 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
-                if qq_frame_type() == 'ntqq':
+                obi = await get_onebot_implementation()
+                if obi == 'ntqq':
                     await bot.call_action('set_msg_emoji_like', message_id=self.msg.session.message.message_id,
-                                          emoji_id=str(Config('qq_typing_emoji', 181, (str, int))))
+                                          emoji_id=str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_aiocqhttp')))
                 else:
                     if self.msg.session.sender in last_send_typing_time:
                         if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                             return
                     last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
 
-                    if qq_frame_type() == 'lagrange':
+                    if obi == 'lagrange':
                         await bot.call_action('group_poke', group_id=self.msg.session.target,
                                               user_id=self.msg.session.sender)
-                    elif qq_frame_type() == 'shamrock':
+                    elif obi == 'shamrock':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:touch,id={self.msg.session.sender}]')
-                    elif qq_frame_type() == 'mirai':
+                    elif obi == 'go-cqhttp':
                         await bot.send_group_msg(group_id=self.msg.session.target,
                                                  message=f'[CQ:poke,qq={self.msg.session.sender}]')
                     else:
@@ -376,7 +379,7 @@ class FetchTarget(FetchTargetT):
             return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
-    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
+    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
         lst = []
         group_list_raw = await bot.call_action('get_group_list')
         group_list = []
@@ -409,7 +412,7 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
         module_name = None if module_name == '*' else module_name
@@ -431,7 +434,7 @@ class FetchTarget(FetchTargetT):
                     msgchain = MessageChain(msgchain)
                     new_msgchain = []
                     for v in msgchain.value:
-                        if isinstance(v, Image):
+                        if isinstance(v, ImageElement):
                             new_msgchain.append(await v.add_random_noise())
                         else:
                             new_msgchain.append(v)
@@ -468,14 +471,15 @@ class FetchTarget(FetchTargetT):
             for x in user_list:
                 await post_(x)
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "QQ")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
             group_list_raw = await bot.call_action('get_group_list')
             group_list = [g['group_id'] for g in group_list_raw]
             friend_list_raw = await bot.call_action('get_friend_list')
             friend_list = [f['user_id'] for f in friend_list_raw]
 
             guild_list = []
-            if qq_frame_type() == 'mirai':
+            obi = await get_onebot_implementation()
+            if obi == 'go-cqhttp':
                 guild_list_raw = await bot.call_action('get_guild_list')
                 for g in guild_list_raw:
                     try:
@@ -532,9 +536,6 @@ class FetchTarget(FetchTargetT):
                 asyncio.create_task(post_not_in_whitelist(else_))
                 Logger.info(f"The task of posting messages to whitelisted groups is complete. "
                             f"Posting message to {len(else_)} groups not in whitelist.")
-
-    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

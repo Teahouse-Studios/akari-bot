@@ -25,21 +25,18 @@ store_path_megolm_backup = os.path.join(store_path, 'megolm_backup')
 store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
 
 if homeserver and user and device_id and token:
-    if not os.path.exists(store_path):
-        os.mkdir(store_path)
-    if not os.path.exists(store_path_nio):
-        os.mkdir(store_path_nio)
+    os.makedirs(store_path, exist_ok=True)
+    os.makedirs(store_path_nio, exist_ok=True)
     if megolm_backup_passphrase:
-        if not os.path.exists(store_path_megolm_backup):
-            os.mkdir(store_path_megolm_backup)
+        os.makedirs(store_path_megolm_backup, exist_ok=True)
         if len(megolm_backup_passphrase) <= 10:
             Logger.warning("matrix_megolm_backup_passphrase is too short. It is insecure.")
     else:
         Logger.warning(
-            f"Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
+            "Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
 
     if homeserver.endswith('/'):
-        Logger.warning(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
+        Logger.warning("The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
     homeserver_host = urllib3.util.parse_url(homeserver).host
     bot: AsyncClient = AsyncClient(homeserver,
                                    user,
@@ -47,8 +44,8 @@ if homeserver and user and device_id and token:
                                    config=AsyncClientConfig(store_sync_tokens=True))
     bot.restore_login(user, device_id, token)
     if bot.olm:
-        Logger.info(f"Matrix E2E encryption support is available.")
+        Logger.info("Matrix E2E encryption support is available.")
     else:
-        Logger.info(f"Matrix E2E encryption support is not available.")
+        Logger.info("Matrix E2E encryption support is not available.")
 else:
     bot = False

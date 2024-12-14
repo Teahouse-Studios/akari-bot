@@ -1,19 +1,15 @@
-import base64
 import traceback
-import urllib.parse
 from datetime import datetime, timedelta, timezone
 from typing import Tuple
 
 import matplotlib.pyplot as plt
-import orjson as json
-import zipfile
 from dateutil.relativedelta import relativedelta
 
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.config import Config
-from core.database import session, BotDBUtil
-from core.database.tables import AnalyticsData, is_mysql
+from core.database import BotDBUtil
+from core.database.tables import is_mysql
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 

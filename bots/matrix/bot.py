@@ -11,7 +11,7 @@ from bots.matrix.client import bot
 from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets, Url
+from core.builtins import PrivateAssets
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -21,7 +21,6 @@ from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, 'private', 'matrix'))
-Url.disable_mm = True
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
@@ -38,8 +37,6 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     Logger.info(f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}")
-    if event.sender == client.user or event.prev_membership == event.membership:
-        pass
     # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == 'invite'
     # if not is_direct:
     #     resp = await bot.room_get_state_event(room.room_id, 'm.room.member', client.user)
@@ -121,7 +118,7 @@ async def on_verify(event: nio.KeyVerificationEvent):
 async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown):
     if event.msgtype == 'm.key.verification.request':
         Logger.info(f"Cancelling in-room verification in {room.room_id}")
-        msg = 'You are requesting a in-room verification to akari-bot. But I does not support in-room-verification at this time, please use to-device verification!'
+        msg = 'You are requesting a in-room verification to AkariBot. But I does not support in-room-verification at this time, please use to-device verification!'
         await bot.room_send(room.room_id, 'm.room.message', {
             'msgtype': 'm.notice',
             'body': msg
@@ -163,7 +160,7 @@ async def start():
     # E2EE setup
     if bot.olm:
         if bot.should_upload_keys:
-            Logger.info(f"Uploading matrix E2E encryption keys...")
+            Logger.info("Uploading matrix E2E encryption keys...")
             resp = await bot.keys_upload()
             if isinstance(
                     resp,
@@ -181,22 +178,24 @@ async def start():
                     if not isinstance(resp, nio.KeysUploadError):
                         Logger.info(f"Successfully uploaded matrix OTK keys after {keys} claims.")
                         break
-        megolm_backup_path = os.path.join(client.store_path_megolm_backup, f"restore.txt")
+        megolm_backup_path = os.path.join(client.store_path_megolm_backup, "restore.txt")
         if os.path.exists(megolm_backup_path):
-            pass_path = os.path.join(client.store_path_megolm_backup, f"restore-passphrase.txt")
-            assert os.path.exists(pass_path)
+            pass_path = os.path.join(client.store_path_megolm_backup, "restore-passphrase.txt")
+            if not os.path.exists(pass_path):
+                Logger.error(f"Passphrase file {pass_path} not found.")
+                return
             Logger.info(f"Importing megolm keys backup from {megolm_backup_path}")
             with open(pass_path) as f:
                 passphrase = f.read()
             await bot.import_keys(megolm_backup_path, passphrase)
-            Logger.info(f"Megolm backup imported.")
+            Logger.info("Megolm backup imported.")
 
     # set device name
     if client.device_name:
         asyncio.create_task(bot.update_device(client.device_id, {"display_name": client.device_name}))
 
     # sync joined room state
-    Logger.info(f"Starting sync room full state...")
+    Logger.info("Starting sync room full state...")
     # bot.upload_filter(presence={'limit':1},room={'timeline':{'limit':1}})
     resp = await bot.sync(timeout=10000, since=bot.next_batch, full_state=True, set_presence='unavailable')
     await bot._handle_invited_rooms(resp)
@@ -205,10 +204,10 @@ async def start():
     await init_async()
     await load_prompt(FetchTarget)
 
-    Logger.info(f"starting sync loop...")
-    await bot.set_presence('online', f"akari-bot {Info.version}")
+    Logger.info("starting sync loop...")
+    await bot.set_presence('online', f"AkariBot {Info.version}")
     await bot.sync_forever(timeout=30000, full_state=False)
-    Logger.info(f"sync loop stopped.")
+    Logger.info("sync loop stopped.")
 
     if bot.olm:
         if client.megolm_backup_passphrase:
@@ -223,12 +222,12 @@ async def start():
                 os.rename(backup_path, old_backup_path)
             Logger.info(f"Saving megolm keys backup to {backup_path}")
             await bot.export_keys(backup_path, client.megolm_backup_passphrase)
-            Logger.info(f"Megolm backup exported.")
+            Logger.info("Megolm backup exported.")
 
     await bot.set_presence('offline')
 
 
-if bot and Config("enable", False, cfg_type=bool, table_name='bot_matrix'):
+if bot and Config("enable", False, table_name='bot_matrix'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

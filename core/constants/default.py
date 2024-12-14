@@ -1,10 +1,10 @@
 default_locale = 'zh_cn'
 
-confirm_command = ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y']
-command_prefix = ['~', '～']
+confirm_command_default = ['是', '对', '對', 'yes', 'Yes', 'YES', 'y', 'Y']
+command_prefix_default = ['~', '～']
 lang_list = {'zh_cn': '简体中文', 'zh_tw': '繁體中文', 'en_us': 'English'}
 
-qq_account_default = 2314163511
+qq_host_default = "127.0.0.1:8080"
 matrix_homeserver_default = 'https://matrix.org'
 matrix_user_default = '@akaribot:matrix.org'
 

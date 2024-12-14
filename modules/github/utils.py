@@ -20,10 +20,7 @@ def dark_check(message: str):
         'programthink'
     ]
     if Info.dirty_word_check:
-        for i in blacklist:
-            if message.find(i) != -1:
-                return True
-        return False
+        return any(message.find(i) != -1 for i in blacklist)
     else:
         return False
 
@@ -32,8 +29,6 @@ def time_diff(time: str):
     datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
     now = datetime.datetime.now().timestamp()
     diff = now - datetimed
-
-    diff = diff
     t = diff / 60 / 60 / 24
     dw = ' day(s)'
     if t < 1:

@@ -31,12 +31,11 @@ class WikiLogUtil:
         infos = json.loads(self.query.infos)
         if add or reset:
             if apilink not in infos or reset:
-                infos[apilink] = {'AbuseLog': {'enable': False,
-                                               'filters': ['*']},
-                                  'RecentChanges': {'enable': False,
-                                                    'filters': ['*'],
-                                                    'rcshow': ['!bot']},
-                                  'use_bot': False}
+                infos[apilink] = {}
+                infos[apilink].setdefault('AbuseLog', {'enable': False, 'filters': ['*']})
+                infos[apilink].setdefault('RecentChanges', {'enable': False, 'filters': ['*'], 'rcshow': ['!bot']})
+                infos[apilink].setdefault('use_bot', False)
+                infos[apilink].setdefault('keep_alive', False)
                 self.query.infos = json.dumps(infos)
                 session.commit()
                 session.expire_all()
@@ -120,6 +119,26 @@ class WikiLogUtil:
         infos = json.loads(self.query.infos)
         if apilink in infos:
             return infos[apilink]['use_bot']
+        return False
+
+    @retry(stop=stop_after_attempt(3), reraise=True)
+    @auto_rollback_error
+    def set_keep_alive(self, apilink: str, keep_alive: bool):  # oh no it smells shit, will rewrite it in the future
+        infos = json.loads(self.query.infos)
+        if apilink in infos:
+            infos[apilink]['keep_alive'] = keep_alive
+            self.query.infos = json.dumps(infos)
+            session.commit()
+            session.expire_all()
+            return True
+        return False
+
+    @retry(stop=stop_after_attempt(3), reraise=True)
+    @auto_rollback_error
+    def get_keep_alive(self, apilink: str):
+        infos = json.loads(self.query.infos)
+        if apilink in infos and 'keep_alive' in infos[apilink]:
+            return infos[apilink]['keep_alive']
         return False
 
     @staticmethod

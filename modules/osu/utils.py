@@ -13,7 +13,7 @@ async def get_profile_name(msg: Bot.MessageSession, uid):
     if not Config('osu_api_key', cfg_type=str, secret=True):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     try:
-        profile_url = f"https://osu.ppy.sh/api/get_user?k={Config('osu_api_key', cfg_type=str)}&u={uid}"
+        profile_url = f"https://osu.ppy.sh/api/get_user?k={Config('osu_api_key', secret=True, cfg_type=str)}&u={uid}"
         profile = json.loads(await get_url(profile_url, 200))[0]
         userid = profile['user_id']
         username = profile['username']

@@ -1,7 +1,7 @@
+import os
 import re
 import shutil
 import sys
-import os
 import traceback  # noqa
 from time import sleep
 
@@ -12,9 +12,11 @@ from core.constants import *
 from core.utils.i18n import Locale
 from core.utils.text import isint
 
-def generate_config(file_path, language):
+
+def generate_config(dir_path, language):
     config_code_list = {}
-    path_ = os.path.join(file_path, config_filename)
+    os.makedirs(dir_path, exist_ok=True)
+    path_ = os.path.join(dir_path, config_filename)
 
     dir_list = ['bots', 'core', 'modules', 'schedulers']
     exclude_dir_list = [os.path.join('core', 'config'), os.path.join('core', 'scripts')]
@@ -44,10 +46,10 @@ def generate_config(file_path, language):
 
     from core.config import Config, CFGManager  # noqa
 
-    CFGManager.switch_config_path(file_path)
+    CFGManager.switch_config_path(dir_path)
 
-    for dir in dir_list:
-        for root, dirs, files in os.walk(dir):
+    for _dir in dir_list:
+        for root, dirs, files in os.walk(_dir):
             if root in exclude_dir_list:
                 continue
             for file in files:
@@ -69,7 +71,16 @@ def generate_config(file_path, language):
                                         break
                                     param_text += param
                                 config_code_list[param_text] = file_path
-
+    # filtered_config_code_map = {}
+    # for c in config_code_list:
+    #     opt = c.split(',')[0]
+    #     if opt not in filtered_config_code_map:
+    #         filtered_config_code_map[opt] = c
+    #     else:
+    #         if len(c) > len(filtered_config_code_map[opt]):
+    #             print(f'Conflict found: {filtered_config_code_map[opt]}')
+    #             filtered_config_code_map[opt] = c
+    # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
     for c in config_code_list:
         if c.endswith(','):
             c = c[:-1]
@@ -91,7 +102,7 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
 {''.join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
 Please input the number of the language you want to use: """)
         if lang.strip() == '':
-            exit(0)
+            sys.exit(0)
         if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
@@ -106,7 +117,7 @@ Please input the number of the language you want to use: """)
     print('Please restart the bot after modifying the config file.')
     print('Press enter to exit.')
     input()
-    exit(0)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
@@ -129,14 +140,11 @@ if __name__ == '__main__':
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
     if os.path.exists(config_store_path):
         shutil.move(config_store_path, config_store_path + '_bak')
-    if not os.path.exists(config_store_path):
-        os.makedirs(config_store_path)
-    if not os.path.exists(config_store_packed_path):
-        os.makedirs(config_store_packed_path)
+    os.makedirs(config_store_path, exist_ok=True)
+    os.makedirs(config_store_packed_path, exist_ok=True)
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
-        if not os.path.exists(config_store_path_):
-            os.makedirs(config_store_path_)
+        os.makedirs(config_store_path_, exist_ok=True)
         generate_config(config_store_path_, lang)
     # compare old and new config files
     repack = False

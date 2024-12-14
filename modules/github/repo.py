@@ -37,7 +37,8 @@ async def repo(msg: Bot.MessageSession, name: str):
             desc = '\n' + result['description']
 
         message = f'''{result['full_name']} ({result['id']}){desc}
-Language · {result['language']} | Fork · {result['forks_count']} | Star · {result['stargazers_count']} | Watch · {result['watchers_count']}
+Language · {result['language']} | Fork · {result['forks_count']}
+                                             | Star · {result['stargazers_count']} | Watch · {result['watchers_count']}
 License: {rlicense}
 Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updated_at'])} ago
 {website}{str(Url(result['html_url']))}'''
@@ -54,10 +55,10 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         else:
             await msg.send_message([Plain(message)])
 
-        hash = str(uuid.uuid4())
+        repo_hash = str(uuid.uuid4())
         download_pic = await download(
-            url=f'https://opengraph.githubassets.com/{hash}/{result["full_name"]}',
-            filename=f'{hash}.png'
+            url=f'https://opengraph.githubassets.com/{repo_hash}/{result["full_name"]}',
+            filename=f'{repo_hash}.png'
         )
         if download_pic:
             await msg.finish([Image(download_pic)], quote=False)

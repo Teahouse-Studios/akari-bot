@@ -31,7 +31,7 @@ class DiceValueError(Exception):
 
 
 # 类定义
-class DiceItemBase(object):
+class DiceItemBase:
     """骰子项的基类"""
 
     def __init__(self, dice_code: str):
@@ -45,8 +45,8 @@ class DiceItemBase(object):
     def GetDetail(self):
         return self.detail
 
-    def Roll(self, msg):
-        pass
+    def Roll(self, msg: Bot.MessageSession):
+        raise NotImplementedError
 
 
 class Dice(DiceItemBase):
@@ -97,7 +97,7 @@ class Dice(DiceItemBase):
             dice_sides = midstrs[0]
             dice_adv = midstrs[2]
             positive = -1
-        if positive and not len(dice_adv):
+        if positive and not dice_adv:
             dice_adv = '1'  # K/Q后没有值默认为1
         # 语法合法检定
         if not isint(dice_count):
@@ -196,11 +196,10 @@ class FudgeDice(DiceItemBase):
         output = self.code.replace('D', '')  # 去除“D”
         result = 0
 
-        dice_results = ['-', '-', '0', '0', '+', '+']
-        selected_results = [Random.choice(dice_results) for _ in range(self.count)]
+        selected_results = [Random.choice(['-', '0', '+']) for _ in range(self.count)]
 
         if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
-            output_buffer = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
+            output = '=[' + msg.locale.t("dice.message.output.too_long", length=self.count) + ']'
         else:
             output += '=[' + ', '.join(selected_results) + ']'
 

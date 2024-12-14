@@ -1,9 +1,9 @@
 import io
 import re
 
+import tiktoken
 from PIL import Image as PILImage
 from openai import OpenAI, AsyncOpenAI
-import tiktoken
 
 from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
@@ -15,7 +15,7 @@ from core.utils.cooldown import CoolDown
 from .formatting import generate_latex, generate_code_snippet
 from .petal import count_petal
 
-if Config('openai_api_key', cfg_type=str):
+if Config('openai_api_key', secret=True, cfg_type=str):
     client = AsyncOpenAI(
         api_key=Config('openai_api_key', cfg_type=str, secret=True),
     )

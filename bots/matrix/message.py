@@ -2,18 +2,19 @@ import mimetypes
 import os
 import re
 import traceback
-from typing import List
+from typing import List, Union
 
 import nio
 
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import *
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
+    FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.utils.image import image_split
 
 enable_analytics = Config("enable_analytics", False)
@@ -129,11 +130,11 @@ class MessageSession(MessageSessionT):
                 reply_to = None
                 reply_to_user = None
 
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 await sendMsg(content)
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 split = [x]
                 if enable_split_image:
                     Logger.info(f"Split image: {str(x.__dict__)}")
@@ -186,7 +187,7 @@ class MessageSession(MessageSessionT):
                             f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
                         )
                         await sendMsg(content)
-            elif isinstance(x, Voice):
+            elif isinstance(x, VoiceElement):
                 path = x.path
                 filename = os.path.basename(path)
                 filesize = os.path.getsize(path)
@@ -348,17 +349,19 @@ class FetchedSession(Bot.FetchedSession):
             Logger.info(
                 f"Could not find any exist private room for {target_id}, trying to create one."
             )
-            resp = await bot.room_create(
-                visibility=nio.RoomVisibility.private,
-                is_direct=True,
-                preset=nio.RoomPreset.trusted_private_chat,
-                invite=[target_id],
-            )
-            if resp is nio.ErrorResponse:
-                pass
-            room = resp.room_id
-            Logger.info(f"Created private messaging room for {target_id}: {room}")
-            self.session.target = room
+            try:
+                resp = await bot.room_create(
+                    visibility=nio.RoomVisibility.private,
+                    is_direct=True,
+                    preset=nio.RoomPreset.trusted_private_chat,
+                    invite=[target_id],
+                )
+                room = resp.room_id
+                Logger.info(f"Created private messaging room for {target_id}: {room}")
+                self.session.target = room
+            except Exception as e:
+                Logger.error(f"Failed to create room for {target_id}: {e}")
+                return
 
 
 Bot.FetchedSession = FetchedSession
@@ -368,7 +371,7 @@ class FetchTarget(FetchedTargetT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
+    async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
         target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr"^({target_pattern})\|(.*)", target_id)
         if match_target:
@@ -387,7 +390,7 @@ class FetchTarget(FetchedTargetT):
             return session
 
     @staticmethod
-    async def fetch_target_list(target_list: list) -> List[FetchedSession]:
+    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
         lst = []
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
@@ -396,7 +399,7 @@ class FetchTarget(FetchedTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:
@@ -414,7 +417,7 @@ class FetchTarget(FetchedTargetT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "Matrix")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
@@ -433,9 +436,6 @@ class FetchTarget(FetchedTargetT):
                             BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
                     except Exception:
                         Logger.error(traceback.format_exc())
-
-    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

@@ -15,12 +15,11 @@ async def generate_latex(formula: str):
 
 
 async def generate_code_snippet(code: str, language: str):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url='https://sourcecodeshots.com/api/image', data=json.dumps({
-            'code': code,
-            'settings': {
-                'language': language,
-                'theme': 'night-owl',
-            }
-        }), headers={'content-type': 'application/json'}) as req:
-            return await req.read()
+    async with aiohttp.ClientSession() as session, session.post(url='https://sourcecodeshots.com/api/image', data=json.dumps({
+        'code': code,
+        'settings': {
+            'language': language,
+            'theme': 'night-owl',
+        }
+    }), headers={'content-type': 'application/json'}) as req:
+        return await req.read()

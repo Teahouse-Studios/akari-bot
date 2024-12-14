@@ -175,7 +175,8 @@ class MkeyGenerator:
             raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
 
     # CRC-32 implementation (v0).
-    def _calculate_crc(self, poly, xorout, addout, inbuf):
+    @staticmethod
+    def _calculate_crc(poly, xorout, addout, inbuf):
         crc = 0xFFFFFFFF
 
         for byte in inbuf:
@@ -184,7 +185,7 @@ class MkeyGenerator:
 
             crc = crc ^ byte
 
-            for i in range(8):
+            for _ in range(8):
                 mask = -(crc & 1)
                 crc = (crc >> 1) ^ (poly & mask)
 
@@ -340,7 +341,6 @@ class MkeyGenerator:
 
     def _generate_v3_v4(self, props, inquiry, aux=None):
         algorithm = props["algorithm"]
-        traits = props["traits"]
 
         if self._data_path and not os.path.isdir(self._data_path):
             self._data_path = None
@@ -396,7 +396,7 @@ class MkeyGenerator:
             outbuf = HMAC.new(mkey_hmac_key, inbuf, digestmod=SHA256).digest()
             tmpbuf = outbuf
 
-            for i in range(1, 10000):
+            for _ in range(1, 10000):
                 tmpbuf = HMAC.new(mkey_hmac_key, tmpbuf, digestmod=SHA256).digest()
                 outbuf = strxor(outbuf, tmpbuf)
         else:
@@ -463,9 +463,9 @@ class MkeyGenerator:
         # Perform calculation of master key.
         if algorithm == "v0":
             output = self._generate_v0(props, inquiry, month, day)
-        elif algorithm == "v1" or algorithm == "v2":
+        elif algorithm in ("v1", "v2"):
             output = self._generate_v1_v2(props, inquiry, month, day)
-        elif algorithm == "v3" or algorithm == "v4":
+        elif algorithm in ("v3", "v4"):
             output = self._generate_v3_v4(props, inquiry, aux)
 
         return output

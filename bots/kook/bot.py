@@ -7,19 +7,18 @@ from bots.kook.client import bot
 from bots.kook.info import *
 from bots.kook.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets, Url
+from core.builtins import PrivateAssets
 from core.config import Config
 from core.constants.default import ignored_sender_default
-from core.constants.path import assets_path
 from core.constants.info import Info
+from core.constants.path import assets_path
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 
-
 PrivateAssets.set(os.path.join(assets_path, 'private', 'kook'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
-Url.disable_mm = not Config('enable_urlmanager', False)
-Url.md_format = True
+Info.use_url_manager = Config('enable_urlmanager', False)
+Info.use_url_md_format = True
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
@@ -55,7 +54,7 @@ async def _(b: bot):
     await init_async()
     await load_prompt(FetchTarget)
 
-if Config("enable", False, cfg_type=bool, table_name='bot_kook'):
+if Config("enable", False, table_name='bot_kook'):
     Info.client_name = client_name
     if 'subprocess' in sys.argv:
         Info.subprocess = True

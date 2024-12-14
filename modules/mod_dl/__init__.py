@@ -15,11 +15,7 @@ mod_dl = module(
     alias='moddl')
 
 x_api_key = Config("curseforge_api_key", cfg_type=str, secret=True)
-if not x_api_key:
-    # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
-    enable_mirror = True
-else:
-    enable_mirror = False
+enable_mirror = bool(not x_api_key)  # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
 
 
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
@@ -36,7 +32,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         if ver:
             url += f'&facets=[["versions:{ver}"],["project_type:mod"]]'
         else:
-            url += f'&facets=[["project_type:mod"]]'
+            url += '&facets=[["project_type:mod"]]'
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3)
         if resp:
             results = []
@@ -170,9 +166,9 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                         f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
         else:  # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
-            for version in version_index:
-                if version["gameVersion"] not in ver_list:
-                    ver_list.append(version["gameVersion"])
+            for version_ in version_index:
+                if version_["gameVersion"] not in ver_list:
+                    ver_list.append(version_["gameVersion"])
             if version_index:
                 if not ver:
                     reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +

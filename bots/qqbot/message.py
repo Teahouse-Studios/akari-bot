@@ -6,28 +6,32 @@ import filetype
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Reference
 
-from bots.ntqq.info import *
-from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, Url, MessageTaskManager
+from bots.qqbot.info import *
+from core.builtins import (Bot, Plain, Image, MessageSession as MessageSessionT, I18NContext, Url, MessageTaskManager,
+                           FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.elements import PlainElement, ImageElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT
 from core.utils.http import download, url_pattern
 
 enable_analytics = Config('enable_analytics', False)
-enable_send_url = Config('qq_bot_enable_send_url', False, table_name='bot_ntqq')
+enable_send_url = Config('qq_bot_enable_send_url', False, table_name='bot_qqbot')
 
 
 class FinishedSession(FinishedSessionT):
     async def delete(self):
-        if self.session.target.target_from == target_guild_prefix:
-            try:
-                from bots.ntqq.bot import client  # noqa
+        try:
+            from bots.qqbot.bot import client  # noqa
+            if self.session.target.target_from == target_guild_prefix:
                 for x in self.message_id:
                     await client.api.recall_message(channel_id=self.session.target.target_id.split('|')[-1], message_id=x, hidetip=True)
-            except Exception:
-                Logger.error(traceback.format_exc())
+            elif self.session.target.target_from == target_group_prefix:
+                for x in self.message_id:
+                    await client.api.recall_group_message(group_openid=self.session.target.target_id.split('|')[-1], message_id=x)
+        except Exception:
+            Logger.error(traceback.format_exc())
 
 
 class MessageSession(MessageSessionT):
@@ -49,13 +53,13 @@ class MessageSession(MessageSessionT):
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
 
-        plains: List[Plain] = []
-        images: List[Image] = []
+        plains: List[PlainElement] = []
+        images: List[ImageElement] = []
 
         for x in message_chain.as_sendable(self, embed=False):
-            if isinstance(x, Plain):
+            if isinstance(x, PlainElement):
                 plains.append(x)
-            elif isinstance(x, Image):
+            elif isinstance(x, ImageElement):
                 images.append(x)
         sends = []
         if len(plains + images) != 0:
@@ -212,7 +216,7 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         msg = self.session.message.content
         if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
-            msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|Tiny|\1', msg)
+            msg = re.sub(r'<@(.*?)>', fr'{sender_tiny_prefix}|\1', msg)
         else:
             msg = re.sub(r'<@(.*?)>', fr'{sender_prefix}|\1', msg)
         return msg
@@ -225,6 +229,8 @@ class MessageSession(MessageSessionT):
             except Exception:
                 Logger.error(traceback.format_exc())
                 return False
+        else:
+            return False
 
     sendMessage = send_message
     asDisplay = as_display
@@ -237,9 +243,9 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             if self.msg.target.target_from == target_guild_prefix:
-                emoji_id = str(Config('qq_typing_emoji', 181, (str, int)))
+                emoji_id = str(Config('qq_typing_emoji', 181, (str, int), table_name='bot_qqbot'))
                 emoji_type = 1 if int(emoji_id) < 9000 else 2
-                from bots.ntqq.bot import client  # noqa
+                from bots.qqbot.bot import client  # noqa
                 await client.api.put_reaction(channel_id=self.msg.target.target_id.split('|')[-1],
                                               message_id=self.msg.target.message_id,
                                               emoji_type=emoji_type,
@@ -252,7 +258,7 @@ class MessageSession(MessageSessionT):
 class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, enable_parse_message=True, enable_split_image=True):
-        from bots.ntqq.bot import client
+        from bots.qqbot.bot import client  # noqa
         if self.target.target_from == target_guild_prefix:
             self.session.message = Message(api=client.api, event_id=None, data={
                                            "channel_id": self.target.target_id.split('|')[-1]})
@@ -296,7 +302,7 @@ class FetchTarget(FetchTargetT):
             return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
-    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
+    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
         lst = []
         for x in target_list:
             fet = await FetchTarget.fetch_target(x)
@@ -305,7 +311,7 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         module_name = None if module_name == '*' else module_name
         if user_list:
             for x in user_list:
@@ -323,7 +329,7 @@ class FetchTarget(FetchTargetT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, "QQ|Bot")
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
@@ -342,9 +348,6 @@ class FetchTarget(FetchTargetT):
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
-
-    async def post_global_message(message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        await FetchTarget.post_message('*', message=message, user_list=user_list, i18n=i18n, **kwargs)
 
 
 Bot.MessageSession = MessageSession

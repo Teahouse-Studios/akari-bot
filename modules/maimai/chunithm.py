@@ -165,7 +165,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @chu.command('chart <song> {{maimai.help.chart}}')
-async def _(msg: Bot.MessageSession, song: str, diff: str = None):
+async def _(msg: Bot.MessageSession, song: str):
     if song[:2].lower() == "id":
         sid = song[2:]
         music = (await total_list.get()).by_id(sid)
@@ -188,13 +188,12 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
             combo=chart['combo'],
             charter=chart['charter']))
     else:
-        for diff in range(len(music['ds'])):
-            chart = music['charts'][diff]
-            ds = music['ds'][diff]
-            level = music['level'][diff]
+        for _diff, ds in enumerate(music['ds']):
+            chart = music['charts'][_diff]
+            level = music['level'][_diff]
             res.append(msg.locale.t(
                 "chunithm.message.chart",
-                diff=diff_list[diff],
+                diff=diff_list[_diff],
                 level=level,
                 ds=ds,
                 combo=chart['combo'],
@@ -204,7 +203,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
 
 @chu.command('id <id> {{maimai.help.id}}',)
 @chu.command('song <song> {{maimai.help.song}}')
-async def _(msg: Bot.MessageSession, song: str, diff: str = None):
+async def _(msg: Bot.MessageSession, song: str):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
         music = (await total_list.get()).by_id(sid)

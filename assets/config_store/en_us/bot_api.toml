@@ -9,3 +9,4 @@ jwt_secret = "<Replace me with str value>" # The authentication key for the buil
 [bot_api]
 # The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
 enable = true # Whether to enable this platform.
+api_port = 5000 # The port number of the API service.

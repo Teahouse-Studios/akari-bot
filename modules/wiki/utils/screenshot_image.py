@@ -17,14 +17,12 @@ from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.web_render import webrender
-
-elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
-            '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
+from .mapping import infobox_elements
 
 
 async def generate_screenshot_v2(page_link: str, section: str = None, allow_special_page=False, content_mode=False, use_local=True,
                                  element=None) -> Union[List[PILImage], bool]:
-    elements_ = elements.copy()
+    elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
     if not Info.web_render_status:
@@ -103,9 +101,8 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
         if link[-1] != '/':
             link += '/'
         try:
-            async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                    html = await req.read()
+            async with aiohttp.ClientSession(headers=headers) as session, session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                html = await req.read()
         except BaseException:
             Logger.error(traceback.format_exc())
             return False
@@ -190,7 +187,7 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                     open_file.write(str(find_diff))
                     w = 2000
             if not find_diff:
-                infoboxes = elements.copy()
+                infoboxes = infobox_elements.copy()
                 find_infobox = None
                 for i in infoboxes:
                     find_infobox = soup.find(class_=i[1:])
@@ -346,8 +343,22 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
         Logger.info('Start rendering...')
         img_lst = []
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(webrender(), headers={
+            async with aiohttp.ClientSession() as session, session.post(webrender(), headers={
+                'Content-Type': 'application/json',
+            }, data=json.dumps(html)) as resp:
+                if resp.status != 200:
+                    Logger.info(f'Failed to render: {await resp.text()}')
+                    return False
+                imgs_data = json.loads(await resp.read())
+                for img in imgs_data:
+                    b = base64.b64decode(img)
+                    bio = BytesIO(b)
+                    bimg = PILImage.open(bio)
+                    img_lst.append(bimg)
+
+        except aiohttp.ClientConnectorError:
+            if use_local:
+                async with aiohttp.ClientSession() as session, session.post(webrender(use_local=False), headers={
                     'Content-Type': 'application/json',
                 }, data=json.dumps(html)) as resp:
                     if resp.status != 200:
@@ -359,22 +370,6 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                         bio = BytesIO(b)
                         bimg = PILImage.open(bio)
                         img_lst.append(bimg)
-
-        except aiohttp.ClientConnectorError:
-            if use_local:
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(webrender(use_local=False), headers={
-                        'Content-Type': 'application/json',
-                    }, data=json.dumps(html)) as resp:
-                        if resp.status != 200:
-                            Logger.info(f'Failed to render: {await resp.text()}')
-                            return False
-                        imgs_data = json.loads(await resp.read())
-                        for img in imgs_data:
-                            b = base64.b64decode(img)
-                            bio = BytesIO(b)
-                            bimg = PILImage.open(bio)
-                            img_lst.append(bimg)
 
         return img_lst
     except Exception:
