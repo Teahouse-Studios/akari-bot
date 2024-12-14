@@ -42,7 +42,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]],
     '''
     if not Info.web_render_status:
         return False
-    elif not Info.web_render_local_status:
+    if not Info.web_render_local_status:
         use_local = False
     pic = False
 

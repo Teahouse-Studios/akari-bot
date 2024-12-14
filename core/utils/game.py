@@ -29,9 +29,8 @@ class PlayState:
         target_dict = _ps_lst[self.target_id]
         if self.whole_target:
             return target_dict.setdefault(self.game, {'_status': False, '_timestamp': 0.0})
-        else:
-            sender_dict = target_dict.setdefault(self.sender_id, {})
-            return sender_dict.setdefault(self.game, {'_status': False, '_timestamp': 0.0})
+        sender_dict = target_dict.setdefault(self.sender_id, {})
+        return sender_dict.setdefault(self.game, {'_status': False, '_timestamp': 0.0})
 
     def enable(self) -> None:
         '''
@@ -116,6 +115,5 @@ class PlayState:
         target_dict = _ps_lst[self.target_id]
         if self.whole_target:
             return target_dict.get(self.game, {}).get(key, None)
-        else:
-            sender_dict = target_dict.get(self.sender_id, {})
-            return sender_dict.get(self.game, {}).get(key, None)
+        sender_dict = target_dict.get(self.sender_id, {})
+        return sender_dict.get(self.game, {}).get(key, None)

@@ -41,17 +41,15 @@ async def auto_search(ctx: discord.AutocompleteContext):
     wiki = WikiLib(query_wiki)
     if title != "":
         return [iw + x for x in (await wiki.search_page(title))]
-    else:
-        return [
-            iw + (await wiki.get_json(action='query', list='random', rnnamespace='0'))['query']['random'][0]['title']]
+    return [
+        iw + (await wiki.get_json(action='query', list='random', rnnamespace='0'))['query']['random'][0]['title']]
 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
     target = WikiTargetInfo(ctx_to_session(ctx)).get_interwikis()
     if not target:
         return []
-    else:
-        return list(target.keys())
+    return list(target.keys())
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):

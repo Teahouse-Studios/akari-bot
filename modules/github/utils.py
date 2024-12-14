@@ -21,8 +21,7 @@ def dark_check(message: str):
     ]
     if Info.dirty_word_check:
         return any(message.find(i) != -1 for i in blacklist)
-    else:
-        return False
+    return False
 
 
 def time_diff(time: str):

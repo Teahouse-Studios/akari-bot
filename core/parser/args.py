@@ -108,8 +108,7 @@ def split_multi_arguments(lst: list):
             split_more = True
     if split_more:
         return split_multi_arguments(new_lst)
-    else:
-        return list(set(new_lst))
+    return list(set(new_lst))
 
 
 def parse_template(argv: List[str]) -> List[Template]:
@@ -325,7 +324,7 @@ def parse_argv(argv: List[str], templates: List['Template']) -> MatchedResult:
             max_ = max(new_priority_result.keys())
             return new_priority_result[max_][0]
         return priority_result[max_][0]
-    elif len_filtered_result == 0:
+    if len_filtered_result == 0:
         raise InvalidCommandFormatError
     else:
         return filtered_result[0]

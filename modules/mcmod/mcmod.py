@@ -25,5 +25,4 @@ async def mcmod(msg, keyword: str, detail: bool = False):
         url = a['href']
         desc = res.find('div', class_='body').text
         return [Plain(name), Url(url), Plain(desc)]
-    else:
-        return msg.locale.t('mcmod.message.not_found')
+    return msg.locale.t('mcmod.message.not_found')

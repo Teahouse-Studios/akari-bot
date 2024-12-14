@@ -41,8 +41,7 @@ class LocaleNode:
         nxt_node = path[0]
         if nxt_node in self.children:
             return self.children[nxt_node]._query_node(path[1:])
-        else:
-            return None
+        return None
 
     def update_node(self, path: str, write_value: str):
         """更新本地化树节点"""
@@ -150,8 +149,7 @@ class Locale:
                     return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
             return f'{{{key}}}' + self.t("error.i18n.fallback", fallback_failed_prompt=False)
-        else:
-            return key
+        return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
     def t(self, key: Union[str, dict], fallback_failed_prompt: bool = True, **kwargs: Any) -> str:
@@ -165,10 +163,9 @@ class Locale:
         if isinstance(key, dict):
             if ft := key.get(self.locale):
                 return ft
-            elif 'fallback' in key:
+            if 'fallback' in key:
                 return key['fallback']
-            else:
-                return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
+            return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(**kwargs)
 
@@ -215,23 +212,21 @@ class Locale:
     def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e11'):
             return 3, Decimal('10e11')
-        elif number >= Decimal('10e7'):
+        if number >= Decimal('10e7'):
             return 2, Decimal('10e7')
-        elif number >= Decimal('10e3'):
+        if number >= Decimal('10e3'):
             return 1, Decimal('10e3')
-        else:
-            return None
+        return None
 
     @staticmethod
     def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
         if number >= Decimal('10e8'):
             return 3, Decimal('10e8')
-        elif number >= Decimal('10e5'):
+        if number >= Decimal('10e5'):
             return 2, Decimal('10e5')
-        elif number >= Decimal('10e2'):
+        if number >= Decimal('10e2'):
             return 1, Decimal('10e2')
-        else:
-            return None
+        return None
 
     @staticmethod
     def _fmt_num(number: Decimal, precision: int) -> str:

@@ -58,7 +58,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     '''
     if not Info.web_render_status:
         return False
-    elif not Info.web_render_local_status:
+    if not Info.web_render_local_status:
         use_local = False
     if isinstance(message_chain, List):
         message_chain = MessageChain(message_chain)
@@ -134,7 +134,7 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILIm
     '''
     if not Info.web_render_status:
         return False
-    elif not Info.web_render_local_status:
+    if not Info.web_render_local_status:
         use_local = False
 
     with open(file_path, 'r', encoding='utf-8') as file:

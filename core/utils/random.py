@@ -23,8 +23,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.randbelow(INF) / INF
-        else:
-            return random.random()
+        return random.random()
 
     @classmethod
     def randint(cls, a: int, b: int) -> int:
@@ -37,8 +36,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.randbelow(b - a + 1) + a
-        else:
-            return random.randint(a, b)
+        return random.randint(a, b)
 
     @classmethod
     def uniform(cls, a: float, b: float) -> float:
@@ -51,8 +49,7 @@ class Random:
         """
         if cls.use_secrets:
             return a + (b - a) * secrets.randbelow(INF) / INF
-        else:
-            return random.uniform(a, b)
+        return random.uniform(a, b)
 
     @classmethod
     def randrange(cls, start: int, stop: Optional[int] = None, step: int = 1) -> int:
@@ -73,8 +70,7 @@ class Random:
                 return start + secrets.randbelow(width)
             n = (width + step - 1) // step
             return start + step * secrets.randbelow(n)
-        else:
-            return random.randrange(start, stop, step)
+        return random.randrange(start, stop, step)
 
     @classmethod
     def randbits(cls, k: int) -> int:
@@ -86,8 +82,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.randbits(k)
-        else:
-            return random.getrandbits(k)
+        return random.getrandbits(k)
 
     @classmethod
     def randbytes(cls, n: int) -> bytes:
@@ -99,8 +94,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.token_bytes(n)
-        else:
-            return random.randbytes(n)
+        return random.randbytes(n)
 
     @classmethod
     def choice(cls, seq: Sequence[T]) -> T:
@@ -112,8 +106,7 @@ class Random:
         """
         if cls.use_secrets:
             return secrets.choice(seq)
-        else:
-            return random.choice(seq)
+        return random.choice(seq)
 
     @classmethod
     def choices(cls, population: Sequence[T], k: int = 1) -> List[T]:
@@ -126,8 +119,7 @@ class Random:
         """
         if cls.use_secrets:
             return [secrets.choice(population) for _ in range(k)]
-        else:
-            return random.choices(population, k=k)
+        return random.choices(population, k=k)
 
     @classmethod
     def sample(cls, population: Sequence[T], k: int) -> List[T]:
@@ -147,8 +139,7 @@ class Random:
                 idx = secrets.randbelow(len(pool))
                 selected.append(pool.pop(idx))
             return selected
-        else:
-            return random.sample(population, k)
+        return random.sample(population, k)
 
     @classmethod
     def shuffle(cls, seq: MutableSequence[T]) -> MutableSequence[T]:

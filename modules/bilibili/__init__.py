@@ -65,7 +65,6 @@ async def parse_shorturl(shorturl):
         video = re.search(r'/video/([^/?]+)', target_url)
         if video:
             return f"?bvid={video.group(1)}"
-        else:
-            return None
+        return None
     except Exception:
         return None

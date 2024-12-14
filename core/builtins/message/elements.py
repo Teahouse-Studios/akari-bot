@@ -127,9 +127,8 @@ class FormattedTimeElement(MessageElement):
                     tz=timezone.utc) +
                 msg.timezone_offset).strftime(
                 ' '.join(ftime_template))
-        else:
-            ftime_template.append('%Y-%m-%d %H:%M:%S')
-            return datetime.fromtimestamp(self.timestamp).strftime(' '.join(ftime_template))
+        ftime_template.append('%Y-%m-%d %H:%M:%S')
+        return datetime.fromtimestamp(self.timestamp).strftime(' '.join(ftime_template))
 
     def __str__(self):
         return self.to_str()

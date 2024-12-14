@@ -16,14 +16,14 @@ def check_winner(board: List[List[int]]):
     if board[0][0] == board[1][1] == board[2][2] != 0:
         return board[0][0]
     # right-left diagonal
-    elif board[0][2] == board[1][1] == board[2][0] != 0:
+    if board[0][2] == board[1][1] == board[2][0] != 0:
         return board[0][2]
     for i in range(3):
         # vertical
         if board[i][0] == board[i][1] == board[i][2] != 0:
             return board[i][0]
         # horizontal
-        elif board[0][i] == board[1][i] == board[2][i] != 0:
+        if board[0][i] == board[1][i] == board[2][i] != 0:
             return board[0][i]
     return None
 
@@ -97,8 +97,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                 y = (digit - 1) % 3
                 if board[x][y] == 0:
                     return x, y
-                else:
-                    continue
+                continue
             elif len(text) == 2:
                 try:
                     x = int(text[0]) - 1
@@ -107,8 +106,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                     continue
                 if board[x][y] == 0:
                     return x, y
-                else:
-                    continue
+                continue
             else:
                 continue
 
@@ -166,28 +164,25 @@ def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
                     # Undo the move
                     board[i][j] = 0
         return best
+    best = 1000
 
-    # If this minimizer's move
-    else:
-        best = 1000
+    # Traverse all cells
+    for i in range(3):
+        for j in range(3):
 
-        # Traverse all cells
-        for i in range(3):
-            for j in range(3):
+            # Check if cell is empty
+            if (board[i][j] == 0):
 
-                # Check if cell is empty
-                if (board[i][j] == 0):
+                # Make the move
+                board[i][j] = opponent
 
-                    # Make the move
-                    board[i][j] = opponent
+                # Call minimax recursively and choose
+                # the minimum value
+                best = min(best, minimax(board, depth + 1, not is_max, worst=worst))
 
-                    # Call minimax recursively and choose
-                    # the minimum value
-                    best = min(best, minimax(board, depth + 1, not is_max, worst=worst))
-
-                    # Undo the move
-                    board[i][j] = 0
-        return best
+                # Undo the move
+                board[i][j] = 0
+    return best
 
 
 def find_best_move(board, worst=False):

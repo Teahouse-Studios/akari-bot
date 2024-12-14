@@ -16,8 +16,7 @@ def joke(text: str) -> str:
     if check_apr_fools():
         # 这里可能会增加使用不同玩笑方法的区分，但现在不太想做XD
         return shuffle_joke(text)
-    else:
-        return text
+    return text
 
 
 def shuffle_joke(text: str) -> str:

@@ -17,7 +17,7 @@ from copy import deepcopy
 def alias_converter(value, _self) -> dict:
     if isinstance(value, str):
         return {value: _self.bind_prefix}
-    elif isinstance(value, (tuple, list)):
+    if isinstance(value, (tuple, list)):
         return {x: _self.bind_prefix for x in value}
     return value
 

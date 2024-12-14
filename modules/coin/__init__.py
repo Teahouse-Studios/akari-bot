@@ -1,4 +1,4 @@
-﻿from core.builtins import Bot
+from core.builtins import Bot
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
@@ -44,10 +44,9 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         prompt = msg.locale.t("coin.message.single.prompt")
         if face_up:
             return prompt + "\n" + msg.locale.t("coin.message.single.head")
-        elif face_down:
+        if face_down:
             return prompt + "\n" + msg.locale.t("coin.message.single.tail")
-        else:
-            return prompt + "\n" + msg.locale.t("coin.message.single.stand")
+        return prompt + "\n" + msg.locale.t("coin.message.single.stand")
     else:
         prompt = msg.locale.t("coin.message.all.prompt", count=count)
         if not (stand or face_down):

@@ -59,8 +59,7 @@ class WikiTargetInfo:
         if q:
             iws = json.loads(q)
             return iws
-        else:
-            return {}
+        return {}
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error

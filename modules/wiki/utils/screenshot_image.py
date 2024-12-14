@@ -27,7 +27,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
         elements_ += element
     if not Info.web_render_status:
         return False
-    elif not Info.web_render_local_status:
+    if not Info.web_render_local_status:
         use_local = False
     if not section:
         if allow_special_page and content_mode:
@@ -51,8 +51,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             if use_local:
                 return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode,
                                                     use_local=False)
-            else:
-                return False
+            return False
         except ValueError:
             Logger.info('[WebRender] Generation Failed.')
             return False
@@ -75,8 +74,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
             if use_local:
                 return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode,
                                                     use_local=False)
-            else:
-                return False
+            return False
         except ValueError:
             Logger.info('[WebRender] Generation Failed.')
             return False
@@ -94,7 +92,7 @@ async def generate_screenshot_v2(page_link: str, section: str = None, allow_spec
 async def generate_screenshot_v1(link, page_link, headers, use_local=True, section=None, allow_special_page=False) -> Union[List[PILImage], bool]:
     if not Info.web_render_status:
         return False
-    elif not Info.web_render_local_status:
+    if not Info.web_render_local_status:
         use_local = False
     try:
         Logger.info('Starting find infobox/section..')
@@ -196,34 +194,33 @@ async def generate_screenshot_v1(link, page_link, headers, use_local=True, secti
                 if not find_infobox:
                     Logger.info('Found nothing...')
                     return False
-                else:
-                    Logger.info('Found infobox...')
+                Logger.info('Found infobox...')
 
-                    for x in find_infobox.find_all(['a', 'img', 'span']):
-                        if x.has_attr('href'):
-                            x.attrs['href'] = join_url(link, x.get('href'))
-                        if x.has_attr('src'):
-                            x.attrs['src'] = join_url(link, x.get('src'))
-                        if x.has_attr('srcset'):
-                            x.attrs['srcset'] = join_url(link, x.get('srcset'))
-                        if x.has_attr('style'):
-                            x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
+                for x in find_infobox.find_all(['a', 'img', 'span']):
+                    if x.has_attr('href'):
+                        x.attrs['href'] = join_url(link, x.get('href'))
+                    if x.has_attr('src'):
+                        x.attrs['src'] = join_url(link, x.get('src'))
+                    if x.has_attr('srcset'):
+                        x.attrs['srcset'] = join_url(link, x.get('srcset'))
+                    if x.has_attr('style'):
+                        x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
 
-                    for x in find_infobox.find_all(class_='lazyload'):
-                        if x.has_attr('class') and x.has_attr('data-src'):
-                            x.attrs['class'] = 'image'
-                            x.attrs['src'] = x.attrs['data-src']
+                for x in find_infobox.find_all(class_='lazyload'):
+                    if x.has_attr('class') and x.has_attr('data-src'):
+                        x.attrs['class'] = 'image'
+                        x.attrs['src'] = x.attrs['data-src']
 
-                    for x in find_infobox.find_all(class_='lazyload'):
-                        if x.has_attr('class') and x.has_attr('data-src'):
-                            x.attrs['class'] = 'image'
-                            x.attrs['src'] = x.attrs['data-src']
+                for x in find_infobox.find_all(class_='lazyload'):
+                    if x.has_attr('class') and x.has_attr('data-src'):
+                        x.attrs['class'] = 'image'
+                        x.attrs['src'] = x.attrs['data-src']
 
-                    open_file.write('<div class="mw-parser-output">')
+                open_file.write('<div class="mw-parser-output">')
 
-                    open_file.write(str(find_infobox))
-                    w = 500
-                    open_file.write('</div>')
+                open_file.write(str(find_infobox))
+                w = 500
+                open_file.write('</div>')
         else:
             for x in soup.find_all('body'):
                 if x.has_attr('class'):

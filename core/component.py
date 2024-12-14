@@ -140,7 +140,7 @@ class Bind:
             first_key = args[0] if args else (kwargs[list(kwargs.keys())[0]] if kwargs else None)
             if isinstance(first_key, re.Pattern):
                 return self.regex(*args, **kwargs)
-            elif isinstance(first_key, (AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger)):
+            if isinstance(first_key, (AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger)):
                 return self.schedule(*args, **kwargs)
             return self.command(*args, **kwargs)
 

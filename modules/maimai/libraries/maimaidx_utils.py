@@ -171,8 +171,7 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
     img = await msgchain2image([Plain(html)])
     if img:
         return img
-    else:
-        await msg.finish(msg.locale.t("error.config.webrender.invalid"))
+    await msg.finish(msg.locale.t("error.config.webrender.invalid"))
 
 
 async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = True):
@@ -667,8 +666,7 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
             value = conv_dict[key]
             new_key = next((k for k, v in conv_dict.items() if v == value), None)
             return value, new_key
-        else:
-            return None, input_key
+        return None, input_key
 
     grade = grade.upper()  # 输入强制转换为大写以适配字典
     grade_key, grade = key_process(grade, grade_mapping)

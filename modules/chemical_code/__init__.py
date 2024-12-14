@@ -221,13 +221,12 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
 
                 Logger.info(f'{wait_text} != {play_state.get("answer")}')
                 return await ans(wait, random_mode)
-            else:
-                send_ = wait.locale.t('chemical_code.message.correct')
-                if random_mode:
-                    if (g_msg := await gained_petal(wait, 1)):
-                        send_ += '\n' + g_msg
-                play_state.disable()
-                await wait.finish(send_)
+            send_ = wait.locale.t('chemical_code.message.correct')
+            if random_mode:
+                if (g_msg := await gained_petal(wait, 1)):
+                    send_ += '\n' + g_msg
+            play_state.disable()
+            await wait.finish(send_)
 
     async def timer(start):
         if play_state.check():

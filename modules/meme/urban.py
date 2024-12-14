@@ -23,14 +23,13 @@ async def urban(term: str, locale: Locale):
         data = json.loads(text)['list']
         if not data:
             return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.not_found")}'
-        else:
-            count = data.__len__()
-            word = data[0]['word']
-            definition = limit_length(data[0]['definition'])
-            example = limit_length(data[0]['example'])
-            link = data[0]['permalink']
-            return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.result", result=count)}\n{
-                word}\n{definition}\nExample: {example}\n{str(Url(link))}'
+        count = data.__len__()
+        word = data[0]['word']
+        definition = limit_length(data[0]['definition'])
+        example = limit_length(data[0]['example'])
+        link = data[0]['permalink']
+        return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.result", result=count)}\n{
+            word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
         return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.error")}'
 

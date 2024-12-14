@@ -153,24 +153,21 @@ class MkeyGenerator:
         if len(inquiry) == 8:
             if "v0" in algorithms:
                 return "v0"
-            else:
-                raise ValueError("v0 algorithm not supported by %s." % device)
+            raise ValueError("v0 algorithm not supported by %s." % device)
         elif len(inquiry) == 10:
             version = int((int(inquiry) / 10000000) % 100)
 
             if "v1" in algorithms and version < 10:
                 return "v1"
-            elif "v2" in algorithms:
+            if "v2" in algorithms:
                 return "v2"
-            elif "v3" in algorithms:
+            if "v3" in algorithms:
                 return "v3"
-            else:
-                raise ValueError("v1/v2/v3 algorithms not supported by %s." % device)
+            raise ValueError("v1/v2/v3 algorithms not supported by %s." % device)
         elif len(inquiry) == 6:
             if "v4" in algorithms:
                 return "v4"
-            else:
-                raise ValueError("v4 algorithm not supported by %s." % device)
+            raise ValueError("v4 algorithm not supported by %s." % device)
         else:
             raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
 

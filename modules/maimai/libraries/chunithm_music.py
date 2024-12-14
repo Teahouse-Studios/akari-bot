@@ -46,10 +46,9 @@ def in_or_equal(checker: Any, elem: Optional[Union[Any, List[Any]]]):
         return True
     if isinstance(elem, List):
         return checker in elem
-    elif isinstance(elem, Tuple):
+    if isinstance(elem, Tuple):
         return elem[0] <= checker <= elem[1]
-    else:
-        return checker == elem
+    return checker == elem
 
 
 class Chart(Dict):
@@ -59,7 +58,7 @@ class Chart(Dict):
     def __getattribute__(self, item):
         if item == 'combo':
             return self['combo']
-        elif item == 'charter':
+        if item == 'charter':
             return self['charter']
         return super().__getattribute__(item)
 
@@ -82,7 +81,7 @@ class Music(Dict):
             if item == 'version':
                 return self['basic_info']['from']
             return self['basic_info'][item]
-        elif item in self:
+        if item in self:
             return self[item]
         return super().__getattribute__(item)
 

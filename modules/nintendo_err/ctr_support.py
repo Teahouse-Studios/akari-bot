@@ -352,11 +352,11 @@ def nim_handler(ret, description):
     if error and error.description:
         return construct_support(ret, 5, description)
 
-    elif 2000 <= description < 3024:
+    if 2000 <= description < 3024:
         description -= 2000
         return construct_result(ret, 52, description)  # nim result module, not support category
 
-    elif 4200 <= description < 4400:
+    if 4200 <= description < 4400:
         description -= 4200
         construct_result(ret, 40, description)  # http result module, not support category
         if description == 199:
