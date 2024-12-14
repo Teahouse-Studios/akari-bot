@@ -54,7 +54,7 @@ def compress_json(input_data):
 
 
 if __name__ == "__main__":
-    api_url = "https://raw.githubusercontent.com/xsalazar/emoji-kitchen-backend/main/app/metadata.json"
+    api_url = "https://mirror.ghproxy.com/https://raw.githubusercontent.com/xsalazar/emoji-kitchen-backend/main/app/metadata.json"
     input_data = get_data_from_api(api_url)
     compressed_data = compress_json(input_data)
 

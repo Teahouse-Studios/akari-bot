@@ -99,7 +99,21 @@ class JobQueueTable(Base):
 
     __table_args__ = {'mysql_charset': 'utf8mb4'}
 
+class InfoServers(Base):
+    __tablename__ = "info_servers"
+    from_target = Column(String(512), primary_key=True)
+    servers = Column(String(1024))
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
+
+class HaofsAccount(Base):
+    __tablename__ = "haofs_account"
+    from_sender = Column(String(512), primary_key=True)
+    email = Column(String(512))
+    password = Column(String(512))
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
+
 
 Session.create()
 __all__ = ["SenderInfo", "TargetInfoTable", "CommandTriggerTime", "GroupBlockList",
-           "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable"]
+           "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable",
+           "JobQueueTable", "InfoServers","HaofsAccount"]
