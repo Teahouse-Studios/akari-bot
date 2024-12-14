@@ -108,7 +108,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
         try:
             if any(item.lower() == func for func in math_funcs):
                 continue
-            elif 'A' in item:
+            if 'A' in item:
                 dice_count += 1
                 dice_expr_list[j] = WODDice(msg, item)
             elif 'C' in item:

@@ -89,7 +89,7 @@ async def _(msg: Bot.MessageSession):
             )
             if run.status == 'completed':
                 break
-            elif run.status == 'failed':
+            if run.status == 'failed':
                 if run.last_error.code == 'rate_limit_exceeded' and \
                    'quota' not in run.last_error.message:
                     Logger.warning(run.last_error.json())

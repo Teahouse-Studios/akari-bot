@@ -1,7 +1,7 @@
 from core.builtins import Url, Bot
 from core.dirty_check import check
 from modules.wiki.utils.time import strptime2ts
-from modules.wiki.utils.wikilib import WikiLib, WikiInfo
+from modules.wiki.utils.wikilib import WikiLib
 
 AB_LIMIT = 5
 

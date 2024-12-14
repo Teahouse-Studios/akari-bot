@@ -213,7 +213,7 @@ class WikiLib:
                     api_match = self.url.split('//')[0] + api_match
                 # Logger.info(api_match)
                 wiki_api_link = api_match
-            except (TimeoutError, asyncio.TimeoutError):
+            except TimeoutError:
                 return WikiStatus(available=False, value=False, message=self.locale.t(
                     "wiki.message.utils.wikilib.get_failed.timeout"))
             except IndexError:

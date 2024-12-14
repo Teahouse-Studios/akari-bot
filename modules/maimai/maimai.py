@@ -631,12 +631,12 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         reduce = 101 - score    # 理论值与给定完成率的差，以百分比计
         if reduce <= 0 or reduce >= 101:
             raise ValueError
-        tap_great = "{:.2f}".format(total_score * reduce / 10000)  # 一个 TAP GREAT 减少 100 分
-        tap_great_prop = "{:.4f}".format(10000 / total_score)
-        b2t_2550_great = "{:.3f}".format(break_2550_reduce / 100)  # 一个 TAP GREAT 减少 100 分
-        b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
-        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)  # 一个 TAP GREAT 减少 100 分
-        b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
+        tap_great = f"{(total_score * reduce / 10000):.2f}"  # 一个 TAP GREAT 减少 100 分
+        tap_great_prop = f"{(10000 / total_score):.4f}"
+        b2t_2550_great = f"{(break_2550_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
+        b2t_2550_great_prop = f"{(break_2550_reduce / total_score * 100):.4f}"
+        b2t_2000_great = f"{(break_2000_reduce / 100):.3f}"  # 一个 TAP GREAT 减少 100 分
+        b2t_2000_great_prop = f"{(break_2000_reduce / total_score * 100):.4f}"
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_list[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
               scoreline=score,

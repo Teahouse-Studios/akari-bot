@@ -325,7 +325,7 @@ async def help_generator(msg: Bot.MessageSession,
             continue
         if value.rss and not msg.Feature.rss:
             continue
-        elif not is_superuser and value.required_superuser or \
+        if not is_superuser and value.required_superuser or \
                 not is_base_superuser and value.required_base_superuser:
             continue
 

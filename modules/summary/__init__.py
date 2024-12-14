@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
         if await check_bool(''.join(texts)):
             await msg.finish(rickroll(msg))
 
-        char_count = sum([len(i) for i in texts])
+        char_count = sum(len(i) for i in texts)
         wait_msg = await msg.send_message(
             msg.locale.t('summary.message.waiting', count=char_count, time=round(char_count / 33.5, 1)))
 
