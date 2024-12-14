@@ -540,7 +540,9 @@ class HTML2Text(html.parser.HTMLParser):
                     if self.inline_links:
                         href = attrs.get("href") or ""
                         self.o(
-                            "(" + str(Url(escape_md(urlparse.urljoin(self.baseurl, href)))) + ")"
+                            "("
+                            + str(Url(escape_md(urlparse.urljoin(self.baseurl, href))))
+                            + ")"
                         )
                     else:
                         i = self.previousIndex(attrs)
@@ -769,7 +771,9 @@ class HTML2Text(html.parser.HTMLParser):
                             "   ["
                             + str(link.count)
                             + "]: "
-                            + str(Url(urlparse.urljoin(self.baseurl, link.attrs["href"])))
+                            + str(
+                                Url(urlparse.urljoin(self.baseurl, link.attrs["href"]))
+                            )
                         )
                         if "title" in link.attrs:
                             self.out(" (" + link.attrs["title"] + ")")

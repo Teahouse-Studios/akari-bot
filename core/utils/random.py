@@ -4,15 +4,16 @@ from typing import Sequence, List, MutableSequence, Optional, TypeVar
 
 from core.config import Config
 
-INF = 2 ** 53
-T = TypeVar('T')
+INF = 2**53
+T = TypeVar("T")
 
 
 class Random:
     """
     机器人内置的随机数生成器。在配置文件中将`use_secrets_random`设为`true`时使用`secret`库，否则默认使用`random`库。
     """
-    use_secrets = Config('use_secrets_random', False)
+
+    use_secrets = Config("use_secrets_random", False)
 
     @classmethod
     def random(cls) -> float:

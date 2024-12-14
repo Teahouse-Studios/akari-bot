@@ -28,10 +28,10 @@ class Module:
     alias: dict = field(converter=Converter(alias_converter, takes_self=True))
     recommend_modules: list = field(converter=convert2lst)
     developers: list = field(converter=convert2lst)
-    available_for: list = field(default=['*'], converter=convert2lst)
+    available_for: list = field(default=["*"], converter=convert2lst)
     exclude_from: list = field(default=[], converter=convert2lst)
     support_languages: list = field(default=None, converter=convert2lst)
-    desc: Union[str] = ''
+    desc: Union[str] = ""
     required_admin: bool = False
     base: bool = False
     doc: bool = False
@@ -50,5 +50,11 @@ class Module:
         return deepcopy(cls(**kwargs))
 
 
-__all__ = ["Module", "AndTrigger", "OrTrigger", "DateTrigger",
-           "CronTrigger", "IntervalTrigger"]
+__all__ = [
+    "Module",
+    "AndTrigger",
+    "OrTrigger",
+    "DateTrigger",
+    "CronTrigger",
+    "IntervalTrigger",
+]

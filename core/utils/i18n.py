@@ -23,6 +23,7 @@ supported_locales = list(lang_list.keys())
 
 class LocaleNode:
     """本地化树节点"""
+
     value: str
     children: dict
 
@@ -32,7 +33,7 @@ class LocaleNode:
 
     def query_node(self, path: str):
         """查询本地化树节点"""
-        return self._query_node(path.split('.'))
+        return self._query_node(path.split("."))
 
     def _query_node(self, path: List[str]):
         """通过路径队列查询本地化树节点"""
@@ -45,7 +46,7 @@ class LocaleNode:
 
     def update_node(self, path: str, write_value: str):
         """更新本地化树节点"""
-        return self._update_node(path.split('.'), write_value)
+        return self._update_node(path.split("."), write_value)
 
     def _update_node(self, path: List[str], write_value: str):
         """通过路径队列更新本地化树节点"""
@@ -63,7 +64,7 @@ locale_root = LocaleNode()
 # From https://stackoverflow.com/a/6027615
 
 
-def flatten(d: Dict[str, Any], parent_key='', sep='.'):
+def flatten(d: Dict[str, Any], parent_key="", sep="."):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -81,8 +82,8 @@ def load_locale_file() -> Optional[List[str]]:
     locales = os.listdir(locales_path)
     try:
         for l in locales:
-            with open(os.path.join(locales_path, l), 'r', encoding='utf-8') as f:
-                locale_dict[l.removesuffix('.json')] = flatten(json.loads(f.read()))
+            with open(os.path.join(locales_path, l), "r", encoding="utf-8") as f:
+                locale_dict[l.removesuffix(".json")] = flatten(json.loads(f.read()))
     except Exception as e:
         traceback.print_exc()
         err_prompt.append(str(e))
@@ -92,19 +93,23 @@ def load_locale_file() -> Optional[List[str]]:
             locales_m = os.listdir(modules_locales_file)
             for lang_file in locales_m:
                 lang_file_path = os.path.join(modules_locales_file, lang_file)
-                with open(lang_file_path, 'r', encoding='utf-8') as f:
+                with open(lang_file_path, "r", encoding="utf-8") as f:
                     try:
-                        if lang_file.removesuffix('.json') in locale_dict:
-                            locale_dict[lang_file.removesuffix('.json')].update(flatten(json.loads(f.read())))
+                        if lang_file.removesuffix(".json") in locale_dict:
+                            locale_dict[lang_file.removesuffix(".json")].update(
+                                flatten(json.loads(f.read()))
+                            )
                         else:
-                            locale_dict[lang_file.removesuffix('.json')] = flatten(json.loads(f.read()))
+                            locale_dict[lang_file.removesuffix(".json")] = flatten(
+                                json.loads(f.read())
+                            )
                     except Exception as e:
                         traceback.print_exc()
-                        err_prompt.append(f'Failed to load {lang_file_path}: {e}')
+                        err_prompt.append(f"Failed to load {lang_file_path}: {e}")
 
     for lang in locale_dict:
         for k in locale_dict[lang].keys():
-            locale_root.update_node(f'{lang}.{k}', locale_dict[lang][k])
+            locale_root.update_node(f"{lang}.{k}", locale_dict[lang][k])
 
     return err_prompt
 
@@ -136,7 +141,9 @@ class Locale:
         """获取本地化节点。"""
         return self.data.query_node(path)
 
-    def get_string_with_fallback(self, key: str, fallback_failed_prompt: bool = True) -> str:
+    def get_string_with_fallback(
+        self, key: str, fallback_failed_prompt: bool = True
+    ) -> str:
         node = self.data.query_node(key)
         if node:
             return node.value  # 1. 如果本地化字符串存在，直接返回
@@ -146,13 +153,19 @@ class Locale:
             if lng in locale_root.children:
                 node = locale_root.query_node(lng).query_node(key)
                 if node:
-                    return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
+                    return (
+                        node.value
+                    )  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f'{{{key}}}' + self.t("error.i18n.fallback", fallback_failed_prompt=False)
+            return f"{{{key}}}" + self.t(
+                "error.i18n.fallback", fallback_failed_prompt=False
+            )
         return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-    def t(self, key: Union[str, dict], fallback_failed_prompt: bool = True, **kwargs: Any) -> str:
+    def t(
+        self, key: Union[str, dict], fallback_failed_prompt: bool = True, **kwargs: Any
+    ) -> str:
         """
         获取本地化字符串。
 
@@ -163,13 +176,15 @@ class Locale:
         if isinstance(key, dict):
             if ft := key.get(self.locale):
                 return ft
-            if 'fallback' in key:
-                return key['fallback']
+            if "fallback" in key:
+                return key["fallback"]
             return str(key) + self.t("error.i18n.fallback", fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(**kwargs)
 
-    def t_str(self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]) -> str:
+    def t_str(
+        self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]
+    ) -> str:
         """
         替换字符串中的本地化键名。
 
@@ -177,12 +192,20 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
-        if locale_str := re.findall(r'\{(.*)}', text):
+        if locale_str := re.findall(r"\{(.*)}", text):
             for l in locale_str:
-                text = text.replace(f'{{{l}}}', self.t(l, fallback_failed_prompt=fallback_failed_prompt, **kwargs))
+                text = text.replace(
+                    f"{{{l}}}",
+                    self.t(l, fallback_failed_prompt=fallback_failed_prompt, **kwargs),
+                )
         return text
 
-    def num(self, number: Union[Decimal, int, str], precision: int = 0, fallback_failed_prompt: bool = False) -> str:
+    def num(
+        self,
+        number: Union[Decimal, int, str],
+        precision: int = 0,
+        fallback_failed_prompt: bool = False,
+    ) -> str:
         """
         格式化数字。
 
@@ -196,7 +219,7 @@ class Locale:
         else:
             return str(number)
 
-        if self.locale in ['zh_cn', 'zh_tw']:
+        if self.locale in ["zh_cn", "zh_tw"]:
             unit_info = self._get_cjk_unit(Decimal(number))
         else:
             unit_info = self._get_unit(Decimal(number))
@@ -210,32 +233,34 @@ class Locale:
 
     @staticmethod
     def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal('10e11'):
-            return 3, Decimal('10e11')
-        if number >= Decimal('10e7'):
-            return 2, Decimal('10e7')
-        if number >= Decimal('10e3'):
-            return 1, Decimal('10e3')
+        if number >= Decimal("10e11"):
+            return 3, Decimal("10e11")
+        if number >= Decimal("10e7"):
+            return 2, Decimal("10e7")
+        if number >= Decimal("10e3"):
+            return 1, Decimal("10e3")
         return None
 
     @staticmethod
     def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal('10e8'):
-            return 3, Decimal('10e8')
-        if number >= Decimal('10e5'):
-            return 2, Decimal('10e5')
-        if number >= Decimal('10e2'):
-            return 1, Decimal('10e2')
+        if number >= Decimal("10e8"):
+            return 3, Decimal("10e8")
+        if number >= Decimal("10e5"):
+            return 2, Decimal("10e5")
+        if number >= Decimal("10e2"):
+            return 1, Decimal("10e2")
         return None
 
     @staticmethod
     def _fmt_num(number: Decimal, precision: int) -> str:
-        number = number.quantize(Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP)
-        num_str = f"{number:.{precision}f}".rstrip('0').rstrip('.')
+        number = number.quantize(
+            Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP
+        )
+        num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
         return num_str if precision > 0 else str(int(number))
 
 
 locale_loaded_err = load_locale_file()
 
 
-__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'locale_loaded_err']
+__all__ = ["Locale", "load_locale_file", "get_available_locales", "locale_loaded_err"]

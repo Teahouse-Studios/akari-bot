@@ -98,7 +98,7 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = os.path.join(assets_path, 'mkey', 'data')
+        self._data_path = os.path.join(assets_path, "mkey", "data")
 
     # Read AES key (v2).
     def _read_aes_key(self, file_name):
@@ -110,8 +110,11 @@ class MkeyGenerator:
         aes_key_len = 0x10
 
         if len(mkey_aes_key) != aes_key_len:
-            raise ValueError("Size of AES key %s is invalid (expected 0x%02X, got 0x%02X)." %
-                             file_name, aes_key_len)
+            raise ValueError(
+                "Size of AES key %s is invalid (expected 0x%02X, got 0x%02X)."
+                % file_name,
+                aes_key_len,
+            )
 
         return mkey_aes_key
 
@@ -125,8 +128,11 @@ class MkeyGenerator:
         mkey_len = 0x40
 
         if len(data) != mkey_len:
-            raise ValueError("Size of masterkey.bin %s is invalid (expected 0x%02X, got 0x%02X)." %
-                             file_name, mkey_len)
+            raise ValueError(
+                "Size of masterkey.bin %s is invalid (expected 0x%02X, got 0x%02X)."
+                % file_name,
+                mkey_len,
+            )
 
         mkey_data = struct.unpack("BB14x16s32s", data)
         return mkey_data
@@ -141,8 +147,11 @@ class MkeyGenerator:
         hmac_key_len = 0x20
 
         if len(mkey_hmac_key) != hmac_key_len:
-            raise ValueError("Size of HMAC key %s is invalid (expected 0x%02X, got 0x%02X)." %
-                             file_name, hmac_key_len)
+            raise ValueError(
+                "Size of HMAC key %s is invalid (expected 0x%02X, got 0x%02X)."
+                % file_name,
+                hmac_key_len,
+            )
 
         return mkey_hmac_key
 
@@ -225,7 +234,9 @@ class MkeyGenerator:
             self._data_path = None
 
         if not self._data_path:
-            raise ValueError("v1/v2 attempted, but data directory doesn't exist or was not specified.")
+            raise ValueError(
+                "v1/v2 attempted, but data directory doesn't exist or was not specified."
+            )
 
         #
         # Extract key ID fields from inquiry number.
@@ -259,7 +270,9 @@ class MkeyGenerator:
             else:
                 file_name = props["mkey_file"] % (region, version)
 
-            (mkey_region, mkey_version, mkey_ctr, mkey_hmac_key) = self._read_mkey_file(file_name)
+            (mkey_region, mkey_version, mkey_ctr, mkey_hmac_key) = self._read_mkey_file(
+                file_name
+            )
 
             file_name = props["aes_file"] % region
             mkey_aes_key = self._read_aes_key(file_name)
@@ -283,13 +296,21 @@ class MkeyGenerator:
         if algorithm == "v2":
             # Verify the region field.
             if mkey_region != region:
-                raise ValueError("%s has an incorrect region field (expected 0x%02X, got 0x%02X)." %
-                                 file_name, region, mkey_region)
+                raise ValueError(
+                    "%s has an incorrect region field (expected 0x%02X, got 0x%02X)."
+                    % file_name,
+                    region,
+                    mkey_region,
+                )
 
             # Verify the version field.
             if mkey_version != version and "no-versions" not in traits:
-                raise ValueError("%s has an incorrect version field (expected 0x%02X, got 0x%02X)." %
-                                 file_name, version, mkey_version)
+                raise ValueError(
+                    "%s has an incorrect version field (expected 0x%02X, got 0x%02X)."
+                    % file_name,
+                    version,
+                    mkey_version,
+                )
 
             if self._dbg:
                 print("AES key:")
@@ -343,13 +364,19 @@ class MkeyGenerator:
             self._data_path = None
 
         if not self._data_path:
-            raise ValueError("v3/v4 attempted, but data directory doesn't exist or was not specified.")
+            raise ValueError(
+                "v3/v4 attempted, but data directory doesn't exist or was not specified."
+            )
 
         if algorithm == "v4" and not aux:
-            raise ValueError("v4 attempted, but no auxiliary string (device ID required).")
+            raise ValueError(
+                "v4 attempted, but no auxiliary string (device ID required)."
+            )
 
         if algorithm == "v4" and len(aux) != 16:
-            raise ValueError("v4 attempted, but auxiliary string (device ID) of invalid length.")
+            raise ValueError(
+                "v4 attempted, but auxiliary string (device ID) of invalid length."
+            )
 
         if algorithm == "v4":
             version = int((inquiry / 10000) % 100)
@@ -373,7 +400,7 @@ class MkeyGenerator:
         if algorithm == "v4":
             inbuf += struct.pack(">I", 1)
 
-            device_id = struct.pack('<Q', int(aux, 16))
+            device_id = struct.pack("<Q", int(aux, 16))
             mkey_hmac_seed = device_id + mkey_hmac_key
 
             if self._dbg:

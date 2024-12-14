@@ -14,7 +14,7 @@ def get_cover_len5_id(mid: Union[int, str]) -> str:
     mid = int(mid)
     if 10000 < mid <= 11000:
         mid -= 10000
-    return f'{mid:05d}'
+    return f"{mid:05d}"
 
 
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
@@ -23,7 +23,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
     if not elem or elem is Ellipsis:
         return True, diff
     if isinstance(elem, List):
-        for _j in (range(len(checker)) if diff is Ellipsis else diff):
+        for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -31,7 +31,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
                 diff_ret.append(_j)
                 ret = True
     elif isinstance(elem, Tuple):
-        for _j in (range(len(checker)) if diff is Ellipsis else diff):
+        for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -39,7 +39,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
                 diff_ret.append(_j)
                 ret = True
     else:
-        for _j in (range(len(checker)) if diff is Ellipsis else diff):
+        for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -68,20 +68,20 @@ class Chart(Dict):
     dxscore: Optional[int] = None
 
     def __getattribute__(self, item):
-        if item == 'tap':
-            return self['notes'][0]
-        if item == 'hold':
-            return self['notes'][1]
-        if item == 'slide':
-            return self['notes'][2]
-        if item == 'touch':
-            return self['notes'][3] if len(self['notes']) == 5 else 0
-        if item == 'brk':
-            return self['notes'][-1]
-        if item == 'dxscore':
-            return sum(self['charter']) * 3
-        if item == 'charter':
-            return self['charter']
+        if item == "tap":
+            return self["notes"][0]
+        if item == "hold":
+            return self["notes"][1]
+        if item == "slide":
+            return self["notes"][2]
+        if item == "touch":
+            return self["notes"][3] if len(self["notes"]) == 5 else 0
+        if item == "brk":
+            return self["notes"][-1]
+        if item == "dxscore":
+            return sum(self["charter"]) * 3
+        if item == "charter":
+            return self["charter"]
         return super().__getattribute__(item)
 
 
@@ -101,10 +101,10 @@ class Music(Dict):
     diff: List[int] = []
 
     def __getattribute__(self, item):
-        if item in {'genre', 'artist', 'release_date', 'bpm', 'version', 'is_new'}:
-            if item == 'version':
-                return self['basic_info']['from']
-            return self['basic_info'][item]
+        if item in {"genre", "artist", "release_date", "bpm", "version", "is_new"}:
+            if item == "version":
+                return self["basic_info"]["from"]
+            return self["basic_info"][item]
         if item in self:
             return self[item]
         return super().__getattribute__(item)
@@ -135,17 +135,18 @@ class MusicList(List[Music]):
     def random(self):
         return Random.choice(self)
 
-    def filter(self,
-               *,
-               level: Optional[Union[str, List[str]]] = ...,
-               ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-               title: Optional[str] = ...,
-               title_search: Optional[str] = ...,
-               genre: Optional[Union[str, List[str]]] = ...,
-               bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-               dxtype: Optional[Union[str, List[str]]] = ...,
-               diff: List[int] = ...,
-               ):
+    def filter(
+        self,
+        *,
+        level: Optional[Union[str, List[str]]] = ...,
+        ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+        title: Optional[str] = ...,
+        title_search: Optional[str] = ...,
+        genre: Optional[Union[str, List[str]]] = ...,
+        bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+        dxtype: Optional[Union[str, List[str]]] = ...,
+        diff: List[int] = ...,
+    ):
         new_list = MusicList()
         for music in self:
             diff2 = diff
@@ -162,9 +163,14 @@ class MusicList(List[Music]):
                 continue
             if not in_or_equal(music.bpm, bpm):
                 continue
-            if title is not Ellipsis and not in_or_equal(music.title.lower(), title.lower()):
+            if title is not Ellipsis and not in_or_equal(
+                music.title.lower(), title.lower()
+            ):
                 continue
-            if title_search is not Ellipsis and title_search.lower() not in music.title.lower():
+            if (
+                title_search is not Ellipsis
+                and title_search.lower() not in music.title.lower()
+            ):
                 continue
             music.diff = diff2
             new_list.append(music)
@@ -198,15 +204,15 @@ class TotalList:
     async def dl_cache():
         try:
             url = "https://www.diving-fish.com/api/maimaidxprober/music_data"
-            data = await get_url(url, 200, fmt='json')
+            data = await get_url(url, 200, fmt="json")
             if data:
-                with open(mai_song_info_path, 'wb') as f:
+                with open(mai_song_info_path, "wb") as f:
                     f.write(json.dumps(data))
             return data
         except Exception:
             Logger.error(traceback.format_exc())
             try:
-                with open(mai_song_info_path, 'r', encoding='utf-8') as f:
+                with open(mai_song_info_path, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
                 return data
             except Exception:
