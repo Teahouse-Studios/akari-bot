@@ -339,8 +339,7 @@ class WikiLib:
                 value=self.rearrange_siteinfo(get.siteInfo, api_link),
                 message="",
             )
-        else:
-            return WikiStatus(available=False, value=False, message="")
+        return WikiStatus(available=False, value=False, message="")
 
     async def fixup_wiki_info(self):
         if not self.wiki_info.api:
