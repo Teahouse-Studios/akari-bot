@@ -1,0 +1,13 @@
+version = 1
+
+[[analyzers]]
+name = "python"
+enabled = true
+dependency_file_paths = [
+  "requirements.txt",
+  "poetry.toml"
+]
+
+[[transformers]]
+name = "black"
+enabled = true
