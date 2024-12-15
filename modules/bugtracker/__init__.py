@@ -4,7 +4,7 @@ from core.builtins import Bot, Image, Plain, Url
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
-bug = module('bugtracker', alias='bug', developers=['OasisAkari'], doc=True)
+bug = module("bugtracker", alias="bug", developers=["OasisAkari"], doc=True)
 
 
 async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
@@ -22,20 +22,24 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
             await msg.send_message(img_chain)
 
 
-@bug.command('<mojiraid> {{bugtracker.help}}')
+@bug.command("<mojiraid> {{bugtracker.help}}")
 async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
     if mojiraid:
-        q = re.match(r'(.*-\d*)', mojiraid)
+        q = re.match(r"(.*-\d*)", mojiraid)
         if q:
             await query_bugtracker(msg, mojiraid)
         else:
-            await msg.finish(msg.locale.t('bugtracker.message.invalid_mojira_id'))
+            await msg.finish(msg.locale.t("bugtracker.message.invalid_mojira_id"))
 
 
-@bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)', mode='A', flags=re.I,
-           desc='{bugtracker.help.regex.desc}')
+@bug.regex(
+    r"((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)",
+    mode="A",
+    flags=re.I,
+    desc="{bugtracker.help.regex.desc}",
+)
 async def regex_bugtracker(msg: Bot.MessageSession):
     titles = list(set(msg.matched_msg))[:5]
     for title in titles:
-        if title != '':
+        if title != "":
             await query_bugtracker(msg, title)

@@ -11,5 +11,5 @@ async def search(query: str):
 
 search_tool = AkariTool.from_function(
     func=search,
-    description='DuckDuckGo Search. Useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible.'
+    description="DuckDuckGo Search. Useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible.",
 )

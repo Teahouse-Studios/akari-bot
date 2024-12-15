@@ -8,5 +8,5 @@ async def mojira(bug_id: str):
 
 bugtracker_tool = AkariTool.from_function(
     func=mojira,
-    description='A tool for querying a bug on Mojira, Minecraft/Mojang\'s bug tracker. Input should be a Jira issue id, e.g. XX-1234.'
+    description="A tool for querying a bug on Mojira, Minecraft/Mojang's bug tracker. Input should be a Jira issue id, e.g. XX-1234.",
 )
