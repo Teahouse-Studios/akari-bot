@@ -9,7 +9,7 @@ class Secret:
 
 
 class Info:
-    '''
+    """
     机器人信息。
 
     :param version: 机器人版本。
@@ -22,12 +22,13 @@ class Info:
     :param web_render_local_status: 本地 WebRender 状态。
     :param use_url_manager: 是否启用 URLManager。
     :param use_url_md_format: 是否启用 URL MarkDown 格式。
-    '''
+    """
+
     version = None
     subprocess = False
     binary_mode = False
     command_parsed = 0
-    client_name = ''
+    client_name = ""
     dirty_word_check = False
     web_render_status = False
     web_render_local_status = False

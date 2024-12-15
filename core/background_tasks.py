@@ -14,4 +14,4 @@ async def job():
 
 
 async def init_background_task():
-    await JobQueue.add_job(JobQueue.name, 'verify_timezone', {}, wait=False)
+    await JobQueue.add_job(JobQueue.name, "verify_timezone", {}, wait=False)

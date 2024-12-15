@@ -6,8 +6,17 @@ from aiogram.types import FSInputFile
 
 from bots.aiogram.client import bot, token
 from bots.aiogram.info import *
-from core.builtins import (Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager,
-                           FetchTarget as FetchTargetT, FinishedSession as FinishedSessionT)
+from core.builtins import (
+    Bot,
+    Plain,
+    Image,
+    Voice,
+    MessageSession as MessageSessionT,
+    I18NContext,
+    MessageTaskManager,
+    FetchTarget as FetchTargetT,
+    FinishedSession as FinishedSessionT,
+)
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
@@ -16,7 +25,7 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import image_split
 
-enable_analytics = Config('enable_analytics', False)
+enable_analytics = Config("enable_analytics", False)
 
 
 class FinishedSession(FinishedSessionT):
@@ -41,8 +50,15 @@ class MessageSession(MessageSessionT):
         typing = False
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           enable_parse_message=True, enable_split_image=True, callback=None) -> FinishedSession:
+    async def send_message(
+        self,
+        message_chain,
+        quote=True,
+        disable_secret_check=False,
+        enable_parse_message=True,
+        enable_split_image=True,
+        callback=None,
+    ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
@@ -51,38 +67,64 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
-                send_ = await bot.send_message(self.session.target, x.text,
-                                               reply_to_message_id=self.session.message.message_id if quote
-                                               and count == 0 and self.session.message else None)
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
+                send_ = await bot.send_message(
+                    self.session.target,
+                    x.text,
+                    reply_to_message_id=(
+                        self.session.message.message_id
+                        if quote and count == 0 and self.session.message
+                        else None
+                    ),
+                )
+                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 send.append(send_)
                 count += 1
             elif isinstance(x, ImageElement):
                 if enable_split_image:
                     split = await image_split(x)
                     for xs in split:
-                        send_ = await bot.send_photo(self.session.target, FSInputFile(await xs.get()),
-                                                     reply_to_message_id=self.session.message.message_id
-                                                     if quote
-                                                     and count == 0
-                                                     and self.session.message else None)
-                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}')
+                        send_ = await bot.send_photo(
+                            self.session.target,
+                            FSInputFile(await xs.get()),
+                            reply_to_message_id=(
+                                self.session.message.message_id
+                                if quote and count == 0 and self.session.message
+                                else None
+                            ),
+                        )
+                        Logger.info(
+                            f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
+                        )
                         send.append(send_)
                         count += 1
                 else:
-                    send_ = await bot.send_photo(self.session.target, FSInputFile(await x.get()),
-                                                 reply_to_message_id=self.session.message.message_id
-                                                 if quote
-                                                 and count == 0
-                                                 and self.session.message else None)
-                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
+                    send_ = await bot.send_photo(
+                        self.session.target,
+                        FSInputFile(await x.get()),
+                        reply_to_message_id=(
+                            self.session.message.message_id
+                            if quote and count == 0 and self.session.message
+                            else None
+                        ),
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
+                    )
                     send.append(send_)
                     count += 1
             elif isinstance(x, VoiceElement):
-                send_ = await bot.send_audio(self.session.target, FSInputFile(x.path),
-                                             reply_to_message_id=self.session.message.message_id if quote
-                                             and count == 0 and self.session.message else None)
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
+                send_ = await bot.send_audio(
+                    self.session.target,
+                    FSInputFile(x.path),
+                    reply_to_message_id=(
+                        self.session.message.message_id
+                        if quote and count == 0 and self.session.message
+                        else None
+                    ),
+                )
+                Logger.info(
+                    f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
+                )
                 send.append(send_)
                 count += 1
 
@@ -98,9 +140,11 @@ class MessageSession(MessageSessionT):
             chat = await bot.get_chat(self.session.target)
         else:
             chat = self.session.message.chat
-        if chat.type == 'private':
+        if chat.type == "private":
             return True
-        admins = [member.user.id for member in await bot.get_chat_administrators(chat.id)]
+        admins = [
+            member.user.id for member in await bot.get_chat_administrators(chat.id)
+        ]
         if self.session.sender in admins:
             return True
         return False
@@ -108,20 +152,26 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         if self.session.message.text:
             return self.session.message.text
-        return ''
+        return ""
 
     async def to_message_chain(self):
         lst = []
         if self.session.message.audio:
             file = await bot.get_file(self.session.message.audio.file_id)
-            d = await download(f'https://api.telegram.org/file/bot{token}/{file.file_path}')
+            d = await download(
+                f"https://api.telegram.org/file/bot{token}/{file.file_path}"
+            )
             lst.append(Voice(d))
         if self.session.message.photo:
-            file = await bot.get_file(self.session.message.photo[-1]['file_id'])
-            lst.append(Image(f'https://api.telegram.org/file/bot{token}/{file.file_path}'))
+            file = await bot.get_file(self.session.message.photo[-1]["file_id"])
+            lst.append(
+                Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
+            )
         if self.session.message.voice:
             file = await bot.get_file(self.session.message.voice.file_id)
-            d = await download(f'https://api.telegram.org/file/bot{token}/{file.file_path}')
+            d = await download(
+                f"https://api.telegram.org/file/bot{token}/{file.file_path}"
+            )
             lst.append(Voice(d))
         if self.session.message.caption:
             lst.append(Plain(self.session.message.caption))
@@ -160,15 +210,17 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
-        match_target = re.match(fr'^({target_pattern})\|(.*)', target_id)
+        target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
+        match_target = re.match(rf"^({target_pattern})\|(.*)", target_id)
 
         if match_target:
             target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
             if sender_id:
-                sender_pattern = r'|'.join(re.escape(item) for item in sender_prefix_list)
-                match_sender = re.match(fr'^({sender_pattern})\|(.*)', sender_id)
+                sender_pattern = r"|".join(
+                    re.escape(item) for item in sender_prefix_list
+                )
+                match_sender = re.match(rf"^({sender_pattern})\|(.*)", sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
@@ -188,24 +240,28 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        module_name = None if module_name == '*' else module_name
+        module_name = None if module_name == "*" else module_name
         if user_list:
             for x in user_list:
                 try:
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
+                            msgchain = MessageChain(
+                                [Plain(x.parent.locale.t(message, **kwargs))]
+                            )
                         else:
                             msgchain = MessageChain([Plain(message)])
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add('', module_name, 'schedule')
+                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
+            get_target_id = BotDBUtil.TargetInfo.get_target_list(
+                module_name, client_name
+            )
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
@@ -215,13 +271,15 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
+                                msgchain = MessageChain(
+                                    [Plain(fetch.parent.locale.t(message, **kwargs))]
+                                )
                             else:
                                 msgchain = MessageChain([Plain(message)])
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
+                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
                     except Exception:
                         Logger.error(traceback.format_exc())
 

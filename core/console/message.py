@@ -4,8 +4,15 @@ from typing import Union
 from PIL import Image as PILImage
 from inputimeout import inputimeout, TimeoutOccurred
 
-from core.builtins import (Plain, I18NContext, confirm_command, Bot, FetchTarget as FetchTargetT,
-                           FetchedSession as FetchedSessionT, FinishedSession as FinS)
+from core.builtins import (
+    Plain,
+    I18NContext,
+    confirm_command,
+    Bot,
+    FetchTarget as FetchTargetT,
+    FetchedSession as FetchedSessionT,
+    FinishedSession as FinS,
+)
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
@@ -36,24 +43,38 @@ class MessageSession(MessageSessionT):
         typing = True
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           enable_parse_message=True, enable_split_image=True, callback=None) -> FinishedSession:
+    async def send_message(
+        self,
+        message_chain,
+        quote=True,
+        disable_secret_check=False,
+        enable_parse_message=True,
+        enable_split_image=True,
+        callback=None,
+    ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
                 print(x.text)
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
+                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 image_path = await x.get()
                 img = PILImage.open(image_path)
                 img.show()
-                Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {image_path}')
-        return FinishedSession(self, [0], ['Should be a callable here... hmm...'])
+                Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {image_path}")
+        return FinishedSession(self, [0], ["Should be a callable here... hmm..."])
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
+    async def wait_confirm(
+        self,
+        message_chain=None,
+        quote=True,
+        delete=True,
+        timeout=120,
+        append_instruction=True,
+    ):
         send = None
-        if Config('no_confirm', False):
+        if Config("no_confirm", False):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)
@@ -62,9 +83,9 @@ class MessageSession(MessageSessionT):
             send = await self.send_message(message_chain)
         try:
             if timeout:
-                c = inputimeout('Confirm: ', timeout=timeout)
+                c = inputimeout("Confirm: ", timeout=timeout)
             else:
-                c = input('Confirm: ')
+                c = input("Confirm: ")
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
@@ -75,8 +96,14 @@ class MessageSession(MessageSessionT):
             return True
         return False
 
-    async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
-                                append_instruction=True):
+    async def wait_next_message(
+        self,
+        message_chain=None,
+        quote=True,
+        delete=False,
+        timeout=120,
+        append_instruction=True,
+    ):
         send = None
         if message_chain:
             message_chain = MessageChain(message_chain)
@@ -85,9 +112,9 @@ class MessageSession(MessageSessionT):
             send = await self.send_message(message_chain)
         try:
             if timeout:
-                c = inputimeout('Confirm: ', timeout=timeout)
+                c = inputimeout("Confirm: ", timeout=timeout)
             else:
-                c = input('Confirm: ')
+                c = input("Confirm: ")
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
@@ -97,42 +124,57 @@ class MessageSession(MessageSessionT):
         self.session.message = c
         return self
 
-    async def wait_reply(self, message_chain, quote=True, delete=False, timeout=120,
-                         all_=False, append_instruction=True):
+    async def wait_reply(
+        self,
+        message_chain,
+        quote=True,
+        delete=False,
+        timeout=120,
+        all_=False,
+        append_instruction=True,
+    ):
         message_chain = MessageChain(message_chain)
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain)
         try:
             if timeout:
-                c = inputimeout('Reply: ', timeout=timeout)
+                c = inputimeout("Reply: ", timeout=timeout)
             else:
-                c = input('Reply: ')
+                c = input("Reply: ")
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
             raise WaitCancelException
         if message_chain and delete:
             await send.delete()
-        return MessageSession(target=MsgInfo(target_id=f'{target_prefix}|0',
-                                             sender_id=f'{sender_prefix}|0',
-                                             sender_prefix='Console',
-                                             target_from=target_prefix,
-                                             sender_from=sender_prefix,
-                                             client_name=client_name,
-                                             message_id=0),
-                              session=Session(message=c, target=f'{target_prefix}|0', sender=f'{sender_prefix}|0'))
+        return MessageSession(
+            target=MsgInfo(
+                target_id=f"{target_prefix}|0",
+                sender_id=f"{sender_prefix}|0",
+                sender_prefix="Console",
+                target_from=target_prefix,
+                sender_from=sender_prefix,
+                client_name=client_name,
+                message_id=0,
+            ),
+            session=Session(
+                message=c, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
+            ),
+        )
 
-    async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
+    async def wait_anyone(
+        self, message_chain=None, quote=True, delete=False, timeout=120
+    ):
         send = None
         if message_chain:
             message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain)
         try:
             if timeout:
-                c = inputimeout('Confirm: ', timeout=timeout)
+                c = inputimeout("Confirm: ", timeout=timeout)
             else:
-                c = input('Confirm: ')
+                c = input("Confirm: ")
         except TimeoutOccurred:
             if message_chain and delete:
                 await send.delete()
@@ -150,7 +192,8 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         print(
-            f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )")
+            f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )"
+        )
         return True
 
     async def check_permission(self):
@@ -158,11 +201,15 @@ class MessageSession(MessageSessionT):
         return True
 
     async def check_native_permission(self):
-        print("(Tried to check your native permissions, but this is a console. Have fun!)")
+        print(
+            "(Tried to check your native permissions, but this is a console. Have fun!)"
+        )
         return True
 
     def check_super_user(self):
-        print("(Try to check if you are superuser, but this is a unit test environment. Have fun!)")
+        print(
+            "(Try to check if you are superuser, but this is a unit test environment. Have fun!)"
+        )
         return True
 
     async def sleep(self, s):
@@ -184,7 +231,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            print('Console is typing...')
+            print("Console is typing...")
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
@@ -200,7 +247,9 @@ class FetchedSession(FetchedSessionT):
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
         """
-        return await self.parent.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False)
+        return await self.parent.send_message(
+            message_chain, disable_secret_check=disable_secret_check, quote=False
+        )
 
 
 class FetchTarget(FetchTargetT):
@@ -208,14 +257,16 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        return FetchedSession(target_from=target_prefix,
-                              target_id='0',
-                              sender_from=sender_prefix,
-                              sender_id='0')
+        return FetchedSession(
+            target_from=target_prefix,
+            target_id="0",
+            sender_from=sender_prefix,
+            sender_id="0",
+        )
 
     @staticmethod
     async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target('0')
+        fetch = await FetchTarget.fetch_target("0")
         if i18n:
             await fetch.send_message(fetch.parent.locale.t(message, **kwargs))
         else:

@@ -18,16 +18,20 @@ def get_first_record(msg: Bot.MessageSession):
     if is_mysql:
         first_record = BotDBUtil.Analytics.get_first().timestamp.timestamp()
     else:
-        first_record = BotDBUtil.Analytics.get_first().timestamp.replace(tzinfo=timezone.utc).timestamp()
+        first_record = (
+            BotDBUtil.Analytics.get_first()
+            .timestamp.replace(tzinfo=timezone.utc)
+            .timestamp()
+        )
     return msg.ts2strftime(first_record, iso=True, timezone=False)
 
 
-ana = module('analytics', alias='ana', required_superuser=True, base=True, doc=True)
+ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=True)
 
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics', False):
+    if Config("enable_analytics", False):
         try:
             first_record = get_first_record(msg)
             get_counts = BotDBUtil.Analytics.get_count()
@@ -36,10 +40,14 @@ async def _(msg: Bot.MessageSession):
             old = datetime.now().replace(hour=0, minute=0, second=0)
             get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
 
-            await msg.finish(msg.locale.t("core.message.analytics.counts",
-                                          first_record=first_record,
-                                          counts=get_counts,
-                                          counts_today=get_counts_today))
+            await msg.finish(
+                msg.locale.t(
+                    "core.message.analytics.counts",
+                    first_record=first_record,
+                    counts=get_counts,
+                    counts_today=get_counts_today,
+                )
+            )
         except AttributeError as e:
             if str(e).find("NoneType") != -1:
                 await msg.finish(msg.locale.t("core.message.analytics.none"))
@@ -49,20 +57,34 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
-@ana.command('days [<module>]')
+@ana.command("days [<module>]")
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics', False):
+    if Config("enable_analytics", False):
         try:
             first_record = get_first_record(msg)
-            module_ = msg.parsed_msg.get('<module>')
+            module_ = msg.parsed_msg.get("<module>")
             if not module_:
-                result = msg.locale.t("core.message.analytics.days.total", first_record=first_record)
+                result = msg.locale.t(
+                    "core.message.analytics.days.total", first_record=first_record
+                )
             else:
-                result = msg.locale.t("core.message.analytics.days", module=module_, first_record=first_record)
+                result = msg.locale.t(
+                    "core.message.analytics.days",
+                    module=module_,
+                    first_record=first_record,
+                )
             data_ = {}
             for d in range(30):
-                new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
-                old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
+                new = (
+                    datetime.now().replace(hour=0, minute=0, second=0)
+                    + timedelta(days=1)
+                    - timedelta(days=30 - d - 1)
+                )
+                old = (
+                    datetime.now().replace(hour=0, minute=0, second=0)
+                    + timedelta(days=1)
+                    - timedelta(days=30 - d)
+                )
                 get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
                 data_[old.day] = get_
             data_x = []
@@ -72,14 +94,20 @@ async def _(msg: Bot.MessageSession):
                 data_y.append(data_[x])
             plt.plot(data_x, data_y, "-o")
             plt.plot(data_x[-1], data_y[-1], "-ro")
-            plt.xlabel('Days')
-            plt.ylabel('Counts')
-            plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
+            plt.xlabel("Days")
+            plt.ylabel("Counts")
+            plt.tick_params(axis="x", labelrotation=45, which="major", labelsize=10)
 
             plt.gca().yaxis.get_major_locator().set_params(integer=True)
             for xitem, yitem in zip(data_x, data_y):
-                plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-            path = f'{random_cache_path()}.png'
+                plt.annotate(
+                    yitem,
+                    (xitem, yitem),
+                    textcoords="offset points",
+                    xytext=(0, 10),
+                    ha="center",
+                )
+            path = f"{random_cache_path()}.png"
             plt.savefig(path)
             plt.close()
             await msg.finish([Plain(result), Image(path)])
@@ -92,21 +120,34 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
-@ana.command('year [<module>]')
+@ana.command("year [<module>]")
 async def _(msg: Bot.MessageSession):
-    if Config('enable_analytics', False):
+    if Config("enable_analytics", False):
         try:
             first_record = get_first_record(msg)
-            module_ = msg.parsed_msg.get('<module>')
+            module_ = msg.parsed_msg.get("<module>")
             if not module_:
-                result = msg.locale.t("core.message.analytics.year.total", first_record=first_record)
+                result = msg.locale.t(
+                    "core.message.analytics.year.total", first_record=first_record
+                )
             else:
-                result = msg.locale.t("core.message.analytics.year", module=module_, first_record=first_record)
+                result = msg.locale.t(
+                    "core.message.analytics.year",
+                    module=module_,
+                    first_record=first_record,
+                )
             data_ = {}
             for m in range(12):
-                new = datetime.now().replace(day=1, hour=0, minute=0, second=0) + \
-                    relativedelta(months=1) - relativedelta(months=12 - m - 1)
-                old = datetime.now().replace(day=1, hour=0, minute=0, second=0) + relativedelta(months=1) - relativedelta(months=12 - m)
+                new = (
+                    datetime.now().replace(day=1, hour=0, minute=0, second=0)
+                    + relativedelta(months=1)
+                    - relativedelta(months=12 - m - 1)
+                )
+                old = (
+                    datetime.now().replace(day=1, hour=0, minute=0, second=0)
+                    + relativedelta(months=1)
+                    - relativedelta(months=12 - m)
+                )
                 get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
                 data_[old.month] = get_
             data_x = []
@@ -116,14 +157,20 @@ async def _(msg: Bot.MessageSession):
                 data_y.append(data_[x])
             plt.plot(data_x, data_y, "-o")
             plt.plot(data_x[-1], data_y[-1], "-ro")
-            plt.xlabel('Months')
-            plt.ylabel('Counts')
-            plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
+            plt.xlabel("Months")
+            plt.ylabel("Counts")
+            plt.tick_params(axis="x", labelrotation=45, which="major", labelsize=10)
 
             plt.gca().yaxis.get_major_locator().set_params(integer=True)
             for xitem, yitem in zip(data_x, data_y):
-                plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
-            path = f'{random_cache_path()}.png'
+                plt.annotate(
+                    yitem,
+                    (xitem, yitem),
+                    textcoords="offset points",
+                    xytext=(0, 10),
+                    ha="center",
+                )
+            path = f"{random_cache_path()}.png"
             plt.savefig(path)
             plt.close()
             await msg.finish([Plain(result), Image(path)])
@@ -136,27 +183,29 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
-@ana.command('modules [<rank>]')
+@ana.command("modules [<rank>]")
 async def _(msg: Bot.MessageSession, rank: int = None):
     rank = rank if rank and rank > 0 else 30
-    if Config('enable_analytics', False):
+    if Config("enable_analytics", False):
         try:
             module_counts = BotDBUtil.Analytics.get_modules_count()
-            top_modules = sorted(module_counts.items(), key=lambda x: x[1], reverse=True)[:rank]
+            top_modules = sorted(
+                module_counts.items(), key=lambda x: x[1], reverse=True
+            )[:rank]
 
             module_names = [item[0] for item in top_modules]
             module_counts = [item[1] for item in top_modules]
             plt.figure(figsize=(10, max(6, len(module_names) * 0.5)))
-            plt.barh(module_names, module_counts, color='skyblue')
-            plt.xlabel('Counts')
-            plt.ylabel('Modules')
+            plt.barh(module_names, module_counts, color="skyblue")
+            plt.xlabel("Counts")
+            plt.ylabel("Modules")
             plt.gca().invert_yaxis()
 
             for i, v in enumerate(module_counts):
-                plt.text(v, i, str(v), color='black', va='center')
+                plt.text(v, i, str(v), color="black", va="center")
 
-            path = f'{random_cache_path()}.png'
-            plt.savefig(path, bbox_inches='tight')
+            path = f"{random_cache_path()}.png"
+            plt.savefig(path, bbox_inches="tight")
             plt.close()
 
             await msg.finish([Image(path)])
@@ -169,7 +218,7 @@ async def _(msg: Bot.MessageSession, rank: int = None):
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
-@ana.command('export')
+@ana.command("export")
 async def _(msg: Bot.MessageSession):
     # if config('enable_analytics', False):
     #     await msg.send_message(msg.locale.t("core.message.analytics.export.waiting"))
@@ -185,7 +234,8 @@ async def _(msg: Bot.MessageSession):
 
 def export_analytics(
     from_to: Tuple[datetime, datetime] = None,
-    commands: bool = False, expires: int = 600
+    commands: bool = False,
+    expires: int = 600,
 ):
     # oss_ak = config('oss_ak', secret=True)
     # oss_sk = config('oss_sk', secret=True)
