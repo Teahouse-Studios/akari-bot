@@ -7,7 +7,7 @@ class Param:
         self.type = type_
 
     def __repr__(self):
-        return f'{self.name}: {self.type}'
+        return f"{self.name}: {self.type}"
 
 
-__all__ = ['Param']
+__all__ = ["Param"]

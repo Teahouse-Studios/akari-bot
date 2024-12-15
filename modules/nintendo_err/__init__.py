@@ -38,8 +38,8 @@ class Results:
             return switch.err2hex(error, suppress_error)
 
         if not suppress_error:
-            return 'Invalid or unsupported error code format. \
-Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
+            return "Invalid or unsupported error code format. \
+Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
 
     def hex2err(self, error, suppress_error=False):
         # Don't bother processing anything if it's not hex.
@@ -47,7 +47,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
             if switch.is_valid(error):
                 return switch.hex2err(error)
         if not suppress_error:
-            return 'This isn\'t a hexadecimal value!'
+            return "This isn't a hexadecimal value!"
 
     @staticmethod
     def fixup_input(user_input):
@@ -75,17 +75,17 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
     @staticmethod
     def check_meme(err: str) -> str:
         memes = {
-            '0xdeadbeef': '都坏掉了，不能吃了。',
-            '0xdeadbabe': '我觉得你有问题。',
-            '0x8badf00d': '记得垃圾分类。'
+            "0xdeadbeef": "都坏掉了，不能吃了。",
+            "0xdeadbabe": "我觉得你有问题。",
+            "0x8badf00d": "记得垃圾分类。",
         }
         return memes.get(err.casefold())
 
 
-e = module('err', developers=['OasisAkari', 'kurisu'], doc=True)
+e = module("err", developers=["OasisAkari", "kurisu"], doc=True)
 
 
-@e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')
+@e.handle("<errcode> {解析任天堂系列主机的报错码并给出原因。}")
 async def result(msg: Bot.MessageSession):
     """
     Displays information on game console result codes, with a fancy embed.
@@ -100,7 +100,7 @@ async def result(msg: Bot.MessageSession):
       .err 2-ARVHA-0000
     """
     results = Results()
-    err = msg.parsed_msg['<errcode>']
+    err = msg.parsed_msg["<errcode>"]
     err = results.fixup_input(err)
     if meme := results.check_meme(err):
         await msg.finish(meme)
@@ -117,4 +117,4 @@ async def result(msg: Bot.MessageSession):
             embed.add_field(name=field.field_name, value=field.message, inline=False)
         await msg.finish(convert_discord_embed(embed))
     else:
-        await msg.finish('你输入的代码是无效的，或者此功能不支持你使用的主机。')
+        await msg.finish("你输入的代码是无效的，或者此功能不支持你使用的主机。")

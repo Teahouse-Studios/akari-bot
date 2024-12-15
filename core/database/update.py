@@ -40,39 +40,54 @@ def update_database():
             data.custom_admins = json.dumps(custom_admins)
             session.commit()
 
-        session.execute(text("DROP TABLE IF EXISTS enabledModules, targetOptions, mutelist, targetadmin"))
+        session.execute(
+            text(
+                "DROP TABLE IF EXISTS enabledModules, targetOptions, mutelist, targetadmin"
+            )
+        )
 
-        version.value = '2'
+        version.value = "2"
         session.commit()
     if value < 3:
-        session.execute(text("ALTER TABLE TargetInfo ADD column petal INTEGER DEFAULT 0"))
+        session.execute(
+            text("ALTER TABLE TargetInfo ADD column petal INTEGER DEFAULT 0")
+        )
 
-        version.value = '3'
+        version.value = "3"
         session.commit()
     if value < 4:
         session.execute(text("ALTER TABLE TargetInfo DROP COLUMN petal"))
-        session.execute(text("ALTER TABLE SenderInfo ADD column petal INTEGER DEFAULT 0"))
-        session.execute(text("ALTER TABLE TargetInfo RENAME COLUMN custom_admins TO customAdmins"))
-        session.execute(text("ALTER TABLE SenderInfo RENAME COLUMN disable_typing TO disableTyping"))
+        session.execute(
+            text("ALTER TABLE SenderInfo ADD column petal INTEGER DEFAULT 0")
+        )
+        session.execute(
+            text("ALTER TABLE TargetInfo RENAME COLUMN custom_admins TO customAdmins")
+        )
+        session.execute(
+            text("ALTER TABLE SenderInfo RENAME COLUMN disable_typing TO disableTyping")
+        )
 
-        version.value = '4'
+        version.value = "4"
         session.commit()
     if value < 5:
         if is_mysql:
             session.execute(
-                text("ALTER TABLE module_wiki_WikiInfo MODIFY COLUMN siteInfo LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"))
-        version.value = '5'
+                text(
+                    "ALTER TABLE module_wiki_WikiInfo MODIFY COLUMN siteInfo LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+                )
+            )
+        version.value = "5"
         session.commit()
     if value < 6:
         mappings = []
         i = 0
         for v in session.query(AnalyticsData).all():
-            mappings.append({'id': v.id, 'command': '*'.join(v.command[::2])})
+            mappings.append({"id": v.id, "command": "*".join(v.command[::2])})
             i += 1
             print(v.id, i)
             if i % 5000 == 0:
                 session.execute(update(AnalyticsData), mappings)
-                print('done')
+                print("done")
                 session.commit()
                 mappings.clear()
                 session.flush()
@@ -81,5 +96,5 @@ def update_database():
         mappings.clear()
         session.commit()
         session.flush()
-        version.value = '6'
+        version.value = "6"
         session.commit()

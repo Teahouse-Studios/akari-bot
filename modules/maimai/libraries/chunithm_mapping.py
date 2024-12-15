@@ -4,7 +4,7 @@ from core.constants.path import assets_path
 
 SONGS_PER_PAGE = 30
 
-mai_assets_path = os.path.join(assets_path, 'maimai')
+mai_assets_path = os.path.join(assets_path, "maimai")
 chu_cover_path = os.path.join(mai_assets_path, "static", "chu", "cover")
 chu_song_info_path = os.path.join(mai_assets_path, "chu_song_info.json")
 
@@ -25,12 +25,9 @@ score_to_rate = {
     (1009000, 1010000): "SSS+",
 }
 
-combo_mapping = {
-    "fullcombo": "FC",
-    "alljustice": "AJ"
-}
+combo_mapping = {"fullcombo": "FC", "alljustice": "AJ"}
 
-diff_list = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
-diff_list_abbr = ['bas', 'adv', 'exp', 'mas', 'ult']
-diff_list_zhs = ['绿', '黄', '红', '紫', '黑']
-diff_list_zht = ['綠', '黃', '紅', '紫', '黑']
+diff_list = ["Basic", "Advanced", "Expert", "Master", "Ultima"]
+diff_list_abbr = ["bas", "adv", "exp", "mas", "ult"]
+diff_list_zhs = ["绿", "黄", "红", "紫", "黑"]
+diff_list_zht = ["綠", "黃", "紅", "紫", "黑"]
