@@ -184,15 +184,14 @@ async def generate_screenshot_v1(
                                 )
 
                         for x in soup.find_all("div"):
-                            if x.has_attr("id"):
-                                if x.get("id") in ["content", "mw-content-text"]:
-                                    fl = []
-                                    for f in x.attrs:
-                                        if isinstance(x.attrs[f], str):
-                                            fl.append(f'{f}="{x.attrs[f]}"')
-                                        elif isinstance(x.attrs[f], list):
-                                            fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                                    open_file.write(f'<div {" ".join(fl)}>')
+                            if x.get("id") in ["content", "mw-content-text"]:
+                                fl = []
+                                for f in x.attrs:
+                                    if isinstance(x.attrs[f], str):
+                                        fl.append(f'{f}="{x.attrs[f]}"')
+                                    elif isinstance(x.attrs[f], list):
+                                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                                open_file.write(f'<div {" ".join(fl)}>')
                         open_file.write('<div class="mw-parser-output">')
 
                         for x in soup.find_all("main"):
@@ -250,15 +249,14 @@ async def generate_screenshot_v1(
                         open_file.write(f'<body class="{" ".join(x.get("class"))}">')
 
                 for x in soup.find_all("div"):
-                    if x.has_attr("id"):
-                        if x.get("id") in ["content", "mw-content-text"]:
-                            fl = []
-                            for f in x.attrs:
-                                if isinstance(x.attrs[f], str):
-                                    fl.append(f'{f}="{x.attrs[f]}"')
-                                elif isinstance(x.attrs[f], list):
-                                    fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                            open_file.write(f'<div {" ".join(fl)}>')
+                    if x.get("id") in ["content", "mw-content-text"]:
+                        fl = []
+                        for f in x.attrs:
+                            if isinstance(x.attrs[f], str):
+                                fl.append(f'{f}="{x.attrs[f]}"')
+                            elif isinstance(x.attrs[f], list):
+                                fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                        open_file.write(f'<div {" ".join(fl)}>')
 
                 open_file.write('<div class="mw-parser-output">')
 
@@ -306,9 +304,8 @@ async def generate_screenshot_v1(
 
                     if b.name == selected_hx:
                         break
-                    if b.name in hx:
-                        if hx.index(selected_hx) >= hx.index(b.name):
-                            break
+                    if b.name in hx and hx.index(selected_hx) >= hx.index(b.name):
+                        break
                     if b not in bl:
                         bl.append(str(b))
                 open_file.write("".join(bl))
