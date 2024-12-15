@@ -13,17 +13,25 @@ class WikiLogUtil:
     @auto_rollback_error
     def __init__(self, msg: [Bot.MessageSession, str]):
         if isinstance(msg, Bot.MessageSession):
-            if msg.target.target_from != 'QQ|Guild':
+            if msg.target.target_from != "QQ|Guild":
                 target_id = msg.target.target_id
             else:
-                target_id = re.match(r'(QQ\|Guild\|.*?)\|.*', msg.target.target_id).group(1)
+                target_id = re.match(
+                    r"(QQ\|Guild\|.*?)\|.*", msg.target.target_id
+                ).group(1)
         else:
             target_id = msg
-        self.query = session.query(WikiLogTargetSetInfo).filter_by(targetId=target_id).first()
+        self.query = (
+            session.query(WikiLogTargetSetInfo).filter_by(targetId=target_id).first()
+        )
         if not self.query:
-            session.add_all([WikiLogTargetSetInfo(targetId=target_id, infos='{}')])
+            session.add_all([WikiLogTargetSetInfo(targetId=target_id, infos="{}")])
             session.commit()
-            self.query = session.query(WikiLogTargetSetInfo).filter_by(targetId=target_id).first()
+            self.query = (
+                session.query(WikiLogTargetSetInfo)
+                .filter_by(targetId=target_id)
+                .first()
+            )
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -32,10 +40,15 @@ class WikiLogUtil:
         if add or reset:
             if apilink not in infos or reset:
                 infos[apilink] = {}
-                infos[apilink].setdefault('AbuseLog', {'enable': False, 'filters': ['*']})
-                infos[apilink].setdefault('RecentChanges', {'enable': False, 'filters': ['*'], 'rcshow': ['!bot']})
-                infos[apilink].setdefault('use_bot', False)
-                infos[apilink].setdefault('keep_alive', False)
+                infos[apilink].setdefault(
+                    "AbuseLog", {"enable": False, "filters": ["*"]}
+                )
+                infos[apilink].setdefault(
+                    "RecentChanges",
+                    {"enable": False, "filters": ["*"], "rcshow": ["!bot"]},
+                )
+                infos[apilink].setdefault("use_bot", False)
+                infos[apilink].setdefault("keep_alive", False)
                 self.query.infos = json.dumps(infos)
                 session.commit()
                 session.expire_all()
@@ -54,7 +67,7 @@ class WikiLogUtil:
     def conf_log(self, apilink: str, logname: str, enable=False):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            infos[apilink][logname]['enable'] = enable
+            infos[apilink][logname]["enable"] = enable
             self.query.infos = json.dumps(infos)
             session.commit()
             session.expire_all()
@@ -66,7 +79,7 @@ class WikiLogUtil:
     def set_filters(self, apilink: str, logname: str, filters: list[str]):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            infos[apilink][logname]['filters'] = filters
+            infos[apilink][logname]["filters"] = filters
             self.query.infos = json.dumps(infos)
             session.commit()
             session.expire_all()
@@ -78,7 +91,7 @@ class WikiLogUtil:
     def get_filters(self, apilink: str, logname: str):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            return infos[apilink][logname]['filters']
+            return infos[apilink][logname]["filters"]
         return False
 
     @retry(stop=stop_after_attempt(3), reraise=True)
@@ -86,7 +99,7 @@ class WikiLogUtil:
     def set_rcshow(self, apilink: str, rcshow: list):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            infos[apilink]['RecentChanges']['rcshow'] = rcshow
+            infos[apilink]["RecentChanges"]["rcshow"] = rcshow
             self.query.infos = json.dumps(infos)
             session.commit()
             session.expire_all()
@@ -98,7 +111,7 @@ class WikiLogUtil:
     def get_rcshow(self, apilink: str):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            return infos[apilink]['RecentChanges']['rcshow']
+            return infos[apilink]["RecentChanges"]["rcshow"]
         return False
 
     @retry(stop=stop_after_attempt(3), reraise=True)
@@ -106,7 +119,7 @@ class WikiLogUtil:
     def set_use_bot(self, apilink: str, use_bot: bool):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            infos[apilink]['use_bot'] = use_bot
+            infos[apilink]["use_bot"] = use_bot
             self.query.infos = json.dumps(infos)
             session.commit()
             session.expire_all()
@@ -118,15 +131,17 @@ class WikiLogUtil:
     def get_use_bot(self, apilink: str):
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            return infos[apilink]['use_bot']
+            return infos[apilink]["use_bot"]
         return False
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def set_keep_alive(self, apilink: str, keep_alive: bool):  # oh no it smells shit, will rewrite it in the future
+    def set_keep_alive(
+        self, apilink: str, keep_alive: bool
+    ):  # oh no it smells shit, will rewrite it in the future
         infos = json.loads(self.query.infos)
         if apilink in infos:
-            infos[apilink]['keep_alive'] = keep_alive
+            infos[apilink]["keep_alive"] = keep_alive
             self.query.infos = json.dumps(infos)
             session.commit()
             session.expire_all()
@@ -137,8 +152,8 @@ class WikiLogUtil:
     @auto_rollback_error
     def get_keep_alive(self, apilink: str):
         infos = json.loads(self.query.infos)
-        if apilink in infos and 'keep_alive' in infos[apilink]:
-            return infos[apilink]['keep_alive']
+        if apilink in infos and "keep_alive" in infos[apilink]:
+            return infos[apilink]["keep_alive"]
         return False
 
     @staticmethod

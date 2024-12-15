@@ -3,37 +3,37 @@ from core.component import module
 from .mojang_api import *
 
 mcplayer = module(
-    bind_prefix='mcplayer',
-    desc='{mcplayer.help.desc}',
+    bind_prefix="mcplayer",
+    desc="{mcplayer.help.desc}",
     doc=True,
-    developers=['Dianliang233'],
+    developers=["Dianliang233"],
 )
 
 
-@mcplayer.command('<username_or_uuid> {{mcplayer.help}}')
+@mcplayer.command("<username_or_uuid> {{mcplayer.help}}")
 async def main(msg: Bot.MessageSession, username_or_uuid: str):
     arg = username_or_uuid
     try:
         if len(arg) == 32:
             name = await uuid_to_name(arg)
             uuid = arg
-        elif len(arg) == 36 and arg.count('-') == 4:
-            uuid = arg.replace('-', '')
+        elif len(arg) == 36 and arg.count("-") == 4:
+            uuid = arg.replace("-", "")
             name = await uuid_to_name(arg)
         else:
             name = arg
             uuid = await name_to_uuid(arg)
-        namemc = 'https://namemc.com/profile/' + name
+        namemc = "https://namemc.com/profile/" + name
         sac = await uuid_to_skin_and_cape(uuid)
         if sac:
-            render = sac['render']
-            skin = sac['skin']
-            cape = sac['cape']
-            chain = [Plain(f'{name} ({uuid})'), Url(namemc), Image(render), Image(skin)]
+            render = sac["render"]
+            skin = sac["skin"]
+            cape = sac["cape"]
+            chain = [Plain(f"{name} ({uuid})"), Url(namemc), Image(render), Image(skin)]
             if cape:
                 chain.append(Image(cape))
             await msg.finish(chain)
         else:
-            await msg.finish([Plain(f'{name} ({uuid})'), Url(namemc)])
+            await msg.finish([Plain(f"{name} ({uuid})"), Url(namemc)])
     except ValueError:
-        await msg.finish(msg.locale.t('mcplayer.message.not_found', player=arg))
+        await msg.finish(msg.locale.t("mcplayer.message.not_found", player=arg))

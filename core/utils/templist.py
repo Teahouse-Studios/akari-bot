@@ -29,12 +29,12 @@ class TempList:
         if len(self.items) > self.length:
             self.items.pop(0)
 
-    def extend(self, items: Union[Iterable, 'TempList']):
+    def extend(self, items: Union[Iterable, "TempList"]):
         if isinstance(items, TempList):
             items = items.items
         self.items.extend(items)
         if len(self.items) > self.length:
-            self.items = self.items[-self.length:]
+            self.items = self.items[-self.length :]
 
     def remove(self, item):
         self.items.remove(item)
@@ -69,32 +69,32 @@ class TempList:
     def __contains__(self, item):
         return item in self.items
 
-    def __add__(self, other: Union[Iterable, 'TempList']):
+    def __add__(self, other: Union[Iterable, "TempList"]):
         if isinstance(other, TempList):
             other = other.items
         new_items = self.items + other
         if len(new_items) > self.length:
-            new_items = new_items[-self.length:]
+            new_items = new_items[-self.length :]
         return TempList(self.length, _items=new_items)
 
-    def __iadd__(self, other: Union[Iterable, 'TempList']):
+    def __iadd__(self, other: Union[Iterable, "TempList"]):
         if isinstance(other, TempList):
             other = other.items
         self.items += other
         if len(self.items) > self.length:
-            self.items = self.items[-self.length:]
+            self.items = self.items[-self.length :]
         return self
 
     def __mul__(self, other):
         new_items = self.items * other
         if len(new_items) > self.length:
-            new_items = new_items[-self.length:]
+            new_items = new_items[-self.length :]
         return TempList(self.length, _items=new_items)
 
     def __imul__(self, other):
         self.items *= other
         if len(self.items) > self.length:
-            self.items = self.items[-self.length:]
+            self.items = self.items[-self.length :]
         return self
 
     def __eq__(self, other):

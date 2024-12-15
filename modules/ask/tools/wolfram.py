@@ -3,7 +3,7 @@ from langchain.utilities import WolframAlphaAPIWrapper
 from core.config import Config
 from .utils import to_async_func, AkariTool
 
-appid = Config('wolfram_alpha_appid', cfg_type=str, secret=True)
+appid = Config("wolfram_alpha_appid", cfg_type=str, secret=True)
 
 if appid:
     wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=appid)
@@ -13,7 +13,7 @@ if appid:
 
     wolfram_tool = AkariTool.from_function(
         func=wolfram_alpha,
-        description='A wrapper around Wolfram Alpha. ALWAYS USE THIS TOOL when you need to answer questions about MATH, Science, Technology, Culture, Society and Everyday Life. Also useful for generating SHA or MD5 hashes. Input should be a search query in English.'
+        description="A wrapper around Wolfram Alpha. ALWAYS USE THIS TOOL when you need to answer questions about MATH, Science, Technology, Culture, Society and Everyday Life. Also useful for generating SHA or MD5 hashes. Input should be a search query in English.",
     )
 else:
     wolfram_tool = None

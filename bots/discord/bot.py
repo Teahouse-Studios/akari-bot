@@ -20,17 +20,17 @@ from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 
-PrivateAssets.set(os.path.join(assets_path, 'private', 'discord'))
+PrivateAssets.set(os.path.join(assets_path, "private", "discord"))
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 count = 0
 
-dc_token = Config('discord_token', cfg_type=str, secret=True, table_name='bot_discord')
+dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
 
 @client.event
 async def on_ready():
-    Logger.info(f'Logged on as {client.user}')
+    Logger.info(f"Logged on as {client.user}")
     global count
     if count == 0:
         await init_async()
@@ -38,7 +38,9 @@ async def on_ready():
         count = 1
 
 
-slash_load_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'slash'))
+slash_load_dir = os.path.abspath(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), "slash")
+)
 
 
 def load_slashcommands():
@@ -48,12 +50,14 @@ def load_slashcommands():
 
     else:
         try:
-            Logger.warning('Binary mode detected, trying to load pre-built slash list...')
-            js = 'assets/discord_slash_list.json'
-            with open(js, 'r', encoding='utf-8') as f:
+            Logger.warning(
+                "Binary mode detected, trying to load pre-built slash list..."
+            )
+            js = "assets/discord_slash_list.json"
+            with open(js, "r", encoding="utf-8") as f:
                 dir_list = json.loads(f.read())
         except Exception:
-            Logger.error('Failed to load pre-built slash list, using default list.')
+            Logger.error("Failed to load pre-built slash list, using default list.")
             dir_list = os.listdir(slash_load_dir)
     for file_name in dir_list:
         try:
@@ -61,24 +65,24 @@ def load_slashcommands():
             fun_file = None
             if not Info.binary_mode:
                 if os.path.isdir(file_path):
-                    if file_name[0] != '_':
+                    if file_name[0] != "_":
                         fun_file = file_name
                 elif os.path.isfile(file_path):
-                    if file_name[0] != '_' and file_name.endswith('.py'):
+                    if file_name[0] != "_" and file_name.endswith(".py"):
                         fun_file = file_name[:-3]
             else:
-                if file_name[0] != '_':
+                if file_name[0] != "_":
                     fun_file = file_name
-                if file_name[0] != '_' and file_name.endswith('.py'):
+                if file_name[0] != "_" and file_name.endswith(".py"):
                     fun_file = file_name[:-3]
             if fun_file:
-                Logger.info(f'Loading slash.{fun_file}...')
-                modules = 'bots.discord.slash.' + fun_file
+                Logger.info(f"Loading slash.{fun_file}...")
+                modules = "bots.discord.slash." + fun_file
                 importlib.import_module(modules)
-                Logger.info(f'Succeeded loaded bots.discord.slash.{fun_file}!')
+                Logger.info(f"Succeeded loaded bots.discord.slash.{fun_file}!")
         except BaseException:
             tb = traceback.format_exc()
-            errmsg = f'Failed to load bots.discord.slash.{fun_file}: \n{tb}'
+            errmsg = f"Failed to load bots.discord.slash.{fun_file}: \n{tb}"
             Logger.error(errmsg)
 
 
@@ -101,10 +105,10 @@ async def on_message(message):
     if message.reference:
         reply_id = message.reference.message_id
     prefix = None
-    if match_at := re.match(r'^<@(.*?)>', message.content):
+    if match_at := re.match(r"^<@(.*?)>", message.content):
         if match_at.group(1) == str(client.user.id):
-            prefix = ['']
-            message.content = re.sub(r'<@(.*?)>', '', message.content)
+            prefix = [""]
+            message.content = re.sub(r"<@(.*?)>", "", message.content)
 
     msg = MessageSession(
         target=MsgInfo(
@@ -115,17 +119,16 @@ async def on_message(message):
             sender_from=sender_prefix,
             client_name=client_name,
             message_id=message.id,
-            reply_id=reply_id),
-        session=Session(
-            message=message,
-            target=message.channel,
-            sender=message.author))
+            reply_id=reply_id,
+        ),
+        session=Session(message=message, target=message.channel, sender=message.author),
+    )
     await parser(msg, prefix=prefix)
 
 
-if Config("enable", False, table_name='bot_discord'):
+if Config("enable", False, table_name="bot_discord"):
     Info.client_name = client_name
-    if 'subprocess' in sys.argv:
+    if "subprocess" in sys.argv:
         Info.subprocess = True
 
     client.run(dc_token)
