@@ -361,5 +361,4 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
         return priority_result[max_][0]
     if len_filtered_result == 0:
         raise InvalidCommandFormatError
-    else:
-        return filtered_result[0]
+    return filtered_result[0]

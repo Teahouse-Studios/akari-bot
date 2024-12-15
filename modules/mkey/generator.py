@@ -166,7 +166,7 @@ class MkeyGenerator:
             if "v0" in algorithms:
                 return "v0"
             raise ValueError("v0 algorithm not supported by %s." % device)
-        elif len(inquiry) == 10:
+        if len(inquiry) == 10:
             version = int((int(inquiry) / 10000000) % 100)
 
             if "v1" in algorithms and version < 10:
@@ -176,12 +176,11 @@ class MkeyGenerator:
             if "v3" in algorithms:
                 return "v3"
             raise ValueError("v1/v2/v3 algorithms not supported by %s." % device)
-        elif len(inquiry) == 6:
+        if len(inquiry) == 6:
             if "v4" in algorithms:
                 return "v4"
             raise ValueError("v4 algorithm not supported by %s." % device)
-        else:
-            raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
+        raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
 
     # CRC-32 implementation (v0).
     @staticmethod

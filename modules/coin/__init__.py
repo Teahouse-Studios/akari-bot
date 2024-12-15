@@ -28,7 +28,7 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         ]
     ):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
-    elif count > MAX_COIN_NUM:
+    if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.invalid.out_of_range", max=MAX_COIN_NUM)
     elif count < 0:
         return msg.locale.t("coin.message.invalid.amount")

@@ -65,8 +65,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode):
     except ValueError as e:
         if str(e).startswith('401'):
             raise ConfigValueError(msg.locale.t("error.config.invalid"))
-        else:
-            raise e
+        raise e
     except Exception:
         Logger.error(traceback.format_exc())
         await msg.finish(msg.locale.t('osu.message.not_found'))

@@ -20,9 +20,8 @@ async def get_profile_name(msg: Bot.MessageSession, uid):
     except ValueError as e:
         if str(e).startswith("401"):
             raise ConfigValueError(msg.locale.t("error.config.invalid"))
-        else:
-            Logger.error(traceback.format_exc())
-            return False
+        Logger.error(traceback.format_exc())
+        return False
     except BaseException:
         return False
 

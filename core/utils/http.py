@@ -109,9 +109,8 @@ async def get_url(
                         if hasattr(req, fmt):
                             return await getattr(req, fmt)()
                         raise ValueError(f"NoSuchMethod: {fmt}")
-                    else:
-                        text = await req.text()
-                        return text
+                    text = await req.text()
+                    return text
             except asyncio.exceptions.TimeoutError:
                 raise ValueError("Request timeout")
             except Exception as e:
@@ -185,9 +184,8 @@ async def post_url(
                         if hasattr(req, fmt):
                             return await getattr(req, fmt)()
                         raise ValueError(f"NoSuchMethod: {fmt}")
-                    else:
-                        text = await req.text()
-                        return text
+                    text = await req.text()
+                    return text
             except asyncio.exceptions.TimeoutError:
                 raise ValueError("Request timeout")
             except Exception as e:
