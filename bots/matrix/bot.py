@@ -152,7 +152,6 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
             tx_id,
         )
         Logger.info(resp)
-    pass
 
 
 async def start():
