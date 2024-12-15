@@ -5,7 +5,7 @@ name = "python"
 enabled = true
 dependency_file_paths = [
   "requirements.txt",
-  "poetry.toml"
+  "pyproject.toml"
 ]
 
 [[transformers]]
