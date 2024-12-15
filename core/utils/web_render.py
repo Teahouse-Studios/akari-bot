@@ -29,11 +29,11 @@ def webrender(
         url = "" if not url else url
         if Info.web_render_status or _ignore_status:
             return f"{(web_render_local if use_local else web_render)}source?url={url}"
-        return url
     else:
+        url = ""
         if Info.web_render_status or _ignore_status:
             return (web_render_local if use_local else web_render) + method
-        return ""
+    return url
 
 
 async def check_web_render() -> Tuple[bool, bool]:

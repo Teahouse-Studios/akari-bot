@@ -105,6 +105,4 @@ async def cost_petal(msg: Bot.MessageSession, amount: int) -> bool:
             await msg.send_message(msg.locale.t("petal.message.cost.not_enough"))
             return False
         msg.info.modify_petal(-amount)
-        return True
-    else:
-        return True
+    return True

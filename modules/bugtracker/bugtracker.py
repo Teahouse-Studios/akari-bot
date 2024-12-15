@@ -34,8 +34,8 @@ async def make_screenshot(page_link, use_local=True):
             request_private_ip=True,
         )
         if img:
-            read = open(img)
-            load_img = json.loads(read.read())
+            with open(img) as read:
+                load_img = json.loads(read.read())
             img_lst = []
             for x in load_img:
                 b = base64.b64decode(x)

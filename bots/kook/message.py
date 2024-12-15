@@ -92,7 +92,7 @@ class MessageSession(MessageSessionT):
                 send.append(send_)
                 count += 1
             elif isinstance(x, VoiceElement):
-                url = await bot.create_asset(open(x.path), 'rb')
+                url = await bot.create_asset(open(x.path, 'rb'))
                 send_ = await self.session.message.reply(url, type=MessageTypes.AUDIO, quote=quote if quote
                                                          and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
@@ -199,7 +199,7 @@ class FetchedSession(Bot.FetchedSession):
                 await get_channel.send(url, type=MessageTypes.IMG)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
             elif isinstance(x, VoiceElement):
-                url = await bot.create_asset(open(x.path), 'rb')
+                url = await bot.create_asset(open(x.path, 'rb'))
                 await get_channel.send(url, type=MessageTypes.AUDIO)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
 

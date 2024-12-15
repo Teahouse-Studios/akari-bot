@@ -29,7 +29,7 @@ async def image_split(i: ImageElement) -> List[ImageElement]:
         return [Image(i)]
     _h = 0
     i_list = []
-    for x in range((ih // 1500) + 1):
+    for _ in range((ih // 1500) + 1):
         if _h + 1500 > ih:
             crop_h = ih
         else:

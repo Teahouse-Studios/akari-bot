@@ -304,9 +304,8 @@ def restart():
 
 def write_version_cache(msg: Bot.MessageSession):
     update = os.path.join(PrivateAssets.path, 'cache_restart_author')
-    write_version = open(update, 'wb')
-    write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
-    write_version.close()
+    with open(update, 'wb') as write_version:
+        write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
 
 
 restart_time = []

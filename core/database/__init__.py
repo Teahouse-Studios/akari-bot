@@ -127,10 +127,10 @@ class BotDBUtil:
                 if not k:
                     return {}
                 return default
-            else:
-                if not k:
-                    return self.options
-                return self.options.get(k, default)
+
+            if not k:
+                return self.options
+            return self.options.get(k, default)
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error

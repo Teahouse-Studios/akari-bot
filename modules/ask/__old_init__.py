@@ -62,14 +62,14 @@ if Config('enable_langsmith'):
                     try:
                         img = PILImage.open(io.BytesIO(content))
                         chain.append(Image(img))
-                    except Exception as e:
+                    except Exception:
                         chain.append(I18NContext('ask.message.text2img.error', text=content))
                 elif block['type'] == 'code':
                     content = block['content']['code']
                     try:
                         chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
                                                                                                 block['content']['language'])))))
-                    except Exception as e:
+                    except Exception:
                         chain.append(I18NContext('ask.message.text2img.error', text=content))
 
             if await check_bool(res):

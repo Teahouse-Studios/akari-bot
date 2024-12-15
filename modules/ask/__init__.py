@@ -67,10 +67,10 @@ async def _(msg: Bot.MessageSession):
     if c == 0 or msg.target.client_name == "TEST" or is_superuser:
         if hasattr(msg, "parsed_msg"):
             question = msg.parsed_msg["<question>"]
-            gpt4 = bool(msg.parsed_msg["-4"])
+            # gpt4 = bool(msg.parsed_msg["-4"])
         else:
             question = msg.matched_msg[0]
-            gpt4 = False
+            # gpt4 = False
         if await check_bool(question):
             await msg.finish(rickroll(msg))
 

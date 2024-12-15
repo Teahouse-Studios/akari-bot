@@ -139,7 +139,7 @@ async def enable_modules(target_id: str, request: Request):
         target_data.enable(modules)
         return {"message": "success"}
     except Exception:
-        raise JSONResponse(status_code=400, content={
+        return JSONResponse(status_code=400, content={
             "detail": "Bad Request",
             "message": "error"
         })

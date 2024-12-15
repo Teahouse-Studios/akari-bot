@@ -106,7 +106,8 @@ class MkeyGenerator:
         if self._dbg:
             print("Using %s." % file_path)
 
-        mkey_aes_key = open(file_path, "rb").read()
+        with open(file_path, "rb") as mkey_aes_key:
+            mkey_aes_key = mkey_aes_key.read()
         aes_key_len = 0x10
 
         if len(mkey_aes_key) != aes_key_len:
@@ -124,7 +125,8 @@ class MkeyGenerator:
         if self._dbg:
             print("Using %s." % file_path)
 
-        data = open(file_path, "rb").read()
+        with open(file_path, "rb") as data:
+            data = data.read()
         mkey_len = 0x40
 
         if len(data) != mkey_len:
@@ -143,7 +145,8 @@ class MkeyGenerator:
         if self._dbg:
             print("Using %s." % file_path)
 
-        mkey_hmac_key = open(file_path, "rb").read()
+        with open(file_path, "rb") as mkey_aes_key:
+            mkey_hmac_key = mkey_aes_key.read()
         hmac_key_len = 0x20
 
         if len(mkey_hmac_key) != hmac_key_len:

@@ -63,7 +63,7 @@ class MessageSession(MessageSessionT):
                     send_ = await self.session.message.send(file=discord.File(await x.get()))
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
             elif isinstance(x, EmbedElement):
-                embeds, files = await convert_embed(x)
+                embeds, _ = await convert_embed(x)
                 if first_send:
                     send_ = await self.session.message.respond(embed=embeds)
                 else:

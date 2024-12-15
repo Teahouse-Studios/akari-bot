@@ -82,15 +82,14 @@ def load_modules():
             err_modules.append(fun_file)
     Logger.info("All modules loaded.")
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
-    open_loader_cache = open(loader_cache, "w")
-    if err_prompt:
-        err_prompt = re.sub(
-            r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt)
-        )
-        open_loader_cache.write(err_prompt)
-    else:
-        open_loader_cache.write("")
-    open_loader_cache.close()
+    with open(loader_cache, "w") as open_loader_cache:
+        if err_prompt:
+            err_prompt = re.sub(
+                r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt)
+            )
+            open_loader_cache.write(err_prompt)
+        else:
+            open_loader_cache.write("")
 
     ModulesManager.refresh()
 
