@@ -17,7 +17,7 @@ ctd = module(
 
 @ctd.handle("profile [<username>] {{cytoid.help.profile}}")
 async def _(msg: Bot.MessageSession, username: str = None):
-    if msg.parsed_msg["profile"]:
+    if username:
         await cytoid_profile(msg, username)
 
 
