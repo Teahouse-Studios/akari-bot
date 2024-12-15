@@ -23,8 +23,12 @@ class BaseMatches:
 class CommandMatches(BaseMatches):
     set: List[CommandMeta] = []
 
-    def get(self, target_from: str, show_required_superuser: bool = False,
-            show_required_base_superuser: bool = False) -> List[CommandMeta]:
+    def get(
+        self,
+        target_from: str,
+        show_required_superuser: bool = False,
+        show_required_base_superuser: bool = False,
+    ) -> List[CommandMeta]:
         metas = []
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
@@ -35,7 +39,7 @@ class CommandMatches(BaseMatches):
                 continue
             if target_from in meta.exclude_from:
                 continue
-            if target_from in meta.available_for or '*' in meta.available_for:
+            if target_from in meta.available_for or "*" in meta.available_for:
                 metas.append(meta)
         return metas
 
@@ -44,8 +48,12 @@ class CommandMatches(BaseMatches):
 class RegexMatches(BaseMatches):
     set: List[RegexMeta] = []
 
-    def get(self, target_from: str, show_required_superuser: bool = False,
-            show_required_base_superuser: bool = False) -> List[RegexMeta]:
+    def get(
+        self,
+        target_from: str,
+        show_required_superuser: bool = False,
+        show_required_base_superuser: bool = False,
+    ) -> List[RegexMeta]:
         metas = []
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
@@ -56,7 +64,7 @@ class RegexMatches(BaseMatches):
                 continue
             if target_from in meta.exclude_from:
                 continue
-            if target_from in meta.available_for or '*' in meta.available_for:
+            if target_from in meta.available_for or "*" in meta.available_for:
                 metas.append(meta)
         return metas
 

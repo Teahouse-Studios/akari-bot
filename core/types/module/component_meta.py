@@ -24,7 +24,7 @@ class CommandMeta(ModuleMeta):
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
-    available_for: list = field(default=['*'], converter=convert2lst)
+    available_for: list = field(default=["*"], converter=convert2lst)
     exclude_from: list = field(default=[], converter=convert2lst)
     load: bool = True
     priority: int = 1
@@ -39,7 +39,7 @@ class RegexMeta(ModuleMeta):
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
-    available_for: list = field(default=['*'], converter=convert2lst)
+    available_for: list = field(default=["*"], converter=convert2lst)
     exclude_from: list = field(default=[], converter=convert2lst)
     flags: re.RegexFlag = 0
     load: bool = True

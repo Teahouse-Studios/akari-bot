@@ -9,17 +9,19 @@ from core.constants.default import db_path_default
 from core.constants.path import database_path
 from core.database.orm_base import Base
 
-DB_LINK = Config('db_path', default=db_path_default, secret=True)
+DB_LINK = Config("db_path", default=db_path_default, secret=True)
 
 db_path = database_path
-if DB_LINK.startswith('sqlite:///'):
-    db_path = os.path.dirname(DB_LINK.replace('sqlite:///', ''))
+if DB_LINK.startswith("sqlite:///"):
+    db_path = os.path.dirname(DB_LINK.replace("sqlite:///", ""))
 os.makedirs(db_path, exist_ok=True)
 
 
 class DBSession:
     def __init__(self):
-        self.engine = create_engine(DB_LINK, isolation_level="READ UNCOMMITTED", pool_pre_ping=True)
+        self.engine = create_engine(
+            DB_LINK, isolation_level="READ UNCOMMITTED", pool_pre_ping=True
+        )
         self.Session = sessionmaker()
         self.Session.configure(bind=self.engine)
 

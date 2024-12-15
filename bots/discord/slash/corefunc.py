@@ -18,7 +18,9 @@ async def hlp(ctx: discord.ApplicationContext, module: str):
 
 
 @client.slash_command(name="locale", description="Set the bot running languages.")
-@discord.option(name="lang", description="Supported language codes.", autocomplete=auto_get_lang)
+@discord.option(
+    name="lang", description="Supported language codes.", autocomplete=auto_get_lang
+)
 async def locale(ctx: discord.ApplicationContext, lang: str = None):
     if lang:
         await slash_parser(ctx, lang)
@@ -36,7 +38,8 @@ async def ping(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-if Config('enable_petal', False):
+if Config("enable_petal", False):
+
     @client.slash_command(name="petal", description="Get the number of petals.")
     async def petal(ctx: discord.ApplicationContext):
         await slash_parser(ctx, "")
@@ -47,7 +50,10 @@ async def version(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@client.slash_command(name="whoami", description="Get the ID of the user account that sent the command inside the bot.")
+@client.slash_command(
+    name="whoami",
+    description="Get the ID of the user account that sent the command inside the bot.",
+)
 async def whoami(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
@@ -78,7 +84,9 @@ async def ban(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"ban {userid}")
 
 
-@admin.command(name="unban", description="Remove limit someone to use bot in the channel.")
+@admin.command(
+    name="unban", description="Remove limit someone to use bot in the channel."
+)
 @discord.option(name="userid", description="The user ID.")
 async def unban(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"unban {userid}")
@@ -101,7 +109,9 @@ async def remove(ctx: discord.ApplicationContext, alias: str):
 
 
 @ali.command(name="list", description="View custom command alias.")
-@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
+@discord.option(
+    name="legacy", choices=["false", "true"], description="Whether to use legacy mode."
+)
 async def lst(ctx: discord.ApplicationContext, legacy: str):
     legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
@@ -126,7 +136,9 @@ m = client.create_group("module", "Set about modules.")
 
 
 @m.command(name="list", description="View all available modules.")
-@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
+@discord.option(
+    name="legacy", choices=["false", "true"], description="Whether to use legacy mode."
+)
 async def lst(ctx: discord.ApplicationContext, legacy: str):
     legacy = "--legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
@@ -171,7 +183,9 @@ async def offset(ctx: discord.ApplicationContext, offset: str):
     await slash_parser(ctx, f"timeoffset {offset}")
 
 
-@setup.command(name="cooldown", description="Set up the command cooldown time within the session.")
+@setup.command(
+    name="cooldown", description="Set up the command cooldown time within the session."
+)
 @discord.option(name="second", description="The command cooldown seconds.")
 async def cooldown(ctx: discord.ApplicationContext, second: str):
     await slash_parser(ctx, f"cooldown {second}")

@@ -14,22 +14,26 @@ from core.utils.info import Info
 def load_extra_schedulers():
     @Scheduler.scheduled_job(IntervalTrigger(hours=12))
     async def clear_queue():
-        Logger.info('Clearing job queue...')
+        Logger.info("Clearing job queue...")
         BotDBUtil.JobQueue.clear()
-        Logger.info('Job queue cleared.')
+        Logger.info("Job queue cleared.")
 
     fun_file = None
-    Logger.info('Attempting to load schedulers...')
+    Logger.info("Attempting to load schedulers...")
     if not Info.binary_mode:
         dir_list = os.listdir(schedulars_path)
     else:
         try:
-            Logger.warning('Binary mode detected, trying to load pre-built schedulers list...')
-            js = 'assets/schedulers_list.json'
-            with open(js, 'r', encoding='utf-8') as f:
+            Logger.warning(
+                "Binary mode detected, trying to load pre-built schedulers list..."
+            )
+            js = "assets/schedulers_list.json"
+            with open(js, "r", encoding="utf-8") as f:
                 dir_list = json.loads(f.read())
         except Exception:
-            Logger.error('Failed to load pre-built schedulers list, using default list.')
+            Logger.error(
+                "Failed to load pre-built schedulers list, using default list."
+            )
             dir_list = os.listdir(schedulars_path)
 
     for file_name in dir_list:
@@ -38,23 +42,23 @@ def load_extra_schedulers():
             fun_file = None
             if not Info.binary_mode:
                 if os.path.isdir(file_path):
-                    if file_name[0] != '_':
+                    if file_name[0] != "_":
                         fun_file = file_name
                 elif os.path.isfile(file_path):
-                    if file_name[0] != '_' and file_name.endswith('.py'):
+                    if file_name[0] != "_" and file_name.endswith(".py"):
                         fun_file = file_name[:-3]
             else:
-                if file_name[0] != '_':
+                if file_name[0] != "_":
                     fun_file = file_name
-                if file_name[0] != '_' and file_name.endswith('.py'):
+                if file_name[0] != "_" and file_name.endswith(".py"):
                     fun_file = file_name[:-3]
             if fun_file:
-                Logger.debug(f'Loading schedulers.{fun_file}...')
-                modules = 'schedulers.' + fun_file
+                Logger.debug(f"Loading schedulers.{fun_file}...")
+                modules = "schedulers." + fun_file
                 importlib.import_module(modules)
-                Logger.debug(f'Succeeded loaded schedulers.{fun_file}!')
+                Logger.debug(f"Succeeded loaded schedulers.{fun_file}!")
         except Exception:
             tb = traceback.format_exc()
-            errmsg = f'Failed to load schedulers.{fun_file}: \n{tb}'
+            errmsg = f"Failed to load schedulers.{fun_file}: \n{tb}"
             Logger.error(errmsg)
-    Logger.info('All schedulers loaded.')
+    Logger.info("All schedulers loaded.")

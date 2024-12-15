@@ -26,26 +26,35 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
         target=MsgInfo(
             target_id=target_id,
             sender_id=sender_id,
-            sender_prefix=ctx.author.name if isinstance(
-                ctx,
-                discord.ApplicationContext) else ctx.interaction.user.name,
+            sender_prefix=(
+                ctx.author.name
+                if isinstance(ctx, discord.ApplicationContext)
+                else ctx.interaction.user.name
+            ),
             target_from=target_slash_prefix,
             sender_from=sender_prefix,
             client_name=target_slash_prefix,
-            message_id=0),
+            message_id=0,
+        ),
         session=Session(
             message=ctx,
-            target=ctx.channel if isinstance(
-                ctx,
-                discord.ApplicationContext) else ctx.interaction.channel,
-            sender=ctx.author if isinstance(
-                ctx,
-                discord.ApplicationContext) else ctx.interaction.user))
+            target=(
+                ctx.channel
+                if isinstance(ctx, discord.ApplicationContext)
+                else ctx.interaction.channel
+            ),
+            sender=(
+                ctx.author
+                if isinstance(ctx, discord.ApplicationContext)
+                else ctx.interaction.user
+            ),
+        ),
+    )
 
 
 async def slash_parser(ctx: discord.ApplicationContext, command: str):
     await ctx.defer()
     session = ctx_to_session(ctx)
     session.command = f'/{str(ctx.command).split(" ")[0]} {command}'
-    Logger.info('Parsing...')
-    await parser(session, prefix=['~', '/'], require_enable_modules=False)
+    Logger.info("Parsing...")
+    await parser(session, prefix=["~", "/"], require_enable_modules=False)
