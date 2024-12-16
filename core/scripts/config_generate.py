@@ -87,7 +87,8 @@ def generate_config(dir_path, language):
             if s.strip() == '':
                 spl.remove(s)
         try:
-            eval(f'Config({','.join(spl)})')  # Execute the code to generate the config file, yeah, just stupid but works
+            # Execute the code to generate the config file, yeah, just stupid but works
+            eval(f'Config({','.join(spl)})')
         except (NameError, TypeError):
             # traceback.print_exc()
             ...
