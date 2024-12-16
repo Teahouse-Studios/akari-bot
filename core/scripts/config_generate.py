@@ -82,11 +82,12 @@ def generate_config(dir_path, language):
     #             filtered_config_code_map[opt] = c
     # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
     for c in config_code_list:
-        if c.endswith(','):
-            c = c[:-1]
-        c += ', _generate=True'  # Add _generate=True param to the end of the config function
+        spl = c.split(',') + ['_generate=True']  # Add _generate=True param to the end of the config function
+        for s in spl:
+            if s.strip() == '':
+                spl.remove(s)
         try:
-            eval(f'Config({c})')  # Execute the code to generate the config file, yeah, just stupid but works
+            eval(f'Config({','.join(spl)})')  # Execute the code to generate the config file, yeah, just stupid but works
         except (NameError, TypeError):
             # traceback.print_exc()
             ...
@@ -137,8 +138,11 @@ if __name__ == '__main__':
 
     config_store_path = os.path.join(assets_path, 'config_store')
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
+    config_store_path_bak = config_store_path + '_bak'
+    if os.path.exists(config_store_path_bak):
+        shutil.rmtree(config_store_path_bak)
     if os.path.exists(config_store_path):
-        shutil.move(config_store_path, config_store_path + '_bak')
+        shutil.move(config_store_path, config_store_path_bak)
     os.makedirs(config_store_path, exist_ok=True)
     os.makedirs(config_store_packed_path, exist_ok=True)
     for lang in lang_list:
