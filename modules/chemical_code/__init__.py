@@ -77,8 +77,8 @@ async def search_csr(id=None):
         id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
     elements = parse_elements(name)
     value = 0
-    for element in elements:
-        value += elements[element]
+    for _, v in elements.items():
+        value += v
     wh = 500 * value // 100
     wh = max(wh, 500)
     return {'id': answer_id,
@@ -146,10 +146,10 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         play_state.enable()
     try:
         csr = await search_csr(id)
-    except Exception as e:
+    except Exception:
         Logger.error(traceback.format_exc())
         play_state.disable()
-        return await msg.finish(msg.locale.t('chemical_code.message.error'))
+        await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
     Logger.info(f'Answer: {play_state.get("answer")}')
@@ -180,8 +180,8 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                     try:
                         parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
                         value = 0
-                        for i in parse_:
-                            value += parse_[i]
+                        for _, v in parse_.items():
+                            value += v
                         v_ = play_state.get('length') - value
                         if v_ < 0:
                             v_ = -v_

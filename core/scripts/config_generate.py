@@ -48,8 +48,8 @@ def generate_config(dir_path, language):
 
     CFGManager.switch_config_path(dir_path)
 
-    for dir in dir_list:
-        for root, dirs, files in os.walk(dir):
+    for _dir in dir_list:
+        for root, dirs, files in os.walk(_dir):
             if root in exclude_dir_list:
                 continue
             for file in files:

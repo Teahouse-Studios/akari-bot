@@ -78,8 +78,8 @@ async def bugtracker_get(msg, mojira_id: str):
         load_json = json.loads(get_json)
         errmsg = ''
         if 'errorMessages' in load_json:
-            for msg in load_json['errorMessages']:
-                errmsg += '\n' + msg
+            for msgs in load_json['errorMessages']:
+                errmsg += '\n' + msgs
         else:
             if 'key' in load_json:
                 data["title"] = f'[{load_json["key"]}] '

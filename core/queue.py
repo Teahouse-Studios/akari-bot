@@ -6,16 +6,19 @@ from uuid import uuid4
 import orjson as json
 
 from core.builtins import Bot, MessageChain
-from core.constants import Info
+from core.config import Config
+from core.constants import Info, default_locale
 from core.database import BotDBUtil
 from core.database.tables import JobQueueTable
 from core.logger import Logger
+from core.utils.i18n import Locale
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
 from core.utils.web_render import check_web_render
 
 _queue_tasks = {}
 queue_actions = {}
+report_targets = Config('report_targets', [])
 
 
 class QueueFinished(Exception):
@@ -125,6 +128,14 @@ async def check_job_queue():
                 return_val(tsk, {'traceback': f}, status=False)
             except QueueFinished:
                 pass
+            try:
+                for target in report_targets:
+                    if ft := await Bot.FetchTarget.fetch_target(target):
+                        await ft.send_direct_message(
+                            Locale(default_locale).t('error.message.report', module=tsk.action, detail=f),
+                            enable_parse_message=False, disable_secret_check=True)
+            except Exception:
+                Logger.error(traceback.format_exc())
 
 
 @action('validate_permission')

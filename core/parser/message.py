@@ -326,7 +326,7 @@ async def parser(msg: Bot.MessageSession,
                         if func.help_doc:
                             none_doc = False
                     if not none_doc:  # 如果有，送入命令解析
-                        async def execute_submodule(msg: Bot.MessageSession, command_first_word, command_split):
+                        async def execute_submodule(msg: Bot.MessageSession, command_first_word):
                             try:
                                 command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
                                                                command_prefixes=msg.prefixes)
@@ -434,7 +434,7 @@ async def parser(msg: Bot.MessageSession,
                                     ErrorMessage("{error.module.helpdoc.invalid}", module=command_first_word, locale=msg.locale.locale))
                                 return
 
-                        await execute_submodule(msg, command_first_word, command_split)
+                        await execute_submodule(msg, command_first_word)
                     else:  # 如果没有，直接传入下游模块
                         msg.parsed_msg = None
                         for func in module.command_list.set:
