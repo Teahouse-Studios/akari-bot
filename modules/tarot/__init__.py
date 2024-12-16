@@ -1,6 +1,5 @@
-import ujson as json
+import orjson as json
 import random
-import time
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.extra import reverse_img
@@ -11,17 +10,21 @@ tarot = module('tarot', desc='塔罗牌模块(移植自https://github.com/LaoLit
 
 @tarot.handle('{获取随机塔罗}')
 async def _(send: Bot.MessageSession):
-    with open('./assets/TarotData.json', 'r', encoding='utf8') as tdata:
-        taro_data = json.load(tdata)
-    preprocessed_taro_data = random.choice(taro_data)
+    with open('./assets/tarot/tarot_cards.json', 'r', encoding='utf8') as tdata:
+        taro_data = json.loads(tdata.read())
+    pre_taro = random.choice(taro_data)
     facing = ["positive", "negative"]
     selected_facing = random.choice(facing)
+    taro_text = None
+    card = None
     if selected_facing == "positive":
-        plain_ = preprocessed_taro_data["name"] + '\n正位\n' + preprocessed_taro_data["positive"]
-        img_ = preprocessed_taro_data["imageName"]
+        taro_text = pre_taro["name"] + '\n正位\n' + pre_taro["positive"]
+        card = pre_taro["imageName"]
     elif selected_facing == "negative":
-        plain_ = preprocessed_taro_data["name"] + '\n逆位\n' + preprocessed_taro_data["negative"]
-        img_ = reverse_img(preprocessed_taro_data["imageName"])
-    msg = await send.sendMessage([Plain(plain_+'\n[30秒后撤回]'), Image(img_)])
-    await send.sleep(30)
-    await msg.delete()
+        taro_text = pre_taro["name"] + '\n逆位\n' + pre_taro["negative"]
+        card = reverse_img(pre_taro["imageName"])
+    msg1 = await send.send_message(Plain(taro_text+'\n[60秒后撤回]'),quote=False)
+    msg2 = await send.send_message(Image(card),quote=False)
+    await send.sleep(60)
+    await msg1.delete()
+    await msg2.delete()

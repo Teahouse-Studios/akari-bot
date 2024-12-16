@@ -18,7 +18,7 @@ class QweatherApi():
                 if response_.status == 200:
                     return dict(result)
                 else:
-                    raise FaildToQueryWeather
+                    raise FaildToQueryWeather('请求失败')
 
     async def geo_ip(self,city):
         """
