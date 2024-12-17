@@ -40,6 +40,18 @@
             font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
         }
 
+        {% if module.base %}
+        body {
+            background-color: white;
+            --theme-color-title: #9f430b;
+            --theme-color-main: #e1996d;
+            --theme-color-main-2: #e9af8b;
+            --theme-color-main-3: #f5d9c5;
+            --theme-color-secondary: #fae0de;
+            --theme-color-tertiary: #f8f4fc;
+            --theme-color-highlight: #d6804a;
+        }
+        {% else %}
         body {
             background-color: white;
             --theme-color-title: #305e7a;
@@ -50,6 +62,7 @@
             --theme-color-tertiary: #f8faf6;
             --theme-color-highlight: #6d98b3;
         }
+        {% endif %}
 
         h2 {
             background-color: var(--theme-color-main);
@@ -135,6 +148,12 @@
             border-top: 2px solid var(--theme-color-highlight);
         }
 
+        {% if module.base %}
+        .authors {
+            display: none;
+        }
+        {% endif %}
+
         .help-contents {
             background-color: var(--theme-color-tertiary);
         }
@@ -207,6 +226,7 @@
                         {%- endif %}
                         {%- endfor %}
                     </div>
+                    {% endif %}
                 </div>
                 {% if module.developers %}
                 <div class="authors">

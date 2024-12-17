@@ -122,14 +122,14 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
                         html_content = env.get_template('help_doc_detail.html').render(msg=msg,
-                                                                                       module=module_,
-                                                                                       help=help_,
-                                                                                       help_name=help_name,
-                                                                                       regex_list=regex_list,
-                                                                                       escape=escape,
-                                                                                       isinstance=isinstance,
-                                                                                       str=str,
-                                                                                       repattern=re.Pattern)
+                                                                                   module=module_,
+                                                                                   help=help_,
+                                                                                   help_name=help_name,
+                                                                                   regex_list=regex_list,
+                                                                                   escape=escape,
+                                                                                   isinstance=isinstance,
+                                                                                   str=str,
+                                                                                   repattern=re.Pattern)
 
                         fname = f'{random_cache_path()}.html'
                         with open(fname, 'w', encoding='utf-8') as fi:
