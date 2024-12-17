@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="{{ msg.locale.locale }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Help</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        html body {
+            margin-top: 0 !important;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        :lang(ko) {
+            font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+        }
+
+        :lang(ja) {
+            font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        }
+
+        :lang(zh-TW), :lang(zh_TW) {
+            font-family: 'Noto Sans TC', 'Noto Sans HK', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        }
+
+        :lang(zh-HK) {
+            font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        }
+
+        :lang(zh-Hans), :lang(zh-CN), :lang(zh), :lang(zh_CN) {
+            font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+        }
+    
+        .content-layout {
+            padding: 10px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        }
+
+        .grid-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 3px;
+            border-radius: 5px;
+            height: 75px;
+            width: 100px;
+            text-align: center;
+            overflow: hidden;
+            justify-content: center;
+            font-weight: bolder;
+            font-size: 12px;
+            margin: 5px 0;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+            background-color: transparent;
+            /* box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2); */
+            }
+
+        .base {
+            background-color: #e1996d;
+            color: white;
+            border: 1px solid #9f430b;
+        }
+
+        .external {
+            background-color: #8aaec4;
+            color: white;
+            border: 1px solid #305e7a;
+        }
+
+        .disabled {
+            background-color: #cecece;
+            color: gray;
+            border: 1px solid #757575;
+        }
+
+        .dev {
+            font-style: italic;
+            border: 1px dashed;
+        }
+
+        .admin {
+            font-style: italic;
+        }
+
+        .module-name {
+            font-family: 'Noto Mono', monospace;
+            font-size: 14px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px dashed gray;
+            margin: 5px 0;
+        }
+
+        .footer {
+            text-align: left;
+            font-size: 16px;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="botbox">
+        <div class="content-layout">
+        <h2>{{ msg.locale.t("core.message.module.list.header") }}</h2>
+        <hr>
+        <div class="grid-container">
+            {% for key, value in module_list.items() %}
+            <div class="grid-item{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else (' base' if value.base else ' external') }}">
+                <div class="{% if not (value.required_superuser or value.required_base_superuser) %}{{ 'admin' if value.required_admin else '' }}{% endif %}">
+                    {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
+                                  command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
+                    {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
+                    <div class="module-name">{{ value.bind_prefix | e }}</div>
+                    {% if len(help_.args) > 0 %}
+                    <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
+                    {%- endif %}
+                    {% if len(regex_list) > 0 %}
+                    <div>{{ msg.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
+                    {%- endif %}
+                </div>
+            </div>
+            {%- endfor %}
+        </div>
+        <hr>
+            <div class="footer">
+                {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]) }} <br> {{ 
+                    msg.locale.t('core.message.help.detail', prefix=msg.prefixes[0]) |safe }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -121,21 +121,21 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     pass
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
-                        html_content = env.get_template('help_doc_detail.html').render(msg=msg,
-                                                                                       module=module_,
-                                                                                       help=help_,
-                                                                                       help_name=help_name,
-                                                                                       regex_list=regex_list,
-                                                                                       escape=escape,
-                                                                                       isinstance=isinstance,
-                                                                                       str=str,
-                                                                                       repattern=re.Pattern)
+                        html_content = env.get_template('help_doc.html').render(msg=msg,
+                                                                                module=module_,
+                                                                                help=help_,
+                                                                                help_name=help_name,
+                                                                                regex_list=regex_list,
+                                                                                escape=escape,
+                                                                                isinstance=isinstance,
+                                                                                str=str,
+                                                                                repattern=re.Pattern)
 
                         fname = f'{random_cache_path()}.html'
                         with open(fname, 'w', encoding='utf-8') as fi:
                             fi.write(html_content)
 
-                        d = {'content': html_content, 'element': '.content-layout'}
+                        d = {'content': html_content, 'element': '.botbox'}
                         html_ = json.dumps(d)
 
                         try:
@@ -348,7 +348,7 @@ async def help_generator(msg: Bot.MessageSession,
     if not show_dev_modules:
         module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
 
-    html_content = env.get_template('help_doc.html').render(
+    html_content = env.get_template('module_list.html').render(
         CommandParser=CommandParser,
         is_base_superuser=is_base_superuser,
         is_superuser=is_superuser,

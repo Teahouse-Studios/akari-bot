@@ -104,7 +104,7 @@
     "core.message.help.legacy.base": "Base Modules: ",
     "core.message.help.legacy.external": "External Modules: ",
     "core.message.help.not_found": "This module may not exist. Please check your input.",
-    "core.message.help.prompt": "Oranges are basic modules, blues are external modules, grays are disabled modules. \nModules marked in red can only be used by the admins of the session.",
+    "core.message.help.prompt": "Oranges are basic modules, blues are external modules, grays are disabled modules. \nModules marked in italics can only be used by the admins of the session.",
     "core.message.help.regex.detail": "(${msg})",
     "core.message.help.regex.no_information": " (No description)",
     "core.message.help.regex_count": "${count} Regex(ps)",
