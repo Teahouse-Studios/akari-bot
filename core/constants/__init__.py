@@ -8,4 +8,4 @@ from .info import *
 from .path import *
 from .version import *
 
-config_filename = 'config.toml'
+config_filename = "config.toml"

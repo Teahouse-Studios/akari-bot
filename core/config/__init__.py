@@ -45,13 +45,8 @@ class CFGManager:
                     cfg_name = cfg
                     if cfg_name.endswith('.toml'):
                         cfg_name = cfg_name.removesuffix('.toml')
-                    cls.values[cfg_name] = toml_parser(
-                        open(
-                            os.path.join(
-                                cls.config_path,
-                                cfg),
-                            'r',
-                            encoding='utf-8').read())
+                    with open(os.path.join(cls.config_path, cfg), 'r', encoding='utf-8') as c:
+                        cls.values[cfg_name] = toml_parser(c.read())
                     cls._tss[cfg_name] = os.path.getmtime(os.path.join(cls.config_path, cfg))
             except Exception as e:
                 raise ConfigValueError(e)

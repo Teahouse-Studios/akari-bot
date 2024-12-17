@@ -49,10 +49,10 @@ def generate_config(dir_path, language):
     CFGManager.switch_config_path(dir_path)
 
     for _dir in dir_list:
-        for root, dirs, files in os.walk(_dir):
+        for root, _, _files in os.walk(_dir):
             if root in exclude_dir_list:
                 continue
-            for file in files:
+            for file in _files:
                 if file.endswith('.py'):
                     file_path = os.path.join(root, file)
                     with open(file_path, 'r', encoding='utf-8') as f:
@@ -82,11 +82,13 @@ def generate_config(dir_path, language):
     #             filtered_config_code_map[opt] = c
     # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
     for c in config_code_list:
-        if c.endswith(','):
-            c = c[:-1]
-        c += ', _generate=True'  # Add _generate=True param to the end of the config function
+        spl = c.split(',') + ['_generate=True']  # Add _generate=True param to the end of the config function
+        for s in spl:
+            if s.strip() == '':
+                spl.remove(s)
         try:
-            eval(f'Config({c})')  # Execute the code to generate the config file, yeah, just stupid but works
+            # Execute the code to generate the config file, yeah, just stupid but works
+            eval(f'Config({','.join(spl)})')
         except (NameError, TypeError):
             # traceback.print_exc()
             ...
@@ -106,8 +108,7 @@ Please input the number of the language you want to use: """)
         if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
-        else:
-            print('Invalid input, please try again.')
+        print('Invalid input, please try again.')
 
     generate_config(config_path, lang)
 
@@ -138,8 +139,11 @@ if __name__ == '__main__':
 
     config_store_path = os.path.join(assets_path, 'config_store')
     config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
+    config_store_path_bak = config_store_path + '_bak'
+    if os.path.exists(config_store_path_bak):
+        shutil.rmtree(config_store_path_bak)
     if os.path.exists(config_store_path):
-        shutil.move(config_store_path, config_store_path + '_bak')
+        shutil.move(config_store_path, config_store_path_bak)
     os.makedirs(config_store_path, exist_ok=True)
     os.makedirs(config_store_packed_path, exist_ok=True)
     for lang in lang_list:
@@ -154,8 +158,8 @@ if __name__ == '__main__':
         if not os.path.exists(config_store_path_bak):
             repack = True
             break
-        for root, _, files in os.walk(config_store_path_):
-            for file in files:
+        for root, _, files_ in os.walk(config_store_path_):
+            for file in files_:
                 file_path = os.path.join(root, file)
                 file_path_bak = file_path.replace(config_store_path, config_store_path_bak)
                 if not os.path.exists(file_path_bak):

@@ -42,7 +42,11 @@ class BotDBUtil:
 
         @property
         def query_data(self):
-            return session.query(TargetInfoTable).filter_by(targetId=self.target_id).first()
+            return (
+                session.query(TargetInfoTable)
+                .filter_by(targetId=self.target_id)
+                .first()
+            )
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -51,8 +55,7 @@ class BotDBUtil:
                 session.add_all([TargetInfoTable(targetId=self.target_id)])
                 session.commit()
                 return self.query_data
-            else:
-                return self.query
+            return self.query
 
         @property
         def enabled_modules(self) -> list:
@@ -123,13 +126,11 @@ class BotDBUtil:
             if not self.query:
                 if not k:
                     return {}
-                else:
-                    return default
-            else:
-                if not k:
-                    return self.options
-                else:
-                    return self.options.get(k, default)
+                return default
+
+            if not k:
+                return self.options
+            return self.options.get(k, default)
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -204,9 +205,11 @@ class BotDBUtil:
         def get_target_list(module_name=None, id_prefix=None) -> List[TargetInfoTable]:
             filter_ = []
             if module_name:
-                filter_.append(TargetInfoTable.enabledModules.like(f'%"{module_name}"%'))
+                filter_.append(
+                    TargetInfoTable.enabledModules.like(f'%"{module_name}"%')
+                )
             if id_prefix:
-                filter_.append(TargetInfoTable.targetId.like(f'{id_prefix}%'))
+                filter_.append(TargetInfoTable.targetId.like(f"{id_prefix}%"))
             return session.query(TargetInfoTable).filter(*filter_).all()
 
     class SenderInfo:
@@ -225,8 +228,7 @@ class BotDBUtil:
                 session.add_all([SenderInfo(id=self.sender_id)])
                 session.commit()
                 return self.query_SenderInfo
-            else:
-                return self.query
+            return self.query
 
         @property
         def is_in_block_list(self):
@@ -273,7 +275,7 @@ class BotDBUtil:
                 self.query = self.init()
             petal = self.petal
             if not isint(amount):
-                amount = Decimal(amount).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+                amount = Decimal(amount).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             new_petal = petal + int(amount)
             new_petal = 0 if new_petal < 0 else new_petal
             self.query.petal = new_petal
@@ -303,7 +305,7 @@ class BotDBUtil:
         def get_sender_list(id_prefix=None) -> List[SenderInfo]:
             filter_ = []
             if id_prefix:
-                filter_.append(SenderInfo.id.like(f'{id_prefix}%'))
+                filter_.append(SenderInfo.id.like(f"{id_prefix}%"))
             return session.query(SenderInfo).filter(*filter_).all()
 
     class GroupBlockList:
@@ -334,8 +336,7 @@ class BotDBUtil:
                 session.delete(entry)
                 session.commit()
                 return True
-            else:
-                return False
+            return False
 
     class Data:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
@@ -349,13 +350,17 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def add(self, name, value: str):
-            session.add(StoredData(name=f'{self.targetName}|{name}', value=value))
+            session.add(StoredData(name=f"{self.targetName}|{name}", value=value))
             session.commit()
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def get(self, name):
-            return session.query(StoredData).filter_by(name=f'{self.targetName}|{name}').first()
+            return (
+                session.query(StoredData)
+                .filter_by(name=f"{self.targetName}|{name}")
+                .first()
+            )
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -375,10 +380,15 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def add(self, command, module_name, module_type):
-            session.add(AnalyticsData(targetId=self.target.target.target_id,
-                                      senderId=self.target.target.sender_id,
-                                      command='*'.join(command[::2]),
-                                      moduleName=module_name, moduleType=module_type))
+            session.add(
+                AnalyticsData(
+                    targetId=self.target.target.target_id,
+                    senderId=self.target.target.sender_id,
+                    command="*".join(command[::2]),
+                    moduleName=module_name,
+                    moduleType=module_type,
+                )
+            )
             session.commit()
 
         @staticmethod
@@ -405,10 +415,11 @@ class BotDBUtil:
 
         @staticmethod
         def get_modules_count():
-            results = session.query(
-                AnalyticsData.moduleName, func.count(
-                    AnalyticsData.id)).group_by(
-                AnalyticsData.moduleName).all()
+            results = (
+                session.query(AnalyticsData.moduleName, func.count(AnalyticsData.id))
+                .group_by(AnalyticsData.moduleName)
+                .all()
+            )
             modules_count = dict(results)
             return modules_count
 
@@ -424,16 +435,26 @@ class BotDBUtil:
 
             :return: True = yes, False = no
             """
-            query = session.query(UnfriendlyActionsTable).filter_by(targetId=self.target_id).all()
+            query = (
+                session.query(UnfriendlyActionsTable)
+                .filter_by(targetId=self.target_id)
+                .all()
+            )
             unfriendly_list = []
             for records in query:
-                if datetime.datetime.now().timestamp() - records.timestamp.timestamp() < 432000:
+                if (
+                    datetime.datetime.now().timestamp() - records.timestamp.timestamp()
+                    < 432000
+                ):
                     unfriendly_list.append(records)
             if len(unfriendly_list) > 5:
                 return True
             count = {}
             for criminal in unfriendly_list:
-                if datetime.datetime.now().timestamp() - criminal.timestamp.timestamp() < 86400:
+                if (
+                    datetime.datetime.now().timestamp() - criminal.timestamp.timestamp()
+                    < 86400
+                ):
                     if criminal.sender_id not in count:
                         count[criminal.sender_id] = 0
                     else:
@@ -447,13 +468,21 @@ class BotDBUtil:
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def add(self, action='default', detail=''):
+        def add(self, action="default", detail=""):
             """
 
             :return: True = yes, False = no
             """
-            session.add_all([UnfriendlyActionsTable(targetId=self.target_id,
-                                                    senderId=self.sender_id, action=action, detail=detail)])
+            session.add_all(
+                [
+                    UnfriendlyActionsTable(
+                        targetId=self.target_id,
+                        senderId=self.sender_id,
+                        action=action,
+                        detail=detail,
+                    )
+                ]
+            )
             session.commit()
 
     class JobQueue:
@@ -463,8 +492,16 @@ class BotDBUtil:
         @auto_rollback_error
         def add(target_client: str, action: str, args: dict):
             taskid = str(uuid.uuid4())
-            session.add_all([JobQueueTable(taskid=taskid, targetClient=target_client, action=action,
-                                           args=json.dumps(args))])
+            session.add_all(
+                [
+                    JobQueueTable(
+                        taskid=taskid,
+                        targetClient=target_client,
+                        action=action,
+                        args=json.dumps(args),
+                    )
+                ]
+            )
             session.commit()
             session.expire_all()
             return taskid
@@ -477,12 +514,20 @@ class BotDBUtil:
         @staticmethod
         @retry(stop=stop_after_attempt(3))
         def get_first(target_client: str) -> JobQueueTable:
-            return session.query(JobQueueTable).filter_by(targetClient=target_client, hasDone=False).first()
+            return (
+                session.query(JobQueueTable)
+                .filter_by(targetClient=target_client, hasDone=False)
+                .first()
+            )
 
         @staticmethod
         @retry(stop=stop_after_attempt(3))
         def get_all(target_client: str) -> List[JobQueueTable]:
-            return session.query(JobQueueTable).filter_by(targetClient=target_client, hasDone=False).all()
+            return (
+                session.query(JobQueueTable)
+                .filter_by(targetClient=target_client, hasDone=False)
+                .all()
+            )
 
         @staticmethod
         @retry(stop=stop_after_attempt(3))

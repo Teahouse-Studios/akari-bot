@@ -6,9 +6,13 @@ from core.utils.game import PlayState
 from core.utils.petal import gained_petal
 from core.utils.random import Random
 
-tic_tac_toe = module('tic_tac_toe',
-                     desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'], doc=True,
-                     alias=['ttt', 'tictactoe'])
+tic_tac_toe = module(
+    "tic_tac_toe",
+    desc="{tic_tac_toe.help.desc}",
+    developers=["Dianliang233"],
+    doc=True,
+    alias=["ttt", "tictactoe"],
+)
 
 
 def check_winner(board: List[List[int]]):
@@ -16,14 +20,14 @@ def check_winner(board: List[List[int]]):
     if board[0][0] == board[1][1] == board[2][2] != 0:
         return board[0][0]
     # right-left diagonal
-    elif board[0][2] == board[1][1] == board[2][0] != 0:
+    if board[0][2] == board[1][1] == board[2][0] != 0:
         return board[0][2]
     for i in range(3):
         # vertical
         if board[i][0] == board[i][1] == board[i][2] != 0:
             return board[i][0]
         # horizontal
-        elif board[0][i] == board[1][i] == board[2][i] != 0:
+        if board[0][i] == board[1][i] == board[2][i] != 0:
             return board[0][i]
     return None
 
@@ -36,11 +40,11 @@ class TerminationError(Exception):
     pass
 
 
-async def game(msg: Bot.MessageSession,
-               x_callback: GameCallback,
-               o_callback: GameCallback) -> 0 | 1 | 2:
+async def game(
+    msg: Bot.MessageSession, x_callback: GameCallback, o_callback: GameCallback
+) -> 0 | 1 | 2:
     # 0 = empty; 1 = x; 2 = o
-    play_state = PlayState('tic_tac_toe', msg)
+    play_state = PlayState("tic_tac_toe", msg)
     board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     while True:
         if not play_state.check():
@@ -71,23 +75,32 @@ async def game(msg: Bot.MessageSession,
 
 
 def format_board(board: GameBoard):
-    return '\n'.join([' '.join(['Ｘ' if i == 1 else 'Ｏ' if i == 2 else '．' for i in row]) for row in board])
+    return "\n".join(
+        [
+            " ".join(["Ｘ" if i == 1 else "Ｏ" if i == 2 else "．" for i in row])
+            for row in board
+        ]
+    )
 
 
 def generate_human_callback(msg: Bot.MessageSession, player: str):
     async def callback(board: List[List[int]]):
-        play_state = PlayState('tic_tac_toe', msg)
-        await msg.send_message(format_board(board) + f'\n{msg.locale.t("tic_tac_toe.message.turn", player=player)}', quote=False)
+        play_state = PlayState("tic_tac_toe", msg)
+        await msg.send_message(
+            format_board(board)
+            + f'\n{msg.locale.t("tic_tac_toe.message.turn", player=player)}',
+            quote=False,
+        )
         while True:
             if not play_state.check():
                 raise TerminationError
             wait = await msg.wait_next_message(timeout=None)
             text = wait.as_display(text_only=True)
-            if text == 'stop':
+            if text == "stop":
                 raise TerminationError
             # remove space
-            text = text.replace(' ', '')
-            text = text.replace(',', '')
+            text = text.replace(" ", "")
+            text = text.replace(",", "")
             if len(text) == 1:
                 try:
                     digit = int(text)
@@ -97,8 +110,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                 y = (digit - 1) % 3
                 if board[x][y] == 0:
                     return x, y
-                else:
-                    continue
+                continue
             elif len(text) == 2:
                 try:
                     x = int(text[0]) - 1
@@ -107,8 +119,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                     continue
                 if board[x][y] == 0:
                     return x, y
-                else:
-                    continue
+                continue
             else:
                 continue
 
@@ -118,7 +129,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
 def is_move_left(board: GameBoard):
     for i in range(3):
         for j in range(3):
-            if (board[i][j] == 0):
+            if board[i][j] == 0:
                 return True
     return False
 
@@ -134,17 +145,17 @@ def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
     player = 2
     opponent = 1
 
-    if (score == 10):
+    if score == 10:
         return score
 
-    if (score == -10):
+    if score == -10:
         return score
 
-    if (not is_move_left(board)):
+    if not is_move_left(board):
         return 0
 
     # If this maximizer's move
-    if (is_max):
+    if is_max:
         best = -1000
 
         # Traverse all cells
@@ -152,42 +163,37 @@ def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
             for j in range(3):
 
                 # Check if cell is empty
-                if (board[i][j] == 0):
+                if board[i][j] == 0:
 
                     # Make the move
                     board[i][j] = player
 
                     # Call minimax recursively and choose
                     # the maximum value
-                    best = max(best, minimax(board,
-                                             depth + 1,
-                                             not is_max, worst=worst))
+                    best = max(best, minimax(board, depth + 1, not is_max, worst=worst))
 
                     # Undo the move
                     board[i][j] = 0
         return best
+    best = 1000
 
-    # If this minimizer's move
-    else:
-        best = 1000
+    # Traverse all cells
+    for i in range(3):
+        for j in range(3):
 
-        # Traverse all cells
-        for i in range(3):
-            for j in range(3):
+            # Check if cell is empty
+            if board[i][j] == 0:
 
-                # Check if cell is empty
-                if (board[i][j] == 0):
+                # Make the move
+                board[i][j] = opponent
 
-                    # Make the move
-                    board[i][j] = opponent
+                # Call minimax recursively and choose
+                # the minimum value
+                best = min(best, minimax(board, depth + 1, not is_max, worst=worst))
 
-                    # Call minimax recursively and choose
-                    # the minimum value
-                    best = min(best, minimax(board, depth + 1, not is_max, worst=worst))
-
-                    # Undo the move
-                    board[i][j] = 0
-        return best
+                # Undo the move
+                board[i][j] = 0
+    return best
 
 
 def find_best_move(board, worst=False):
@@ -203,7 +209,7 @@ def find_best_move(board, worst=False):
         for j in range(3):
 
             # Check if cell is empty
-            if (board[i][j] == 0):
+            if board[i][j] == 0:
 
                 # Make the move
                 board[i][j] = player
@@ -217,7 +223,7 @@ def find_best_move(board, worst=False):
                 # If the value of the current move is
                 # more than the best value, then update
                 # best/
-                if (move_val > best_val):
+                if move_val > best_val:
                     best_move = (i, j)
                     best_val = move_val
 
@@ -247,71 +253,92 @@ async def random_bot_callback(board: GameBoard):
     return Random.choice(random_spaces)
 
 
-@tic_tac_toe.command('stop {{game.help.stop}}')
+@tic_tac_toe.command("stop {{game.help.stop}}")
 async def terminate(msg: Bot.MessageSession):
-    play_state = PlayState('tic_tac_toe', msg)
+    play_state = PlayState("tic_tac_toe", msg)
     if play_state.check():
         play_state.disable()
-        await msg.finish(msg.locale.t('game.message.stop'))
+        await msg.finish(msg.locale.t("game.message.stop"))
     else:
-        await msg.finish(msg.locale.t('game.message.stop.none'))
+        await msg.finish(msg.locale.t("game.message.stop.none"))
 
 
-@tic_tac_toe.command('{{tic_tac_toe.help}}')
-@tic_tac_toe.command('noob {{tic_tac_toe.help.noob}}')
-@tic_tac_toe.command('expert {{tic_tac_toe.help.expert}}')
-@tic_tac_toe.command('master {{tic_tac_toe.help.master}}')
+@tic_tac_toe.command("{{tic_tac_toe.help}}")
+@tic_tac_toe.command("noob {{tic_tac_toe.help.noob}}")
+@tic_tac_toe.command("expert {{tic_tac_toe.help.expert}}")
+@tic_tac_toe.command("master {{tic_tac_toe.help.master}}")
 async def ttt_with_bot(msg: Bot.MessageSession):
     if msg.parsed_msg:
-        if 'expert' in msg.parsed_msg:
-            game_type = 'expert'
+        if "expert" in msg.parsed_msg:
+            game_type = "expert"
             bot_callback = expert_bot_callback
-        elif 'master' in msg.parsed_msg:
-            game_type = 'master'
+        elif "master" in msg.parsed_msg:
+            game_type = "master"
             bot_callback = master_bot_callback
-        elif 'noob' in msg.parsed_msg:
-            game_type = 'noob'
+        elif "noob" in msg.parsed_msg:
+            game_type = "noob"
             bot_callback = noob_bot_callback
     else:
-        game_type = 'random'
+        game_type = "random"
         bot_callback = random_bot_callback
-    play_state = PlayState('tic_tac_toe', msg)
+    play_state = PlayState("tic_tac_toe", msg)
     if play_state.check():
-        await msg.finish(msg.locale.t('game.message.running'))
+        await msg.finish(msg.locale.t("game.message.running"))
     else:
         play_state.enable()
 
     try:
-        winner, board = await game(msg, generate_human_callback(msg, 'X'), bot_callback)
+        winner, board = await game(msg, generate_human_callback(msg, "X"), bot_callback)
     except TerminationError:
         return
 
     play_state.disable()
-    g_msg = ''
+    g_msg = ""
     if winner == 0:
-        await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.draw'), quote=False)
+        await msg.finish(
+            format_board(board) + "\n" + msg.locale.t("tic_tac_toe.message.draw"),
+            quote=False,
+        )
     if winner == 1:
-        if game_type == 'random' and (reward := await gained_petal(msg, 1)):
-            g_msg = '\n' + reward
-        if game_type == 'expert' and (reward := await gained_petal(msg, 2)):
-            g_msg = '\n' + reward
-    await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
+        if game_type == "random" and (reward := await gained_petal(msg, 1)):
+            g_msg = "\n" + reward
+        if game_type == "expert" and (reward := await gained_petal(msg, 2)):
+            g_msg = "\n" + reward
+    await msg.finish(
+        format_board(board)
+        + "\n"
+        + msg.locale.t("tic_tac_toe.message.winner", winner="X" if winner == 1 else "O")
+        + g_msg,
+        quote=False,
+    )
 
 
-@tic_tac_toe.command('duo {{tic_tac_toe.help.duo}}')
+@tic_tac_toe.command("duo {{tic_tac_toe.help.duo}}")
 async def ttt_multiplayer(msg: Bot.MessageSession):
-    play_state = PlayState('tic_tac_toe', msg)
+    play_state = PlayState("tic_tac_toe", msg)
     if play_state.check():
-        await msg.finish(msg.locale.t('game.message.running'))
+        await msg.finish(msg.locale.t("game.message.running"))
     else:
         play_state.enable()
 
     try:
-        winner, board = await game(msg, generate_human_callback(msg, 'X'), generate_human_callback(msg, 'O'))
+        winner, board = await game(
+            msg, generate_human_callback(msg, "X"), generate_human_callback(msg, "O")
+        )
     except TerminationError:
         return
 
     play_state.disable()
     if winner == 0:
-        await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.draw'), quote=False)
-    await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O'), quote=False)
+        await msg.finish(
+            format_board(board) + "\n" + msg.locale.t("tic_tac_toe.message.draw"),
+            quote=False,
+        )
+    await msg.finish(
+        format_board(board)
+        + "\n"
+        + msg.locale.t(
+            "tic_tac_toe.message.winner", winner="X" if winner == 1 else "O"
+        ),
+        quote=False,
+    )

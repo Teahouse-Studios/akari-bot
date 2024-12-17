@@ -51,8 +51,8 @@ if not os.path.exists(cfg_file_path):
 
 
 # Load the config file
-
-config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
+with open(cfg_file_path, 'r', encoding='utf-8') as cfg_file:
+    config = toml_parser(cfg_file.read())
 
 # If config version not exists, regenerate the config file (assumed as
 # version 0 to convert old to new format since this is the first time to

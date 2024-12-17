@@ -304,9 +304,8 @@ def restart():
 
 def write_version_cache(msg: Bot.MessageSession):
     update = os.path.join(PrivateAssets.path, 'cache_restart_author')
-    write_version = open(update, 'wb')
-    write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
-    write_version.close()
+    with open(update, 'wb') as write_version:
+        write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
 
 
 restart_time = []
@@ -319,14 +318,13 @@ async def wait_for_restart(msg: Bot.MessageSession):
             await msg.send_message(msg.locale.t("core.message.restart.wait", count=len(get)))
             await msg.sleep(10)
             return await wait_for_restart(msg)
-        else:
-            await msg.send_message(msg.locale.t("core.message.restart.restarting"))
-            get_wait_list = MessageTaskManager.get()
-            for x in get_wait_list:
-                for y in get_wait_list[x]:
-                    for z in get_wait_list[x][y]:
-                        if get_wait_list[x][y][z]['active']:
-                            await z.send_message(z.locale.t("core.message.restart.prompt"))
+        await msg.send_message(msg.locale.t("core.message.restart.restarting"))
+        get_wait_list = MessageTaskManager.get()
+        for x in get_wait_list:
+            for y in get_wait_list[x]:
+                for z in get_wait_list[x][y]:
+                    if get_wait_list[x][y][z]['active']:
+                        await z.send_message(z.locale.t("core.message.restart.prompt"))
 
     else:
         await msg.send_message(msg.locale.t("core.message.restart.timeout"))
@@ -384,7 +382,7 @@ resume = module('resume', required_base_superuser=True, base=True, doc=True, loa
 
 
 @resume.command()
-async def resume_sending_group_message(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     Temp.data['is_group_message_blocked'] = False
     if targets := Temp.data['waiting_for_send_group_message']:
         await msg.send_message(msg.locale.t("core.message.resume.processing", counts=len(targets)))
@@ -401,7 +399,7 @@ async def resume_sending_group_message(msg: Bot.MessageSession):
 
 
 @resume.command('continue')
-async def resume_sending_group_message(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     if not Temp.data['waiting_for_send_group_message']:
         await msg.finish(msg.locale.t("core.message.resume.nothing"))
     del Temp.data['waiting_for_send_group_message'][0]
@@ -547,15 +545,15 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
     else:
         await msg.finish(msg.locale.t("message.failed"))
 
-petal = module('petal', alias='petals', base=True, doc=True, load=Config('enable_petal', False))
+petal_ = module('petal', alias='petals', base=True, doc=True, load=Config('enable_petal', False))
 
 
-@petal.command('{{core.help.petal}}')
+@petal_.command('{{core.help.petal}}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.petal))
 
 
-@petal.command('[<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
+@petal_.command('[<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
 async def _(msg: Bot.MessageSession):
     sender = msg.parsed_msg['<sender>']
     if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -564,8 +562,8 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t('core.message.petal', sender=sender, petal=sender_info.petal))
 
 
-@petal.command('modify <petal>', available_for=['TEST|Console'])
-@petal.command('modify <petal> [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
+@petal_.command('modify <petal>', available_for=['TEST|Console'])
+@petal_.command('modify <petal> [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
 async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
     if sender:
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -580,8 +578,8 @@ async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
         await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=sender_info.petal))
 
 
-@petal.command('clear', required_superuser=True, available_for=['TEST|Console'])
-@petal.command('clear [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
+@petal_.command('clear', required_superuser=True, available_for=['TEST|Console'])
+@petal_.command('clear [<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
 async def _(msg: Bot.MessageSession, sender: str = None):
     if sender:
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
@@ -598,7 +596,7 @@ jobqueue = module('jobqueue', required_superuser=True, base=True)
 
 
 @jobqueue.command('clear')
-async def stop_playing_maimai(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     BotDBUtil.JobQueue.clear(0)
     await msg.finish(msg.locale.t("message.success"))
 

@@ -8,8 +8,18 @@ from urllib.parse import urlparse
 
 import orjson as json
 
-from core.builtins.message.elements import elements_map, MessageElement, PlainElement, EmbedElement, \
-    ErrorMessageElement, FormattedTimeElement, I18NContextElement, URLElement, ImageElement, VoiceElement
+from core.builtins.message.elements import (
+    elements_map,
+    MessageElement,
+    PlainElement,
+    EmbedElement,
+    ErrorMessageElement,
+    FormattedTimeElement,
+    I18NContextElement,
+    URLElement,
+    ImageElement,
+    VoiceElement,
+)
 
 if TYPE_CHECKING:
     from core.builtins.message import MessageSession
@@ -29,13 +39,15 @@ class MessageChain:
 
     def __init__(
         self,
-        elements: Optional[Union[
-            str,
-            List[MessageElement],
-            Tuple[MessageElement],
-            MessageElement,
-            MessageChain
-        ]] = None,
+        elements: Optional[
+            Union[
+                str,
+                List[MessageElement],
+                Tuple[MessageElement],
+                MessageElement,
+                MessageChain,
+            ]
+        ] = None,
     ):
         """
         :param elements: 消息链元素。
@@ -46,9 +58,7 @@ class MessageChain:
             return
         if isinstance(elements, str):
             elements = match_kecode(elements)
-        if isinstance(
-            elements, MessageElement
-        ):
+        if isinstance(elements, MessageElement):
             if isinstance(elements, PlainElement):
                 if elements.text != "":
                     elements = match_kecode(elements.text)
@@ -98,6 +108,7 @@ class MessageChain:
         """
         检查消息链是否安全。
         """
+
         def unsafeprompt(name, secret, text):
             return f'{name} contains unsafe text "{secret}": {text}'
 
@@ -125,11 +136,15 @@ class MessageChain:
                             return False
                     if v.footer:
                         if v.footer.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.footer", secret, v.footer))
+                            Logger.warning(
+                                unsafeprompt("Embed.footer", secret, v.footer)
+                            )
                             return False
                     if v.author:
                         if v.author.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.author", secret, v.author))
+                            Logger.warning(
+                                unsafeprompt("Embed.author", secret, v.author)
+                            )
                             return False
                     if v.url:
                         if v.url.upper().find(secret.upper()) != -1:
@@ -164,8 +179,13 @@ class MessageChain:
                     value.append(x)
                 else:
                     value.append(
-                        PlainElement.assign(str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
-                                                                           locale=locale)))
+                        PlainElement.assign(
+                            str(
+                                ErrorMessageElement.assign(
+                                    "{error.message.chain.plain.empty}", locale=locale
+                                )
+                            )
+                        )
                     )
             elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(msg=msg)
@@ -190,8 +210,11 @@ class MessageChain:
         if not value:
             value.append(
                 PlainElement.assign(
-                    str(ErrorMessageElement.assign("{error.message.chain.plain.empty}",
-                                                   locale=locale))
+                    str(
+                        ErrorMessageElement.assign(
+                            "{error.message.chain.plain.empty}", locale=locale
+                        )
+                    )
                 )
             )
         return value
@@ -251,18 +274,20 @@ class MessageChain:
     def __add__(self, other):
         if isinstance(other, MessageChain):
             return MessageChain(self.value + other.value)
-        elif isinstance(other, list):
+        if isinstance(other, list):
             return MessageChain(self.value + other)
-        else:
-            raise TypeError(f"Unsupported operand type(s) for +: 'MessageChain' and '{type(other).__name__}'")
+        raise TypeError(
+            f"Unsupported operand type(s) for +: 'MessageChain' and '{type(other).__name__}'"
+        )
 
     def __radd__(self, other):
         if isinstance(other, MessageChain):
             return MessageChain(other.value + self.value)
-        elif isinstance(other, list):
+        if isinstance(other, list):
             return MessageChain(other + self.value)
-        else:
-            raise TypeError(f"Unsupported operand type(s) for +: '{type(other).__name__}' and 'MessageChain'")
+        raise TypeError(
+            f"Unsupported operand type(s) for +: '{type(other).__name__}' and 'MessageChain'"
+        )
 
     def __iadd__(self, other):
         if isinstance(other, MessageChain):
@@ -270,7 +295,9 @@ class MessageChain:
         elif isinstance(other, list):
             self.value += other
         else:
-            raise TypeError(f"Unsupported operand type(s) for +=: 'MessageChain' and '{type(other).__name__}'")
+            raise TypeError(
+                f"Unsupported operand type(s) for +=: 'MessageChain' and '{type(other).__name__}'"
+            )
         return self
 
 
@@ -306,7 +333,9 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                         img = None
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
+                            if parse_url[0] == "file" or url_pattern.match(
+                                parse_url[1]
+                            ):
                                 img = ImageElement.assign(path=ma.group(2))
                         if ma.group(1) == "headers":
                             img.headers = json.loads(
@@ -322,7 +351,9 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                     if ma:
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
+                            if parse_url[0] == "file" or url_pattern.match(
+                                parse_url[1]
+                            ):
                                 elements.append(VoiceElement.assign(ma.group(2)))
                         else:
                             elements.append(VoiceElement.assign(a))

@@ -1,21 +1,24 @@
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check
+
 # from modules.meme.jiki import jiki
 from modules.meme.moegirl import moegirl
 from modules.meme.nbnhhsh import nbnhhsh
 from modules.meme.urban import urban
 
 meme = module(
-    bind_prefix='meme',
+    bind_prefix="meme",
     # well, people still use it though it only lived for an hour or so
-    alias='nbnhhsh',
-    desc='{meme.help.desc}', doc=True,
-    developers=['Dianliang233'],
-    support_languages=['zh_cn', 'en_us'])
+    alias="nbnhhsh",
+    desc="{meme.help.desc}",
+    doc=True,
+    developers=["Dianliang233"],
+    support_languages=["zh_cn", "en_us"],
+)
 
 
-@meme.command('<term> {{meme.help}}')
+@meme.command("<term> {{meme.help}}")
 async def _(msg: Bot.MessageSession, term: str):
     #   res_jiki = await jiki(msg.parsed_msg['<term>'], msg.locale)
     #   R.I.P. jikipedia
@@ -23,7 +26,7 @@ async def _(msg: Bot.MessageSession, term: str):
     res_nbnhhsh = await nbnhhsh(term, msg.locale)
     res_urban = await urban(term, msg.locale)
     chk = await check(res_moegirl, res_nbnhhsh, res_urban, msg=msg)
-    res = ''
+    res = ""
     for i in chk:
-        res += i['content'] + '\n'
+        res += i["content"] + "\n"
     await msg.finish(res.strip())
