@@ -15,6 +15,6 @@
     "ncmusic.message.search.table.header.artists": "歌手",
     "ncmusic.message.search.table.header.id": "編號",
     "ncmusic.message.search.table.header.name": "歌名",
-    "config.comments.ncmusic_api": "网易云音乐 API 的 API 地址。（用于 ncmusic 模块）",
-    "config.comments.ncmusic_enable_card": "ncmusic 模块是否启用卡片消息。（仅在 QQ 平台有效）"
+    "config.comments.ncmusic_api": "網易雲音樂 API 的 API 位址。（用於 ncmusic 模組）",
+    "config.comments.ncmusic_enable_card": "ncmusic 模組是否啟用卡片訊息。（僅在 QQ 平台有效）"
 }
