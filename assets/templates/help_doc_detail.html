@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ msg.locale.locale }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,179 +10,235 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
         rel="stylesheet">
-    <style>html body {
-        margin-top: 0 !important;
-        font-family: 'Noto Sans SC', sans-serif;
-        background-color: #f4f4f4;
-    }
+    <style>
+        html body {
+            margin-top: 0 !important;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
 
-    :lang(ko) {
-        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
-    }
+        :lang(ko) {
+            font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+        }
 
-    :lang(ja) {
-        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
+        :lang(ja) {
+            font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        }
 
-    :lang(zh-TW), :lang(zh_TW) {
-        font-family: 'Noto Sans TC', 'Noto Sans HK', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
+        :lang(zh-TW),
+        :lang(zh_TW) {
+            font-family: 'Noto Sans TC', 'Noto Sans HK', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        }
 
-    :lang(zh-HK) {
-        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
-    }
+        :lang(zh-HK) {
+            font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        }
 
-    :lang(zh-Hans), :lang(zh-CN), :lang(zh), :lang(zh_CN) {
-        font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
-    }
+        :lang(zh-Hans),
+        :lang(zh-CN),
+        :lang(zh),
+        :lang(zh_CN) {
+            font-family: 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+        }
 
+        body {
+            background-color: white;
+            --theme-color-title: #305e7a;
+            --theme-color-main: #8aaec4;
+            --theme-color-main-2: #a2bfd1;
+            --theme-color-main-3: #d1dfe9;
+            --theme-color-secondary: #e5f2f3;
+            --theme-color-tertiary: #f8faf6;
+            --theme-color-highlight: #6d98b3;
+        }
 
-    .content-layout {
-        width: fit-content;
-        min-width: 400px;
-        padding: 10px;
-    }
+        h2 {
+            background-color: var(--theme-color-main);
+            padding: 10px;
+            color: white;
+            margin-bottom: 4px
+        }
 
-    .help-shard {
-        padding: 8px;
-        position: relative;
-        background: #ececec;
-        border-radius: 5px;
-    }
+        h4 {
+            background-color: var(--theme-color-main-2);
+            padding: .3em 1em;
+            color: white;
+            margin: 0;
+            border-top: 1px solid var(--theme-color-highlight);
+        }
 
-    .help-commands{
-        width: min-content;
-    }
+        h5 {
+            background-color: var(--theme-color-secondary);
+            border-top: .5px solid var(--theme-color-highlight);
+            border-bottom: .5px solid #cecece;
+            padding: 5px 10px;
+            color: var(--theme-color-highlight);
+            margin: 0;
+            font-weight: bold;
 
-    .help-shard:nth-child(2n) {
-        background-color: #fafafa;
-    }
+        }
 
-    .help-shard h3 {
-        margin: 0;
-        font-family: 'Noto Mono', monospace;
-    }
+        .help-module-name {
+            font-size: 1.6em;
+            padding: .2em .5em;
+            color: #ffffff;
+            color: var(--theme-color-title);
+            margin-bottom: .2em;
+            font-family: 'Noto Mono', monospace;
+            font-weight: bolder;
+        }
 
-    .help-shard .authors {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        border: 1px solid #bcbcbc;
-        border-radius: 5px;
-        max-width: 600px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        padding-left: 5px;
-        padding-right: 5px;
-    }
+        .botbox {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
 
-    .help-contents-layout {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: nowrap;
-    }
+        }
 
-    .help-alias-layout {
-        border: 1px solid #bcbcbc;
-        border-radius: 5px;
-        padding-left: 5px;
-        padding-right: 5px;
-        margin-left: 10px;
-    }
+        .content-layout {
+            width: fit-content;
+            min-width: 400px;
+            border-bottom: 4px solid var(--theme-color-highlight);
+        }
 
-    .help-detail {
-        border-bottom: 1px solid #cecece;
-        background-color: #e4e4e4;
-        white-space: nowrap;
-    }
+        .help-desc {
+            padding: 0.5em 1em;
+            background-color: var(--theme-color-secondary);
+            border-bottom: 1px solid var(--theme-color-highlight);
+            border-top: 4px solid var(--theme-color-highlight);
+        }
 
-    .help-detail:nth-child(2n) {
-        background-color: #f0f0f0;
-    }
+        .help-shard {
+            position: relative;
+        }
+
+        .help-commands {
+            width: min-content;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+        }
+
+        .help-shard:nth-child(2n) {
+            background-color: #f7f7f7;
+        }
+
+        .help-sidebar {
+            border-left: 1px solid var(--theme-color-highlight);
+        }
+
+        .authors {
+            padding: .2em .8em;
+            font-size: 0.9em;
+            background-color: var(--theme-color-main);
+            color: white;
+            border-top: 2px solid var(--theme-color-highlight);
+        }
+
+        .help-contents {
+            background-color: var(--theme-color-tertiary);
+        }
+
+        .help-detail {
+            border-bottom: .5px solid #cecece;
+            background-color: #f0f4f4;
+            white-space: nowrap;
+            padding: 0 1em;
+        }
+
+        .help-note {
+            padding: .2em 1em;
+            color: var(--theme-color-highlight);
+            background-color: var(--theme-color-main-3);
+            border-bottom: 1px solid #cecece;
+            font-size: 14px;
+        }
+
+        .help-detail:nth-child(2n) {
+            background-color: #f8fAfA;
+        }
     </style>
 </head>
 
 <body>
-<div class="botbox">
-    <div class="content-layout">
-        <h2>{{ msg.locale.t("core.help.header") }}</h2>
-        <div class="help-shard">
-            <h3>{{ help_name }}</h3>
-            <hr>
-            {% if module.developers %}
-                <div class="authors">
-                    {{ msg.locale.t("core.help.author") }}{{ msg.locale.t('message.delimiter').join(module.developers) }}</div>
-            {%- endif %}
-            {% if module.desc %}
+    <div class="botbox">
+        <div class="content-layout">
+            <div class="help-shard">
+                <h3 class="help-module-name"> {{ help_name }} </h3>
+                {% if module.desc %}
                 <div class="help-desc">{{ msg.locale.t_str(module.desc) }}</div>
-            {%- endif %}
-            <div class="help-contents-layout">
-                <div class="help-commands">
-                    {% set command_doc = help.return_formatted_help_doc().split('\n') %}
-                    {%if help.args %}
-                    <div
-                        class="available-commands-header">{{ msg.locale.t("core.help.commands") }}</div>
-                    {% endif %}
-                    {% for doc in command_doc %}
-                        {% if doc == msg.locale.t("core.help.options") %}
-                            <div class="available-options-header">{{ msg.locale.t("core.help.options") }}</div>
-                        {% else %}
+                {%- endif %}
+                <div class="help-contents">
+                    <div class="help-commands">
+                        {% set command_doc = help.return_formatted_help_doc().split('\n') %}
+                        {%if help.args %}
+                        <div class="help-command-body">
+                            <h4>{{ msg.locale.t("core.help.commands") }}</h4>
+                            {% for doc in command_doc %}
+                            {% if doc == msg.locale.t("core.help.options") %}
+                            <h5>{{ msg.locale.t("core.help.options") }}</h5>
+                            {% else %}
                             <div class="help-detail">{{ escape(doc) | safe }}</div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
                         {% endif %}
-                    {% endfor %}
-                    </div>
-                {% if module.alias %}
-                    <div class="help-alias">
-                        <div class="help-alias-layout">
-                            <div class="available-alias-header">{{ msg.locale.t("core.help.alias") }}</div>
+                        {% if module.alias %}
+                        <div class="help-sidebar">
+                            <h4>{{ msg.locale.t("core.help.alias") }}</h4>
                             {% for alias in module.alias %}
-                                <div class="help-detail">{{ alias }} -> {{ module.alias[alias] }}</div>
+                            <div class="help-detail">{{ alias }} -> {{ module.alias[alias] }}</div>
                             {%- endfor %}
                         </div>
+                        {%- endif %}
                     </div>
+                    {% if regex_list %}
+                    <div class="help-regex">
+                        <h4>{{ msg.locale.t("core.help.regex") }}</h4>
+                        <div class="help-note">{{ msg.locale.t("core.help.regex.note") }}</div>
+                        {% for regex in regex_list %}
+                        {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
+                        (regex.pattern.pattern if isinstance(regex.pattern, repattern) else None) %}
+                        {% if pattern %}
+                        <div class="help-detail">{{ escape(pattern) | safe }} {{
+                            msg.locale.t("core.message.help.regex.detail",
+                            msg=msg.locale.t_str(regex.desc)) if regex.desc else
+                            msg.locale.t("core.message.help.regex.no_information") }}</div>
+                        {%- endif %}
+                        {%- endfor %}
+                    </div>
+                </div>
+                {% if module.developers %}
+                <div class="authors">
+                    {{ msg.locale.t("core.help.author") }}{{ msg.locale.t('message.delimiter').join(module.developers)
+                    }}</div>
                 {%- endif %}
             </div>
-            {% if regex_list %}
-                <div class="regex-contents-layout">
-                    <div class="available-regex-header">{{ msg.locale.t("core.help.regex") }}</div>
-                    {% for regex in regex_list %}
-                    {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
-                (regex.pattern.pattern if isinstance(regex.pattern, repattern) else None) %}
-                    {% if pattern %}
-                        <div class="help-detail">{{ escape(pattern) | safe }} {{ msg.locale.t("core.message.help.regex.detail",
-                                                                      msg=msg.locale.t_str(regex.desc)) if regex.desc else
-                                                                       msg.locale.t("core.message.help.regex.no_information") }}</div>
-                    {%- endif %}
-                    {%- endfor %}
-                </div>
-            {%- endif %}
         </div>
     </div>
-</div>
-<script>
+    <script>
 
-    window.onload = function() {
-        const layout = document.querySelector('.content-layout');
-        if (layout.getBoundingClientRect().width >= 1280){
-            layout.style.setProperty('width', 'min-content')
-            const help_contents_layout = document.querySelector('.help-contents-layout')
-            help_contents_layout.style.setProperty('flex-wrap', 'wrap')
-            const help_alias_layout = document.querySelector('.help-alias-layout')
-            help_alias_layout.style.setProperty('border', 'none')
-            help_alias_layout.style.setProperty('margin', '0')
-            help_alias_layout.style.setProperty('padding', '0')
-            const help_commands = document.querySelector('.help-commands')
-            help_alias_layout.style.setProperty('width', help_commands.getBoundingClientRect().width + 'px')
+        window.onload = function () {
+            const layout = document.querySelector('.content-layout');
+            if (layout.getBoundingClientRect().width >= 1280) {
+                layout.style.setProperty('width', 'min-content')
+                const help_contents_layout = document.querySelector('.help-contents-layout')
+                help_contents_layout.style.setProperty('flex-wrap', 'wrap')
+                const help_alias_layout = document.querySelector('.help-alias-layout')
+                help_alias_layout.style.setProperty('border', 'none')
+                help_alias_layout.style.setProperty('margin', '0')
+                help_alias_layout.style.setProperty('padding', '0')
+                const help_commands = document.querySelector('.help-commands')
+                help_alias_layout.style.setProperty('width', help_commands.getBoundingClientRect().width + 'px')
 
-        }
-        if (layout.getBoundingClientRect().width <= 500){
+            }
+            if (layout.getBoundingClientRect().width <= 500) {
                 console.log(layout.getBoundingClientRect().width)
                 const authors = document.querySelector('.help-shard .authors')
                 authors.style.position = 'static'
             }
-    }
-</script>
+        }
+    </script>
 </body>
 
 </html>
