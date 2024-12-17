@@ -14,5 +14,5 @@
     "mod_dl.message.version": "此 Mod 擁有以下版本：",
     "mod_dl.message.version.not_found": "未找到指定版本。",
     "mod_dl.message.version.prompt": "請回覆版本號來選擇版本。",
-    "config.comments.curseforge_api_key": "CurseForge 的 API Key。（用于 mod_dl 模块）"
+    "config.comments.curseforge_api_key": "CurseForge 的 API Key。（用於 mod_dl 模組）"
 }
