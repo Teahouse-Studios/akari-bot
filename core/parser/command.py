@@ -35,7 +35,7 @@ class CommandParser:
         if is_superuser is None:
             is_superuser = self.msg.check_super_user() if self.msg else False
         is_base_superuser = (
-            (msg.target.sender_id in base_superuser_list) if self.msg else False
+            (self.msg.target.sender_id in base_superuser_list) if self.msg else False
         )
         for match in (
             args.command_list.set
@@ -56,7 +56,7 @@ class CommandParser:
                     desc = self.lang.t_str(
                         match.options_desc[m], fallback_failed_prompt=False
                     )
-                    self.options_desc.append(f"{m} {desc}")
+                    self.options_desc.append(f"{m} - {desc}")
         self.args: Dict[Union[Template, ""], dict] = help_docs
 
     def return_formatted_help_doc(self) -> str:

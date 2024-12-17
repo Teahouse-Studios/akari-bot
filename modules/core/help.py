@@ -122,14 +122,14 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
                         html_content = env.get_template('help_doc_detail.html').render(msg=msg,
-                                                                                   module=module_,
-                                                                                   help=help_,
-                                                                                   help_name=help_name,
-                                                                                   regex_list=regex_list,
-                                                                                   escape=escape,
-                                                                                   isinstance=isinstance,
-                                                                                   str=str,
-                                                                                   repattern=re.Pattern)
+                                                                                       module=module_,
+                                                                                       help=help_,
+                                                                                       help_name=help_name,
+                                                                                       regex_list=regex_list,
+                                                                                       escape=escape,
+                                                                                       isinstance=isinstance,
+                                                                                       str=str,
+                                                                                       repattern=re.Pattern)
 
                         fname = f'{random_cache_path()}.html'
                         with open(fname, 'w', encoding='utf-8') as fi:
@@ -172,16 +172,16 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                             bio = BytesIO(b)
                             bimg = PILImage.open(bio)
                             img_lst.append(Image(bimg))
-                        await msg.finish(img_lst + [Plain(wiki_msg)])
+                        await msg.finish(img_lst + [Plain(wiki_msg.strip())])
                     except Exception:
                         Logger.error(traceback.format_exc())
 
                 if wiki_msg:
-                    await msg.finish(wiki_msg)
+                    await msg.finish(wiki_msg.strip())
                 else:
                     await msg.finish(msg.locale.t("core.help.info.none"))
 
-            doc_msg = (doc + devs_msg + wiki_msg).lstrip()
+            doc_msg = (doc + devs_msg + wiki_msg).strip()
             if doc_msg:
                 await msg.finish(doc_msg)
             else:
