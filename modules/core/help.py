@@ -74,7 +74,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 pass
             else:
                 if regex_list:
-                    mdocs.append(msg.locale.t("core.help.regex"))
+                    mdocs.append(msg.locale.t("core.help.regex.note"))
                     for regex in regex_list:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -94,7 +94,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 if module_.alias:
                     for a in module_.alias:
                         malias.append(f'{a} -> {module_.alias[a]}')
-                if module_.developers:
+                if module_.developers and not module_.base:
                     devs = msg.locale.t('message.delimiter').join(module_.developers)
                     devs_msg = '\n' + msg.locale.t("core.help.author") + devs
                 else:
