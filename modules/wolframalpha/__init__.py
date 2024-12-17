@@ -11,23 +11,25 @@ from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from .check import secret_check
 
-appid = Config('wolfram_alpha_appid', cfg_type=str, secret=True)
+appid = Config("wolfram_alpha_appid", cfg_type=str, secret=True)
 
 w = module(
-    'wolframalpha',
-    alias=['wolfram', 'wa'],
-    developers=['DoroWolf'],
-    desc='{wolframalpha.help.desc}',
-    support_languages=['en_us'], doc=True)
+    "wolframalpha",
+    alias=["wolfram", "wa"],
+    developers=["DoroWolf"],
+    desc="{wolframalpha.help.desc}",
+    support_languages=["en_us"],
+    doc=True,
+)
 
 
-@w.handle('<query> {{wolframalpha.help}}')
+@w.handle("<query> {{wolframalpha.help}}")
 async def _(msg: Bot.MessageSession, query: str):
     if await secret_check(query):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
@@ -39,25 +41,25 @@ async def _(msg: Bot.MessageSession, query: str):
             os.remove(img_path)
             await msg.finish([BImage(output)])
     except ValueError as e:
-        if str(e).startswith('501'):
-            await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
+        if str(e).startswith("501"):
+            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
         else:
             raise e
 
 
-@w.handle('ask <question> {{wolframalpha.help.ask}}')
+@w.handle("ask <question> {{wolframalpha.help.ask}}")
 async def _(msg: Bot.MessageSession, question: str):
     if await secret_check(question):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(question)
     if not appid:
-        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)
         await msg.finish(data)
     except ValueError as e:
-        if str(e).startswith('501'):
-            await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
+        if str(e).startswith("501"):
+            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
         else:
             raise e

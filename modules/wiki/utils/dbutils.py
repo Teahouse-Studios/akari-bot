@@ -8,7 +8,13 @@ from tenacity import retry, stop_after_attempt
 
 from core.builtins import MessageSession
 from core.database import session, auto_rollback_error
-from modules.wiki.utils.orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList, WikiBotAccountList
+from modules.wiki.utils.orm import (
+    WikiTargetSetInfo,
+    WikiInfo,
+    WikiAllowList,
+    WikiBlockList,
+    WikiBotAccountList,
+)
 
 
 class WikiTargetInfo:
@@ -16,17 +22,25 @@ class WikiTargetInfo:
     @auto_rollback_error
     def __init__(self, msg: [MessageSession, str]):
         if isinstance(msg, MessageSession):
-            if msg.target.target_from != 'QQ|Guild':
+            if msg.target.target_from != "QQ|Guild":
                 target_id = msg.target.target_id
             else:
-                target_id = re.match(r'(QQ\|Guild\|.*?)\|.*', msg.target.target_id).group(1)
+                target_id = re.match(
+                    r"(QQ\|Guild\|.*?)\|.*", msg.target.target_id
+                ).group(1)
         else:
             target_id = msg
-        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
+        self.query = (
+            session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
+        )
         if not self.query:
-            session.add_all([WikiTargetSetInfo(targetId=target_id, iws='{}', headers='{}')])
+            session.add_all(
+                [WikiTargetSetInfo(targetId=target_id, iws="{}", headers="{}")]
+            )
             session.commit()
-            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
+            self.query = (
+                session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
+            )
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -59,8 +73,7 @@ class WikiTargetInfo:
         if q:
             iws = json.loads(q)
             return iws
-        else:
-            return {}
+        return {}
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -86,7 +99,9 @@ class WikiTargetInfo:
             q = self.query.headers
             headers = json.loads(q)
         else:
-            headers = {'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
+            headers = {
+                "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"
+            }
         return headers
 
     @retry(stop=stop_after_attempt(3), reraise=True)
@@ -123,7 +138,9 @@ class WikiSiteInfo:
     @auto_rollback_error
     def update(self, info: dict):
         if not self.query:
-            session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))])
+            session.add_all(
+                [WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))]
+            )
         else:
             self.query.siteInfo = json.dumps(info)
             self.query.timestamp = datetime.now()
@@ -145,15 +162,20 @@ class Audit:
     def inAllowList(self) -> bool:
         session.expire_all()
         apilink = urlparse(self.api_link).netloc
-        return bool(session.query(WikiAllowList).filter(
-            WikiAllowList.apiLink.like(f'%{apilink}%')).first())
+        return bool(
+            session.query(WikiAllowList)
+            .filter(WikiAllowList.apiLink.like(f"%{apilink}%"))
+            .first()
+        )
 
     @property
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def inBlockList(self) -> bool:
         session.expire_all()
-        return bool(session.query(WikiBlockList).filter_by(apiLink=self.api_link).first())
+        return bool(
+            session.query(WikiBlockList).filter_by(apiLink=self.api_link).first()
+        )
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -170,7 +192,11 @@ class Audit:
     def remove_from_AllowList(self) -> Union[bool, None]:
         if not self.inAllowList:
             return False
-        if query := session.query(WikiAllowList).filter_by(apiLink=self.api_link).first():
+        if (
+            query := session.query(WikiAllowList)
+            .filter_by(apiLink=self.api_link)
+            .first()
+        ):
             session.delete(query)
             session.commit()
             session.expire_all()
@@ -192,7 +218,9 @@ class Audit:
     def remove_from_BlockList(self) -> bool:
         if not self.inBlockList:
             return False
-        session.delete(session.query(WikiBlockList).filter_by(apiLink=self.api_link).first())
+        session.delete(
+            session.query(WikiBlockList).filter_by(apiLink=self.api_link).first()
+        )
         session.commit()
         session.expire_all()
         return True
@@ -215,7 +243,13 @@ class BotAccount:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def add(api_link, bot_account, bot_password):
-        session.add_all([WikiBotAccountList(apiLink=api_link, botAccount=bot_account, botPassword=bot_password)])
+        session.add_all(
+            [
+                WikiBotAccountList(
+                    apiLink=api_link, botAccount=bot_account, botPassword=bot_password
+                )
+            ]
+        )
         session.commit()
         session.expire_all()
         return True
@@ -224,7 +258,9 @@ class BotAccount:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def remove(api_link):
-        session.delete(session.query(WikiBotAccountList).filter_by(apiLink=api_link).first())
+        session.delete(
+            session.query(WikiBotAccountList).filter_by(apiLink=api_link).first()
+        )
         session.commit()
         session.expire_all()
         return True

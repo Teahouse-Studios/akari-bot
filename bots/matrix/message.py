@@ -107,7 +107,6 @@ class MessageSession(MessageSessionT):
                                 "is_falling_back": False,
                                 "m.in_reply_to": {"event_id": reply_to},
                             }
-                            pass
                         else:
                             # reply in thread
                             content["m.relates_to"] = {
@@ -282,7 +281,7 @@ class MessageSession(MessageSessionT):
                 while text.startswith("> "):
                     text = "".join(text.splitlines(keepends=True)[1:])
             return MessageChain(Plain(text.strip()))
-        elif msgtype == "m.image":
+        if msgtype == "m.image":
             url = None
             if "url" in content:
                 url = str(content["url"])
@@ -293,7 +292,7 @@ class MessageSession(MessageSessionT):
             else:
                 Logger.error(f"Got invalid m.image message from {self.session.target}")
             return MessageChain(Image(await bot.mxc_to_http(url)))
-        elif msgtype == "m.audio":
+        if msgtype == "m.audio":
             url = str(content["url"])
             return MessageChain(Voice(await bot.mxc_to_http(url)))
         Logger.error(f"Got unknown msgtype: {msgtype}")
@@ -319,11 +318,9 @@ class MessageSession(MessageSessionT):
 
         async def __aenter__(self):
             await bot.room_typing(self.msg.session.target, True)
-            pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             await bot.room_typing(self.msg.session.target, False)
-            pass
 
 
 class FetchedSession(Bot.FetchedSession):

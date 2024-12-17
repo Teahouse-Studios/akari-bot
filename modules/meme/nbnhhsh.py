@@ -25,12 +25,11 @@ async def nbnhhsh(term: str, locale: Locale):
             count = trans.__len__()
             return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t(
                 "meme.message.nbnhhsh.result", result=count)}{"、".join(trans)}'
-        elif 'inputting' in result and result['inputting']:
+        if 'inputting' in result and result['inputting']:
             inputting = result['inputting']
             count = inputting.__len__()
             return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t(
                 "meme.message.nbnhhsh.result.ai", result=count)}{"、".join(inputting)}'
-        else:
-            return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t("meme.message.not_found")}'
+        return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t("meme.message.not_found")}'
     except Exception:
         return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t("meme.message.error")}'

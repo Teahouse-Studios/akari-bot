@@ -104,7 +104,7 @@
     "core.message.help.legacy.base": "基础模块：",
     "core.message.help.legacy.external": "扩展模块：",
     "core.message.help.not_found": "此模块可能不存在，请检查输入。",
-    "core.message.help.prompt": "橙色为基础模块，蓝色为扩展模块，灰色为未开启模块。\n标为红字的模块仅能被该对话的管理员所使用。",
+    "core.message.help.prompt": "橙色为基础模块，蓝色为扩展模块，灰色为未开启模块。\n标为斜体的模块仅能被该对话的管理员使用。",
     "core.message.help.regex.detail": "（${msg}）",
     "core.message.help.regex.no_information": "（无描述）",
     "core.message.help.regex_count": "${count} 条表达式",

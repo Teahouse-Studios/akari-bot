@@ -28,30 +28,6 @@ hitokoto = module('hitokoto', alias=['hitk', 'saying', '一言'],
 @hitokoto.handle('{一言}')
 async def hitokoto__(msg: Bot.MessageSession):
     await msg.sendMessage(await hitokoto_())
-#
-#
-# @hitokoto.handle('cowsay {哲学牛牛}')
-# async def cowsay(msg: Bot.MessageSession):
-#     await msg.sendMessage(cowsay_())
-#
-#
-# # @hitokoto.handle('echo_cave add <sth> {添加回声洞}',
-# #              'echo_cave del <num> {删除回声洞}',
-# #              'echo_cave {显示回声洞}')
-# # async def ___(msg: Bot.MessageSession):
-# #     if 'add' in msg.parsed_msg:
-# #
-# # cq = await msg.asDisplay()
-# # cq = re.findall(r'^\[CQ:image,(\s\S)*\]', cq, re.I | re.M)
-#
-#
-# @hitokoto.handle('{回声洞(WIP)}')
-# async def ___(msg: Bot.MessageSession):
-#     mode = ['hitokoto', 'cowsay']
-#     if random.choice(mode) == 'hitokoto':
-#         await msg.sendMessage(hitokoto_())
-#     else:
-#         await msg.sendMessage(cowsay_())
 
 if __name__ == '__main__':
     hit = asyncio.run(hitokoto_())

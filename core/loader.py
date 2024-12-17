@@ -11,7 +11,12 @@ from core.config import Config
 from core.constants.path import modules_path, PrivateAssets
 from core.logger import Logger
 from core.types import Module
-from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
+from core.types.module.component_meta import (
+    CommandMeta,
+    RegexMeta,
+    ScheduleMeta,
+    HookMeta,
+)
 from core.utils.i18n import locale_loaded_err
 from core.utils.info import Info
 
@@ -21,25 +26,27 @@ err_modules = []
 
 
 def load_modules():
-    unloaded_modules = Config('unloaded_modules', [])
+    unloaded_modules = Config("unloaded_modules", [])
     err_prompt = []
     if locale_loaded_err:
-        err_prompt.append('i18n:')
-        err_prompt.append('\n'.join(locale_loaded_err))
+        err_prompt.append("i18n:")
+        err_prompt.append("\n".join(locale_loaded_err))
     fun_file = None
     if not Info.binary_mode:
         dir_list = os.listdir(modules_path)
     else:
         try:
-            Logger.warning('Binary mode detected, trying to load pre-built modules list...')
-            js = 'assets/modules_list.json'
-            with open(js, 'r', encoding='utf-8') as f:
+            Logger.warning(
+                "Binary mode detected, trying to load pre-built modules list..."
+            )
+            js = "assets/modules_list.json"
+            with open(js, "r", encoding="utf-8") as f:
                 dir_list = json.loads(f.read())
         except Exception:
-            Logger.error('Failed to load pre-built modules list, using default list.')
+            Logger.error("Failed to load pre-built modules list, using default list.")
             dir_list = os.listdir(modules_path)
 
-    Logger.info('Attempting to load modules...')
+    Logger.info("Attempting to load modules...")
 
     for file_name in dir_list:
         try:
@@ -47,41 +54,42 @@ def load_modules():
             fun_file = None
             if not Info.binary_mode:
                 if os.path.isdir(file_path):
-                    if file_name[0] != '_':
+                    if file_name[0] != "_":
                         fun_file = file_name
                 elif os.path.isfile(file_path):
-                    if file_name[0] != '_' and file_name.endswith('.py'):
+                    if file_name[0] != "_" and file_name.endswith(".py"):
                         fun_file = file_name[:-3]
             else:
-                if file_name[0] != '_':
+                if file_name[0] != "_":
                     fun_file = file_name
-                if file_name[0] != '_' and file_name.endswith('.py'):
+                if file_name[0] != "_" and file_name.endswith(".py"):
                     fun_file = file_name[:-3]
             if fun_file:
-                Logger.debug(f'Loading modules.{fun_file}...')
+                Logger.debug(f"Loading modules.{fun_file}...")
                 all_modules.append(fun_file)
                 if fun_file in unloaded_modules:
-                    Logger.warning(f'Skipped modules.{fun_file}!')
+                    Logger.warning(f"Skipped modules.{fun_file}!")
                     current_unloaded_modules.append(fun_file)
                     continue
-                modules = 'modules.' + fun_file
+                modules = "modules." + fun_file
                 importlib.import_module(modules)
-                Logger.debug(f'Successfully loaded modules.{fun_file}!')
+                Logger.debug(f"Successfully loaded modules.{fun_file}!")
         except Exception:
             tb = traceback.format_exc()
-            errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
+            errmsg = f"Failed to load modules.{fun_file}: \n{tb}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
-    Logger.info('All modules loaded.')
-    loader_cache = os.path.join(PrivateAssets.path, '.cache_loader')
-    open_loader_cache = open(loader_cache, 'w')
-    if err_prompt:
-        err_prompt = re.sub(r'  File \"<frozen importlib.*?>\", .*?\n', '', '\n'.join(err_prompt))
-        open_loader_cache.write(err_prompt)
-    else:
-        open_loader_cache.write('')
-    open_loader_cache.close()
+    Logger.info("All modules loaded.")
+    loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
+    with open(loader_cache, "w") as open_loader_cache:
+        if err_prompt:
+            err_prompt = re.sub(
+                r"  File \"<frozen importlib.*?>\", .*?\n", "", "\n".join(err_prompt)
+            )
+            open_loader_cache.write(err_prompt)
+        else:
+            open_loader_cache.write("")
 
     ModulesManager.refresh()
 
@@ -104,7 +112,7 @@ class ModulesManager:
     def remove_modules(cls, modules):
         for module in modules:
             if module in cls.modules:
-                Logger.info(f'Removing... {module}')
+                Logger.info(f"Removing... {module}")
                 cls.modules.pop(module)
                 cls.modules_origin.pop(module)
             else:
@@ -125,7 +133,9 @@ class ModulesManager:
             module = cls.modules[m]
             if module.hooks_list:
                 for hook in module.hooks_list.set:
-                    hook_name = module.bind_prefix + (('.' + hook.name) if hook.name else '')
+                    hook_name = module.bind_prefix + (
+                        ("." + hook.name) if hook.name else ""
+                    )
                     cls.modules_hooks.update({hook_name: hook.function})
 
     @classmethod
@@ -145,18 +155,22 @@ class ModulesManager:
             if not include_self:
                 modules.remove(module)
             return modules
-        else:
-            raise ValueError(f'Could not find "{module}" in modules_origin dict')
+        raise ValueError(f'Could not find "{module}" in modules_origin dict')
 
     @classmethod
     def return_py_module(cls, module):
         if module in cls.modules_origin:
-            return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', cls.modules_origin[module]).group()
-        else:
-            return None
+            return re.match(
+                r"^modules(\.[a-zA-Z0-9_]*)?", cls.modules_origin[module]
+            ).group()
+        return None
 
     @classmethod
-    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta]):
+    def bind_to_module(
+        cls,
+        bind_prefix: str,
+        meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta],
+    ):
         if bind_prefix in cls.modules:
             if isinstance(meta, CommandMeta):
                 cls.modules[bind_prefix].command_list.add(meta)
@@ -170,9 +184,10 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, target_from: str = None) -> \
-            Dict[str, Module]:
-        modules = {bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)}
+    def return_modules_list(cls, target_from: str = None) -> Dict[str, Module]:
+        modules = {
+            bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)
+        }
         if target_from:
             if target_from in cls._return_cache:
                 return cls._return_cache[target_from]
@@ -184,7 +199,7 @@ class ModulesManager:
                     if target_from in modules[m].exclude_from:
                         continue
                     available = modules[m].available_for
-                    if target_from in available or '*' in available:
+                    if target_from in available or "*" in available:
                         returns.update({m: modules[m]})
             cls._return_cache.update({target_from: returns})
             return returns
@@ -208,20 +223,20 @@ class ModulesManager:
         """
         if module_name not in current_unloaded_modules:
             return False
-        modules = 'modules.' + module_name
+        modules = "modules." + module_name
         if modules in sys.modules:
             cls.reload_py_module(modules)
             current_unloaded_modules.remove(module_name)
         else:
             try:
                 importlib.import_module(modules)
-                Logger.info(f'Succeeded loaded modules.{module_name}!')
+                Logger.info(f"Succeeded loaded modules.{module_name}!")
                 if module_name in err_modules:
                     err_modules.remove(module_name)
                 current_unloaded_modules.remove(module_name)
             except Exception:
                 tb = traceback.format_exc()
-                errmsg = f'Failed to load modules.{module_name}: \n{tb}'
+                errmsg = f"Failed to load modules.{module_name}: \n{tb}"
                 Logger.error(errmsg)
                 if module_name not in err_modules:
                     err_modules.append(module_name)
@@ -246,23 +261,27 @@ class ModulesManager:
         重载该Python模块
         """
         try:
-            Logger.info(f'Reloading {module_name} ...')
+            Logger.info(f"Reloading {module_name} ...")
             module = sys.modules[module_name]
             cnt = 0
             loaded_module_list = list(sys.modules.keys())
             for mod in loaded_module_list:
-                if mod.startswith(f'{module_name}.'):
+                if mod.startswith(f"{module_name}."):
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)
-            Logger.info(f'Successfully reloaded {module_name}.')
-            if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) in err_modules:
+            Logger.info(f"Successfully reloaded {module_name}.")
+            if (m := re.match(r"^modules(\.[a-zA-Z0-9_]*)?", module_name)) and m.group(
+                1
+            ) in err_modules:
                 err_modules.remove(m.group(1))
             return cnt + 1
         except BaseException:
             tb = traceback.format_exc()
-            errmsg = f'Failed to reload {module_name}: \n{tb}'
+            errmsg = f"Failed to reload {module_name}: \n{tb}"
             Logger.error(errmsg)
-            if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) not in err_modules:
+            if (m := re.match(r"^modules(\.[a-zA-Z0-9_]*)?", module_name)) and m.group(
+                1
+            ) not in err_modules:
                 err_modules.append(m.group(1))
             return -999
         finally:

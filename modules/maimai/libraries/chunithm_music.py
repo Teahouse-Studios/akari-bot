@@ -16,7 +16,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
     if not elem or elem is Ellipsis:
         return True, diff
     if isinstance(elem, List):
-        for _j in (range(len(checker)) if diff is Ellipsis else diff):
+        for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -24,7 +24,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
                 diff_ret.append(_j)
                 ret = True
     elif isinstance(elem, Tuple):
-        for _j in (range(len(checker)) if diff is Ellipsis else diff):
+        for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -32,7 +32,7 @@ def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
                 diff_ret.append(_j)
                 ret = True
     else:
-        for _j in (range(len(checker)) if diff is Ellipsis else diff):
+        for _j in range(len(checker)) if diff is Ellipsis else diff:
             if _j >= len(checker):
                 continue
             __e = checker[_j]
@@ -46,10 +46,9 @@ def in_or_equal(checker: Any, elem: Optional[Union[Any, List[Any]]]):
         return True
     if isinstance(elem, List):
         return checker in elem
-    elif isinstance(elem, Tuple):
+    if isinstance(elem, Tuple):
         return elem[0] <= checker <= elem[1]
-    else:
-        return checker == elem
+    return checker == elem
 
 
 class Chart(Dict):
@@ -57,10 +56,10 @@ class Chart(Dict):
     charter: Optional[int] = None
 
     def __getattribute__(self, item):
-        if item == 'combo':
-            return self['combo']
-        elif item == 'charter':
-            return self['charter']
+        if item == "combo":
+            return self["combo"]
+        if item == "charter":
+            return self["charter"]
         return super().__getattribute__(item)
 
 
@@ -78,11 +77,11 @@ class Music(Dict):
     diff: List[int] = []
 
     def __getattribute__(self, item):
-        if item in {'genre', 'artist', 'bpm', 'version'}:
-            if item == 'version':
-                return self['basic_info']['from']
-            return self['basic_info'][item]
-        elif item in self:
+        if item in {"genre", "artist", "bpm", "version"}:
+            if item == "version":
+                return self["basic_info"]["from"]
+            return self["basic_info"][item]
+        if item in self:
             return self[item]
         return super().__getattribute__(item)
 
@@ -103,16 +102,17 @@ class MusicList(List[Music]):
     def random(self):
         return Random.choice(self)
 
-    def filter(self,
-               *,
-               level: Optional[Union[str, List[str]]] = ...,
-               ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-               title: Optional[str] = ...,
-               title_search: Optional[str] = ...,
-               genre: Optional[Union[str, List[str]]] = ...,
-               bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
-               diff: List[int] = ...,
-               ):
+    def filter(
+        self,
+        *,
+        level: Optional[Union[str, List[str]]] = ...,
+        ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+        title: Optional[str] = ...,
+        title_search: Optional[str] = ...,
+        genre: Optional[Union[str, List[str]]] = ...,
+        bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+        diff: List[int] = ...,
+    ):
         new_list = MusicList()
         for music in self:
             diff2 = diff
@@ -127,9 +127,14 @@ class MusicList(List[Music]):
                 continue
             if not in_or_equal(music.bpm, bpm):
                 continue
-            if title is not Ellipsis and not in_or_equal(music.title.lower(), title.lower()):
+            if title is not Ellipsis and not in_or_equal(
+                music.title.lower(), title.lower()
+            ):
                 continue
-            if title_search is not Ellipsis and title_search.lower() not in music.title.lower():
+            if (
+                title_search is not Ellipsis
+                and title_search.lower() not in music.title.lower()
+            ):
                 continue
             music.diff = diff2
             new_list.append(music)
@@ -163,15 +168,15 @@ class TotalList:
     async def dl_cache():
         try:
             url = "https://www.diving-fish.com/api/chunithmprober/music_data"
-            data = await get_url(url, 200, fmt='json')
+            data = await get_url(url, 200, fmt="json")
             if data:
-                with open(chu_song_info_path, 'wb') as f:
+                with open(chu_song_info_path, "wb") as f:
                     f.write(json.dumps(data))
             return data
         except Exception:
             Logger.error(traceback.format_exc())
             try:
-                with open(chu_song_info_path, 'r', encoding='utf-8') as f:
+                with open(chu_song_info_path, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
                 return data
             except Exception:

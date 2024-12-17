@@ -10,23 +10,33 @@ class PgrBindInfoManager:
     @auto_rollback_error
     def __init__(self, msg: Bot.MessageSession):
         self.target_id = msg.target.sender_id
-        self.query = session.query(PgrBindInfo).filter_by(targetId=self.target_id).first()
+        self.query = (
+            session.query(PgrBindInfo).filter_by(targetId=self.target_id).first()
+        )
         if not self.query:
-            session.add_all([PgrBindInfo(targetId=self.target_id, sessiontoken='', username='Guest')])
+            session.add_all(
+                [
+                    PgrBindInfo(
+                        targetId=self.target_id, sessiontoken="", username="Guest"
+                    )
+                ]
+            )
             session.commit()
-            self.query = session.query(PgrBindInfo).filter_by(targetId=self.target_id).first()
+            self.query = (
+                session.query(PgrBindInfo).filter_by(targetId=self.target_id).first()
+            )
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def get_bind_info(self):
         sessiontoken = self.query.sessiontoken
-        if sessiontoken != '':
+        if sessiontoken != "":
             return sessiontoken, self.query.username
         return None
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def set_bind_info(self, sessiontoken, username='Guest'):
+    def set_bind_info(self, sessiontoken, username="Guest"):
         self.query.sessiontoken = sessiontoken
         self.query.username = username
         session.commit()

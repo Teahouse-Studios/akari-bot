@@ -21,6 +21,7 @@ class ExecutionLockList:
     """
     执行锁。
     """
+
     _list = set()
 
     @staticmethod
@@ -48,41 +49,61 @@ class MessageTaskManager:
     """
     消息计划管理器。
     """
+
     _task_list = {}
     _callback_list = {}
 
     @classmethod
     def add_task(
-            cls,
-            session: MessageSession,
-            flag: asyncio.Event,
-            all_: bool = False,
-            reply: Optional[Union[List[int], List[str], int, str]] = None,
-            timeout: Optional[float] = 120):
+        cls,
+        session: MessageSession,
+        flag: asyncio.Event,
+        all_: bool = False,
+        reply: Optional[Union[List[int], List[str], int, str]] = None,
+        timeout: Optional[float] = 120,
+    ):
         sender = session.target.sender_id
-        task_type = 'reply' if reply else 'wait'
+        task_type = "reply" if reply else "wait"
         if all_:
-            sender = 'all'
+            sender = "all"
 
         if session.target.target_id not in cls._task_list:
             cls._task_list[session.target.target_id] = {}
         if sender not in cls._task_list[session.target.target_id]:
             cls._task_list[session.target.target_id][sender] = {}
         cls._task_list[session.target.target_id][sender][session] = {
-            'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp(),
-            'timeout': timeout}
+            "flag": flag,
+            "active": True,
+            "type": task_type,
+            "reply": reply,
+            "ts": datetime.now().timestamp(),
+            "timeout": timeout,
+        }
         Logger.debug(cls._task_list)
 
     @classmethod
-    def add_callback(cls, message_id: Union[List[int], List[str], int, str], callback: Optional[Coroutine]):
-        cls._callback_list[message_id] = {'callback': callback, 'ts': datetime.now().timestamp()}
+    def add_callback(
+        cls,
+        message_id: Union[List[int], List[str], int, str],
+        callback: Optional[Coroutine],
+    ):
+        cls._callback_list[message_id] = {
+            "callback": callback,
+            "ts": datetime.now().timestamp(),
+        }
 
     @classmethod
     def get_result(cls, session: MessageSession):
-        if 'result' in cls._task_list[session.target.target_id][session.target.sender_id][session]:
-            return cls._task_list[session.target.target_id][session.target.sender_id][session]['result']
-        else:
-            return None
+        if (
+            "result"
+            in cls._task_list[session.target.target_id][session.target.sender_id][
+                session
+            ]
+        ):
+            return cls._task_list[session.target.target_id][session.target.sender_id][
+                session
+            ]["result"]
+        return None
 
     @classmethod
     def get(cls):
@@ -93,13 +114,18 @@ class MessageTaskManager:
         for target in cls._task_list:
             for sender in cls._task_list[target]:
                 for session in cls._task_list[target][sender]:
-                    if cls._task_list[target][sender][session]['active']:
-                        if (datetime.now().timestamp() - cls._task_list[target][sender][session]['ts'] >
-                                cls._task_list[target][sender][session].get('timeout', 3600)):
-                            cls._task_list[target][sender][session]['active'] = False
-                            cls._task_list[target][sender][session]['flag'].set()  # no result = cancel
+                    if cls._task_list[target][sender][session]["active"]:
+                        if datetime.now().timestamp() - cls._task_list[target][sender][
+                            session
+                        ]["ts"] > cls._task_list[target][sender][session].get(
+                            "timeout", 3600
+                        ):
+                            cls._task_list[target][sender][session]["active"] = False
+                            cls._task_list[target][sender][session][
+                                "flag"
+                            ].set()  # no result = cancel
         for message_id in cls._callback_list.copy():
-            if datetime.now().timestamp() - cls._callback_list[message_id]['ts'] > 3600:
+            if datetime.now().timestamp() - cls._callback_list[message_id]["ts"] > 3600:
                 del cls._callback_list[message_id]
 
     @classmethod
@@ -108,31 +134,31 @@ class MessageTaskManager:
             senders = []
             if session.target.sender_id in cls._task_list[session.target.target_id]:
                 senders.append(session.target.sender_id)
-            if 'all' in cls._task_list[session.target.target_id]:
-                senders.append('all')
+            if "all" in cls._task_list[session.target.target_id]:
+                senders.append("all")
             if senders:
                 for sender in senders:
                     for s in cls._task_list[session.target.target_id][sender]:
                         get_ = cls._task_list[session.target.target_id][sender][s]
-                        if get_['type'] == 'wait':
-                            get_['result'] = session
-                            get_['active'] = False
-                            get_['flag'].set()
-                        elif get_['type'] == 'reply':
-                            if isinstance(get_['reply'], list):
-                                for reply in get_['reply']:
+                        if get_["type"] == "wait":
+                            get_["result"] = session
+                            get_["active"] = False
+                            get_["flag"].set()
+                        elif get_["type"] == "reply":
+                            if isinstance(get_["reply"], list):
+                                for reply in get_["reply"]:
                                     if reply == session.target.reply_id:
-                                        get_['result'] = session
-                                        get_['active'] = False
-                                        get_['flag'].set()
+                                        get_["result"] = session
+                                        get_["active"] = False
+                                        get_["flag"].set()
                                         break
                             else:
-                                if get_['reply'] == session.target.reply_id:
-                                    get_['result'] = session
-                                    get_['active'] = False
-                                    get_['flag'].set()
+                                if get_["reply"] == session.target.reply_id:
+                                    get_["result"] = session
+                                    get_["active"] = False
+                                    get_["flag"].set()
         if session.target.reply_id in cls._callback_list:
-            await cls._callback_list[session.target.reply_id]['callback'](session)
+            await cls._callback_list[session.target.reply_id]["callback"](session)
 
 
 class FinishedSession:
@@ -140,7 +166,9 @@ class FinishedSession:
     结束会话。
     """
 
-    def __init__(self, session, message_id: Union[List[int], List[str], int, str], result):
+    def __init__(
+        self, session, message_id: Union[List[int], List[str], int, str], result
+    ):
         self.session = session
         if isinstance(message_id, (int, str)):
             message_id = [message_id]
@@ -162,9 +190,7 @@ class MessageSession:
     消息会话。
     """
 
-    def __init__(self,
-                 target: MsgInfo,
-                 session: Session):
+    def __init__(self, target: MsgInfo, session: Session):
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
@@ -178,20 +204,23 @@ class MessageSession:
         self.custom_admins = self.data.custom_admins
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
-        self.name = self.locale.t('bot_name')
+        self.name = self.locale.t("bot_name")
         self.petal = self.info.petal
         self.tmp = {}
         self._tz_offset = self.options.get(
-            'timezone_offset', Config('timezone_offset', '+8'))
+            "timezone_offset", Config("timezone_offset", "+8")
+        )
         self.timezone_offset = parse_time_string(self._tz_offset)
 
-    async def send_message(self,
-                           message_chain: Union[MessageChain, str, list, MessageElement],
-                           quote: bool = True,
-                           disable_secret_check: bool = False,
-                           enable_parse_message: bool = True,
-                           enable_split_image: bool = True,
-                           callback: Optional[Coroutine] = None) -> FinishedSession:
+    async def send_message(
+        self,
+        message_chain: Union[MessageChain, str, list, MessageElement],
+        quote: bool = True,
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+        callback: Optional[Coroutine] = None,
+    ) -> FinishedSession:
         """
         用于向消息发送者返回消息。
 
@@ -205,13 +234,15 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    async def finish(self,
-                     message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
-                     quote: bool = True,
-                     disable_secret_check: bool = False,
-                     enable_parse_message: bool = True,
-                     enable_split_image: bool = True,
-                     callback: Optional[Coroutine] = None):
+    async def finish(
+        self,
+        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        quote: bool = True,
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+        callback: Optional[Coroutine] = None,
+    ):
         """
         用于向消息发送者返回消息并终结会话（模块后续代码不再执行）。
 
@@ -226,16 +257,24 @@ class MessageSession:
         ...
         f = None
         if message_chain:
-            f = await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=quote,
-                                        enable_parse_message=enable_parse_message, enable_split_image=enable_split_image, callback=callback)
+            f = await self.send_message(
+                message_chain,
+                disable_secret_check=disable_secret_check,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+                enable_split_image=enable_split_image,
+                callback=callback,
+            )
         raise FinishedException(f)
 
-    async def send_direct_message(self,
-                                  message_chain: Union[MessageChain, str, list, MessageElement],
-                                  disable_secret_check: bool = False,
-                                  enable_parse_message: bool = True,
-                                  enable_split_image: bool = True,
-                                  callback: Optional[Coroutine] = None):
+    async def send_direct_message(
+        self,
+        message_chain: Union[MessageChain, str, list, MessageElement],
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+        callback: Optional[Coroutine] = None,
+    ):
         """
         用于向消息发送者直接发送消息。
 
@@ -246,8 +285,14 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
         """
-        await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False, enable_parse_message=enable_parse_message,
-                                enable_split_image=enable_split_image, callback=callback)
+        await self.send_message(
+            message_chain,
+            disable_secret_check=disable_secret_check,
+            quote=False,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+            callback=callback,
+        )
 
     def as_display(self, text_only: bool = False) -> str:
         """
@@ -307,12 +352,14 @@ class MessageSession:
     async def call_api(self, action, **params):
         raise NotImplementedError
 
-    async def wait_confirm(self,
-                           message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
-                           quote: bool = True,
-                           delete: bool = True,
-                           timeout: Optional[float] = 120,
-                           append_instruction: bool = True) -> bool:
+    async def wait_confirm(
+        self,
+        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        quote: bool = True,
+        delete: bool = True,
+        timeout: Optional[float] = 120,
+        append_instruction: bool = True,
+    ) -> bool:
         """
         一次性模板，用于等待触发对象确认。
 
@@ -325,7 +372,7 @@ class MessageSession:
         """
         send = None
         ExecutionLockList.remove(self)
-        if Config('no_confirm', False):
+        if Config("no_confirm", False):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)
@@ -347,15 +394,16 @@ class MessageSession:
             if result.as_display(text_only=True) in confirm_command:
                 return True
             return False
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
-    async def wait_next_message(self,
-                                message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
-                                quote: bool = True,
-                                delete: bool = False,
-                                timeout: Optional[float] = 120,
-                                append_instruction: bool = True) -> MessageSession:
+    async def wait_next_message(
+        self,
+        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        quote: bool = True,
+        delete: bool = False,
+        timeout: Optional[float] = 120,
+        append_instruction: bool = True,
+    ) -> MessageSession:
         """
         一次性模板，用于等待对象的下一条消息。
 
@@ -386,16 +434,17 @@ class MessageSession:
             await send.delete()
         if result:
             return result
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
-    async def wait_reply(self,
-                         message_chain: Union[MessageChain, str, list, MessageElement],
-                         quote: bool = True,
-                         delete: bool = False,
-                         timeout: Optional[float] = 120,
-                         all_: bool = False,
-                         append_instruction: bool = True) -> MessageSession:
+    async def wait_reply(
+        self,
+        message_chain: Union[MessageChain, str, list, MessageElement],
+        quote: bool = True,
+        delete: bool = False,
+        timeout: Optional[float] = 120,
+        all_: bool = False,
+        append_instruction: bool = True,
+    ) -> MessageSession:
         """
         一次性模板，用于等待触发对象回复消息。
 
@@ -407,7 +456,7 @@ class MessageSession:
         :param append_instruction: 是否在发送的消息中附加提示。
         :return: 回复消息的MessageChain对象。
         """
-        self.tmp['enforce_send_by_master_client'] = True
+        self.tmp["enforce_send_by_master_client"] = True
         send = None
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
@@ -415,7 +464,9 @@ class MessageSession:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
+        MessageTaskManager.add_task(
+            self, flag, reply=send.message_id, all_=all_, timeout=timeout
+        )
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -427,14 +478,15 @@ class MessageSession:
             await send.delete()
         if result:
             return result
-        else:
-            raise WaitCancelException
+        raise WaitCancelException
 
-    async def wait_anyone(self,
-                          message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
-                          quote: bool = False,
-                          delete: bool = False,
-                          timeout: Optional[float] = 120) -> MessageSession:
+    async def wait_anyone(
+        self,
+        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        quote: bool = False,
+        delete: bool = False,
+        timeout: Optional[float] = 120,
+    ) -> MessageSession:
         """
         一次性模板，用于等待触发对象所属对话内任意成员确认。
 
@@ -457,13 +509,14 @@ class MessageSession:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = MessageTaskManager.get()[self.target.target_id]['all'][self]
-        if 'result' in result:
+        result = MessageTaskManager.get()[self.target.target_id]["all"][self]
+        if "result" in result:
             if send and delete:
                 await send.delete()
-            return MessageTaskManager.get()[self.target.target_id]['all'][self]['result']
-        else:
-            raise WaitCancelException
+            return MessageTaskManager.get()[self.target.target_id]["all"][self][
+                "result"
+            ]
+        raise WaitCancelException
 
     async def sleep(self, s: float):
         ExecutionLockList.remove(self)
@@ -495,13 +548,15 @@ class MessageSession:
     toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
-    def ts2strftime(self,
-                    timestamp: float,
-                    date: bool = True,
-                    iso: bool = False,
-                    time: bool = True,
-                    seconds: bool = True,
-                    timezone: bool = True) -> str:
+    def ts2strftime(
+        self,
+        timestamp: float,
+        date: bool = True,
+        iso: bool = False,
+        time: bool = True,
+        seconds: bool = True,
+        timezone: bool = True,
+    ) -> str:
         """
         用于将时间戳转换为可读的时间格式。
 
@@ -530,16 +585,14 @@ class MessageSession:
             else:
                 ftime_template.append(f"(UTC{self._tz_offset})")
         return (
-            datetime.fromtimestamp(
-                timestamp,
-                datetimeUTC) +
-            self.timezone_offset).strftime(
-            ' '.join(ftime_template))
+            datetime.fromtimestamp(timestamp, datetimeUTC) + self.timezone_offset
+        ).strftime(" ".join(ftime_template))
 
     class Feature:
         """
         此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断。
         """
+
         image = False
         voice = False
         embed = False
@@ -557,30 +610,36 @@ class FetchedSession:
     获取消息会话。
     """
 
-    def __init__(self,
-                 target_from: str,
-                 target_id: Union[str, int],
-                 sender_from: Optional[str] = None,
-                 sender_id: Optional[Union[str, int]] = None):
+    def __init__(
+        self,
+        target_from: str,
+        target_id: Union[str, int],
+        sender_from: Optional[str] = None,
+        sender_id: Optional[Union[str, int]] = None,
+    ):
         if not sender_from:
             sender_from = target_from
         if not sender_id:
             sender_id = target_id
-        self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
-                              sender_id=f'{sender_from}|{sender_id}',
-                              target_from=target_from,
-                              sender_from=sender_from,
-                              sender_prefix='',
-                              client_name='',
-                              message_id=0)
+        self.target = MsgInfo(
+            target_id=f"{target_from}|{target_id}",
+            sender_id=f"{sender_from}|{sender_id}",
+            target_from=target_from,
+            sender_from=sender_from,
+            sender_prefix="",
+            client_name="",
+            message_id=0,
+        )
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = MessageSession(self.target, self.session)
 
-    async def send_direct_message(self,
-                                  message_chain: Union[MessageChain, str, list, MessageElement],
-                                  disable_secret_check: bool = False,
-                                  enable_parse_message: bool = True,
-                                  enable_split_image: bool = True):
+    async def send_direct_message(
+        self,
+        message_chain: Union[MessageChain, str, list, MessageElement],
+        disable_secret_check: bool = False,
+        enable_parse_message: bool = True,
+        enable_split_image: bool = True,
+    ):
         """
         用于向获取对象发送消息。
 
@@ -590,9 +649,12 @@ class FetchedSession:
         :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅Telegram平台使用，默认为True）
         :return: 被发送的消息链。
         """
-        return await self.parent.send_direct_message(message_chain, disable_secret_check,
-                                                     enable_parse_message=enable_parse_message,
-                                                     enable_split_image=enable_split_image)
+        return await self.parent.send_direct_message(
+            message_chain,
+            disable_secret_check,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image,
+        )
 
     sendDirectMessage = send_direct_message
 
@@ -601,28 +663,35 @@ class FetchTarget:
     """
     获取消息会话对象。
     """
-    name = ''
+
+    name = ""
 
     @staticmethod
-    async def fetch_target(target_id: str, sender_id: Optional[Union[int, str]] = None) -> FetchedSession:
+    async def fetch_target(
+        target_id: str, sender_id: Optional[Union[int, str]] = None
+    ) -> FetchedSession:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         raise NotImplementedError
 
     @staticmethod
-    async def fetch_target_list(target_list: List[Union[int, str]]) -> List[FetchedSession]:
+    async def fetch_target_list(
+        target_list: List[Union[int, str]]
+    ) -> List[FetchedSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         raise NotImplementedError
 
     @staticmethod
-    async def post_message(module_name: str,
-                           message: str,
-                           user_list: Optional[List[FetchedSession]] = None,
-                           i18n: bool = False,
-                           **kwargs: Dict[str, Any]):
+    async def post_message(
+        module_name: str,
+        message: str,
+        user_list: Optional[List[FetchedSession]] = None,
+        i18n: bool = False,
+        **kwargs: Dict[str, Any],
+    ):
         """
         尝试向开启此模块的对象发送一条消息。
 
@@ -634,10 +703,12 @@ class FetchTarget:
         raise NotImplementedError
 
     @staticmethod
-    async def post_global_message(message: str,
-                                  user_list: Optional[List[FetchedSession]] = None,
-                                  i18n: bool = False,
-                                  **kwargs):
+    async def post_global_message(
+        message: str,
+        user_list: Optional[List[FetchedSession]] = None,
+        i18n: bool = False,
+        **kwargs,
+    ):
         """
         尝试向客户端内的任意对象发送一条消息。
 
@@ -657,4 +728,5 @@ __all__ = [
     "MessageTaskManager",
     "FetchTarget",
     "FetchedSession",
-    "FinishedSession"]
+    "FinishedSession",
+]

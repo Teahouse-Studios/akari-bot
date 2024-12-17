@@ -104,7 +104,7 @@
     "core.message.help.legacy.base": "基礎模組：",
     "core.message.help.legacy.external": "擴充模組：",
     "core.message.help.not_found": "此模組可能不存在，請校對輸入。",
-    "core.message.help.prompt": "橘色為基礎模組，藍色為擴充模組，灰色為未啟用模組。\n標為紅字的模組只能被該對話的管理員所使用。",
+    "core.message.help.prompt": "橘色為基礎模組，藍色為擴充模組，灰色為未啟用模組。\n標為斜體的模組只能被該對話的管理員所使用。",
     "core.message.help.regex.detail": "（${msg}）",
     "core.message.help.regex.no_information": "（無描述）",
     "core.message.help.regex_count": "${count} 條表示式",

@@ -101,7 +101,7 @@ async def check_ip(ip: str):
 def parse_coordinate(axis: str, value: float):
     if axis == 'latitude':
         return f'{value}°{"N" if value > 0 else "S"}'
-    elif axis == 'longitude':
+    if axis == 'longitude':
         return f'{value}°{"E" if value > 0 else "W"}'
 
 

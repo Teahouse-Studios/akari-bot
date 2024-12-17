@@ -16,7 +16,7 @@ def size_convert(value):
     size = 1024.0
     for _, unit in enumerate(units):
         if (value / size) < 1:
-            return '%.2f%s' % (value, ' ' + unit)
+            return f'{value:.2f} {unit}'
         value /= size
 
 

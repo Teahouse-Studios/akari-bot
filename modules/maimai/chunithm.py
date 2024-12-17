@@ -10,48 +10,68 @@ from .libraries.chunithm_utils import generate_best30_text, get_diff, SONGS_PER_
 
 total_list = TotalList()
 
-chu = module('chunithm',
-             developers=['DoroWolf'],
-             doc=True,
-             alias='chu',
-             support_languages=['zh_cn'],
-             desc='{chunithm.help.desc}')
+chu = module(
+    "chunithm",
+    developers=["DoroWolf"],
+    doc=True,
+    alias="chu",
+    support_languages=["zh_cn"],
+    desc="{chunithm.help.desc}",
+)
 
 
-@chu.command('base <constant> [<constant_max>] [-p <page>] {{maimai.help.base}}',
-             options_desc={'-p': '{maimai.help.option.p}'})
+@chu.command(
+    "base <constant> [<constant_max>] [-p <page>] {{maimai.help.base}}",
+    options_desc={"-p": "{maimai.help.option.p}"},
+)
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     result_set = []
     if constant <= 0:
-        await msg.finish(msg.locale.t('maimai.message.level_invalid'))
+        await msg.finish(msg.locale.t("maimai.message.level_invalid"))
     elif constant_max:
         if constant > constant_max:
             data = (await total_list.get()).filter(ds=(constant_max, constant))
-            s = msg.locale.t(
-                "maimai.message.base.range", constant=round(
-                    constant_max, 1), constant_max=round(
-                    constant, 1)) + "\n"
+            s = (
+                msg.locale.t(
+                    "maimai.message.base.range",
+                    constant=round(constant_max, 1),
+                    constant_max=round(constant, 1),
+                )
+                + "\n"
+            )
         else:
             data = (await total_list.get()).filter(ds=(constant, constant_max))
-            s = msg.locale.t(
-                "maimai.message.base.range", constant=round(
-                    constant, 1), constant_max=round(
-                    constant_max, 1)) + "\n"
+            s = (
+                msg.locale.t(
+                    "maimai.message.base.range",
+                    constant=round(constant, 1),
+                    constant_max=round(constant_max, 1),
+                )
+                + "\n"
+            )
     else:
         data = (await total_list.get()).filter(ds=constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
 
-    for music in sorted(data, key=lambda i: int(i['id'])):
+    for music in sorted(data, key=lambda i: int(i["id"])):
         for i in music.diff:
-            result_set.append((music['id'],
-                               music['title'],
-                               music['ds'][i],
-                               diff_list[i],
-                               music['level'][i]))
+            result_set.append(
+                (
+                    music["id"],
+                    music["title"],
+                    music["ds"][i],
+                    diff_list[i],
+                    music["level"][i],
+                )
+            )
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get('-p', False)
-    page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
+    get_page = msg.parsed_msg.get("-p", False)
+    page = (
+        max(min(int(get_page["<page>"]), total_pages), 1)
+        if get_page and isint(get_page["<page>"])
+        else 1
+    )
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -73,21 +93,31 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
             await msg.finish(s)
 
 
-@chu.command('level <level> [-p <page>] {{maimai.help.level}}',
-             options_desc={'-p': '{maimai.help.option.p}'})
+@chu.command(
+    "level <level> [-p <page>] {{maimai.help.level}}",
+    options_desc={"-p": "{maimai.help.option.p}"},
+)
 async def _(msg: Bot.MessageSession, level: str):
     result_set = []
     data = (await total_list.get()).filter(level=level)
-    for music in sorted(data, key=lambda i: int(i['id'])):
+    for music in sorted(data, key=lambda i: int(i["id"])):
         for i in music.diff:
-            result_set.append((music['id'],
-                               music['title'],
-                               music['ds'][i],
-                               diff_list[i],
-                               music['level'][i]))
+            result_set.append(
+                (
+                    music["id"],
+                    music["title"],
+                    music["ds"][i],
+                    diff_list[i],
+                    music["level"][i],
+                )
+            )
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    get_page = msg.parsed_msg.get('-p', False)
-    page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
+    get_page = msg.parsed_msg.get("-p", False)
+    page = (
+        max(min(int(get_page["<page>"]), total_pages), 1)
+        if get_page and isint(get_page["<page>"])
+        else 1
+    )
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
@@ -111,7 +141,7 @@ async def _(msg: Bot.MessageSession, level: str):
             await msg.finish(s)
 
 
-@chu.command('search <keyword> [-p <page>] {{maimai.help.search}}')
+@chu.command("search <keyword> [-p <page>] {{maimai.help.search}}")
 async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
     result_set = []
@@ -119,11 +149,15 @@ async def _(msg: Bot.MessageSession, keyword: str):
     if len(data) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
-        for music in sorted(data, key=lambda i: int(i['id'])):
-            result_set.append((music['id'], music['title']))
+        for music in sorted(data, key=lambda i: int(i["id"])):
+            result_set.append((music["id"], music["title"]))
         total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-        get_page = msg.parsed_msg.get('-p', False)
-        page = max(min(int(get_page['<page>']), total_pages), 1) if get_page and isint(get_page['<page>']) else 1
+        get_page = msg.parsed_msg.get("-p", False)
+        page = (
+            max(min(int(get_page["<page>"]), total_pages), 1)
+            if get_page and isint(get_page["<page>"])
+            else 1
+        )
         start_index = (page - 1) * SONGS_PER_PAGE
         end_index = page * SONGS_PER_PAGE
 
@@ -133,7 +167,9 @@ async def _(msg: Bot.MessageSession, keyword: str):
         if len(data) <= SONGS_PER_PAGE:
             await msg.finish(s.strip())
         else:
-            s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+            s += msg.locale.t(
+                "maimai.message.pages", page=page, total_pages=total_pages
+            )
             imgs = await msgchain2image([Plain(s)])
             if imgs:
                 imgchain = []
@@ -142,19 +178,23 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 await msg.finish(imgchain)
 
 
-@chu.command('b30 [<username>] {{chunithm.help.b30}}')
+@chu.command("b30 [<username>] {{chunithm.help.b30}}")
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.target.sender_from == "QQ":
-            payload = {'qq': msg.session.sender}
+            payload = {"qq": msg.session.sender}
         else:
             username = DivingProberBindInfoManager(msg).get_bind_username()
             if not username:
-                await msg.finish(msg.locale.t("chunithm.message.user_unbound", prefix=msg.prefixes[0]))
-            payload = {'username': username}
+                await msg.finish(
+                    msg.locale.t(
+                        "chunithm.message.user_unbound", prefix=msg.prefixes[0]
+                    )
+                )
+            payload = {"username": username}
         use_cache = True
     else:
-        payload = {'username': username}
+        payload = {"username": username}
         use_cache = False
 
     imgs = await generate_best30_text(msg, payload, use_cache)
@@ -164,7 +204,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish(imgchain)
 
 
-@chu.command('chart <song> {{maimai.help.chart}}')
+@chu.command("chart <song> {{maimai.help.chart}}")
 async def _(msg: Bot.MessageSession, song: str):
     if song[:2].lower() == "id":
         sid = song[2:]
@@ -176,36 +216,44 @@ async def _(msg: Bot.MessageSession, song: str):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     res = []
-    if len(music['ds']) == 6:
-        chart = music['charts'][5]
-        ds = music['ds'][5]
-        level = music['level'][5]
-        res.append(msg.locale.t(
-            "chunithm.message.chart",
-            diff='World\'s End',
-            level=level,
-            ds=ds,
-            combo=chart['combo'],
-            charter=chart['charter']))
-    else:
-        for _diff, ds in enumerate(music['ds']):
-            chart = music['charts'][_diff]
-            level = music['level'][_diff]
-            res.append(msg.locale.t(
+    if len(music["ds"]) == 6:
+        chart = music["charts"][5]
+        ds = music["ds"][5]
+        level = music["level"][5]
+        res.append(
+            msg.locale.t(
                 "chunithm.message.chart",
-                diff=diff_list[_diff],
+                diff="World's End",
                 level=level,
                 ds=ds,
-                combo=chart['combo'],
-                charter=chart['charter']))
-    await msg.finish(await get_info(music, Plain('\n'.join(res))))
+                combo=chart["combo"],
+                charter=chart["charter"],
+            )
+        )
+    else:
+        for _diff, ds in enumerate(music["ds"]):
+            chart = music["charts"][_diff]
+            level = music["level"][_diff]
+            res.append(
+                msg.locale.t(
+                    "chunithm.message.chart",
+                    diff=diff_list[_diff],
+                    level=level,
+                    ds=ds,
+                    combo=chart["combo"],
+                    charter=chart["charter"],
+                )
+            )
+    await msg.finish(await get_info(music, Plain("\n".join(res))))
 
 
-@chu.command('id <id> {{maimai.help.id}}',)
-@chu.command('song <song> {{maimai.help.song}}')
+@chu.command(
+    "id <id> {{maimai.help.id}}",
+)
+@chu.command("song <song> {{maimai.help.song}}")
 async def _(msg: Bot.MessageSession, song: str):
-    if '<id>' in msg.parsed_msg:
-        sid = msg.parsed_msg['<id>']
+    if "<id>" in msg.parsed_msg:
+        sid = msg.parsed_msg["<id>"]
         music = (await total_list.get()).by_id(sid)
     elif song[:2].lower() == "id":
         sid = song[2:]
@@ -216,32 +264,34 @@ async def _(msg: Bot.MessageSession, song: str):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if len(music['ds']) == 6:
+    if len(music["ds"]) == 6:
         res = msg.locale.t(
             "chunithm.message.song.worlds_end",
-            artist=music['basic_info']['artist'],
-            genre=music['basic_info']['genre'],
-            bpm=music['basic_info']['bpm'],
-            version=music['basic_info']['from'])
+            artist=music["basic_info"]["artist"],
+            genre=music["basic_info"]["genre"],
+            bpm=music["basic_info"]["bpm"],
+            version=music["basic_info"]["from"],
+        )
     else:
         res = msg.locale.t(
             "chunithm.message.song",
-            artist=music['basic_info']['artist'],
-            genre=music['basic_info']['genre'],
-            bpm=music['basic_info']['bpm'],
-            version=music['basic_info']['from'],
-            level='/'.join((str(ds) for ds in music['ds'])))
+            artist=music["basic_info"]["artist"],
+            genre=music["basic_info"]["genre"],
+            bpm=music["basic_info"]["bpm"],
+            version=music["basic_info"]["from"],
+            level="/".join((str(ds) for ds in music["ds"])),
+        )
     await msg.finish(await get_info(music, Plain(res)))
 
 
-@chu.command('random [<diff+level>] {{maimai.help.random}}')
+@chu.command("random [<diff+level>] {{maimai.help.random}}")
 async def _(msg: Bot.MessageSession):
-    condit = msg.parsed_msg.get('<diff+level>', '')
-    level = ''
-    diff = ''
+    condit = msg.parsed_msg.get("<diff+level>", "")
+    level = ""
+    diff = ""
     try:
         for char in condit:
-            if isint(char) or char == '+':
+            if isint(char) or char == "+":
                 level += char
             else:
                 diff += char
@@ -249,34 +299,42 @@ async def _(msg: Bot.MessageSession):
         if level == "":
             if diff == "":
                 music = (await total_list.get()).random()
-                await msg.finish(await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
+                await msg.finish(
+                    await get_info(
+                        music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")
+                    )
+                )
             else:
                 raise ValueError
         else:
             if diff == "":
                 music_data = (await total_list.get()).filter(level=level)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)])
+                music_data = (await total_list.get()).filter(
+                    level=level, diff=[get_diff(diff)]
+                )
 
         if len(music_data) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         else:
             music = music_data.random()
-            await msg.finish(await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
+            await msg.finish(
+                await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}"))
+            )
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
-@chu.handle('bind <username> {{maimai.help.bind}}', exclude_from=['QQ', 'QQ|Group'])
+@chu.handle("bind <username> {{maimai.help.bind}}", exclude_from=["QQ", "QQ|Group"])
 async def _(msg: Bot.MessageSession, username: str):
-    await get_record(msg, {'username': username}, use_cache=False)
+    await get_record(msg, {"username": username}, use_cache=False)
     bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
     if bind:
-        await msg.finish(msg.locale.t('maimai.message.bind.success') + username)
+        await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
 
 
-@chu.handle('unbind {{maimai.help.unbind}}', exclude_from=['QQ', 'QQ|Group'])
+@chu.handle("unbind {{maimai.help.unbind}}", exclude_from=["QQ", "QQ|Group"])
 async def _(msg: Bot.MessageSession):
     unbind = DivingProberBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish(msg.locale.t('maimai.message.unbind.success'))
+        await msg.finish(msg.locale.t("maimai.message.unbind.success"))
