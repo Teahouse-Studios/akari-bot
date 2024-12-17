@@ -682,12 +682,12 @@ async def parser(msg: Bot.MessageSession,
     if match_close_module:
         module = modules[match_close_module[0]]
         none_doc = True  # 检查模块绑定的命令是否有文档
-        for func in module.match_list.get(msg.target.targetFrom):
+        for func in module.match_list.get(msg.target.target_from):
             if func.help_doc is not None:
                 none_doc = False
         len_command_split = len(command_split)
         if not none_doc and len_command_split > 1:
-            get_submodules: List[CommandMeta] = module.match_list.get(msg.target.targetFrom)
+            get_submodules: List[CommandMeta] = module.match_list.get(msg.target.target_from)
             docs = {}  # 根据命令模板的空格数排序命令
             for func in get_submodules:
                 help_doc: List[Template] = copy.deepcopy(func.help_doc)

@@ -5,6 +5,7 @@ config/*.toml*
 .idea
 .DS_Store
 .vscode
+.vs
 test*
 *.db
 cache/*
@@ -27,3 +28,9 @@ modules/ask/tools/self_knowledge
 output/*
 assets/modules_list.json
 assets/discord_slash_list.json
+assets/mcbeversion.txt
+!modules/chemical_code/answer.db
+!test_commands.txt
+modules/natural/dataset.jsonl
+go-cqhttp
+modules/trust-post/trust.json
