@@ -15,12 +15,12 @@ ctd = module(
 )
 
 
-@ctd.handle("profile [<username>] {{cytoid.help.profile}}")
+@ctd.command("profile [<username>] {{cytoid.help.profile}}")
 async def _(msg: Bot.MessageSession, username: str = None):
     await cytoid_profile(msg, username)
 
 
-@ctd.handle(
+@ctd.command(
     "b30 [<username>] {{cytoid.help.b30}}", "r30 [<username>] {{cytoid.help.r30}}"
 )
 async def _(msg: Bot.MessageSession, username: str = None):
@@ -59,7 +59,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish(res)
 
 
-@ctd.handle("bind <username> {{cytoid.help.bind}}")
+@ctd.command("bind <username> {{cytoid.help.bind}}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(code)
@@ -75,7 +75,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(msg.locale.t("cytoid.message.bind.failed"))
 
 
-@ctd.handle("unbind {{cytoid.help.unbind}}")
+@ctd.command("unbind {{cytoid.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:

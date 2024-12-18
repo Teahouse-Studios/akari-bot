@@ -8,7 +8,7 @@ mk = module(
 
 
 @mk.command("<device> <month> <day> <inquiry_num> [<device_id>]")
-async def mkey(
+async def _(
     msg: Bot.MessageSession,
     device: str,
     month: int,

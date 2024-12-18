@@ -18,8 +18,8 @@ x_api_key = Config("curseforge_api_key", cfg_type=str, secret=True)
 enable_mirror = bool(not x_api_key)  # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
 
 
-@mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
-async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
+@mod_dl.command('<mod_name> [<version>] {{mod_dl.help}}')
+async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
     ver = version
     if version:
         match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', version)

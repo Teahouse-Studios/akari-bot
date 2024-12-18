@@ -18,11 +18,11 @@ ncmusic = module(
 )
 
 
-@ncmusic.handle(
+@ncmusic.command(
     "search [--legacy] <keyword> {{ncmusic.help.search}}",
     options_desc={"--legacy": "{help.option.legacy}"},
 )
-async def search(msg: Bot.MessageSession, keyword: str):
+async def _(msg: Bot.MessageSession, keyword: str):
     if not API:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
     url = f"{API}/search?keywords={keyword}"
@@ -156,7 +156,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             await info(msg, sid)
 
 
-@ncmusic.handle("<sid> {{ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])
+@ncmusic.command("<sid> {{ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])
 async def _(msg: Bot.MessageSession, sid: int):
     if Config("ncmusic_enable_card", False):
         await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
@@ -164,7 +164,11 @@ async def _(msg: Bot.MessageSession, sid: int):
         await info(msg, sid)
 
 
-@ncmusic.handle("info <sid> {{ncmusic.help.info}}")
+@ncmusic.command("info <sid> {{ncmusic.help.info}}")
+async def _(msg: Bot.MessageSession, sid: int):
+    await info(msg, sid)
+
+
 async def info(msg: Bot.MessageSession, sid: int):
     if not API:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))

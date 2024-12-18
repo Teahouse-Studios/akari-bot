@@ -7,7 +7,7 @@ from .utils import get_profile_name
 osu = module("osu", developers=["DoroWolf"], desc="{osu.help.desc}", doc=True)
 
 
-@osu.handle(
+@osu.command(
     "profile [<username>] [-t <mode>] {{osu.help.profile}}",
     options_desc={"-t": "{osu.help.option.t}"},
 )
@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await osu_profile(msg, query_id, mode)
 
 
-@osu.handle("bind <username> {{osu.help.bind}}")
+@osu.command("bind <username> {{osu.help.bind}}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(msg, code)
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(msg.locale.t("osu.message.bind.failed"))
 
 
-@osu.handle("unbind {{osu.help.unbind}}")
+@osu.command("unbind {{osu.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     unbind = OsuBindInfoManager(msg).remove_bind_info()
     if unbind:

@@ -44,7 +44,7 @@ wikilog = module(
 )
 
 
-@wikilog.handle(
+@wikilog.command(
     "add wiki <apilink> {{wikilog.help.add.wiki}}",
     "reset wiki <apilink> {{wikilog.help.reset.wiki}}",
     "remove wiki <apilink> {{wikilog.help.remove.wiki}}",
@@ -83,7 +83,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         )
 
 
-@wikilog.handle(
+@wikilog.command(
     "enable <apilink> <logtype> {{wikilog.help.enable.logtype}}",
     "disable <apilink> <logtype> {{wikilog.help.disable.logtype}}",
 )
@@ -125,7 +125,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         )
 
 
-@wikilog.handle("filter test <filters> <example> {{wikilog.help.filter.test}}")
+@wikilog.command("filter test <filters> <example> {{wikilog.help.filter.test}}")
 async def _(msg: Bot.MessageSession, filters: str, example: str):
     f = re.compile(filters)
     if m := f.search(example):
@@ -134,14 +134,14 @@ async def _(msg: Bot.MessageSession, filters: str, example: str):
                 "wikilog.message.filter.test.success",
                 start=m.start(),
                 end=m.end(),
-                string=example[m.start() : m.end()],
+                string=example[m.start(): m.end()],
             )
         )
     else:
         await msg.finish(msg.locale.t("wikilog.message.filter.test.failed"))
 
 
-@wikilog.handle("filter example <example> {{wikilog.help.filter.example}}")
+@wikilog.command("filter example <example> {{wikilog.help.filter.example}}")
 async def _(msg: Bot.MessageSession):
     try:
         example = msg.trigger_msg.replace("wikilog filter example ", "", 1)
@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession):
         await msg.send_message(msg.locale.t("wikilog.message.filter.example.invalid"))
 
 
-@wikilog.handle("api get <apilink> <logtype> {{wikilog.help.api.get}}")
+@wikilog.command("api get <apilink> <logtype> {{wikilog.help.api.get}}")
 async def _(msg: Bot.MessageSession, apilink, logtype):
     t = WikiLogUtil(msg)
     infos = json.loads(t.query.infos)
@@ -194,8 +194,8 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
         )
 
 
-@wikilog.handle("filter set <apilink> <logtype> ... {{wikilog.help.filter.set}}")
-@wikilog.handle("filter reset <apilink> <logtype> {{wikilog.help.filter.reset}}")
+@wikilog.command("filter set <apilink> <logtype> ... {{wikilog.help.filter.set}}")
+@wikilog.command("filter reset <apilink> <logtype> {{wikilog.help.filter.reset}}")
 async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     if "reset" in msg.parsed_msg:
         filters = ["*"]
@@ -239,17 +239,17 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
         await msg.finish(msg.locale.t("wikilog.message.filter.set.no_filter"))
 
 
-@wikilog.handle(
+@wikilog.command(
     "bot enable <apilink> {{wikilog.help.bot.enable}}", required_superuser=True
 )
-@wikilog.handle(
+@wikilog.command(
     "bot disable <apilink> {{wikilog.help.bot.disable}}", required_superuser=True
 )
-@wikilog.handle(
+@wikilog.command(
     "keepalive enable <apilink> {{wikilog.help.keepalive.enable}}",
     required_superuser=True,
 )
-@wikilog.handle(
+@wikilog.command(
     "keepalive disable <apilink> {{wikilog.help.keepalive.disable}}",
     required_superuser=True,
 )
@@ -280,8 +280,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
         )
 
 
-@wikilog.handle("rcshow set <apilink> ... {{wikilog.help.rcshow.set}}")
-@wikilog.handle("rcshow reset <apilink> {{wikilog.help.rcshow.reset}}")
+@wikilog.command("rcshow set <apilink> ... {{wikilog.help.rcshow.set}}")
+@wikilog.command("rcshow reset <apilink> {{wikilog.help.rcshow.reset}}")
 async def _(msg: Bot.MessageSession, apilink: str):
     if "reset" in msg.parsed_msg:
         rcshows_ = []
@@ -319,8 +319,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
         await msg.finish(msg.locale.t("wikilog.message.filter.set.no_filter"))
 
 
-@wikilog.handle("list {{wikilog.help.list}}")
-async def list_wiki_link(msg: Bot.MessageSession):
+@wikilog.command("list {{wikilog.help.list}}")
+async def _(msg: Bot.MessageSession):
     t = WikiLogUtil(msg)
     infos = json.loads(t.query.infos)
     text = ""

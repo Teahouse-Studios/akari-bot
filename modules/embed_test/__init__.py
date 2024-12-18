@@ -6,7 +6,7 @@ from core.component import module
 t = module("embed_test", required_superuser=True, hidden=True)
 
 
-@t.handle()
+@t.command()
 async def _(msg: Bot.MessageSession):
     await msg.finish(
         Embed(

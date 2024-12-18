@@ -12,7 +12,7 @@ enable_urlmanager = Config("enable_urlmanager", False)
 
 
 @wiki.command("set <wikiurl> {{wiki.help.set}}", required_admin=True)
-async def set_start_wiki(msg: Bot.MessageSession, wikiurl: str):
+async def _(msg: Bot.MessageSession, wikiurl: str):
     target = WikiTargetInfo(msg)
     check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
     if check.available:
