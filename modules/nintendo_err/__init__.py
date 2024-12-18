@@ -85,8 +85,8 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
 e = module("err", developers=["OasisAkari", "kurisu"], doc=True)
 
 
-@e.handle("<errcode> {解析任天堂系列主机的报错码并给出原因。}")
-async def result(msg: Bot.MessageSession):
+@e.command("<errcode> {解析任天堂系列主机的报错码并给出原因。}")
+async def _(msg: Bot.MessageSession):
     """
     Displays information on game console result codes, with a fancy embed.
     0x prefix is not required for hex input.

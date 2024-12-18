@@ -22,7 +22,7 @@ t = module(
 )
 
 
-@t.handle("<tweet> {{tweet.help}}")
+@t.command("<tweet> {{tweet.help}}")
 async def _(msg: Bot.MessageSession, tweet: str):
     if isint(tweet):
         tweet_id = tweet

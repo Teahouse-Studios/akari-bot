@@ -82,26 +82,26 @@ async def get_weekly_img(with_img=False, zh_tw=False):
 wky = module('weekly', developers=['Dianliang233'], support_languages=['zh_cn', 'zh_tw'], doc=True)
 
 
-@wky.handle('{{weekly.help}}')
+@wky.command('{{weekly.help}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_weekly(msg.target.client_name in ['QQ', 'TEST'],
                               zh_tw=msg.locale.locale == 'zh_tw')
     await msg.finish(weekly)
 
 
-@wky.handle('image {{weekly.help.image}}')
+@wky.command('image {{weekly.help.image}}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(await get_weekly_img(msg.target.client_name in ['QQ', 'TEST'],
                                           zh_tw=msg.locale.locale == 'zh_tw'))
 
 
-@wky.handle('teahouse {{weekly.help.teahouse}}')
+@wky.command('teahouse {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     await msg.finish(weekly)
 
 
-@wky.handle('teahouse image {{weekly.help.teahouse}}')
+@wky.command('teahouse image {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     imgchain = []

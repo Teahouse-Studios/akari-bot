@@ -296,7 +296,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wordle.command("stop {{game.help.stop}}")
-async def terminate(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
     play_state = PlayState("wordle", msg)
     qc = CoolDown("wordle", msg)
@@ -311,15 +311,13 @@ async def terminate(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("game.message.stop.none"))
 
 
-if not text_mode:
+@wordle.command("theme {{wordle.help.theme}}", load=(not text_mode))
+async def _(msg: Bot.MessageSession):
+    dark_theme = msg.data.options.get("wordle_dark_theme")
 
-    @wordle.command("theme {{wordle.help.theme}}")
-    async def _(msg: Bot.MessageSession):
-        dark_theme = msg.data.options.get("wordle_dark_theme")
-
-        if dark_theme:
-            msg.data.edit_option("wordle_dark_theme", False)
-            await msg.finish(msg.locale.t("wordle.message.theme.disable"))
-        else:
-            msg.data.edit_option("wordle_dark_theme", True)
-            await msg.finish(msg.locale.t("wordle.message.theme.enable"))
+    if dark_theme:
+        msg.data.edit_option("wordle_dark_theme", False)
+        await msg.finish(msg.locale.t("wordle.message.theme.disable"))
+    else:
+        msg.data.edit_option("wordle_dark_theme", True)
+        await msg.finish(msg.locale.t("wordle.message.theme.enable"))

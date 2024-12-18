@@ -257,7 +257,7 @@ async def _(msg: Bot.MessageSession, grade: str):
     await get_grade_info(msg, grade)
 
 
-@mai.handle("bind <username> {{maimai.help.bind}}", exclude_from=["QQ", "QQ|Group"])
+@mai.command("bind <username> {{maimai.help.bind}}", exclude_from=["QQ", "QQ|Group"])
 async def _(msg: Bot.MessageSession, username: str):
     await get_record(msg, {"username": username}, use_cache=False)
     bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
@@ -265,7 +265,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
 
 
-@mai.handle("unbind {{maimai.help.unbind}}", exclude_from=["QQ", "QQ|Group"])
+@mai.command("unbind {{maimai.help.unbind}}", exclude_from=["QQ", "QQ|Group"])
 async def _(msg: Bot.MessageSession):
     unbind = DivingProberBindInfoManager(msg).remove_bind_info()
     if unbind:

@@ -43,7 +43,7 @@ def search_cluster(clusterList: dict, key: str, value: str):
 
 @oba.command()
 @oba.command('status {{oba.help.status}}')
-async def status(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     dashboard = await get_url(f'{API}/metric/dashboard', fmt='json')
 
     current_nodes = dashboard.get('currentNodes')
@@ -74,7 +74,7 @@ async def status(msg: Bot.MessageSession):
 
 
 @oba.command('node [<rank>] {{oba.help.rank}}')
-async def rank(msg: Bot.MessageSession, rank: int = 1):
+async def _(msg: Bot.MessageSession, rank: int = 1):
     if rank < 1:
         await msg.finish(msg.locale.t('oba.message.node.invalid'))
     rank_list = await get_url(f'{API}/metric/rank', fmt='json')
@@ -111,7 +111,7 @@ async def rank(msg: Bot.MessageSession, rank: int = 1):
 
 
 @oba.command('top [<rank>] {{oba.help.top}}')
-async def top(msg: Bot.MessageSession, rank: int = 1):
+async def _(msg: Bot.MessageSession, rank: int = 1):
     rankList = await get_url(f'{API}/metric/rank', fmt='json')
     rank = 1 if rank <= 0 else rank
 
@@ -145,7 +145,7 @@ async def top(msg: Bot.MessageSession, rank: int = 1):
 
 
 @oba.command('search <keyword> {{oba.help.search}}')
-async def search(msg: Bot.MessageSession, keyword: str):
+async def _(msg: Bot.MessageSession, keyword: str):
     rank_list = await get_url(f'{API}/metric/rank', fmt='json')
 
     match_list = search_cluster(rank_list, 'name', keyword)
@@ -184,7 +184,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
 
 @oba.command('sponsor {{oba.help.sponsor}}')
-async def sponsor(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     sponsor = await get_url(f'{API}/sponsor', fmt='json')
     cluster = await get_url(f'{API}/sponsor/{str(sponsor['_id'])}', fmt='json')
     name = cluster.get('name')

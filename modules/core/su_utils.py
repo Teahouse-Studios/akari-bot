@@ -8,7 +8,7 @@ import orjson as json
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
-from core.config import Config, config, CFGManager
+from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
 from core.database import BotDBUtil
@@ -31,7 +31,7 @@ su = module('superuser', alias='su', required_superuser=True, base=True, doc=Tru
 
 
 @su.command('add <user>')
-async def add_su(msg: Bot.MessageSession, user: str):
+async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
@@ -40,7 +40,7 @@ async def add_su(msg: Bot.MessageSession, user: str):
 
 
 @su.command('remove <user>')
-async def del_su(msg: Bot.MessageSession, user: str):
+async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user == msg.target.sender_id:
@@ -143,18 +143,18 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("message.success"))
 
 
-if Bot.client_name == 'QQ':
-    post_whitelist = module('post_whitelist', required_superuser=True, base=True, doc=True)
+post_whitelist = module('post_whitelist', required_superuser=True, base=True, doc=True, load=(Bot.client_name == 'QQ'))
 
-    @post_whitelist.command('<group_id>')
-    async def _(msg: Bot.MessageSession, group_id: str):
-        if not group_id.startswith('QQ|Group|'):
-            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-        target_data = BotDBUtil.TargetInfo(group_id)
-        k = 'in_post_whitelist'
-        v = not target_data.options.get(k, False)
-        target_data.edit_option(k, v)
-        await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
+
+@post_whitelist.command('<group_id>')
+async def _(msg: Bot.MessageSession, group_id: str):
+    if not group_id.startswith('QQ|Group|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
+    target_data = BotDBUtil.TargetInfo(group_id)
+    k = 'in_post_whitelist'
+    v = not target_data.options.get(k, False)
+    target_data.edit_option(k, v)
+    await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
 ae = module('abuse', alias='ae', required_superuser=True, base=True, doc=True, exclude_from=['TEST|Console'])
@@ -244,21 +244,23 @@ async def _(msg: Bot.MessageSession, user: str):
     if sender_info.edit('isInAllowList', False):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
-    @ae.command('block <target>', load=(Bot.client_name == 'QQ'))
-    async def _(msg: Bot.MessageSession, target: str):
-        if not target.startswith('QQ|Group|'):
-            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-        if target == msg.target.target_id:
-            await msg.finish(msg.locale.t("core.message.abuse.block.self"))
-        if BotDBUtil.GroupBlockList.add(target):
-            await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
-    @ae.command('unblock <target>', load=(Bot.client_name == 'QQ'))
-    async def _(msg: Bot.MessageSession, target: str):
-        if not target.startswith('QQ|Group|'):
-            await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-        if BotDBUtil.GroupBlockList.remove(target):
-            await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
+@ae.command('block <target>', load=(Bot.client_name == 'QQ'))
+async def _(msg: Bot.MessageSession, target: str):
+    if not target.startswith('QQ|Group|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
+    if target == msg.target.target_id:
+        await msg.finish(msg.locale.t("core.message.abuse.block.self"))
+    if BotDBUtil.GroupBlockList.add(target):
+        await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
+
+
+@ae.command('unblock <target>', load=(Bot.client_name == 'QQ'))
+async def _(msg: Bot.MessageSession, target: str):
+    if not target.startswith('QQ|Group|'):
+        await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
+    if BotDBUtil.GroupBlockList.remove(target):
+        await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
 
 
 upd = module('update', required_superuser=True, base=True, doc=True)
@@ -282,7 +284,7 @@ def update_dependencies():
 
 
 @upd.command()
-async def update_bot(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     if not Info.binary_mode:
         if Info.version:
             pull_repo_result = pull_repo()
@@ -294,6 +296,7 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.finish(update_dependencies())
     else:
         await msg.finish(msg.locale.t("core.message.update.binary_mode"))
+
 
 rst = module('restart', required_superuser=True, base=True, doc=True, load=Info.subprocess)
 
@@ -331,7 +334,7 @@ async def wait_for_restart(msg: Bot.MessageSession):
 
 
 @rst.command()
-async def restart_bot(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
     if confirm:
         restart_time.append(datetime.now().timestamp())
@@ -345,7 +348,7 @@ upds = module('update&restart', required_superuser=True, alias='u&r', base=True,
 
 
 @upds.command()
-async def update_and_restart_bot(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     if not Info.binary_mode:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if confirm:

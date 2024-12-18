@@ -13,7 +13,7 @@ mcv_rss = module(
 
 
 @mcv_rss.hook()
-async def mcv_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcv_rss", **ctx.args)
 
 
@@ -29,7 +29,7 @@ mcbv_rss = module(
 
 
 @mcbv_rss.hook()
-async def mcbv_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcbv_rss", **ctx.args)
 
 
@@ -45,7 +45,7 @@ mcv_jira_rss = module(
 
 
 @mcv_jira_rss.hook()
-async def mcv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcv_jira_rss", **ctx.args)
 
 
@@ -61,37 +61,37 @@ mcbv_jira_rss = module(
 
 
 @mcbv_jira_rss.hook()
-async def mcbv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcbv_rss", **ctx.args)
 
 
-mcdv_jira_rss = module(
-    "mcdv_jira_rss",
+mcdv_rss = module(
+    "mcdv_rss",
     developers=["OasisAkari", "Dianliang233"],
-    desc="{mcv_rss.help.mcdv_jira_rss.desc}",
-    alias="mcdvjirarss",
+    desc="{mcv_rss.help.mcdv_rss.desc}",
+    alias=["mcdvrss", "mcdv_rss", "mcdvjirarss"],
     doc=True,
     hidden=True,
     rss=True,
 )
 
 
-@mcdv_jira_rss.hook()
-async def mcdv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+@mcdv_rss.hook()
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcdv_rss", **ctx.args)
 
 
-mclgv_jira_rss = module(
-    "mclgv_jira_rss",
+mclgv_rss = module(
+    "mclgv_rss",
     developers=["OasisAkari", "Dianliang233"],
-    desc="{mcv_rss.help.mclgv_jira_rss.desc}",
-    alias="mclgvjirarss",
+    desc="{mcv_rss.help.mclgv_rss.desc}",
+    alias=["mclgvrss", "mclgv_rss", "mclgvjirarss"],
     doc=True,
     hidden=True,
     rss=True,
 )
 
 
-@mclgv_jira_rss.hook()
-async def mclgv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+@mclgv_rss.hook()
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mclgv_rss", **ctx.args)
