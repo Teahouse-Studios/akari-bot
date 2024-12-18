@@ -28,7 +28,7 @@ s = module(
 )
 
 
-@s.handle("{{summary.help}}")
+@s.command("{{summary.help}}")
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config("openai_api_key", cfg_type=str, secret=True):

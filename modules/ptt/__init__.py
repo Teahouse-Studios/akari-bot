@@ -15,7 +15,7 @@ p = module("ptt", developers=["OasisAkari"], doc=True)
 
 
 @p.command("<ptt> {{ptt.help}}")
-async def pttimg(msg: Bot.MessageSession, ptt: str):
+async def _(msg: Bot.MessageSession, ptt: str):
     if ptt == "--":
         ptt = -1
     else:

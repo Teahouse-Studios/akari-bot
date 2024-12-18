@@ -20,7 +20,7 @@ ver = module("version", base=True, doc=True)
 
 
 @ver.command("{{core.help.version}}")
-async def bot_version(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
         send_msgs = [I18NContext("core.message.version", commit=commit)]
@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession):
     "unban <user> {{core.help.admin.unban}}",
     "ban list {{core.help.admin.ban.list}}",
 )
-async def config_ban(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.options.get("ban", [])
     if "list" in msg.parsed_msg:
         if admin_ban_list:
@@ -204,7 +204,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @locale.command("[<lang>] {{core.help.locale.set}}", required_admin=True)
-async def config_gu(msg: Bot.MessageSession, lang: str):
+async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and BotDBUtil.TargetInfo(
         msg.target.target_id
     ).edit("locale", lang):
@@ -220,7 +220,7 @@ async def config_gu(msg: Bot.MessageSession, lang: str):
 
 
 @locale.command("reload", required_superuser=True)
-async def reload_locale(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
         await msg.finish(msg.locale.t("message.success"))

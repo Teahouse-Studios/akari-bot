@@ -411,6 +411,5 @@ def Config(q: str,
     return v
 
 
-config = Config
 add_export(Config)
 add_export(CFGManager)

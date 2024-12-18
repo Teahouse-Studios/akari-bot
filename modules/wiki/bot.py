@@ -9,7 +9,7 @@ from modules.wiki.utils.wikilib import WikiLib
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
 
 
-@wb.handle("login <apilink> <account> <password>")
+@wb.command("login <apilink> <account> <password>")
 async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
     check = await WikiLib(apilink).check_wiki_available()
     if check.available:
@@ -32,13 +32,13 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
         await msg.finish(result)
 
 
-@wb.handle("logout <apilink>")
+@wb.command("logout <apilink>")
 async def _(msg: Bot.MessageSession, apilink: str):
     BotAccountDB.remove(apilink)
     await msg.finish(msg.locale.t("message.success"))
 
 
-@wb.handle("toggle")
+@wb.command("toggle")
 async def _(msg: Bot.MessageSession):
     target_data = BotDBUtil.TargetInfo(msg)
     use_bot_account = target_data.options.get("use_bot_account")

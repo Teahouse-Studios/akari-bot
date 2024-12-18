@@ -1,52 +1,40 @@
 from core.builtins import Bot
 from core.component import module
-from .mcv import mcv, mcbv, mcdv, mcev, mclgv
+from .mcv import mcjv, mcbv, mcdv, mcev, mclgv
 
 m = module(
     "mcv",
     developers=["OasisAkari", "Dianliang233"],
-    recommend_modules=["mcbv"],
-    doc=True,
+    alias={
+        "mcbv": "mcv mcbv",
+        "mcdv": "mcv mcdv",
+        "mcev": "mcv mcev",
+        "mclgv": "mcv mclgv"
+    },
+    doc=True
 )
 
 
 @m.command("{{mcv.help.mcv}}")
-async def mcv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcv(msg))
+async def _(msg: Bot.MessageSession):
+    await msg.finish(await mcjv(msg))
 
 
-mb = module(
-    "mcbv",
-    developers=["OasisAkari", "Dianliang233"],
-    recommend_modules=["mcv"],
-    doc=True,
-)
-
-
-@mb.command("{{mcv.help.mcbv}}")
-async def mcbv_loader(msg: Bot.MessageSession):
+@m.command("mcbv {{mcv.help.mcbv}}")
+async def _(msg: Bot.MessageSession):
     await msg.finish(await mcbv(msg))
 
 
-md = module("mcdv", developers=["OasisAkari", "Dianliang233"], hidden=True, doc=True)
-
-
-@md.command("{{mcv.help.mcdv}}")
-async def mcdv_loader(msg: Bot.MessageSession):
+@m.command("mcdv {{mcv.help.mcdv}}")
+async def _(msg: Bot.MessageSession):
     await msg.finish(await mcdv(msg))
 
 
-me = module("mcev", developers=["OasisAkari", "Dianliang233"], hidden=True, doc=True)
-
-
-@me.command("{{mcv.help.mcev}}")
+@m.command("mcev {{mcv.help.mcev}}")
 async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mcev(msg))
 
 
-mlg = module("mclgv", developers=["OasisAkari", "Dianliang233"], hidden=True, doc=True)
-
-
-@mlg.command("{{mcv.help.mclgv}}")
+@m.command("mclgv {{mcv.help.mclgv}}")
 async def mclgv_loader(msg: Bot.MessageSession):
     await msg.finish(await mclgv(msg))
