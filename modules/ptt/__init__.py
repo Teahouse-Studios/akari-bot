@@ -8,7 +8,7 @@ from core.constants.path import assets_path
 from core.utils.cache import random_cache_path
 from core.utils.image import get_fontsize
 
-arc_assets_path = os.path.join(assets_path, "arcaea")
+arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 
 
 p = module("ptt", developers=["OasisAkari"], doc=True)

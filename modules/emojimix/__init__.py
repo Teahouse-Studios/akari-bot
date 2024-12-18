@@ -10,7 +10,7 @@ from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.random import Random
 
-data_path = os.path.join(assets_path, 'emojimix', 'emoji_data.json')
+data_path = os.path.join(assets_path, "modules", 'emojimix', 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 
 

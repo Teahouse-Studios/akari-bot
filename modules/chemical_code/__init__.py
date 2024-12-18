@@ -24,7 +24,7 @@ CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修�
 csr_link = "https://legacy.chemspider.com"
 
 special_id_path = os.path.join(
-    assets_path, "chemical_code", "special_id"
+    assets_path, "modules", "chemical_code", "special_id"
 )  # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [
     os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)

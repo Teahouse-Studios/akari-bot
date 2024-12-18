@@ -61,7 +61,7 @@ def decrypt_bytes(encrypted):
 
 def parse_game_record(file_path):
     with open(
-        os.path.join(assets_path, "phigros", "rating.json"), "r", encoding="utf-8"
+        os.path.join(assets_path, "modules", "phigros", "rating.json"), "r", encoding="utf-8"
     ) as f:
         rating = json.loads(f.read())
     decrypted_data = {}
@@ -73,14 +73,14 @@ def parse_game_record(file_path):
             pos += 1
             if name_length == 1:
                 continue
-            name = data[pos : (pos + name_length)]
+            name = data[pos: (pos + name_length)]
             name = name.decode("utf-8").removesuffix(".0")
 
             pos += name_length
             score_length = data[pos]
             pos += 1
 
-            score = data[pos : (pos + score_length)]
+            score = data[pos: (pos + score_length)]
             pos += score_length
 
             has_score = score[0]
@@ -93,12 +93,12 @@ def parse_game_record(file_path):
                 if (has_score & digit) == digit:
                     record[name_] = {
                         "score": int.from_bytes(
-                            score[score_pos : (score_pos + 4)],
+                            score[score_pos: (score_pos + 4)],
                             byteorder="little",
                             signed=True,
                         ),
                         "accuracy": struct.unpack(
-                            "<f", score[(score_pos + 4) : (score_pos + 8)]
+                            "<f", score[(score_pos + 4): (score_pos + 8)]
                         )[0],
                         "full_combo": (full_combo & digit) == digit,
                     }

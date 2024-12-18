@@ -6,7 +6,7 @@ from core.constants.path import assets_path
 from core.utils.http import get_url
 from core.utils.web_render import webrender
 
-arc_assets_path = os.path.join(assets_path, "arcaea")
+arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 
 
 arc = module(

@@ -26,8 +26,8 @@ wordle = module(
     developers=["Dianliang233", "DoroWolf"],
 )
 
-words_txt = os.path.join(assets_path, "wordle", "words.txt")
-answers_txt = os.path.join(assets_path, "wordle", "answers.txt")
+words_txt = os.path.join(assets_path, "modules", "wordle", "words.txt")
+answers_txt = os.path.join(assets_path, "modules", "wordle", "answers.txt")
 with open(words_txt, encoding="utf8") as handle:
     word_list = handle.read().splitlines()
 with open(answers_txt, encoding="utf8") as handle:

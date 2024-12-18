@@ -8,12 +8,11 @@ config/*.toml*
 test*
 *.db
 cache/*
-assets/arc.apk
-assets/arcaea
-assets/maimai*
-!assets/maimai/mai_utage_info.json
-!assets/maimai/mai_grade_info.json
-assets/phigros*
+assets/modules/arcaea
+assets/modules/maimai*
+!assets/modules/maimai/mai_utage_info.json
+!assets/modules/maimai/mai_grade_info.json
+assets/modules/phigros*
 assets/private*
 bots/**/assets
 version*
@@ -25,5 +24,7 @@ version*
 matrix_store
 modules/ask/tools/self_knowledge
 output/*
-assets/modules_list.json
+assets/bots_list.json
 assets/discord_slash_list.json
+assets/modules_list.json
+assets/schedulers_list.json
