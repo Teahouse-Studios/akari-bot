@@ -186,5 +186,6 @@
     "wiki.message.wiki_bot.login.success": "Login success.",
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
     "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
-    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}"
+    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}",
+    "config.comments.wiki_whitelist_url": "Wiki whitelist application URL."
 }
