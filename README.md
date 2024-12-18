@@ -21,17 +21,29 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 目前小可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
 
-## 平台
+## 功能列表
+> 此处展示的功能非机器人可用全部功能，详情请查看机器人文档。
 
-小可目前支持以下平台：
-
--   QQ（官方/第三方）
--   Discord
--   Telegram
--   KOOK
--   Matrix
+| 核心          | MediaWiki    | Minecraft      | 音乐游戏        | API 查询工具  | 实用工具        | 娱乐        | RSS               |
+| :-----------: | :----------: | :------------: | :------------: | :-----------: |  :------------: | :---------: | :---------------: |
+| 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | GitHub        | IP 地址查询     | Wordle      | MC 版本更新推送    |
+| 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | Bilibili      | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
+| 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai         | 网易云音乐     | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
+| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  | 迷因/梗查询     | 抛硬币      | 茶馆周报推送        |
+| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） | OpenAI        | 色彩查看器      | 掷骰工具    |                     |
+| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha | 随机数生成器     | Emojimix   |                     |
+| 货币系统（WIP） |             |                |                |               |                | 一言       |                     |
 
 ## 运行
+
+小可目前支持以下平台：
+- [X] QQ
+  - [X] 官方机器人
+  - [X] 第三方协议
+- [X] Discord
+- [X] Telegram
+- [X] KOOK（开黑啦）
+- [X] Matrix
 
 ### 公共实例
 
@@ -58,7 +70,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 邀请链接：<https://t.me/oasisakaribot>
 
-#### KOOK
+#### KOOK（开黑啦）
 
 邀请链接：<https://www.kookapp.cn/app/oauth2/authorize?id=19512&permissions=949248&client_id=xiDWoVygvPsP6bov&redirect_uri=&scope=bot>
 
