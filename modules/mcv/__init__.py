@@ -9,9 +9,9 @@ m = module(
         "mcbv": "mcv mcbv",
         "mcdv": "mcv mcdv",
         "mcev": "mcv mcev",
-        "mclgv": "mmcvodule mclgv"
+        "mclgv": "mmcvodule mclgv",
     },
-    doc=True
+    doc=True,
 )
 
 
