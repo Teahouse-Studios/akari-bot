@@ -71,9 +71,9 @@ async def config_modules(msg: Bot.MessageSession):
     for module_ in wait_config:
         if module_ not in wait_config_list:
             if module_ in alias:
-                wait_config_list.append(alias[module_])
+                wait_config_list.append(alias[module_].split()[0])
             else:
-                wait_config_list.append(module_)
+                wait_config_list.append(module_.split()[0])
     msglist = []
     recommend_modules_list = []
     recommend_modules_help_doc_list = []
