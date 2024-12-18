@@ -1,3 +1,4 @@
+import ast
 import os
 import re
 import shutil
@@ -12,6 +13,37 @@ from core.constants import *
 from core.utils.i18n import Locale
 from core.utils.text import isint
 
+TYPE_MAPPING = {
+    "int": int,
+    "float": float,
+    "str": str,
+    "bool": bool,
+    "list": list,
+}
+
+
+def safe_literal_eval(node):
+    """ 安全解析 AST 节点 """
+    if isinstance(node, ast.Str):  # 字符串类型
+        return node.s
+    elif isinstance(node, ast.Num):  # 数字类型
+        return node.n
+    elif isinstance(node, ast.NameConstant):  # 常量类型 (True, False, None)
+        return node.value
+    elif isinstance(node, ast.Tuple):  # 元组类型
+        # 对元组元素进行递归解析，对于 type 类型的元素保持原样
+        return tuple(safe_literal_eval(el) if not isinstance(el, ast.Name)
+                     or el.id != 'type' else el for el in node.elts)
+    elif isinstance(node, ast.List):  # 列表类型
+        return tuple(safe_literal_eval(el) for el in node.elts)  # 转换成元组
+    elif isinstance(node, ast.Dict):  # 字典类型
+        return frozenset((safe_literal_eval(k), safe_literal_eval(v))
+                         for k, v in zip(node.keys, node.values))  # 转换成 frozenset
+    elif isinstance(node, ast.Name):  # 变量名类型
+        return TYPE_MAPPING.get(node.id, node.id)  # 尝试在映射表中查找
+    else:
+        return None  # 对于其他不支持的类型返回 None 或进行其他处理
+
 
 def generate_config(dir_path, language):
     config_code_list = {}
@@ -21,7 +53,6 @@ def generate_config(dir_path, language):
     dir_list = ['bots', 'core', 'modules', 'schedulers']
     exclude_dir_list = [os.path.join('core', 'config'), os.path.join('core', 'scripts')]
 
-    match_code = re.compile(r'(Config\()', re.DOTALL)
 
     # create empty config.toml
     locale = Locale(language)
@@ -33,19 +64,17 @@ def generate_config(dir_path, language):
         f.write(
             f'default_locale = "{language}" # {
                 locale.t(
-                    'config.comments.default_locale',
+                    "config.comments.default_locale",
                     fallback_failed_prompt=False)}\n')
         f.write(
             f'config_version = {
                 str(config_version)} # {
                 locale.t(
-                    'config.comments.config_version',
+                    "config.comments.config_version",
                     fallback_failed_prompt=False)}\n')
         f.write('initialized = false\n')
-        f.close()
 
     from core.config import Config, CFGManager  # noqa
-
     CFGManager.switch_config_path(dir_path)
 
     for _dir in dir_list:
@@ -57,41 +86,40 @@ def generate_config(dir_path, language):
                     file_path = os.path.join(root, file)
                     with open(file_path, 'r', encoding='utf-8') as f:
                         code = f.read()
-                        if f := match_code.finditer(code):  # Find all Config() functions in the code
-                            for m in f:
-                                left_brackets_count = 0
-                                param_text = ''
-                                for param in code[m.end(
-                                ):]:  # Get the parameters text inside the Config() function by counting brackets
-                                    if param == '(':
-                                        left_brackets_count += 1
-                                    elif param == ')':
-                                        left_brackets_count -= 1
-                                    if left_brackets_count == -1:
-                                        break
-                                    param_text += param
-                                config_code_list[param_text] = file_path
-    # filtered_config_code_map = {}
-    # for c in config_code_list:
-    #     opt = c.split(',')[0]
-    #     if opt not in filtered_config_code_map:
-    #         filtered_config_code_map[opt] = c
-    #     else:
-    #         if len(c) > len(filtered_config_code_map[opt]):
-    #             print(f'Conflict found: {filtered_config_code_map[opt]}')
-    #             filtered_config_code_map[opt] = c
-    # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
-    for c in config_code_list:
-        spl = c.split(',') + ['_generate=True']  # Add _generate=True param to the end of the config function
-        for s in spl:
-            if s.strip() == '':
-                spl.remove(s)
+
+                        # 解析代码中的函数调用
+                        tree = ast.parse(code)
+                        for node in ast.walk(tree):
+                            if isinstance(
+                                    node, ast.Call) and isinstance(
+                                    node.func, ast.Name) and node.func.id == "Config":
+                                # 提取位置参数 (args) 和关键字参数 (kwargs)
+                                args = []
+                                kwargs = {}
+
+                                # 提取位置参数
+                                for arg in node.args:
+                                    args.append(safe_literal_eval(arg))
+
+                                # 提取关键字参数
+                                for kwarg in node.keywords:
+                                    kwargs[kwarg.arg] = safe_literal_eval(kwarg.value)
+
+                                # 在参数列表中加上 _generate=True
+                                kwargs['_generate'] = True
+
+                                # 存储参数：使用元组作为键，`args` 和 `kwargs` 分开
+                                config_code_list[(tuple(args), frozenset(kwargs.items()))] = file_path
+
+    # 调用 Config 函数
+    for (args, kwargs) in config_code_list:
         try:
-            # Execute the code to generate the config file, yeah, just stupid but works
-            eval(f'Config({','.join(spl)})')
-        except (NameError, TypeError):
-            # traceback.print_exc()
-            ...
+            # 安全地调用 Config 函数
+            print(str(args))
+            print(str(kwargs))
+            Config(*args, **dict(kwargs))
+        except Exception:
+            traceback.print_exc()
 
     CFGManager.write('initialized', True)
 
