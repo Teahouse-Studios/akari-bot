@@ -134,7 +134,7 @@ async def _(msg: Bot.MessageSession, filters: str, example: str):
                 "wikilog.message.filter.test.success",
                 start=m.start(),
                 end=m.end(),
-                string=example[m.start(): m.end()],
+                string=example[m.start() : m.end()],
             )
         )
     else:
