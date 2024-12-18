@@ -260,10 +260,10 @@ async def mcbv_jira_rss():
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
-async def mcdv_jira_rss():
+async def mcdv_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/11901/versions"
-        verlist = get_stored_list("scheduler", "mcdv_jira_rss")
+        verlist = get_stored_list("scheduler", "mcdv_rss")
         file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
@@ -277,23 +277,23 @@ async def mcdv_jira_rss():
                 Logger.info(f"Huh, we find {release}.")
 
                 await JobQueue.trigger_hook_all(
-                    "mcdv_jira_rss",
+                    "mcdv_rss",
                     message=MessageChain(
-                        [I18NContext("mcv_rss.message.mcdv_jira_rss", version=release)]
+                        [I18NContext("mcv_rss.message.mcdv_rss", version=release)]
                     ),
                 )
                 verlist.append(release)
-                update_stored_list("scheduler", "mcdv_jira_rss", verlist)
+                update_stored_list("scheduler", "mcdv_rss", verlist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
-async def mclgv_jira_rss():
+async def mclgv_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/12200/versions"
-        verlist = get_stored_list("scheduler", "mclgv_jira_rss")
+        verlist = get_stored_list("scheduler", "mclgv_rss")
         file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
@@ -307,13 +307,13 @@ async def mclgv_jira_rss():
                 Logger.info(f"Huh, we find {release}.")
 
                 await JobQueue.trigger_hook_all(
-                    "mclgv_jira_rss",
+                    "mclgv_rss",
                     message=MessageChain(
-                        [I18NContext("mcv_rss.message.mclgv_jira_rss", version=release)]
+                        [I18NContext("mcv_rss.message.mclgv_rss", version=release)]
                     ),
                 )
                 verlist.append(release)
-                update_stored_list("scheduler", "mclgv_jira_rss", verlist)
+                update_stored_list("scheduler", "mclgv_rss", verlist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())

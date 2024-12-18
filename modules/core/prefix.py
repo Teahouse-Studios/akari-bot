@@ -11,7 +11,7 @@ p = module("prefix", required_admin=True, base=True, doc=True)
     "reset {{core.help.prefix.reset}}",
     "list {{core.help.prefix.list}}",
 )
-async def set_prefix(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     prefixes = msg.options.get("command_prefix")
     prefix = msg.parsed_msg.get("<prefix>", False)
     if not prefixes:

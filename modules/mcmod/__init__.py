@@ -13,10 +13,10 @@ mcmod = module(
 
 
 @mcmod.command("<mod_name> {{mcmod.help.mod_name}}")
-async def main(msg: Bot.MessageSession, mod_name: str):
+async def _(msg: Bot.MessageSession, mod_name: str):
     await msg.finish(await m(msg, mod_name))
 
 
 @mcmod.command("details <content> {{mcmod.help.details}}")
-async def main(msg: Bot.MessageSession, content: str):
+async def _(msg: Bot.MessageSession, content: str):
     await msg.finish(await m(msg, content, detail=True))

@@ -20,7 +20,7 @@ async def weekly_rss():
 
 
 @Scheduler.scheduled_job(trigger=CronTrigger.from_crontab("30 9 * * MON"))
-async def weekly_rss():
+async def teahouse_weekly_rss():
     Logger.info("Checking teahouse weekly...")
 
     weekly = await get_teahouse_rss()

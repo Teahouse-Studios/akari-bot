@@ -325,7 +325,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
-@chu.handle("bind <username> {{maimai.help.bind}}", exclude_from=["QQ", "QQ|Group"])
+@chu.command("bind <username> {{maimai.help.bind}}", exclude_from=["QQ", "QQ|Group"])
 async def _(msg: Bot.MessageSession, username: str):
     await get_record(msg, {"username": username}, use_cache=False)
     bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
@@ -333,7 +333,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
 
 
-@chu.handle("unbind {{maimai.help.unbind}}", exclude_from=["QQ", "QQ|Group"])
+@chu.command("unbind {{maimai.help.unbind}}", exclude_from=["QQ", "QQ|Group"])
 async def _(msg: Bot.MessageSession):
     unbind = DivingProberBindInfoManager(msg).remove_bind_info()
     if unbind:

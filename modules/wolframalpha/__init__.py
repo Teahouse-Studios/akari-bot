@@ -23,7 +23,7 @@ w = module(
 )
 
 
-@w.handle("<query> {{wolframalpha.help}}")
+@w.command("<query> {{wolframalpha.help}}")
 async def _(msg: Bot.MessageSession, query: str):
     if await secret_check(query):
         await msg.finish(rickroll(msg))
@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, query: str):
             raise e
 
 
-@w.handle("ask <question> {{wolframalpha.help.ask}}")
+@w.command("ask <question> {{wolframalpha.help.ask}}")
 async def _(msg: Bot.MessageSession, question: str):
     if await secret_check(question):
         await msg.finish(rickroll(msg))

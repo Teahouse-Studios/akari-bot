@@ -30,7 +30,7 @@ hlp = module('help', base=True, doc=True)
 
 @hlp.command('<module> [--legacy] {{core.help.help.detail}}',
              options_desc={'--legacy': '{help.option.legacy}'})
-async def bot_help(msg: Bot.MessageSession, module: str):
+async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(

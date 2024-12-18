@@ -12,7 +12,7 @@ lc_zh_hk = LanguageConverter.from_language(zh_hk)
 lc_zh_tw = LanguageConverter.from_language(zh_tw)
 
 
-@l.handle("<language> <content> {{langconv.help}}")
+@l.command("<language> <content> {{langconv.help}}")
 async def _(msg: Bot.MessageSession, language: str, content: str):
     if not language.startswith("zh"):
         language = "zh-" + language
