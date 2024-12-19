@@ -1,12 +1,12 @@
 import asyncio
 
-from modules.mcv import mcv, mcbv, mcdv, mcev
+from modules.mcv import mcjv, mcbv, mcdv, mcev
 from .utils import fake_msg, AkariTool
 
 
 async def mcv_all():
     results = await asyncio.gather(
-        mcv(fake_msg), mcbv(fake_msg), mcdv(fake_msg), mcev(fake_msg)
+        mcjv(fake_msg), mcbv(fake_msg), mcdv(fake_msg), mcev(fake_msg)
     )
     return "\n---".join(results)
 
