@@ -16,13 +16,11 @@ BASE_COST_GPT_3_5 = Decimal("0.002")  # gpt-3.5-turbo-1106: $0.002 / 1K tokens
 BASE_COST_GPT_4 = Decimal("0.03")  # gpt-4-1106-preview: $0.03 / 1K tokens
 # We are not tracking specific tool usage like searches b/c I'm too lazy, use a universal multiplier
 THIRD_PARTY_MULTIPLIER = Decimal("1.5")
-PROFIT_MULTIPLIER = Decimal(
-    "1.1"
-)  # At the time we are really just trying to break even
+PROFIT_MULTIPLIER = Decimal("1.1")  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 PRICE_PER_1K_TOKEN_GPT_4 = BASE_COST_GPT_4 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 USD_TO_CNY = Decimal("7.1")  # Assuming 1 USD = 7.1 CNY
-CNY_TO_PETAL = 100  # 100 petal = 1 CNY
+CNY_TO_PETAL = 1000  # 1000 petal = 1 CNY
 
 
 async def get_petal_exchange_rate():
