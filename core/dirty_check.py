@@ -54,7 +54,7 @@ def parse_data(
                                 content = (
                                     content[: pos["startPos"] + _offset]
                                     + reason
-                                    + content[pos["endPos"] + _offset :]
+                                    + content[pos["endPos"] + _offset:]
                                 )
                                 if additional_text:
                                     content += "\n" + additional_text + "\n"

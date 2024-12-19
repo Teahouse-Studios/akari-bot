@@ -207,7 +207,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         if not text_status:
             if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \
                 (original_user in user_checked_map and user_checked_map[original_user] != original_user) or \
-                (comment and comment_checked_map[replace_brackets(x['comment'])] != replace_brackets(x['comment'])):
+                    (comment and comment_checked_map[replace_brackets(x['comment'])] != replace_brackets(x['comment'])):
                 t.append(msg.locale.t("wiki.message.utils.redacted"))
         rclist.append('\n'.join(t))
     return rclist
