@@ -72,7 +72,7 @@ def init_bot():
             BotDBUtil.SenderInfo(bu).edit("isSuperUser", True)
     else:
         Logger.warning(
-            "The base superuser was not found, please setup it in the config file."
+            "The base superuser is not found, please setup it in the config file."
         )
 
     disabled_bots.clear()
