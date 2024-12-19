@@ -9,7 +9,6 @@ from time import sleep
 
 from loguru import logger as loggerFallback
 
-
 ascii_art = r"""
            _              _   ____        _
      /\   | |            (_) |  _ \      | |
@@ -25,7 +24,8 @@ bots_and_required_configs = {
     "discord": ["discord_token"],
     "aiogram": ["telegram_token"],
     "kook": ["kook_token"],
-    "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
+    "matrix":
+    ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
     "api": [],
     "qqbot": ["qq_bot_appid", "qq_bot_secret"],
 }
@@ -52,18 +52,17 @@ def init_bot():
         session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
-    if (current_ver := int(query_dbver.value)) < (
-        target_ver := BotDBUtil.database_version
-    ):
+    if (current_ver := int(query_dbver.value)) < (target_ver :=
+                                                  BotDBUtil.database_version):
         Logger.info(f"Updating database from {current_ver} to {target_ver}...")
         from core.database.update import update_database
 
         update_database()
         Logger.info("Database updated successfully!")
     print(ascii_art)
-    base_superuser = Config(
-        "base_superuser", base_superuser_default, cfg_type=(str, list)
-    )
+    base_superuser = Config("base_superuser",
+                            base_superuser_default,
+                            cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
@@ -84,9 +83,7 @@ def init_bot():
 
 
 def multiprocess_run_until_complete(func):
-    p = multiprocessing.Process(
-        target=func,
-    )
+    p = multiprocessing.Process(target=func, )
     p.start()
 
     while True:
@@ -98,7 +95,9 @@ def multiprocess_run_until_complete(func):
     p.close()
 
 
-def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
+def go(bot_name: str = None,
+       subprocess: bool = False,
+       binary_mode: bool = False):
     from core.logger import Logger  # noqa
     from core.utils.info import Info  # noqa
 
@@ -121,17 +120,16 @@ def run_bot():
     from core.logger import Logger  # noqa
 
     def restart_process(bot_name: str):
-        if (
-            bot_name not in failed_to_start_attempts
-            or datetime.now().timestamp()
-            - failed_to_start_attempts[bot_name]["timestamp"]
-            > 60
-        ):
+        if (bot_name not in failed_to_start_attempts
+                or datetime.now().timestamp() -
+                failed_to_start_attempts[bot_name]["timestamp"] > 60):
             failed_to_start_attempts[bot_name] = {}
             failed_to_start_attempts[bot_name]["count"] = 0
-            failed_to_start_attempts[bot_name]["timestamp"] = datetime.now().timestamp()
+            failed_to_start_attempts[bot_name]["timestamp"] = datetime.now(
+            ).timestamp()
         failed_to_start_attempts[bot_name]["count"] += 1
-        failed_to_start_attempts[bot_name]["timestamp"] = datetime.now().timestamp()
+        failed_to_start_attempts[bot_name]["timestamp"] = datetime.now(
+        ).timestamp()
         if failed_to_start_attempts[bot_name]["count"] >= 3:
             Logger.error(
                 f"Bot {bot_name} failed to start 3 times, abort to restart, please check the log."
@@ -170,8 +168,9 @@ def run_bot():
             if abort:
                 continue
         p = multiprocessing.Process(
-            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl
-        )
+            target=go,
+            args=(bl, True, bool(not sys.argv[0].endswith(".py"))),
+            name=bl)
         p.start()
         processes.append(p)
     while True:
@@ -214,7 +213,8 @@ if __name__ == "__main__":
                 processes.clear()
                 continue
             except Exception:
-                loggerFallback.critical("An error occurred, please check the output.")
+                loggerFallback.critical(
+                    "An error occurred, please check the output.")
                 traceback.print_exc()
                 break
     except (KeyboardInterrupt, SystemExit):
