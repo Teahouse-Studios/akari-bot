@@ -1838,14 +1838,8 @@ web_applet = Module(
     },
 )
 
-youtube_app = Module(
-    "youtube",
-    {
-        0: ResultInfo(
-            "This error typically occurs when your system clock isn't set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop."
-        )
-    },
-)
+youtube_app = Module("youtube", {0: ResultInfo(
+    "This error typically occurs when your system clock isn't set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop.")}, )
 
 arms_game = Module(
     "ARMS",

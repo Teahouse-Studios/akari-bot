@@ -73,8 +73,9 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
                 data = await fi.read()
                 try:
                     ftt = ft.match(data)
-                    lst.append(f'<img src="data:{ftt.mime};base64,{
-                               (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
+                    lst.append(f'< img src="data: {ftt.mime}
+                               base64, {
+                               (base64.encodebytes(data)).decode("utf-8")}" width="720" / >')
                 except Exception:
                     Logger.error(traceback.format_exc())
         elif isinstance(m, VoiceElement):

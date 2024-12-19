@@ -31,13 +31,13 @@ def generate_config(dir_path, language):
         f.write(f"# {locale.t('config.header.line.3', fallback_failed_prompt=False)}\n")
         f.write('\n')
         f.write(
-            f'default_locale = "{language}" # {
+            f'default_locale="{language}"  # {
                 locale.t(
                     'config.comments.default_locale',
                     fallback_failed_prompt=False)}\n')
         f.write(
             f'config_version = {
-                str(config_version)} # {
+                str(config_version)}  # {
                 locale.t(
                     'config.comments.config_version',
                     fallback_failed_prompt=False)}\n')
@@ -54,15 +54,15 @@ def generate_config(dir_path, language):
                 continue
             for file in _files:
                 if file.endswith('.py'):
-                    file_path = os.path.join(root, file)
+                    file_path= os.path.join(root, file)
                     with open(file_path, 'r', encoding='utf-8') as f:
-                        code = f.read()
+                        code= f.read()
                         if f := match_code.finditer(code):  # Find all Config() functions in the code
                             for m in f:
-                                left_brackets_count = 0
-                                param_text = ''
+                                left_brackets_count= 0
+                                param_text= ''
                                 for param in code[m.end(
-                                ):]:  # Get the parameters text inside the Config() function by counting brackets
+                                ): ]:  # Get the parameters text inside the Config() function by counting brackets
                                     if param == '(':
                                         left_brackets_count += 1
                                     elif param == ')':
@@ -70,7 +70,7 @@ def generate_config(dir_path, language):
                                     if left_brackets_count == -1:
                                         break
                                     param_text += param
-                                config_code_list[param_text] = file_path
+                                config_code_list[param_text]= file_path
     # filtered_config_code_map = {}
     # for c in config_code_list:
     #     opt = c.split(',')[0]
@@ -82,13 +82,13 @@ def generate_config(dir_path, language):
     #             filtered_config_code_map[opt] = c
     # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
     for c in config_code_list:
-        spl = c.split(',') + ['_generate=True']  # Add _generate=True param to the end of the config function
+        spl= c.split(',') + ['_generate=True']  # Add _generate=True param to the end of the config function
         for s in spl:
             if s.strip() == '':
                 spl.remove(s)
         try:
             # Execute the code to generate the config file, yeah, just stupid but works
-            eval(f'Config({','.join(spl)})')
+            eval(f'Config({', '.join(spl)})')
         except (NameError, TypeError):
             # traceback.print_exc()
             ...
@@ -98,15 +98,15 @@ def generate_config(dir_path, language):
 
 if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ != '__main__':
     while True:
-        i = 1
-        lang = input(
+        i= 1
+        lang= input(
             f"""Hi, it seems you are first time to run AkariBot, what language do you want to use by default?
 {''.join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
 Please input the number of the language you want to use: """)
         if lang.strip() == '':
             sys.exit(0)
         if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
-            lang = list(lang_list.keys())[langI]
+            lang= list(lang_list.keys())[langI]
             break
         print('Invalid input, please try again.')
 
@@ -127,19 +127,19 @@ if __name__ == '__main__':
 
     def zip_language_folders(config_store_path, config_store_packed_path):
         for lang in os.listdir(config_store_path):
-            lang_path = os.path.join(config_store_path, lang)
+            lang_path= os.path.join(config_store_path, lang)
             if os.path.isdir(lang_path):
-                zip_path = os.path.join(config_store_packed_path, f'{lang}.zip')
+                zip_path= os.path.join(config_store_packed_path, f'{lang}.zip')
                 with zipfile.ZipFile(zip_path, 'w') as zipf:
                     for root, _, files in os.walk(lang_path):
                         for file in files:
-                            file_path = os.path.join(root, file)
-                            arcname = os.path.relpath(file_path, lang_path)
+                            file_path= os.path.join(root, file)
+                            arcname= os.path.relpath(file_path, lang_path)
                             zipf.write(file_path, arcname)
 
-    config_store_path = os.path.join(assets_path, 'config_store')
-    config_store_packed_path = os.path.join(assets_path, 'config_store_packed')
-    config_store_path_bak = config_store_path + '_bak'
+    config_store_path= os.path.join(assets_path, 'config_store')
+    config_store_packed_path= os.path.join(assets_path, 'config_store_packed')
+    config_store_path_bak= config_store_path + '_bak'
     if os.path.exists(config_store_path_bak):
         shutil.rmtree(config_store_path_bak)
     if os.path.exists(config_store_path):
@@ -147,34 +147,34 @@ if __name__ == '__main__':
     os.makedirs(config_store_path, exist_ok=True)
     os.makedirs(config_store_packed_path, exist_ok=True)
     for lang in lang_list:
-        config_store_path_ = os.path.join(config_store_path, lang)
+        config_store_path_= os.path.join(config_store_path, lang)
         os.makedirs(config_store_path_, exist_ok=True)
         generate_config(config_store_path_, lang)
     # compare old and new config files
-    repack = False
+    repack= False
     for lang in lang_list:
-        config_store_path_ = os.path.join(config_store_path, lang)
-        config_store_path_bak = config_store_path + '_bak'
+        config_store_path_= os.path.join(config_store_path, lang)
+        config_store_path_bak= config_store_path + '_bak'
         if not os.path.exists(config_store_path_bak):
-            repack = True
+            repack= True
             break
         for root, _, files_ in os.walk(config_store_path_):
             for file in files_:
-                file_path = os.path.join(root, file)
-                file_path_bak = file_path.replace(config_store_path, config_store_path_bak)
+                file_path= os.path.join(root, file)
+                file_path_bak= file_path.replace(config_store_path, config_store_path_bak)
                 if not os.path.exists(file_path_bak):
-                    repack = True
+                    repack= True
                     break
                 with open(file_path, 'r', encoding='utf-8') as f:
-                    new = f.readlines()
+                    new= f.readlines()
                 with open(file_path_bak, 'r', encoding='utf-8') as f:
-                    old = f.readlines()
-                diff = difflib.unified_diff(old, new, fromfile=file_path_bak, tofile=file_path)
+                    old= f.readlines()
+                diff= difflib.unified_diff(old, new, fromfile=file_path_bak, tofile=file_path)
                 for d in diff:
 
                     if d:
                         print(d)
-                        repack = True
+                        repack= True
                         break
             if repack:
                 break
