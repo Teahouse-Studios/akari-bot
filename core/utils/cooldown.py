@@ -43,7 +43,8 @@ class CoolDown:
         :param delay: 设定的冷却时间。
         :return: 剩余的冷却时间。
         """
-        if self.key not in _cd_lst:
+        if self.target_id not in _cd_lst:
+            self.add()
             return 0
         target_dict = _cd_lst[self.target_id]
         if self.whole_target:
