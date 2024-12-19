@@ -236,13 +236,13 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                             if len(argv_copy[index_flag:]) >= len_t_args:
 
                                 sub_argv = argv_copy[
-                                    index_flag + 1 : index_flag + len_t_args + 1
+                                    index_flag + 1: index_flag + len_t_args + 1
                                 ]
 
                                 parsed_argv[a.flag] = Optional(
                                     parse_argv(sub_argv, a.args).args, flagged=True
                                 )
-                                del argv_copy[index_flag : index_flag + len_t_args + 1]
+                                del argv_copy[index_flag: index_flag + len_t_args + 1]
             for a in args:
                 if isinstance(a, ArgumentPattern):
                     if a.name.startswith("<"):
