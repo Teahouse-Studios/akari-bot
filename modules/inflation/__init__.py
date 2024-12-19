@@ -7,13 +7,13 @@ from core.builtins import Bot
 from core.component import module
 from core.constants.path import assets_path
 
-csv_file = os.path.join(
-    assets_path, "modules", "inflaction", "consumer_price_index.csv"
-)
+csv_file = os.path.join(assets_path, "modules", "inflaction",
+                        "consumer_price_index.csv")
 cpi = pd.read_csv(csv_file)
 
-
-i = module("inflation", developers=["Dianliang233"], desc="{inflation.help.desc}")
+i = module("inflation",
+           developers=["Dianliang233"],
+           desc="{inflation.help.desc}")
 
 
 @i.command(
@@ -29,7 +29,8 @@ async def _(
     row = cpi[cpi["Country Name"] == country_or_region_name_or_alpha_3_code]
 
     if row.empty:
-        row = cpi[cpi["Country Code"] == country_or_region_name_or_alpha_3_code.upper()]
+        row = cpi[cpi["Country Code"] ==
+                  country_or_region_name_or_alpha_3_code.upper()]
     if row.empty:
         await msg.finish(msg.locale.t("inflation.message.country_not_found"))
 
@@ -58,5 +59,4 @@ async def _(
             from_year=from_year,
             to_year=to_year,
             price=f"{price:.4f}",
-        )
-    )
+        ))

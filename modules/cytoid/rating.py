@@ -53,8 +53,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             avatar_img = None
         transport = AIOHTTPTransport(url="https://services.cytoid.io/graphql")
         client = Client(transport=transport, fetch_schema_from_transport=True)
-        query = gql(
-            f"""
+        query = gql(f"""
             query StudioAnalytics($id: ID = "{profile_id}") {{
           profile(id: $id) {{
             id
@@ -87,8 +86,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             miss
           }}
         }}
-        """
-        )
+        """)
 
         result = await client.execute_async(query)
         workdir = random_cache_path()
@@ -109,8 +107,8 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             details = x["details"]
             _date = datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
             local_time = _date + parse_time_string(
-                msg.options.get("timezone_offset", Config("timezone_offset", "+8"))
-            )
+                msg.options.get("timezone_offset",
+                                Config("timezone_offset", "+8")))
             playtime = local_time.timestamp()
             nowtime = time.time()
             playtime = playtime - nowtime
@@ -141,8 +139,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                     rank,
                     details,
                     havecover,
-                )
-            )
+                ))
 
         for x in best_records:
             rank += 1
@@ -180,9 +177,10 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         drawtext = ImageDraw.Draw(b30img)
         get_name_width = get_fontsize(font4, nick)[0]
         get_img_width = b30img.width
-        drawtext.text(
-            (get_img_width - get_name_width - 150, 30), nick, "#ffffff", font=font4
-        )
+        drawtext.text((get_img_width - get_name_width - 150, 30),
+                      nick,
+                      "#ffffff",
+                      font=font4)
 
         font5 = ImageFont.truetype(noto_sans_demilight_path, 20)
         level_text = f'{msg.locale.t("cytoid.message.b30.level")} {profile_level}'
@@ -218,8 +216,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             font=font6,
         )
         b30img.alpha_composite(
-            img_rating, (1825 - img_level.width - img_rating.width - 30, 85)
-        )
+            img_rating, (1825 - img_level.width - img_rating.width - 30, 85))
         textdraw = ImageDraw.Draw(b30img)
         textdraw.text(
             (5, 5),
@@ -255,10 +252,13 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             # shutil.rmtree(workdir)
             return {"status": True, "path": savefilename}
     except Exception as e:
-        if e.args == (404,):
+        if e.args == (404, ):
             await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
         Logger.error(traceback.format_exc())
-        return {"status": False, "text": msg.locale.t("message.error") + str(e)}
+        return {
+            "status": False,
+            "text": msg.locale.t("message.error") + str(e)
+        }
 
 
 async def download_cover_thumb(uid):
@@ -271,9 +271,10 @@ async def download_cover_thumb(uid):
             level_url = f"http://services.cytoid.io/levels/{uid}"
             get_level = json.loads(await get_url(level_url))
             cover_thumbnail = f"{get_level['cover']['original']}?h=240&w=384"
-            path = await download(
-                cover_thumbnail, filename=filename, path=d, logging_err_resp=False
-            )
+            path = await download(cover_thumbnail,
+                                  filename=filename,
+                                  path=d,
+                                  logging_err_resp=False)
         return path
     except Exception:
         Logger.error(traceback.format_exc())
@@ -285,9 +286,10 @@ async def download_avatar_thumb(link, id):
     try:
         d = os.path.join(cache_path, "cytoid-avatar")
         os.makedirs(d, exist_ok=True)
-        path = await download(
-            link, filename=f"{id}.png", path=d, logging_err_resp=False
-        )
+        path = await download(link,
+                              filename=f"{id}.png",
+                              path=d,
+                              logging_err_resp=False)
         return path
     except Exception:
         Logger.error(traceback.format_exc())
@@ -326,25 +328,18 @@ async def make_songcard(
         resize_img_h = int(img_size[1] * resize_multiplier)
         crop_start_x = int((resize_img_w - 384) / 2)
         crop_start_y = int((resize_img_h - 240) / 2)
-        img = (
-            downlight.enhance(0.5)
-            .resize(
-                (resize_img_w, resize_img_h),
-            )
-            .crop((crop_start_x, crop_start_y, 384 + crop_start_x, 240 + crop_start_y))
-        )
+        img = (downlight.enhance(0.5).resize(
+            (resize_img_w, resize_img_h), ).crop(
+                (crop_start_x, crop_start_y, 384 + crop_start_x,
+                 240 + crop_start_y)))
     elif img_h > 240:
         crop_start_y = int((img_h - 240) / 2)
-        img = (
-            downlight.enhance(0.5)
-            .resize((384, img_h))
-            .crop((0, crop_start_y, 384, 240 + crop_start_y))
-        )
+        img = (downlight.enhance(0.5).resize((384, img_h)).crop(
+            (0, crop_start_y, 384, 240 + crop_start_y)))
     else:
         img = downlight.enhance(0.5).resize((384, img_h))
     img_type = Image.open(
-        os.path.join(assets_path, "modules", "cytoid", f"{chart_type}.png")
-    )
+        os.path.join(assets_path, "modules", "cytoid", f"{chart_type}.png"))
     img_type = img_type.convert("RGBA")
     img_type = img_type.resize((40, 40))
     img.alpha_composite(img_type, (20, 20))
@@ -363,15 +358,17 @@ async def make_songcard(
     playtime = f"{playtime} #{rank}"
     playtime_width = get_fontsize(font3, playtime)[0]
     songimg_width = 384
-    drawtext.text(
-        (songimg_width - playtime_width - 15, 205), playtime, "#ffffff", font=font3
-    )
+    drawtext.text((songimg_width - playtime_width - 15, 205),
+                  playtime,
+                  "#ffffff",
+                  font=font3)
     type_ = str(difficulty)
     type_text = Image.new("RGBA", (32, 32))
     draw_typetext = ImageDraw.Draw(type_text)
-    draw_typetext.text(
-        ((32 - get_fontsize(font3, type_)[0]) / 2, 0), type_, "#ffffff", font=font3
-    )
+    draw_typetext.text(((32 - get_fontsize(font3, type_)[0]) / 2, 0),
+                       type_,
+                       "#ffffff",
+                       font=font3)
     img.alpha_composite(type_text, (23, 29))
     Logger.debug("Image generated: " + str(rank))
     return {int(rank): img}
