@@ -74,34 +74,34 @@ class MessageSession(MessageSessionT):
                         # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                         # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                         reply_to_type = self.session.message["content"]["msgtype"]
-                        content["body"] = (f"> {' *' if reply_to_type == 'm.emote' else ''} < {self.session.sender} > {
+                        content["body"] = (f">{' *' if reply_to_type == 'm.emote' else ''} <{self.session.sender}> {
                             self.session.message['content']['body']}\n\n{x.text}")
                         content["format"] = "org.matrix.custom.html"
                         html_text = x.text
                         html_text = html_text.replace("<", "&lt;").replace(">", "&gt;")
                         html_text = html_text.replace("\n", "<br />")
                         content["formatted_body"] = (
-                            f"< mx - reply > <blockquote > <a href=\"https: // matrix.to /  # /{
-                                self.session.target} / {reply_to}?via = {homeserver_host}\"> In reply to < /a > {
-                                ' *' if reply_to_type == 'm.emote' else ''} < a href =\"https: // matrix.to/  # /{
-                                self.session.sender}\"> {
-                                self.session.sender} < /a > <br / >{
-                                self.session.message['content']['body']} < /blockquote > < / mx - reply > {html_text}")
+                            f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{
+                                self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{
+                                ' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{
+                                self.session.sender}\">{
+                                self.session.sender}</a><br/>{
+                                self.session.message['content']['body']}</blockquote></mx-reply>{html_text}")
 
                 if (
                     self.session.message
                     and "m.relates_to" in self.session.message["content"]
                 ):
-                    relates_to= self.session.message["content"]["m.relates_to"]
+                    relates_to = self.session.message["content"]["m.relates_to"]
                     if (
                         "rel_type" in relates_to
                         and relates_to["rel_type"] == "m.thread"
                     ):
                         # replying in thread
-                        thread_root= relates_to["event_id"]
+                        thread_root = relates_to["event_id"]
                         if reply_to:
                             # reply to msg replying in thread
-                            content["m.relates_to"]= {
+                            content["m.relates_to"] = {
                                 "rel_type": "m.thread",
                                 "event_id": thread_root,
                                 "is_falling_back": False,
@@ -109,14 +109,14 @@ class MessageSession(MessageSessionT):
                             }
                         else:
                             # reply in thread
-                            content["m.relates_to"]= {
+                            content["m.relates_to"] = {
                                 "rel_type": "m.thread",
                                 "event_id": thread_root,
                                 "is_falling_back": True,
                                 "m.in_reply_to": {"event_id": self.target.message_id},
                             }
 
-                resp= await bot.room_send(
+                resp = await bot.room_send(
                     self.session.target,
                     "m.room.message",
                     content,
@@ -126,31 +126,31 @@ class MessageSession(MessageSessionT):
                     Logger.error(f"Error while sending message: {str(resp)}")
                 else:
                     sentMessages.append(resp)
-                reply_to= None
-                reply_to_user= None
+                reply_to = None
+                reply_to_user = None
 
             if isinstance(x, PlainElement):
-                content= {"msgtype": "m.notice", "body": x.text}
+                content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 await sendMsg(content)
             elif isinstance(x, ImageElement):
-                split= [x]
+                split = [x]
                 if enable_split_image:
                     Logger.info(f"Split image: {str(x.__dict__)}")
-                    split= await image_split(x)
+                    split = await image_split(x)
                 for xs in split:
-                    path= await xs.get()
+                    path = await xs.get()
                     with open(path, "rb") as image:
-                        filename= os.path.basename(path)
-                        filesize= os.path.getsize(path)
-                        (content_type, content_encoding)= mimetypes.guess_type(path)
+                        filename = os.path.basename(path)
+                        filesize = os.path.getsize(path)
+                        (content_type, content_encoding) = mimetypes.guess_type(path)
                         if not content_type or not content_encoding:
-                            content_type= "image"
-                            content_encoding= "png"
-                        mimetype= f"{content_type}/{content_encoding}"
+                            content_type = "image"
+                            content_encoding = "png"
+                        mimetype = f"{content_type}/{content_encoding}"
 
-                        encrypted= self.session.target in bot.encrypted_rooms
-                        (upload, upload_encryption)= await bot.upload(
+                        encrypted = self.session.target in bot.encrypted_rooms
+                        (upload, upload_encryption) = await bot.upload(
                             image,
                             content_type=mimetype,
                             filename=filename,
@@ -162,7 +162,7 @@ class MessageSession(MessageSessionT):
                                 upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                         # todo: provide more image info
                         if not encrypted:
-                            content= {
+                            content = {
                                 "msgtype": "m.image",
                                 "url": upload.content_uri,
                                 "body": filename,
@@ -209,7 +209,7 @@ class MessageSession(MessageSessionT):
                     upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                 # todo: provide audio duration info
                 if not encrypted:
-                    content= {
+                    content = {
                         "msgtype": "m.audio",
                         "url": upload.content_uri,
                         "body": filename,

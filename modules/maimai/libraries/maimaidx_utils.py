@@ -406,7 +406,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
             music = (await total_list.get()).by_id(str(s['id']))
 
             output = f"{music.id} - {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {
-                music.ds[s['level_index']]} {s['achievements']: .4f}%"
+                music.ds[s['level_index']]} {s['achievements']:.4f}%"
             if s["fc"] and s["fs"]:
                 output += f" {combo_mapping.get(s['fc'], '')} {sync_mapping.get(s['fs'], '')}"
             elif s["fc"] or s["fs"]:
@@ -426,8 +426,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
     return res, get_img
 
 
-async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str,
-                            use_cache: bool = True) -> tuple[str, bool]:
+async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[str, bool]:
     song_played = []
     song_remain_basic = []
     song_remain_advanced = []

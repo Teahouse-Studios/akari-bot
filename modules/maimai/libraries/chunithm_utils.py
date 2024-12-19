@@ -30,7 +30,7 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
 
     html = "<style>pre { font-size: 15px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
     html += f"{msg.locale.t('chunithm.message.b30.text_prompt',
-                            user=data['username'], rating=round(data['rating'], 2))}\n < pre >"
+                            user=data['username'], rating=round(data['rating'], 2))}\n<pre>"
     html += "Best30\n"
     for idx, chart in enumerate(b30_records, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()

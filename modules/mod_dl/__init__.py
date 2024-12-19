@@ -45,16 +45,16 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
     async def search_curseforge(name: str, ver: str):
         if enable_mirror:
             # https://mcim.z0z0r4.top/docs#/Curseforge/curseforge_search_curseforge_search_get
-            url = f'https: // mcim.z0z0r4.top / curseforge / search?gameId = 432 & searchFilter = {
-                name} & sortField = 2 & sortOrder = desc & pageSize = 10 & classId = 6'
+            url = f'https://mcim.z0z0r4.top/curseforge/search?gameId=432&searchFilter={
+                name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
             headers = None
         else:
             headers = {
                 'Accept': 'application/json',
                 'x-api-key': x_api_key
             }
-            url = f'https: // api.curseforge.com / v1 / mods / search?gameId = 432 & searchFilter = {
-                name} & sortField = 2 & sortOrder = desc & pageSize = 10 & classId = 6'
+            url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={
+                name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
 
         if ver:
             url += f'&gameVersion={ver}'
