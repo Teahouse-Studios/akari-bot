@@ -10,7 +10,7 @@ from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check_bool, rickroll
 from core.utils.cooldown import CoolDown
-from .petal import count_petal
+from .petal import count_token_petal
 
 os.environ["LANGCHAIN_TRACING_V2"] = str(Config("enable_langsmith"))
 if Config("enable_langsmith"):
@@ -48,8 +48,7 @@ if Config("enable_langsmith"):
                 res = await agent_executor.arun(question)
                 tokens = cb.total_tokens
             if not is_superuser:
-                petal = await count_petal(msg, tokens)
-                msg.data.modify_petal(-petal)
+                petal = await count_token_petal(msg, tokens)
             else:
                 petal = 0
 

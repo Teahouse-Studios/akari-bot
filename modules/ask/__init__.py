@@ -13,7 +13,7 @@ from core.dirty_check import check, check_bool, rickroll
 from core.logger import Logger
 from core.utils.cooldown import CoolDown
 from .formatting import generate_latex, generate_code_snippet
-from .petal import count_petal
+from .petal import count_token_petal
 
 if Config("openai_api_key", secret=True, cfg_type=str):
     client = AsyncOpenAI(
@@ -104,8 +104,8 @@ async def _(msg: Bot.MessageSession):
         res = messages.data[0].content[0].text.value
         tokens = count_token(res)
 
-        petal = await count_petal(msg, tokens)
-        # petal = await count_petal(msg, tokens, gpt4)
+        petal = await count_token_petal(msg, tokens)
+        # petal = await count_token_petal(msg, tokens, gpt4)
 
         res = await check(res, msg=msg)
         resm = ""
