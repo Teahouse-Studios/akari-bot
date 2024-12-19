@@ -103,7 +103,7 @@ py-cpuinfo==9.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4
 pycparser==2.22 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and platform_python_implementation != "PyPy"
 pycryptodome==3.21.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pycryptodomex==3.21.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
-pydantic-core==2.23.4 ; python_full_version >= "3.12.0" and python_version < "4.0"
+pydantic-core==2.27.2 ; python_full_version >= "3.12.0" and python_version < "4.0"
 pydantic==2.9.2 ; python_full_version >= "3.12.0" and python_version < "4.0"
 pyjwt[crypto]==2.9.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pymysql==1.1.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
