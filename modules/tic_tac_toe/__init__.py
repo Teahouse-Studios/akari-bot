@@ -111,7 +111,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                 if board[x][y] == 0:
                     return x, y
                 continue
-            elif len(text) == 2:
+            if len(text) == 2:
                 try:
                     x = int(text[0]) - 1
                     y = int(text[1]) - 1
@@ -119,8 +119,6 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                     continue
                 if board[x][y] == 0:
                     return x, y
-                continue
-            else:
                 continue
 
     return callback

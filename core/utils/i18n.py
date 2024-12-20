@@ -193,10 +193,10 @@ class Locale:
         :returns: 本地化后的字符串。
         """
         if locale_str := re.findall(r"\{(.*)}", text):
-            for l in locale_str:
+            for lc in locale_str:
                 text = text.replace(
-                    f"{{{l}}}",
-                    self.t(l, fallback_failed_prompt=fallback_failed_prompt, **kwargs),
+                    f"{{{lc}}}",
+                    self.t(lc, fallback_failed_prompt=fallback_failed_prompt, **kwargs),
                 )
         return text
 

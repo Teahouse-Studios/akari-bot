@@ -119,10 +119,10 @@ async def search_by_alias(input_: str) -> list:
 async def get_record(
     msg: Bot.MessageSession, payload: dict, use_cache: bool = True
 ) -> Optional[str]:
-    dir = os.path.join(cache_path, "maimai-record")
-    os.makedirs(dir, exist_ok=True)
+    mai_cache_path = os.path.join(cache_path, "maimai-record")
+    os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json"
+        mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
@@ -169,10 +169,10 @@ async def get_song_record(
     use_cache: bool = True,
 ) -> Optional[str]:
     if DEVELOPER_TOKEN:
-        dir = os.path.join(cache_path, "maimai-record")
-        os.makedirs(dir, exist_ok=True)
+        mai_cache_path = os.path.join(cache_path, "maimai-record")
+        os.makedirs(mai_cache_path, exist_ok=True)
         cache_dir = os.path.join(
-            dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json"
+            mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json"
         )
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
@@ -222,10 +222,10 @@ async def get_song_record(
 async def get_total_record(
     msg: Bot.MessageSession, payload: dict, utage: bool = False, use_cache: bool = True
 ):
-    dir = os.path.join(cache_path, "maimai-record")
-    os.makedirs(dir, exist_ok=True)
+    mai_cache_path = os.path.join(cache_path, "maimai-record")
+    os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json"
+        mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload["version"] = versions
@@ -280,10 +280,10 @@ async def get_plate(
     msg: Bot.MessageSession, payload: dict, version: str, use_cache: bool = True
 ) -> Optional[str]:
     version = "舞" if version == "覇" else version  # “覇者”属于舞代
-    dir = os.path.join(cache_path, "maimai-record")
-    os.makedirs(dir, exist_ok=True)
+    mai_cache_path = os.path.join(cache_path, "maimai-record")
+    os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        dir, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json"
+        mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:

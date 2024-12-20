@@ -27,11 +27,11 @@ from core.bot_init import init_async
 from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
+from core.database import BotDBUtil, session
+from core.database.tables import DBVersion
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.database import BotDBUtil, session
-from core.database.tables import DBVersion
 
 query_dbver = session.query(DBVersion).first()
 if not query_dbver:

@@ -53,7 +53,7 @@ class CoolDown:
             sender_dict = target_dict.get(self.sender_id, {})
             ts = sender_dict.get(self.key, {}).get("_timestamp", 0.0)
 
-        if (d := (datetime.now().timestamp() - ts)) > delay:
+        if (d := datetime.now().timestamp() - ts) > delay:
             return 0
         return d
 

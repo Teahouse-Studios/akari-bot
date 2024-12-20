@@ -105,7 +105,7 @@ async def _(msg: Bot.MessageSession, module: str):
                                                    url=help_page_url.replace('${module}', help_name))
                 elif help_url := Config('help_url', help_url_default, get_url=True):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=(help_url + help_name))
+                                                   url=help_url + help_name)
                 else:
                     wiki_msg = ''
             else:
