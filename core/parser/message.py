@@ -43,7 +43,9 @@ async def check_temp_ban(target):
     is_temp_banned = temp_ban_counter.get(target)
     if is_temp_banned:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
-        return int(TOS_TEMPBAN_TIME - ban_time)
+        ban_time_remain = int(TOS_TEMPBAN_TIME - ban_time)
+    if ban_time_remain > 0:
+        return ban_time_remain
     return False
 
 
