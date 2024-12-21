@@ -1,7 +1,7 @@
 <div align="center">
   <img width="512" src="./assets/character_marked.png" alt="logo">
 
-# 小可好耶机 · AkariHaoyeBot v4
+# 云可 · Claudkari Bot v4
 
 </div>
 
@@ -9,15 +9,15 @@
 
 ## 介绍
 
-**小可好耶机**是基于多个框架开发的可扩展、多平台机器人。图标来源于 [P站](https://www.pixiv.net/artworks/98830047)。
+**云可**是基于多个框架开发的可扩展、多平台机器人。图标来源于 [P站](https://www.pixiv.net/artworks/98830047)。
 
-**小可好耶机**是一个**小可**的下游分支，对原bot进行了一些裁切和扩充
+**云可**是一个**小可**的下游分支，对原bot进行了一些裁切和扩充
 
-目前小可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
+目前云可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
 
 ## 平台
 
-小可目前支持以下平台：
+云可目前支持以下平台：
 
 -   QQ（官方/第三方）
 -   Discord
@@ -35,4 +35,4 @@
 
 ## 许可
 
-小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
+云可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
