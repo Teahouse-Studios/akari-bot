@@ -16,7 +16,7 @@ async def _now(msg: Bot.MessageSession):
     url = 'https://' + quote(url)
     weather_now = [
         Image(await download(
-            webrender("page_screenshot"),
+            webrender("page"),
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
