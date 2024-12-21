@@ -12,8 +12,8 @@ msw = module('msweather', desc='MSN天气查询', developers='haoye_qwq', alias=
 @msw.command('<city> {获取天气}')
 async def _now(msg: Bot.MessageSession):
     city = msg.parsed_msg['<city>']
-    url = f"https://www.msn.cn/zh-cn/weather/forecast/in-%E6%B2%B3%E5%8D%97{city}"
-    url = quote(url)
+    url = f"www.msn.cn/zh-cn/weather/forecast/in-{city}"
+    url = 'https://' + quote(url)
     weather_now = [
         Image(await download(
             webrender("element_screenshot"),
@@ -32,8 +32,8 @@ async def _now(msg: Bot.MessageSession):
 @msw.command('month <city> {获取周天气}')
 async def _month(msg:Bot.MessageSession):
     city = msg.parsed_msg['<city>']
-    url = f"https://www.msn.cn/zh-cn/weather/forecast/in-{city}"
-    url = quote(url)
+    url = f"www.msn.cn/zh-cn/weather/forecast/in-{city}"
+    url = 'https://'+quote(url)
     weather_now = [
         Image(await download(
             webrender("element_screenshot"),
