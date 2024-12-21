@@ -20,7 +20,6 @@ async def _now(msg: Bot.MessageSession):
     url = 'https://' + quote(url)
     load_img = await download(
             webrender("page/"),
-            filename='page.png',
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
