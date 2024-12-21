@@ -18,13 +18,30 @@ async def _now(msg: Bot.MessageSession):
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
-            post_data=json.dumps({"url": url, "element": '#WeatherOverviewCurrentSection'}),
+            post_data=json.dumps({"url": url, "element": ['#WeatherOverviewCurrentSection']}),
             attempt=1,
             timeout=30,
             request_private_ip=True,
         )),
         Plain(url)
     ]
-    send = await msg.send_message(weather_now)
-    await msg.sleep(90)
-    await send.delete()
+    await msg.finish(weather_now)
+
+@msw.command('month <city> {获取周天气}')
+async def _month(msg:Bot.MessageSession):
+    city = msg.parsed_msg['<city>']
+    url = f"https://www.msn.cn/zh-cn/weather/forecast/in-%E6%B2%B3%E5%8D%97{city}"
+    weather_now = [
+        Image(await download(
+            webrender("element_screenshot"),
+            status_code=200,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+            post_data=json.dumps({"url": url, "element": ['.monthCalendarRoot-DS-EntryPoint1-1']}),
+            attempt=1,
+            timeout=30,
+            request_private_ip=True,
+        )),
+        Plain(url)
+    ]
+    await msg.finish(weather_now)
