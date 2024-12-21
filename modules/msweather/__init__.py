@@ -1,7 +1,3 @@
-import orjson as json
-
-from core.utils.web_render import webrender
-from core.utils.http import download
 from core.builtins import Bot, Image, Plain
 from core.component import module
 from urllib.parse import quote
@@ -17,7 +13,7 @@ async def _now(msg: Bot.MessageSession):
     url = f"www.msn.cn/zh-cn/weather/forecast/in-{city}"
     url = 'https://' + quote(url)
     img = await generate_screenshot_v2(url, element=[
-        'div#WeatherOverviewCurrentSection.weatherOverview_root-DS-EntryPoint1-1'], content_mode=False)
+        '.weatherOverview_root-DS-EntryPoint1-1'], content_mode=False)
     msg_ = []
     if img:
         for i in img:
@@ -32,7 +28,7 @@ async def _month(msg: Bot.MessageSession):
     url = f"www.msn.cn/zh-cn/weather/forecast/in-{city}"
     url = 'https://' + quote(url)
     img = await generate_screenshot_v2(url, element=[
-        'div.monthCalendarRoot-DS-EntryPoint1-1.visualReady'], content_mode=False)
+        '.monthCalendarRoot-DS-EntryPoint1-1'], content_mode=False)
     msg_ = []
     if img:
         for i in img:
