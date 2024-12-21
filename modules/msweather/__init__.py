@@ -1,4 +1,8 @@
+from io import BytesIO
+from PIL import Image as PILImage
+
 import orjson as json
+import base64
 
 from core.utils.web_render import webrender
 from core.utils.http import download
@@ -14,9 +18,9 @@ async def _now(msg: Bot.MessageSession):
     city = msg.parsed_msg['<city>']
     url = f"www.msn.cn/zh-cn/weather/forecast/in-{city}"
     url = 'https://' + quote(url)
-    weather_now = [
-        Image(await download(
+    load_img = await download(
             webrender("page/"),
+            filename='page.png',
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -24,9 +28,14 @@ async def _now(msg: Bot.MessageSession):
             attempt=1,
             timeout=30,
             request_private_ip=True,
-        )),
-        Plain(url)
-    ]
+        )
+    weather_now = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        weather_now.append(Image(bimg))
+    weather_now.append(Plain(url))
     await msg.finish(weather_now)
 
 # @msw.command('month <city> {获取周天气}')
