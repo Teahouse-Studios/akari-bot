@@ -18,7 +18,7 @@ async def _now(msg: Bot.MessageSession):
     city = msg.parsed_msg['<city>']
     url = f"www.msn.cn/zh-cn/weather/forecast/in-{city}"
     url = 'https://' + quote(url)
-    load_img = json.loads(await download(
+    img = await download(
             webrender("page/"),
             status_code=200,
             headers={"Content-Type": "application/json"},
@@ -27,7 +27,9 @@ async def _now(msg: Bot.MessageSession):
             attempt=1,
             timeout=30,
             request_private_ip=True,
-        ))
+        )
+    with open(img) as read:
+        load_img = json.loads(read.read())
     weather_now = []
     for x in load_img:
         b = base64.b64decode(x)
