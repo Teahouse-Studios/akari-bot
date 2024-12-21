@@ -1,0 +1,39 @@
+name: "Nightly Build and Release (3:00, UTC+8)"
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Delete and recreate nightly tag
+        run: |
+          if git rev-parse refs/tags/nightly >/dev/null 2>&1; then
+            git tag -d nightly
+            git push origin --delete nightly
+          fi
+          git tag nightly
+          git push origin nightly
+
+      - name: Update release version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_exists=$(gh release list --json tagName --jq '.[] | select(.tagName=="nightly") | .tagName')
+          if [ -n "$release_exists" ]; then
+            gh release delete nightly -y
+          fi
+          gh release create nightly \
+            --title "Nightly Release" \
+            --notes "> 这是 Nightly 版本，由于无法及时同步代码和验证版本的稳定性，本项目已不再提供正式版本。请点击 Assets -> Source code 下载当前最新源代码。"
