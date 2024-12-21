@@ -5,7 +5,7 @@
 
 </div>
 
-![GitHub issues](https://img.shields.io/github/issues/cloudw233/akari-haoye-bot) ![GitHub pull requests](https://img.shields.io/github/issues-pr/cloudw233/akari-haoye-bot) ![License](https://img.shields.io/github/license/cloudw233/akari-haoye-bot) ![GitHub Repo stars](https://img.shields.io/github/stars/cloudw233/akari-haoye-bot?style=social) ![GitHub tag](https://img.shields.io/github/v/tag/cloudw233/akari-haoye-bot?include_prereleases)
+![GitHub issues](https://img.shields.io/github/issues/cloudw233/claudkari-bot) ![GitHub pull requests](https://img.shields.io/github/issues-pr/cloudw233/claudkari-bot) ![License](https://img.shields.io/github/license/cloudw233/claudkari-bot) ![GitHub Repo stars](https://img.shields.io/github/stars/cloudw233/claudkari-bot?style=social) ![GitHub tag](https://img.shields.io/github/v/tag/cloudw233/claudkari-bot?include_prereleases)
 
 ## 介绍
 
