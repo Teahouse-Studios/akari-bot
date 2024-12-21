@@ -16,11 +16,11 @@ async def _now(msg: Bot.MessageSession):
     url = 'https://' + quote(url)
     weather_now = [
         Image(await download(
-            webrender("element_screenshot"),
+            webrender("section_screenshot"),
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
-            post_data=json.dumps({"url": url, "element": ['#WeatherOverviewCurrentSection']}),
+            post_data=json.dumps({"url": url, "section": ['#WeatherOverviewCurrentSection']}),
             attempt=1,
             timeout=30,
             request_private_ip=True,
@@ -36,11 +36,11 @@ async def _month(msg:Bot.MessageSession):
     url = 'https://'+quote(url)
     weather_now = [
         Image(await download(
-            webrender("element_screenshot"),
+            webrender("section_screenshot"),
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
-            post_data=json.dumps({"url": url, "element": ['.monthCalendarRoot-DS-EntryPoint1-1']}),
+            post_data=json.dumps({"url": url, "section": ['#WeatherOverviewCurrentSection']}),
             attempt=1,
             timeout=30,
             request_private_ip=True,
