@@ -64,7 +64,7 @@ emoji = "^2.12.1"
 langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
 ff3 = "^1.0.2"
 orjson = "^3.10.9"
-jinja2 = "^3.1.4"
+jinja2 = "^3.1.5"
 mcstatus = "^11.1.1"
 qq-botpy = "^1.2.1"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
