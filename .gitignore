@@ -8,7 +8,10 @@ config/*.toml*
 test*
 *.db
 cache/*
+assets/arcaea*
+assets/maimai*
 assets/modules/arcaea
+assets/arc.apk
 assets/modules/maimai*
 !assets/modules/maimai/mai_utage_info.json
 !assets/modules/maimai/mai_grade_info.json
