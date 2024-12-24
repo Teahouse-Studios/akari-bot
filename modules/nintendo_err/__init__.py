@@ -75,35 +75,22 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
     @staticmethod
     def check_meme(err: str) -> str:
         memes = {
-            "0xdeadbeef": "都坏掉了，不能吃了。",
-            "0xdeadbabe": "我觉得你有问题。",
-            "0x8badf00d": "记得垃圾分类。",
+            "0xdeadbeef": "nintendo_err.message.meme.0xdeadbeef",
+            "0xdeadbabe": "nintendo_err.message.meme.0xdeadbabe",
+            "0x8badf00d": "nintendo_err.message.meme.0xbadf00d",
         }
         return memes.get(err.casefold())
 
 
-e = module("err", developers=["OasisAkari", "kurisu"], doc=True)
+e = module("nintendo_err", alias=["err"], developers=["OasisAkari", "kurisu"], doc=True)
 
 
-@e.command("<errcode> {解析任天堂系列主机的报错码并给出原因。}")
-async def _(msg: Bot.MessageSession):
-    """
-    Displays information on game console result codes, with a fancy embed.
-    0x prefix is not required for hex input.
-
-    Examples:
-      .err 0xD960D02B
-      .err D960D02B
-      .err 022-2634
-      .err 102-2804
-      .err 2168-0002
-      .err 2-ARVHA-0000
-    """
+@e.command("<err_code> {{nintendo_err.help}}")
+async def _(msg: Bot.MessageSession, err_code: str):
     results = Results()
-    err = msg.parsed_msg["<errcode>"]
-    err = results.fixup_input(err)
+    err = results.fixup_input(err_code)
     if meme := results.check_meme(err):
-        await msg.finish(meme)
+        await msg.finish(msg.locale.t(meme))
     try:
         ret = results.fetch(err)
     except ValueError:
@@ -117,4 +104,4 @@ async def _(msg: Bot.MessageSession):
             embed.add_field(name=field.field_name, value=field.message, inline=False)
         await msg.finish(convert_discord_embed(embed))
     else:
-        await msg.finish("你输入的代码是无效的，或者此功能不支持你使用的主机。")
+        await msg.finish(msg.locale.t("nintendo_err.message.invalid"))
