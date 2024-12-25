@@ -7,7 +7,7 @@ DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=Tru
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 
-mai_assets_path = os.path.join(assets_path, "maimai")
+mai_assets_path = os.path.join(assets_path, "modules", "maimai")
 mai_cover_path = os.path.join(mai_assets_path, "static", "mai", "cover")
 mai_alias_path = os.path.join(mai_assets_path, "mai_song_alias.json")
 mai_grade_info_path = os.path.join(mai_assets_path, "mai_grade_info.json")

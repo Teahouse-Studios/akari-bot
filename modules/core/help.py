@@ -30,7 +30,7 @@ hlp = module('help', base=True, doc=True)
 
 @hlp.command('<module> [--legacy] {{core.help.help.detail}}',
              options_desc={'--legacy': '{help.option.legacy}'})
-async def bot_help(msg: Bot.MessageSession, module: str):
+async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
@@ -105,7 +105,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                                                    url=help_page_url.replace('${module}', help_name))
                 elif help_url := Config('help_url', help_url_default, get_url=True):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=(help_url + help_name))
+                                                   url=help_url + help_name)
                 else:
                     wiki_msg = ''
             else:

@@ -88,16 +88,13 @@ async def start_check_news():
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=300))
 async def feedback_news():
-    sections = [
-        {
-            "name": "beta",
-            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
-        },
-        {
-            "name": "article",
-            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
-        },
-    ]
+    sections = [{"name": "beta",
+                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
+                 },
+                {"name": "article",
+                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
+                 },
+                ]
     for section in sections:
         try:
             alist = get_stored_list("scheduler", "mcfeedbacknews")

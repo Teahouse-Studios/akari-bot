@@ -13,7 +13,7 @@ async def query_java_server(
 ) -> str:
     match_object = re.match(r"(.*)[\s:](\d*)", address, re.M | re.I)
     serip = match_object.group(1) if match_object else address
-    port = int(match_object.group(2)) if match_object else 25565
+    port = match_object.group(2)if match_object else 25565
     servers = []
 
     try:
@@ -65,7 +65,7 @@ async def query_java_server(
 async def query_bedrock_server(msg, address, raw=False):
     match_object = re.match(r"(.*)[\s:](\d*)", address, re.M | re.I)
     serip = match_object.group(1) if match_object else address
-    port = int(match_object.group(2)) if match_object else 19132
+    port = match_object.group(2) if match_object else 19132
     servers = []
 
     try:

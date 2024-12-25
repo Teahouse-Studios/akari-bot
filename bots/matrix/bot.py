@@ -185,8 +185,7 @@ async def start():
                 and "already exists." in resp.message
             ):
                 Logger.warning(
-                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}"
-                )
+                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}")
                 keys = 0
                 while True:
                     resp = await bot.keys_claim({client.user: [client.device_id]})

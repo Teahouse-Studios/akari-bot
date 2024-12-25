@@ -98,7 +98,7 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = os.path.join(assets_path, "mkey", "data")
+        self._data_path = os.path.join(assets_path, "modules", "mkey", "data")
 
     # Read AES key (v2).
     def _read_aes_key(self, file_name):

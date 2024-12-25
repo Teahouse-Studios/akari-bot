@@ -15,7 +15,7 @@ weekly_rss = module(
 
 
 @weekly_rss.hook()
-async def weekly_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     weekly_cn = MessageChain(ctx.args["weekly_cn"])
     weekly_tw = MessageChain(ctx.args["weekly_tw"])
     if Bot.FetchTarget.name == "QQ":
@@ -43,7 +43,7 @@ teahouse_weekly_rss = module(
 
 
 @teahouse_weekly_rss.hook()
-async def weekly_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     Logger.info("Checking teahouse weekly...")
 
     weekly = ctx.args["weekly"]

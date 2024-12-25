@@ -5,5 +5,6 @@
     "exchange_rate.message": "${amount} ${base} = ${exchange_rate} ${target}\n(${time}, for reference only)",
     "exchange_rate.message.invalid.unit": "Invalid currency unit: ",
     "exchange_rate.message.invalid.non_digital": "Invalid amount, must be numeric.",
-    "exchange_rate.message.invalid.non_positive": "The amount must be positive."
+    "exchange_rate.message.invalid.non_positive": "The amount must be positive.",
+    "config.comments.exchange_rate_api_key": "API Key for ExchangeRate-API. (For exchange_rate module and exchange rate calculation)"
 }

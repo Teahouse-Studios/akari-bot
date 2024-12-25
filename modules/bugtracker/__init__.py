@@ -23,7 +23,7 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
 
 
 @bug.command("<mojiraid> {{bugtracker.help}}")
-async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
+async def _(msg: Bot.MessageSession, mojiraid: str):
     if mojiraid:
         q = re.match(r"(.*-\d*)", mojiraid)
         if q:
@@ -38,7 +38,7 @@ async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
     flags=re.I,
     desc="{bugtracker.help.regex.desc}",
 )
-async def regex_bugtracker(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     titles = list(set(msg.matched_msg))[:5]
     for title in titles:
         if title != "":

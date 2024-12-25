@@ -42,7 +42,6 @@ def generate_config(dir_path, language):
                     'config.comments.config_version',
                     fallback_failed_prompt=False)}\n')
         f.write('initialized = false\n')
-        f.close()
 
     from core.config import Config, CFGManager  # noqa
 
@@ -88,7 +87,7 @@ def generate_config(dir_path, language):
                 spl.remove(s)
         try:
             # Execute the code to generate the config file, yeah, just stupid but works
-            eval(f'Config({','.join(spl)})')
+            exec(f'Config({','.join(spl)})')
         except (NameError, TypeError):
             # traceback.print_exc()
             ...
@@ -105,7 +104,7 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
 Please input the number of the language you want to use: """)
         if lang.strip() == '':
             sys.exit(0)
-        if isint(lang) and (langI := (int(lang) - 1)) in range(len(lang_list)):
+        if isint(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
             lang = list(lang_list.keys())[langI]
             break
         print('Invalid input, please try again.')

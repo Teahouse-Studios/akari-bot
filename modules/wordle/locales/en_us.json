@@ -11,5 +11,6 @@
     "wordle.message.start": "The game has started. You will guess a 5-letter word by testing up to 6 words.\nGreen indicates the letter is in the word and is in its place; yellow indicates the letter is in the word, but it is not at its current location; gray indicates the letter is not in the word.",
     "wordle.message.stop": "Stopped. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.theme.disable": "Dark theme disabled.",
-    "wordle.message.theme.enable": "Dark theme enabled."
+    "wordle.message.theme.enable": "Dark theme enabled.",
+    "config.comments.wordle_disable_image": "Whether to disable images of wordle module."
 }

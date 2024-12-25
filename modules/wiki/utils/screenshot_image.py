@@ -129,8 +129,6 @@ async def generate_screenshot_v1(
             os.remove(url)
         Logger.info("Downloaded raw.")
 
-        timeless_fix = False
-
         def join_url(base, target):
             target = target.split(" ")
             targetlist = []

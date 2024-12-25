@@ -16,7 +16,7 @@ ali = module("alias", required_admin=True, base=True, doc=True)
     "list [--legacy] {{core.help.alias.list}}",
     options_desc={"--legacy": "{help.option.legacy}"},
 )
-async def set_alias(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     aliases = msg.options.get("command_alias")
     alias = msg.parsed_msg.get("<alias>", False)
     command = msg.parsed_msg.get("<command>", False)

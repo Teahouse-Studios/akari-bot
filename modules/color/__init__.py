@@ -20,7 +20,7 @@ c = module(
     doc=True,
 )
 
-md_color_path = os.path.join(assets_path, "color", "material_colors.json")
+md_color_path = os.path.join(assets_path, "modules", "color", "material_colors.json")
 
 font = ImageFont.truetype(noto_sans_demilight_path, 40)
 with open(md_color_path, "r", encoding="utf-8") as f:

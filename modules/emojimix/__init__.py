@@ -10,7 +10,7 @@ from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.random import Random
 
-data_path = os.path.join(assets_path, 'emojimix', 'emoji_data.json')
+data_path = os.path.join(assets_path, "modules", 'emojimix', 'emoji_data.json')
 API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 
 
@@ -114,7 +114,7 @@ mixer = EmojimixGenerator()
 emojimix = module('emojimix', developers=['DoroWolf'], doc=True)
 
 
-@emojimix.handle()
+@emojimix.command()
 async def _(msg: Bot.MessageSession):
     combo = mixer.random_choice_emoji()
     Logger.debug(str(combo))
@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish([Plain(f"{mixer.str2emoji(combo[0])} + {mixer.str2emoji(combo[1])}"), Image(result)])
 
 
-@emojimix.handle('<emoji1> [<emoji2>] {{emojimix.help}}')
+@emojimix.command('<emoji1> [<emoji2>] {{emojimix.help}}')
 async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
     if '+' in emoji1:
         emojis = emoji1.split('+', 1)
@@ -158,7 +158,7 @@ def check_valid_emoji(emoji_str):
     return emoji.is_emoji(emoji_str)
 
 
-@emojimix.handle('list [<emoji>] {{emojimix.help.list}}')
+@emojimix.command('list [<emoji>] {{emojimix.help.list}}')
 async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:

@@ -8,14 +8,14 @@ from core.constants.path import assets_path
 from core.utils.cache import random_cache_path
 from core.utils.image import get_fontsize
 
-arc_assets_path = os.path.join(assets_path, "arcaea")
+arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 
 
 p = module("ptt", developers=["OasisAkari"], doc=True)
 
 
 @p.command("<ptt> {{ptt.help}}")
-async def pttimg(msg: Bot.MessageSession, ptt: str):
+async def _(msg: Bot.MessageSession, ptt: str):
     if ptt == "--":
         ptt = -1
     else:

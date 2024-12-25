@@ -10,7 +10,7 @@ from core.logger import Logger
 from core.utils.http import get_url, post_url
 
 
-async def mcv(msg: Bot.MessageSession):
+async def mcjv(msg: Bot.MessageSession):
     try:
         data = json.loads(
             await get_url(

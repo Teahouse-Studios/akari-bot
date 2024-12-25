@@ -111,7 +111,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                 if board[x][y] == 0:
                     return x, y
                 continue
-            elif len(text) == 2:
+            if len(text) == 2:
                 try:
                     x = int(text[0]) - 1
                     y = int(text[1]) - 1
@@ -119,8 +119,6 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
                     continue
                 if board[x][y] == 0:
                     return x, y
-                continue
-            else:
                 continue
 
     return callback
@@ -254,7 +252,7 @@ async def random_bot_callback(board: GameBoard):
 
 
 @tic_tac_toe.command("stop {{game.help.stop}}")
-async def terminate(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     play_state = PlayState("tic_tac_toe", msg)
     if play_state.check():
         play_state.disable()
@@ -267,7 +265,7 @@ async def terminate(msg: Bot.MessageSession):
 @tic_tac_toe.command("noob {{tic_tac_toe.help.noob}}")
 @tic_tac_toe.command("expert {{tic_tac_toe.help.expert}}")
 @tic_tac_toe.command("master {{tic_tac_toe.help.master}}")
-async def ttt_with_bot(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.parsed_msg:
         if "expert" in msg.parsed_msg:
             game_type = "expert"
@@ -314,7 +312,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
 
 
 @tic_tac_toe.command("duo {{tic_tac_toe.help.duo}}")
-async def ttt_multiplayer(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     play_state = PlayState("tic_tac_toe", msg)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))

@@ -186,5 +186,6 @@
     "wiki.message.wiki_bot.login.success": "登入成功。",
     "wiki.message.wiki_bot.toggle.disable": "已禁用機器人帳戶。",
     "wiki.message.wiki_bot.toggle.enable": "已啟用機器人帳戶。",
-    "wiki.message.wiki_inline.flies": "此頁面含有以下檔案：\n${file}"
+    "wiki.message.wiki_inline.flies": "此頁面含有以下檔案：\n${file}",
+    "config.comments.wiki_whitelist_url": "Wiki 白名單申請網址。"
 }

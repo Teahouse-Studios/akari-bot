@@ -5,7 +5,7 @@
     "phigros.help.unbind": "Unbind user.",
     "phigros.message.bind.success": "Bound successfully: ${username}",
     "phigros.message.bind.delete_failed": "尝试自动删除消息失败，请手动删除消息。",
-    "phigros.message.bind.warning": "警告：你正在公开对话中绑定用户，这有可能会使你的云存档数据被他人篡改。请尽可能私聊绑定用户以避免这种情况。\n你可以通过重新登录来重置 SessionToken。",
+    "phigros.message.bind.warning": "警告：你正在公开会话中绑定用户，这有可能会使你的云存档数据被他人篡改。请尽可能私聊绑定用户以避免这种情况。\n你可以通过重新登录来重置 SessionToken。",
     "phigros.message.unbind.success": "Unbound successfully.",
     "phigros.message.bind.failed": "绑定失败，请检查输入。",
     "phigros.message.user_unbound": "未绑定用户，请使用“${prefix}phigros bind”绑定一个用户。",

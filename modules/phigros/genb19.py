@@ -7,7 +7,7 @@ from core.constants.path import assets_path, noto_sans_demilight_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
-pgr_assets_path = os.path.join(assets_path, "phigros")
+pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
 
 levels = {"EZ": 0, "HD": 1, "IN": 2, "AT": 3}
 

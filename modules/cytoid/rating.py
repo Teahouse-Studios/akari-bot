@@ -342,7 +342,7 @@ async def make_songcard(
         )
     else:
         img = downlight.enhance(0.5).resize((384, img_h))
-    img_type = Image.open(os.path.join(assets_path, "cytoid", f"{chart_type}.png"))
+    img_type = Image.open(os.path.join(assets_path, "modules", "cytoid", f"{chart_type}.png"))
     img_type = img_type.convert("RGBA")
     img_type = img_type.resize((40, 40))
     img.alpha_composite(img_type, (20, 20))

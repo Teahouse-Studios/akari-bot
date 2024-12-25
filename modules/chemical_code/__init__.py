@@ -24,7 +24,7 @@ CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修�
 csr_link = "https://legacy.chemspider.com"
 
 special_id_path = os.path.join(
-    assets_path, "chemical_code", "special_id"
+    assets_path, "modules", "chemical_code", "special_id"
 )  # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [
     os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)
@@ -220,7 +220,7 @@ ccode = module(
 
 
 @ccode.command("{{chemical_code.help}}")
-async def chemical_code_by_random(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     await chemical_code(msg)
 
 
@@ -230,7 +230,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @ccode.command("stop {{game.help.stop}}")
-async def s(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
         play_state.disable()
@@ -243,7 +243,7 @@ async def s(msg: Bot.MessageSession):
 
 
 @ccode.command("<csid> {{chemical_code.help.csid}}")
-async def chemical_code_by_id(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     id = msg.parsed_msg["<csid>"]
     if isint(id):
         if int(id) == 0:  # 若 id 为 0，则随机

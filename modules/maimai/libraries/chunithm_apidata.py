@@ -22,9 +22,9 @@ async def get_info(music: Music, *details) -> MessageChain:
 
 
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
-    dir = os.path.join(cache_path, 'maimai-record')
-    os.makedirs(dir, exist_ok=True)
-    cache_dir = os.path.join(dir, f'{msg.target.sender_id.replace('|', '_')}_chunithm_record.json')
+    maimai_cache_dir = os.path.join(cache_path, 'maimai-record')
+    os.makedirs(maimai_cache_dir, exist_ok=True)
+    cache_dir = os.path.join(maimai_cache_dir, f'{msg.target.sender_id.replace('|', '_')}_chunithm_record.json')
     url = "https://www.diving-fish.com/api/chunithmprober/query/player"
     if 'username' in payload:
         use_cache = False
