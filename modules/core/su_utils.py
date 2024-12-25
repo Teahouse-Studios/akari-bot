@@ -22,6 +22,7 @@ from core.utils.i18n import Locale
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint
+from core.database import BotDBUtil
 
 target_list = get_all_target_prefix()
 sender_list = get_all_sender_prefix()
@@ -614,3 +615,48 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(dec)
     else:
         await msg.finish(msg.locale.t("message.failed"))
+    @petal.command('clear [<sender>]', required_superuser=True)
+    async def _(msg: Bot.MessageSession, sender: str = None):
+        if sender:
+            if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
+                await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
+            sender_info = BotDBUtil.SenderInfo(sender)
+            sender_info.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear', sender=sender))
+        else:
+            msg.info.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear.self'))
+
+ckframe = module("check_frame", alias=['ckf','chkf'], base=True, required_base_superuser=True)
+
+@ckframe.command('{检测并更换机器人框架}')
+async def ckframe_(msg: Bot.MessageSession):
+    unsupported_ = []
+    all_frames_ = ['ntqq', 'shamrock', 'lagrange', 'mirai']
+    for frame in all_frames_:
+        try:
+            if frame == 'lagrange':
+                await msg.call_action('group_poke', group_id=msg.session.target,
+                                      user_id=msg.session.sender)
+            elif frame == 'shamrock':
+                await msg.send_group_msg(group_id=msg.session.target,
+                                         message=f'[CQ:touch,id={msg.session.sender}]')
+            elif frame == 'mirai':
+                await msg.send_group_msg(group_id=msg.session.target,
+                                         message=f'[CQ:poke,qq={msg.session.sender}]')
+            if frame == 'ntqq':
+                await msg.call_action('set_msg_emoji_like', message_id=msg.session.message.message_id,
+                                      emoji_id=str(Config('qq_typing_emoji', '181', (str, int))))
+        except Exception:
+            unsupported_.append(frame)
+    support_frame = list(set(all_frames_) - set(unsupported_))
+    CFGManager.write('qq_frame_type',support_frame[0])
+    await msg.sendMessage(f"已自动设置框架为：{support_frame[0]}")
+    # confirm = await msg.wait_confirm('要重启吗?(yes?)', append_instruction=False)
+    # if confirm:
+    #     restart_time.append(datetime.now().timestamp())
+    #     await wait_for_restart(msg)
+    #     write_version_cache(msg)
+    #     restart()
+    # else:
+    #     await msg.finish()
