@@ -11,6 +11,7 @@ if db_type == "sqlite":
     db_path = os.path.dirname(db_link.replace("sqlite:///", ""))
 os.makedirs(db_path, exist_ok=True)
 
+
 def get_db_link(orm_type="sqlalchemy"):
     if orm_type == "sqlalchemy":
         return db_link
