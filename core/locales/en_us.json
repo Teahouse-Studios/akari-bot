@@ -35,7 +35,6 @@
     "config.comments.help_url": "Help document URL.",
     "config.comments.ignored_sender": "Ignore user list. Users matching this list will be ignored.",
     "config.comments.issue_url": "Issue feedback URL.",
-    "config.comments.jwt_secret": "The authentication key for the built-in API, it can be filled in at will.",
     "config.comments.kook_token": "KOOK bot token.",
     "config.comments.locale_url": "Localized project URL.",
     "config.comments.lost_petal_limit": "The maximum number of petals users can lose per day.",

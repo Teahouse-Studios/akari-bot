@@ -1,10 +1,15 @@
+from datetime import datetime
 import os
+import platform
 import sys
 import time
 
-import jwt
+import hashlib
+import psutil
 import uvicorn
-from fastapi import FastAPI, Request
+from cpuinfo import get_cpu_info
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from bots.api.info import client_name
@@ -15,7 +20,9 @@ from core.utils.info import Info
 sys.path.append(os.getcwd())
 
 from core.bot_init import init_async  # noqa: E402
+from core.builtins import PrivateAssets  # noqa: E402
 from core.config import Config  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
 from core.database import BotDBUtil  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
@@ -24,8 +31,23 @@ from core.utils.i18n import Locale  # noqa: E402
 from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 
 
+PrivateAssets.set(os.path.join(assets_path, "private", "api"))
 app = FastAPI()
-jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_api")
+started_time = datetime.now()
+
+origins = [
+    "http://localhost:8080",  # Vue 前端的地址
+    "http://127.0.0.1:8080",  # 如果是从本地开发环境发出的请求
+]
+
+# 将 CORSMiddleware 中间件添加到 FastAPI 应用
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # 允许的源
+    allow_credentials=True,
+    allow_methods=["*"],    # 允许所有 HTTP 方法（GET、POST 等）
+    allow_headers=["*"],    # 允许所有 HTTP 头
+)
 
 
 @app.on_event("startup")
@@ -37,12 +59,44 @@ async def startup_event():
     await JobQueue.web_render_status()
 
 
-@app.get("/auth/{token}")
-async def auth(token: str):
-    try:
-        return jwt.decode(token, jwt_secret, algorithms=["HS256"])
-    except jwt.InvalidSignatureError:
-        return JSONResponse(status_code=403, content={"token": token, "invalid": True})
+@app.post("/auth")
+async def auth(request: Request):
+    password_path = os.path.join(PrivateAssets.path, ".password")
+    if not os.path.exists(password_path):
+        return {"message": "success"}
+
+    with open(password_path, "r") as file:
+        stored_password = file.read().strip()
+
+    body = await request.json()
+    password = body["password"]
+    password = hashlib.sha256(password.encode()).hexdigest()
+    if stored_password != password:
+        raise HTTPException(status_code=401, detail="Invalid password")
+    return {"message": "success"}
+
+
+@app.get("/serverinfo")
+async def get_server_info():
+    timediff = str(datetime.now() - started_time).split(".")[0]
+    python_version = str(platform.python_version())
+    cpu_brand = get_cpu_info()["brand_raw"]
+    cpu_usage = psutil.cpu_percent()
+    ram = int(psutil.virtual_memory().total / (1024 * 1024))
+    swap = int(psutil.swap_memory().total / (1024 * 1024))
+    disk = int(psutil.disk_usage("/").used / (1024 * 1024 * 1024))
+    disk_total = int(psutil.disk_usage("/").total / (1024 * 1024 * 1024))
+    return {
+        "message": "Success",
+        "timeDiff": timediff,
+        "pythonVersion": python_version,
+        "cpuBrand": cpu_brand,
+        "cpuUsage": cpu_usage,
+        "ram": ram,
+        "swap": swap,
+        "disk": disk,
+        "diskTotal": disk_total,
+    }
 
 
 @app.get("/target/{target_id}")
