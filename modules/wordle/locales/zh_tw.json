@@ -12,5 +12,5 @@
     "wordle.message.stop": "已停止，答案为：${answer}。\n查詢辭典：https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.theme.disable": "已禁用深色主題。",
     "wordle.message.theme.enable": "已啟用深色主題。",
-    "config.comments.wordle_disable_image": "wordle 模块是否禁用图片。"
+    "config.comments.wordle_disable_image": "wordle 模組是否停用圖片。"
 }
