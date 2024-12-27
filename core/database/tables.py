@@ -2,10 +2,11 @@ from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
 from core.config import Config
-from core.database.orm import Session, DB_LINK
+from core.database.orm import Session
+from core.database.link import db_type
 from core.database.orm_base import Base
 
-is_mysql = DB_LINK.startswith("mysql")
+is_mysql = db_type == "mysql"
 default_locale = Config("default_locale", cfg_type=str)
 
 
