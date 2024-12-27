@@ -213,9 +213,7 @@ class MessageSession:
         self.info = None
         self.petal = self.sender_info.petal
 
-
         self.tmp = {}
-
 
     async def data_init(self):
         get_data: TargetInfo = (await TargetInfo.get_or_create(target_id=self.target.target_id))[0]
@@ -230,7 +228,6 @@ class MessageSession:
             "timezone_offset", Config("timezone_offset", "+8")
         )
         self.timezone_offset = parse_time_string(self._tz_offset)
-
 
     async def send_message(
         self,
