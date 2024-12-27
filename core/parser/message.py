@@ -181,6 +181,7 @@ async def parser(msg: Bot.MessageSession,
     identify_str = f'[{msg.target.sender_id}{
         f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
+    await msg.data_init()
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
         modules = ModulesManager.return_modules_list(msg.target.target_from)
@@ -188,8 +189,8 @@ async def parser(msg: Bot.MessageSession,
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        if (msg.info.is_in_block_list and not msg.info.is_in_allow_list and not msg.info.is_super_user) or \
-           (msg.target.sender_id in msg.options.get('ban', []) and not msg.info.is_super_user):
+        if (msg.sender_info.is_in_block_list and not msg.sender_info.is_in_allow_list and not msg.sender_info.is_super_user) or \
+           (msg.target.sender_id in msg.options.get('ban', []) and not msg.sender_info.is_super_user):
             return
 
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
@@ -408,7 +409,7 @@ async def parser(msg: Bot.MessageSession,
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-                                    if not msg.info.disable_typing:
+                                    if not msg.target_info.target_data.get('disable_typing', False):
                                         async with msg.Typing(msg):
                                             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:

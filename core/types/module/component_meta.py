@@ -9,7 +9,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from core.parser.args import Template
 
 from attrs import define, field
-from .utils import convert2lst
+from core.utils.list import convert2lst
 
 
 class ModuleMeta:

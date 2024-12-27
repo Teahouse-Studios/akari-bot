@@ -12,6 +12,7 @@ from .message.internal import *
 from .temp import *
 from .utils import *
 from ..constants import base_superuser_default
+from ..database_v2.models import TargetInfo
 from ..logger import Logger
 
 
@@ -53,10 +54,10 @@ class Bot:
 
     @staticmethod
     async def get_enabled_this_module(module: str) -> List[FetchedSession]:
-        lst = exports.get("BotDBUtil").TargetInfo.get_target_list(module)
+        lst = await TargetInfo.get_target_list_by_module(module)
         fetched = []
         for x in lst:
-            x = Bot.FetchTarget.fetch_target(x)
+            x = Bot.FetchTarget.fetch_target(x.target_id)
             if isinstance(x, FetchedSession):
                 fetched.append(x)
         return fetched

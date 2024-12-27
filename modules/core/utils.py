@@ -13,6 +13,7 @@ from core.database import BotDBUtil
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 
+
 ver = module("version", base=True, doc=True)
 
 
@@ -202,9 +203,7 @@ async def _(msg: Bot.MessageSession):
 
 @locale.command("[<lang>] {{core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
-    if lang in get_available_locales() and BotDBUtil.TargetInfo(
-        msg.target.target_id
-    ).edit("locale", lang):
+    if lang in get_available_locales() and await msg.target_info.edit_attr("locale", lang):
         await msg.finish(Locale(lang).t("message.success"))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())

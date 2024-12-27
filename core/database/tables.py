@@ -44,16 +44,6 @@ class StoredData(Base):
     __table_args__ = {"mysql_charset": "utf8mb4"}
 
 
-class CommandTriggerTime(Base):
-    """命令触发时间"""
-
-    __tablename__ = "CommandTriggerTime"
-    targetId = Column(String(512), primary_key=True)
-    commandName = Column(String(512))
-    timestamp = Column(TIMESTAMP, default=text("CURRENT_TIMESTAMP"))
-    __table_args__ = {"mysql_charset": "utf8mb4"}
-
-
 class GroupBlockList(Base):
     __tablename__ = "GroupBlockList"
     targetId = Column(String(512), primary_key=True)
@@ -109,7 +99,6 @@ Session.create()
 __all__ = [
     "SenderInfo",
     "TargetInfoTable",
-    "CommandTriggerTime",
     "GroupBlockList",
     "StoredData",
     "DBVersion",

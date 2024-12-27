@@ -5,6 +5,7 @@ import sys
 from datetime import datetime
 
 import orjson as json
+from tortoise.exceptions import DoesNotExist
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
@@ -12,6 +13,7 @@ from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
 from core.database import BotDBUtil
+from core.database_v2.models import TargetInfo
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
@@ -78,29 +80,31 @@ set_ = module('set', required_superuser=True, base=True, doc=True, exclude_from=
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-    target_data = BotDBUtil.TargetInfo(target)
-    if not target_data.query:
+    target_data = TargetInfo.get_or_none(target=target)
+
+    if not target_data:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
+        target_data = await TargetInfo.create(target=target)
     if 'enable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                    if m in ModulesManager.return_modules_list(msg.target.target_from)]
-        target_data.enable(modules)
+        await target_data.config_module(modules, True)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
         else:
             await msg.finish(msg.locale.t("core.message.set.module.enable.failed"))
     elif 'disable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-                   if m in target_data.enabled_modules]
-        target_data.disable(modules)
+                   if m in (await target_data.get()).modules]
+        await target_data.config_module(modules, False)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
         else:
             await msg.finish(msg.locale.t("core.message.set.module.disable.failed"))
     elif 'list' in msg.parsed_msg:
-        modules = sorted(target_data.enabled_modules)
+        modules = sorted((await target_data.get()).modules)
         if modules:
             await msg.finish([I18NContext("core.message.set.module.list"), Plain(" | ".join(modules))])
         else:
@@ -113,14 +117,15 @@ async def _(msg: Bot.MessageSession, target: str):
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-    target_data = BotDBUtil.TargetInfo(target)
-    if not target_data.query:
+    target_data = TargetInfo.get_or_none(target_id=target)
+    if not target_data:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
+        target_data = await TargetInfo.create(target=target)
     if 'get' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>', None)
-        await msg.finish(str(target_data.get_option(k)))
+        await msg.finish(str(target_data.target_data.get(k)))
     elif 'edit' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         v = msg.parsed_msg.get('<v>')
@@ -135,11 +140,11 @@ async def _(msg: Bot.MessageSession, target: str):
             v = True
         elif v.lower() == 'false':
             v = False
-        target_data.edit_option(k, v)
+        await target_data.set_data(k, v)
         await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
     elif 'delete' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
-        target_data.remove_option(k)
+        await target_data.set_data(k, None)
         await msg.finish(msg.locale.t("message.success"))
 
 
@@ -150,10 +155,16 @@ post_whitelist = module('post_whitelist', required_superuser=True, base=True, do
 async def _(msg: Bot.MessageSession, group_id: str):
     if not group_id.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-    target_data = BotDBUtil.TargetInfo(group_id)
+    target_data = TargetInfo.get_or_none(target_id=group_id)
+    if not target_data:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
+        if not confirm:
+            await msg.finish()
+        target_data = await TargetInfo.create(target=group_id)
+
     k = 'in_post_whitelist'
-    v = not target_data.options.get(k, False)
-    target_data.edit_option(k, v)
+    v = not target_data.target_data.get(k, False)
+    await target_data.set_data(k, v)
     await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 

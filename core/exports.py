@@ -4,5 +4,5 @@
 exports = {}
 
 
-def add_export(func):
-    exports[func.__name__] = func
+def add_export(func, name=None):
+    exports[func.__name__ if not name else name] = func

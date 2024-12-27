@@ -1,7 +1,7 @@
 import datetime
 import uuid
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Union, List
+from typing import Union, List, TYPE_CHECKING
 
 import orjson as json
 from sqlalchemy import func

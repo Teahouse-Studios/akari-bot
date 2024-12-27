@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from bots.api.info import client_name
+from core.database_v2.models import TargetInfo
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
@@ -101,14 +102,12 @@ async def get_server_info():
 
 @app.get("/target/{target_id}")
 async def get_target(target_id: str):
-    target = BotDBUtil.TargetInfo(target_id)
-    if not target.query:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
-    enabled_modules = target.enabled_modules
-    is_muted = target.is_muted
-    custom_admins = target.custom_admins
-    locale = target.locale
-    options = target.get_option()
+    get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+    enabled_modules = get_info.modules
+    is_muted = get_info.muted
+    custom_admins = get_info.custom_admins
+    locale = get_info.locale
+    options = get_info.target_data
 
     wiki_target = WikiTargetInfo(target_id)
     wiki_headers = wiki_target.get_headers()
@@ -154,12 +153,10 @@ async def get_module_list():
 
 @app.get("/modules/{target_id}")
 async def get_target_modules(target_id: str):
-    target_data = BotDBUtil.TargetInfo(target_id)
-    if not target_data.query:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
     target_from = "|".join(target_id.split("|")[:-2])
     modules = ModulesManager.return_modules_list(target_from=target_from)
-    enabled_modules = target_data.enabled_modules
+    enabled_modules = get_info.modules
     return {
         "targetId": target_id,
         "modules": {k: v for k, v in modules.items() if k in enabled_modules},
@@ -169,9 +166,7 @@ async def get_target_modules(target_id: str):
 @app.post("/modules/{target_id}/enable")
 async def enable_modules(target_id: str, request: Request):
     try:
-        target_data = BotDBUtil.TargetInfo(target_id)
-        if not target_data.query:
-            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -182,7 +177,7 @@ async def enable_modules(target_id: str, request: Request):
             for m in modules
             if m in ModulesManager.return_modules_list(target_from=target_from)
         ]
-        target_data.enable(modules)
+        await get_info.config_module(modules, True)
         return {"message": "success"}
     except Exception:
         return JSONResponse(
@@ -193,9 +188,7 @@ async def enable_modules(target_id: str, request: Request):
 @app.post("/modules/{target_id}/disable")
 async def enable_modules(target_id: str, request: Request):
     try:
-        target_data = BotDBUtil.TargetInfo(target_id)
-        if not target_data.query:
-            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -206,7 +199,7 @@ async def enable_modules(target_id: str, request: Request):
             for m in modules
             if m in ModulesManager.return_modules_list(target_from=target_from)
         ]
-        target_data.disable(modules)
+        await get_info.config_module(modules, False)
         return {"message": "success"}
     except Exception as e:
         Logger.error(str(e))

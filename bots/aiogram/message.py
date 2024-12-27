@@ -21,6 +21,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
+from core.database_v2.models import TargetInfo
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import image_split
@@ -259,13 +260,13 @@ class FetchTarget(FetchTargetT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(
+            get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
             )
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
+                fetch = await FetchTarget.fetch_target(x.target_id)
                 if fetch:
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
+                    if x.muted:
                         continue
                     try:
                         msgchain = message

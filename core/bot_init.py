@@ -13,9 +13,11 @@ from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
+from core.database_v2 import init_db
 
 
 async def init_async(start_scheduler=True) -> None:
+    await init_db()
     try:
         Info.version = os.popen("git rev-parse HEAD", "r").read()
     except Exception:
