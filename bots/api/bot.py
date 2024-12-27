@@ -10,7 +10,6 @@ import uvicorn
 from cpuinfo import get_cpu_info
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from bots.api.info import client_name
 from core.queue import JobQueue
@@ -36,17 +35,17 @@ app = FastAPI()
 started_time = datetime.now()
 
 origins = [
-    "http://localhost:8080",  # Vue 前端的地址
-    "http://127.0.0.1:8080",  # 如果是从本地开发环境发出的请求
-]
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]  # temp
 
-# 将 CORSMiddleware 中间件添加到 FastAPI 应用
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # 允许的源
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],    # 允许所有 HTTP 方法（GET、POST 等）
-    allow_headers=["*"],    # 允许所有 HTTP 头
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
 
 
@@ -61,19 +60,63 @@ async def startup_event():
 
 @app.post("/auth")
 async def auth(request: Request):
-    password_path = os.path.join(PrivateAssets.path, ".password")
-    if not os.path.exists(password_path):
+    try:
+        password_path = os.path.join(PrivateAssets.path, ".password")
+        if not os.path.exists(password_path):
+            return {"message": "success"}
+
+        with open(password_path, "r") as file:
+            stored_password = file.read().strip()
+
+        body = await request.json()
+        password = body["password"]
+        password = hashlib.sha256(password.encode()).hexdigest()
+        if stored_password != password:
+            raise HTTPException(status_code=401, detail="invalid password")
         return {"message": "success"}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        return HTTPException(status_code=400, detail="bad request")
 
-    with open(password_path, "r") as file:
-        stored_password = file.read().strip()
 
-    body = await request.json()
-    password = body["password"]
-    password = hashlib.sha256(password.encode()).hexdigest()
-    if stored_password != password:
-        raise HTTPException(status_code=401, detail="Invalid password")
-    return {"message": "success"}
+@app.post("/auth/change")
+async def changepassword(request: Request):
+    try:
+        password_path = os.path.join(PrivateAssets.path, ".password")
+
+        body = await request.json()
+        new_password = body.get("new_password", "")
+        password = body.get("password", "")
+
+        if not os.path.exists(password_path):
+            if new_password == "":
+                raise HTTPException(status_code=400, detail="new password required")
+            new_password = hashlib.sha256(new_password.encode()).hexdigest()
+            with open(password_path, "w") as file:
+                file.write(new_password)
+            return {"message": "success"}
+
+        with open(password_path, "r") as file:
+            stored_password = file.read().strip()
+
+        password = hashlib.sha256(password.encode()).hexdigest()
+        if stored_password != password:
+            raise HTTPException(status_code=401, detail="invalid password")
+
+        if new_password == "":
+            os.remove(password_path)
+            return {"message": "success"}
+
+        new_password = hashlib.sha256(new_password.encode()).hexdigest()
+        with open(password_path, "w") as file:
+            file.write(new_password)
+
+        return {"message": "success"}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        return HTTPException(status_code=400, detail="bad request")
 
 
 @app.get("/serverinfo")
@@ -103,7 +146,7 @@ async def get_server_info():
 async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if not target.query:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        return HTTPException(status_code=404, detail="not found")
     enabled_modules = target.enabled_modules
     is_muted = target.is_muted
     custom_admins = target.custom_admins
@@ -134,7 +177,7 @@ async def get_target(target_id: str):
 async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
     if not sender.query:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        return HTTPException(status_code=404, detail="not found")
 
     return {
         "senderId": sender_id,
@@ -156,7 +199,7 @@ async def get_module_list():
 async def get_target_modules(target_id: str):
     target_data = BotDBUtil.TargetInfo(target_id)
     if not target_data.query:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        return HTTPException(status_code=404, detail="not found")
     target_from = "|".join(target_id.split("|")[:-2])
     modules = ModulesManager.return_modules_list(target_from=target_from)
     enabled_modules = target_data.enabled_modules
@@ -171,7 +214,7 @@ async def enable_modules(target_id: str, request: Request):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
         if not target_data.query:
-            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+            return HTTPException(status_code=404, detail="not found")
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -184,18 +227,18 @@ async def enable_modules(target_id: str, request: Request):
         ]
         target_data.enable(modules)
         return {"message": "success"}
+    except HTTPException as e:
+        raise e
     except Exception:
-        return JSONResponse(
-            status_code=400, content={"detail": "Bad Request", "message": "error"}
-        )
+        return HTTPException(status_code=400, detail="bad request")
 
 
 @app.post("/modules/{target_id}/disable")
-async def enable_modules(target_id: str, request: Request):
+async def disable_modules(target_id: str, request: Request):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
         if not target_data.query:
-            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+            return HTTPException(status_code=404, detail="not found")
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -208,11 +251,11 @@ async def enable_modules(target_id: str, request: Request):
         ]
         target_data.disable(modules)
         return {"message": "success"}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         Logger.error(str(e))
-        return JSONResponse(
-            status_code=400, content={"detail": "Bad Request", "message": "error"}
-        )
+        return HTTPException(status_code=400, detail="bad request")
 
 
 @app.get("/locale/{locale}/{string}")
@@ -224,7 +267,7 @@ async def get_locale(locale: str, string: str):
             "translation": Locale(locale).t(string, False),
         }
     except TypeError:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+        return HTTPException(status_code=404, detail="not found")
 
 
 if (__name__ == "__main__" or Info.subprocess) and Config(
