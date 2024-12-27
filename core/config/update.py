@@ -194,6 +194,7 @@ if 'initialized' not in config.value:
         Reorganize.table = 'api'
         Reorganize.bot_add_enabled_flag()
         Reorganize.reorganize_bot_key('api_port')
+        Reorganize.reorganize_bot_key('jwt_secret', True)
 
         # discord
 

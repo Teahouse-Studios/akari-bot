@@ -1,15 +1,19 @@
-from datetime import datetime
 import os
 import platform
 import sys
 import time
+import uuid
+from datetime import datetime, timedelta, UTC
 
 import hashlib
+import jwt
+import orjson as json
 import psutil
 import uvicorn
 from cpuinfo import get_cpu_info
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from bots.api.info import client_name
 from core.queue import JobQueue
@@ -33,6 +37,10 @@ from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 PrivateAssets.set(os.path.join(assets_path, "private", "api"))
 app = FastAPI()
 started_time = datetime.now()
+
+JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_api")
+PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
+
 
 origins = [
     "http://localhost:8080",
@@ -61,85 +69,83 @@ async def startup_event():
 @app.post("/auth")
 async def auth(request: Request):
     try:
-        password_path = os.path.join(PrivateAssets.path, ".password")
-        if not os.path.exists(password_path):
+        if not os.path.exists(PASSWORD_PATH):
             return {"message": "success"}
-
-        with open(password_path, "r") as file:
-            stored_password = file.read().strip()
 
         body = await request.json()
         password = body["password"]
+        remember = body.get("remember", False)
+
+        with open(PASSWORD_PATH, "r") as file:
+            stored_password = file.read().strip()
+
         password = hashlib.sha256(password.encode()).hexdigest()
         if stored_password != password:
             raise HTTPException(status_code=401, detail="invalid password")
-        return {"message": "success"}
+
+        payload = {
+            "device_id": str(uuid.uuid4()),
+            "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),  # 过期时间
+            "iat": datetime.now(UTC),  # 签发时间
+            "iss": "auth-api"  # 签发者
+        }
+        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
+        return {"message": "success", "deviceToken": jwt_token}
+
     except HTTPException as e:
         raise e
-    except Exception:
-        return HTTPException(status_code=400, detail="bad request")
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="bad request")
 
 
-@app.post("/auth/change")
-async def changepassword(request: Request):
+@app.post("/verify-token")
+async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     try:
-        password_path = os.path.join(PrivateAssets.path, ".password")
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithm='HS256')
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="invalid token")
 
+
+@app.post("/change-password")
+async def change_password(request: Request):
+    try:
         body = await request.json()
         new_password = body.get("new_password", "")
         password = body.get("password", "")
 
-        if not os.path.exists(password_path):
+        # 读取旧密码
+        if not os.path.exists(PASSWORD_PATH):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="new password required")
-            new_password = hashlib.sha256(new_password.encode()).hexdigest()
-            with open(password_path, "w") as file:
-                file.write(new_password)
+            new_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
+            with open(PASSWORD_PATH, "w") as file:
+                file.write(new_password_hashed)
             return {"message": "success"}
 
-        with open(password_path, "r") as file:
+        with open(PASSWORD_PATH, "r") as file:
             stored_password = file.read().strip()
 
-        password = hashlib.sha256(password.encode()).hexdigest()
-        if stored_password != password:
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        if stored_password != hashed_password:
             raise HTTPException(status_code=401, detail="invalid password")
 
-        if new_password == "":
-            os.remove(password_path)
-            return {"message": "success"}
-
-        new_password = hashlib.sha256(new_password.encode()).hexdigest()
-        with open(password_path, "w") as file:
-            file.write(new_password)
+        # 设置新密码
+        new_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
+        with open(PASSWORD_PATH, "w") as file:
+            file.write(new_password_hashed)
 
         return {"message": "success"}
     except HTTPException as e:
         raise e
-    except Exception:
-        return HTTPException(status_code=400, detail="bad request")
-
-
-@app.get("/serverinfo")
-async def get_server_info():
-    timediff = str(datetime.now() - started_time).split(".")[0]
-    python_version = str(platform.python_version())
-    cpu_brand = get_cpu_info()["brand_raw"]
-    cpu_usage = psutil.cpu_percent()
-    ram = int(psutil.virtual_memory().total / (1024 * 1024))
-    swap = int(psutil.swap_memory().total / (1024 * 1024))
-    disk = int(psutil.disk_usage("/").used / (1024 * 1024 * 1024))
-    disk_total = int(psutil.disk_usage("/").total / (1024 * 1024 * 1024))
-    return {
-        "message": "Success",
-        "timeDiff": timediff,
-        "pythonVersion": python_version,
-        "cpuBrand": cpu_brand,
-        "cpuUsage": cpu_usage,
-        "ram": ram,
-        "swap": swap,
-        "disk": disk,
-        "diskTotal": disk_total,
-    }
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="bad request")
 
 
 @app.get("/target/{target_id}")
@@ -229,7 +235,8 @@ async def enable_modules(target_id: str, request: Request):
         return {"message": "success"}
     except HTTPException as e:
         raise e
-    except Exception:
+    except Exception as e:
+        Logger.error(str(e))
         return HTTPException(status_code=400, detail="bad request")
 
 

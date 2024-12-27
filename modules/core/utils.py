@@ -1,6 +1,6 @@
 import platform
 import subprocess
-from datetime import datetime, timedelta, UTC
+from datetime import datetime
 
 import psutil
 from cpuinfo import get_cpu_info

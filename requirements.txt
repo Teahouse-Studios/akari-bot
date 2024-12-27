@@ -105,6 +105,7 @@ pycryptodome==3.21.0 ; python_full_version >= "3.12.0" and python_full_version <
 pycryptodomex==3.21.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pydantic-core==2.23.4 ; python_full_version >= "3.12.0" and python_version < "4.0"
 pydantic==2.9.2 ; python_full_version >= "3.12.0" and python_version < "4.0"
+pyjwt[crypto]==2.9.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pymysql==1.1.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pyparsing==3.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 python-dateutil==2.9.0.post0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"

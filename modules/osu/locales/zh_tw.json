@@ -9,5 +9,5 @@
     "osu.message.unbind.success": "解绑成功。",
     "osu.message.not_found": "获取内容失败。",
     "osu.message.user_unbound": "未绑定用户，请使用“${prefix}osu bind”绑定一个用户。",
-    "config.comments.osu_api_key": "osu! 的 API Key。（用于 osu 模块）"
+    "config.comments.osu_api_key": "osu! 的 API Key。（用於 osu 模組）"
 }

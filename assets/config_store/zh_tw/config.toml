@@ -57,9 +57,9 @@ dice_output_len = 200 # dice 模組輸出最大長度。
 dice_roll_limit = 10 # dice 模組一次指令投擲次數上限。
 dice_detail_count = 5 # dice 模組 n 次投擲的骰子的總量超過該值時將不再顯示詳細資訊。
 dice_count_limit = 10 # dice 模組骰子表示式項數上限。
-ncmusic_enable_card = false # ncmusic 模組是否啟用卡片訊息。（僅在 QQ 平台有效）
+ncmusic_enable_card = false # ncmusic 模組是否啟用卡片訊息。（僅在 QQ 用戶端有效）
 wiki_whitelist_url = "<Replace me with str value>" # Wiki 白名單申請網址。
-wordle_disable_image = false # wordle 模块是否禁用图片。
+wordle_disable_image = false # wordle 模組是否停用圖片。
 slower_schedule = false # 是否啟用更慢的排程任務調度器。（減少請求壓力用）
 
 [secret]
@@ -77,4 +77,4 @@ wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha 的 AppID。�
 diving_fish_developer_token = "<Replace me with str value>" # Diving Fish 查分器的開發者令牌。（用於 maimai 模組）
 curseforge_api_key = "<Replace me with str value>" # CurseForge 的 API Key。（用於 mod_dl 模組）
 ncmusic_api = "<Replace me with str value>" # 網易雲音樂 API 的 API 位址。（用於 ncmusic 模組）
-osu_api_key = "<Replace me with str value>" # osu! 的 API Key。（用于 osu 模块）
+osu_api_key = "<Replace me with str value>" # osu! 的 API Key。（用於 osu 模組）

@@ -35,6 +35,7 @@
     "config.comments.help_url": "帮助文档网址。",
     "config.comments.ignored_sender": "无视的用户列表，匹配到此列表中的用户将会被忽略。",
     "config.comments.issue_url": "问题反馈网址。",
+    "config.comments.jwt_secret": "内置 API 的身份认证密钥，用于签名和验证有效性。",
     "config.comments.kook_token": "KOOK 机器人令牌。",
     "config.comments.locale_url": "本地化项目网址。",
     "config.comments.lost_petal_limit": "单日失去花瓣上限。",
