@@ -5,12 +5,9 @@ import time
 import uuid
 from datetime import datetime, timedelta, UTC
 
-import hashlib
 import jwt
-import orjson as json
-import psutil
 import uvicorn
-from cpuinfo import get_cpu_info
+from argon2 import PasswordHasher
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -55,6 +52,7 @@ def verify_access_token(request: Request):
 
 
 app = FastAPI(dependencies=[Depends(verify_access_token)])
+ph = PasswordHasher()
 
 
 app.add_middleware(
@@ -101,8 +99,9 @@ async def auth(request: Request):
         with open(PASSWORD_PATH, "r") as file:
             stored_password = file.read().strip()
 
-        password = hashlib.sha256(password.encode()).hexdigest()
-        if stored_password != password:
+        try:
+            ph.verify(stored_password, password)  # 验证输入的密码是否与存储的哈希匹配
+        except Exception:
             raise HTTPException(status_code=401, detail="invalid password")
 
         payload = {
@@ -145,7 +144,7 @@ async def change_password(request: Request):
         if not os.path.exists(PASSWORD_PATH):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="new password required")
-            new_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
+            new_password_hashed = ph.hash(new_password)
             with open(PASSWORD_PATH, "w") as file:
                 file.write(new_password_hashed)
             return {"message": "success"}
@@ -153,12 +152,13 @@ async def change_password(request: Request):
         with open(PASSWORD_PATH, "r") as file:
             stored_password = file.read().strip()
 
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        if stored_password != hashed_password:
+        try:
+            ph.verify(stored_password, password)
+        except Exception:
             raise HTTPException(status_code=401, detail="invalid password")
 
         # 设置新密码
-        new_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
+        new_password_hashed = ph.hash(new_password)
         with open(PASSWORD_PATH, "w") as file:
             file.write(new_password_hashed)
 
