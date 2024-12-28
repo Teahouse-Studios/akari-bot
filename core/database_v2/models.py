@@ -141,7 +141,7 @@ class TargetInfo(Model):
         '''
         获取开启此模块的所有会话列表。
 
-        :param module_name: 指定的模块名称。
+        :param module_names: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         '''
@@ -173,6 +173,29 @@ class AnalyticsData(Model):
 
     class Meta:
         table = "analytics_data"
+
+    @classmethod
+    async def get_count(cls):
+        return await cls.all().count()
+
+    @classmethod
+    async def get_first(cls):
+        return await cls.all().order_by("id").first()
+
+    @classmethod
+    async def get_data_by_times(cls, new, old, module_name=None):
+        filter_ = [cls.timestamp <= new, cls.timestamp >= old]
+        if module_name:
+            filter_.append(cls.module_name == module_name)
+        return cls.all().filter(*filter_)
+
+    @classmethod
+    async def get_count_by_times(cls, new, old, module_name=None):
+        filter_ = [cls.timestamp <= new, cls.timestamp >= old]
+        if module_name:
+            filter_.append(cls.module_name == module_name)
+        return cls.all().filter(*filter_).count()
+
 
 
 class DBVersion(Model):
