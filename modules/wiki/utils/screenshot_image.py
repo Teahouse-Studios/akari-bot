@@ -52,7 +52,7 @@ async def generate_screenshot_v2(
                 timeout=30,
                 request_private_ip=True,
             )
-        except aiohttp.ClientConnectorError:
+        except Exception:
             if use_local:
                 return await generate_screenshot_v2(
                     page_link,
@@ -61,9 +61,7 @@ async def generate_screenshot_v2(
                     content_mode,
                     use_local=False,
                 )
-            return False
-        except ValueError:
-            Logger.info("[WebRender] Generation Failed.")
+            Logger.error("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
@@ -79,7 +77,7 @@ async def generate_screenshot_v2(
                 timeout=30,
                 request_private_ip=True,
             )
-        except aiohttp.ClientConnectorError:
+        except Exception:
             if use_local:
                 return await generate_screenshot_v2(
                     page_link,
@@ -88,9 +86,7 @@ async def generate_screenshot_v2(
                     content_mode,
                     use_local=False,
                 )
-            return False
-        except ValueError:
-            Logger.info("[WebRender] Generation Failed.")
+            Logger.error("[WebRender] Generation Failed.")
             return False
     with open(img) as read:
         load_img = json.loads(read.read())
@@ -119,7 +115,7 @@ async def generate_screenshot_v1(
                 page_link, timeout=aiohttp.ClientTimeout(total=20)
             ) as req:
                 html = await req.read()
-        except BaseException:
+        except Exception:
             Logger.error(traceback.format_exc())
             return False
         soup = BeautifulSoup(html, "html.parser")
