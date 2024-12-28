@@ -137,7 +137,7 @@ async def _(msg: Bot.MessageSession, module: str):
 
                         d = {'content': html_content, 'element': '.botbox'}
                         html_ = json.dumps(d)
-
+                        Logger.info("[WebRender] Generating help document...")
                         try:
                             pic = await download(webrender('element_screenshot', use_local=use_local),
                                                  status_code=200,
@@ -363,7 +363,7 @@ async def help_generator(msg: Bot.MessageSession,
 
     d = {'content': html_content, 'element': '.botbox'}
     html_ = json.dumps(d)
-
+    Logger.info("[WebRender] Generating module list...")
     try:
         pic = await download(webrender('element_screenshot', use_local=use_local),
                              status_code=200,
