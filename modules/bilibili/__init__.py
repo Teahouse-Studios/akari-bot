@@ -36,34 +36,30 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         await msg.finish(msg.locale.t("message.cooldown", time=int(30 - res)))
 
 
-@bili.regex(
-    re.compile(r"av(\d+)", flags=re.I), mode="M", desc="{bilibili.help.regex.av}"
-)
+@bili.regex(r"av(\d+)", flags=re.I, mode="A", desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
-    query = f"?aid={msg.matched_msg.group(1)}"
-    await get_video_info(msg, query)
-
-
-@bili.regex(
-    re.compile(r"\bBV[a-zA-Z0-9]{10}\b"), mode="A", desc="{bilibili.help.regex.bv}"
-)
-async def _(msg: Bot.MessageSession):
-    matched = list(set(msg.matched_msg))[:5]
+    matched = msg.matched_msg[:5]
     for video in matched:
-        if video != "":
+        if video:
+            query = f"?aid={video}"
+            await get_video_info(msg, query)
+
+
+@bili.regex(r"\bBV[a-zA-Z0-9]{10}\b", mode="A", desc="{bilibili.help.regex.bv}")
+async def _(msg: Bot.MessageSession):
+    matched = msg.matched_msg[:5]
+    for video in matched:
+        if video:
             query = f"?bvid={video}"
             await get_video_info(msg, query)
 
 
-@bili.regex(
-    re.compile(
-        r"\b(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)\b"
-    ),
-    mode="A",
-    desc="{bilibili.help.regex.url}",
-)
+@bili.regex(r"\b(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)\b",
+            mode="A",
+            desc="{bilibili.help.regex.url}",
+            )
 async def _(msg: Bot.MessageSession):
-    matched = list(set(msg.matched_msg))[:5]
+    matched = msg.matched_msg[:5]
     for video in matched:
         if video != "":
             query = await parse_shorturl(f"https://b23.tv/{video}")

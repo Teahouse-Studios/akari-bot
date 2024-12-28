@@ -489,11 +489,8 @@ async def parser(msg: Bot.MessageSession,
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                     if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                        errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=Url(Config('bug_report_url',
-                                                                     bug_report_url_default,
-                                                                     cfg_type=str),
-                                                              use_mm=False))
+                        bug_report_url = Url(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)
+                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:
@@ -539,16 +536,16 @@ async def parser(msg: Bot.MessageSession,
                     for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
                         time_start = datetime.now()
                         try:
-                            msg.matched_msg = False
                             matched = False
                             matched_hash = 0
+                            trigger_msg = msg.as_display(msg.trigger_msg)
                             if rfunc.mode.upper() in ['M', 'MATCH']:
-                                msg.matched_msg = re.match(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg:
                                     matched = True
                                     matched_hash = hash(msg.matched_msg.groups())
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
-                                msg.matched_msg = re.findall(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                msg.matched_msg = re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                                 msg.matched_msg = tuple(set(msg.matched_msg))
                                 if msg.matched_msg:
                                     matched = True
@@ -633,11 +630,8 @@ async def parser(msg: Bot.MessageSession,
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                             if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                                errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url',
-                                                                                 bug_report_url_default,
-                                                                                 cfg_type=str),
-                                                                          use_mm=False)))
+                                bug_report_url = Url(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)
+                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                             await msg.send_message(errmsg)
 
                             if not timeout and report_targets:
