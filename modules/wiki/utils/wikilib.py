@@ -226,7 +226,7 @@ class WikiLib:
             wiki_api_link = api_match.group(1)
         except Exception:
             try:
-                get_page = await get_url(self.url, fmt="text", headers=self.headers)
+                get_page = await get_url(self.url, status_code=None, fmt="text", headers=self.headers)
                 if (
                     get_page.find("<title>Attention Required! | Cloudflare</title>")
                     != -1

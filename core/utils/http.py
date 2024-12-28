@@ -47,7 +47,7 @@ def private_ip_check(url: str):
 
 async def get_url(
     url: str,
-    status_code: int = 200,
+    status_code: Union[int, None] = 200,
     headers: Optional[Dict[str, Any]] = None,
     params: Optional[Dict[str, Any]] = None,
     fmt: Optional[str] = None,
