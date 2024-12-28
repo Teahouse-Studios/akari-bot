@@ -26,7 +26,7 @@ bots_and_required_configs = {
     "aiogram": ["telegram_token"],
     "kook": ["kook_token"],
     "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    "api": [],
+    "api": ["jwt_secret", "api_allow_origins"],
     "qqbot": ["qq_bot_appid", "qq_bot_secret"],
 }
 
@@ -98,7 +98,7 @@ def multiprocess_run_until_complete(func):
     p.close()
 
 
-def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
+def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     from core.logger import Logger  # noqa
     from core.utils.info import Info  # noqa
 

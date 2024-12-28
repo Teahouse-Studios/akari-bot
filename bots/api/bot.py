@@ -13,7 +13,9 @@ import uvicorn
 from cpuinfo import get_cpu_info
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 
 from bots.api.info import client_name
 from core.queue import JobQueue
@@ -33,28 +35,37 @@ from core.logger import Logger  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
 from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 
-
-PrivateAssets.set(os.path.join(assets_path, "private", "api"))
-app = FastAPI()
 started_time = datetime.now()
-
+PrivateAssets.set(os.path.join(assets_path, "private", "api"))
+ACCESS_TOKEN = Config("api_access_token", cfg_type=str, secret=True, table_name="bot_api")
+ALLOW_ORIGINS = Config("api_allow_origins", default=['*'], cfg_type=(str, list), secret=True, table_name="bot_api")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_api")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 
 
-origins = [
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
-]  # temp
+def verify_access_token(request: Request):
+    if request.url.path == "/favicon.ico":
+        return
+    if not ACCESS_TOKEN:
+        return
+
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or auth_header != f"Bearer {ACCESS_TOKEN}":
+        raise HTTPException(status_code=403, detail="forbidden")
+
+
+app = FastAPI(dependencies=[Depends(verify_access_token)])
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 
 @app.on_event("startup")
@@ -64,6 +75,17 @@ async def startup_event():
     Scheduler.start()
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
+
+
+@app.get("/favicon.ico", response_class=FileResponse)
+async def favicon():
+    favicon_path = os.path.join(assets_path, "favicon.ico")
+    return FileResponse(favicon_path)
+
+
+@app.get("/")
+async def main():
+    return {"message": "Hello AkariBot!"}
 
 
 @app.post("/auth")
