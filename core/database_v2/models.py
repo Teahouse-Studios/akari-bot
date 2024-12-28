@@ -13,7 +13,7 @@ from core.utils.text import isint
 
 
 class SenderInfo(Model):
-    sender_id = fields.CharField(max_length=512, pk=True)
+    sender_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     trusted = fields.BooleanField(default=False)
     superuser = fields.BooleanField(default=False)
@@ -50,7 +50,7 @@ class SenderInfo(Model):
 
 
 class TargetInfo(Model):
-    target_id = fields.CharField(max_length=512, pk=True)
+    target_id = fields.CharField(max_length=512, primary_key=True)
     blocked = fields.BooleanField(default=False)
     modules = fields.JSONField(default=[])
     target_data = fields.JSONField(default={})
@@ -137,15 +137,17 @@ class TargetInfo(Model):
         return True
 
     @staticmethod
-    async def get_target_list_by_module(module_names: Union[str, list[str], tuple[str]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(module_names: Union[str, list[str], tuple[str]],
+                                        id_prefix: Optional[str] = None) -> List[TargetInfo]:
         '''
         获取开启此模块的所有会话列表。
 
-        :param module_name: 指定的模块名称。
+        :param module_names: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         '''
-        return [x for x in await TargetInfo.filter(modules__contains=convert2lst(module_names), target_id__startswith=id_prefix or "")]
+        return [x for x in await TargetInfo.filter(modules__contains=convert2lst(module_names),
+                                                   target_id__startswith=id_prefix or "")]
 
     async def edit_attr(self, key: str, value: Any) -> bool:
         setattr(self, key, value)
@@ -154,7 +156,7 @@ class TargetInfo(Model):
 
 
 class StoredData(Model):
-    stored_key = fields.CharField(max_length=512, pk=True)
+    stored_key = fields.CharField(max_length=512, primary_key=True)
     value = fields.JSONField(default={})
 
     class Meta:
@@ -162,7 +164,7 @@ class StoredData(Model):
 
 
 class AnalyticsData(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
     target_id = fields.CharField(max_length=512)
@@ -176,14 +178,14 @@ class AnalyticsData(Model):
 
 
 class DBVersion(Model):
-    value = fields.CharField(max_length=32, pk=True)
+    value = fields.CharField(max_length=32, primary_key=True)
 
     class Meta:
         table = "database_version"
 
 
 class UnfriendlyActionRecords(Model):
-    id = fields.IntField(pk=True)
+    id = fields.IntField(primary_key=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
     timestamp = fields.DatetimeField(auto_now_add=True)
@@ -195,7 +197,7 @@ class UnfriendlyActionRecords(Model):
 
 
 class JobQueuesTable(Model):
-    task_id = fields.UUIDField(pk=True)
+    task_id = fields.UUIDField(primary_key=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
     args = fields.JSONField(default={})
