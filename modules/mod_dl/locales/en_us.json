@@ -5,7 +5,7 @@
     "mod_dl.message.curseforge.result": "CurseForge results:",
     "mod_dl.message.download_url": "Download link:",
     "mod_dl.message.filename": "File name:",
-    "mod_dl.message.invalid.non_digital": "无效的编号，必须为数字。",
+    "mod_dl.message.invalid.non_digital": "Invalid number, must be numeric.",
     "mod_dl.message.invalid.out_of_range": "The number is out of range.",
     "mod_dl.message.modrinth.not_found": "Modrinth results: None",
     "mod_dl.message.modrinth.result": "Modrinth results:",
