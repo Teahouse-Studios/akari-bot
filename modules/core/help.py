@@ -137,7 +137,7 @@ async def _(msg: Bot.MessageSession, module: str):
 
                         d = {'content': html_content, 'element': '.botbox'}
                         html_ = json.dumps(d)
-
+                        Logger.info("[WebRender] Generating help document...")
                         try:
                             pic = await download(webrender('element_screenshot', use_local=use_local),
                                                  status_code=200,
@@ -148,7 +148,7 @@ async def _(msg: Bot.MessageSession, module: str):
                                                  timeout=30,
                                                  request_private_ip=True
                                                  )
-                        except aiohttp.ClientConnectorError:
+                        except Exception as e:
                             if use_local:
                                 try:
                                     pic = await download(webrender('element_screenshot', use_local=False),
@@ -158,12 +158,12 @@ async def _(msg: Bot.MessageSession, module: str):
                                                          post_data=html_,
                                                          request_private_ip=True
                                                          )
-                                except aiohttp.ClientConnectorError:
-                                    Logger.info('[WebRender] Generation Failed.')
-                                    raise
+                                except Exception as e:
+                                    Logger.error('[WebRender] Generation Failed.')
+                                    raise e
                             else:
-                                Logger.info('[WebRender] Generation Failed.')
-                                raise
+                                Logger.error('[WebRender] Generation Failed.')
+                                raise e
                         with open(pic) as read:
                             load_img = json.loads(read.read())
                         img_lst = []
@@ -363,7 +363,7 @@ async def help_generator(msg: Bot.MessageSession,
 
     d = {'content': html_content, 'element': '.botbox'}
     html_ = json.dumps(d)
-
+    Logger.info("[WebRender] Generating module list...")
     try:
         pic = await download(webrender('element_screenshot', use_local=use_local),
                              status_code=200,
@@ -374,17 +374,21 @@ async def help_generator(msg: Bot.MessageSession,
                              timeout=30,
                              request_private_ip=True
                              )
-    except aiohttp.ClientConnectorError:
+    except Exception:
         if use_local:
-            pic = await download(webrender('element_screenshot', use_local=False),
-                                 status_code=200,
-                                 method='POST',
-                                 headers={'Content-Type': 'application/json'},
-                                 post_data=html_,
-                                 request_private_ip=True
-                                 )
+            try:
+                pic = await download(webrender('element_screenshot', use_local=False),
+                                     status_code=200,
+                                     method='POST',
+                                     headers={'Content-Type': 'application/json'},
+                                     post_data=html_,
+                                     request_private_ip=True
+                                     )
+            except Exception:
+                Logger.error('[WebRender] Generation Failed.')
+                return False
         else:
-            Logger.info('[WebRender] Generation Failed.')
+            Logger.error('[WebRender] Generation Failed.')
             return False
     with open(pic) as read:
         load_img = json.loads(read.read())
