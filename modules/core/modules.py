@@ -4,7 +4,6 @@ from core.builtins import Bot
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
-from core.database import BotDBUtil
 from core.database_v2.models import TargetInfo
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
@@ -131,8 +130,8 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}")[0]
-                await query.config_module(enable_list, True)
+                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                await target_info.config_module(enable_list, True)
             for x in enable_list:
                 msglist.append(
                     msg.locale.t(
@@ -217,8 +216,8 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}")[0]
-                await query.config_module(disable_list, False)
+                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                await target_info.config_module(disable_list, False)
             for x in disable_list:
                 msglist.append(
                     msg.locale.t(

@@ -78,6 +78,6 @@ async def count_token_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = F
             petal = price * USD_TO_CNY * CNY_TO_PETAL
 
         petal = round(int(petal))
-        msg.info.modify_petal(-petal)
+        await msg.sender_info.modify_petal(-petal)
         return petal
     return 0

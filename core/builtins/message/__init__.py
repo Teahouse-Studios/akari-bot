@@ -11,7 +11,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
 
-from core.database_v2.models import TargetInfo
+from core.database_v2.models import SenderInfo, TargetInfo
 from core.exports import exports
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
@@ -196,35 +196,38 @@ class MessageSession:
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
-        self.trigger_msg: Optional[str] = None
-        self.parsed_msg: Optional[dict] = None
+        self.trigger_msg: str = None
+        self.parsed_msg: dict = None
         self.prefixes: List[str] = []
-        self.target_info: Union[TargetInfo, None] = None
-        self.sender_info = exports.get("BotDBUtil").SenderInfo(self.target.sender_id)
-        self.muted = None
-        self.options = None
-        self.custom_admins = None
-        self.enabled_modules = None
-        self.locale = None
-        self.name = None
+        self.target_info: TargetInfo = None
+        self.sender_info: SenderInfo = None
+        self.muted: bool = None
+        self.sender_data: dict = None
+        self.target_data: dict = None
+        self.custom_admins: list = None
+        self.enabled_modules: dict = None
+        self.locale: Locale = None
+        self.name: str = None
         self._tz_offset = None
-        self.timezone_offset = None
-        self.petal = None
-        self.info = None
-        self.petal = self.sender_info.petal
+        self.timezone_offset: float = None
+        self.petal: int = None
 
         self.tmp = {}
 
     async def data_init(self):
-        get_data: TargetInfo = (await TargetInfo.get_or_create(target_id=self.target.target_id))[0]
-        self.target_info = get_data
-        self.muted = get_data.muted
-        self.options = get_data.target_data
-        self.custom_admins = get_data.custom_admins
-        self.enabled_modules = get_data.modules
-        self.locale = Locale(get_data.locale)
+        get_sender_info = (await SenderInfo.get_or_create(target_id=self.target.sender_id))[0]
+        get_target_info = (await TargetInfo.get_or_create(target_id=self.target.target_id))[0]
+        self.target_info = get_target_info
+        self.sender_info = get_sender_info
+        self.muted = self.target_info.muted
+        self.sender_data = self.sender_info.sender_data
+        self.target_data = self.target_info.target_data
+        self.petal = self.sender_info.petal
+        self.custom_admins = self.target_info.custom_admins
+        self.enabled_modules = self.target_info.modules
+        self.locale = Locale(self.target_info.locale)
         self.name = self.locale.t("bot_name")
-        self._tz_offset = self.options.get(
+        self._tz_offset = self.target_data.get(
             "timezone_offset", Config("timezone_offset", "+8")
         )
         self.timezone_offset = parse_time_string(self._tz_offset)

@@ -34,7 +34,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
                 "amount": amount,
             }
             p = [p]
-            msg.info.modify_petal(amount)
+            await msg.sender_info.modify_petal(amount)
             update_stored_list(msg.target.client_name, "gainedpetal", p)
             return msg.locale.t("petal.message.gained.success", amount=amount)
         if limit > 0:
@@ -44,7 +44,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
                 amount = limit - p[msg.target.sender_id]["amount"]
         p[msg.target.sender_id]["amount"] += amount
         p = [p]
-        msg.info.modify_petal(amount)
+        await msg.sender_info.modify_petal(amount)
         update_stored_list(msg.target.client_name, "gainedpetal", p)
         return msg.locale.t("petal.message.gained.success", amount=amount)
 
@@ -78,7 +78,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
                 "amount": amount,
             }
             p = [p]
-            msg.info.modify_petal(-amount)
+            await msg.sender_info.modify_petal(-amount)
             update_stored_list(msg.target.client_name, "lostpetal", p)
             return msg.locale.t("petal.message.lost.success", amount=amount)
         if limit > 0:
@@ -88,7 +88,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
                 amount = limit - p[msg.target.sender_id]["amount"]
         p[msg.target.sender_id]["amount"] += amount
         p = [p]
-        msg.info.modify_petal(-amount)
+        await msg.sender_info.modify_petal(-amount)
         update_stored_list(msg.target.client_name, "lostpetal", p)
         return msg.locale.t("petal.message.lost.success", amount=amount)
 
@@ -104,5 +104,5 @@ async def cost_petal(msg: Bot.MessageSession, amount: int) -> bool:
         if amount > msg.petal:
             await msg.send_message(msg.locale.t("petal.message.cost.not_enough"))
             return False
-        msg.info.modify_petal(-amount)
+        await msg.sender_info.modify_petal(-amount)
     return True

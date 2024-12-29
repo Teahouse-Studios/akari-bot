@@ -11,9 +11,10 @@ from cpuinfo import get_cpu_info
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from tortoise.exceptions import DoesNotExist
 
 from bots.api.info import client_name
-from core.database_v2.models import TargetInfo
+from core.database_v2.models import SenderInfo, TargetInfo
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
@@ -24,7 +25,6 @@ from core.bot_init import init_async  # noqa: E402
 from core.builtins import PrivateAssets  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
-from core.database import BotDBUtil  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.logger import Logger  # noqa: E402
@@ -102,12 +102,10 @@ async def get_server_info():
 
 @app.get("/target/{target_id}")
 async def get_target(target_id: str):
-    get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
-    enabled_modules = get_info.modules
-    is_muted = get_info.muted
-    custom_admins = get_info.custom_admins
-    locale = get_info.locale
-    options = get_info.target_data
+    try:
+        target_info = await TargetInfo.get(target_id=target_id)
+    except DoesNotExist:
+        raise HTTPException(status_code=404, detail="not found")
 
     wiki_target = WikiTargetInfo(target_id)
     wiki_headers = wiki_target.get_headers()
@@ -116,11 +114,11 @@ async def get_target(target_id: str):
 
     return {
         "targetId": target_id,
-        "enabledModules": enabled_modules,
-        "isMuted": is_muted,
-        "customAdmins": custom_admins,
-        "locale": locale,
-        "options": options,
+        "modules": target_info.modules,
+        "muted": target_info.muted,
+        "customAdmins": target_info.custom_admins,
+        "locale": target_info.locale,
+        "targetData": target_info.target_data,
         "wiki": {
             "headers": wiki_headers,
             "startWiki": wiki_start_wiki,
@@ -131,18 +129,19 @@ async def get_target(target_id: str):
 
 @app.get("/sender/{sender_id}")
 async def get_sender(sender_id: str):
-    sender = BotDBUtil.SenderInfo(sender_id)
-    if not sender.query:
-        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    try:
+        sender_info = await SenderInfo.get(sender_id=sender_id)
+    except DoesNotExist:
+        raise HTTPException(status_code=404, detail="not found")
 
     return {
         "senderId": sender_id,
-        "isInBlockList": sender.is_in_block_list,
-        "isInAllowList": sender.is_in_allow_list,
-        "isSuperUser": sender.is_super_user,
-        "warns": sender.warns,
-        "disableTyping": sender.disable_typing,
-        "petal": sender.petal,
+        "blocked": sender_info.blocked,
+        "trusted": sender_info.trusted,
+        "superUser": sender_info.superuser,
+        "warns": sender_info.warns,
+        "petal": sender_info.petal,
+        "senderData": sender_info.sender_data,
     }
 
 
@@ -153,20 +152,19 @@ async def get_module_list():
 
 @app.get("/modules/{target_id}")
 async def get_target_modules(target_id: str):
-    get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+    target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
     target_from = "|".join(target_id.split("|")[:-2])
     modules = ModulesManager.return_modules_list(target_from=target_from)
-    enabled_modules = get_info.modules
     return {
         "targetId": target_id,
-        "modules": {k: v for k, v in modules.items() if k in enabled_modules},
+        "modules": {k: v for k, v in modules.items() if k in target_info.modules},
     }
 
 
 @app.post("/modules/{target_id}/enable")
 async def enable_modules(target_id: str, request: Request):
     try:
-        get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+        target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -177,7 +175,7 @@ async def enable_modules(target_id: str, request: Request):
             for m in modules
             if m in ModulesManager.return_modules_list(target_from=target_from)
         ]
-        await get_info.config_module(modules, True)
+        await target_info.config_module(modules, True)
         return {"message": "success"}
     except Exception:
         return JSONResponse(
@@ -186,9 +184,9 @@ async def enable_modules(target_id: str, request: Request):
 
 
 @app.post("/modules/{target_id}/disable")
-async def enable_modules(target_id: str, request: Request):
+async def disable_modules(target_id: str, request: Request):
     try:
-        get_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+        target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -199,7 +197,7 @@ async def enable_modules(target_id: str, request: Request):
             for m in modules
             if m in ModulesManager.return_modules_list(target_from=target_from)
         ]
-        await get_info.config_module(modules, False)
+        await target_info.config_module(modules, False)
         return {"message": "success"}
     except Exception as e:
         Logger.error(str(e))

@@ -5,15 +5,13 @@ import sys
 from datetime import datetime
 
 import orjson as json
-from tortoise.exceptions import DoesNotExist
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
-from core.database import BotDBUtil
-from core.database_v2.models import TargetInfo
+from core.database_v2.models import SenderInfo, TargetInfo, JobQueuesTable
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
@@ -37,7 +35,8 @@ async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
-        if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
+        sender_info = await SenderInfo.get(sender_id=user)
+        if await sender_info.edit_attr('isSuperUser', True):
             await msg.finish(msg.locale.t("message.success"))
 
 
@@ -50,7 +49,8 @@ async def _(msg: Bot.MessageSession, user: str):
         if not confirm:
             await msg.finish()
     if user:
-        if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
+        sender_info = await SenderInfo.get(sender_id=user)
+        if await sender_info.edit_attr('isSuperUser', False):
             await msg.finish(msg.locale.t("message.success"))
 
 
@@ -80,31 +80,31 @@ set_ = module('set', required_superuser=True, base=True, doc=True, exclude_from=
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-    target_data = TargetInfo.get_or_none(target=target)
+    target_info = await TargetInfo.get_or_none(target=target)
 
-    if not target_data:
+    if not target_info:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-        target_data = await TargetInfo.create(target=target)
+        target_info = await TargetInfo.create(target=target)
     if 'enable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                    if m in ModulesManager.return_modules_list(msg.target.target_from)]
-        await target_data.config_module(modules, True)
+        await target_info.config_module(modules, True)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
         else:
             await msg.finish(msg.locale.t("core.message.set.module.enable.failed"))
     elif 'disable' in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-                   if m in (await target_data.get()).modules]
-        await target_data.config_module(modules, False)
+                   if m in (await target_info.get()).modules]
+        await target_info.config_module(modules, False)
         if modules:
             await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
         else:
             await msg.finish(msg.locale.t("core.message.set.module.disable.failed"))
     elif 'list' in msg.parsed_msg:
-        modules = sorted((await target_data.get()).modules)
+        modules = sorted((await target_info.get()).modules)
         if modules:
             await msg.finish([I18NContext("core.message.set.module.list"), Plain(" | ".join(modules))])
         else:
@@ -117,15 +117,15 @@ async def _(msg: Bot.MessageSession, target: str):
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target=msg.target.target_from))
-    target_data = TargetInfo.get_or_none(target_id=target)
-    if not target_data:
+    target_info = await TargetInfo.get_or_none(target_id=target)
+    if not target_info:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-        target_data = await TargetInfo.create(target=target)
+        target_info = await TargetInfo.create(target=target)
     if 'get' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>', None)
-        await msg.finish(str(target_data.target_data.get(k)))
+        await msg.finish(str(target_info.target_data.get(k)))
     elif 'edit' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
         v = msg.parsed_msg.get('<v>')
@@ -140,11 +140,11 @@ async def _(msg: Bot.MessageSession, target: str):
             v = True
         elif v.lower() == 'false':
             v = False
-        await target_data.set_data(k, v)
+        await target_info.edit_target_data(k, v)
         await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
     elif 'delete' in msg.parsed_msg:
         k = msg.parsed_msg.get('<k>')
-        await target_data.set_data(k, None)
+        await target_info.edit_target_data(k, None)
         await msg.finish(msg.locale.t("message.success"))
 
 
@@ -155,16 +155,16 @@ post_whitelist = module('post_whitelist', required_superuser=True, base=True, do
 async def _(msg: Bot.MessageSession, group_id: str):
     if not group_id.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-    target_data = TargetInfo.get_or_none(target_id=group_id)
-    if not target_data:
+    target_info = await TargetInfo.get_or_none(target_id=group_id)
+    if not target_info:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-        target_data = await TargetInfo.create(target=group_id)
+        target_info = await TargetInfo.create(target=group_id)
 
     k = 'in_post_whitelist'
-    v = not target_data.target_data.get(k, False)
-    await target_data.set_data(k, v)
+    v = not target_info.target_data.get(k, False)
+    await target_info.edit_target_data(k, v)
     await msg.finish(msg.locale.t("core.message.set.option.edit.success", k=k, v=v))
 
 
@@ -176,14 +176,14 @@ async def _(msg: Bot.MessageSession, user: str):
     stat = ''
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(user)
+    sender_info = await SenderInfo.get(sender_id=user)
     warns = sender_info.warns
     temp_banned_time = await check_temp_ban(user)
     if temp_banned_time:
         stat += '\n' + msg.locale.t("core.message.abuse.check.tempbanned", ban_time=temp_banned_time)
-    if sender_info.is_in_allow_list:
+    if sender_info.trusted:
         stat += '\n' + msg.locale.t("core.message.abuse.check.trusted")
-    elif sender_info.is_in_block_list:
+    elif sender_info.blocked:
         stat += '\n' + msg.locale.t("core.message.abuse.check.banned")
     await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns) + stat)
 
@@ -224,8 +224,8 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(user)
-    if sender_info.edit('isInBlockList', True) and sender_info.edit('isInAllowList', False):
+    sender_info = await SenderInfo.get(sender_id=user)
+    if await sender_info.switch_identity(trust=False):
         await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
 
 
@@ -233,8 +233,8 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(user)
-    if sender_info.edit('isInBlockList', False):
+    sender_info = await SenderInfo.get(sender_id=user)
+    if await sender_info.switch_identity(trust=False, enable=False):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
@@ -242,8 +242,8 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(user)
-    if sender_info.edit('isInAllowList', True) and sender_info.edit('isInBlockList', False):
+    sender_info = await SenderInfo.get(sender_id=user)
+    if await sender_info.switch_identity(trust=True, enable=True):
         await msg.finish(msg.locale.t("core.message.abuse.trust.success", user=user))
 
 
@@ -251,8 +251,8 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(user)
-    if sender_info.edit('isInAllowList', False):
+    sender_info = await SenderInfo.get(sender_id=user)
+    if await sender_info.switch_identity(trust=True, enable=False):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
 
@@ -262,7 +262,8 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
     if target == msg.target.target_id:
         await msg.finish(msg.locale.t("core.message.abuse.block.self"))
-    if BotDBUtil.GroupBlockList.add(target):
+    target_info = await SenderInfo.get(target_info=target)
+    if target_info.edit_attr('blocked', True):
         await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
 
@@ -270,7 +271,8 @@ async def _(msg: Bot.MessageSession, target: str):
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-    if BotDBUtil.GroupBlockList.remove(target):
+    target_info = await SenderInfo.get(target_info=target)
+    if target_info.edit_attr('blocked', False):
         await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
 
 
@@ -568,11 +570,10 @@ async def _(msg: Bot.MessageSession):
 
 
 @petal_.command('[<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
-async def _(msg: Bot.MessageSession):
-    sender = msg.parsed_msg['<sender>']
+async def _(msg: Bot.MessageSession, sender: str = None):
     if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(sender)
+    sender_info = await SenderInfo.get(sender_id=sender)
     await msg.finish(msg.locale.t('core.message.petal', sender=sender, petal=sender_info.petal))
 
 
@@ -582,13 +583,13 @@ async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
     if sender:
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
             await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-        sender_info = BotDBUtil.SenderInfo(sender)
-        sender_info.modify_petal(petal)
+        sender_info = await SenderInfo.get(sender_id=sender)
+        await sender_info.modify_petal(petal)
         await msg.finish(
             msg.locale.t('core.message.petal.modify', sender=sender, add_petal=petal, petal=sender_info.petal))
     else:
-        sender_info = BotDBUtil.SenderInfo(msg.target.sender_id)
-        sender_info.modify_petal(petal)
+        sender_info = await SenderInfo.get(sender_id=msg.target.sender_id)
+        await sender_info.modify_petal(petal)
         await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=sender_info.petal))
 
 
@@ -598,11 +599,11 @@ async def _(msg: Bot.MessageSession, sender: str = None):
     if sender:
         if not any(sender.startswith(f'{sender_from}|') for sender_from in sender_list):
             await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-        sender_info = BotDBUtil.SenderInfo(sender)
-        sender_info.clear_petal()
+        sender_info = await SenderInfo.get(sender_id=sender)
+        await sender_info.edit_attr('patel', 0)
         await msg.finish(msg.locale.t('core.message.petal.clear', sender=sender))
     else:
-        msg.info.clear_petal()
+        await msg.sender_info.edit_attr('patel', 0)
         await msg.finish(msg.locale.t('core.message.petal.clear.self'))
 
 
@@ -611,7 +612,7 @@ jobqueue = module('jobqueue', required_superuser=True, base=True)
 
 @jobqueue.command('clear')
 async def _(msg: Bot.MessageSession):
-    BotDBUtil.JobQueue.clear(0)
+    await JobQueuesTable.clear_task(0)
     await msg.finish(msg.locale.t("message.success"))
 
 
