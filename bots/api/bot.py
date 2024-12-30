@@ -1,5 +1,4 @@
 import os
-import platform
 import sys
 import time
 import uuid
@@ -15,6 +14,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 
 from bots.api.info import client_name
+from core.constants import config_filename, config_path
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
@@ -165,6 +165,62 @@ async def change_password(request: Request):
         return {"message": "success"}
     except HTTPException as e:
         raise e
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="bad request")
+
+
+@app.get("/config")
+async def get_config_list():
+    try:
+        files = os.listdir(config_path)
+        cfg_files = [f for f in files if f.endswith(".toml")]
+
+        if config_filename in cfg_files:
+            cfg_files.remove(config_filename)
+            cfg_files.insert(0, config_filename)
+
+        return {"message": "success", "cfg_files": cfg_files}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="not found")
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="bad request")
+
+
+@app.get("/config/{cfg_filename}")
+async def get_config_file(cfg_filename: str):
+    if not os.path.exists(config_path):
+        raise HTTPException(status_code=404, detail="not found")
+    if not cfg_filename.endswith(".toml"):
+        raise HTTPException(status_code=400, detail="bad request")
+    cfg_file_path = os.path.join(config_path, cfg_filename)
+
+    try:
+        with open(cfg_file_path, 'r', encoding='UTF-8') as f:
+            content = f.read()
+        return {"message": "success", "content": content}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="not found")
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="bad request")
+
+
+@app.post("/config/{cfg_filename}")
+async def edit_config_file(cfg_filename: str, request: Request):
+    if not os.path.exists(config_path):
+        raise HTTPException(status_code=404, detail="not found")
+    if not cfg_filename.endswith(".toml"):
+        raise HTTPException(status_code=400, detail="bad request")
+    cfg_file_path = os.path.join(config_path, cfg_filename)
+    try:
+        body = await request.json()
+        content = body["content"]
+        with open(cfg_file_path, 'w', encoding='UTF-8') as f:
+            f.write(content)
+        return {"message": "success"}
+
     except Exception as e:
         Logger.error(str(e))
         raise HTTPException(status_code=400, detail="bad request")
