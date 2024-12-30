@@ -170,8 +170,8 @@ class TargetInfo(Model):
         await self.save()
         return True
 
-    @staticmethod
-    async def get_target_list_by_module(module_name: Union[str, list[str], tuple[str]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    @classmethod
+    async def get_target_list_by_module(cls, module_name: Union[str, list[str], tuple[str]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
         '''
         获取开启此模块的所有会话列表。
 
@@ -179,7 +179,7 @@ class TargetInfo(Model):
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         '''
-        return [x for x in await TargetInfo.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or "")]
+        return [x for x in await cls.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or "")]
 
     async def edit_attr(self, key: str, value: Any) -> bool:
         setattr(self, key, value)
@@ -339,15 +339,15 @@ class JobQueuesTable(Model):
 
         return True
 
-    @staticmethod
-    async def get_first(target_client: str):
-        return await JobQueuesTable.filter(
+    @classmethod
+    async def get_first(cls, target_client: str):
+        return await cls.filter(
             target_client=target_client, status='pending'
         ).first()
 
-    @staticmethod
-    async def get_all(target_client: str) -> list:
-        return await JobQueuesTable.filter(
+    @classmethod
+    async def get_all(cls, target_client: str) -> list:
+        return await cls.filter(
             target_client=target_client, status='pending'
         ).all()
 
