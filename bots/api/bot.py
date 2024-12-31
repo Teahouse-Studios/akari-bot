@@ -1,7 +1,10 @@
 import os
+import psutil
+import platform
 import sys
 import time
 import uuid
+from cpuinfo import get_cpu_info
 from datetime import datetime, timedelta, UTC
 
 import jwt
@@ -168,6 +171,40 @@ async def change_password(request: Request):
     except Exception as e:
         Logger.error(str(e))
         raise HTTPException(status_code=400, detail="bad request")
+
+
+@app.get("/server-info")
+async def server_info():
+    return {
+        "message": "success",
+        "os": {
+            "system": platform.system(),
+            "version": platform.version(),
+            "machine": platform.machine(),
+            "boot_time": psutil.boot_time(),
+        },
+        "bot": {
+            "running_time": (datetime.now() - started_time).total_seconds(),
+            "python_version": platform.python_version(),
+            "version": Info.version,
+            "web_render_local_status": Info.web_render_local_status,
+            "web_render_status": Info.web_render_status,
+        },
+        "cpu": {
+            "cpu_brand": get_cpu_info()["brand_raw"],
+            "cpu_percent": psutil.cpu_percent(interval=1),  # 获取 CPU 使用率
+        },
+        "memory": {
+            "total": psutil.virtual_memory().total / (1024 * 1024),  # 总内存
+            "used": psutil.virtual_memory().used / (1024 * 1024),  # 已用内存
+            "percent": psutil.virtual_memory().percent,  # 内存使用百分比
+        },
+        "disk": {
+            "total": psutil.disk_usage('/').total / (1024 * 1024 * 1024),  # 磁盘总容量
+            "used": psutil.disk_usage('/').used / (1024 * 1024 * 1024),  # 磁盘已使用容量
+            "percent": psutil.disk_usage('/').percent,  # 磁盘使用百分比
+        }
+    }
 
 
 @app.get("/config")
