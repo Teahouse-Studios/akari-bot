@@ -1,23 +1,26 @@
+import glob
 import os
 import psutil
 import platform
+import re
 import sys
 import time
 import uuid
 from cpuinfo import get_cpu_info
 from datetime import datetime, timedelta, UTC
 
+import asyncio
 import jwt
 import uvicorn
 from argon2 import PasswordHasher
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 
 from bots.api.info import client_name
-from core.constants import config_filename, config_path
+from core.constants import config_filename, config_path, logs_path
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.info import Info
@@ -41,6 +44,10 @@ ACCESS_TOKEN = Config("api_access_token", cfg_type=str, secret=True, table_name=
 ALLOW_ORIGINS = Config("api_allow_origins", default=['*'], cfg_type=(str, list), secret=True, table_name="bot_api")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_api")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
+MAX_LOG_HISTORY = 1000
+
+last_file_line_count = {}
+logs_history = []
 
 
 def verify_access_token(request: Request):
@@ -54,7 +61,8 @@ def verify_access_token(request: Request):
         raise HTTPException(status_code=403, detail="forbidden")
 
 
-app = FastAPI(dependencies=[Depends(verify_access_token)])
+# app = FastAPI(dependencies=[Depends(verify_access_token)])
+app = FastAPI()
 ph = PasswordHasher()
 
 
@@ -390,6 +398,56 @@ async def get_locale(locale: str, string: str):
         }
     except TypeError:
         return HTTPException(status_code=404, detail="not found")
+
+
+@app.websocket("/ws/logs")
+async def websocket_logs(websocket: WebSocket):
+    global logs_history
+    await websocket.accept()
+
+    if logs_history:
+        await websocket.send_text("\n".join(logs_history))
+
+    while True:
+        today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime('%Y-%m-%d')}.log")
+        today_logs = [log for log in today_logs if 'console' not in os.path.basename(log)]
+
+        if today_logs:
+            for log_file in today_logs:
+                try:
+                    current_line_count = 0
+                    new_lines = []
+
+                    with open(log_file, 'r', encoding='utf-8') as f:
+                        # 逐行读取文件，获取新增加的内容
+                        for i, line in enumerate(f):
+                            if i >= last_file_line_count.get(log_file, 0):
+                                if line:
+                                    new_lines.append(line[:-1])  # 移除行尾换行符
+                            current_line_count = i + 1  # 文件的总行数
+
+                    if new_lines:
+                        # 只有当有新的日志行时才发送
+                        await websocket.send_text("\n".join(new_lines))
+                        logs_history.extend(new_lines)  # 更新历史日志
+                        while len(logs_history) > MAX_LOG_HISTORY:
+                            # 删除最早的日志记录，直到符合格式的日志为止
+                            logs_history.pop(0)
+                            while logs_history and not is_log_line_valid(logs_history[0]):
+                                logs_history.pop(0)
+
+                    # 更新文件的行数
+                    last_file_line_count[log_file] = current_line_count
+
+                except Exception:
+                    continue
+
+        await asyncio.sleep(0.1)
+
+
+def is_log_line_valid(line: str) -> bool:
+    log_pattern = r'^\[[A-Z]+\]\[[a-zA-Z0-9_]+:[a-zA-Z0-9_]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[\[A-Z]+]\:.*$'
+    return bool(re.match(log_pattern, line))
 
 
 if (__name__ == "__main__" or Info.subprocess) and Config(

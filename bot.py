@@ -60,7 +60,7 @@ def init_bot():
 
         update_database()
         Logger.info("Database updated successfully!")
-    print(ascii_art)
+    Logger.info(ascii_art)
     base_superuser = Config(
         "base_superuser", base_superuser_default, cfg_type=(str, list)
     )
