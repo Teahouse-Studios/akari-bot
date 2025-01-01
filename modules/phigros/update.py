@@ -74,7 +74,7 @@ async def update_assets():
                     os.path.join(pgr_assets_path, "unknown"),
                     os.path.join(illustration_path, song_name),
                 )
-    Logger.info("Phigros illustrations download completed.")
+    Logger.success("Phigros illustrations download completed.")
     another_assets_url = (
         "https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
     )

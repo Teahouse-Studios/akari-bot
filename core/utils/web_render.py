@@ -56,7 +56,7 @@ async def check_web_render() -> Tuple[bool, bool]:
                 200,
                 request_private_ip=True,
             )
-            Logger.info("[WebRender] WebRender is working as expected.")
+            Logger.success("[WebRender] WebRender is working as expected.")
         except Exception:
             Logger.error("[WebRender] WebRender is not working as expected.")
             Logger.error(traceback.format_exc())

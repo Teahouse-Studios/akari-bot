@@ -195,7 +195,7 @@ async def start():
                     keys += 1
                     resp = await bot.keys_upload()
                     if not isinstance(resp, nio.KeysUploadError):
-                        Logger.info(
+                        Logger.success(
                             f"Successfully uploaded matrix OTK keys after {keys} claims."
                         )
                         break

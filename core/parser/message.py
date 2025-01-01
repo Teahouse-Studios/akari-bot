@@ -464,8 +464,8 @@ async def parser(msg: Bot.MessageSession,
 
                 except FinishedException as e:
                     time_used = datetime.now() - time_start
-                    Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
-                                f'Times take up: {str(time_used)}')
+                    Logger.success(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
+                                   f'Times take up: {str(time_used)}')
                     Info.command_parsed += 1
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
@@ -489,7 +489,12 @@ async def parser(msg: Bot.MessageSession,
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                     if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                        bug_report_url = Url(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)
+                        bug_report_url = Url(
+                            Config(
+                                'bug_report_url',
+                                bug_report_url_default,
+                                cfg_type=str),
+                            use_mm=False)
                         errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                     await msg.send_message(errmsg)
 
@@ -601,7 +606,7 @@ async def parser(msg: Bot.MessageSession,
                         except FinishedException as e:
                             time_used = datetime.now() - time_start
                             if rfunc.logging:
-                                Logger.info(
+                                Logger.success(
                                     f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                     f'Times take up: {time_used}')
 
@@ -630,7 +635,12 @@ async def parser(msg: Bot.MessageSession,
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                             if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                                bug_report_url = Url(Config('bug_report_url', bug_report_url_default, cfg_type=str), use_mm=False)
+                                bug_report_url = Url(
+                                    Config(
+                                        'bug_report_url',
+                                        bug_report_url_default,
+                                        cfg_type=str),
+                                    use_mm=False)
                                 errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                             await msg.send_message(errmsg)
 

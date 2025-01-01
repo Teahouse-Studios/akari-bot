@@ -1,3 +1,5 @@
+from fastapi import WebSocket
+from datetime import datetime
 import glob
 import os
 import psutil
@@ -419,7 +421,6 @@ async def websocket_logs(websocket: WebSocket):
                     new_lines = []
 
                     with open(log_file, 'r', encoding='utf-8') as f:
-                        # 逐行读取文件，获取新增加的内容
                         for i, line in enumerate(f):
                             if i >= last_file_line_count.get(log_file, 0):
                                 if line:
@@ -427,16 +428,17 @@ async def websocket_logs(websocket: WebSocket):
                             current_line_count = i + 1  # 文件的总行数
 
                     if new_lines:
-                        # 只有当有新的日志行时才发送
                         await websocket.send_text("\n".join(new_lines))
-                        logs_history.extend(new_lines)  # 更新历史日志
-                        while len(logs_history) > MAX_LOG_HISTORY:
-                            # 删除最早的日志记录，直到符合格式的日志为止
-                            logs_history.pop(0)
-                            while logs_history and not is_log_line_valid(logs_history[0]):
-                                logs_history.pop(0)
+                        logs_history.extend(new_lines)
 
-                    # 更新文件的行数
+                        logs_history.sort(key=lambda line: extract_timestamp(line) or datetime.min)
+
+                        while len(logs_history) > MAX_LOG_HISTORY:
+                            logs_history.pop(0)
+
+                        while logs_history and not is_log_line_valid(logs_history[0]):
+                            logs_history.pop(0)
+
                     last_file_line_count[log_file] = current_line_count
 
                 except Exception:
@@ -446,8 +448,16 @@ async def websocket_logs(websocket: WebSocket):
 
 
 def is_log_line_valid(line: str) -> bool:
-    log_pattern = r'^\[[A-Z]+\]\[[a-zA-Z0-9_]+:[a-zA-Z0-9_]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[\[A-Z]+]\:.*$'
+    log_pattern = r'^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:'
     return bool(re.match(log_pattern, line))
+
+
+def extract_timestamp(log_line: str):
+    log_time_pattern = r'\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]'
+    match = re.search(log_time_pattern, log_line)
+    if match:
+        return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
+    return None
 
 
 if (__name__ == "__main__" or Info.subprocess) and Config(

@@ -59,7 +59,7 @@ def init_bot():
         from core.database.update import update_database
 
         update_database()
-        Logger.info("Database updated successfully!")
+        Logger.success("Database updated successfully!")
     Logger.info(ascii_art)
     base_superuser = Config(
         "base_superuser", base_superuser_default, cfg_type=(str, list)

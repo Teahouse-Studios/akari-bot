@@ -285,7 +285,7 @@ async def generate_screenshot_v1(
                         if selected:
                             break
                 if not selected:
-                    Logger.info("Found nothing...")
+                    Logger.info("Nothing found.")
                     return False
                 Logger.info("Found section...")
                 open_file.write(str(x))
@@ -348,7 +348,7 @@ async def generate_screenshot_v1(
                 data=json.dumps(html),
             ) as resp:
                 if resp.status != 200:
-                    Logger.info(f"Failed to render: {await resp.text()}")
+                    Logger.error(f"Failed to render: {await resp.text()}")
                     return False
                 imgs_data = json.loads(await resp.read())
                 for img in imgs_data:
@@ -367,7 +367,7 @@ async def generate_screenshot_v1(
                     data=json.dumps(html),
                 ) as resp:
                     if resp.status != 200:
-                        Logger.info(f"Failed to render: {await resp.text()}")
+                        Logger.error(f"Failed to render: {await resp.text()}")
                         return False
                     imgs_data = json.loads(await resp.read())
                     for img in imgs_data:

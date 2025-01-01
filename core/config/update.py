@@ -259,7 +259,7 @@ if 'initialized' not in config.value:
                 filename += '.toml'
             with open(os.path.join(config_path, filename), 'w', encoding='utf-8') as f:
                 f.write(toml_dumps(configs[c]))
-        logger.info('Config file regenerated successfully.')
+        logger.success('Config file regenerated successfully.')
         sleep(3)
     elif config['config_version'] < config_version:
         logger.info(f'Updating Config file from {config['config_version']} to {config_version}...')
@@ -269,5 +269,5 @@ if 'initialized' not in config.value:
         #         f.write(toml_dumps(config))
         #     config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
 
-        logger.info('Config file updated successfully.')
+        logger.success('Config file updated successfully.')
         sleep(3)
