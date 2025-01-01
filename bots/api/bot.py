@@ -241,7 +241,9 @@ async def get_config_file(cfg_filename: str):
         raise HTTPException(status_code=404, detail="not found")
     if not cfg_filename.endswith(".toml"):
         raise HTTPException(status_code=400, detail="bad request")
-    cfg_file_path = os.path.join(config_path, cfg_filename)
+    cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+    if not cfg_file_path.startswith(config_path):
+        raise HTTPException(status_code=400, detail="bad request")
 
     try:
         with open(cfg_file_path, 'r', encoding='UTF-8') as f:
@@ -260,7 +262,9 @@ async def edit_config_file(cfg_filename: str, request: Request):
         raise HTTPException(status_code=404, detail="not found")
     if not cfg_filename.endswith(".toml"):
         raise HTTPException(status_code=400, detail="bad request")
-    cfg_file_path = os.path.join(config_path, cfg_filename)
+    cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+    if not cfg_file_path.startswith(config_path):
+        raise HTTPException(status_code=400, detail="bad request")
     try:
         body = await request.json()
         content = body["content"]
