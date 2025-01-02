@@ -4,7 +4,6 @@
     "check.redacted.all": "<全部已編輯:${reason}>",
     "config.comments.allow_reload_base": "是否允許重載基礎模組。",
     "config.comments.allow_request_private_ip": "是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）",
-    "config.comments.api_access_token": "請求 API 服務的 Access Token。",
     "config.comments.api_allow_origins": "API 服務允许 CORS 的來源列表。",
     "config.comments.api_port": "API 服務的連接埠號。",
     "config.comments.base_superuser": "機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。",
