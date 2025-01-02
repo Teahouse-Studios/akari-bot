@@ -4,7 +4,6 @@
     "check.redacted.all": "<全部吃掉了:${reason}>",
     "config.comments.allow_reload_base": "是否允许重载基础模块。",
     "config.comments.allow_request_private_ip": "是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）",
-    "config.comments.api_access_token": "请求 API 服务的 Access Token。",
     "config.comments.api_allow_origins": "API 服务允许 CORS 的源列表。",
     "config.comments.api_port": "API 服务的端口号。",
     "config.comments.base_superuser": "机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。",
