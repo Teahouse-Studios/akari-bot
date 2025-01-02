@@ -13,12 +13,14 @@ from datetime import datetime, timedelta, UTC
 
 import asyncio
 import jwt
+import orjson as json
+import secrets
 import uvicorn
 from argon2 import PasswordHasher
-from fastapi import FastAPI, Request, HTTPException, Depends, WebSocket
+from fastapi import FastAPI, WebSocket
+from fastapi import Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 
 from bots.api.info import client_name
@@ -42,28 +44,68 @@ from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 
 started_time = datetime.now()
 PrivateAssets.set(os.path.join(assets_path, "private", "api"))
-ACCESS_TOKEN = Config("api_access_token", cfg_type=str, secret=True, table_name="bot_api")
 ALLOW_ORIGINS = Config("api_allow_origins", default=['*'], cfg_type=(str, list), secret=True, table_name="bot_api")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_api")
+CSRF_TOKEN_PATH = os.path.join(PrivateAssets.path, ".CSRF_token")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
+CSRF_TOKEN_EXPIRY = 1800
 MAX_LOG_HISTORY = 1000
 
 last_file_line_count = {}
 logs_history = []
 
+if not os.path.exists(CSRF_TOKEN_PATH):
+    with open(CSRF_TOKEN_PATH, 'wb') as f:
+        f.write(json.dumps([]))
 
-def verify_access_token(request: Request):
-    if request.url.path == "/favicon.ico":
-        return
-    if not ACCESS_TOKEN:
-        return
+def load_csrf_tokens():
+    with open(CSRF_TOKEN_PATH, 'r') as f:
+        return json.loads(f.read())
 
+def save_csrf_tokens(tokens):
+    with open(CSRF_TOKEN_PATH, 'wb') as f:
+        f.write(json.dumps(tokens))
+
+def verify_csrf_token(request: Request):
+    csrf_token = request.headers.get("X-CSRF-Token")
+    if not csrf_token:
+        raise HTTPException(status_code=403, detail="Missing CSRF token")
+
+    token_entries = load_csrf_tokens()
+
+    for token_entry in token_entries:
+        stored_token = token_entry.get("csrf_token")
+        stored_timestamp = token_entry.get("token_timestamp")
+
+        if stored_token == csrf_token:
+            if time.time() - stored_timestamp > CSRF_TOKEN_EXPIRY:
+                raise HTTPException(status_code=403, detail="CSRF token expired")
+            return {"message": "Success"}
+
+    raise HTTPException(status_code=403, detail="Invalid CSRF token")
+
+
+def verify_jwt(request: Request):
     auth_header = request.headers.get("Authorization")
-    if not auth_header or auth_header != f"Bearer {ACCESS_TOKEN}":
-        raise HTTPException(status_code=403, detail="forbidden")
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Invalid request")
+
+    token = auth_header.split("Bearer ")[-1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Invalid request")
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        if payload.get("iat") > datetime.now(UTC).timestamp():
+            raise HTTPException(status_code=400, detail="Invalid token")
+        return {"message": "Success", "payload": payload}
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid token")
 
 
-# app = FastAPI(dependencies=[Depends(verify_access_token)])
 app = FastAPI()
 ph = PasswordHasher()
 
@@ -94,16 +136,41 @@ async def favicon():
     return FileResponse(favicon_path)
 
 
-@app.get("/")
-async def main():
-    return {"message": "Hello AkariBot!"}
+@app.get("/get-csrf-token")
+async def set_csrf_token():
+    current_time = time.time()
+
+    token_entries = load_csrf_tokens()
+
+    token_entries = [
+        token for token in token_entries if current_time - token["token_timestamp"] < CSRF_TOKEN_EXPIRY
+    ]
+
+    csrf_token = secrets.token_hex(32)
+
+    token_entries.append({
+        "csrf_token": csrf_token,
+        "token_timestamp": current_time
+    })
+
+    save_csrf_tokens(token_entries)
+
+    return {"message": "Success", "csrfToken": csrf_token}
 
 
 @app.post("/auth")
 async def auth(request: Request):
     try:
+        payload = {
+            "device_id": str(uuid.uuid4()),
+            "exp": datetime.now(UTC) + timedelta(days=24),  # 过期时间
+            "iat": datetime.now(UTC),  # 签发时间
+            "iss": "auth-api"  # 签发者
+        }
+        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
         if not os.path.exists(PASSWORD_PATH):
-            return {"message": "success"}
+            return {"message": "Success", "deviceToken": jwt_token}
 
         body = await request.json()
         password = body["password"]
@@ -115,7 +182,7 @@ async def auth(request: Request):
         try:
             ph.verify(stored_password, password)  # 验证输入的密码是否与存储的哈希匹配
         except Exception:
-            raise HTTPException(status_code=401, detail="invalid password")
+            raise HTTPException(status_code=401, detail="Invalid password")
 
         payload = {
             "device_id": str(uuid.uuid4()),
@@ -125,30 +192,20 @@ async def auth(request: Request):
         }
         jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
 
-        return {"message": "success", "deviceToken": jwt_token}
+        return {"message": "Success", "deviceToken": jwt_token}
 
     except HTTPException as e:
         raise e
     except Exception as e:
         Logger.error(str(e))
-        raise HTTPException(status_code=400, detail="bad request")
-
-
-@app.post("/verify-token")
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
-    try:
-        token = credentials.credentials
-        payload = jwt.decode(token, JWT_SECRET, algorithm='HS256')
-        return payload
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="invalid token")
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.post("/change-password")
 async def change_password(request: Request):
     try:
+        verify_jwt(request)
+        verify_csrf_token(request)
         body = await request.json()
         new_password = body.get("new_password", "")
         password = body.get("password", "")
@@ -156,11 +213,11 @@ async def change_password(request: Request):
         # 读取旧密码
         if not os.path.exists(PASSWORD_PATH):
             if new_password == "":
-                raise HTTPException(status_code=400, detail="new password required")
+                raise HTTPException(status_code=400, detail="New password required")
             new_password_hashed = ph.hash(new_password)
             with open(PASSWORD_PATH, "w") as file:
                 file.write(new_password_hashed)
-            return {"message": "success"}
+            return {"message": "Success"}
 
         with open(PASSWORD_PATH, "r") as file:
             stored_password = file.read().strip()
@@ -168,25 +225,26 @@ async def change_password(request: Request):
         try:
             ph.verify(stored_password, password)
         except Exception:
-            raise HTTPException(status_code=401, detail="invalid password")
+            raise HTTPException(status_code=401, detail="Invalid password")
 
         # 设置新密码
         new_password_hashed = ph.hash(new_password)
         with open(PASSWORD_PATH, "w") as file:
             file.write(new_password_hashed)
 
-        return {"message": "success"}
+        return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception as e:
-        Logger.error(str(e))
-        raise HTTPException(status_code=400, detail="bad request")
+        # 这里可以记录日志
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/server-info")
-async def server_info():
+async def server_info(request: Request):
+    verify_jwt(request)
     return {
-        "message": "success",
+        "message": "Success",
         "os": {
             "system": platform.system(),
             "version": platform.version(),
@@ -218,7 +276,8 @@ async def server_info():
 
 
 @app.get("/config")
-async def get_config_list():
+async def get_config_list(request: Request):
+    verify_jwt(request)
     try:
         files = os.listdir(config_path)
         cfg_files = [f for f in files if f.endswith(".toml")]
@@ -227,61 +286,64 @@ async def get_config_list():
             cfg_files.remove(config_filename)
             cfg_files.insert(0, config_filename)
 
-        return {"message": "success", "cfg_files": cfg_files}
+        return {"message": "Success", "cfg_files": cfg_files}
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="not found")
+        raise HTTPException(status_code=404, detail="Not found")
     except Exception as e:
         Logger.error(str(e))
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/config/{cfg_filename}")
-async def get_config_file(cfg_filename: str):
+async def get_config_file(cfg_filename: str, request: Request):
+    verify_jwt(request)
     if not os.path.exists(config_path):
-        raise HTTPException(status_code=404, detail="not found")
-    if not cfg_filename.endswith(".toml"):
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=404, detail="Not found")
     cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+    if not cfg_filename.endswith(".toml"):
+        raise HTTPException(status_code=400, detail="Bad request")
     if not cfg_file_path.startswith(config_path):
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=400, detail="Bad request")
 
     try:
         with open(cfg_file_path, 'r', encoding='UTF-8') as f:
             content = f.read()
-        return {"message": "success", "content": content}
+        return {"message": "Success", "content": content}
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="not found")
+        raise HTTPException(status_code=404, detail="Not found")
     except Exception as e:
         Logger.error(str(e))
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.post("/config/{cfg_filename}")
 async def edit_config_file(cfg_filename: str, request: Request):
+    verify_jwt(request)
+    verify_csrf_token(request)
     if not os.path.exists(config_path):
-        raise HTTPException(status_code=404, detail="not found")
-    if not cfg_filename.endswith(".toml"):
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=404, detail="Not found")
     cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+    if not cfg_filename.endswith(".toml"):
+        raise HTTPException(status_code=400, detail="Bad request")
     if not cfg_file_path.startswith(config_path):
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=400, detail="Bad request")
     try:
         body = await request.json()
         content = body["content"]
         with open(cfg_file_path, 'w', encoding='UTF-8') as f:
             f.write(content)
-        return {"message": "success"}
+        return {"message": "Success"}
 
     except Exception as e:
         Logger.error(str(e))
-        raise HTTPException(status_code=400, detail="bad request")
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/target/{target_id}")
 async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if not target.query:
-        return HTTPException(status_code=404, detail="not found")
+        return HTTPException(status_code=404, detail="Not found")
     enabled_modules = target.enabled_modules
     is_muted = target.is_muted
     custom_admins = target.custom_admins
@@ -312,7 +374,7 @@ async def get_target(target_id: str):
 async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
     if not sender.query:
-        return HTTPException(status_code=404, detail="not found")
+        return HTTPException(status_code=404, detail="Not found")
 
     return {
         "senderId": sender_id,
@@ -334,7 +396,7 @@ async def get_module_list():
 async def get_target_modules(target_id: str):
     target_data = BotDBUtil.TargetInfo(target_id)
     if not target_data.query:
-        return HTTPException(status_code=404, detail="not found")
+        return HTTPException(status_code=404, detail="Not found")
     target_from = "|".join(target_id.split("|")[:-2])
     modules = ModulesManager.return_modules_list(target_from=target_from)
     enabled_modules = target_data.enabled_modules
@@ -349,7 +411,7 @@ async def enable_modules(target_id: str, request: Request):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
         if not target_data.query:
-            return HTTPException(status_code=404, detail="not found")
+            return HTTPException(status_code=404, detail="Not found")
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -361,12 +423,12 @@ async def enable_modules(target_id: str, request: Request):
             if m in ModulesManager.return_modules_list(target_from=target_from)
         ]
         target_data.enable(modules)
-        return {"message": "success"}
+        return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception as e:
         Logger.error(str(e))
-        return HTTPException(status_code=400, detail="bad request")
+        return HTTPException(status_code=400, detail="Bad request")
 
 
 @app.post("/modules/{target_id}/disable")
@@ -374,7 +436,7 @@ async def disable_modules(target_id: str, request: Request):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
         if not target_data.query:
-            return HTTPException(status_code=404, detail="not found")
+            return HTTPException(status_code=404, detail="Not found")
         target_from = "|".join(target_id.split("|")[:-2])
 
         body = await request.json()
@@ -386,12 +448,12 @@ async def disable_modules(target_id: str, request: Request):
             if m in ModulesManager.return_modules_list(target_from=target_from)
         ]
         target_data.disable(modules)
-        return {"message": "success"}
+        return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception as e:
         Logger.error(str(e))
-        return HTTPException(status_code=400, detail="bad request")
+        return HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/locale/{locale}/{string}")
@@ -403,14 +465,28 @@ async def get_locale(locale: str, string: str):
             "translation": Locale(locale).t(string, False),
         }
     except TypeError:
-        return HTTPException(status_code=404, detail="not found")
+        return HTTPException(status_code=404, detail="Not found")
 
 
 @app.websocket("/ws/logs")
 async def websocket_logs(websocket: WebSocket):
-    global logs_history
-    await websocket.accept()
+    try:
+        await websocket.accept()
+        auth_message = await websocket.receive_text()
+        auth_data = json.loads(auth_message)
 
+        device_token = auth_data.get('token')
+        
+        if not device_token:
+            raise HTTPException(status_code=401, detail="Invalid request")
+        
+        verify_jwt_websocket(device_token)
+        
+    except HTTPException as e:
+        await websocket.close()
+        raise e
+
+    global logs_history
     if logs_history:
         await websocket.send_text("\n".join(logs_history))
 
@@ -450,6 +526,18 @@ async def websocket_logs(websocket: WebSocket):
 
         await asyncio.sleep(0.1)
 
+
+def verify_jwt_websocket(device_token: str):
+    try:
+        payload = jwt.decode(device_token, JWT_SECRET, algorithms=['HS256'])
+        if payload.get("iat") > datetime.now(UTC).timestamp():
+            raise HTTPException(status_code=400, detail="Invalid token")
+        return {"message": "Success", "payload": payload}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    
 
 def is_log_line_valid(line: str) -> bool:
     log_pattern = r'^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:'

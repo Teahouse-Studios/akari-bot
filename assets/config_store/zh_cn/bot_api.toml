@@ -4,7 +4,6 @@
 
 [bot_api_secret]
 # 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-api_access_token = "<Replace me with str value>" # 请求 API 服务的 Access Token。
 api_allow_origins = ["*"] # API 服务允许 CORS 的源列表。
 jwt_secret = "<Replace me with str value>" # 内置 API 的身份认证密钥，用于签名和验证有效性。
 

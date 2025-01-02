@@ -4,7 +4,6 @@
     "check.redacted.all": "<ALL REDACTED:${reason}>",
     "config.comments.allow_reload_base": "Whether to allow reloading of the base modules.",
     "config.comments.allow_request_private_ip": "Whether to allow bot to request local private IP addresses. (Prevent possible leakage)",
-    "config.comments.api_access_token": "Access Token used to request the API service.",
     "config.comments.api_allow_origins": "The API service allows CORS sources list.",
     "config.comments.api_port": "The port number of the API service.",
     "config.comments.base_superuser": "The bot's base superuser list. The values ​​filled in here will be loaded into the database when the bot starts.",

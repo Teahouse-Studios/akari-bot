@@ -4,7 +4,6 @@
 
 [bot_api_secret]
 # The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
-api_access_token = "<Replace me with str value>" # Access Token used to request the API service.
 api_allow_origins = ["*"] # The API service allows CORS sources list.
 jwt_secret = "<Replace me with str value>" # The authentication key for the built-in API, for signing and verifying validity.
 
