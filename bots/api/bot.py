@@ -191,7 +191,7 @@ async def auth(request: Request, response: Response):
                 samesite="none",
                 expires=datetime.now(UTC) + timedelta(hours=24)
             )
-            return {"message": "Success", "deviceToken": jwt_token}
+            return {"message": "Success"}
 
         body = await request.json()
         password = body.get("password", "")
@@ -201,7 +201,7 @@ async def auth(request: Request, response: Response):
             stored_password = file.read().strip()
 
         try:
-            ph.verify(stored_password, password)  # 验证输入的密码是否与存储的哈希匹配
+            ph.verify(stored_password, password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
@@ -222,7 +222,7 @@ async def auth(request: Request, response: Response):
             expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
 
-        return {"message": "Success", "deviceToken": jwt_token}
+        return {"message": "Success"}
 
     except HTTPException as e:
         raise e
