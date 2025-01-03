@@ -50,7 +50,7 @@ ALLOW_ORIGINS = Config("api_allow_origins", default=['*'], cfg_type=(str, list),
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_api")
 CSRF_TOKEN_PATH = os.path.join(PrivateAssets.path, ".CSRF_token")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
-CSRF_TOKEN_EXPIRY = 1800
+CSRF_TOKEN_EXPIRY = 3600
 MAX_LOG_HISTORY = 1000
 
 last_file_line_count = {}
@@ -72,7 +72,8 @@ def save_csrf_tokens(tokens):
 
 
 def verify_csrf_token(request: Request):
-    csrf_token = request.cookies.get("XSRF-TOKEN")
+    csrf_token = request.headers.get("X-XSRF-TOKEN")
+    device_token = request.cookies.get("deviceToken")
     if not csrf_token:
         raise HTTPException(status_code=403, detail="Missing CSRF token")
 
@@ -80,9 +81,10 @@ def verify_csrf_token(request: Request):
 
     for token_entry in token_entries:
         stored_token = token_entry.get("csrf_token")
+        stored_device_token = token_entry.get("device_token")
         stored_timestamp = token_entry.get("token_timestamp")
 
-        if stored_token == csrf_token:
+        if stored_token == csrf_token and stored_device_token == device_token:
             if time.time() - stored_timestamp > CSRF_TOKEN_EXPIRY:
                 raise HTTPException(status_code=403, detail="CSRF token expired")
             return {"message": "Success"}
@@ -147,34 +149,26 @@ async def verify_token(request: Request):
 
 @app.get("/api/get-csrf-token")
 @limiter.limit("2/second")
-async def set_csrf_token(request: Request, response: Response):
+async def set_csrf_token(request: Request):
+    verify_jwt(request)
+    device_token = request.cookies.get("deviceToken")
     current_time = time.time()
 
     token_entries = load_csrf_tokens()
-
     token_entries = [
         token for token in token_entries if current_time - token["token_timestamp"] < CSRF_TOKEN_EXPIRY
     ]
 
     csrf_token = secrets.token_hex(32)
-
     token_entries.append({
         "csrf_token": csrf_token,
+        "device_token": device_token,
         "token_timestamp": current_time
     })
 
     save_csrf_tokens(token_entries)
 
-    response.set_cookie(
-        key="XSRF-TOKEN",
-        value=csrf_token,
-        httponly=True,
-        secure=True,
-        samesite="none",
-        expires=datetime.now(UTC) + timedelta(seconds=CSRF_TOKEN_EXPIRY)
-    )
-
-    return {"message": "Success"}
+    return {"message": "Success", "csrf_token": csrf_token}
 
 
 @app.post("/api/auth")
