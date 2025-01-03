@@ -18,7 +18,7 @@ import secrets
 import uvicorn
 from argon2 import PasswordHasher
 from fastapi import FastAPI, WebSocket
-from fastapi import Request, HTTPException
+from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -58,16 +58,19 @@ if not os.path.exists(CSRF_TOKEN_PATH):
     with open(CSRF_TOKEN_PATH, 'wb') as f:
         f.write(json.dumps([]))
 
+
 def load_csrf_tokens():
     with open(CSRF_TOKEN_PATH, 'r') as f:
         return json.loads(f.read())
+
 
 def save_csrf_tokens(tokens):
     with open(CSRF_TOKEN_PATH, 'wb') as f:
         f.write(json.dumps(tokens))
 
+
 def verify_csrf_token(request: Request):
-    csrf_token = request.headers.get("X-CSRF-Token")
+    csrf_token = request.cookies.get("csrfToken")
     if not csrf_token:
         raise HTTPException(status_code=403, detail="Missing CSRF token")
 
@@ -86,16 +89,12 @@ def verify_csrf_token(request: Request):
 
 
 def verify_jwt(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header:
-        raise HTTPException(status_code=401, detail="Invalid request")
-
-    token = auth_header.split("Bearer ")[-1]
-    if not token:
+    auth_token = request.cookies.get("deviceToken")
+    if not auth_token:
         raise HTTPException(status_code=401, detail="Invalid request")
 
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        payload = jwt.decode(auth_token, JWT_SECRET, algorithms=['HS256'])
         if payload.get("iat") > datetime.now(UTC).timestamp():
             raise HTTPException(status_code=400, detail="Invalid token")
         return {"message": "Success", "payload": payload}
@@ -136,8 +135,13 @@ async def favicon():
     return FileResponse(favicon_path)
 
 
-@app.get("/get-csrf-token")
-async def set_csrf_token():
+@app.get("/api/verify-token")
+async def verify_token(request: Request):
+    verify_jwt(request)
+
+
+@app.get("/api/get-csrf-token")
+async def set_csrf_token(response: Response):
     current_time = time.time()
 
     token_entries = load_csrf_tokens()
@@ -155,25 +159,42 @@ async def set_csrf_token():
 
     save_csrf_tokens(token_entries)
 
-    return {"message": "Success", "csrfToken": csrf_token}
+    response.set_cookie(
+        key="csrfToken",
+        value=csrf_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        expires=datetime.now(UTC) + timedelta(seconds=CSRF_TOKEN_EXPIRY)
+    )
+
+    return {"message": "Success"}
 
 
-@app.post("/auth")
-async def auth(request: Request):
+@app.post("/api/auth")
+async def auth(request: Request, response: Response):
     try:
         payload = {
             "device_id": str(uuid.uuid4()),
-            "exp": datetime.now(UTC) + timedelta(days=24),  # 过期时间
+            "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
             "iat": datetime.now(UTC),  # 签发时间
             "iss": "auth-api"  # 签发者
         }
         jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
 
         if not os.path.exists(PASSWORD_PATH):
+            response.set_cookie(
+                key="deviceToken",
+                value=jwt_token,
+                httponly=True,
+                secure=True,
+                samesite="none",
+                expires=datetime.now(UTC) + timedelta(hours=24)
+            )
             return {"message": "Success", "deviceToken": jwt_token}
 
         body = await request.json()
-        password = body["password"]
+        password = body.get("password", "")
         remember = body.get("remember", False)
 
         with open(PASSWORD_PATH, "r") as file:
@@ -186,11 +207,20 @@ async def auth(request: Request):
 
         payload = {
             "device_id": str(uuid.uuid4()),
-            "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),  # 过期时间
-            "iat": datetime.now(UTC),  # 签发时间
-            "iss": "auth-api"  # 签发者
+            "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),
+            "iat": datetime.now(UTC),
+            "iss": "auth-api"
         }
         jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
+        response.set_cookie(
+            key="deviceToken",
+            value=jwt_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
+        )
 
         return {"message": "Success", "deviceToken": jwt_token}
 
@@ -201,7 +231,7 @@ async def auth(request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/change-password")
+@app.post("/api/change-password")
 async def change_password(request: Request):
     try:
         verify_jwt(request)
@@ -240,7 +270,7 @@ async def change_password(request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/server-info")
+@app.get("/api/server-info")
 async def server_info(request: Request):
     verify_jwt(request)
     return {
@@ -275,7 +305,7 @@ async def server_info(request: Request):
     }
 
 
-@app.get("/config")
+@app.get("/api/config")
 async def get_config_list(request: Request):
     verify_jwt(request)
     try:
@@ -294,7 +324,7 @@ async def get_config_list(request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/config/{cfg_filename}")
+@app.get("/api/config/{cfg_filename}")
 async def get_config_file(cfg_filename: str, request: Request):
     verify_jwt(request)
     if not os.path.exists(config_path):
@@ -316,7 +346,7 @@ async def get_config_file(cfg_filename: str, request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/config/{cfg_filename}")
+@app.post("/api/config/{cfg_filename}")
 async def edit_config_file(cfg_filename: str, request: Request):
     verify_jwt(request)
     verify_csrf_token(request)
@@ -339,7 +369,7 @@ async def edit_config_file(cfg_filename: str, request: Request):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/target/{target_id}")
+@app.get("/api/target/{target_id}")
 async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if not target.query:
@@ -370,7 +400,7 @@ async def get_target(target_id: str):
     }
 
 
-@app.get("/sender/{sender_id}")
+@app.get("/api/sender/{sender_id}")
 async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
     if not sender.query:
@@ -387,12 +417,12 @@ async def get_sender(sender_id: str):
     }
 
 
-@app.get("/modules")
+@app.get("/api/modules")
 async def get_module_list():
     return {"modules": ModulesManager.return_modules_list()}
 
 
-@app.get("/modules/{target_id}")
+@app.get("/api/modules/{target_id}")
 async def get_target_modules(target_id: str):
     target_data = BotDBUtil.TargetInfo(target_id)
     if not target_data.query:
@@ -406,7 +436,7 @@ async def get_target_modules(target_id: str):
     }
 
 
-@app.post("/modules/{target_id}/enable")
+@app.post("/api/modules/{target_id}/enable")
 async def enable_modules(target_id: str, request: Request):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
@@ -431,7 +461,7 @@ async def enable_modules(target_id: str, request: Request):
         return HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/modules/{target_id}/disable")
+@app.post("/api/modules/{target_id}/disable")
 async def disable_modules(target_id: str, request: Request):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
@@ -456,7 +486,7 @@ async def disable_modules(target_id: str, request: Request):
         return HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/locale/{locale}/{string}")
+@app.get("/api/locale/{locale}/{string}")
 async def get_locale(locale: str, string: str):
     try:
         return {
@@ -470,21 +500,7 @@ async def get_locale(locale: str, string: str):
 
 @app.websocket("/ws/logs")
 async def websocket_logs(websocket: WebSocket):
-    try:
-        await websocket.accept()
-        auth_message = await websocket.receive_text()
-        auth_data = json.loads(auth_message)
-
-        device_token = auth_data.get('token')
-        
-        if not device_token:
-            raise HTTPException(status_code=401, detail="Invalid request")
-        
-        verify_jwt_websocket(device_token)
-        
-    except HTTPException as e:
-        await websocket.close()
-        raise e
+    await websocket.accept()
 
     global logs_history
     if logs_history:
@@ -512,7 +528,6 @@ async def websocket_logs(websocket: WebSocket):
                         logs_history.extend(new_lines)
 
                         logs_history.sort(key=lambda line: extract_timestamp(line) or datetime.min)
-
                         while len(logs_history) > MAX_LOG_HISTORY:
                             logs_history.pop(0)
 
@@ -526,18 +541,6 @@ async def websocket_logs(websocket: WebSocket):
 
         await asyncio.sleep(0.1)
 
-
-def verify_jwt_websocket(device_token: str):
-    try:
-        payload = jwt.decode(device_token, JWT_SECRET, algorithms=['HS256'])
-        if payload.get("iat") > datetime.now(UTC).timestamp():
-            raise HTTPException(status_code=400, detail="Invalid token")
-        return {"message": "Success", "payload": payload}
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid token")
-    
 
 def is_log_line_valid(line: str) -> bool:
     log_pattern = r'^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:'
