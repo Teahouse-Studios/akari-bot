@@ -96,6 +96,7 @@ async def send_command(msg):
 
 
 if __name__ == "__main__":
+    import core.scripts.config_generate  # noqa
     init_bot()
     Info.client_name = client_name
     loop = asyncio.new_event_loop()

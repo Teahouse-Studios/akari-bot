@@ -22,6 +22,8 @@ from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from bots.api.info import client_name
 from core.constants import config_filename, config_path, logs_path
@@ -70,7 +72,7 @@ def save_csrf_tokens(tokens):
 
 
 def verify_csrf_token(request: Request):
-    csrf_token = request.cookies.get("csrfToken")
+    csrf_token = request.cookies.get("XSRF-TOKEN")
     if not csrf_token:
         raise HTTPException(status_code=403, detail="Missing CSRF token")
 
@@ -106,6 +108,7 @@ def verify_jwt(request: Request):
 
 
 app = FastAPI()
+limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
 
@@ -130,18 +133,21 @@ async def startup_event():
 
 
 @app.get("/favicon.ico", response_class=FileResponse)
-async def favicon():
+@limiter.limit("2/second")
+async def favicon(request: Request):
     favicon_path = os.path.join(assets_path, "favicon.ico")
     return FileResponse(favicon_path)
 
 
 @app.get("/api/verify-token")
+@limiter.limit("2/second")
 async def verify_token(request: Request):
     verify_jwt(request)
 
 
 @app.get("/api/get-csrf-token")
-async def set_csrf_token(response: Response):
+@limiter.limit("2/second")
+async def set_csrf_token(request: Request, response: Response):
     current_time = time.time()
 
     token_entries = load_csrf_tokens()
@@ -160,7 +166,7 @@ async def set_csrf_token(response: Response):
     save_csrf_tokens(token_entries)
 
     response.set_cookie(
-        key="csrfToken",
+        key="XSRF-TOKEN",
         value=csrf_token,
         httponly=True,
         secure=True,
@@ -172,6 +178,7 @@ async def set_csrf_token(response: Response):
 
 
 @app.post("/api/auth")
+@limiter.limit("10/minute")
 async def auth(request: Request, response: Response):
     try:
         payload = {
@@ -232,6 +239,7 @@ async def auth(request: Request, response: Response):
 
 
 @app.post("/api/change-password")
+@limiter.limit("10/minute")
 async def change_password(request: Request):
     try:
         verify_jwt(request)
@@ -271,6 +279,7 @@ async def change_password(request: Request):
 
 
 @app.get("/api/server-info")
+@limiter.limit("10/minute")
 async def server_info(request: Request):
     verify_jwt(request)
     return {
@@ -306,6 +315,7 @@ async def server_info(request: Request):
 
 
 @app.get("/api/config")
+@limiter.limit("2/second")
 async def get_config_list(request: Request):
     verify_jwt(request)
     try:
@@ -325,7 +335,8 @@ async def get_config_list(request: Request):
 
 
 @app.get("/api/config/{cfg_filename}")
-async def get_config_file(cfg_filename: str, request: Request):
+@limiter.limit("2/second")
+async def get_config_file(request: Request, cfg_filename: str):
     verify_jwt(request)
     if not os.path.exists(config_path):
         raise HTTPException(status_code=404, detail="Not found")
@@ -347,7 +358,8 @@ async def get_config_file(cfg_filename: str, request: Request):
 
 
 @app.post("/api/config/{cfg_filename}")
-async def edit_config_file(cfg_filename: str, request: Request):
+@limiter.limit("10/minute")
+async def edit_config_file(request: Request, cfg_filename: str):
     verify_jwt(request)
     verify_csrf_token(request)
     if not os.path.exists(config_path):
@@ -370,7 +382,8 @@ async def edit_config_file(cfg_filename: str, request: Request):
 
 
 @app.get("/api/target/{target_id}")
-async def get_target(target_id: str):
+@limiter.limit("2/second")
+async def get_target(request: Request, target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if not target.query:
         return HTTPException(status_code=404, detail="Not found")
@@ -401,7 +414,8 @@ async def get_target(target_id: str):
 
 
 @app.get("/api/sender/{sender_id}")
-async def get_sender(sender_id: str):
+@limiter.limit("2/second")
+async def get_sender(request: Request, sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
     if not sender.query:
         return HTTPException(status_code=404, detail="Not found")
@@ -418,12 +432,14 @@ async def get_sender(sender_id: str):
 
 
 @app.get("/api/modules")
-async def get_module_list():
+@limiter.limit("2/second")
+async def get_module_list(request: Request):
     return {"modules": ModulesManager.return_modules_list()}
 
 
 @app.get("/api/modules/{target_id}")
-async def get_target_modules(target_id: str):
+@limiter.limit("2/second")
+async def get_target_modules(request: Request, target_id: str):
     target_data = BotDBUtil.TargetInfo(target_id)
     if not target_data.query:
         return HTTPException(status_code=404, detail="Not found")
@@ -437,7 +453,8 @@ async def get_target_modules(target_id: str):
 
 
 @app.post("/api/modules/{target_id}/enable")
-async def enable_modules(target_id: str, request: Request):
+@limiter.limit("10/minute")
+async def enable_modules(request: Request, target_id: str):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
         if not target_data.query:
@@ -462,7 +479,8 @@ async def enable_modules(target_id: str, request: Request):
 
 
 @app.post("/api/modules/{target_id}/disable")
-async def disable_modules(target_id: str, request: Request):
+@limiter.limit("10/minute")
+async def disable_modules(request: Request, target_id: str):
     try:
         target_data = BotDBUtil.TargetInfo(target_id)
         if not target_data.query:
@@ -487,7 +505,8 @@ async def disable_modules(target_id: str, request: Request):
 
 
 @app.get("/api/locale/{locale}/{string}")
-async def get_locale(locale: str, string: str):
+@limiter.limit("2/second")
+async def get_locale(request: Request, locale: str, string: str):
     try:
         return {
             "locale": locale,

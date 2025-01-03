@@ -2,7 +2,6 @@ import os
 import re
 import shutil
 import sys
-import traceback  # noqa
 from time import sleep
 
 if __name__ == '__main__':
@@ -42,6 +41,7 @@ def generate_config(dir_path, language):
                     'config.comments.config_version',
                     fallback_failed_prompt=False)}\n')
         f.write('initialized = false\n')
+        f.close()
 
     from core.config import Config, CFGManager  # noqa
 
