@@ -15,7 +15,7 @@ async def query_java_server(
 ) -> str:
     match_object = re.match(r"(.*)[\s:](\d*)", address, re.M | re.I)
     serip = match_object.group(1) if match_object else address
-    port = match_object.group(2)if match_object else 25565
+    port = match_object.group(2) if match_object else 25565
     servers = []
 
     try:
