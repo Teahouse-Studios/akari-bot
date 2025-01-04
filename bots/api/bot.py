@@ -151,6 +151,7 @@ async def verify_token(request: Request):
 @limiter.limit("2/second")
 async def set_csrf_token(request: Request):
     verify_jwt(request)
+    csrf_token = secrets.token_hex(32)
     device_token = request.cookies.get("deviceToken")
     current_time = time.time()
 
@@ -158,14 +159,11 @@ async def set_csrf_token(request: Request):
     token_entries = [
         token for token in token_entries if current_time - token["token_timestamp"] < CSRF_TOKEN_EXPIRY
     ]
-
-    csrf_token = secrets.token_hex(32)
     token_entries.append({
         "csrf_token": csrf_token,
         "device_token": device_token,
         "token_timestamp": current_time
     })
-
     save_csrf_tokens(token_entries)
 
     return {"message": "Success", "csrf_token": csrf_token}
