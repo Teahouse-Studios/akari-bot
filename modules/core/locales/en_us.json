@@ -196,7 +196,7 @@
     "core.message.setup.timeoffset.success": "The time offset has been set to UTC${offset}.",
     "core.message.setup.typing.disable": "Input prompt disabled.",
     "core.message.setup.typing.enable": "Input prompt enabled.",
-    "core.message.update.binary_mode": "The robot is deployed through the binary executable and therefore cannot be updated. Please download the latest version of the executable and replace it manually.",
+    "core.message.update.binary_mode": "The bot is deployed through the binary executable and therefore cannot be updated. Please download the latest version of the executable and replace it manually.",
     "core.message.update.failed": "Failed to fetch update from GitHub.",
     "core.message.version": "Current bot version: ${commit}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
