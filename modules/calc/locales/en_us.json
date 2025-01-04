@@ -2,5 +2,5 @@
     "calc.help": "Safely evaluate Python ast expressions.",
     "calc.message.invalid": "Invalid expression: ${expr}",
     "calc.message.time_out": "Calculation timeout.",
-    "calc.message.binary_mode": "The robot is deployed through the binary executable and therefore this module is disabled. To use the module, deploy the robot right through the source code."
+    "calc.message.binary_mode": "The bot is deployed through the binary executable and therefore this module is disabled. To use the module, deploy the bot right through the source code."
 }
