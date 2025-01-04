@@ -309,9 +309,9 @@ async def parser(msg: Bot.MessageSession,
                             await msg.send_message(
                                 msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
                                              prefix=msg.prefixes[0]))
-                            if await msg.check_permission():
-                                if await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable", confirm = msg.locale.t("message.wait.prompt.confirm")), quote=False):
-                                    if await msg.data.enable(command_first_word):
+                            if all([await msg.check_permission(),
+                                    await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable", confirm = msg.locale.t("message.wait.prompt.confirm")), quote=False),
+                                    msg.data.enable(command_first_word)]):
                                         await msg.send_message(msg.locale.t("core.message.module.enable.success", module=command_first_word))
                             return
                     elif module.required_admin:
