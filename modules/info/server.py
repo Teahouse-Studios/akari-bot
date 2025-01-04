@@ -39,6 +39,8 @@ async def query_java_server(
                     else:
                         text.append(item)
                 servers.append(''.join(text))
+            else:
+                servers.append(str(description))
         if 'players' in jejson:
             onlinesplayer = f"{msg.locale.t('server.message.player')}{str(
                 jejson['players']['online'])} / {str(jejson['players']['max'])}"
