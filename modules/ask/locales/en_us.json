@@ -1,8 +1,0 @@
-{
-    "ask.help": "Answer your question via ChatGPT.",
-    "ask.help.desc": "Ask AkariBot anything!",
-    "ask.help.regex": "Question:<question>? Answer your question via ChatGPT.",
-    "ask.message.rate_limit_exceeded": "You have been rate limited. Please try again 20 seconds later.",
-    "ask.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into images. Here is the original text output:\n${text}) ",
-    "config.comments.openai_api_key": "OpenAI API Key. (For ask modules etc.)"
-}

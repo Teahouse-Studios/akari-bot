@@ -78,6 +78,12 @@ slowapi = "^0.1.9"
 autopep8 = "^2.0.2"
 pycodestyle = "2.12.1"
 
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

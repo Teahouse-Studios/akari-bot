@@ -1,5 +1,5 @@
 {
-    "bot_name": "小可",
+    "bot_name": "云可",
     "check.redacted": "<已編輯:${reason}>",
     "check.redacted.all": "<全部已編輯:${reason}>",
     "config.comments.allow_reload_base": "是否允許重載基礎模組。",

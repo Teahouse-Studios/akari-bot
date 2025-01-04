@@ -3,7 +3,7 @@ description: 提出新的建议。
 title: "[FEATURE]: "
 labels: ["enhancement"]
 assignees:
-  - OasisAkari
+  - cloudw233
 body:
   - type: markdown
     attributes:

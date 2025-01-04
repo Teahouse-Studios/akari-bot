@@ -139,8 +139,9 @@ async def _(msg: Bot.MessageSession):
 
     answer = await msg.wait_next_message(
         msg.locale.t("twenty_four.message", numbers=numbers), timeout=None
-    )
-    expr = answer.as_display(text_only=True)
+    , append_instruction=False)
+    expr = answer.as_display(text_only=True).replace('÷', '/').replace('×', '*')\
+            .replace('（', '(').replace('）', ')').replace('。', '.').replace(' ', '') #shitcode D:
     if play_state.check():
         play_state.disable()
         if expr.lower() in no_solution_lst:
