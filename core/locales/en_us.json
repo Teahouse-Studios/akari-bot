@@ -73,6 +73,7 @@
     "config.comments.use_secrets_random": "Whether to use the random number generator based on the secrets library.",
     "config.comments.web_render": "WebRender service URL.",
     "config.comments.web_render_local": "The local WebRender service address.",
+    "config.comments.webui_port": "The port number of the WebUI service.",
     "config.header.line.1": "https://toml.io/en/v1.0.0",
     "config.header.line.2": "NOTE: TOML is not like Python. Do not use Python syntax here.",
     "config.header.line.3": "EXAMPLE: Boolean values in TOML must be lowercase.",
