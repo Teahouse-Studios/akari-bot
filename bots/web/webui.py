@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from flask import Flask, redirect, send_from_directory, url_for
+from urllib.parse import urlparse
 
 import orjson as json
 
@@ -40,7 +41,12 @@ if os.path.exists(webui_path):
     @app.route("/api/<path:path>")
     def api_redirect(path=None):
         if path:
-            return redirect(f"http://127.0.0.1:{API_PORT}/api/{path}")
+            from urllib.parse import urlparse
+            parsed_path = urlparse(path)
+            if not parsed_path.netloc and not parsed_path.scheme:
+                return redirect(f"http://127.0.0.1:{API_PORT}/api/{path}")
+            else:
+                return redirect(f"http://127.0.0.1:{API_PORT}/api")
         else:
             return redirect(f"http://127.0.0.1:{API_PORT}/api")
 
