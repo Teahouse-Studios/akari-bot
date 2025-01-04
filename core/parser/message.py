@@ -310,7 +310,7 @@ async def parser(msg: Bot.MessageSession,
                                 msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
                                              prefix=msg.prefixes[0]))
                             if all([await msg.check_permission(),
-                                    await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable", confirm = msg.locale.t("message.wait.prompt.confirm")), quote=False),
+                                    await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable"), quote=False),
                                     msg.data.enable(command_first_word)]):
                                         await msg.send_message(msg.locale.t("core.message.module.enable.success", module=command_first_word))
                             else:

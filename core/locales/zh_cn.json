@@ -150,7 +150,7 @@
     "parser.matched.but_try_again_later": "请稍后再试。",
     "parser.module.desc": "介绍：\n${desc}",
     "parser.module.disabled.prompt": "“${module}”模块未开启，请使用“${prefix}enable ${module}”开启本模块。",
-    "parser.module.disabled.to_enable": "是否开启并继续执行？${confirm}",
+    "parser.module.disabled.to_enable": "是否开启并继续执行？",
     "parser.module.unloaded": "“${module}”模块当前未加载，请联系开发者处理。",
     "parser.superuser.permission.denied": "你没有使用该命令的权限。",
     "petal.message.cost": "（使用了 ${amount} 片花瓣）",
