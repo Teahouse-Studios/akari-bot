@@ -203,6 +203,5 @@
     "core.message.whoami": "你的 ID：${sender}\n本会话的 ID：${target}",
     "core.message.whoami.admin": "（你拥有本会话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本会话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
-    "parser.module.disabled.to_enable": "是否开启？${confirm}"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
 }
