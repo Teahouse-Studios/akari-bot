@@ -189,13 +189,6 @@ if 'initialized' not in config.value:
         Reorganize.bot_add_enabled_flag()
         Reorganize.reorganize_bot_key("telegram_token", True)
 
-        # api
-
-        Reorganize.table = 'api'
-        Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key('api_port')
-        Reorganize.reorganize_bot_key('jwt_secret', True)
-
         # discord
 
         Reorganize.table = 'discord'
@@ -226,6 +219,13 @@ if 'initialized' not in config.value:
         Reorganize.reorganize_bot_key("qq_bot_secret", True)
         Reorganize.reorganize_bot_key("qq_private_bot")
         Reorganize.reorganize_bot_key("qq_bot_enable_send_url")
+
+        # web
+
+        Reorganize.table = 'web'
+        Reorganize.bot_add_enabled_flag()
+        Reorganize.reorganize_bot_key('api_port')
+        Reorganize.reorganize_bot_key('jwt_secret', True)
 
         configs['config'].add('config', toml_document())
         configs['config']['config'].add(toml_comment(old_locale.t('config.table.config')))

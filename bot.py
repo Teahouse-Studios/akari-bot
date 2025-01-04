@@ -26,8 +26,8 @@ bots_and_required_configs = {
     "aiogram": ["telegram_token"],
     "kook": ["kook_token"],
     "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    "api": ["jwt_secret", "api_allow_origins"],
     "qqbot": ["qq_bot_appid", "qq_bot_secret"],
+    "web": ["jwt_secret", "api_allow_origins"],
 }
 
 
