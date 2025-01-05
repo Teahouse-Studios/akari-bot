@@ -16,5 +16,5 @@
     "ncmusic.message.search.table.header.id": "序号",
     "ncmusic.message.search.table.header.name": "Title",
     "config.comments.ncmusic_api": "API address of NetEase Cloud Music API. (For ncmusic module)",
-    "config.comments.ncmusic_enable_card": "Whether enables card messages of ncmusic module. (Only valid on QQ client)"
+    "config.comments.ncmusic_enable_card": "Whether enables card messages of ncmusic module. (Only valid on QQ)"
 }
