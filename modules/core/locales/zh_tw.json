@@ -196,7 +196,7 @@
     "core.message.setup.timeoffset.success": "已將時間偏移量設定為 UTC${offset}。",
     "core.message.setup.typing.disable": "已停用輸入提醒。",
     "core.message.setup.typing.enable": "已啟用輸入提醒。",
-    "core.message.update.binary_mode": "机器人正在使用二进制部署，无法更新。请手动下载最新版本的二进制文件进行替换。",
+    "core.message.update.binary_mode": "機器人正在使用二進位部署，無法更新。請手動下載最新版本的二進位檔案覆寫。",
     "core.message.update.failed": "嘗試從 GitHub 取得更新失敗。",
     "core.message.version": "當前機器人版本號：${commit}",
     "core.message.version.unknown": "無法取得版本號。此實例可能沒有使用 Git 進行部署。",
