@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         await msg.finish(msg.locale.t("message.cooldown", time=int(30 - res)))
 
 
-@bili.regex(r"av(\d+)", flags=re.I, mode="A", desc="{bilibili.help.regex.av}")
+@bili.regex(r"\bav(\d+)\b", flags=re.I, mode="A", desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
