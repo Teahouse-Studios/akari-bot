@@ -11,7 +11,7 @@ jobs:
     
     steps:
     - name: Checkout WebUI repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         ref: beta
         repository: DoroWolf/akari-bot-webui
@@ -30,7 +30,7 @@ jobs:
         mv dist webui
 
     - name: Checkout Repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: Teahouse-Studios/akari-bot
         token: ${{ secrets.GITHUB_TOKEN }}
