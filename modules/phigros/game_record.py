@@ -59,13 +59,13 @@ def decrypt_bytes(encrypted):
     return unpad(decrypted, AES.block_size)
 
 
-def parse_game_record(file_path):
+def parse_game_record(rd_path):
     with open(
         os.path.join(assets_path, "modules", "phigros", "rating.json"), "r", encoding="utf-8"
     ) as f:
         rating = json.loads(f.read())
     decrypted_data = {}
-    with open(file_path, "rb+") as rd:
+    with open(os.path.join(rd_path, "gameRecord"), "rb+") as rd:
         data = decrypt_bytes(rd.read())
         pos = int(data[0] < 0) + 1
         while pos < len(data):

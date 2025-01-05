@@ -5,14 +5,14 @@ from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 
-l = module("langconv", developers=["Dianliang233"], alias=["lc"], doc=True)
+lc_ = module("langconv", developers=["Dianliang233"], alias=["lc"], doc=True)
 
 lc_zh_cn = LanguageConverter.from_language(zh_cn)
 lc_zh_hk = LanguageConverter.from_language(zh_hk)
 lc_zh_tw = LanguageConverter.from_language(zh_tw)
 
 
-@l.command("<language> <content> {{langconv.help}}")
+@lc_.command("<language> <content> {{langconv.help}}")
 async def _(msg: Bot.MessageSession, language: str, content: str):
     if not language.startswith("zh"):
         language = "zh-" + language

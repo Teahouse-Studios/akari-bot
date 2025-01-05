@@ -15,7 +15,7 @@ async def fetch_ip_info() -> dict:
     try:
         Logger.info("Fetching IP information...")
         ip_info = await get_url("https://api.ip.sb/geoip", timeout=10, fmt="json")
-        Logger.info("Successfully fetched IP information.")
+        Logger.success("Successfully fetched IP information.")
         return ip_info
     except Exception:
         Logger.error("Failed to get IP information.")

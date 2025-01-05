@@ -16,7 +16,7 @@ def load_extra_schedulers():
     async def clear_queue():
         Logger.info("Clearing job queue...")
         BotDBUtil.JobQueue.clear()
-        Logger.info("Job queue cleared.")
+        Logger.success("Job queue cleared.")
 
     fun_file = None
     Logger.info("Attempting to load schedulers...")
@@ -61,4 +61,4 @@ def load_extra_schedulers():
             tb = traceback.format_exc()
             errmsg = f"Failed to load schedulers.{fun_file}: \n{tb}"
             Logger.error(errmsg)
-    Logger.info("All schedulers loaded.")
+    Logger.success("All schedulers loaded.")

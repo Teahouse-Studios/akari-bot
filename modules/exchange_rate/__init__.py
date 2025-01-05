@@ -1,10 +1,12 @@
 import datetime
+import re
 
 from core.builtins import Bot
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
+from core.utils.text import isfloat
 
 api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True)
 
@@ -61,8 +63,6 @@ async def exchange(base_currency, target_currency, amount: float, msg):
             await msg.finish(
                 f"{msg.locale.t('exchange_rate.message.invalid.unit')}{' '.join(unsupported_currencies)}"
             )
-    else:
-        raise Exception(data["error-type"])
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
@@ -81,18 +81,18 @@ async def exchange(base_currency, target_currency, amount: float, msg):
                 time=time,
             )
         )
-    else:
-        raise Exception(data["error-type"])
 
 
 @excr.regex(
-    r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})",
+    r"(\d+(?:\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})",
+    mode="M",
+    flags=re.I,
     desc="{exchange_rate.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
-    groups = msg.matched_msg.groups()
-    amount = groups[0] if groups[0] else "1"
-    base = groups[2].upper()
-    target = groups[3].upper()
+    matched_msg = msg.matched_msg
+    amount = matched_msg.group(1) if matched_msg.group(1) and isfloat(matched_msg.group(1)) else 1
+    base = matched_msg.group(2).upper()
+    target = matched_msg.group(3).upper()
     if base != target:
-        await msg.finish(await exchange(base, target, amount, msg))
+        await msg.finish(await exchange(base, target, float(amount), msg))

@@ -49,14 +49,14 @@ async def _(msg: Bot.MessageSession):
     await msg.send_message([Plain("A picture:"), Image("https://http.cat/100.jpg")])
 
 
-@test.regex(re.compile(r"\{\{(.*)}}"), mode="M")  # re.match
+@test.regex(r"\{\{(.*)}}", mode="M")  # re.match
 async def _(msg: Bot.MessageSession):
     #  >>> {{Hello World!}}
     #  <<< Hello World!
     await msg.finish(msg.matched_msg.group(1))
 
 
-@test.regex(re.compile(r"\[\[(.*)]]"), mode="A")  # re.findall
+@test.regex(r"\[\[(.*)]]", mode="A")  # re.findall
 async def _(msg: Bot.MessageSession):
     #  >>> [[Hello]] [[World]]
     #  <<< Hello

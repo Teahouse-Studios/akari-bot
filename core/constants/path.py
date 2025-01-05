@@ -10,6 +10,7 @@ locales_path = os.path.abspath("./core/locales")
 logs_path = os.path.abspath("./logs")
 modules_path = os.path.abspath("./modules")
 schedulars_path = os.path.abspath("./schedulers")
+webui_path = os.path.abspath("./webui")
 
 # assets 子路径
 fonts_path = os.path.join(assets_path, "fonts")

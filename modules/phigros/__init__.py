@@ -87,7 +87,7 @@ async def _(msg: Bot.MessageSession):
             dl = await download(save_url)
             rd_path = random_cache_path()
             shutil.unpack_archive(dl, rd_path)
-            game_records = parse_game_record(os.path.join(rd_path, "gameRecord"))
+            game_records = parse_game_record(rd_path)
             sort_by_rks = sorted(
                 {
                     f"{level}.{song}": game_records[song][level]

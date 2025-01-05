@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
                     content = await generate_latex(block["content"])
                     img = PILImage.open(io.BytesIO(content))
                     chain.append(Image(img))
-                except Exception as e:
+                except Exception:
                     chain.append(
                         I18NContext("ask.message.text2img.error", text=content)
                     )
@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession):
                             )
                         )
                     )
-                except Exception as e:
+                except Exception:
                     chain.append(
                         I18NContext("ask.message.text2img.error", text=content)
                     )

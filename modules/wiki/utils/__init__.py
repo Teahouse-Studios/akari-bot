@@ -16,12 +16,11 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 
 
 @rc_.command()
-@rc_.command(
-    "[--legacy] {{wiki.help.rc}}",
-    options_desc={"--legacy": "{help.option.legacy}"},
-    available_for=["QQ|Group"],
-)
-async def rc_loader(msg: Bot.MessageSession):
+@rc_.command("[--legacy] {{wiki.help.rc}}",
+             options_desc={"--legacy": "{help.option.legacy}"},
+             available_for=["QQ|Group"]
+             )
+async def _(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -60,7 +59,7 @@ async def rc_loader(msg: Bot.MessageSession):
 
 
 @rc_.command("{{wiki.help.rc}}", exclude_from=["QQ|Group"])
-async def rc_loader(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -76,12 +75,11 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 
 
 @ab_.command()
-@ab_.command(
-    "[--legacy] {{wiki.help.ab}}",
-    options_desc={"--legacy": "{help.option.legacy}"},
-    available_for=["QQ|Group"],
-)
-async def ab_loader(msg: Bot.MessageSession):
+@ab_.command("[--legacy] {{wiki.help.ab}}",
+             options_desc={"--legacy": "{help.option.legacy}"},
+             available_for=["QQ|Group"]
+             )
+async def _(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -120,7 +118,7 @@ async def ab_loader(msg: Bot.MessageSession):
 
 
 @ab_.command("{{wiki.help.ab}}", exclude_from=["QQ|Group"])
-async def ab_loader(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -136,7 +134,7 @@ new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=
 
 
 @new.command("{{wiki.help.newbie}}")
-async def newbie_loader(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -152,7 +150,7 @@ usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=Tr
 
 
 @usr.command("<username> {{wiki.help.user}}")
-async def user(msg: Bot.MessageSession, username: str):
+async def _(msg: Bot.MessageSession, username: str):
     target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
     if start_wiki:

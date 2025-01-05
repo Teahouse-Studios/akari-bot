@@ -17,7 +17,7 @@ from core.utils.info import Info
 
 async def init_async(start_scheduler=True) -> None:
     try:
-        Info.version = os.popen("git rev-parse HEAD", "r").read()
+        Info.version = os.popen("git rev-parse HEAD", "r").read().strip('\n')
     except Exception:
         Logger.warning("Failed to get Git commit hash, is it a Git repository?")
     load_modules()

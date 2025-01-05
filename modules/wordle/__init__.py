@@ -311,7 +311,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("game.message.stop.none"))
 
 
-@wordle.command("theme {{wordle.help.theme}}", load=(not text_mode))
+@wordle.command("theme {{wordle.help.theme}}", load=not text_mode)
 async def _(msg: Bot.MessageSession):
     dark_theme = msg.data.options.get("wordle_dark_theme")
 

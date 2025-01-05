@@ -26,8 +26,8 @@ bots_and_required_configs = {
     "aiogram": ["telegram_token"],
     "kook": ["kook_token"],
     "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    "api": [],
     "qqbot": ["qq_bot_appid", "qq_bot_secret"],
+    "web": ["jwt_secret", "api_allow_origins"],
 }
 
 
@@ -41,8 +41,7 @@ processes = []
 
 
 def init_bot():
-    import core.scripts.config_generate  # noqa
-    from core.config import Config, CFGManager  # noqa
+    from core.config import Config  # noqa
     from core.constants.default import base_superuser_default  # noqa
     from core.database import BotDBUtil, session, DBVersion  # noqa
     from core.logger import Logger  # noqa
@@ -59,8 +58,8 @@ def init_bot():
         from core.database.update import update_database
 
         update_database()
-        Logger.info("Database updated successfully!")
-    print(ascii_art)
+        Logger.success("Database updated successfully!")
+    Logger.info(ascii_art)
     base_superuser = Config(
         "base_superuser", base_superuser_default, cfg_type=(str, list)
     )
@@ -74,13 +73,6 @@ def init_bot():
         Logger.warning(
             "The base superuser is not found, please setup it in the config file."
         )
-
-    disabled_bots.clear()
-    for t in CFGManager.values:
-        if t.startswith("bot_") and not t.endswith("_secret"):
-            if "enable" in CFGManager.values[t][t]:
-                if not CFGManager.values[t][t]["enable"]:
-                    disabled_bots.append(t[4:])
 
 
 def multiprocess_run_until_complete(func):
@@ -98,7 +90,7 @@ def multiprocess_run_until_complete(func):
     p.close()
 
 
-def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
+def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     from core.logger import Logger  # noqa
     from core.utils.info import Info  # noqa
 
@@ -117,7 +109,7 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
 
 def run_bot():
     from core.constants.path import cache_path  # noqa
-    from core.config import Config  # noqa
+    from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
 
     def restart_process(bot_name: str):
@@ -155,6 +147,14 @@ def run_bot():
     envs["PYTHONPATH"] = os.path.abspath(".")
     lst = bots_and_required_configs.keys()
 
+    for t in CFGManager.values:
+        if t.startswith("bot_") and not t.endswith("_secret"):
+            if "enable" in CFGManager.values[t][t]:
+                if not CFGManager.values[t][t]["enable"]:
+                    disabled_bots.append(t[4:])
+            else:
+                Logger.warning(f"Bot {t} cannot found config \"enable\".")
+
     for bl in lst:
         if bl in disabled_bots:
             continue
@@ -163,7 +163,7 @@ def run_bot():
             for c in bots_and_required_configs[bl]:
                 if not Config(c, _global=True):
                     Logger.error(
-                        f"Bot {bl} requires config {c} but not found, abort to launch."
+                        f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
                     )
                     abort = True
                     break
@@ -200,6 +200,7 @@ def run_bot():
 
 
 if __name__ == "__main__":
+    import core.scripts.config_generate  # noqa
     try:
         while True:
             try:

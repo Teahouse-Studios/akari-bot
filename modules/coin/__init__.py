@@ -30,9 +30,9 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
     if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.invalid.out_of_range", max=MAX_COIN_NUM)
-    elif count < 0:
+    if count < 0:
         return msg.locale.t("coin.message.invalid.amount")
-    elif count == 0:
+    if count == 0:
         return msg.locale.t("coin.message.nocoin")
 
     coin_total_weight = FACE_UP_WEIGHT + FACE_DOWN_WEIGHT + STAND_WEIGHT

@@ -35,11 +35,11 @@ class LoggingLogger:
     def __init__(self, name):
         self.log = logger
         self.log.remove()
-        self.info = logger.info
-        self.error = logger.error
         self.debug = logger.debug
+        self.info = logger.info
+        self.success = logger.success
         self.warning = logger.warning
-        self.exception = logger.exception
+        self.error = logger.error
         self.critical = logger.critical
 
         self.rename(name)
@@ -63,11 +63,11 @@ class LoggingLogger:
             retention="10 days",
             encoding="utf8",
         )
-        self.info = self.log.info
-        self.error = self.log.error
         self.debug = self.log.debug
+        self.info = self.log.info
+        self.success = self.log.success
         self.warning = self.log.warning
-        self.exception = self.log.exception
+        self.error = self.log.error
         self.critical = self.log.critical
 
 

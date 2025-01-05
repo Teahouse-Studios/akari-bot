@@ -47,7 +47,7 @@ def private_ip_check(url: str):
 
 async def get_url(
     url: str,
-    status_code: int = 200,
+    status_code: Optional[int] = 200,
     headers: Optional[Dict[str, Any]] = None,
     params: Optional[Dict[str, Any]] = None,
     fmt: Optional[str] = None,
@@ -124,7 +124,7 @@ async def get_url(
 async def post_url(
     url: str,
     data: Any = None,
-    status_code: int = 200,
+    status_code: Optional[int] = 200,
     headers: Optional[Dict[str, Any]] = None,
     fmt: Optional[str] = None,
     timeout: Optional[float] = 20,
@@ -200,7 +200,7 @@ async def download(
     url: str,
     filename: Optional[str] = None,
     path: Optional[str] = None,
-    status_code: int = 200,
+    status_code: Optional[int] = 200,
     method: str = "GET",
     post_data: Any = None,
     headers: Optional[Dict[str, Any]] = None,
