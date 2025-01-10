@@ -96,7 +96,8 @@ async def message_handler(event: Event):
         if event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == str(qq_account):
                 event.message = event.message[1:]
-                if not event.message:
+                if not event.message or \
+                        event.message[0]["type"] == "text" and event.message[0]["data"]["text"] == ' ':
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
                     prefix = command_prefix
             else:

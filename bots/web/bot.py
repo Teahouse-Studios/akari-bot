@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from multiprocessing import Process
+import uvicorn
 
 sys.path.append(os.getcwd())
 
@@ -20,9 +21,8 @@ PrivateAssets.set(os.path.join(assets_path, "private", "api"))
 
 
 def run_fastapi():
-    import uvicorn
-    from bots.web.api import app as fastapi_app
     while True:
+        from bots.web.api import app as fastapi_app  # noqa: E402
         Info.client_name = client_name
         uvicorn.run(fastapi_app, port=API_PORT, log_level="info")
         Logger.error("API Server crashed, is the port occupied?")
@@ -31,8 +31,8 @@ def run_fastapi():
 
 
 def run_flask():
-    if os.path.exists(webui_path):
-        from bots.web.webui import app as flask_app, generate_config
+    from bots.web.webui import generate_config, app as flask_app  # noqa: E402
+    if os.path.exists(os.path.join(webui_path, "index.html")):
         generate_config()
         Logger.info(f"Visit AkariBot WebUI: http://127.0.0.1:{WEBUI_PORT}")
         flask_app.run(port=WEBUI_PORT)
