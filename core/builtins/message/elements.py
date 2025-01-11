@@ -217,7 +217,7 @@ class ErrorMessageElement(MessageElement):
                 )
             ):
                 error_message += "\n" + locale.t(
-                    "error.prompt.address", url=str(report_url)
+                    "error.prompt.address", url=str(report_url.url)
                 )
 
         return deepcopy(cls(error_message))

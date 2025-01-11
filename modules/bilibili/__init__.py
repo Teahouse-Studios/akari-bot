@@ -54,9 +54,10 @@ async def _(msg: Bot.MessageSession):
             await get_video_info(msg, query)
 
 
-@bili.regex(r"\b(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)\b",
+@bili.regex(r"(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)",
             mode="A",
             desc="{bilibili.help.regex.url}",
+            text_only=False,
             )
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]

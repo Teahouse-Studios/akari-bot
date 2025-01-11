@@ -446,7 +446,15 @@ async def _(msg: Bot.MessageSession):
 echo = module('echo', required_superuser=True, base=True, doc=True)
 
 
-@echo.command('<display_msg>')
+@echo.command()
+async def _(msg: Bot.MessageSession):
+    dis = await msg.wait_next_message()
+    if dis:
+        dis = dis.as_display()
+        await msg.finish(dis, enable_parse_message=False)
+
+
+@echo.command('[<display_msg>]')
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     await msg.finish(dis, enable_parse_message=False)
 

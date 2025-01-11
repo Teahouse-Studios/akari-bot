@@ -43,8 +43,9 @@ class RegexMeta(ModuleMeta):
     exclude_from: list = field(default=[], converter=convert2lst)
     flags: re.RegexFlag = 0
     load: bool = True
-    show_typing: bool = True
     logging: bool = True
+    show_typing: bool = True
+    text_only: bool = True
 
 
 @define

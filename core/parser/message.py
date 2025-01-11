@@ -550,7 +550,7 @@ async def parser(msg: Bot.MessageSession,
                         try:
                             matched = False
                             matched_hash = 0
-                            trigger_msg = msg.as_display(msg.trigger_msg)
+                            trigger_msg = msg.as_display(text_only=rfunc.text_only)
                             if rfunc.mode.upper() in ['M', 'MATCH']:
                                 msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg:
