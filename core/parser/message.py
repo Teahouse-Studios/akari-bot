@@ -3,6 +3,7 @@ import inspect
 import re
 import traceback
 from datetime import datetime
+from string import Template
 from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
@@ -127,7 +128,6 @@ def transform_alias(msg, command: str):
             pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
             # 匹配占位符
             pattern_placeholders = re.findall(r'\$\{([^{}$]+)\}', pattern)
-            replacement_placeholders = re.findall(r'\$\{([^{}$]+)\}', replacement)
 
             regex_pattern = re.escape(pattern)
             for placeholder in pattern_placeholders:
@@ -135,20 +135,10 @@ def transform_alias(msg, command: str):
 
             match = re.match(regex_pattern, command)
             if match:
-                result = replacement
                 groups = match.groups()
-                # 替换模板中的占位符
-                for i, placeholder in enumerate(pattern_placeholders):
-                    if i < len(groups):
-                        result = result.replace(f'${{{placeholder}}}', groups[i])
-                    else:
-                        result = result.replace(f'${{{placeholder}}}', '')
-                # 检查未匹配的占位符并保留原始文本
-                for placeholder in replacement_placeholders:
-                    if placeholder not in pattern_placeholders:
-                        result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
-                    else:
-                        result = result.replace(f'${{{placeholder}}}', '')
+                placeholder_dict = {placeholder: groups[i] for i,
+                                    placeholder in enumerate(pattern_placeholders) if i < len(groups)}
+                result = Template(replacement).safe_substitute(placeholder_dict)
 
                 Logger.debug(msg.prefixes[0] + result)
                 return msg.prefixes[0] + result

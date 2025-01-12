@@ -6,8 +6,8 @@ import urllib.parse
 from copy import deepcopy
 from typing import Union, Dict, List
 
-from attrs import define
 import orjson as json
+from attrs import define
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
@@ -28,19 +28,7 @@ default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config("enable_tos", True)
 
 
-class InvalidPageIDError(Exception):
-    pass
-
-
 class InvalidWikiError(Exception):
-    pass
-
-
-class DangerousContentError(Exception):
-    pass
-
-
-class PageNotFound(Exception):
     pass
 
 
