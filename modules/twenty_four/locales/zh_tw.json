@@ -3,7 +3,7 @@
     "twenty_four.help.desc": "24 點小遊戲。",
     "twenty_four.message": "給出的數字組合：${numbers}\n請輸入運算式使其結果為 24。（若無解，請輸入「無解」）",
     "twenty_four.message.correct": "回答正確。",
-    "twenty_four.message.incorrect.have_solution": "回答錯誤：該組合存在解。",
-    "twenty_four.message.incorrect.error": "回答錯誤：運算式無效。",
+    "twenty_four.message.incorrect.have_solution": "回答錯誤：該組合存在解。\n其中一組解為：${solution}",
+    "twenty_four.message.incorrect.invalid": "回答錯誤：運算式無效。",
     "twenty_four.message.incorrect": "回答錯誤。"
 }

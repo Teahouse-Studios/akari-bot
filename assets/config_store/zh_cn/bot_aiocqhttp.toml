@@ -1,0 +1,19 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+[bot_aiocqhttp]
+# 平台端的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+qq_account = "<Replace me with (int, str) value>" # 机器人 QQ 号。（使用 Onebot 协议端部署 QQ 机器人时需要）
+qq_enable_listening_self_message = false # 使用 Onebot 协议时，是否启用自身消息监听。
+qq_disable_temp_session = true # 使用 Onebot 协议时，是否启用临时会话。
+qq_allow_approve_friend = false # 使用 Onebot 协议时，是否自动同意好友请求。
+qq_allow_approve_group_invite = false # 使用 Onebot 协议时，是否自动同意群邀请。
+qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket 主服务器的地址。（Onebot 协议端请使用反向 Websocket 方式进行连接）
+enable = false # 是否启用此平台。
+qq_typing_emoji = 181 # 使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+qq_limited_emoji = 10060 # 使用 QQ 相关协议端时，消息处理失败时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+
+[bot_aiocqhttp_secret]
+# 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+qq_access_token = "<Replace me with str value>" # 使用 Onebot 协议时，连接 WebSocket 服务器的 Access Token。

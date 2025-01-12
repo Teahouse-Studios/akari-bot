@@ -1,0 +1,7 @@
+{
+    "nintendo_err.help": "Parse the error code of Nintendo devices and tell the reason.",
+    "nintendo_err.message.invalid": "The code you entered is invalid, or the device you use is not supported by this feature.",
+    "nintendo_err.message.meme.0xdeadbeef": "都坏掉了，不能吃了。",
+    "nintendo_err.message.meme.0xdeadbabe": "我觉得你有问题。",
+    "nintendo_err.message.meme.0xbadf00d": "记得垃圾分类。"
+}

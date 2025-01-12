@@ -1,12 +1,10 @@
-import traceback
-
 from bs4 import BeautifulSoup
 
-from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale
+from core.utils.web_render import webrender
 
 
 async def jiki(term: str, locale: Locale):
@@ -16,10 +14,7 @@ async def jiki(term: str, locale: Locale):
     :returns: 查询结果。'''
     try:
         api = 'https://jikipedia.com/search?phrase=' + term
-        webrender = CFG.get_url('web_render')
-        if webrender:
-            api = webrender + 'source?url=' + api
-        html = await get_url(api, 200)
+        html = await get_url(webrender('source', api), 200, request_private_ip=True)
         Logger.debug(html)
         bs = BeautifulSoup(html, 'html.parser')
         result = bs.select_one('[data-index="0"]')
@@ -33,7 +28,7 @@ async def jiki(term: str, locale: Locale):
 
         results = bs.select('.lite-card').__len__()
         count = str(result) if results < 15 else '15+'
-        return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.result", result=count)}{title}\n{content}\n{str(Url(link))}'
+        return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.result", result=count)}{
+            title}\n{content}\n{str(Url(link))}'
     except Exception:
-        traceback.print_exc()
         return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.error")}'

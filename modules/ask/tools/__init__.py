@@ -18,7 +18,7 @@ tools = [
     random_number_tool,
     random_uuid_tool,
     bugtracker_tool,
-    self_knowledge_tool
+    self_knowledge_tool,
 ]
 
 if wolfram_tool:
@@ -26,4 +26,4 @@ if wolfram_tool:
 
 tool_names = [tool.name for tool in tools]
 
-__all__ = ['tools', 'tool_names']
+__all__ = ["tools", "tool_names"]

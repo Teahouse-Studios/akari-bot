@@ -29,6 +29,9 @@ from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
+from core.constants.path import assets_path
+from core.utils.text import isint
+
 
 class MkeyGenerator:
     __props = {
@@ -95,7 +98,7 @@ class MkeyGenerator:
     def __init__(self, debug=False):
         self._dbg = debug
 
-        self._data_path = 'modules/mkey/data'
+        self._data_path = os.path.join(assets_path, "modules", "mkey", "data")
 
     # Read AES key (v2).
     def _read_aes_key(self, file_name):
@@ -103,12 +106,16 @@ class MkeyGenerator:
         if self._dbg:
             print("Using %s." % file_path)
 
-        mkey_aes_key = open(file_path, "rb").read()
+        with open(file_path, "rb") as mkey_aes_key:
+            mkey_aes_key = mkey_aes_key.read()
         aes_key_len = 0x10
 
         if len(mkey_aes_key) != aes_key_len:
-            raise ValueError("Size of AES key %s is invalid (expected 0x%02X, got 0x%02X)." %
-                             file_name, aes_key_len)
+            raise ValueError(
+                "Size of AES key %s is invalid (expected 0x%02X, got 0x%02X)."
+                % file_name,
+                aes_key_len,
+            )
 
         return mkey_aes_key
 
@@ -118,12 +125,16 @@ class MkeyGenerator:
         if self._dbg:
             print("Using %s." % file_path)
 
-        data = open(file_path, "rb").read()
+        with open(file_path, "rb") as data:
+            data = data.read()
         mkey_len = 0x40
 
         if len(data) != mkey_len:
-            raise ValueError("Size of masterkey.bin %s is invalid (expected 0x%02X, got 0x%02X)." %
-                             file_name, mkey_len)
+            raise ValueError(
+                "Size of masterkey.bin %s is invalid (expected 0x%02X, got 0x%02X)."
+                % file_name,
+                mkey_len,
+            )
 
         mkey_data = struct.unpack("BB14x16s32s", data)
         return mkey_data
@@ -134,12 +145,16 @@ class MkeyGenerator:
         if self._dbg:
             print("Using %s." % file_path)
 
-        mkey_hmac_key = open(file_path, "rb").read()
+        with open(file_path, "rb") as mkey_aes_key:
+            mkey_hmac_key = mkey_aes_key.read()
         hmac_key_len = 0x20
 
         if len(mkey_hmac_key) != hmac_key_len:
-            raise ValueError("Size of HMAC key %s is invalid (expected 0x%02X, got 0x%02X)." %
-                             file_name, hmac_key_len)
+            raise ValueError(
+                "Size of HMAC key %s is invalid (expected 0x%02X, got 0x%02X)."
+                % file_name,
+                hmac_key_len,
+            )
 
         return mkey_hmac_key
 
@@ -150,29 +165,26 @@ class MkeyGenerator:
         if len(inquiry) == 8:
             if "v0" in algorithms:
                 return "v0"
-            else:
-                raise ValueError("v0 algorithm not supported by %s." % device)
-        elif len(inquiry) == 10:
+            raise ValueError("v0 algorithm not supported by %s." % device)
+        if len(inquiry) == 10:
             version = int((int(inquiry) / 10000000) % 100)
 
             if "v1" in algorithms and version < 10:
                 return "v1"
-            elif "v2" in algorithms:
+            if "v2" in algorithms:
                 return "v2"
-            elif "v3" in algorithms:
+            if "v3" in algorithms:
                 return "v3"
-            else:
-                raise ValueError("v1/v2/v3 algorithms not supported by %s." % device)
-        elif len(inquiry) == 6:
+            raise ValueError("v1/v2/v3 algorithms not supported by %s." % device)
+        if len(inquiry) == 6:
             if "v4" in algorithms:
                 return "v4"
-            else:
-                raise ValueError("v4 algorithm not supported by %s." % device)
-        else:
-            raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
+            raise ValueError("v4 algorithm not supported by %s." % device)
+        raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
 
     # CRC-32 implementation (v0).
-    def _calculate_crc(self, poly, xorout, addout, inbuf):
+    @staticmethod
+    def _calculate_crc(poly, xorout, addout, inbuf):
         crc = 0xFFFFFFFF
 
         for byte in inbuf:
@@ -181,7 +193,7 @@ class MkeyGenerator:
 
             crc = crc ^ byte
 
-            for i in range(8):
+            for _ in range(8):
                 mask = -(crc & 1)
                 crc = (crc >> 1) ^ (poly & mask)
 
@@ -224,7 +236,9 @@ class MkeyGenerator:
             self._data_path = None
 
         if not self._data_path:
-            raise ValueError("v1/v2 attempted, but data directory doesn't exist or was not specified.")
+            raise ValueError(
+                "v1/v2 attempted, but data directory doesn't exist or was not specified."
+            )
 
         #
         # Extract key ID fields from inquiry number.
@@ -258,7 +272,9 @@ class MkeyGenerator:
             else:
                 file_name = props["mkey_file"] % (region, version)
 
-            (mkey_region, mkey_version, mkey_ctr, mkey_hmac_key) = self._read_mkey_file(file_name)
+            (mkey_region, mkey_version, mkey_ctr, mkey_hmac_key) = self._read_mkey_file(
+                file_name
+            )
 
             file_name = props["aes_file"] % region
             mkey_aes_key = self._read_aes_key(file_name)
@@ -282,13 +298,21 @@ class MkeyGenerator:
         if algorithm == "v2":
             # Verify the region field.
             if mkey_region != region:
-                raise ValueError("%s has an incorrect region field (expected 0x%02X, got 0x%02X)." %
-                                 file_name, region, mkey_region)
+                raise ValueError(
+                    "%s has an incorrect region field (expected 0x%02X, got 0x%02X)."
+                    % file_name,
+                    region,
+                    mkey_region,
+                )
 
             # Verify the version field.
             if mkey_version != version and "no-versions" not in traits:
-                raise ValueError("%s has an incorrect version field (expected 0x%02X, got 0x%02X)." %
-                                 file_name, version, mkey_version)
+                raise ValueError(
+                    "%s has an incorrect version field (expected 0x%02X, got 0x%02X)."
+                    % file_name,
+                    version,
+                    mkey_version,
+                )
 
             if self._dbg:
                 print("AES key:")
@@ -337,19 +361,24 @@ class MkeyGenerator:
 
     def _generate_v3_v4(self, props, inquiry, aux=None):
         algorithm = props["algorithm"]
-        traits = props["traits"]
 
         if self._data_path and not os.path.isdir(self._data_path):
             self._data_path = None
 
         if not self._data_path:
-            raise ValueError("v3/v4 attempted, but data directory doesn't exist or was not specified.")
+            raise ValueError(
+                "v3/v4 attempted, but data directory doesn't exist or was not specified."
+            )
 
         if algorithm == "v4" and not aux:
-            raise ValueError("v4 attempted, but no auxiliary string (device ID required).")
+            raise ValueError(
+                "v4 attempted, but no auxiliary string (device ID required)."
+            )
 
         if algorithm == "v4" and len(aux) != 16:
-            raise ValueError("v4 attempted, but auxiliary string (device ID) of invalid length.")
+            raise ValueError(
+                "v4 attempted, but auxiliary string (device ID) of invalid length."
+            )
 
         if algorithm == "v4":
             version = int((inquiry / 10000) % 100)
@@ -373,7 +402,7 @@ class MkeyGenerator:
         if algorithm == "v4":
             inbuf += struct.pack(">I", 1)
 
-            device_id = struct.pack('<Q', int(aux, 16))
+            device_id = struct.pack("<Q", int(aux, 16))
             mkey_hmac_seed = device_id + mkey_hmac_key
 
             if self._dbg:
@@ -393,7 +422,7 @@ class MkeyGenerator:
             outbuf = HMAC.new(mkey_hmac_key, inbuf, digestmod=SHA256).digest()
             tmpbuf = outbuf
 
-            for i in range(1, 10000):
+            for _ in range(1, 10000):
                 tmpbuf = HMAC.new(mkey_hmac_key, tmpbuf, digestmod=SHA256).digest()
                 outbuf = strxor(outbuf, tmpbuf)
         else:
@@ -414,12 +443,12 @@ class MkeyGenerator:
 
     def generate(self, inquiry, month=None, day=None, aux=None, device=None):
         inquiry = inquiry.replace(" ", "")
-        if not inquiry.isdigit():
+        if not isint(inquiry):
             raise ValueError("Inquiry string must represent a decimal number.")
 
-        if month is None:
+        if not month:
             month = datetime.date.today().month
-        if day is None:
+        if not day:
             day = datetime.date.today().day
 
         if month < 1 or month > 12:
@@ -460,9 +489,9 @@ class MkeyGenerator:
         # Perform calculation of master key.
         if algorithm == "v0":
             output = self._generate_v0(props, inquiry, month, day)
-        elif algorithm == "v1" or algorithm == "v2":
+        elif algorithm in ("v1", "v2"):
             output = self._generate_v1_v2(props, inquiry, month, day)
-        elif algorithm == "v3" or algorithm == "v4":
+        elif algorithm in ("v3", "v4"):
             output = self._generate_v3_v4(props, inquiry, aux)
 
         return output

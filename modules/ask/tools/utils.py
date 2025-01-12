@@ -1,9 +1,9 @@
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, List, Union, Awaitable, Callable, Optional
 
-import ujson as json
+import orjson as json
 from langchain.tools import StructuredTool
 
-from core.types.message import MessageSession, MsgInfo, Session
+from core.builtins import MessageSession, MsgInfo, Session
 from core.utils.i18n import Locale
 
 
@@ -24,18 +24,18 @@ def to_async_func(func: Callable):
 def with_args(func: Callable, *args, **kwargs):
     async def wrapper(*a, **k):
         # if a is tuple with empty string
-        if len(a) == 1 and a[0] == '':
+        if len(a) == 1 and not a[0]:
             return await func(*args, **kwargs, **k)
         return await func(*args, *a, **kwargs, **k)
 
     return wrapper
 
 
-def parse_input(input: str):
-    if isinstance(input, list):  # wat hell it is appeared in here
-        vals = input
+def parse_input(input_: Union[str, List[str]]):
+    if isinstance(input_, list):  # wat hell it is appeared in here
+        vals = input_
     else:
-        vals = input.split(',')
+        vals = input_.split(",")
     parsed = []
     for v in vals:
         parsed.append(v.strip().strip('"'.strip("'")))
@@ -44,19 +44,28 @@ def parse_input(input: str):
 
 class AkariTool(StructuredTool):
     def __init__(
-            self,
-            name: str,
-            func: Callable,
-            coroutine=Optional[Callable[..., Awaitable[str]]],
-            args_schema: Any = None,
-            description: str = None,
-            return_direct: bool = False):
-        super().__init__(name=name, args_schema=args_schema, description=description,
-                         return_direct=return_direct, func=func, coroutine=coroutine)
+        self,
+        name: str,
+        func: Callable,
+        coroutine=Optional[Callable[..., Awaitable[str]]],
+        args_schema: Any = None,
+        description: str = None,
+        return_direct: bool = False,
+    ):
+        super().__init__(
+            name=name,
+            args_schema=args_schema,
+            description=description,
+            return_direct=return_direct,
+            func=func,
+            coroutine=coroutine,
+        )
         self.coroutine = func
 
 
-fake_msg = MessageSession(MsgInfo('Ask|0', 'Ask|0', 'AkariBot', 'Ask', 'Ask', 'Ask', 0),
-                          Session('~lol lol', 'Ask|0', 'Ask|0'))
-locale_en = Locale('en_us')
+fake_msg = MessageSession(
+    MsgInfo("Ask|0", "Ask|0", "AkariBot", "Ask", "Ask", "Ask", 0),
+    Session("~lol lol", "Ask|0", "Ask|0"),
+)
+locale_en = Locale("en_us")
 fake_msg.locale = locale_en

@@ -145,8 +145,7 @@ class HTML2Text(html.parser.HTMLParser):
         markdown = self.optwrap(self.finish())
         if self.pad_tables:
             return pad_tables_in_text(markdown)
-        else:
-            return markdown
+        return markdown
 
     def outtextf(self, s: str) -> None:
         self.outtextlist.append(s)
@@ -442,7 +441,6 @@ class HTML2Text(html.parser.HTMLParser):
                     self.abbr_title = attrs["title"]
             else:
                 if self.abbr_title is not None:
-                    assert self.abbr_data is not None
                     self.abbr_list[self.abbr_data] = self.abbr_title
                     self.abbr_title = None
                 self.abbr_data = None
@@ -479,7 +477,6 @@ class HTML2Text(html.parser.HTMLParser):
                     if self.maybe_automatic_link and not self.empty_link:
                         self.maybe_automatic_link = None
                     elif a:
-                        assert a["href"] is not None
                         if self.empty_link:
                             self.o("[")
                             self.empty_link = False
@@ -500,7 +497,6 @@ class HTML2Text(html.parser.HTMLParser):
 
         if tag == "img" and start and not self.ignore_images:
             if "src" in attrs:
-                assert attrs["src"] is not None
                 if not self.images_to_alt:
                     attrs["href"] = attrs["src"]
                 alt = attrs.get("alt") or self.default_image_alt
@@ -512,10 +508,8 @@ class HTML2Text(html.parser.HTMLParser):
                 ):
                     self.o("<img src='" + attrs["src"] + "' ")
                     if "width" in attrs:
-                        assert attrs["width"] is not None
                         self.o("width='" + attrs["width"] + "' ")
                     if "height" in attrs:
-                        assert attrs["height"] is not None
                         self.o("height='" + attrs["height"] + "' ")
                     if alt:
                         self.o("alt='" + alt + "' ")
@@ -533,10 +527,9 @@ class HTML2Text(html.parser.HTMLParser):
                         self.o("<" + escape_md(alt) + ">")
                         self.empty_link = False
                         return
-                    else:
-                        self.o("[")
-                        self.maybe_automatic_link = None
-                        self.empty_link = False
+                    self.o("[")
+                    self.maybe_automatic_link = None
+                    self.empty_link = False
 
                 # If we have images_to_alt, we discard the image itself,
                 # considering only the alt text.
@@ -547,7 +540,9 @@ class HTML2Text(html.parser.HTMLParser):
                     if self.inline_links:
                         href = attrs.get("href") or ""
                         self.o(
-                            "(" + str(Url(escape_md(urlparse.urljoin(self.baseurl, href)))) + ")"
+                            "("
+                            + str(Url(escape_md(urlparse.urljoin(self.baseurl, href))))
+                            + ")"
                         )
                     else:
                         i = self.previousIndex(attrs)
@@ -776,10 +771,11 @@ class HTML2Text(html.parser.HTMLParser):
                             "   ["
                             + str(link.count)
                             + "]: "
-                            + str(Url(urlparse.urljoin(self.baseurl, link.attrs["href"])))
+                            + str(
+                                Url(urlparse.urljoin(self.baseurl, link.attrs["href"]))
+                            )
                         )
                         if "title" in link.attrs:
-                            assert link.attrs["title"] is not None
                             self.out(" (" + link.attrs["title"] + ")")
                         self.out("\n")
                     else:
@@ -832,10 +828,9 @@ class HTML2Text(html.parser.HTMLParser):
                 self.o("<" + data + ">")
                 self.empty_link = False
                 return
-            else:
-                self.o("[")
-                self.maybe_automatic_link = None
-                self.empty_link = False
+            self.o("[")
+            self.maybe_automatic_link = None
+            self.empty_link = False
 
         if not self.code and not self.pre and not entity_char:
             data = escape_md_section(data, snob=self.escape_snob)
@@ -850,11 +845,10 @@ class HTML2Text(html.parser.HTMLParser):
 
         if not self.unicode_snob and c in unifiable_n:
             return unifiable_n[c]
-        else:
-            try:
-                return chr(c)
-            except ValueError:  # invalid unicode
-                return ""
+        try:
+            return chr(c)
+        except ValueError:  # invalid unicode
+            return ""
 
     def entityref(self, c: str) -> str:
         if not self.unicode_snob and c in config.UNIFIABLE:

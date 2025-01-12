@@ -1,44 +1,40 @@
 from core.builtins import Bot
 from core.component import module
-from .mcv import mcv, mcbv, mcdv, mcev
+from .mcv import mcjv, mcbv, mcdv, mcev, mclgv
 
 m = module(
-    bind_prefix='mcv',
-    alias='m',
-    developers=['OasisAkari', 'Dianliang233'],
-    recommend_modules=['mcbv', 'mcdv'])
+    "mcv",
+    developers=["OasisAkari", "Dianliang233"],
+    alias={
+        "mcbv": "mcv mcbv",
+        "mcdv": "mcv mcdv",
+        "mcev": "mcv mcev",
+        "mclgv": "mcv mclgv"
+    },
+    doc=True
+)
 
 
-@m.handle('{{mcv.help.mcv}}')
-async def mcv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcv(msg))
+@m.command("{{mcv.help.mcv}}")
+async def _(msg: Bot.MessageSession):
+    await msg.finish(await mcjv(msg))
 
 
-mb = module(
-    bind_prefix='mcbv',
-    developers=['OasisAkari', 'Dianliang233'])
-
-
-@mb.handle('{{mcv.help.mcbv}}')
-async def mcbv_loader(msg: Bot.MessageSession):
+@m.command("mcbv {{mcv.help.mcbv}}")
+async def _(msg: Bot.MessageSession):
     await msg.finish(await mcbv(msg))
 
 
-md = module(
-    bind_prefix='mcdv',
-    developers=['OasisAkari', 'Dianliang233'])
-
-
-@md.handle('{{mcv.help.mcdv}}')
-async def mcdv_loader(msg: Bot.MessageSession):
+@m.command("mcdv {{mcv.help.mcdv}}")
+async def _(msg: Bot.MessageSession):
     await msg.finish(await mcdv(msg))
 
 
-me = module(
-    bind_prefix='mcev',
-    developers=['OasisAkari', 'Dianliang233'])
-
-
-@me.handle('{{mcv.help.mcev}}')
+@m.command("mcev {{mcv.help.mcev}}")
 async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mcev(msg))
+
+
+@m.command("mclgv {{mcv.help.mclgv}}")
+async def mclgv_loader(msg: Bot.MessageSession):
+    await msg.finish(await mclgv(msg))

@@ -1,6 +1,7 @@
 {
     "wolframalpha.help": "Input a question or formula to search for WolframAlpha.",
     "wolframalpha.help.ask": "Answer the question via WolframAlpha.",
-    "wolframalpha.help.desc": "搜索 WolframAlpha。",
-    "wolframalpha.message.incomprehensible": "WolframAlpha can't understand your question."
+    "wolframalpha.help.desc": "Use WolframAlpha.",
+    "wolframalpha.message.incomprehensible": "WolframAlpha can't understand your question.",
+    "config.comments.wolfram_alpha_appid": "WolframAlpha AppID. (For wolframalpha module)"
 }

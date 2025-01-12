@@ -3,47 +3,61 @@ import os
 import urllib3
 from nio import AsyncClient, AsyncClientConfig
 
-from config import Config
+from core.config import Config
+from core.constants.default import matrix_homeserver_default, matrix_user_default
 from core.logger import Logger
 
-homeserver: str = Config('matrix_homeserver')
-user: str = Config('matrix_user')
-device_id: str = Config('matrix_device_id')
-device_name: str = Config('matrix_device_name')
-token: str = Config('matrix_token')
-megolm_backup_passphrase: str = Config('matrix_megolm_backup_passphrase')
+homeserver = Config(
+    "matrix_homeserver", matrix_homeserver_default, table_name="bot_matrix"
+)
+user = Config("matrix_user", matrix_user_default, table_name="bot_matrix")
+device_id = Config(
+    "matrix_device_id", cfg_type=str, secret=True, table_name="bot_matrix"
+)
+device_name = Config("matrix_device_name", cfg_type=str, table_name="bot_matrix")
+token = Config("matrix_token", cfg_type=str, secret=True, table_name="bot_matrix")
+megolm_backup_passphrase = Config(
+    "matrix_megolm_backup_passphrase",
+    cfg_type=str,
+    secret=True,
+    table_name="bot_matrix",
+)
 
-store_path = os.path.abspath('./matrix_store')
-store_path_nio = os.path.join(store_path, 'nio')
-store_path_megolm_backup = os.path.join(store_path, 'megolm_backup')
+store_path = os.path.abspath("./matrix_store")
+store_path_nio = os.path.join(store_path, "nio")
+store_path_megolm_backup = os.path.join(store_path, "megolm_backup")
 
-store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
+store_path_next_batch = os.path.join(store_path, "next_batch.txt")
 
-if homeserver and user and token:
-    if not os.path.exists(store_path):
-        os.mkdir(store_path)
-    if not os.path.exists(store_path_nio):
-        os.mkdir(store_path_nio)
+if homeserver and user and device_id and token:
+    os.makedirs(store_path, exist_ok=True)
+    os.makedirs(store_path_nio, exist_ok=True)
     if megolm_backup_passphrase:
-        if not os.path.exists(store_path_megolm_backup):
-            os.mkdir(store_path_megolm_backup)
+        os.makedirs(store_path_megolm_backup, exist_ok=True)
         if len(megolm_backup_passphrase) <= 10:
-            Logger.warn("matrix_megolm_backup_passphrase is too short. It is insecure.")
+            Logger.warning(
+                "matrix_megolm_backup_passphrase is too short. It is insecure."
+            )
     else:
-        Logger.warn(
-            f"Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
+        Logger.warning(
+            "Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase."
+        )
 
-    if homeserver.endswith('/'):
-        Logger.warn(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error")
+    if homeserver.endswith("/"):
+        Logger.warning(
+            "The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error."
+        )
     homeserver_host = urllib3.util.parse_url(homeserver).host
-    bot: AsyncClient = AsyncClient(homeserver,
-                                   user,
-                                   store_path=store_path_nio,
-                                   config=AsyncClientConfig(store_sync_tokens=True))
+    bot: AsyncClient = AsyncClient(
+        homeserver,
+        user,
+        store_path=store_path_nio,
+        config=AsyncClientConfig(store_sync_tokens=True),
+    )
     bot.restore_login(user, device_id, token)
     if bot.olm:
-        Logger.info(f"Matrix E2E encryption support available")
+        Logger.info("Matrix E2E encryption support is available.")
     else:
-        Logger.info(f"Matrix E2E encryption support not available")
+        Logger.info("Matrix E2E encryption support is not available.")
 else:
     bot = False

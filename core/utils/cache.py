@@ -1,11 +1,14 @@
 import uuid
-from os.path import abspath
+from os.path import join
 
-from config import Config
-
-
-def random_cache_path():
-    return abspath(f'{Config("cache_path")}/{str(uuid.uuid4())}')
+from core.constants.path import cache_path
 
 
-__all__ = ['random_cache_path']
+def random_cache_path() -> str:
+    """
+    提供带有随机UUID文件名的缓存路径。
+    """
+    return join(cache_path, str(uuid.uuid4()))
+
+
+__all__ = ["random_cache_path"]

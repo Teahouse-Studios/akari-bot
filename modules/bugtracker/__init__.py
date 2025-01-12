@@ -1,52 +1,46 @@
 import re
 
-from core.builtins import Bot, Image
+from core.builtins import Bot, Image, Plain, Url
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
-bug = module('bugtracker', alias='bug', developers=['OasisAkari'])
+bug = module("bugtracker", alias="bug", developers=["OasisAkari"], doc=True)
 
 
-@bug.handle('<MojiraID> {{bugtracker.help}}')
-async def bugtracker(msg: Bot.MessageSession):
-    mojira_id = msg.parsed_msg['<MojiraID>']
-    if mojira_id:
-        q = re.match(r'(.*-.*)', mojira_id)
+async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
+    result = await bugtracker_get(msg, mojiraid)
+    msg_list = [Plain(result[0])]
+    if result[1]:
+        msg_list.append(Url(result[1]))
+    await msg.send_message(msg_list)
+    if result[1]:
+        screenshot = await make_screenshot(result[1])
+        if screenshot:
+            img_chain = []
+            for scr in screenshot:
+                img_chain.append(Image(scr))
+            await msg.send_message(img_chain)
+
+
+@bug.command("<mojiraid> {{bugtracker.help}}")
+async def _(msg: Bot.MessageSession, mojiraid: str):
+    if mojiraid:
+        q = re.match(r"(.*-\d*)", mojiraid)
         if q:
-            result = await bugtracker_get(msg, q.group(1))
-            await msg.send_message(result[0])
-            if result[1] is not None:
-                screenshot = await make_screenshot(result[1])
-                if screenshot:
-                    await msg.send_message(Image(screenshot))
+            await query_bugtracker(msg, mojiraid)
+        else:
+            await msg.finish(msg.locale.t("bugtracker.message.invalid_mojira_id"))
 
 
-@bug.regex(pattern=r'\!?(BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-(\d+)\b', mode='M', flags=re.I,
-           desc='{bugtracker.help.regex.desc}')
-async def regex_bugtracker(msg: Bot.MessageSession):
-    matched_msg = msg.matched_msg
-    if len(matched_msg.group(1)) < 10:
-        result = await bugtracker_get(msg, matched_msg.group(1) + '-' + matched_msg.group(2))
-        await msg.send_message(result[0])
-        if result[1] is not None:
-            screenshot = await make_screenshot(result[1])
-            if screenshot:
-                await msg.send_message(Image(screenshot))
-
-
-@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)'
-                      r'|projects/.*?/issues/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*))', flags=re.I),
-           mode='M', desc='{bugtracker.help.regex.url}')
+@bug.regex(
+    r"((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)",
+    mode="A",
+    flags=re.I,
+    desc="{bugtracker.help.regex.desc}",
+)
 async def _(msg: Bot.MessageSession):
-    async def bgtask(msg: Bot.MessageSession):
-        for title in msg.matched_msg:
-            for t in title:
-                if t != '':
-                    get_ = await bugtracker_get(msg, t.split('?')[0], nolink=True)
-                    await msg.send_message(get_[0])
-                    if get_[1] is not None:
-                        screenshot = await make_screenshot(get_[1])
-                        if screenshot:
-                            await msg.send_message(Image(screenshot))
 
-    await bgtask(msg)
+    titles = msg.matched_msg[:5]
+    for title in titles:
+        if title != "":
+            await query_bugtracker(msg, title)

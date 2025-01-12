@@ -1,10 +1,10 @@
 {
+    "arcaea.help.calc": "Calculate the single Potential based on scores and rating.",
     "arcaea.help.desc": "Queries about Arcaea.",
-    "arcaea.help.download": "Get the latest version of game apk.",
-    "arcaea.help.random": "Random a track.",
+    "arcaea.help.download": "Get the latest version of game APK (China version).",
+    "arcaea.help.random": "Random a song.",
     "arcaea.help.rank.free": "View the current rank of the free packs.",
     "arcaea.help.rank.paid": "View the current rank of the paid packs.",
-    "arcaea.message.download": "Current latest version is ${version}.\nDownload: ${url}",
-    "arcaea.message.sb616": "According to Arcaea TOS 3.2.6, this command cannot be used.\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/en/terms_of_service",
+    "arcaea.message.download": "Current latest version: ${version}\nDownload: ${url}",
     "arcaea.message.get_failed": "Failed to fetch."
 }

@@ -1,31 +1,50 @@
+import base64
 import re
+import traceback
 from html import escape
-from typing import List, Union
+from io import BytesIO
+from typing import Any, List, Union
 
-import aiohttp
-import ujson as json
+import orjson as json
+from PIL import Image as PILImage
 from tabulate import tabulate
 
-from config import CFG
+from core.constants.info import Info
+from core.joke import joke
 from core.logger import Logger
-from .cache import random_cache_path
-from .http import download_to_cache
-
-web_render = CFG.get_url('web_render')
-web_render_local = CFG.get_url('web_render_local')
+from core.utils.cache import random_cache_path
+from core.utils.http import download
+from core.utils.web_render import webrender
 
 
 class ImageTable:
-    def __init__(self, data, headers):
+    """
+    图片表格。
+    :param data: 表格内容，表格行数需与表格标头的数量相符。
+    :param headers: 表格表头。
+    """
+
+    def __init__(self, data: List[List[Any]], headers: List[str]):
         self.data = data
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
-    if not web_render_local:
-        if not web_render:
-            Logger.warn('[Webrender] Webrender is not configured.')
-            return False
+async def image_table_render(
+    table: Union[ImageTable, List[ImageTable]],
+    save_source: bool = True,
+    use_local: bool = True,
+) -> Union[List[PILImage.Image], bool]:
+    """
+    使用WebRender渲染图片表格。
+
+    :param table: 要渲染的表格。
+    :param save_source: 是否保存源文件。
+    :param use_local: 是否使用本地WebRender渲染。
+    :return: 图片的PIL对象。
+    """
+    if not Info.web_render_status:
+        return False
+    if not Info.web_render_local_status:
         use_local = False
     pic = False
 
@@ -39,13 +58,19 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             for row in tbl.data:
                 cs = []
                 for c in row:
-                    cs.append(re.sub(r'\n', '<br>', escape(c)))
+                    c = joke(c)
+                    cs.append(re.sub(r"\n", "<br>", escape(c)))
                 d.append(cs)
-            w = len(tbl.headers) * 500
+            headers = [joke(header) for header in tbl.headers]
+            w = len(headers) * 500
             if w > max_width:
                 max_width = w
-            tblst.append(re.sub(r'<table>|</table>', '', tabulate(d, tbl.headers, tablefmt='unsafehtml')))
-        tblst = '<table>' + '\n'.join(tblst) + '</table>'
+            tblst.append(
+                re.sub(
+                    r"<table>|</table>", "", tabulate(d, headers, tablefmt="unsafehtml")
+                )
+            )
+        tblst = "<table>" + "\n".join(tblst) + "</table>"
         css = """
         <style>table {
                 border-collapse: collapse;
@@ -59,37 +84,52 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
               padding: 15px;
               text-align: left;
             }</style>"""
-        html = {'content': tblst + css, 'width': w, 'mw': False}
+        html = {"content": tblst + css, "width": w, "mw": False}
         if save_source:
-            fname = random_cache_path() + '.html'
-            with open(fname, 'w', encoding='utf-8') as fi:
+            fname = f"{random_cache_path()}.html"
+            with open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
 
         try:
-            pic = await download_to_cache(
-                web_render_local if use_local else web_render,
-                method='POST',
+            pic = await download(
+                webrender(use_local=use_local),
+                method="POST",
                 post_data=json.dumps(html),
                 request_private_ip=True,
                 headers={
-                    'Content-Type': 'application/json',
-                }
+                    "Content-Type": "application/json",
+                },
             )
-        except aiohttp.ClientConnectorError:
+        except Exception:
             if use_local:
-                pic = await download_to_cache(
-                    web_render,
-                    method='POST',
-                    post_data=json.dumps(html),
-                    request_private_ip=True,
-                    headers={
-                        'Content-Type': 'application/json',
-                    }
-                )
+                try:
+                    pic = await download(
+                        webrender(use_local=False),
+                        method="POST",
+                        post_data=json.dumps(html),
+                        request_private_ip=True,
+                        headers={
+                            "Content-Type": "application/json",
+                        },
+                    )
+                except Exception:
+                    Logger.error("Generation failed.")
+                    return False
+            else:
+                Logger.error("Generation failed.")
+                return False
     except Exception:
-        Logger.exception("error at image_table_render")
+        Logger.error(traceback.format_exc())
+        return False
+    with open(pic) as read:
+        load_img = json.loads(read.read())
+    img_lst = []
+    for x in load_img:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        img_lst.append(bimg)
+    return img_lst
 
-    return pic
 
-
-__all__ = ['ImageTable', 'image_table_render']
+__all__ = ["ImageTable", "image_table_render"]

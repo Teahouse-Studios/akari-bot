@@ -1,0 +1,16 @@
+{
+    "oba.help.desc": "Get information about OpenBMCLAPI.",
+    "oba.help.rank": "Get the node status of OpenBMCLAPI.",
+    "oba.help.search": "Search for node status of OpenBMCLAPI with the specified name.",
+    "oba.help.sponsor": "Get a random node sponsor.",
+    "oba.help.status": "Get OpenBMBLAPI Dashboard data.",
+    "oba.help.top": "Get the node ranking of OpenBMCLAPI.",
+    "oba.message.node.invalid": "Invalid node.",
+    "oba.message.node": "Cluster name: ${name}\nCluster ID: ${id}\nToday's traffic: ${size} | Hits: ${hits}",
+    "oba.message.query_time": "Query Time: ${query_time}",
+    "oba.message.search.not_found": "No result found.",
+    "oba.message.sponsor": "Sponsor: ${name}\nSponsor URL: ${url}\nWarning: The node sponsor here have no affiliation with Teahouse Studios.",
+    "oba.message.status.detail": "Current clusters: ${current_nodes}\n5-Minute Load: ${load}\nTotal bandwidth: ${bandwidth} Mbps\nCurrent bandwidth: ${current_bandwidth} Mbps\nToday's hits: ${hits}\nToday's traffic: ${size}",
+    "oba.message.status.version": "The OpenBMCLAPI latest version: ${version}",
+    "oba.message.top": "${rank} | ${name} | ${id}\n${size} | ${hits}\nSponsor: ${sponsor_name}"
+}

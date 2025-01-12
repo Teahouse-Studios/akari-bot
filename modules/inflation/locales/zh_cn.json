@@ -1,0 +1,10 @@
+{
+    "inflation.help.desc": "通货膨胀计算。",
+    "inflation.help.adjust": "对特定价格进行通货膨胀调整。",
+    "inflation.message.country_not_found": "找不到国家或地区。请确认输入了正确的国家或地区名或三位字母代码。",
+    "inflation.message.from_year_not_found": "指定的起点年份超过了数据集的支持范围。",
+    "inflation.message.from_year_no_data": "指定的起点年份在本数据集内，但是数据集内没有相应数据。",
+    "inflation.message.to_year_not_found": "指定的目标年份超过了数据集的支持范围。",
+    "inflation.message.to_year_no_data": "指定的目标年份在本数据集内，但是数据集内没有相应数据。",
+    "inflation.message.result": "在 ${country_or_region_name}，${from_year} 年的 ${price} 单位的货币相当于 ${to_year} 年的 ${result} 单位的货币。"
+}

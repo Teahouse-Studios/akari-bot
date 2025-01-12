@@ -1,0 +1,706 @@
+{
+    "grade": {
+        "grade1": {
+            "charts": [
+                {
+                    "level_index": 0,
+                    "song_id": 11410
+                },
+                {
+                    "level_index": 0,
+                    "song_id": 11086
+                },
+                {
+                    "level_index": 0,
+                    "song_id": 322
+                },
+                {
+                    "level_index": 0,
+                    "song_id": 628
+                }
+            ],
+            "condition": [
+                "-0",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": 350
+        },
+        "grade2": {
+            "charts": [
+                {
+                    "level_index": 1,
+                    "song_id": 11486
+                },
+                {
+                    "level_index": 1,
+                    "song_id": 11437
+                },
+                {
+                    "level_index": 1,
+                    "song_id": 725
+                },
+                {
+                    "level_index": 1,
+                    "song_id": 11358
+                }
+            ],
+            "condition": [
+                "-0",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": 350
+        },
+        "grade3": {
+            "charts": [
+                {
+                    "level_index": 1,
+                    "song_id": 706
+                },
+                {
+                    "level_index": 1,
+                    "song_id": 741
+                },
+                {
+                    "level_index": 1,
+                    "song_id": 11230
+                },
+                {
+                    "level_index": 1,
+                    "song_id": 11472
+                }
+            ],
+            "condition": [
+                "-1",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 600
+        },
+        "grade4": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "song_id": 311
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 11205
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 11239
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 11139
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 700
+        },
+        "grade5": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "song_id": 11083
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 11298
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 11333
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 548
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 700
+        },
+        "grade6": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "song_id": 713
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 681
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 705
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11272
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 700
+        },
+        "grade7": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11271
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 818
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11003
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 138
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 700
+        },
+        "grade8": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11228
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11439
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 426
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 464
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": 700
+        },
+        "grade9": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11390
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 386
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 252
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11438
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+30"
+            ],
+            "life": 800
+        },
+        "grade10": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11466
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 642
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11454
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 379
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+30"
+            ],
+            "life": 900
+        }
+    },
+    "rgrade": {
+        "expert1": {
+            "base": [
+                7.0,
+                9.6
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 700
+        },
+        "expert2": {
+            "base": [
+                9.7,
+                11.6
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 600
+        },
+        "expert3": {
+            "base": [
+                11.7,
+                12.6
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 500
+        },
+        "expert4": {
+            "base": [
+                12.7,
+                13.9
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 400
+        },
+        "master1": {
+            "base": [
+                10.0,
+                11.9
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 700
+        },
+        "master2": {
+            "base": [
+                12.0,
+                13.2
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": 500
+        },
+        "master3": {
+            "base": [
+                13.3,
+                14.4
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": 300
+        },
+        "master4": {
+            "base": [
+                14.5,
+                14.9
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+20"
+            ],
+            "life": 100
+        }
+    },
+    "tgrade": {
+        "tgrade1": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11010
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 540
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 229
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 136
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade2": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "song_id": 632
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 603
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 110
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 655
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade3": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11100
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11263
+                },
+                {
+                    "level_index": 2,
+                    "song_id": 142
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11188
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade4": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "song_id": 849
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 794
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11105
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 113
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade5": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11427
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11134
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 681
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 673
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade6": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 132
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11211
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11445
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11395
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade7": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11460
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 701
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 339
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11491
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade8": {
+            "charts": [
+                {
+                    "level_index": 4,
+                    "song_id": 24
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 556
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11467
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 760
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade9": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 641
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11461
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 367
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11167
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade10": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11029
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 852
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11388
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 22
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": 50
+        },
+        "tgrade11": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "song_id": 11470
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 812
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11311
+                },
+                {
+                    "level_index": 3,
+                    "song_id": 11379
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+5"
+            ],
+            "life": 50
+        },
+        "tgrade12": {
+            "charts": [
+                {
+                    "level_index": 4,
+                    "song_id": 833
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 803
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 799
+                },
+                {
+                    "level_index": 4,
+                    "song_id": 834
+                }
+            ],
+            "condition": [
+                "-1",
+                "-3",
+                "-10",
+                "+0"
+            ],
+            "life": 10
+        }
+    }
+}

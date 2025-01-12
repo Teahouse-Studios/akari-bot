@@ -3,6 +3,7 @@
     "whois.message.creation_date": "註冊日期：",
     "whois.message.dnssec": "DNSSEC：",
     "whois.message.domain_name": "網域名稱：",
+    "whois.message.email": "電郵：",
     "whois.message.expiration_date": "截止日期：",
     "whois.message.get_failed": "取得 WHOIS 失敗。",
     "whois.message.location": "位置：",

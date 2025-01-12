@@ -5,5 +5,5 @@
     "mkey.message.error.inquiry_num": "無效的確認碼。",
     "mkey.message.error.device": "無效的主機。",
     "mkey.message.error.hal": "Switch 需要指定主機 ID。",
-    "mkey.message.result": "您的萬用密碼是：${result}。"
+    "mkey.message.result": "你的萬用密碼是：${result}。"
 }

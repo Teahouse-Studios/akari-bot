@@ -1,0 +1,19 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[bot_aiocqhttp]
+# The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+qq_account = "<Replace me with (int, str) value>" # Bot QQ number. (Required when using the Onebot Protocol side to deploy the QQ bot)
+qq_enable_listening_self_message = false # Whether to enable self-message monitoring when using the Onebot protocol.
+qq_disable_temp_session = true # Whether to enable temp sessions when using the Onebot Protocol.
+qq_allow_approve_friend = false # Whether to automatically approve friend requests when using the Onebot protocol.
+qq_allow_approve_group_invite = false # Whether to automatically accept group invitations when using the Onebot protocol.
+qq_host = "127.0.0.1:8080" # The address of Aiocqhttp WebSocket main server. (The Onebot protocol end should use the reverse Websocket method to connect)
+enable = false # Whether to enable this platform.
+qq_typing_emoji = 181 # When using QQ related protocol terminals, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+qq_limited_emoji = 10060 # When using QQ related protocol terminals, the response emoji ID attached to the message when the message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
+
+[bot_aiocqhttp_secret]
+# The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+qq_access_token = "<Replace me with str value>" # Access Token for connecting to the WebSocket server when using the Onebot protocol.

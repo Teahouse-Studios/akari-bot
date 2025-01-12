@@ -1,5 +1,5 @@
 from core.builtins import MessageTaskManager
-from core.queue import check_job_queue
+from core.queue import check_job_queue, JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 
 
@@ -13,5 +13,5 @@ async def job():
     await check_job_queue()
 
 
-def init_background_task():  # make IDE happy :)
-    pass
+async def init_background_task():
+    await JobQueue.add_job(JobQueue.name, "verify_timezone", {}, wait=False)

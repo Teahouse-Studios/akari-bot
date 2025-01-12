@@ -1,5 +1,5 @@
 {
     "idlist.help": "查询 Minecraft：基岩版的 ID 表。",
-    "idlist.message.collapse": "...仅显示前 5 条结果，查看更多：",
+    "idlist.message.collapse": "查看更多：",
     "idlist.message.none": "没有找到结果。"
 }

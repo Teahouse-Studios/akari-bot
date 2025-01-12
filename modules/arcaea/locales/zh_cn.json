@@ -1,10 +1,10 @@
 {
+    "arcaea.help.calc": "根据分数与歌曲定数计算对应的单曲潜力值。",
     "arcaea.help.desc": "查询 Arcaea 相关内容。",
-    "arcaea.help.download": "获取最新版本的游戏 Apk。",
+    "arcaea.help.download": "获取最新版本的游戏 APK。",
     "arcaea.help.random": "随机一首歌曲。",
     "arcaea.help.rank.free": "查看当前免费包游玩排行。",
     "arcaea.help.rank.paid": "查看当前付费包游玩排行。",
-    "arcaea.message.download": "目前的最新版本为 ${version}。\n下载地址：${url}",
-    "arcaea.message.sb616": "根据 Arcaea TOS 3.2.6 规定，无法使用该命令。\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/zh/terms_of_service",
+    "arcaea.message.download": "当前最新版本：${version}\n下载地址：${url}",
     "arcaea.message.get_failed": "获取失败。"
 }

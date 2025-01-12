@@ -3,7 +3,7 @@
     "twenty_four.help.desc": "24 点小游戏。",
     "twenty_four.message": "给出的数字组合：${numbers}\n请输入表达式使其结果为 24。（若无解，请输入“无解”）",
     "twenty_four.message.correct": "回答正确。",
-    "twenty_four.message.incorrect.have_solution": "回答错误：该组合存在解。",
-    "twenty_four.message.incorrect.error": "回答错误：表达式无效。",
+    "twenty_four.message.incorrect.have_solution": "回答错误：该组合存在解。\n其中一组解为：${solution}",
+    "twenty_four.message.incorrect.invalid": "回答错误：表达式无效。",
     "twenty_four.message.incorrect": "回答错误。"
 }
