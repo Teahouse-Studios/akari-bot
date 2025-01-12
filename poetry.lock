@@ -993,13 +993,13 @@ pycryptodome = "*"
 
 [[package]]
 name = "ffmpy"
-version = "0.4.0"
+version = "0.5.0"
 description = "A simple Python wrapper for FFmpeg"
 optional = false
-python-versions = "<4.0.0,>=3.8.1"
+python-versions = "<4.0,>=3.8"
 files = [
-    {file = "ffmpy-0.4.0-py3-none-any.whl", hash = "sha256:39c0f20c5b465e7f8d29a5191f3a7d7675a8c546d9d985de8921151cd9b59e14"},
-    {file = "ffmpy-0.4.0.tar.gz", hash = "sha256:131b57794e802ad555f579007497f7a3d0cab0583d37496c685b8acae4837b1d"},
+    {file = "ffmpy-0.5.0-py3-none-any.whl", hash = "sha256:df3799cf5816daa56d4959a023630ee53c6768b66009dae6d131519ba4b80233"},
+    {file = "ffmpy-0.5.0.tar.gz", hash = "sha256:277e131f246d18e9dcfee9bb514c50749031c43582ce5ef82c57b51e3d3955c3"},
 ]
 
 [[package]]
@@ -4623,4 +4623,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "90eaf72bd185ab2ef655c2a5280fd25b0b989efc919ccb1e672b606d50edd021"
+content-hash = "d7473a79ba38aba698899a5714a14e8d45547757f7e0cfde9c16878773221dbd"
