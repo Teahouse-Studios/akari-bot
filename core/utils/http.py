@@ -107,8 +107,12 @@ async def get_url(
                     )
                 if fmt:
                     if hasattr(resp, fmt):
-                        return getattr(resp, fmt)()
-                    raise ValueError(f"NoSuchMethod: {fmt}")
+                        attr = getattr(resp, fmt)
+                        if callable(attr):
+                            return attr()
+                        return attr
+                    else:
+                        raise ValueError(f"NoSuchMethod: {fmt}")
                 return resp.text
             except asyncio.exceptions.TimeoutError:
                 raise ValueError("Request timeout")
@@ -182,8 +186,12 @@ async def post_url(
                     )
                 if fmt:
                     if hasattr(resp, fmt):
-                        return getattr(resp, fmt)()
-                    raise ValueError(f"NoSuchMethod: {fmt}")
+                        attr = getattr(resp, fmt)
+                        if callable(attr):
+                            return attr()
+                        return attr
+                    else:
+                        raise ValueError(f"NoSuchMethod: {fmt}")
                 return resp.text
             except asyncio.exceptions.TimeoutError:
                 raise ValueError("Request timeout")
