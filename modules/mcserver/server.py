@@ -14,7 +14,7 @@ async def query_java_server(
     query_msg = []
 
     try:
-        server = JavaServer.lookup(address)
+        server = JavaServer.lookup(address.replace(':25565',''))
         status = await server.async_status()
         Logger.debug(str(status))
         query_msg.append("[JE]")
@@ -63,7 +63,7 @@ async def query_bedrock_server(msg, address, raw=False):
     query_msg = []
 
     try:
-        server = BedrockServer.lookup(address)
+        server = BedrockServer.lookup(address.replace(':19132',''))
         status = await server.async_status()
         Logger.debug(str(status))
         query_msg.append("[BE]")
