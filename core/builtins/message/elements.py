@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
-import aiohttp
+import httpx
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
@@ -269,14 +269,14 @@ class ImageElement(MessageElement):
         从网络下载图片。
         """
         url = self.path
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                raw = await req.read()
-                ft = filetype.match(raw).extension
-                img_path = f"{random_cache_path()}.{ft}"
-                with open(img_path, "wb+") as image_cache:
-                    image_cache.write(raw)
-                return img_path
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, timeout=20.0)
+            raw = resp.content
+            ft = filetype.match(raw).extension
+            img_path = f"{random_cache_path()}.{ft}"
+            with open(img_path, "wb+") as image_cache:
+                image_cache.write(raw)
+            return img_path
 
     async def get_base64(self):
         file = await self.get()
