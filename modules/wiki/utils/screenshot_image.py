@@ -7,7 +7,7 @@ from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
-import aiohttp
+import httpx
 import orjson as json
 from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
@@ -111,10 +111,9 @@ async def generate_screenshot_v1(
         if link[-1] != "/":
             link += "/"
         try:
-            async with aiohttp.ClientSession(headers=headers) as session, session.get(
-                page_link, timeout=aiohttp.ClientTimeout(total=20)
-            ) as req:
-                html = await req.read()
+            async with httpx.AsyncClient(headers=headers) as client:
+                resp = await client.get(page_link, timeout=20)
+                html = resp.text
         except Exception:
             Logger.error(traceback.format_exc())
             return False
@@ -221,11 +220,6 @@ async def generate_screenshot_v1(
                             x.attrs["style"] = re.sub(
                                 r"url\(/(.*)\)", "url(" + link + "\\1)", x.get("style")
                             )
-
-                    for x in find_infobox.find_all(class_="lazyload"):
-                        if x.has_attr("class") and x.has_attr("data-src"):
-                            x.attrs["class"] = "image"
-                            x.attrs["src"] = x.attrs["data-src"]
 
                     for x in find_infobox.find_all(class_="lazyload"):
                         if x.has_attr("class") and x.has_attr("data-src"):
@@ -340,36 +334,39 @@ async def generate_screenshot_v1(
         Logger.info("Start rendering...")
         img_lst = []
         try:
-            async with aiohttp.ClientSession() as session, session.post(
-                webrender(),
-                headers={
-                    "Content-Type": "application/json",
-                },
-                data=json.dumps(html),
-            ) as resp:
-                if resp.status != 200:
-                    Logger.error(f"Failed to render: {await resp.text()}")
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    webrender(),
+                    headers={
+                        "Content-Type": "application/json",
+                    },
+                    data=json.dumps(html),
+                )
+                if resp.status_code != 200:
+                    Logger.error(f"Failed to render: {resp.text}")
                     return False
-                imgs_data = json.loads(await resp.read())
+                imgs_data = json.loads(resp.text)
                 for img in imgs_data:
                     b = base64.b64decode(img)
                     bio = BytesIO(b)
                     bimg = PILImage.open(bio)
                     img_lst.append(bimg)
 
-        except aiohttp.ClientConnectorError:
+        except httpx.RequestError as e:
+            Logger.error(f"Request error: {e}")
             if use_local:
-                async with aiohttp.ClientSession() as session, session.post(
-                    webrender(use_local=False),
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                    data=json.dumps(html),
-                ) as resp:
-                    if resp.status != 200:
-                        Logger.error(f"Failed to render: {await resp.text()}")
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        webrender(use_local=False),
+                        headers={
+                            "Content-Type": "application/json",
+                        },
+                        data=json.dumps(html),
+                    )
+                    if resp.status_code != 200:
+                        Logger.error(f"Failed to render: {resp.text}")
                         return False
-                    imgs_data = json.loads(await resp.read())
+                    imgs_data = json.loads(resp.text)
                     for img in imgs_data:
                         b = base64.b64decode(img)
                         bio = BytesIO(b)

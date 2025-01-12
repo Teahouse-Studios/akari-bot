@@ -1,6 +1,6 @@
 import re
 
-import aiohttp
+import httpx
 
 from core.builtins import Bot
 from core.component import module
@@ -71,10 +71,9 @@ async def _(msg: Bot.MessageSession):
 
 async def parse_shorturl(shorturl):
     try:
-        async with aiohttp.ClientSession() as session, session.get(
-            shorturl, allow_redirects=False
-        ) as response:
-            target_url = response.headers.get("Location")
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(shorturl, allow_redirects=False)
+            target_url = resp.headers.get("Location")
 
         video = re.search(r"/video/([^/?]+)", target_url)
         if video:

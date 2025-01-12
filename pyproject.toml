@@ -16,7 +16,6 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12.0"
 Pillow = "^11.0.0"
-aiohttp = ">=3.9.3"
 beautifulsoup4 = "^4.11.1"
 psutil = "^6.0.0"
 gql = "^3.4.0"
@@ -54,6 +53,7 @@ matrix-nio = "^0.25.0"
 attrs = "^24.2.0"
 uvicorn = {extras = ["standard"], version = "^0.34.0"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
+httpx = "^0.25.1"
 python-whois = "^0.9.0"
 pandas = "^2.2.0"
 future = "^1.0.0"

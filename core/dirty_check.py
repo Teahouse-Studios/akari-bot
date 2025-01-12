@@ -10,7 +10,7 @@ import hmac
 import time
 from typing import Union, List, Dict
 
-import aiohttp
+import httpx
 import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
@@ -117,7 +117,7 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
             "tasks": list(
                 map(
                     lambda x: {
-                        "dataId": "Nullcat is god {}".format(time.time()),
+                        "dataId": f"Nullcat is god {time.time()}",
                         "content": x,
                     },
                     call_api_list_,
@@ -126,11 +126,11 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
         }
         client_info = "{}"
         root = "https://green.cn-shanghai.aliyuncs.com"
-        url = "/green/text/scan?{}".format(client_info)
+        url = f"/green/text/scan?{client_info}"
 
         gmt_format = "%a, %d %b %Y %H:%M:%S GMT"
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
-        nonce = "LittleC sb {}".format(time.time())
+        nonce = f"LittleC sb {time.time()}"
         content_md5 = base64.b64encode(
             hashlib.md5(json.dumps(body), usedforsecurity=False).digest()
         ).decode("utf-8")
@@ -154,23 +154,21 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
         step1 = "\n".join(
             list(
                 map(
-                    lambda x: "{}:{}".format(x, sorted_header[x]),
+                    lambda x: f"{x}:{sorted_header[x]}",
                     list(sorted_header.keys()),
                 )
             )
         )
         step2 = url
-        step3 = "POST\napplication/json\n{contentMd5}\napplication/json\n{date}\n{step1}\n{step2}".format(
-            contentMd5=content_md5, date=headers["Date"], step1=step1, step2=step2
-        )
-        sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3))
+        step3 = f"POST\napplication/json\n{content_md5}\napplication/json\n{date}\n{step1}\n{step2}"
+        sign = f"acs {access_key_id}:{hash_hmac(access_key_secret, step3)}"
         headers["Authorization"] = sign
-        # 'Authorization': "acs {}:{}".format(access_key_id, sign)
-        async with aiohttp.ClientSession(headers=headers) as session, session.post(
-            "{}{}".format(root, url), data=json.dumps(body)
-        ) as resp:
-            if resp.status == 200:
-                result = await resp.json()
+        # 'Authorization': f"acs {access_key_id}:{sign}"
+
+        async with httpx.AsyncClient(headers=headers) as client:
+            resp = await client.post(f"{root}{url}", json=body)
+            if resp.status_code == 200:
+                result = resp.json()
                 Logger.debug(result)
                 for item in result["data"]:
                     content = item["content"]
@@ -178,7 +176,8 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
                         query_list.update({n: {content: parse_data(item, additional_text=additional_text)}})
                     DirtyWordCache(content).update(item)
             else:
-                raise ValueError(await resp.text())
+                raise ValueError(resp.text)
+
     results = []
     Logger.debug(query_list)
     for x in query_list:

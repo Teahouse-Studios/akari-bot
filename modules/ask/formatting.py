@@ -1,35 +1,36 @@
-import aiohttp
+import httpx
 import orjson as json
 
 
 async def generate_latex(formula: str):
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
             url="https://wikimedia.org/api/rest_v1/media/math/check/inline-tex",
             data=json.dumps({"q": formula}),
             headers={"content-type": "application/json"},
-        ) as req:
-            headers = req.headers
-            location = headers.get("x-resource-location")
+        )
+        headers = resp.headers
+        location = headers.get("x-resource-location")
 
-        async with session.get(
+        img_resp = await client.get(
             url=f"https://wikimedia.org/api/rest_v1/media/math/render/png/{location}"
-        ) as img:
-            return await img.read()
+        )
+        return img_resp.content
 
 
 async def generate_code_snippet(code: str, language: str):
-    async with aiohttp.ClientSession() as session, session.post(
-        url="https://sourcecodeshots.com/api/image",
-        data=json.dumps(
-            {
-                "code": code,
-                "settings": {
-                    "language": language,
-                    "theme": "night-owl",
-                },
-            }
-        ),
-        headers={"content-type": "application/json"},
-    ) as req:
-        return await req.read()
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            url="https://sourcecodeshots.com/api/image",
+            data=json.dumps(
+                {
+                    "code": code,
+                    "settings": {
+                        "language": language,
+                        "theme": "night-owl",
+                    },
+                }
+            ),
+            headers={"content-type": "application/json"},
+        )
+        return resp.content

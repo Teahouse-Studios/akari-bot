@@ -1,4 +1,4 @@
-import aiohttp
+import httpx
 
 from core.logger import Logger
 from .dbutils import BotAccount as BotAccountDB
@@ -20,18 +20,18 @@ class BotAccount:
             "lgpassword": password,
             "format": "json",
         }
-        async with aiohttp.ClientSession() as session:
-            async with session.get(lgtoken_url) as req:
-                if req.status != 200:
-                    raise LoginFailed(f"Login failed: {await req.text()}")
-                PARAMS_1["lgtoken"] = (await req.json())["query"]["tokens"][
-                    "logintoken"
-                ]
-            async with session.post(api_link, data=PARAMS_1) as req:
-                if req.status != 200:
-                    raise LoginFailed(f"Login failed: {await req.text()}")
-                Logger.info(f"Logged in to {api_link} as {account}")
-                return req.cookies.output(attrs=[], header="", sep=";")
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(lgtoken_url)
+            if resp.status_code != 200:
+                raise LoginFailed(f"Login failed: {resp.text}")
+            PARAMS_1["lgtoken"] = resp.json()["query"]["tokens"]["logintoken"]
+
+            resp = await client.post(api_link, data=PARAMS_1)
+            if resp.status_code != 200:
+                raise LoginFailed(f"Login failed: {resp.text}")
+
+            Logger.info(f"Logged in to {api_link} as {account}")
+            return resp.cookies
 
     @classmethod
     async def login(cls):
