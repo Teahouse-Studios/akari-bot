@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, term: str):
     res_moegirl = await moegirl(term, msg.locale)
     res_nbnhhsh = await nbnhhsh(term, msg.locale)
     res_urban = await urban(term, msg.locale)
-    chk = await check(res_moegirl, res_nbnhhsh, res_urban, msg=msg)
+    chk = await check(res_moegirl, res_nbnhhsh, res_urban)
     res = ""
     for i in chk:
         res += i["content"] + "\n"

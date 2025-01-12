@@ -31,9 +31,7 @@ def computeMD5hash(my_string):
     return m.hexdigest()
 
 
-def parse_data(
-    result: dict, msg: Bot.MessageSession = None, additional_text=None
-) -> Dict:
+def parse_data(result: dict, additional_text=None) -> Dict:
     original_content = content = result["content"]
     status = True
     for itemResult in result["results"]:
@@ -45,12 +43,7 @@ def parse_data(
                         if "positions" in itemContext:
                             for pos in itemContext["positions"]:
                                 filter_words_length = pos["endPos"] - pos["startPos"]
-                                if not msg:
-                                    reason = f"<REDACTED:{itemDetail['label']}>"
-                                else:
-                                    reason = msg.locale.t(
-                                        "check.redacted", reason=itemDetail["label"]
-                                    )
+                                reason = f"[Ke:i18n,i18nkey=check.redacted,reason={itemDetail['label']}]"
                                 content = (
                                     content[: pos["startPos"] + _offset]
                                     + reason
@@ -60,20 +53,10 @@ def parse_data(
                                     content += "\n" + additional_text + "\n"
                                 _offset += len(reason) - filter_words_length
                         else:
-                            if not msg:
-                                content = f"<REDACTED:{itemDetail['label']}>"
-                            else:
-                                content = msg.locale.t(
-                                    "check.redacted", reason=itemDetail["label"]
-                                )
+                            content = f"[Ke:i18n,i18nkey=check.redacted,reason={itemDetail['label']}]"
                         status = False
                 else:
-                    if not msg:
-                        content = f"<ALL REDACTED:{itemDetail['label']}>"
-                    else:
-                        content = msg.locale.t(
-                            "check.redacted.all", reason=itemDetail["label"]
-                        )
+                    content = f"[Ke:i18n,i18nkey=check.redacted.all,reason={itemDetail['label']}]"
 
                     if additional_text:
                         content += "\n" + additional_text + "\n"
@@ -82,9 +65,7 @@ def parse_data(
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(
-    *text: Union[str, List[str]], msg: Bot.MessageSession = None, additional_text=None
-) -> List[Dict]:
+async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
@@ -95,9 +76,7 @@ async def check(
     access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
     access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
     text = list(text)
-    text = (
-        text[0] if len(text) == 1 and isinstance(text[0], list) else text
-    )  # 检查是否为嵌套的消息链
+    text = (text[0] if len(text) == 1 and isinstance(text[0], list) else text)  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not Bot.Info.dirty_word_check:
         Logger.warning("Dirty words filter was disabled, skip.")
         query_list = []
@@ -122,17 +101,7 @@ async def check(
             if not query_list[q][pq]:
                 cache = DirtyWordCache(pq)
                 if not cache.need_insert:
-                    query_list.update(
-                        {
-                            q: {
-                                pq: parse_data(
-                                    cache.get(),
-                                    msg=msg,
-                                    additional_text=additional_text,
-                                )
-                            }
-                        }
-                    )
+                    query_list.update({q: {pq: parse_data(cache.get(), additional_text=additional_text)}})
     call_api_list = {}
     for q in query_list:
         for pq in query_list[q]:
@@ -206,15 +175,7 @@ async def check(
                 for item in result["data"]:
                     content = item["content"]
                     for n in call_api_list[content]:
-                        query_list.update(
-                            {
-                                n: {
-                                    content: parse_data(
-                                        item, msg=msg, additional_text=additional_text
-                                    )
-                                }
-                            }
-                        )
+                        query_list.update({n: {content: parse_data(item, additional_text=additional_text)}})
                     DirtyWordCache(content).update(item)
             else:
                 raise ValueError(await resp.text())

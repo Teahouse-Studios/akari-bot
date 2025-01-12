@@ -106,7 +106,7 @@ async def _(msg: Bot.MessageSession):
         if msg.target.client_name != "TEST" and not is_superuser:
             qc.reset()
 
-        output = await check(output, msg=msg)
+        output = await check(output)
         o = ""
         for m in output:
             o += m["content"]

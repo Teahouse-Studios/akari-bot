@@ -23,7 +23,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
                                     action=x['action'],
                                     filter_name=x['filter'],
                                     result=result))
-    y = await check(*d, msg=msg)
+    y = await check(*d)
     yy = '\n'.join(z['content'] for z in y)
     st = True
     for z in y:
@@ -46,14 +46,14 @@ async def convert_ab_to_detailed_format(abl: list, msg: Bot.MessageSession):
         if 'user' in x:
             userlist.append(x.get('user'))
     text_status = True
-    checked_userlist = await check(*userlist, msg=msg)
+    checked_userlist = await check(*userlist)
     user_checked_map = {}
     for u in checked_userlist:
         if not u['status']:
             text_status = False
         user_checked = u['content']
         user_checked_map[u['original']] = user_checked
-    checked_titlelist = await check(*titlelist, msg=msg)
+    checked_titlelist = await check(*titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']

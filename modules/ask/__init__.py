@@ -107,7 +107,7 @@ async def _(msg: Bot.MessageSession):
         petal = await count_token_petal(msg, tokens)
         # petal = await count_token_petal(msg, tokens, gpt4)
 
-        res = await check(res, msg=msg)
+        res = await check(res)
         resm = ""
         for m in res:
             resm += m["content"]

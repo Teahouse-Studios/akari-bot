@@ -114,7 +114,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
     userlist = list(set(userlist))
     titlelist = list(set(titlelist))
     commentlist = list(set(commentlist))
-    checked_userlist = await check(*userlist, msg=msg)
+    checked_userlist = await check(*userlist)
     user_checked_map = {}
     text_status = True
     for u in checked_userlist:
@@ -122,14 +122,14 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         if not u['status']:
             text_status = False
         user_checked_map[u['original']] = user_checked
-    checked_titlelist = await check(*titlelist, msg=msg)
+    checked_titlelist = await check(*titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t['content']
         if not t['status']:
             text_status = False
         title_checked_map[t['original']] = title_checked
-    checked_commentlist = await check(*commentlist, msg=msg)
+    checked_commentlist = await check(*commentlist)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c['content']
