@@ -4,10 +4,9 @@ import traceback
 from html import escape
 from io import BytesIO
 
-import aiohttp
 import orjson as json
-from PIL import Image as PILImage
 from jinja2 import FileSystemLoader, Environment
+from PIL import Image as PILImage
 
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module

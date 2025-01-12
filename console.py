@@ -7,7 +7,6 @@ import traceback
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
-import core.scripts.config_generate  # noqa
 from core.config import Config
 from core.constants.default import db_path_default
 from core.constants.info import Info

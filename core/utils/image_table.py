@@ -5,7 +5,6 @@ from html import escape
 from io import BytesIO
 from typing import Any, List, Union
 
-import aiohttp
 import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate

@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
 
-import aiohttp
 import orjson as json
 from PIL import Image as PILImage
 

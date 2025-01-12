@@ -43,10 +43,7 @@ if os.path.exists(os.path.join(webui_path, "index.html")):
             parsed_path = urlparse(path)
             if not parsed_path.netloc and not parsed_path.scheme:
                 return redirect(f"http://127.0.0.1:{API_PORT}/api/{path}")
-            else:
-                return redirect(f"http://127.0.0.1:{API_PORT}/api")
-        else:
-            return redirect(f"http://127.0.0.1:{API_PORT}/api")
+        return redirect(f"http://127.0.0.1:{API_PORT}/api")
 
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web") and \
         os.path.exists(os.path.join(webui_path, "index.html")):

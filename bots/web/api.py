@@ -1,4 +1,3 @@
-from datetime import datetime
 import glob
 import os
 import psutil
@@ -275,7 +274,7 @@ async def change_password(request: Request):
     except HTTPException as e:
         raise e
     except Exception as e:
-        # 这里可以记录日志
+        Logger.error(str(e))
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -538,7 +537,6 @@ async def get_locale(request: Request, locale: str, string: str):
 async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
-    global logs_history
     if logs_history:
         await websocket.send_text("\n".join(logs_history))
 
