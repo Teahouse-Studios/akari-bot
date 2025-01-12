@@ -6,6 +6,7 @@ import urllib.parse
 from copy import deepcopy
 from typing import Union, Dict, List
 
+from attrs import define
 import orjson as json
 from bs4 import BeautifulSoup
 
@@ -22,7 +23,6 @@ from .bot import BotAccount
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 from .mapping import *
 
-from attrs import define
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config("enable_tos", True)

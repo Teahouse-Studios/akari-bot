@@ -359,6 +359,19 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                             elements.append(VoiceElement.assign(a))
                     else:
                         elements.append(VoiceElement.assign(a))
+            elif element_type == "i18n":
+                key = ""
+                kwargs = {}
+                for a in args:
+                    ma = re.match(r"(.*?)=(.*)", a)
+                    if ma:
+                        if ma.group(1) == "i18nkey":
+                            key = ma.group(2)
+                        else:
+                            kwargs[ma.group(1)] = ma.group(2)
+
+                elements.append(I18NContextElement.assign(key, **kwargs))
+
     return elements
 
 
