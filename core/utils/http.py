@@ -18,8 +18,7 @@ from core.logger import Logger
 
 logging_resp = False
 debug = Config("debug", False)
-if not (proxy := Config("proxy", cfg_type=str, secret=True)):
-    proxy = ""
+proxy = Config("proxy", cfg_type=str, secret=True)
 
 url_pattern = re.compile(
     r"\b(?:http[s]?://)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b"
@@ -80,7 +79,7 @@ async def get_url(
 
         async with httpx.AsyncClient(
             headers=headers,
-            proxies={"http": proxy, "https": proxy} if proxy else None,
+            proxy=proxy,
             verify=False if debug else True
         ) as client:
             if cookies:
@@ -159,7 +158,7 @@ async def post_url(
 
         async with httpx.AsyncClient(
             headers=headers,
-            proxies={"http": proxy, "https": proxy} if proxy else None,
+            proxy=proxy,
             verify=False if debug else True
         ) as client:
             if cookies:
