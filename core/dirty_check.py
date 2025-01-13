@@ -126,7 +126,7 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
         }
         client_info = "{}"
         root = "https://green.cn-shanghai.aliyuncs.com"
-        url = f"/green/text/scan?{client_info}"
+        url = "/green/text/scan?{}".format(client_info)
 
         gmt_format = "%a, %d %b %Y %H:%M:%S GMT"
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)
@@ -154,17 +154,18 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
         step1 = "\n".join(
             list(
                 map(
-                    lambda x: f"{x}:{sorted_header[x]}",
+                    lambda x: "{}:{}".format(x, sorted_header[x]),
                     list(sorted_header.keys()),
                 )
             )
         )
         step2 = url
-        step3 = f"POST\napplication/json\n{content_md5}\napplication/json\n{date}\n{step1}\n{step2}"
-        sign = f"acs {access_key_id}:{hash_hmac(access_key_secret, step3)}"
+        step3 = "POST\napplication/json\n{contentMd5}\napplication/json\n{date}\n{step1}\n{step2}".format(
+            contentMd5=content_md5, date=headers["Date"], step1=step1, step2=step2
+        )
+        sign = "acs {}:{}".format(access_key_id, hash_hmac(access_key_secret, step3))
         headers["Authorization"] = sign
-        # 'Authorization': f"acs {access_key_id}:{sign}"
-
+        # 'Authorization': "acs {}:{}".format(access_key_id, sign)
         async with httpx.AsyncClient(headers=headers) as client:
             resp = await client.post(f"{root}{url}", json=body)
             if resp.status_code == 200:
