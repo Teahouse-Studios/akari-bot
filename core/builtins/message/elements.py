@@ -355,15 +355,15 @@ class EmbedElement(MessageElement):
     :param footer: 页脚。
     """
 
-    title: Optional[str] = (None,)
-    description: Optional[str] = (None,)
-    url: Optional[str] = (None,)
-    timestamp: float = (datetime.now().timestamp(),)
-    color: int = (0x0091FF,)
-    image: Optional[ImageElement] = (None,)
-    thumbnail: Optional[ImageElement] = (None,)
-    author: Optional[str] = (None,)
-    footer: Optional[str] = (None,)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    url: Optional[str] = None
+    timestamp: float = datetime.now().timestamp()
+    color: int = 0x0091FF
+    image: Optional[ImageElement] = None
+    thumbnail: Optional[ImageElement] = None
+    author: Optional[str] = None
+    footer: Optional[str] = None
     fields: Optional[List[EmbedFieldElement]] = None
 
     @classmethod
