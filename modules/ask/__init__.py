@@ -170,7 +170,7 @@ def parse_markdown(md: str):
             except AttributeError:
                 raise ValueError("Code block is missing language or code.")
             content = {"language": language, "code": code}
-        elif content.startswith("$$"):
+        elif content.startswith("$$") and content.endswith("$$"):
             block = "latex"
             content = content[2:-2].strip()
         elif content.startswith("$") and content.endswith("$"):
@@ -181,7 +181,7 @@ def parse_markdown(md: str):
             content = content[2:-2].strip()
         else:
             block = "text"
-        
+
         blocks.append({"type": block, "content": content})
 
     return blocks
