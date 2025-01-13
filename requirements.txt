@@ -116,7 +116,7 @@ python-dotenv==1.0.1 ; python_full_version >= "3.12.0" and python_full_version <
 python-socks[asyncio]==2.6.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 python-whois==0.9.5 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pytz==2024.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
-pywin32==308 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and sys_platform == "win32"
+pywin32==306 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" and sys_platform == "win32"
 pyyaml==6.0.2 ; python_version >= "3.12" and python_version < "4.0"
 qq-botpy==1.2.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 quart==0.20.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
