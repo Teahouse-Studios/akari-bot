@@ -52,7 +52,7 @@ async def get_article(version):
 
     try:
         html = await get_url(
-            webrender("source", quote(link)),
+            webrender("source", link),
             attempt=1,
             request_private_ip=True,
             logging_err_resp=False,

@@ -45,7 +45,7 @@ async def start_check_news():
     baseurl = "https://www.minecraft.net"
     url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json"
     try:
-        get_webrender = webrender("source", quote(url))
+        get_webrender = webrender("source", url)
         if get_webrender == url:
             Logger.debug("WebRender is not working, skip check minecraft news.")
             return

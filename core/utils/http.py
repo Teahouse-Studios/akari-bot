@@ -94,6 +94,7 @@ async def get_url(
                     timeout=timeout,
                     headers=headers,
                     params=params,
+                    follow_redirects=True,
                 )
                 Logger.debug(f"[{resp.status_code}] {url}")
                 if logging_resp:
@@ -173,6 +174,7 @@ async def post_url(
                     data=data,
                     headers=headers,
                     timeout=timeout,
+                    follow_redirects=True,
                 )
                 Logger.debug(f"[{resp.status_code}] {url}")
                 if logging_resp:

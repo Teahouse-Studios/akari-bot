@@ -122,14 +122,14 @@ class WikiLib:
         if api in redirect_list:
             api = redirect_list[api]
         if kwargs:
-            api = api + "?" + urllib.parse.urlencode(kwargs) + "&format=json"
+            api = f"{api}?{urllib.parse.urlencode(kwargs)}&format=json"
             Logger.debug(api)
         else:
             raise ValueError("kwargs is None")
         request_local = False
         for x in request_by_web_render_list:
             if x.match(api):
-                api = webrender("source", urllib.parse.quote(api))
+                api = webrender("source", api)
                 request_local = True
                 break
 
@@ -215,10 +215,7 @@ class WikiLib:
         except Exception:
             try:
                 get_page = await get_url(self.url, status_code=None, fmt="text", headers=self.headers)
-                if (
-                    get_page.find("<title>Attention Required! | Cloudflare</title>")
-                    != -1
-                ):
+                if get_page.find("<title>Attention Required! | Cloudflare</title>") != -1:
                     return WikiStatus(
                         available=False,
                         value=False,

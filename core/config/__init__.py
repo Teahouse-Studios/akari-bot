@@ -404,8 +404,11 @@ def Config(q: str,
     '''
     if get_url:
         v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
-        if v and v[-1] != '/':
-            v += '/'
+        if v:
+            if not re.match(r'^[a-zA-Z][a-zA-Z\d+\-.]*://', v):
+                v = "http://" + v
+            if v[-1] != '/':
+                v += '/'
     else:
         v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v

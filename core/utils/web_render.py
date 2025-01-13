@@ -1,13 +1,14 @@
 import traceback
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional
+from urllib.parse import quote
 
 from core.config import Config
 from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import get_url
 
-web_render = Config("web_render", secret=True, get_url=True)
-web_render_local = Config("web_render_local", get_url=True)
+web_render = Config("web_render", cfg_type=str, secret=True, get_url=True)
+web_render_local = Config("web_render_local", cfg_type=str, get_url=True)
 
 
 def webrender(
@@ -28,7 +29,7 @@ def webrender(
     if method == "source":
         url = "" if not url else url
         if Info.web_render_status or _ignore_status:
-            return f"{(web_render_local if use_local else web_render)}source?url={url}"
+            return f"{(web_render_local if use_local else web_render)}source?url={quote(url)}"
     else:
         url = ""
         if Info.web_render_status or _ignore_status:
