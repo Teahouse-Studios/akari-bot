@@ -94,7 +94,13 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
                 if not cache.need_insert:
                     query_list[q][pq] = parse_data(cache.get(), additional_text=additional_text)
 
-    call_api_list = {pq: [q] for q in query_list for pq in query_list[q] if not query_list[q][pq]}
+    call_api_list = {}
+    for q in query_list:
+        for pq in query_list[q]:
+            if not query_list[q][pq]:
+                if pq not in call_api_list:
+                    call_api_list.update({pq: []})
+                call_api_list[pq].append(q)
     call_api_list_ = list(call_api_list)
     Logger.debug(call_api_list_)
 
