@@ -4,6 +4,7 @@ from typing import List, Union
 
 import filetype
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
+from botpy.errors import ServerError
 from botpy.types.message import Reference
 
 from bots.qqbot.info import *
@@ -24,6 +25,7 @@ from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
 from core.utils.http import download, url_pattern
+from core.utils.image import msgchain2image
 
 enable_analytics = Config("enable_analytics", False)
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
@@ -181,20 +183,29 @@ class MessageSession(MessageSessionT):
                     )
                 if msg and self.session.message.id:
                     msg = "\n" + msg
-                send = await self.session.message.reply(
-                    content=msg,
-                    msg_type=7 if send_img else 0,
-                    media=send_img,
-                    msg_seq=seq,
-                )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
-                if image_1:
-                    Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                try:
+                    send = await self.session.message.reply(
+                        content=msg,
+                        msg_type=7 if send_img else 0,
+                        media=send_img,
+                        msg_seq=seq,
                     )
-                if send:
-                    sends.append(send)
-                    seq += 1
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
+                    if image_1:
+                        Logger.info(
+                            f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                        )
+                    if send:
+                        sends.append(send)
+                        seq += 1
+                except ServerError:
+                    img_chain = filtered_msg
+                    img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                    img_chain.append(image_1) if image_1 else None
+                    imgs = await msgchain2image(img_chain, self)
+                    if imgs:
+                        imgs = [Image(img) for img in imgs]
+                        images = imgs + images
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_group_file(
@@ -224,20 +235,29 @@ class MessageSession(MessageSessionT):
                         file_type=1,
                         file_data=await image_1.get_base64(),
                     )
-                send = await self.session.message.reply(
-                    content=msg,
-                    msg_type=7 if send_img else 0,
-                    media=send_img,
-                    msg_seq=seq,
-                )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
-                if image_1:
-                    Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                try:
+                    send = await self.session.message.reply(
+                        content=msg,
+                        msg_type=7 if send_img else 0,
+                        media=send_img,
+                        msg_seq=seq,
                     )
-                if send:
-                    sends.append(send)
-                    seq += 1
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
+                    if image_1:
+                        Logger.info(
+                            f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                        )
+                    if send:
+                        sends.append(send)
+                        seq += 1
+                except ServerError:
+                    img_chain = filtered_msg
+                    img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                    img_chain.append(image_1) if image_1 else None
+                    imgs = await msgchain2image(img_chain, self)
+                    if imgs:
+                        imgs = [Image(img) for img in imgs]
+                        images = imgs + images
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_c2c_file(
