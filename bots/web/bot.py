@@ -17,7 +17,7 @@ API_PORT = Config("api_port", 5000, table_name="bot_web")
 WEBUI_PORT = Config("webui_port", 8081, table_name="bot_web")
 
 Info.client_name = client_name
-PrivateAssets.set(os.path.join(assets_path, "private", "api"))
+PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 
 def run_fastapi():

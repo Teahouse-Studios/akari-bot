@@ -66,7 +66,7 @@ async def console_command():
     try:
         session = PromptSession(history=FileHistory(console_history_path))
         while True:
-            m = await asyncio.to_thread(session.prompt, "> ")
+            m = await asyncio.to_thread(session.prompt)
             await send_command(m)
     except Exception:
         Logger.error(traceback.format_exc())

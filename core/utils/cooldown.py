@@ -55,7 +55,7 @@ class CoolDown:
 
         if (d := datetime.now().timestamp() - ts) > delay:
             return 0
-        return d
+        return delay - d
 
     def reset(self):
         """

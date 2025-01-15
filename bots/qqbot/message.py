@@ -120,6 +120,7 @@ class MessageSession(MessageSessionT):
                 )
                 if not msg_quote and quote:
                     msg = f"<@{self.session.message.author.id}> \n" + msg
+                msg = "" if not msg else msg
                 send = await self.session.message.reply(
                     content=msg, file_image=send_img, message_reference=msg_quote
                 )
@@ -151,6 +152,7 @@ class MessageSession(MessageSessionT):
                     if quote and not send_img
                     else None
                 )
+                msg = "" if not msg else msg
                 send = await self.session.message.reply(
                     content=msg, file_image=send_img, message_reference=msg_quote
                 )
@@ -183,6 +185,7 @@ class MessageSession(MessageSessionT):
                     )
                 if msg and self.session.message.id:
                     msg = "\n" + msg
+                msg = "" if not msg else msg
                 try:
                     send = await self.session.message.reply(
                         content=msg,
@@ -235,6 +238,7 @@ class MessageSession(MessageSessionT):
                         file_type=1,
                         file_data=await image_1.get_base64(),
                     )
+                msg = "" if not msg else msg
                 try:
                     send = await self.session.message.reply(
                         content=msg,

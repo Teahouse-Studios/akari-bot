@@ -153,7 +153,7 @@ async def _(msg: Bot.MessageSession):
             qc.reset()
         await msg.finish(chain)
     else:
-        await msg.finish(msg.locale.t("message.cooldown", time=int(60 - c)))
+        await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
 
 def parse_markdown(md: str):

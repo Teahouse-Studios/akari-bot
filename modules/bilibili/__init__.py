@@ -31,9 +31,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         query = f"?aid={bid[2:]}"
     else:
         return await msg.finish(msg.locale.t("bilibili.message.invalid"))
-    res = await get_video_info(msg, query, get_detail)
-    if res:
-        await msg.finish(msg.locale.t("message.cooldown", time=int(30 - res)))
+    await get_video_info(msg, query, get_detail)
 
 
 @bili.regex(r"av(\d+)\b", flags=re.I, mode="A", desc="{bilibili.help.regex.av}")
@@ -72,7 +70,7 @@ async def _(msg: Bot.MessageSession):
 async def parse_shorturl(shorturl):
     try:
         async with httpx.AsyncClient() as client:
-            resp = await client.get(shorturl, allow_redirects=False)
+            resp = await client.get(shorturl, follow_redirects=False)
             target_url = resp.headers.get("Location")
 
         video = re.search(r"/video/([^/?]+)", target_url)
