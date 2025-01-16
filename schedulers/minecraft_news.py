@@ -1,5 +1,4 @@
 import traceback
-from urllib.parse import quote
 
 import orjson as json
 

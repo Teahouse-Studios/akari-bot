@@ -10,7 +10,7 @@ class ArgumentPattern:
         self.name = name
 
     def __str__(self):
-        return 'ArgumentPattern("{}")'.format(self.name)
+        return f'ArgumentPattern("{self.name}")'
 
     def __repr__(self):
         return self.__str__()
@@ -21,7 +21,7 @@ class DescPattern:
         self.text = text
 
     def __str__(self):
-        return 'DescPattern("{}")'.format(self.text)
+        return f'DescPattern("{self.text}")'
 
     def __repr__(self):
         return self.__str__()
@@ -41,7 +41,7 @@ class Template:
         return self.args_
 
     def __str__(self):
-        return "Template({})".format(self.args)
+        return f"Template({self.args})"
 
     def __repr__(self):
         return self.__str__()
@@ -53,7 +53,7 @@ class OptionalPattern:
         self.args = args
 
     def __str__(self):
-        return 'OptionalPattern("{}", {})'.format(self.flag, self.args)
+        return f'OptionalPattern("{self.flag}", {self.args})'
 
     def __repr__(self):
         return self.__str__()
@@ -77,7 +77,7 @@ class MatchedResult:
         self.priority = priority
 
     def __str__(self):
-        return "MatchedResult({}, {})".format(self.args, self.priority)
+        return f"MatchedResult({self.args}, {self.priority})"
 
     def __repr__(self):
         return self.__str__()

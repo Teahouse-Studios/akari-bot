@@ -258,7 +258,7 @@ def generate_dice_message(
             ).message
         try:
             if abs(result) >= 10**9:
-                result = "{:.10e}".format(result)
+                result = f"{result:.10e}"
             else:
                 result = str(result)
             output_line += "=" + result

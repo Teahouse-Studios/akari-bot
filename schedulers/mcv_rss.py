@@ -1,7 +1,6 @@
 import re
 import traceback
 from datetime import datetime
-from urllib.parse import quote
 
 import orjson as json
 from bs4 import BeautifulSoup

@@ -93,11 +93,12 @@ RE_MD_DASH_MATCHER = re.compile(
 )
 RE_SLASH_CHARS = r"\`*_{}[]()#+-.!"
 RE_MD_BACKSLASH_MATCHER = re.compile(
-    r"""
-    (\\)          # match one slash
-    (?=[%s])      # followed by a char that requires escaping
-    """
-    % re.escape(RE_SLASH_CHARS),
+    rf"""
+    (\\)
+    (?=[{re.escape(RE_SLASH_CHARS)}])
+    """,
+    # match one slash
+    # followed by a char that requires escaping
     flags=re.VERBOSE,
 )
 

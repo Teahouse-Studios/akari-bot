@@ -204,7 +204,8 @@ class MessageSession(MessageSessionT):
                 except ServerError:
                     img_chain = filtered_msg
                     img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                    img_chain.append(image_1) if image_1 else None
+                    if image_1:
+                        img_chain.append(image_1)
                     imgs = await msgchain2image(img_chain, self)
                     if imgs:
                         imgs = [Image(img) for img in imgs]
@@ -257,7 +258,8 @@ class MessageSession(MessageSessionT):
                 except ServerError:
                     img_chain = filtered_msg
                     img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                    img_chain.append(image_1) if image_1 else None
+                    if image_1:
+                        img_chain.append(image_1)
                     imgs = await msgchain2image(img_chain, self)
                     if imgs:
                         imgs = [Image(img) for img in imgs]

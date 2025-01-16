@@ -43,5 +43,4 @@ async def nbnhhsh(msg: Bot.MessageSession, term: str):
         inputting = result['inputting']
         if inputting:
             return f'{msg.locale.t("nbnhhsh.message.guess", term=term)}{"、".join(inputting)}'
-        else:
-            await msg.finish(msg.locale.t("nbnhhsh.message.not_found"))
+        await msg.finish(msg.locale.t("nbnhhsh.message.not_found"))
