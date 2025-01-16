@@ -43,17 +43,18 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
             continue
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:>4} {:<3} {:>7} {:<4} {:<2} {:>4}->{:<5.2f} {:<20}\n".format(
-            idx,
-            chart["mid"],
-            level,
-            chart["score"],
-            rank,
-            combo_mapping.get(chart["fc"], ""),
-            chart["ds"],
-            chart["ra"],
-            title
-        )
+        line = f"#{
+            idx:<2} {
+            chart['mid']:>4} {
+            level:<3} {
+                chart['score']:>7} {
+                    rank:<4} {
+                        combo_mapping.get(
+                            chart['fc'],
+                            ''):<2} {
+                                chart['ds']:>4}->{
+                                    chart['ra']:<5.2f} {
+                                        title:<20}\n"
         html += line
     html += "Recent10\n"
     for idx, chart in enumerate(r10_records, start=1):
@@ -67,17 +68,18 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
             continue
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:>4} {:<3} {:>7} {:<4} {:<2} {:>4}->{:<5.2f} {:<20}\n".format(
-            idx,
-            chart["mid"],
-            level,
-            chart["score"],
-            rank,
-            combo_mapping.get(chart["fc"], ""),
-            chart["ds"],
-            chart["ra"],
-            title
-        )
+        line = f"#{
+            idx:<2} {
+            chart["mid"]:>4} {
+            level:<3} {
+                chart["score"]:>7} {
+                    rank:<4} {
+                        combo_mapping.get(
+                            chart["fc"],
+                            ""):<2} {
+                                chart["ds"]:>4}->{
+                                    chart["ra"]:<5.2f} {
+                                        title:<20}\n"
         html += line
     html += "</pre>"
     time = msg.ts2strftime(datetime.now().timestamp(), iso=True, timezone=False)

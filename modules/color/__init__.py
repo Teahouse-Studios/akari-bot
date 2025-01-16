@@ -81,14 +81,10 @@ async def _(msg: Bot.MessageSession, color: str = None):
     else:
         await msg.finish(msg.locale.t("color.message.invalid"))
 
-    color_hex = "#%02x%02x%02x" % color
-    color_rgb = "rgb(%d, %d, %d)" % color
+    color_hex = f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}"
+    color_rgb = f"rgb({color[0]}, {color[1]}, {color[2]})"
     color_hsl = colorsys.rgb_to_hls(color[0] / 255, color[1] / 255, color[2] / 255)
-    color_hsl = "hsl(%d, %d%%, %d%%)" % (
-        color_hsl[0] * 360,
-        color_hsl[2] * 100,
-        color_hsl[1] * 100,
-    )
+    color_hsl = f"hsl({color_hsl[0] * 360:.0f}, {color_hsl[2] * 100:.0f}%, {color_hsl[1] * 100:.0f}%)"
     luminance = get_luminance(color)
 
     contrast = (0, 0, 0) if luminance > 140 else (255, 255, 255)

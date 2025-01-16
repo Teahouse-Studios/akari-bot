@@ -107,7 +107,7 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
             "tasks": [{"dataId": f"Nullcat is god {time.time()}", "content": x} for x in call_api_list_],
         }
         root = "https://green.cn-shanghai.aliyuncs.com"
-        url = f"/green/text/scan"
+        url = "/green/text/scan"
 
         gmt_format = "%a, %d %b %Y %H:%M:%S GMT"
         date = datetime.datetime.now(datetime.UTC).strftime(gmt_format)

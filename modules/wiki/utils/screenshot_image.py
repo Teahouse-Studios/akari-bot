@@ -151,8 +151,6 @@ async def generate_screenshot_v1(
             for x in soup.find_all(rel="stylesheet"):
                 if x.has_attr("href"):
                     get_herf = x.get("href")
-                    if get_herf.find("timeless") != -1:
-                        timeless_fix = True
                     x.attrs["href"] = re.sub(";", "&", urljoin(link, get_herf))
                 open_file.write(str(x))
 

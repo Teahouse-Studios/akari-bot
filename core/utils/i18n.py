@@ -81,9 +81,9 @@ def load_locale_file() -> Optional[List[str]]:
 
     locales = os.listdir(locales_path)
     try:
-        for l in locales:
-            with open(os.path.join(locales_path, l), "r", encoding="utf-8") as f:
-                locale_dict[l.removesuffix(".json")] = flatten(json.loads(f.read()))
+        for loc in locales:
+            with open(os.path.join(locales_path, loc), "r", encoding="utf-8") as f:
+                locale_dict[loc.removesuffix(".json")] = flatten(json.loads(f.read()))
     except Exception as e:
         traceback.print_exc()
         err_prompt.append(str(e))
