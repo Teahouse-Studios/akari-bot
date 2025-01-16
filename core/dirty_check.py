@@ -43,20 +43,17 @@ def parse_data(result: dict, additional_text=None) -> Dict:
                         if "positions" in itemContext:
                             for pos in itemContext["positions"]:
                                 filter_words_length = pos["endPos"] - pos["startPos"]
-                                reason = f"[Ke:i18n,i18nkey=check.redacted,reason={itemDetail['label']}]"
-                                content = (
-                                    content[: pos["startPos"] + _offset]
-                                    + reason
-                                    + content[pos["endPos"] + _offset:]
-                                )
+                                reason = f"[i18n:check.redacted,reason={itemDetail['label']}]"
+                                content = (content[: pos["startPos"] + _offset] +
+                                           reason + content[pos["endPos"] + _offset:])
                                 if additional_text:
                                     content += "\n" + additional_text + "\n"
                                 _offset += len(reason) - filter_words_length
                         else:
-                            content = f"[Ke:i18n,i18nkey=check.redacted,reason={itemDetail['label']}]"
+                            content = f"[i18n:check.redacted,reason={itemDetail['label']}]"
                         status = False
                 else:
-                    content = f"[Ke:i18n,i18nkey=check.redacted.all,reason={itemDetail['label']}]"
+                    content = f"[i18n:check.redacted.all,reason={itemDetail['label']}]"
 
                     if additional_text:
                         content += "\n" + additional_text + "\n"

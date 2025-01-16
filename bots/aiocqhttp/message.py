@@ -139,7 +139,7 @@ class MessageSession(MessageSessionT):
                     parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                     parts = [part for part in parts if part]
                     previous_was_cq = False
-                    #  CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
+                    # CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
                     for i, part in enumerate(parts):
                         if re.match(r"\[CQ:[^\]]+\]", part):
                             try:

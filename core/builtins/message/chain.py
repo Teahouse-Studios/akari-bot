@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import html
 import re
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
@@ -176,6 +177,29 @@ class MessageChain:
                 value += x.to_message_chain(msg)
             elif isinstance(x, PlainElement):
                 if x.text != "":
+                    if msg:
+                        pattern = r'\[i18n:([^\s,]+)(?:,([^\]]+))?\]'
+                        matches = re.findall(pattern, x.text)
+
+                        for match in matches:
+                            key = html.unescape(match[0])
+                            kwargs = {}
+
+                            if match[1]:
+                                params = match[1].split(',')
+                                for param in params:
+                                    k, v = param.split('=')
+                                    kwargs[html.unescape(k)] = html.unescape(v)
+
+                            t_value = msg.locale.t(key, **kwargs)
+                            if isinstance(t_value, str):
+                                x.text = x.text.replace(
+                                    f"[i18n:{
+                                        match[0]}{
+                                        ',' +
+                                        match[1] if match[1] else ''}]",
+                                    t_value)
+
                     value.append(x)
                 else:
                     value.append(
@@ -301,10 +325,11 @@ class MessageChain:
         return self
 
 
-def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceElement]]:
+def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceElement, I18NContextElement]]:
     split_all = re.split(r"(\[Ke:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
+
     for e in split_all:
         match = re.match(r"\[Ke:(.*?),(.*)]", e)
         if not match:
@@ -313,18 +338,21 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
         else:
             element_type = match.group(1).lower()
             args = re.split(r",|,.\s", match.group(2))
-            for x in args:
-                if not x:
-                    args.remove("")
+
+            args = [x for x in args if x]
+
             if element_type == "plain":
                 for a in args:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "text":
-                            elements.append(PlainElement.assign(ma.group(2)))
+                            ua = html.unescape(ma.group(2))
+                            elements.append(PlainElement.assign(ua))
                         else:
+                            a = html.unescape(a)
                             elements.append(PlainElement.assign(a))
                     else:
+                        a = html.unescape(a)
                         elements.append(PlainElement.assign(a))
             elif element_type == "image":
                 for a in args:
@@ -333,17 +361,17 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                         img = None
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(
-                                parse_url[1]
-                            ):
+                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 img = ImageElement.assign(path=ma.group(2))
-                        if ma.group(1) == "headers":
-                            img.headers = json.loads(
-                                str(base64.b64decode(ma.group(2)), "UTF-8")
-                            )
+                        if ma.group(1) == "headers" and img:
+                            img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
                         if img:
                             elements.append(img)
+                        else:
+                            a = html.unescape(a)
+                            elements.append(ImageElement.assign(a))
                     else:
+                        a = html.unescape(a)
                         elements.append(ImageElement.assign(a))
             elif element_type == "voice":
                 for a in args:
@@ -351,26 +379,26 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                     if ma:
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(
-                                parse_url[1]
-                            ):
+                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 elements.append(VoiceElement.assign(ma.group(2)))
                         else:
+                            a = html.unescape(a)
                             elements.append(VoiceElement.assign(a))
                     else:
+                        a = html.unescape(a)
                         elements.append(VoiceElement.assign(a))
             elif element_type == "i18n":
-                key = ""
+                i18nkey = None
                 kwargs = {}
                 for a in args:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "i18nkey":
-                            key = ma.group(2)
+                            i18nkey = html.unescape(ma.group(2))
                         else:
-                            kwargs[ma.group(1)] = ma.group(2)
-
-                elements.append(I18NContextElement.assign(key, **kwargs))
+                            kwargs[ma.group(1)] = html.unescape(ma.group(2))
+                if i18nkey:
+                    elements.append(I18NContextElement.assign(i18nkey, **kwargs))
 
     return elements
 
