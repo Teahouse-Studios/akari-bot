@@ -26,7 +26,7 @@ w = module(
 @w.command("<query> {{wolframalpha.help}}")
 async def _(msg: Bot.MessageSession, query: str):
     if await secret_check(query):
-        await msg.finish(rickroll(msg))
+        await msg.finish(rickroll())
     url_query = urllib.parse.quote(query)
     if not appid:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
@@ -50,7 +50,7 @@ async def _(msg: Bot.MessageSession, query: str):
 @w.command("ask <question> {{wolframalpha.help.ask}}")
 async def _(msg: Bot.MessageSession, question: str):
     if await secret_check(question):
-        await msg.finish(rickroll(msg))
+        await msg.finish(rickroll())
     url_query = urllib.parse.quote(question)
     if not appid:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))

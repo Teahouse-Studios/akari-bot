@@ -53,7 +53,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             message
         )
         if is_dirty:
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
         else:
             await msg.send_message([Plain(message)])
 

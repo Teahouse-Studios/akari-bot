@@ -166,12 +166,11 @@ async def check_bool(*text: Union[str, List[str]]) -> bool:
     return False
 
 
-def rickroll(msg: Bot.MessageSession) -> str:
+def rickroll() -> str:
     """合规检查失败时输出的Rickroll消息。
 
-    :param msg: 消息会话。
     :returns: Rickroll消息。
     """
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
-        return msg.locale.t_str(Config("rickroll_msg", cfg_type=str))
-    return msg.locale.t("error.message.chain.unsafe")
+        return Config("rickroll_msg", cfg_type=str)
+    return "[i18n:error.message.chain.unsafe]"

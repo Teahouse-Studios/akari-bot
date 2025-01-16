@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession):
             question = msg.matched_msg[0]
             # gpt4 = False
         if await check_bool(question):
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
 
         thread = await client.beta.threads.create(
             messages=[{"role": "user", "content": question}]

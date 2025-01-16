@@ -55,7 +55,8 @@ async def _(msg: Bot.MessageSession):
 @bili.regex(r"(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)",
             mode="A",
             desc="{bilibili.help.regex.url}",
-            text_only=False,
+            show_typing=False,
+            text_only=False
             )
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]

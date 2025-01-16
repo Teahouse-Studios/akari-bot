@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
         msgs = data["messages"]
         texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
         if await check_bool("".join(texts)):
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
 
         char_count = sum(len(i) for i in texts)
         wait_msg = await msg.send_message(

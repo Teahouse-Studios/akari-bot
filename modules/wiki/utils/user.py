@@ -195,5 +195,5 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
 
     res = "\n".join(msgs)
     if await check_bool(res):
-        await msg.finish(rickroll(msg))
+        await msg.finish(rickroll())
     await msg.finish(res)
