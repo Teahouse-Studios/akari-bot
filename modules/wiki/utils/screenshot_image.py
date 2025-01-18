@@ -7,7 +7,7 @@ from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
-import aiohttp
+import httpx
 import orjson as json
 from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
@@ -52,7 +52,7 @@ async def generate_screenshot_v2(
                 timeout=30,
                 request_private_ip=True,
             )
-        except aiohttp.ClientConnectorError:
+        except Exception:
             if use_local:
                 return await generate_screenshot_v2(
                     page_link,
@@ -61,9 +61,7 @@ async def generate_screenshot_v2(
                     content_mode,
                     use_local=False,
                 )
-            return False
-        except ValueError:
-            Logger.info("[WebRender] Generation Failed.")
+            Logger.error("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
@@ -79,7 +77,7 @@ async def generate_screenshot_v2(
                 timeout=30,
                 request_private_ip=True,
             )
-        except aiohttp.ClientConnectorError:
+        except Exception:
             if use_local:
                 return await generate_screenshot_v2(
                     page_link,
@@ -88,9 +86,7 @@ async def generate_screenshot_v2(
                     content_mode,
                     use_local=False,
                 )
-            return False
-        except ValueError:
-            Logger.info("[WebRender] Generation Failed.")
+            Logger.error("[WebRender] Generation Failed.")
             return False
     with open(img) as read:
         load_img = json.loads(read.read())
@@ -115,11 +111,10 @@ async def generate_screenshot_v1(
         if link[-1] != "/":
             link += "/"
         try:
-            async with aiohttp.ClientSession(headers=headers) as session, session.get(
-                page_link, timeout=aiohttp.ClientTimeout(total=20)
-            ) as req:
-                html = await req.read()
-        except BaseException:
+            async with httpx.AsyncClient(headers=headers) as client:
+                resp = await client.get(page_link, timeout=20)
+                html = resp.text
+        except Exception:
             Logger.error(traceback.format_exc())
             return False
         soup = BeautifulSoup(html, "html.parser")
@@ -156,8 +151,6 @@ async def generate_screenshot_v1(
             for x in soup.find_all(rel="stylesheet"):
                 if x.has_attr("href"):
                     get_herf = x.get("href")
-                    if get_herf.find("timeless") != -1:
-                        timeless_fix = True
                     x.attrs["href"] = re.sub(";", "&", urljoin(link, get_herf))
                 open_file.write(str(x))
 
@@ -231,11 +224,6 @@ async def generate_screenshot_v1(
                             x.attrs["class"] = "image"
                             x.attrs["src"] = x.attrs["data-src"]
 
-                    for x in find_infobox.find_all(class_="lazyload"):
-                        if x.has_attr("class") and x.has_attr("data-src"):
-                            x.attrs["class"] = "image"
-                            x.attrs["src"] = x.attrs["data-src"]
-
                     open_file.write('<div class="mw-parser-output">')
 
                     open_file.write(str(find_infobox))
@@ -289,7 +277,7 @@ async def generate_screenshot_v1(
                         if selected:
                             break
                 if not selected:
-                    Logger.info("Found nothing...")
+                    Logger.info("Nothing found.")
                     return False
                 Logger.info("Found section...")
                 open_file.write(str(x))
@@ -344,36 +332,39 @@ async def generate_screenshot_v1(
         Logger.info("Start rendering...")
         img_lst = []
         try:
-            async with aiohttp.ClientSession() as session, session.post(
-                webrender(),
-                headers={
-                    "Content-Type": "application/json",
-                },
-                data=json.dumps(html),
-            ) as resp:
-                if resp.status != 200:
-                    Logger.info(f"Failed to render: {await resp.text()}")
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    webrender(),
+                    headers={
+                        "Content-Type": "application/json",
+                    },
+                    data=json.dumps(html),
+                )
+                if resp.status_code != 200:
+                    Logger.error(f"Failed to render: {resp.text}")
                     return False
-                imgs_data = json.loads(await resp.read())
+                imgs_data = json.loads(resp.text)
                 for img in imgs_data:
                     b = base64.b64decode(img)
                     bio = BytesIO(b)
                     bimg = PILImage.open(bio)
                     img_lst.append(bimg)
 
-        except aiohttp.ClientConnectorError:
+        except httpx.RequestError as e:
+            Logger.error(f"Request error: {e}")
             if use_local:
-                async with aiohttp.ClientSession() as session, session.post(
-                    webrender(use_local=False),
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                    data=json.dumps(html),
-                ) as resp:
-                    if resp.status != 200:
-                        Logger.info(f"Failed to render: {await resp.text()}")
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        webrender(use_local=False),
+                        headers={
+                            "Content-Type": "application/json",
+                        },
+                        data=json.dumps(html),
+                    )
+                    if resp.status_code != 200:
+                        Logger.error(f"Failed to render: {resp.text}")
                         return False
-                    imgs_data = json.loads(await resp.read())
+                    imgs_data = json.loads(resp.text)
                     for img in imgs_data:
                         b = base64.b64decode(img)
                         bio = BytesIO(b)

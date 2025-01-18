@@ -3,6 +3,7 @@ import inspect
 import re
 import traceback
 from datetime import datetime
+from string import Template
 from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
@@ -25,6 +26,7 @@ from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
 qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
+qq_limited_emoji = str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp'))
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config('enable_tos', True)
@@ -107,13 +109,13 @@ async def check_target_cooldown(msg: Bot.MessageSession):
     neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
     if cooldown_time and not neutralized:
-        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
-            time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
+        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id):
+            time = datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts']
             if time > cooldown_time:
                 cooldown_counter[msg.target.target_id].update(
                     {msg.target.sender_id: {'ts': datetime.now().timestamp()}})
             else:
-                await msg.finish(msg.locale.t('message.cooldown.manual', time=cooldown_time - time))
+                await msg.finish(msg.locale.t('message.cooldown.manual', time=int(cooldown_time - time)))
         else:
             cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
 
@@ -127,7 +129,6 @@ def transform_alias(msg, command: str):
             pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
             # 匹配占位符
             pattern_placeholders = re.findall(r'\$\{([^{}$]+)\}', pattern)
-            replacement_placeholders = re.findall(r'\$\{([^{}$]+)\}', replacement)
 
             regex_pattern = re.escape(pattern)
             for placeholder in pattern_placeholders:
@@ -135,20 +136,10 @@ def transform_alias(msg, command: str):
 
             match = re.match(regex_pattern, command)
             if match:
-                result = replacement
                 groups = match.groups()
-                # 替换模板中的占位符
-                for i, placeholder in enumerate(pattern_placeholders):
-                    if i < len(groups):
-                        result = result.replace(f'${{{placeholder}}}', groups[i])
-                    else:
-                        result = result.replace(f'${{{placeholder}}}', '')
-                # 检查未匹配的占位符并保留原始文本
-                for placeholder in replacement_placeholders:
-                    if placeholder not in pattern_placeholders:
-                        result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
-                    else:
-                        result = result.replace(f'${{{placeholder}}}', '')
+                placeholder_dict = {placeholder: groups[i] for i,
+                                    placeholder in enumerate(pattern_placeholders) if i < len(groups)}
+                result = Template(replacement).safe_substitute(placeholder_dict)
 
                 Logger.debug(msg.prefixes[0] + result)
                 return msg.prefixes[0] + result
@@ -310,7 +301,14 @@ async def parser(msg: Bot.MessageSession,
                             await msg.send_message(
                                 msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
                                              prefix=msg.prefixes[0]))
-                            return
+                            if await msg.check_permission():
+                                if await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable")):
+                                    msg.data.enable(command_first_word)
+                                    await msg.send_message(msg.locale.t("core.message.module.enable.success", module=command_first_word))
+                                else:
+                                    return
+                            else:
+                                return
                     elif module.required_admin:
                         if not await msg.check_permission():
                             await msg.send_message(msg.locale.t("parser.admin.module.permission.denied",
@@ -450,23 +448,32 @@ async def parser(msg: Bot.MessageSession,
                 except SendMessageFailed:
                     if msg.target.target_from == qq_group_prefix:  # wtf onebot 11
                         obi = await get_onebot_implementation()
-                        if obi == 'ntqq':
-                            await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
-                                               emoji_id=str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp')))
-                        elif obi == 'lagrange':
-                            await msg.call_api('group_poke', group_id=msg.session.target, user_id=int(qq_account))
-                        elif obi == 'shamrock':
-                            await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:touch,id={qq_account}]')
-                        elif obi == 'go-cqhttp':
-                            await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:poke,qq={qq_account}]')
+                        if obi in ["llonebot", "napcat"]:
+                            await msg.call_api("set_msg_emoji_like",
+                                               message_id=msg.session.message.message_id,
+                                               emoji_id=qq_limited_emoji)
+                        elif obi == "lagrange":
+                            await msg.call_api("set_group_reaction",
+                                               group_id=msg.session.target,
+                                               message_id=msg.session.message.message_id,
+                                               code=qq_limited_emoji,
+                                               is_add=True)
+                        elif obi == "shamrock":
+                            await msg.call_api("send_group_msg",
+                                               group_id=msg.session.target,
+                                               message=f"[CQ:touch,id={qq_account}]")
+                        elif obi == "go-cqhttp":
+                            await msg.call_api("send_group_msg",
+                                               group_id=msg.session.target,
+                                               message=f"[CQ:poke,qq={qq_account}]")
                         else:
                             pass
                     await msg.send_message(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
                     time_used = datetime.now() - time_start
-                    Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
-                                f'Times take up: {str(time_used)}')
+                    Logger.success(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
+                                   f'Times take up: {str(time_used)}')
                     Info.command_parsed += 1
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
@@ -490,11 +497,13 @@ async def parser(msg: Bot.MessageSession,
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                     if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                        errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                      url=Url(Config('bug_report_url',
-                                                                     bug_report_url_default,
-                                                                     cfg_type=str),
-                                                              use_mm=False))
+                        bug_report_url = Url(
+                            Config(
+                                'bug_report_url',
+                                bug_report_url_default,
+                                cfg_type=str),
+                            use_mm=False)
+                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                     await msg.send_message(errmsg)
 
                     if not timeout and report_targets:
@@ -540,16 +549,16 @@ async def parser(msg: Bot.MessageSession,
                     for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
                         time_start = datetime.now()
                         try:
-                            msg.matched_msg = False
                             matched = False
                             matched_hash = 0
+                            trigger_msg = msg.as_display(text_only=rfunc.text_only)
                             if rfunc.mode.upper() in ['M', 'MATCH']:
-                                msg.matched_msg = re.match(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg:
                                     matched = True
                                     matched_hash = hash(msg.matched_msg.groups())
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
-                                msg.matched_msg = re.findall(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
+                                msg.matched_msg = re.findall(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                                 msg.matched_msg = tuple(set(msg.matched_msg))
                                 if msg.matched_msg:
                                     matched = True
@@ -605,7 +614,7 @@ async def parser(msg: Bot.MessageSession,
                         except FinishedException as e:
                             time_used = datetime.now() - time_start
                             if rfunc.logging:
-                                Logger.info(
+                                Logger.success(
                                     f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                     f'Times take up: {time_used}')
 
@@ -634,11 +643,13 @@ async def parser(msg: Bot.MessageSession,
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
                             if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                                errmsg += '\n' + msg.locale.t('error.prompt.address',
-                                                              url=str(Url(Config('bug_report_url',
-                                                                                 bug_report_url_default,
-                                                                                 cfg_type=str),
-                                                                          use_mm=False)))
+                                bug_report_url = Url(
+                                    Config(
+                                        'bug_report_url',
+                                        bug_report_url_default,
+                                        cfg_type=str),
+                                    use_mm=False)
+                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                             await msg.send_message(errmsg)
 
                             if not timeout and report_targets:

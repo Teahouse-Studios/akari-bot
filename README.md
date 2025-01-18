@@ -29,10 +29,10 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 | 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | Bilibili      | IP 地址查询     | Wordle     | MC 版本更新推送     |
 | 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | 网易云音乐    | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
 | 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai          | GitHub       | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
-| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  | 迷因/梗查询     | 抛硬币      | 茶馆周报推送        |
-| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） | OpenAI       | 色彩查看器      | 掷骰工具    |                    |
-| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha | 随机生成器       | Emojimix   |                    |
-| 货币系统（WIP） |             |                |                |               |                | 一言        |                    |
+| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  | 色彩查看器     | 抛硬币      | 茶馆周报推送        |
+| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） | OpenAI       | 随机生成器     | 掷骰工具    |                    |
+| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |                | Emojimix   |                    |
+|   WebUI（WIP） |             |                |                | nbnhhsh       |                | 一言        |                    |
 
 ## 运行
 
@@ -95,7 +95,3 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 ## 许可
 
 小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
-
-## 友情链接
-
-* [音卡](https://github.com/codethink-cn/Inkar-Suki) - 各种功能于一体的群聊机器人。

@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         res_json["data"]["user"]["name"],
         res_json["data"]["user"]["screen_name"],
     ):
-        await msg.finish(rickroll(msg))
+        await msg.finish(rickroll())
 
     css = """
         main {

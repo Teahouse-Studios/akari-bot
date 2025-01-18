@@ -232,9 +232,9 @@ async def _(msg: Bot.MessageSession):
 
     qc = CoolDown("wordle", msg)
     if not msg.target.client_name == "TEST" and not msg.check_super_user():
-        c = qc.check(150)
+        c = qc.check(180)
         if c != 0:
-            await msg.finish(msg.locale.t("message.cooldown", time=int(150 - c)))
+            await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
     board = WordleBoard.from_random_word()
     hard_mode = bool(msg.parsed_msg)

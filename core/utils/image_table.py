@@ -1,10 +1,10 @@
 import base64
 import re
+import traceback
 from html import escape
 from io import BytesIO
 from typing import Any, List, Union
 
-import aiohttp
 import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate
@@ -100,19 +100,27 @@ async def image_table_render(
                     "Content-Type": "application/json",
                 },
             )
-        except aiohttp.ClientConnectorError:
+        except Exception:
             if use_local:
-                pic = await download(
-                    webrender(use_local=False),
-                    method="POST",
-                    post_data=json.dumps(html),
-                    request_private_ip=True,
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                )
+                try:
+                    pic = await download(
+                        webrender(use_local=False),
+                        method="POST",
+                        post_data=json.dumps(html),
+                        request_private_ip=True,
+                        headers={
+                            "Content-Type": "application/json",
+                        },
+                    )
+                except Exception:
+                    Logger.error("Generation failed.")
+                    return False
+            else:
+                Logger.error("Generation failed.")
+                return False
     except Exception:
-        Logger.exception("Error at image_table_render.")
+        Logger.error(traceback.format_exc())
+        return False
     with open(pic) as read:
         load_img = json.loads(read.read())
     img_lst = []

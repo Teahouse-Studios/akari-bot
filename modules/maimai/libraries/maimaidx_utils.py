@@ -121,19 +121,22 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
             continue
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:>5} {:<3} {:>8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:<5} {:<20}\n".format(
-            idx,
-            chart["song_id"],
-            level,
-            chart["achievements"],
-            rank,
-            combo_mapping.get(chart["fc"], ""),
-            sync_mapping.get(chart["fs"], ""),
-            chart["ds"],
-            chart["ra"],
-            dxstar,
-            title
-        )
+        line = f"#{
+            idx:<2} {
+            chart["song_id"]:>5} {
+            level:<3} {
+                chart["achievements"]:>8.4f}% {
+                    rank:<4} {
+                        combo_mapping.get(
+                            chart["fc"],
+                            ""):<3} {
+                                sync_mapping.get(
+                                    chart["fs"],
+                                    ""):<4} {
+                                        chart["ds"]:>4}->{
+                                            chart["ra"]:<3} {
+                                                dxstar:<5} {
+                                                    title:<20}\n"
         html += line
     html += f"New ({sum(chart['ra'] for chart in dx_charts)})\n"
     for idx, chart in enumerate(dx_charts, start=1):
@@ -148,19 +151,22 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
             continue
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:>5} {:<3} {:>8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:<5} {:<20}\n".format(
-            idx,
-            chart["song_id"],
-            level,
-            chart["achievements"],
-            rank,
-            combo_mapping.get(chart["fc"], ""),
-            sync_mapping.get(chart["fs"], ""),
-            chart["ds"],
-            chart["ra"],
-            dxstar,
-            title
-        )
+        line = f"#{
+            idx:<2} {
+            chart["song_id"]:>5} {
+            level:<3} {
+                chart["achievements"]:>8.4f}% {
+                    rank:<4} {
+                        combo_mapping.get(
+                            chart["fc"],
+                            ""):<3} {
+                                sync_mapping.get(
+                                    chart["fs"],
+                                    ""):<4} {
+                                        chart["ds"]:>4}->{
+                                            chart["ra"]:<3} {
+                                                dxstar:<5} {
+                                                    title:<20}\n"
         html += line
     html += "</pre>"
     time = msg.ts2strftime(datetime.now().timestamp(), iso=True, timezone=False)
@@ -219,8 +225,8 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
                                   user=username,
                                   rating=rating,
                                   rank=rank,
-                                  average_rating="{:.4f}".format(average_rating),
-                                  surpassing_rate="{:.2f}".format(surpassing_rate)))
+                                  average_rating=f"{average_rating:.4f}",
+                                  surpassing_rate=f"{surpassing_rate:.2f}"))
 
 
 async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str, use_cache: bool = True) -> str:
@@ -367,7 +373,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
             if [int(s[0]), s[-2]] in song_record:
                 record_index = song_record.index([int(s[0]), s[-2]])
                 if goal in rate_list:
-                    self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
+                    self_record = f"{verlist[record_index]['achievements']:.4f}%"
                 elif goal in combo_list:
                     if verlist[record_index]['fc']:
                         self_record = combo_list[combo_list_raw.index(verlist[record_index]['fc'])]
@@ -611,7 +617,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余13+以上歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['將', '者']:
-                        self_record = f"{str('{:.4f}'.format(verlist[record_index]['achievements']))}%"
+                        self_record = f"{verlist[record_index]['achievements']:.4f}%"
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = combo_list[combo_list_raw.index(verlist[record_index]['fc'])]
@@ -637,7 +643,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['將', '者']:
-                        self_record = str("{:.4f}".format(verlist[record_index]['achievements'])) + '%'
+                        self_record = f"{verlist[record_index]['achievements']:.4f}%"
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = combo_list[combo_list_raw.index(verlist[record_index]['fc'])]

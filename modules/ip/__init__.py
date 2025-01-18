@@ -1,5 +1,4 @@
 import ipaddress
-import json
 import socket
 from typing import Any, Dict
 
@@ -84,24 +83,30 @@ async def check_ip(ip: str):
         'real_ip': real_ip
     }
     if not skip_geoip:
-        data = json.loads(await get_url('https://api.ip.sb/geoip/' + ip))
+        data = await get_url(f"https://api.ip.sb/geoip/{ip}", 200, fmt="json")
         for key in res:
             if key in data:
                 res[key] = data[key]
-
         try:
             reverse = socket.getnameinfo((ip, 0), 0)
             res['reverse'] = reverse[0]
-        except BaseException:
+        except Exception:
             Logger.warning("Unable to fetch reverse DNS.")
 
     return res
 
 
+def zzzq(msg: Bot.MessageSession, country: str):
+    if msg.target.client_name in ["KOOK", "QQ", "QQ|Bot"] and \
+            country in ["Hong Kong", "Macao", "Taiwan"]:
+        return "China"
+    return country
+
+
 def parse_coordinate(axis: str, value: float):
-    if axis == 'latitude':
+    if axis == "latitude":
         return f'{value}°{"N" if value > 0 else "S"}'
-    if axis == 'longitude':
+    if axis == "longitude":
         return f'{value}°{"E" if value > 0 else "W"}'
 
 
@@ -122,26 +127,18 @@ async def format_ip(msg, info: Dict[str, Any]):
         'unknown': msg.locale.t('message.unknown')
     }
 
-    res.append(info['ip'])
+    res.append(info["ip"])
     res.append(f"{msg.locale.t('ip.message.type')}IPv{info['version']} {
                ip_property[info['ip_property']]}{msg.locale.t('ip.message.ip_property')}")
     res.append(f"{msg.locale.t('ip.message.real_ip')}{info['real_ip']}" if info['real_ip'] else '')
     res.append(
         f"""{
-            f'''{
-                msg.locale.t('ip.message.location')}{
-                f"{
-                    info['city']}, " if info['city'] else ''}{
-                        f"{
-                            info['region']}, " if info['region'] else ''}{
-                                info['country']}''' if info['country'] else ''}{
-                                    f" ({
-                                        parse_coordinate(
-                                            'longitude',
-                                            info['longitude'])}, {
-                                                parse_coordinate(
-                                                    'latitude',
-                                                    info['latitude'])})" if info['longitude'] and info['latitude'] else ''}""")
+            f'''{msg.locale.t('ip.message.location')}{
+                f"{info['city']}, " if info['city'] else ''}{
+                f"{info['region']}, " if info['region'] else ''}{
+                zzzq(msg, info['country'])}''' if info['country'] else ''}{
+            f" ({parse_coordinate('longitude', info['longitude'])}, {
+                parse_coordinate('latitude', info['latitude'])})" if info['longitude'] and info['latitude'] else ''}""")
     res.append(f"{msg.locale.t('ip.message.postal_code')}{info['postal_code']}" if info['postal_code'] else '')
     res.append(f"{msg.locale.t('ip.message.organization')}{info['organization']}" if info['organization'] else '')
     res.append(f"""{f"{msg.locale.t('ip.message.asn')}{info['asn']}" if info['asn'] else ''}{

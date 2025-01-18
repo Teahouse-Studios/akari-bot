@@ -80,7 +80,7 @@ def load_modules():
             Logger.error(errmsg)
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
-    Logger.info("All modules loaded.")
+    Logger.success("All modules loaded.")
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
     with open(loader_cache, "w") as open_loader_cache:
         if err_prompt:
@@ -230,14 +230,13 @@ class ModulesManager:
         else:
             try:
                 importlib.import_module(modules)
-                Logger.info(f"Succeeded loaded modules.{module_name}!")
+                Logger.success(f"Succeeded loaded modules.{module_name}!")
                 if module_name in err_modules:
                     err_modules.remove(module_name)
                 current_unloaded_modules.remove(module_name)
             except Exception:
                 tb = traceback.format_exc()
-                errmsg = f"Failed to load modules.{module_name}: \n{tb}"
-                Logger.error(errmsg)
+                Logger.error(f"Failed to load modules.{module_name}: \n{tb}")
                 if module_name not in err_modules:
                     err_modules.append(module_name)
                 return False
@@ -269,7 +268,7 @@ class ModulesManager:
                 if mod.startswith(f"{module_name}."):
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)
-            Logger.info(f"Successfully reloaded {module_name}.")
+            Logger.success(f"Successfully reloaded {module_name}.")
             if (m := re.match(r"^modules(\.[a-zA-Z0-9_]*)?", module_name)) and m.group(
                 1
             ) in err_modules:

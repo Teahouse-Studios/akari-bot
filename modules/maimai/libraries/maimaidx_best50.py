@@ -51,10 +51,7 @@ class ChartInfo:
         self.lv = lv
 
     def __str__(self):
-        return (
-            "%-50s" % f"{self.title} [{self.tp}]"
-            + f"{self.ds}\t{diff_list[self.diff]}\t{self.ra}"
-        )
+        return f"{self.title:<50} [{self.tp}]{self.ds}\t{diff_list[self.diff]}\t{self.ra}"
 
     def __eq__(self, other):
         return self.ra == other.ra
@@ -204,7 +201,7 @@ class DrawBest:
             font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
             tempDraw.text((7, 29), f"ID: {chartInfo.idNum}", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
-            tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', "white", font)
+            tempDraw.text((6, 42), f"{chartInfo.achievement:.4f}%", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             tempDraw.text((96, 42), chartInfo.rate, "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")
@@ -272,7 +269,7 @@ class DrawBest:
             font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
             tempDraw.text((7, 29), f"ID: {chartInfo.idNum}", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
-            tempDraw.text((6, 42), f'{"%.4f" % chartInfo.achievement}%', "white", font)
+            tempDraw.text((6, 42), f"{chartInfo.achievement:.4f}%", "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 18, encoding="utf-8")
             tempDraw.text((96, 42), chartInfo.rate, "white", font)
             font = ImageFont.truetype(noto_sans_demilight_path, 12, encoding="utf-8")

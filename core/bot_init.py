@@ -19,7 +19,7 @@ from core.database_v2 import init_db
 async def init_async(start_scheduler=True) -> None:
     await init_db()
     try:
-        Info.version = os.popen("git rev-parse HEAD", "r").read()
+        Info.version = os.popen("git rev-parse HEAD", "r").read().strip('\n')
     except Exception:
         Logger.warning("Failed to get Git commit hash, is it a Git repository?")
     load_modules()
@@ -56,7 +56,7 @@ async def load_secret():
 
 
 async def load_prompt(bot) -> None:
-    author_cache = os.path.join(PrivateAssets.path, "cache_restart_author")
+    author_cache = os.path.join(PrivateAssets.path, ".cache_restart_author")
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
     if os.path.exists(author_cache):
         with open(author_cache, "r", encoding="utf-8") as open_author_cache:
@@ -72,8 +72,7 @@ async def load_prompt(bot) -> None:
                         await m.send_direct_message(
                             m.parent.locale.t("loader.load.success")
                         )
-                    os.remove(author_cache)
-                    os.remove(loader_cache)
+        os.remove(author_cache)
 
 
 __all__ = ["init_async", "load_prompt"]

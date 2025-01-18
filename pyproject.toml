@@ -16,7 +16,6 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12.0"
 Pillow = "^11.0.0"
-aiohttp = ">=3.9.3"
 beautifulsoup4 = "^4.11.1"
 psutil = "^6.0.0"
 gql = "^3.4.0"
@@ -29,30 +28,31 @@ py-cord = "^2.5.0"
 aiocqhttp = "^1.4.3"
 tabulate = "^0.9.0"
 feedparser = "^6.0.10"
-ffmpy = "^0.4.0"
+ffmpy = "^0.5.0"
 google-play-scraper = "^1.2.2"
 py-cpuinfo = "^9.0.0"
 aiofile = "^3.8.1"
 loguru = "^0.7.0"
-numpy = "^1.24.1"
+numpy = "^2.0.0"
 matplotlib = "^3.6.3"
 pint = "^0.24.0"
 simpleeval = "^1.0.0"
-pywin32 = { version = "^306", platform = "win32" }
+pywin32 = { version = "^308", platform = "win32" }
 tenacity = "^9.0.0"
 openai = "^1.6.1"
-cryptography = "^43.0.0"
+cryptography = "^44.0.0"
 pre-commit = "^4.0.0"
 webcolors = "^24.0.0"
 langchain = "^0.3.0"
 wolframalpha = "^5.0.0"
-duckduckgo-search = "^6.0.0"
+duckduckgo-search = "^7.0.0"
 tiktoken = "^0.8.0"
 pycryptodome = "^3.18.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
 attrs = "^24.2.0"
-uvicorn = {extras = ["standard"], version = "^0.32.0"}
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 python-whois = "^0.9.0"
 pandas = "^2.2.0"
 future = "^1.0.0"
@@ -70,6 +70,8 @@ botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 tomlkit = "^0.13.2"
 cattrs = "^24.1.2"
 tortoise-orm = {extras = ["asyncmy"], version = "^0.23.0"}
+argon2-cffi = "^23.1.0"
+slowapi = "^0.1.9"
 
 
 [tool.poetry.group.dev.dependencies]

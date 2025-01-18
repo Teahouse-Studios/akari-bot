@@ -1,7 +1,6 @@
 import re
 import traceback
 from datetime import datetime
-from urllib.parse import quote
 
 import orjson as json
 from bs4 import BeautifulSoup
@@ -52,7 +51,7 @@ async def get_article(version):
 
     try:
         html = await get_url(
-            webrender("source", quote(link)),
+            webrender("source", link),
             attempt=1,
             request_private_ip=True,
             logging_err_resp=False,

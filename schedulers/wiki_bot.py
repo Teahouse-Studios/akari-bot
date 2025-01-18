@@ -15,4 +15,4 @@ async def login_bots():
         "wiki_bot.login_wiki_bots", cookies=BotAccount.cookies
     )
     await JobQueue.trigger_hook_all("wikilog.keepalive")
-    Logger.info("Successfully login wiki bot account.")
+    Logger.success("Successfully login wiki bot account.")

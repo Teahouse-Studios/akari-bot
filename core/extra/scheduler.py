@@ -62,4 +62,4 @@ def load_extra_schedulers():
             tb = traceback.format_exc()
             errmsg = f"Failed to load schedulers.{fun_file}: \n{tb}"
             Logger.error(errmsg)
-    Logger.info("All schedulers loaded.")
+    Logger.success("All schedulers loaded.")

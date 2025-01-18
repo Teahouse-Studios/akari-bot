@@ -319,7 +319,7 @@ def restart():
 
 
 def write_version_cache(msg: Bot.MessageSession):
-    update = os.path.join(PrivateAssets.path, 'cache_restart_author')
+    update = os.path.join(PrivateAssets.path, '.cache_restart_author')
     with open(update, 'wb') as write_version:
         write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
 
@@ -459,7 +459,15 @@ async def _(msg: Bot.MessageSession):
 echo = module('echo', required_superuser=True, base=True, doc=True)
 
 
-@echo.command('<display_msg>')
+@echo.command()
+async def _(msg: Bot.MessageSession):
+    dis = await msg.wait_next_message()
+    if dis:
+        dis = dis.as_display()
+        await msg.finish(dis, enable_parse_message=False)
+
+
+@echo.command('[<display_msg>]')
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     await msg.finish(dis, enable_parse_message=False)
 

@@ -40,6 +40,7 @@ from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 
 enable_analytics = Config("enable_analytics", False)
+qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
 
 
 class FinishedSession(FinishedSessionT):
@@ -139,7 +140,7 @@ class MessageSession(MessageSessionT):
                     parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                     parts = [part for part in parts if part]
                     previous_was_cq = False
-                    #  CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
+                    # CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
                     for i, part in enumerate(parts):
                         if re.match(r"\[CQ:[^\]]+\]", part):
                             try:
@@ -431,47 +432,31 @@ class MessageSession(MessageSessionT):
         async def __aenter__(self):
             if self.msg.target.target_from == target_group_prefix:  # wtf onebot 11
                 obi = await get_onebot_implementation()
-                if obi == "ntqq":
+                if obi in ["llonebot", "napcat"]:
                     await bot.call_action(
                         "set_msg_emoji_like",
                         message_id=self.msg.session.message.message_id,
-                        emoji_id=str(
-                            Config(
-                                "qq_typing_emoji",
-                                181,
-                                (str, int),
-                                table_name="bot_aiocqhttp",
-                            )
-                        ),
-                    )
+                        emoji_id=qq_typing_emoji)
+                elif obi == "lagrange":
+                    await bot.call_action(
+                        "set_group_reaction",
+                        group_id=self.msg.session.target,
+                        message_id=self.msg.session.message.message_id,
+                        code=qq_typing_emoji,
+                        is_add=True)
                 else:
                     if self.msg.session.sender in last_send_typing_time:
-                        if (
-                            datetime.datetime.now().timestamp()
-                            - last_send_typing_time[self.msg.session.sender]
-                            <= 3600
-                        ):
+                        if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                             return
-                    last_send_typing_time[self.msg.session.sender] = (
-                        datetime.datetime.now().timestamp()
-                    )
-
-                    if obi == "lagrange":
-                        await bot.call_action(
-                            "group_poke",
-                            group_id=self.msg.session.target,
-                            user_id=self.msg.session.sender,
-                        )
-                    elif obi == "shamrock":
+                    last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
+                    if obi == "shamrock":
                         await bot.send_group_msg(
                             group_id=self.msg.session.target,
-                            message=f"[CQ:touch,id={self.msg.session.sender}]",
-                        )
+                            message=f"[CQ:touch,id={self.msg.session.sender}]")
                     elif obi == "go-cqhttp":
                         await bot.send_group_msg(
                             group_id=self.msg.session.target,
-                            message=f"[CQ:poke,qq={self.msg.session.sender}]",
-                        )
+                            message=f"[CQ:poke,qq={self.msg.session.sender}]")
                     else:
                         pass
 

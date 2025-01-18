@@ -150,7 +150,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
                     msg.locale.t("ncmusic.message.search.invalid.non_digital")
                 )
 
-        if Bot.client_name == "QQ" and Config("ncmusic_enable_card", False):
+        if msg.target.client_name == "QQ" and Config("ncmusic_enable_card", False):
             await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
         else:
             await info(msg, sid)

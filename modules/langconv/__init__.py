@@ -22,5 +22,5 @@ async def _(msg: Bot.MessageSession, language: str, content: str):
     lc = {"zh-cn": lc_zh_cn, "zh-hk": lc_zh_hk, "zh-tw": lc_zh_tw}[language]
     res = lc.convert(content)
     if await check_bool(res):
-        await msg.finish(rickroll(msg))
+        await msg.finish(rickroll())
     await msg.finish(res)

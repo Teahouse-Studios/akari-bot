@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, UTC as datetimeUTC
-from typing import Any, Coroutine, Dict, List, Optional, Union, TYPE_CHECKING
+from re import Match
+from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
 
 from core.builtins.message.chain import *
 from core.builtins.message.elements import MessageElement
@@ -196,8 +197,9 @@ class MessageSession:
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
-        self.trigger_msg: str = None
-        self.parsed_msg: dict = None
+        self.trigger_msg: Optional[str] = None
+        self.matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
+        self.parsed_msg: Optional[dict] = None
         self.prefixes: List[str] = []
         self.target_info: TargetInfo = None
         self.sender_info: SenderInfo = None

@@ -104,7 +104,7 @@ class MkeyGenerator:
     def _read_aes_key(self, file_name):
         file_path = os.path.join(self._data_path, file_name)
         if self._dbg:
-            print("Using %s." % file_path)
+            print(f"Using {file_path}.")
 
         with open(file_path, "rb") as mkey_aes_key:
             mkey_aes_key = mkey_aes_key.read()
@@ -112,9 +112,7 @@ class MkeyGenerator:
 
         if len(mkey_aes_key) != aes_key_len:
             raise ValueError(
-                "Size of AES key %s is invalid (expected 0x%02X, got 0x%02X)."
-                % file_name,
-                aes_key_len,
+                f"Size of AES key {file_name} is invalid (expected 0x{aes_key_len:02X}, got 0x{aes_key_len:02X})."
             )
 
         return mkey_aes_key
@@ -123,7 +121,7 @@ class MkeyGenerator:
     def _read_mkey_file(self, file_name):
         file_path = os.path.join(self._data_path, file_name)
         if self._dbg:
-            print("Using %s." % file_path)
+            print(f"Using {file_path}.")
 
         with open(file_path, "rb") as data:
             data = data.read()
@@ -131,9 +129,7 @@ class MkeyGenerator:
 
         if len(data) != mkey_len:
             raise ValueError(
-                "Size of masterkey.bin %s is invalid (expected 0x%02X, got 0x%02X)."
-                % file_name,
-                mkey_len,
+                f"Size of masterkey.bin {file_name} is invalid (expected 0x{mkey_len:02X}, got 0x{mkey_len:02X})."
             )
 
         mkey_data = struct.unpack("BB14x16s32s", data)
@@ -143,7 +139,7 @@ class MkeyGenerator:
     def _read_hmac_key(self, file_name):
         file_path = os.path.join(self._data_path, file_name)
         if self._dbg:
-            print("Using %s." % file_path)
+            print(f"Using {file_path}.")
 
         with open(file_path, "rb") as mkey_aes_key:
             mkey_hmac_key = mkey_aes_key.read()
@@ -151,9 +147,7 @@ class MkeyGenerator:
 
         if len(mkey_hmac_key) != hmac_key_len:
             raise ValueError(
-                "Size of HMAC key %s is invalid (expected 0x%02X, got 0x%02X)."
-                % file_name,
-                hmac_key_len,
+                f"Size of HMAC key {file_name} is invalid (expected 0x{hmac_key_len:02X}, got 0x{hmac_key_len:02X})."
             )
 
         return mkey_hmac_key
@@ -165,7 +159,7 @@ class MkeyGenerator:
         if len(inquiry) == 8:
             if "v0" in algorithms:
                 return "v0"
-            raise ValueError("v0 algorithm not supported by %s." % device)
+            raise ValueError(f"v0 algorithm not supported by {device}.")
         if len(inquiry) == 10:
             version = int((int(inquiry) / 10000000) % 100)
 
@@ -175,11 +169,11 @@ class MkeyGenerator:
                 return "v2"
             if "v3" in algorithms:
                 return "v3"
-            raise ValueError("v1/v2/v3 algorithms not supported by %s." % device)
+            raise ValueError(f"v1/v2/v3 algorithms not supported by {device}.")
         if len(inquiry) == 6:
             if "v4" in algorithms:
                 return "v4"
-            raise ValueError("v4 algorithm not supported by %s." % device)
+            raise ValueError(f"v4 algorithm not supported by {device}.")
         raise ValueError("Inquiry number must be 6, 8 or 10 digits.")
 
     # CRC-32 implementation (v0).
@@ -208,13 +202,13 @@ class MkeyGenerator:
         addout = props["addout"]
 
         # Create the input buffer.
-        inbuf = "%02u%02u%04u" % (month, day, inquiry % 10000)
+        inbuf = f"{month:02}{day:02}{inquiry % 10000:04}"
         inbuf = inbuf.encode("ascii")
 
         if self._dbg:
-            print("CRC polynomial: 0x%08X." % poly)
-            print("CRC xor-out:    0x%X." % xorout)
-            print("CRC add-out:    0x%X." % addout)
+            print(f"CRC polynomial: 0x{poly:08X}.")
+            print(f"CRC xor-out:    0x{xorout:X}.")
+            print(f"CRC add-out:    0x{addout:X}.")
             print("")
 
             print("CRC input:")
@@ -222,11 +216,11 @@ class MkeyGenerator:
 
         output = self._calculate_crc(poly, xorout, addout, inbuf)
         if self._dbg:
-            print("Output word: %u.\n" % output)
+            print(f"Output word: {output}.\n")
 
         # Truncate to 5 decimal digits to form the final master key.
         master_key = output % 100000
-        return "%05d" % master_key
+        return f"{master_key:05d}"
 
     def _generate_v1_v2(self, props, inquiry, month, day):
         algorithm = props["algorithm"]
@@ -299,19 +293,13 @@ class MkeyGenerator:
             # Verify the region field.
             if mkey_region != region:
                 raise ValueError(
-                    "%s has an incorrect region field (expected 0x%02X, got 0x%02X)."
-                    % file_name,
-                    region,
-                    mkey_region,
+                    f"{file_name} has an incorrect region field (expected 0x{region:02X}, got 0x{mkey_region:02X})."
                 )
 
             # Verify the version field.
             if mkey_version != version and "no-versions" not in traits:
                 raise ValueError(
-                    "%s has an incorrect version field (expected 0x%02X, got 0x%02X)."
-                    % file_name,
-                    version,
-                    mkey_version,
+                    f"{file_name} has an incorrect version field (expected 0x{version:02X}, got 0x{mkey_version:02X})."
                 )
 
             if self._dbg:
@@ -330,7 +318,7 @@ class MkeyGenerator:
             mkey_hmac_key = ctx.decrypt(mkey_hmac_key)
 
         # Create the input buffer.
-        inbuf = "%02u%02u%010u" % (month, day, inquiry % 10000000000)
+        inbuf = f"{month:02}{day:02}{inquiry % 10000000000:010}"
         inbuf = inbuf.encode("ascii")
 
         if self._dbg:
@@ -353,11 +341,11 @@ class MkeyGenerator:
             output = struct.unpack_from("<I", outbuf)[0]
 
         if self._dbg:
-            print("Output word: %u.\n" % output)
+            print(f"Output word: {output}.\n")
 
         # Truncate to 5 decimal digits to form the final master key.
         master_key = output % 100000
-        return "%05d" % master_key
+        return f"{master_key:05d}"
 
     def _generate_v3_v4(self, props, inquiry, aux=None):
         algorithm = props["algorithm"]
@@ -393,9 +381,9 @@ class MkeyGenerator:
 
         # Create the input buffer.
         if algorithm == "v4":
-            inbuf = "%06u" % (inquiry % 1000000)
+            inbuf = f"{inquiry % 1000000:06}"
         else:
-            inbuf = "%010u" % (inquiry % 10000000000)
+            inbuf = f"{inquiry % 10000000000:010}"
 
         inbuf = inbuf.encode("ascii")
 
@@ -435,11 +423,11 @@ class MkeyGenerator:
         output = struct.unpack_from("<Q", outbuf)[0] & 0x0000FFFFFFFFFFFF
 
         if self._dbg:
-            print("Output word: %u.\n" % output)
+            print(f"Output word: {output}.\n")
 
         # Truncate to 8 decimal digits to form the final master key.
         master_key = output % 100000000
-        return "%08d" % master_key
+        return f"{master_key:08d}"
 
     def generate(self, inquiry, month=None, day=None, aux=None, device=None):
         inquiry = inquiry.replace(" ", "")
@@ -460,7 +448,7 @@ class MkeyGenerator:
         if not device:
             device = self.default_device
         if device not in self.devices:
-            raise ValueError("Unsupported device: %s." % device)
+            raise ValueError(f"Unsupported device: {device}.")
 
         # We can glean information about the required algorithm from the inquiry number.
         algorithm = self._detect_algorithm(device, inquiry)

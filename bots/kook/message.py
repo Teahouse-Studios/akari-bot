@@ -2,7 +2,7 @@ import re
 import traceback
 from typing import List, Union
 
-import aiohttp
+import httpx
 import orjson as json
 from khl import MessageTypes, Message
 
@@ -34,22 +34,20 @@ kook_headers = {
 
 async def direct_msg_delete(msg_id: str):
     """删除私聊消息"""
-    url = kook_base + "/api/v3/direct-message/delete"
+    url = f"{kook_base}/api/v3/direct-message/delete"
     params = {"msg_id": msg_id}
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=params, headers=kook_headers) as response:
-            res = json.loads(await response.text())
-    return res
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, data=params, headers=kook_headers)
+    return json.loads(resp.text)
 
 
 async def channel_msg_delete(msg_id: str):
     """删除普通消息"""
-    url = kook_base + "/api/v3/message/delete"
+    url = f"{kook_base}/api/v3/message/delete"
     params = {"msg_id": msg_id}
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=params, headers=kook_headers) as response:
-            res = json.loads(await response.text())
-    return res
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, data=params, headers=kook_headers)
+    return json.loads(resp.text)
 
 
 class FinishedSession(FinishedSessionT):

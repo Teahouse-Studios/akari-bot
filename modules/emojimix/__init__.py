@@ -120,7 +120,7 @@ async def _(msg: Bot.MessageSession):
     Logger.debug(str(combo))
     result = mixer.mix_emoji(combo)
     Logger.debug(result)
-    await msg.finish([Plain(f"{mixer.str2emoji(combo[0])} + {mixer.str2emoji(combo[1])}"), Image(result)])
+    await msg.finish([Plain(f"{mixer.str2emoji(combo[0])}+{mixer.str2emoji(combo[1])}"), Image(result)])
 
 
 @emojimix.command('<emoji1> [<emoji2>] {{emojimix.help}}')
@@ -147,9 +147,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         combo = mixer.random_choice_emoji(emoji1)
         Logger.debug(str(combo))
     result = mixer.mix_emoji(combo)
-    Logger.debug(result)
     if result:
-        await msg.finish([Plain(f"{mixer.str2emoji(combo[0])} + {mixer.str2emoji(combo[1])}"), Image(result)])
+        await msg.finish([Plain(f"{mixer.str2emoji(combo[0])}+{mixer.str2emoji(combo[1])}"), Image(result)])
     else:
         await msg.finish(msg.locale.t("emojimix.message.not_found"))
 

@@ -1,4 +1,3 @@
-import os.path
 import shutil
 import traceback
 

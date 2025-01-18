@@ -7,7 +7,7 @@ from datetime import datetime
 import orjson as json
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from gql import Client, gql
-from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.httpx import HTTPXAsyncTransport
 
 from core.builtins import Bot
 from core.config import Config
@@ -51,7 +51,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             avatar_img = profile_json["user"]["avatar"]["medium"]
         else:
             avatar_img = None
-        transport = AIOHTTPTransport(url="https://services.cytoid.io/graphql")
+        transport = HTTPXAsyncTransport(url="https://services.cytoid.io/graphql")
         client = Client(transport=transport, fetch_schema_from_transport=True)
         query = gql(
             f"""

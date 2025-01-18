@@ -13,7 +13,7 @@ async def newbie(msg: Bot.MessageSession, wiki_url):
     for x in query["query"]["logevents"][:NEWBIE_LIMIT]:
         if "title" in x:
             d.append(x["title"])
-    y = await check(*d, msg=msg)
+    y = await check(*d)
     yy = "\n".join(z["content"] for z in y)
     g = f'{pageurl}\n{yy}\n{msg.locale.t("message.collapse", amount=NEWBIE_LIMIT)}'
     st = True
