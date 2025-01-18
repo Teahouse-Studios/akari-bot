@@ -47,8 +47,6 @@ async def query_java_server(
         if hasattr(status, "version") and hasattr(status.version, "name"):
             query_msg.append(msg.locale.t("server.message.version") + status.version.name)
 
-        query_msg.append(address)
-
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
@@ -78,8 +76,6 @@ async def query_bedrock_server(msg, address, raw=False):
         if hasattr(status, "gamemode"):
             game_mode = msg.locale.t("server.message.gamemode") + status.gamemode
             query_msg.append(game_mode)
-
-        query_msg.append(address)
 
     except Exception:
         if Config("debug", False):
