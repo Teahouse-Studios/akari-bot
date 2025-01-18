@@ -214,6 +214,17 @@ class AnalyticsData(Model):
     class Meta:
         table = "analytics_data"
 
+    async def add_analytics(self, command, module_name, module_type):
+        await AnalyticsData.create(
+            targetId=self.target_id,
+            senderId=self.sender_id,
+            command="*".join(command[::2]),
+            moduleName=module_name,
+            moduleType=module_type,
+        )
+        await self.save()
+        return True
+
     @classmethod
     async def get_count(cls):
         return await cls.all().count()
@@ -235,6 +246,12 @@ class AnalyticsData(Model):
         if module_name:
             filter_.append(cls.module_name == module_name)
         return cls.all().filter(*filter_).count()
+
+    @classmethod
+    async def get_modules_count(cls):
+        result = await cls.all().values('module_name').annotate(count='count').group_by('module_name')
+        modules_count = {item['module_name']: item['count'] for item in result}
+        return modules_count
 
 
 class DBVersion(Model):
