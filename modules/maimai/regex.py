@@ -110,7 +110,14 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    await query_plate(msg, plate, username)
+    await query_plate(msg, plate, username, get_list=False)
+
+
+@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表\s?(.+)?", desc="{maimai.help.maimai_regex.plate.list}")
+async def _(msg: Bot.MessageSession):
+    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
+    username = msg.matched_msg.groups()[2]
+    await query_plate(msg, plate, username, get_list=True)
 
 
 @mai_regex.regex(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)",

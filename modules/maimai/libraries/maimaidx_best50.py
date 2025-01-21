@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -364,9 +364,7 @@ class DrawBest:
         return self.img
 
 
-async def generate(
-    msg: Bot.MessageSession, payload: dict, use_cache: bool = True
-) -> Tuple[Optional[Image.Image], bool]:
+async def generate(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[Image.Image]:
     resp = await get_record(msg, payload, use_cache)
     sd_best = BestList(35)
     dx_best = BestList(15)

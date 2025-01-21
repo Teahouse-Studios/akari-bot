@@ -2,14 +2,9 @@ from core.builtins import Image as BImage
 from core.component import module
 from core.utils.text import isint
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import (
-    get_alias,
-    get_info,
-    search_by_alias,
-    update_alias,
-    update_cover,
-)
-from .libraries.maimaidx_best50 import generate
+from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
+from .libraries.maimaidx_best50 import generate as generate_b50
+from .libraries.maimaidx_plates import generate as generate_plate
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()
@@ -27,7 +22,7 @@ mai = module(
 
 @mai.command(
     "base <constant> [<constant_max>] [-p <page>] {{maimai.help.base}}",
-    options_desc={"-p": "{maimai.help.option.p}"},
+    options_desc={"-p": "{maimai.help.option.p}"}
 )
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     result_set = []
@@ -101,7 +96,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
 @mai.command(
     "level <level> [-p <page>] {{maimai.help.level}}",
-    options_desc={"-p": "{maimai.help.option.p}"},
+    options_desc={"-p": "{maimai.help.option.p}"}
 )
 async def _(msg: Bot.MessageSession, level: str):
     result_set = []
@@ -289,7 +284,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         payload = {"username": username, "b50": True}
         use_cache = False
 
-    img = await generate(msg, payload, use_cache)
+    img = await generate_b50(msg, payload, use_cache)
     await msg.finish([BImage(img)])
 
 
@@ -502,12 +497,14 @@ async def query_song_info(msg, query, username):
     await msg.finish(await get_info(music, Plain(output)))
 
 
-@mai.command("plate <plate> [<username>] {{maimai.help.plate}}")
+@mai.command("plate <plate> [<username>] [-l] {{maimai.help.plate}}",
+             options_desc={"-l": "{maimai.help.option.l}"})
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
-    await query_plate(msg, plate, username)
+    get_list = msg.parsed_msg.get("-l", False)
+    await query_plate(msg, plate, username, get_list)
 
 
-async def query_plate(msg, plate, username):
+async def query_plate(msg, plate, username, get_list=False):
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
@@ -523,22 +520,26 @@ async def query_plate(msg, plate, username):
         payload = {"username": username}
         use_cache = False
 
-    if plate in ["真将", "真將"] or (plate[1] == "者" and plate[0] != "霸"):
+    if plate in ["真将", "真將"] or (plate[1] == "者" and plate[0] not in ["覇", "霸"]):
         await msg.finish(msg.locale.t("maimai.message.plate.plate_not_found"))
 
-    output, get_img = await get_plate_process(msg, payload, plate, use_cache)
+    if get_list:
+        img = await generate_plate(msg, payload, plate, use_cache)
+        await msg.finish([BImage(img)])
+    else:
+        output, get_img = await get_plate_process(msg, payload, plate, use_cache)
 
-    if get_img:
-        imgs = await msgchain2image([Plain(output)], msg)
-        if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+        if get_img:
+            imgs = await msgchain2image([Plain(output)], msg)
+            if imgs:
+                imgchain = []
+                for img in imgs:
+                    imgchain.append(BImage(img))
+                await msg.finish(imgchain)
+            else:
+                await msg.finish(output.strip())
         else:
             await msg.finish(output.strip())
-    else:
-        await msg.finish(output.strip())
 
 
 @mai.command("process <level> <goal> [<username>] {{maimai.help.process}}")
