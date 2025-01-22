@@ -45,3 +45,10 @@ if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, table_
     p2 = Process(target=run_flask)
     p1.start()
     p2.start()
+    try:
+        while True:
+            time.sleep(1)
+    except (KeyboardInterrupt, SystemExit):
+        p1.terminate()
+        p2.terminate()
+        sys.exit(0)
