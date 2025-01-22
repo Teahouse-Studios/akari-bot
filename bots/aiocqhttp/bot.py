@@ -23,6 +23,8 @@ from core.tos import tos_report
 from core.types import MsgInfo, Session
 from core.utils.i18n import Locale
 
+from hypercorn import Config as HyperConfig
+
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
@@ -249,7 +251,8 @@ qq_host = Config("qq_host", default=qq_host_default, table_name='bot_aiocqhttp')
 if qq_host and Config("enable", False, table_name='bot_aiocqhttp'):
     argv = sys.argv
     Info.client_name = client_name
+    HyperConfig.startup_timeout = 120
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     host, port = qq_host.split(':')
-    bot.run(host=host, port=port, debug=False, startup_timeout=120)
+    bot.run(host=host, port=port, debug=False)
