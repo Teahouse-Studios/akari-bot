@@ -252,4 +252,4 @@ if qq_host and Config("enable", False, table_name='bot_aiocqhttp'):
     if 'subprocess' in sys.argv:
         Info.subprocess = True
     host, port = qq_host.split(':')
-    bot.run(host=host, port=port, debug=False)
+    bot.run(host=host, port=port, debug=False, startup_timeout=120)
