@@ -20,8 +20,7 @@ from core.builtins import (
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
-from core.database import BotDBUtil
-from core.database_v2.models import TargetInfo
+from core.database_v2.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import image_split
@@ -256,7 +255,11 @@ class FetchTarget(FetchTargetT):
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
+                    await AnalyticsData.create(target_id=x.target.target_id,
+                                               sender_id=x.target.sender_id,
+                                               command="",
+                                               module_name=module_name,
+                                               module_type="schedule")
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
@@ -280,7 +283,11 @@ class FetchTarget(FetchTargetT):
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
+                            await AnalyticsData.create(target_id=fetch.target.target_id,
+                                                       sender_id=fetch.target.sender_id,
+                                                       command="",
+                                                       module_name=module_name,
+                                                       module_type="schedule")
                     except Exception:
                         Logger.error(traceback.format_exc())
 

@@ -8,8 +8,7 @@ import orjson as json
 from core.builtins import Bot, MessageChain
 from core.config import Config
 from core.constants import Info, default_locale
-from core.database import BotDBUtil
-from core.database.tables import JobQueueTable
+from core.database_v2.models import JobQueuesTable
 from core.logger import Logger
 from core.utils.i18n import Locale
 from core.utils.info import get_all_clients_name
@@ -38,7 +37,7 @@ class JobQueue:
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
-        taskid = BotDBUtil.JobQueue.add(target_client, action, args)
+        taskid = await JobQueuesTable().add_task(target_client, action, args)
         if wait:
             flag = asyncio.Event()
             _queue_tasks[taskid] = {'flag': flag}
@@ -84,47 +83,46 @@ class JobQueue:
         await cls.add_job(target_client, 'send_message', {'target_id': target_id, 'message': message})
 
 
-def return_val(tsk, value: dict, status=True):
+async def return_val(tsk: JobQueuesTable, value: dict, status=True):
     status = {'status': status}
     if value:
-        value = value.update(status)
+        value.update(status)
     else:
         value = status
-    BotDBUtil.JobQueue.return_val(tsk, value)
+    await tsk.return_val(value)
     raise QueueFinished
 
 
 async def check_job_queue():
     for tskid in _queue_tasks:
-        tsk = BotDBUtil.JobQueue.get(tskid)
-        if tsk.hasDone:
-            _queue_tasks[tskid]['result'] = json.loads(tsk.returnVal)
+        tsk = await JobQueuesTable.get(task_id=tskid)
+        if tsk and tsk.status == 'done':
+            _queue_tasks[tskid]['result'] = tsk.result
             _queue_tasks[tskid]['flag'].set()
-    get_internal = BotDBUtil.JobQueue.get_all(target_client=JobQueue.name)
-    get_all = BotDBUtil.JobQueue.get_all(target_client=Bot.FetchTarget.name)
-    for tsk in get_internal + get_all:
-        Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
-        args = json.loads(tsk.args)
-        Logger.debug(f'Args: {args}')
+
+    internal_tasks = await JobQueuesTable.get_all(JobQueue.name)
+    all_tasks = await JobQueuesTable.get_all(Bot.FetchTarget.name)
+
+    for tsk in internal_tasks + all_tasks:
+        Logger.debug(f'Received job queue task {tsk.task_id}, action: {tsk.action}')
+        Logger.debug(f'Args: {tsk.args}')
         try:
             timestamp = tsk.timestamp
-            if BotDBUtil.time_offset is not None and datetime.datetime.now().timestamp() - timestamp.timestamp() - \
-                    BotDBUtil.time_offset > 7200:
-                Logger.warning(f'Task {tsk.taskid} timeout, {
-                    datetime.datetime.now().timestamp() - timestamp.timestamp() - BotDBUtil.time_offset}, skip.')
+            if (datetime.datetime.now().timestamp() - timestamp.timestamp()) > 7200:
+                Logger.warning(f'Task {tsk.task_id} timeout, skip.')
             elif tsk.action in queue_actions:
-                await queue_actions[tsk.action](tsk, args)
-                Logger.warning(f'Task {tsk.action}({tsk.taskid}) not returned any value, did you forgot something?')
+                await queue_actions[tsk.action](tsk, tsk.args)
+                Logger.warning(f'Task {tsk.action}({tsk.task_id}) not returned any value, did you forgot something?')
             else:
                 Logger.warning(f'Unknown action {tsk.action}, skip.')
-            return_val(tsk, {}, status=False)
+            await return_val(tsk, {}, status=False)
         except QueueFinished:
-            Logger.debug(f'Task {tsk.action}({tsk.taskid}) finished.')
+            Logger.debug(f'Task {tsk.action}({tsk.task_id}) finished.')
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
             try:
-                return_val(tsk, {'traceback': f}, status=False)
+                await return_val(tsk, {'traceback': f}, status=False)
             except QueueFinished:
                 pass
             try:
@@ -138,43 +136,34 @@ async def check_job_queue():
 
 
 @action('validate_permission')
-async def _(tsk: JobQueueTable, args: dict):
+async def _(tsk: JobQueuesTable, args: dict):
     fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
     if fetch:
-        return_val(tsk, {'value': await fetch.parent.check_permission()})
+        await return_val(tsk, {'value': await fetch.parent.check_permission()})
     else:
-        return_val(tsk, {'value': False})
+        await return_val(tsk, {'value': False})
 
 
 @action('trigger_hook')
-async def _(tsk: JobQueueTable, args: dict):
+async def _(tsk: JobQueuesTable, args: dict):
     await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
-    return_val(tsk, {})
+    await return_val(tsk, {})
 
 
 @action('secret_append_ip')
-async def _(tsk: JobQueueTable, args: dict):
+async def _(tsk: JobQueuesTable, args: dict):
     append_ip(args)
-    return_val(tsk, {})
+    await return_val(tsk, {})
 
 
 @action('web_render_status')
-async def _(tsk: JobQueueTable, args: dict):
+async def _(tsk: JobQueuesTable, args: dict):
     Info.web_render_status = args['web_render_status']
     Info.web_render_local_status = args['web_render_local_status']
-    return_val(tsk, {})
+    await return_val(tsk, {})
 
 
 @action('send_message')
-async def _(tsk: JobQueueTable, args: dict):
+async def _(tsk: JobQueuesTable, args: dict):
     await Bot.send_message(args['target_id'], MessageChain(args['message']))
-    return_val(tsk, {'send': True})
-
-
-@action('verify_timezone')
-async def _(tsk: JobQueueTable, args: dict):
-    timestamp = tsk.timestamp
-    tz_ = datetime.datetime.now().timestamp() - timestamp.timestamp()
-    Logger.debug(f'Timezone offset: {tz_}')
-    BotDBUtil.time_offset = tz_
-    return_val(tsk, {})
+    await return_val(tsk, {'send': True})

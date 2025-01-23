@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import List, Union
 
 import aiocqhttp.exceptions
-import orjson as json
 from aiocqhttp import MessageSegment
 from tenacity import retry, wait_fixed, stop_after_attempt
 
@@ -33,8 +32,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
-from core.database import BotDBUtil
-from core.database_v2.models import TargetInfo
+from core.database_v2.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
@@ -566,7 +564,11 @@ class FetchTarget(FetchTargetT):
                     if _tsk:
                         _tsk = []
                 if enable_analytics and module_name:
-                    BotDBUtil.Analytics(fetch_).add("", module_name, "schedule")
+                    await AnalyticsData.create(target_id=fetch_.target.target_id,
+                                               sender_id=fetch_.target.sender_id,
+                                               command="",
+                                               module_name=module_name,
+                                               module_type="schedule")
                 await asyncio.sleep(0.5)
             except SendMessageFailed as e:
                 if e.args[0] == "send group message failed: blocked by server":

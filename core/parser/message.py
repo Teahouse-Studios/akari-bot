@@ -15,7 +15,7 @@ from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
     InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
-from core.database import BotDBUtil
+from core.database_v2.models import AnalyticsData
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
@@ -476,7 +476,11 @@ async def parser(msg: Bot.MessageSession,
                                    f'Times take up: {str(time_used)}')
                     Info.command_parsed += 1
                     if enable_analytics:
-                        BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
+                        await AnalyticsData.create(target_id=msg.target.target_id,
+                                                   sender_id=msg.target.sender_id,
+                                                   command=msg.trigger_msg,
+                                                   module_name=command_first_word,
+                                                   module_type="normal")
 
                 except AbuseWarning as e:
                     await tos_abuse_warning(msg, str(e))
@@ -620,7 +624,11 @@ async def parser(msg: Bot.MessageSession,
 
                             Info.command_parsed += 1
                             if enable_analytics and rfunc.show_typing:
-                                BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, 'regex')
+                                await AnalyticsData.create(target_id=msg.target.target_id,
+                                                           sender_id=msg.target.sender_id,
+                                                           command=msg.trigger_msg,
+                                                           module_name=m,
+                                                           module_type="regex")
 
                             continue
 

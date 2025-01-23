@@ -188,12 +188,6 @@ class TargetInfo(Model):
 
 
 class StoredData(Model):
-    '''
-    数据存储。
-
-    :param stored_key: 存储键。
-    :param value: 值。
-    '''
     stored_key = fields.CharField(max_length=512, pk=True)
     value = fields.JSONField(default={})
 
@@ -213,17 +207,6 @@ class AnalyticsData(Model):
 
     class Meta:
         table = "analytics_data"
-
-    async def add_analytics(self, command, module_name, module_type):
-        await AnalyticsData.create(
-            targetId=self.target_id,
-            senderId=self.sender_id,
-            command="*".join(command[::2]),
-            moduleName=module_name,
-            moduleType=module_type,
-        )
-        await self.save()
-        return True
 
     @classmethod
     async def get_count(cls):
@@ -301,21 +284,6 @@ class UnfriendlyActionRecords(Model):
 
         return False
 
-    async def add_record(self, action: str = "default", detail: str = ""):
-        '''添加会话的不友好行为记录。
-
-        :param action: 不友好行为类型。
-        :param detail: 不友好行为详情。
-        '''
-        await UnfriendlyActionRecords.create(
-            target_id=self.target_id,
-            sender_id=self.sender_id,
-            action=action,
-            detail=detail,
-        )
-        await self.save()
-        return True
-
 
 class JobQueuesTable(Model):
     task_id = fields.UUIDField(pk=True)
@@ -342,7 +310,7 @@ class JobQueuesTable(Model):
 
     async def return_val(self, value) -> bool:
         self.result = value
-        self.status = 'done'
+        self.status = 'complete'
         await self.save()
         return True
 

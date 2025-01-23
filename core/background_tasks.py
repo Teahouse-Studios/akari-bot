@@ -13,5 +13,5 @@ async def job():
     await check_job_queue()
 
 
-async def init_background_task():
-    await JobQueue.add_job(JobQueue.name, "verify_timezone", {}, wait=False)
+def init_background_task():  # make IDE happy :)
+    pass
