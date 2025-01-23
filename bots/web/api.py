@@ -591,8 +591,11 @@ def extract_timestamp(log_line: str):
 
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
     while True:
-        Info.client_name = client_name
-        uvicorn.run(app, port=API_PORT, log_level="info")
-        Logger.error("API Server crashed, is the port occupied?")
-        Logger.error("Retrying in 5 seconds...")
-        time.sleep(5)
+        try:
+            Info.client_name = client_name
+            uvicorn.run(app, port=API_PORT, log_level="info")
+            break
+        except Exception as e:
+            Logger.error(f"API Server crashed: {e}")
+            Logger.error("Retrying in 5 seconds...")
+            time.sleep(5)

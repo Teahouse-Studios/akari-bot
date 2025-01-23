@@ -226,7 +226,7 @@ class CFGManager:
                 else:
                     value = "<Replace me>"
             else:  # if the value is None, skip to autofill
-                logger.info(f'[Config] Config {q} has no default value, skipped to auto fill.')
+                logger.debug(f'[Config] Config {q} has no default value, skipped to auto fill.')
                 return
 
         found = False
