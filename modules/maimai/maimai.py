@@ -4,7 +4,7 @@ from core.utils.text import isint
 from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
-from .libraries.maimaidx_plates import generate as generate_plate
+from .libraries.maimaidx_platelist import generate as generate_plate
 from .libraries.maimaidx_utils import *
 
 total_list = TotalList()

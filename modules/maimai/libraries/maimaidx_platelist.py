@@ -18,17 +18,7 @@ class DrawPlateList:
         song_list,
         song_complete,
         remaster_required,
-        goal_mark,
-        image_size=80,
-        spacing=10,
-        margin=20,
-        rank_colors=[
-            (69, 193, 36),
-            (255, 186, 1),
-            (255, 90, 102),
-            (134, 49, 200),
-            (217, 197, 233),
-        ],
+        goal_mark
     ):
         self.song_list = song_list
         self.song_complete = song_complete
@@ -39,14 +29,22 @@ class DrawPlateList:
             self.goal_mark = "舞"
         else:
             self.goal_mark = goal_mark
-        self.image_size = image_size
-        self.spacing = spacing
-        self.margin = margin
-        self.rank_colors = rank_colors
+        self.image_size = 80
+        self.spacing = 10
+        self.margin = 20
+        self.rank_colors = [
+            (69, 193, 36),
+            (255, 186, 1),
+            (255, 90, 102),
+            (134, 49, 200),
+            (217, 197, 233),
+        ]
         self.cover_marks = {}
+        self.img = None
+        self.update_cover_marks()
+        self.create_ranked_image()
 
     def create_ranked_image(self):
-        self.update_cover_marks()
         total_width = 10 * (self.image_size + self.spacing) - self.spacing + 2 * self.margin
         total_height = 0
         for level, elements in self.song_list.items():
@@ -318,7 +316,5 @@ async def generate(msg: Bot.MessageSession, payload: dict, plate: str, use_cache
     song_list, song_complete = await get_plate_process(msg, payload, plate, use_cache)
     remaster_required = mai_plate_remaster_required if version in ['覇', '舞'] else []
 
-    creator = DrawPlateList(song_list, song_complete, remaster_required, goal)
-    creator.create_ranked_image()
-    pic = creator.get_dir()
+    pic = DrawPlateList(song_list, song_complete, remaster_required, goal).get_dir()
     return pic
