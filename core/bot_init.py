@@ -4,7 +4,6 @@ import os
 
 import orjson as json
 
-from core.background_tasks import init_background_task
 from core.config import CFGManager
 from core.constants import PrivateAssets, Secret
 from core.extra.scheduler import load_extra_schedulers
@@ -17,6 +16,7 @@ from core.database_v2 import init_db
 
 
 async def init_async(start_scheduler=True) -> None:
+    await init_db()
     try:
         Info.version = os.popen("git rev-parse HEAD", "r").read().strip('\n')
     except Exception:
@@ -34,7 +34,6 @@ async def init_async(start_scheduler=True) -> None:
                     max_instance=1,
                 )
     await asyncio.gather(*gather_list)
-    await init_background_task()
     if start_scheduler:
         if not Info.subprocess:
             load_extra_schedulers()

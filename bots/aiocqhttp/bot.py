@@ -200,9 +200,8 @@ async def _(event: Event):
         sender_info = await SenderInfo.get(sender_id=sender_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
         target_info = await TargetInfo.get(target_id=target_id)
-        await UnfriendlyActionRecords.create(target_id=event.group_id, sender_id=event.operator_id, action='mute', detail=str(event.duration))
-        unfriendly_actions = await UnfriendlyActionRecords.get(target_id=event.group_id, sender_id=event.operator_id)
-        result = await unfriendly_actions.check_mute()
+        await UnfriendlyActionRecords.add_record(target_id=event.group_id, sender_id=event.operator_id, action='mute', detail=str(event.duration))
+        result = await UnfriendlyActionRecords.check_mute(target_id=event.group_id)
         if event.duration >= 259200:  # 3 days
             result = True
         if result and not sender_info.superuser:
@@ -221,7 +220,7 @@ async def _(event: Event):
         sender_info = await SenderInfo.get(sender_id=sender_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
         target_info = await TargetInfo.get(target_id=target_id)
-        await UnfriendlyActionRecords.create(target_id=event.group_id, sender_id=event.operator_id, action='kick')
+        await UnfriendlyActionRecords.add_record(target_id=event.group_id, sender_id=event.operator_id, action='kick')
         if not sender_info.superuser:
             reason = Locale(default_locale).t('tos.message.reason.kick')
             await tos_report(sender_id, target_id, reason, banned=True)
@@ -233,8 +232,8 @@ async def _(event: Event):
 @bot.on_message('group')
 async def _(event: Event):
     target_id = f'{target_group_prefix}|{event.group_id}'
-    target_info = await TargetInfo.get(target_id=target_id)
-    if target_info.blocked:
+    target_info = await TargetInfo.get_or_none(target_id=target_id)
+    if target_info and target_info.blocked:
         res = Locale(default_locale).t('tos.message.in_group_blocklist')
         if Config('issue_url', issue_url_default, cfg_type=str):
             res += '\n' + Locale(default_locale).t('tos.message.appeal',

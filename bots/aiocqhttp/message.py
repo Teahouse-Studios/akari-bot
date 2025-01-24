@@ -564,11 +564,11 @@ class FetchTarget(FetchTargetT):
                     if _tsk:
                         _tsk = []
                 if enable_analytics and module_name:
-                    await AnalyticsData.create(target_id=fetch_.target.target_id,
-                                               sender_id=fetch_.target.sender_id,
-                                               command="",
-                                               module_name=module_name,
-                                               module_type="schedule")
+                    await AnalyticsData.add_analytics(target_id=fetch_.target.target_id,
+                                                      sender_id=fetch_.target.sender_id,
+                                                      command="",
+                                                      module_name=module_name,
+                                                      module_type="schedule")
                 await asyncio.sleep(0.5)
             except SendMessageFailed as e:
                 if e.args[0] == "send group message failed: blocked by server":

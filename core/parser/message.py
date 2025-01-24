@@ -476,11 +476,11 @@ async def parser(msg: Bot.MessageSession,
                                    f'Times take up: {str(time_used)}')
                     Info.command_parsed += 1
                     if enable_analytics:
-                        await AnalyticsData.create(target_id=msg.target.target_id,
-                                                   sender_id=msg.target.sender_id,
-                                                   command=msg.trigger_msg,
-                                                   module_name=command_first_word,
-                                                   module_type="normal")
+                        await AnalyticsData.add_analytics(target_id=msg.target.target_id,
+                                                          sender_id=msg.target.sender_id,
+                                                          command=msg.trigger_msg,
+                                                          module_name=command_first_word,
+                                                          module_type="normal")
 
                 except AbuseWarning as e:
                     await tos_abuse_warning(msg, str(e))
@@ -624,12 +624,11 @@ async def parser(msg: Bot.MessageSession,
 
                             Info.command_parsed += 1
                             if enable_analytics and rfunc.show_typing:
-                                await AnalyticsData.create(target_id=msg.target.target_id,
-                                                           sender_id=msg.target.sender_id,
-                                                           command=msg.trigger_msg,
-                                                           module_name=m,
-                                                           module_type="regex")
-
+                                await AnalyticsData.add_analytics(target_id=msg.target.target_id,
+                                                                  sender_id=msg.target.sender_id,
+                                                                  command=msg.trigger_msg,
+                                                                  module_name=m,
+                                                                  module_type="regex")
                             continue
 
                         except NoReportException as e:

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 
 from core.builtins import Bot
 from core.config import Config
@@ -19,7 +19,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
         if not p:
             p = [{}]
         p = p[0]
-        now = datetime.now(timezone.utc) + msg.timezone_offset
+        now = datetime.now(UTC) + msg.timezone_offset
         expired = datetime.combine(
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
@@ -63,7 +63,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
         if not p:
             p = [{}]
         p = p[0]
-        now = datetime.now(timezone.utc) + msg.timezone_offset
+        now = datetime.now(UTC) + msg.timezone_offset
         expired = datetime.combine(
             (now + timedelta(days=1)).date(), datetime.min.time()
         )

@@ -1,5 +1,5 @@
 import traceback
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -9,19 +9,14 @@ from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.config import Config
 from core.database_v2.models import AnalyticsData
-from core.database.tables import is_mysql
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
 
 async def get_first_record(msg: Bot.MessageSession):
-    if is_mysql:
-        first_record = await AnalyticsData.get_first().timestamp.timestamp()
-    else:
-        first_record = await AnalyticsData.get_first()
-        .timestamp.replace(tzinfo=timezone.utc)
-        .timestamp()
-    return msg.ts2strftime(first_record, iso=True, timezone=False)
+    first_record = await AnalyticsData.get(id=1)
+    ts = first_record.timestamp.replace(tzinfo=UTC).timestamp()
+    return msg.ts2strftime(ts, iso=True, timezone=False)
 
 
 ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=True)
@@ -31,8 +26,8 @@ ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=T
 async def _(msg: Bot.MessageSession):
     if Config("enable_analytics", False):
         try:
-            first_record = get_first_record(msg)
-            get_counts = await AnalyticsData.get_count()
+            first_record = await get_first_record(msg)
+            get_counts = await AnalyticsData.all().count()
 
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
             old = datetime.now().replace(hour=0, minute=0, second=0)

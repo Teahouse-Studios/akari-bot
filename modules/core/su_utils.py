@@ -620,7 +620,7 @@ jobqueue = module('jobqueue', required_superuser=True, base=True)
 
 @jobqueue.command('clear')
 async def _(msg: Bot.MessageSession):
-    await JobQueuesTable.clear_task(0)
+    await JobQueuesTable().clear_task(time=0)
     await msg.finish(msg.locale.t("message.success"))
 
 

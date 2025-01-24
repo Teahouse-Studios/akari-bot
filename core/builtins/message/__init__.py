@@ -217,7 +217,7 @@ class MessageSession:
         self.tmp = {}
 
     async def data_init(self):
-        get_sender_info = (await SenderInfo.get_or_create(target_id=self.target.sender_id))[0]
+        get_sender_info = (await SenderInfo.get_or_create(sender_id=self.target.sender_id))[0]
         get_target_info = (await TargetInfo.get_or_create(target_id=self.target.target_id))[0]
         self.target_info = get_target_info
         self.sender_info = get_sender_info
@@ -548,13 +548,13 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
-        return bool(self.info.is_super_user)
+        return bool(self.sender_info.superuser)
 
     async def check_permission(self) -> bool:
         """
         用于检查消息发送者在对话内的权限。
         """
-        if self.target.sender_id in self.custom_admins or self.sender_info.is_super_user:
+        if self.target.sender_id in self.custom_admins or self.sender_info.superuser:
             return True
         return await self.check_native_permission()
 

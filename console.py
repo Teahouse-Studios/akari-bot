@@ -6,7 +6,7 @@ import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from tortoise import run_async
+from tortoise import Tortoise, run_async
 
 from core.config import Config
 from core.constants.default import db_path_default
@@ -49,7 +49,6 @@ async def update_db():
 
             print("Database updated successfully! Please restart the program.")
             sys.exit()
-
 run_async(update_db())
 
 Info.dirty_word_check = True
@@ -99,16 +98,16 @@ async def send_command(msg):
     Logger.info("----Process end----")
     return returns
 
-
 if __name__ == "__main__":
     import core.scripts.config_generate  # noqa
-    init_bot()
-    Info.client_name = client_name
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(console_scheduler())
     try:
+        init_bot()
+        Info.client_name = client_name
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(console_scheduler())
         loop.run_until_complete(console_command())
     except (KeyboardInterrupt, SystemExit):
         print("Exited.")
     finally:
+        loop.run_until_complete(Tortoise.close_connections())
         loop.close()

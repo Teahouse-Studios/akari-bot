@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import multiprocessing
 import os
@@ -8,7 +9,7 @@ from datetime import datetime
 from time import sleep
 
 from loguru import logger as loggerFallback
-from tortoise import run_async
+from tortoise import Tortoise, run_async
 
 
 ascii_art = r"""
@@ -221,6 +222,8 @@ if __name__ == "__main__":
                     ps.close()
                 processes.clear()
                 continue
+            except (KeyboardInterrupt, SystemExit):
+                raise
             except Exception:
                 loggerFallback.critical("An error occurred, please check the output.")
                 traceback.print_exc()

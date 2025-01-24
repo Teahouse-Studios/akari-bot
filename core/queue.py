@@ -3,8 +3,6 @@ import datetime
 import traceback
 from uuid import uuid4
 
-import orjson as json
-
 from core.builtins import Bot, MessageChain
 from core.config import Config
 from core.constants import Info, default_locale
@@ -37,15 +35,15 @@ class JobQueue:
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
-        taskid = await JobQueuesTable().add_task(target_client, action, args)
+        task_id = await JobQueuesTable.add_task(target_client, action, args)
         if wait:
             flag = asyncio.Event()
-            _queue_tasks[taskid] = {'flag': flag}
+            _queue_tasks[task_id] = {'flag': flag}
             await flag.wait()
-            result = _queue_tasks[taskid]['result']
-            del _queue_tasks[taskid]
+            result = _queue_tasks[task_id]['result']
+            del _queue_tasks[task_id]
             return result
-        return taskid
+        return task_id
 
     @classmethod
     async def validate_permission(cls, target_client: str, target_id: str, sender_id: str):
@@ -94,35 +92,35 @@ async def return_val(tsk: JobQueuesTable, value: dict, status=True):
 
 
 async def check_job_queue():
-    for tskid in _queue_tasks:
-        tsk = await JobQueuesTable.get(task_id=tskid)
-        if tsk and tsk.status == 'done':
-            _queue_tasks[tskid]['result'] = tsk.result
-            _queue_tasks[tskid]['flag'].set()
+    for task_id in _queue_tasks:
+        tsk = await JobQueuesTable.get(task_id=task_id)
+        if tsk.status == 'done':
+            _queue_tasks[task_id]['result'] = tsk.result
+            _queue_tasks[task_id]['flag'].set()
 
-    internal_tasks = await JobQueuesTable.get_all(JobQueue.name)
-    all_tasks = await JobQueuesTable.get_all(Bot.FetchTarget.name)
+    get_internal = await JobQueuesTable.get_all(target_client=JobQueue.name)
+    get_all = await JobQueuesTable.get_all(target_client=Bot.FetchTarget.name)
 
-    for tsk in internal_tasks + all_tasks:
+    for tsk in get_internal + get_all:
         Logger.debug(f'Received job queue task {tsk.task_id}, action: {tsk.action}')
-        Logger.debug(f'Args: {tsk.args}')
+        args = tsk.args
+        Logger.debug(f'Args: {args}')
         try:
             timestamp = tsk.timestamp
-            if (datetime.datetime.now().timestamp() - timestamp.timestamp()) > 7200:
+            if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
                 Logger.warning(f'Task {tsk.task_id} timeout, skip.')
             elif tsk.action in queue_actions:
-                await queue_actions[tsk.action](tsk, tsk.args)
-                Logger.warning(f'Task {tsk.action}({tsk.task_id}) not returned any value, did you forgot something?')
+                await queue_actions[tsk.action](tsk, args)
             else:
                 Logger.warning(f'Unknown action {tsk.action}, skip.')
-            await return_val(tsk, {}, status=False)
+                await tsk.return_val({}, status=False)
         except QueueFinished:
             Logger.debug(f'Task {tsk.action}({tsk.task_id}) finished.')
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
             try:
-                await return_val(tsk, {'traceback': f}, status=False)
+                await tsk.return_val({'traceback': f}, status=False)
             except QueueFinished:
                 pass
             try:

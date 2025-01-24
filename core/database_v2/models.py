@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import datetime
 import uuid
+from collections import Counter
+from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, List, Optional, Union
 
-import orjson as json
 from tortoise.models import Model
 from tortoise import fields
 
@@ -75,15 +75,12 @@ class SenderInfo(Model):
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         '''
-        sender_data = json.loads(self.sender_data)
-
         if not value:
-            if key in sender_data:
-                del sender_data[key]
+            if key in self.sender_data:
+                del self.sender_data[key]
         else:
-            sender_data[key] = value
+            self.sender_data[key] = value
 
-        self.sender_data = sender_data
         await self.save()
         return True
 
@@ -141,15 +138,12 @@ class TargetInfo(Model):
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
         '''
-        target_data = json.loads(self.target_data)
-
         if not value:
-            if key in target_data:
-                del target_data[key]
+            if key in self.target_data:
+                del self.target_data[key]
         else:
-            target_data[key] = value
+            self.target_data[key] = value
 
-        self.target_data = target_data
         await self.save()
         return True
 
@@ -188,6 +182,12 @@ class TargetInfo(Model):
 
 
 class StoredData(Model):
+    '''
+    数据存储。
+
+    :param stored_key: 存储键。
+    :param value: 值。
+    '''
     stored_key = fields.CharField(max_length=512, pk=True)
     value = fields.JSONField(default={})
 
@@ -203,38 +203,41 @@ class AnalyticsData(Model):
     sender_id = fields.CharField(max_length=512)
     command = fields.TextField()
     timestamp = fields.DatetimeField(auto_now_add=True)
-    data = fields.JSONField(default={})
 
     class Meta:
         table = "analytics_data"
 
     @classmethod
-    async def get_count(cls):
-        return await cls.all().count()
-
-    @classmethod
-    async def get_first(cls):
-        return await cls.all().order_by("id").first()
+    async def add_analytics(cls, target_id, sender_id, command, module_name, module_type):
+        ana = await cls.create(
+            target_id=target_id,
+            sender_id=sender_id,
+            command="*".join(command[::2]),
+            module_name=module_name,
+            module_type=module_type,
+        )
+        await ana.save()
+        return True
 
     @classmethod
     async def get_data_by_times(cls, new, old, module_name=None):
-        filter_ = [cls.timestamp <= new, cls.timestamp >= old]
-        if module_name:
-            filter_.append(cls.module_name == module_name)
-        return cls.all().filter(*filter_)
+        query = cls.filter(timestamp__gte=old, timestamp__lte=new)
+        if module_name is not None:
+            query = query.filter(module_name=module_name)
+        return await query.all()
 
     @classmethod
     async def get_count_by_times(cls, new, old, module_name=None):
-        filter_ = [cls.timestamp <= new, cls.timestamp >= old]
-        if module_name:
-            filter_.append(cls.module_name == module_name)
-        return cls.all().filter(*filter_).count()
+        query = cls.filter(timestamp__gte=old, timestamp__lte=new)
+        if module_name is not None:
+            query = query.filter(module_name=module_name)
+        return await query.count()
 
     @classmethod
     async def get_modules_count(cls):
-        result = await cls.all().values('module_name').annotate(count='count').group_by('module_name')
-        modules_count = {item['module_name']: item['count'] for item in result}
-        return modules_count
+        analytics = await cls.all().values('module_name')
+        module_counter = Counter([entry['module_name'] for entry in analytics])
+        return dict(module_counter)
 
 
 class DBVersion(Model):
@@ -255,7 +258,8 @@ class UnfriendlyActionRecords(Model):
     class Meta:
         table = "unfriendly_actions"
 
-    async def check_mute(self) -> bool:
+    @classmethod
+    async def check_mute(cls, target_id) -> bool:
         '''检查会话的禁言行为记录。
 
         :return: 如果：
@@ -265,10 +269,10 @@ class UnfriendlyActionRecords(Model):
 
         则返回 True。
         '''
-        records = await UnfriendlyActionRecords.filter(target_id=self.target_id, action='mute').all()
+        records = await cls.filter(target_id=target_id, action='mute').all()
         unfriendly_list = [
             record for record in records
-            if (datetime.datetime.now() - record.timestamp).total_seconds() < 432000  # 5 days
+            if (datetime.now(UTC) - record.timestamp).total_seconds() < 432000  # 5 days
         ]
 
         if len(unfriendly_list) > 5:
@@ -276,13 +280,29 @@ class UnfriendlyActionRecords(Model):
 
         count = {}
         for record in unfriendly_list:
-            if (datetime.datetime.now() - record.timestamp).total_seconds() < 86400:  # 1 day
+            if (datetime.now(UTC) - record.timestamp).total_seconds() < 86400:  # 1 day
                 count[record.sender_id] = count.get(record.sender_id, 0) + 1
 
         if len(count) >= 3 or any(c >= 3 for c in count.values()):
             return True
 
         return False
+
+    @classmethod
+    async def add_record(cls, target_id, sender_id, action: str = "default", detail: str = ""):
+        '''添加会话的不友好行为记录。
+
+        :param action: 不友好行为类型。
+        :param detail: 不友好行为详情。
+        '''
+        rec = await cls.create(
+            target_id=target_id,
+            sender_id=sender_id,
+            action=action,
+            detail=detail,
+        )
+        await rec.save()
+        return True
 
 
 class JobQueuesTable(Model):
@@ -297,25 +317,26 @@ class JobQueuesTable(Model):
     class Meta:
         table = "job_queues_v2"
 
-    async def add_task(self, target_client: str, action: str, args: dict) -> str:
+    @classmethod
+    async def add_task(cls, target_client: str, action: str, args: dict) -> str:
         task_id = str(uuid.uuid4())
-        await self.create(
+        tsk = await cls.create(
             task_id=task_id,
             target_client=target_client,
             action=action,
             args=args
         )
-        await self.save()
+        await tsk.save()
         return task_id
 
     async def return_val(self, value) -> bool:
         self.result = value
-        self.status = 'complete'
+        self.status = 'done'
         await self.save()
         return True
 
     async def clear_task(self, time=43200) -> bool:
-        now_timestamp = datetime.datetime.now().timestamp()
+        now_timestamp = datetime.now().timestamp()
 
         queries = await self.all()
         for q in queries:
