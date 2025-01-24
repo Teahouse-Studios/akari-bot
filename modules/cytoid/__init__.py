@@ -1,7 +1,7 @@
 from core.builtins import Bot, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
-from .dbutils import CytoidBindInfoManager
+from .models import CytoidBindInfo
 from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name
@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     if username:
         query_id = username
     else:
-        query_id = CytoidBindInfoManager(msg).get_bind_username()
+        query_id = (await CytoidBindInfo().get_or_none()).username
         if not query_id:
             await msg.finish(
                 msg.locale.t("cytoid.message.user_unbound", prefix=msg.prefixes[0])
@@ -64,7 +64,11 @@ async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(code)
     if getcode:
-        bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])
+        try:
+            (await CytoidBindInfo().get_or_none(target_id=msg.target.sender_id)).username = getcode[0]
+            bind = True
+        except Exception:
+            bind = False
         if bind:
             if getcode[1]:
                 m = f"{getcode[1]}({getcode[0]})"
@@ -77,6 +81,6 @@ async def _(msg: Bot.MessageSession, username: str):
 
 @ctd.command("unbind {{cytoid.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    unbind = CytoidBindInfoManager(msg).remove_bind_info()
+    unbind = CytoidBindInfo().remove_bind_info(msg)
     if unbind:
         await msg.finish(msg.locale.t("cytoid.message.unbind.success"))

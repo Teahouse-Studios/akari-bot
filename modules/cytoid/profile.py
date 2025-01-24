@@ -2,14 +2,14 @@ import orjson as json
 
 from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
-from .dbutils import CytoidBindInfoManager
+from .models import CytoidBindInfo
 
 
 async def cytoid_profile(msg: Bot.MessageSession, username):
     if username:
         query_id = username.lower()
     else:
-        query_id = CytoidBindInfoManager(msg).get_bind_username()
+        query_id = (await CytoidBindInfo().get_or_none(target_id = msg.target.target_id)).username
         if not query_id:
             await msg.finish(
                 msg.locale.t("cytoid.message.user_unbound", prefix=msg.prefixes[0])
