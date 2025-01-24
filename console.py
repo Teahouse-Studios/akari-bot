@@ -6,6 +6,7 @@ import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
+from tortoise import run_async
 
 from core.config import Config
 from core.constants.default import db_path_default
@@ -26,25 +27,30 @@ from core.bot_init import init_async
 from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
-from core.database import BotDBUtil, session
-from core.database.tables import DBVersion
+from core.constants import database_version
+from core.database_v2 import init_db
+from core.database_v2.models import DBVersion
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 
-query_dbver = session.query(DBVersion).first()
-if not query_dbver:
-    session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
-    session.commit()
-    query_dbver = session.query(DBVersion).first()
 
-if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
-    print(f"Updating database from {current_ver} to {target_ver}...")
-    from core.database.update import update_database
+async def update_db():
+    await init_db()
+    query_dbver = await DBVersion.all().first()
+    if not query_dbver:
+        await DBVersion.create(value=str(database_version))
+        query_dbver = await DBVersion.all().first()
+        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
+            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+            from core.database.update import update_database
 
-    update_database()
-    print("Database updated successfully! Please restart the program.")
-    sys.exit()
+            update_database()
+
+            print("Database updated successfully! Please restart the program.")
+            sys.exit()
+
+run_async(update_db())
 
 Info.dirty_word_check = True
 PrivateAssets.set(os.path.join(assets_path, "private", "console"))

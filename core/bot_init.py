@@ -17,7 +17,6 @@ from core.database_v2 import init_db
 
 
 async def init_async(start_scheduler=True) -> None:
-    await init_db()
     try:
         Info.version = os.popen("git rev-parse HEAD", "r").read().strip('\n')
     except Exception:

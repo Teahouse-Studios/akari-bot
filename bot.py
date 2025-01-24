@@ -8,6 +8,7 @@ from datetime import datetime
 from time import sleep
 
 from loguru import logger as loggerFallback
+from tortoise import run_async
 
 
 ascii_art = r"""
@@ -42,37 +43,42 @@ processes = []
 
 def init_bot():
     from core.config import Config  # noqa
+    from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
-    from core.database import BotDBUtil, session, DBVersion  # noqa
+    from core.database_v2 import init_db
+    from core.database_v2.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
-    query_dbver = session.query(DBVersion).first()
-    if not query_dbver:
-        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
-        session.commit()
-        query_dbver = session.query(DBVersion).first()
-    if (current_ver := int(query_dbver.value)) < (
-        target_ver := BotDBUtil.database_version
-    ):
-        Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-        from core.database.update import update_database
-
-        update_database()
-        Logger.success("Database updated successfully!")
     Logger.info(ascii_art)
-    base_superuser = Config(
-        "base_superuser", base_superuser_default, cfg_type=(str, list)
-    )
-    if base_superuser:
-        if isinstance(base_superuser, str):
-            base_superuser = [base_superuser]
-        for bu in base_superuser:
-            BotDBUtil.SenderInfo(bu).init()
-            BotDBUtil.SenderInfo(bu).edit("isSuperUser", True)
-    else:
-        Logger.warning(
-            "The base superuser is not found, please setup it in the config file."
+
+    async def update_db():
+        await init_db()
+        query_dbver = await DBVersion.all().first()
+        if not query_dbver:
+            await DBVersion.create(value=str(database_version))
+            query_dbver = await DBVersion.all().first()
+        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
+            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+            from core.database.update import update_database
+
+            update_database()
+            Logger.success("Database updated successfully!")
+        base_superuser = Config(
+            "base_superuser", base_superuser_default, cfg_type=(str, list)
         )
+        if base_superuser:
+            if isinstance(base_superuser, str):
+                base_superuser = [base_superuser]
+            for bu in base_superuser:
+                sender_info = await SenderInfo.get_or_create(sender_id=bu)
+                sender_info = await SenderInfo.get(sender_id=bu)
+                sender_info.superuser = True
+                await sender_info.save()
+        else:
+            Logger.warning(
+                "The base superuser is not found, please setup it in the config file."
+            )
+    run_async(update_db())
 
 
 def multiprocess_run_until_complete(func):
