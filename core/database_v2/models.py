@@ -49,7 +49,7 @@ class SenderInfo(Model):
 
         :param amount: 警告用户次数。
         '''
-        self.warn = self.warn + amount
+        self.warns = self.warns + amount
         await self.save()
         return True
 
