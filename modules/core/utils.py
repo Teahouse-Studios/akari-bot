@@ -165,16 +165,16 @@ async def _(msg: Bot.MessageSession):
     if "ban" in msg.parsed_msg:
         if user not in admin_ban_list:
             msg.data.edit_option("ban", admin_ban_list + [user])
-            await msg.finish(msg.locale.t("message.success"))
+            await msg.finish(msg.locale.t("core.message.admin.ban.success"))
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if "unban" in msg.parsed_msg:
         if user in (banlist := admin_ban_list):
             banlist.remove(user)
             msg.data.edit_option("ban", banlist)
-            await msg.finish(msg.locale.t("message.success"))
+            await msg.finish(msg.locale.t("core.message.admin.unban.success"))
         else:
-            await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
+            await msg.finish(msg.locale.t("core.message.admin.unban.none"))
 
 
 locale = module(

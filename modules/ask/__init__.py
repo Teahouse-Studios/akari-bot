@@ -62,8 +62,8 @@ async def _(msg: Bot.MessageSession):
     if Config("enable_petal", False) and not is_superuser and msg.petal <= 0:  # refuse
         await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
 
-    qc = CoolDown("call_openai", msg)
-    c = qc.check(60)
+    qc = CoolDown("call_openai", msg, 60)
+    c = qc.check()
     if c == 0 or msg.target.client_name == "TEST" or is_superuser:
         if hasattr(msg, "parsed_msg"):
             question = msg.parsed_msg["<question>"]
