@@ -229,6 +229,7 @@ if __name__ == "__main__":
                 traceback.print_exc()
                 break
     except (KeyboardInterrupt, SystemExit):
+        run_async(Tortoise.close_connections())
         for ps in processes:
             ps.terminate()
             ps.join()
