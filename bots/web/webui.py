@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from flask import Flask, redirect, send_from_directory, url_for
 from urllib.parse import urlparse
 
@@ -48,7 +49,12 @@ if os.path.exists(os.path.join(webui_path, "index.html")):
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web") and \
         os.path.exists(os.path.join(webui_path, "index.html")):
     generate_config()
-    Logger.info(f"Visit AkariBot WebUI: http://127.0.0.1:{WEBUI_PORT}")
-    app.run(port=WEBUI_PORT)
-    Logger.error("WebUI crashed, is the port occupied?")
-    Logger.error("Please check and restart WebUI manually.")
+    while True:
+        try:
+            Logger.info(f"Visit AkariBot WebUI: http://127.0.0.1:{WEBUI_PORT}")
+            app.run(port=WEBUI_PORT)
+            break
+        except Exception as e:
+            Logger.error(f"WebUI Server crashed: {e}")
+            Logger.error("Retrying in 5 seconds...")
+            time.sleep(5)

@@ -1,4 +1,3 @@
-import asyncio.exceptions
 import os
 import re
 import socket
@@ -113,7 +112,7 @@ async def get_url(
                         return attr
                     raise ValueError(f"NoSuchMethod: {fmt}")
                 return resp.text
-            except asyncio.exceptions.TimeoutError:
+            except httpx.TimeoutException:
                 raise ValueError("Request timeout")
             except Exception as e:
                 if logging_err_resp:
@@ -192,7 +191,7 @@ async def post_url(
                         return attr
                     raise ValueError(f"NoSuchMethod: {fmt}")
                 return resp.text
-            except asyncio.exceptions.TimeoutError:
+            except httpx.TimeoutException:
                 raise ValueError("Request timeout")
             except Exception as e:
                 if logging_err_resp:

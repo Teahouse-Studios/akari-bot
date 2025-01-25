@@ -243,27 +243,34 @@ class BotAccount:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def add(api_link, bot_account, bot_password):
-        session.add_all(
-            [
-                WikiBotAccountList(
-                    apiLink=api_link, botAccount=bot_account, botPassword=bot_password
-                )
-            ]
-        )
-        session.commit()
-        session.expire_all()
-        return True
+        try:
+            session.add_all(
+                [
+                    WikiBotAccountList(
+                        apiLink=api_link, botAccount=bot_account, botPassword=bot_password
+                    )
+                ]
+            )
+            session.commit()
+            session.expire_all()
+            return True
+        except BaseException:
+            session.rollback()
+            return False
 
     @staticmethod
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def remove(api_link):
-        session.delete(
-            session.query(WikiBotAccountList).filter_by(apiLink=api_link).first()
-        )
-        session.commit()
-        session.expire_all()
-        return True
+        try:
+            session.delete(
+                session.query(WikiBotAccountList).filter_by(apiLink=api_link).first()
+            )
+            session.commit()
+            session.expire_all()
+            return True
+        except Exception:
+            return False
 
     @staticmethod
     @retry(stop=stop_after_attempt(3), reraise=True)

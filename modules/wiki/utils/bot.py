@@ -31,7 +31,7 @@ class BotAccount:
                 raise LoginFailed(f"Login failed: {resp.text}")
 
             Logger.info(f"Logged in to {api_link} as {account}")
-            return resp.cookies
+            return dict(resp.cookies)
 
     @classmethod
     async def login(cls):

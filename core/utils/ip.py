@@ -6,9 +6,10 @@ from core.utils.http import get_url
 
 
 def append_ip(ip_info: dict):
-    Secret.add(ip_info["ip"])
-    Secret.ip_address = ip_info["country"]
-    Secret.ip_country = ip_info["ip"]
+    if ip_info and ip_info.get("ip"):
+        Secret.add(ip_info["ip"])
+    Secret.ip_address = ip_info.get("country")
+    Secret.ip_country = ip_info.get("ip")
 
 
 async def fetch_ip_info() -> dict:
@@ -20,3 +21,4 @@ async def fetch_ip_info() -> dict:
     except Exception:
         Logger.error("Failed to get IP information.")
         Logger.error(traceback.format_exc())
+        return {}

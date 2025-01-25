@@ -15,9 +15,11 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
     if check.available:
         try:
             login = await BotAccount._login(check.value.api, account, password)
-            BotAccountDB.add(check.value.api, account, password)
-            BotAccount.cookies[check.value.api] = login
-            await msg.finish(msg.locale.t("wiki.message.wiki_bot.login.success"))
+            if BotAccountDB.add(check.value.api, account, password):
+                BotAccount.cookies[check.value.api] = login
+                await msg.finish(msg.locale.t("wiki.message.wiki_bot.login.success"))
+            else:
+                await msg.finish(msg.locale.t("wiki.message.wiki_bot.login.already"))
         except LoginFailed as e:
             Logger.error(f"Login failed: {e}")
             await msg.finish(
