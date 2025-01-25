@@ -143,7 +143,12 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("message.success"))
 
 
-post_whitelist = module('post_whitelist', required_superuser=True, base=True, doc=True, load=Bot.client_name == 'QQ')
+post_whitelist = module(
+    'post_whitelist',
+    required_superuser=True,
+    base=True,
+    doc=True,
+    load=Bot.FetchTarget.name == 'QQ')
 
 
 @post_whitelist.command('<group_id>')
@@ -245,7 +250,7 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
 
-@ae.command('block <target>', load=Bot.client_name == 'QQ')
+@ae.command('block <target>', load=Bot.FetchTarget.name == 'QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -255,7 +260,7 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
 
-@ae.command('unblock <target>', load=Bot.client_name == 'QQ')
+@ae.command('unblock <target>', load=Bot.FetchTarget.name == 'QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
