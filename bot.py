@@ -69,11 +69,11 @@ def init_bot():
         if base_superuser:
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
-            for bu in base_superuser:
-                sender_info = await SenderInfo.get_or_create(sender_id=bu)
-                sender_info = await SenderInfo.get(sender_id=bu)
-                sender_info.superuser = True
-                await sender_info.save()
+                for bu in base_superuser:
+                    sender_info = await SenderInfo.get_or_create(sender_id=bu)
+                    sender_info = await SenderInfo.get(sender_id=bu)
+                    sender_info.superuser = True
+                    await sender_info.save()
             else:
                 Logger.warning(
                     "The base superuser is not found, please setup it in the config file."
