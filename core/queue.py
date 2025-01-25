@@ -113,14 +113,14 @@ async def check_job_queue():
                 await queue_actions[tsk.action](tsk, args)
             else:
                 Logger.warning(f'Unknown action {tsk.action}, skip.')
-                await tsk.return_val({}, status=False)
+                await tsk.return_val({}, status='failed')
         except QueueFinished:
             Logger.debug(f'Task {tsk.action}({tsk.task_id}) finished.')
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
             try:
-                await tsk.return_val({'traceback': f}, status=False)
+                await tsk.return_val({'traceback': f}, status='failed')
             except QueueFinished:
                 pass
             try:

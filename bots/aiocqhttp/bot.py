@@ -57,30 +57,33 @@ async def message_handler(event: Event):
 
     if sender_id in ignored_sender:
         return
-
+    string_post = False
     if isinstance(event.message, str):
+        string_post = True
+
+    if string_post:
         match_json = re.match(r'\[CQ:json,data=(.*?)\]', event.message, re.MULTILINE | re.DOTALL)
         if match_json:
             load_json = json.loads(html.unescape(match_json.group(1)))
             if load_json['app'] == 'com.tencent.multimsg':
                 event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
-    elif isinstance(event.message, dict):
+    else:
         if event.message[0]["type"] == "json":
             load_json = json.loads(event.message[0]["data"]["data"])
             if load_json['app'] == 'com.tencent.multimsg':
                 event.message = [{"type": "forward", "data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
 
     reply_id = None
-    if isinstance(event.message, str):
+    if string_post:
         match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
         if match_reply:
             reply_id = int(match_reply.group(1))
-    elif isinstance(event.message, dict):
+    else:
         if event.message[0]["type"] == "reply":
             reply_id = int(event.message[0]["data"]["id"])
 
     prefix = None
-    if isinstance(event.message, str):
+    if string_post:
         if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
             if match_at.group(1) == str(qq_account):
                 event.message = match_at.group(2)
@@ -89,7 +92,7 @@ async def message_handler(event: Event):
                     prefix = command_prefix
             else:
                 return
-    elif isinstance(event.message, dict):
+    else:
         if event.message[0]["type"] == "at":
             if event.message[0]["data"]["qq"] == str(qq_account):
                 event.message = event.message[1:]

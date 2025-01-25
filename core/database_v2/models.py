@@ -335,10 +335,11 @@ class JobQueuesTable(Model):
         await self.save()
         return True
 
-    async def clear_task(self, time=43200) -> bool:
+    @classmethod
+    async def clear_task(cls, time=43200) -> bool:
         now_timestamp = datetime.now().timestamp()
 
-        queries = await self.all()
+        queries = await cls.all()
         for q in queries:
             if now_timestamp - q.timestamp.timestamp() > time:
                 await q.delete()
@@ -352,7 +353,7 @@ class JobQueuesTable(Model):
         ).first()
 
     @classmethod
-    async def get_all(cls, target_client: str) -> list:
+    async def get_all(cls, target_client: str):
         return await cls.filter(
             target_client=target_client, status='pending'
         ).all()

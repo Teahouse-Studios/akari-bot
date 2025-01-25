@@ -1,5 +1,5 @@
 from core.builtins import MessageTaskManager
-from core.queue import check_job_queue, JobQueue
+from core.queue import check_job_queue
 from core.scheduler import Scheduler, IntervalTrigger
 
 

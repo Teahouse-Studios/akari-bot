@@ -215,6 +215,7 @@ class MessageSession:
         self.petal: int = None
 
         self.tmp = {}
+        asyncio.create_task(self.data_init())
 
     async def data_init(self):
         get_sender_info = (await SenderInfo.get_or_create(sender_id=self.target.sender_id))[0]

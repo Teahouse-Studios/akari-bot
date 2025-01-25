@@ -1,4 +1,3 @@
-import asyncio
 import importlib
 import multiprocessing
 import os
@@ -9,7 +8,7 @@ from datetime import datetime
 from time import sleep
 
 from loguru import logger as loggerFallback
-from tortoise import Tortoise, run_async
+from tortoise import run_async
 
 
 ascii_art = r"""
@@ -58,12 +57,12 @@ def init_bot():
         if not query_dbver:
             await DBVersion.create(value=str(database_version))
             query_dbver = await DBVersion.all().first()
-        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
-            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-            from core.database.update import update_database
+#        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
+#            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+#            from core.database.update import update_database
 
-            update_database()
-            Logger.success("Database updated successfully!")
+#            update_database()
+#            Logger.success("Database updated successfully!")
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
         )
@@ -75,10 +74,10 @@ def init_bot():
                 sender_info = await SenderInfo.get(sender_id=bu)
                 sender_info.superuser = True
                 await sender_info.save()
-        else:
-            Logger.warning(
-                "The base superuser is not found, please setup it in the config file."
-            )
+            else:
+                Logger.warning(
+                    "The base superuser is not found, please setup it in the config file."
+                )
     run_async(update_db())
 
 
@@ -222,14 +221,11 @@ if __name__ == "__main__":
                     ps.close()
                 processes.clear()
                 continue
-            except (KeyboardInterrupt, SystemExit):
-                raise
             except Exception:
                 loggerFallback.critical("An error occurred, please check the output.")
                 traceback.print_exc()
                 break
     except (KeyboardInterrupt, SystemExit):
-        run_async(Tortoise.close_connections())
         for ps in processes:
             ps.terminate()
             ps.join()

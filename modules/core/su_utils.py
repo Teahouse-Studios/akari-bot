@@ -148,7 +148,12 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("message.success"))
 
 
-post_whitelist = module('post_whitelist', required_superuser=True, base=True, doc=True, load=Bot.client_name == 'QQ')
+post_whitelist = module(
+    'post_whitelist',
+    required_superuser=True,
+    base=True,
+    doc=True,
+    load=Bot.FetchTarget.name == 'QQ')
 
 
 @post_whitelist.command('<group_id>')
@@ -176,7 +181,7 @@ async def _(msg: Bot.MessageSession, user: str):
     stat = ''
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     warns = sender_info.warns
     temp_banned_time = await check_temp_ban(user)
     if temp_banned_time:
@@ -224,7 +229,7 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     if await sender_info.switch_identity(trust=False):
         await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
 
@@ -233,7 +238,7 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     if await sender_info.switch_identity(trust=False, enable=False):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
@@ -242,7 +247,7 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     if await sender_info.switch_identity(trust=True, enable=True):
         await msg.finish(msg.locale.t("core.message.abuse.trust.success", user=user))
 
@@ -251,28 +256,38 @@ async def _(msg: Bot.MessageSession, user: str):
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     if await sender_info.switch_identity(trust=True, enable=False):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
 
-@ae.command('block <target>', load=Bot.client_name == 'QQ')
+@ae.command('block <target>', load=Bot.FetchTarget.name == 'QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
     if target == msg.target.target_id:
         await msg.finish(msg.locale.t("core.message.abuse.block.self"))
-    target_info = await SenderInfo.get(target_info=target)
-    if target_info.edit_attr('blocked', True):
+    target_info = await TargetInfo.get_or_none(target_id=target)
+    if not target_info:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
+        if not confirm:
+            await msg.finish()
+        target_info = await TargetInfo.create(target=target)
+    if await target_info.edit_attr('blocked', True):
         await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
 
-@ae.command('unblock <target>', load=Bot.client_name == 'QQ')
+@ae.command('unblock <target>', load=Bot.FetchTarget.name == 'QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
-    target_info = await SenderInfo.get(target_info=target)
-    if target_info.edit_attr('blocked', False):
+    target_info = await TargetInfo.get_or_none(target_id=target)
+    if not target_info:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
+        if not confirm:
+            await msg.finish()
+        target_info = await TargetInfo.create(target=target)
+    if await target_info.edit_attr('blocked', False):
         await msg.finish(msg.locale.t("core.message.abuse.unblock.success", target=target))
 
 
@@ -620,7 +635,7 @@ jobqueue = module('jobqueue', required_superuser=True, base=True)
 
 @jobqueue.command('clear')
 async def _(msg: Bot.MessageSession):
-    await JobQueuesTable().clear_task(time=0)
+    await JobQueuesTable.clear_task(time=0)
     await msg.finish(msg.locale.t("message.success"))
 
 

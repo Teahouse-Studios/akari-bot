@@ -15,8 +15,7 @@ def load_extra_schedulers():
     @Scheduler.scheduled_job(IntervalTrigger(hours=12))
     async def clear_queue():
         Logger.info("Clearing job queue...")
-        job_queue = await JobQueuesTable.get()
-        await job_queue.clear_task()
+        await JobQueuesTable.clear_task()
         Logger.info("Job queue cleared.")
 
     fun_file = None

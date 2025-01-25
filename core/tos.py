@@ -55,12 +55,12 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
 
 
 async def pardon_user(user: str):
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     await sender_info.edit_attr("warns", 0)
 
 
 async def warn_user(user: str, count: int = 1):
-    sender_info = await SenderInfo.get(sender_id=user)
+    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
     await sender_info.warn_user(count)
     if sender_info.warns > WARNING_COUNTS >= 1 and not sender_info.trusted:
         await sender_info.switch_identity(trust=False)
