@@ -315,7 +315,7 @@ mute = module(
 
 @mute.command("{{core.help.mute}}")
 async def _(msg: Bot.MessageSession):
-    state = msg.target_info.switch_mute()
+    state = await msg.target_info.switch_mute()
     if state:
         await msg.finish(msg.locale.t("core.message.mute.enable"))
     else:
