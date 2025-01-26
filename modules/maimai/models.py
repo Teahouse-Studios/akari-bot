@@ -1,15 +1,15 @@
 from tortoise.models import Model
 from tortoise import fields
 
-table_prefix = "module_cytoid_"
+table_prefix = "module_maimai_"
 
 
-class CytoidBindInfo(Model):
+class DivingProberBindInfo(Model):
     sender_id = fields.CharField(max_length=512, pk=True)
     username = fields.CharField(max_length=512)
 
     class Meta:
-        table = table_prefix + "bind_info"
+        table = table_prefix + "diving_prober_bind_info"
 
     @classmethod
     async def set_bind_info(cls, sender_id: str, username: str):

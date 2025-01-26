@@ -21,7 +21,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @ctd.command(
-    "b30 [<username>] {{cytoid.help.b30}}", "r30 [<username>] {{cytoid.help.r30}}"
+    "b30 [<username>] {{cytoid.help.b30}}",
+    "r30 [<username>] {{cytoid.help.r30}}"
 )
 async def _(msg: Bot.MessageSession, username: str = None):
     if "b30" in msg.parsed_msg:
@@ -33,11 +34,12 @@ async def _(msg: Bot.MessageSession, username: str = None):
     if username:
         query_id = username
     else:
-        query_id = (await CytoidBindInfo().get_or_none()).username
-        if not query_id:
+        bind_info = await CytoidBindInfo.get_or_none(sender_id=msg.target.sender_id)
+        if not bind_info:
             await msg.finish(
                 msg.locale.t("cytoid.message.user_unbound", prefix=msg.prefixes[0])
             )
+        query_id = bind_info.username
     if query:
         if msg.target.client_name == "TEST":
             c = 0
@@ -64,23 +66,17 @@ async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(code)
     if getcode:
-        try:
-            (await CytoidBindInfo().get_or_none(target_id=msg.target.sender_id)).username = getcode[0]
-            bind = True
-        except Exception:
-            bind = False
-        if bind:
-            if getcode[1]:
-                m = f"{getcode[1]}({getcode[0]})"
-            else:
-                m = getcode[0]
-            await msg.finish(msg.locale.t("cytoid.message.bind.success") + m)
+        await CytoidBindInfo.set_bind_info(msg.target.sender_id, getcode[0])
+        if getcode[1]:
+            m = f"{getcode[1]}({getcode[0]})"
+        else:
+            m = getcode[0]
+        await msg.finish(msg.locale.t("cytoid.message.bind.success") + m)
     else:
         await msg.finish(msg.locale.t("cytoid.message.bind.failed"))
 
 
 @ctd.command("unbind {{cytoid.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    unbind = CytoidBindInfo().remove_bind_info(msg)
-    if unbind:
-        await msg.finish(msg.locale.t("cytoid.message.unbind.success"))
+    await CytoidBindInfo.remove_bind_info(msg.target.sender_id)
+    await msg.finish(msg.locale.t("cytoid.message.unbind.success"))

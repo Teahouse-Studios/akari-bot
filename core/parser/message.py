@@ -303,7 +303,7 @@ async def parser(msg: Bot.MessageSession,
                                              prefix=msg.prefixes[0]))
                             if await msg.check_permission():
                                 if await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable")):
-                                    msg.data.enable(command_first_word)
+                                    await msg.target_info.config_module(command_first_word)
                                     await msg.send_message(msg.locale.t("core.message.module.enable.success", module=command_first_word))
                                 else:
                                     return

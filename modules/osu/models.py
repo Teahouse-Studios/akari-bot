@@ -1,10 +1,10 @@
 from tortoise.models import Model
 from tortoise import fields
 
-table_prefix = "module_cytoid_"
+table_prefix = "module_osu_"
 
 
-class CytoidBindInfo(Model):
+class OsuBindInfo(Model):
     sender_id = fields.CharField(max_length=512, pk=True)
     username = fields.CharField(max_length=512)
 
