@@ -16,4 +16,4 @@ def get_db_link(orm_type="sqlalchemy"):
     if orm_type == "sqlalchemy":
         return db_link
     if orm_type == "tortoise":
-        return db_type + "://" + db_link.split("://")[1]
+        return db_type + "://" + db_link.split(":///")[1]
