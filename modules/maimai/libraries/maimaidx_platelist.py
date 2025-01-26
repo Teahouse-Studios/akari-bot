@@ -15,20 +15,20 @@ total_list = TotalList()
 class DrawPlateList:
     def __init__(
         self,
+        plate,
         song_list,
         song_complete,
-        remaster_required,
-        goal_mark
+        remaster_required
     ):
         self.song_list = song_list
         self.song_complete = song_complete
         self.remaster_required = remaster_required
-        if goal_mark == "者":
-            self.goal_mark = "覇"
-        elif goal_mark == "舞舞":
-            self.goal_mark = "舞"
-        else:
-            self.goal_mark = goal_mark
+        self.version = plate[0]
+        self.goal = plate[1:]
+        if self.goal == "者":
+            self.goal = "覇"
+        elif self.goal == "舞舞":
+            self.goal = "舞"
         self.image_size = 80
         self.spacing = 10
         self.margin = 20
@@ -43,6 +43,68 @@ class DrawPlateList:
         self.img = None
         self.update_cover_marks()
         self.create_ranked_image()
+
+    def _get_version_color(self):
+        match self.version:
+            case '真':
+                color = (89, 174, 229)
+            case '超':
+                color = (223, 254, 114)
+            case '檄':
+                color = (181, 230, 1)
+            case '橙':
+                color = (254, 208, 120)
+            case '暁':
+                color = (254, 120, 35)
+            case '桃':
+                color = (255, 10, 121)
+            case '櫻':
+                color = (254, 106, 158)
+            case '紫':
+                color = (185, 131, 255)
+            case '菫':
+                color = (116, 50, 220)
+            case '白':
+                color = (179, 235, 252)
+            case '雪':
+                color = (103, 254, 253)
+            case '輝':
+                color = (154, 160, 254)
+            case '覇' | '舞':
+                color = (221, 121, 237)
+            case '熊' | '華':
+                color = (239, 95, 95)
+            case '爽' | '煌':
+                color = (255, 255, 95)
+            case '宙' | '星':
+                color = (138, 200, 251)
+            case '祭' | '祝':
+                color = (184, 123, 191)
+            case '双' | '宴':
+                color = (255, 172, 62)
+            case _:
+                color = (0, 0, 0)
+        return color
+
+    def _get_goal_color(self):
+        match self.goal:
+            case '覇':
+                color = (255, 129, 141)
+            case '極':
+                color = (129, 217, 85)
+            case '将':
+                color = (239, 243, 13)
+            case '神':
+                color = (252, 197, 49)
+            case '舞':
+                color = (69, 174, 255)
+            case _:
+                color = (255, 255, 255)
+        return color
+
+    @staticmethod
+    def _get_luminance(r, g, b):
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
     def create_ranked_image(self):
         total_width = 10 * (self.image_size + self.spacing) - self.spacing + 2 * self.margin
@@ -63,7 +125,7 @@ class DrawPlateList:
             if not elements:
                 continue
 
-            font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
+            font = ImageFont.truetype(noto_sans_demilight_path, 24, encoding="utf-8")
             draw.text((self.margin, y_offset), level, fill=(0, 0, 0), font=font)
             y_offset += 30
 
@@ -87,7 +149,7 @@ class DrawPlateList:
                         [x_offset, y_offset, x_offset + self.image_size, y_offset + self.image_size],
                         fill=(240, 240, 240),
                     )
-                    font = ImageFont.truetype(noto_sans_demilight_path, 16, encoding="utf-8")
+                    font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
                     bbox = draw.textbbox((0, 0), str(sid), font=font)
                     text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
                     text_x = x_offset + (self.image_size - text_width) // 2
@@ -99,6 +161,9 @@ class DrawPlateList:
                 bar_height = 15
                 large_bar_width = self.image_size * 0.6  # 左边部分的宽度，占比大
                 small_bar_width = self.image_size * 0.4  # 右边部分的宽度，占比小
+                vcolor = self._get_version_color()
+                luminance = self._get_luminance(*vcolor)
+                text_color = (0, 0, 0) if luminance > 140 else (255, 255, 255)
 
                 # 左侧用于放置标记
                 draw.rectangle(
@@ -109,7 +174,7 @@ class DrawPlateList:
                 # 右侧用于放置封面ID
                 draw.rectangle(
                     [x_offset + large_bar_width, bar_top, x_offset + self.image_size, bar_top + bar_height],
-                    fill=(0, 0, 0),
+                    fill=vcolor,
                 )
 
                 if int(sid) in self.remaster_required:
@@ -118,7 +183,7 @@ class DrawPlateList:
                     mark_count = 4
 
                 # 分段填充颜色
-                mark_width = large_bar_width // mark_count
+                mark_width = large_bar_width / mark_count  # 使用浮点数计算
                 if sid not in self.cover_marks:
                     self.cover_marks[sid] = [False] * mark_count
 
@@ -128,7 +193,7 @@ class DrawPlateList:
                             [
                                 x_offset + i * mark_width,
                                 bar_top,
-                                x_offset + (i + 1) * mark_width,
+                                x_offset + (i + 1) * mark_width if i < mark_count - 1 else x_offset + large_bar_width,
                                 bar_top + bar_height,
                             ],
                             fill=self.rank_colors[i],
@@ -140,18 +205,19 @@ class DrawPlateList:
                 text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
                 text_x = x_offset + large_bar_width + (small_bar_width - text_width) // 2
                 text_y = bar_top + (bar_height - text_height) // 2
-                draw.text((text_x, text_y), str(sid), fill=(255, 255, 255), font=font)
+                draw.text((text_x, text_y), str(sid), fill=text_color, font=font)
 
                 if all(self.cover_marks[sid]):
                     overlay = Image.new("RGBA", (self.image_size, self.image_size), (0, 0, 0, 180))  # 半透明黑色
                     self.img.paste(overlay, (x_offset, y_offset), overlay)  # 使用overlay进行粘贴
 
+                    text_color = self._get_goal_color()
                     font = ImageFont.truetype(noto_sans_demilight_path, 36, encoding="utf-8")
-                    bbox = draw.textbbox((0, 0), self.goal_mark, font=font)
+                    bbox = draw.textbbox((0, 0), self.goal, font=font)
                     text_width, text_height = bbox[2] - bbox[0], bbox[3] - bbox[1]
                     text_x = x_offset + (self.image_size - text_width) // 2
                     text_y = y_offset + (self.image_size - text_height) // 2
-                    draw.text((text_x, text_y), self.goal_mark, fill=(255, 255, 255), font=font)
+                    draw.text((text_x, text_y), self.goal, fill=text_color, font=font)
 
                 x_offset += self.image_size + self.spacing
 
@@ -159,7 +225,7 @@ class DrawPlateList:
 
         font = ImageFont.truetype(noto_sans_demilight_path, 10, encoding="utf-8")
         draw.text(
-            (5, total_height - 15), 'Generated by Teahouse Studios "AkariBot"', "black", font=font
+            (5, total_height - 15), 'Generated by Teahouse Studios "AkariBot"', (0, 0, 0), font=font
         )
 
     def update_cover_marks(self):
@@ -316,5 +382,5 @@ async def generate(msg: Bot.MessageSession, payload: dict, plate: str, use_cache
     song_list, song_complete = await get_plate_process(msg, payload, plate, use_cache)
     remaster_required = mai_plate_remaster_required if version in ['覇', '舞'] else []
 
-    pic = DrawPlateList(song_list, song_complete, remaster_required, goal).get_dir()
+    pic = DrawPlateList(plate, song_list, song_complete, remaster_required).get_dir()
     return pic
