@@ -186,6 +186,7 @@
     "wiki.message.wiki_bot.login.already": "登入失敗：機器人帳戶已存在，請先登出帳戶。",
     "wiki.message.wiki_bot.login.failed": "登入失敗：\n${detail}",
     "wiki.message.wiki_bot.login.success": "登入成功。",
+    "wiki.message.wiki_bot.login.already": "登入失敗：機器人帳戶已存在，請先登出帳戶。",
     "wiki.message.wiki_bot.toggle.disable": "已禁用機器人帳戶。",
     "wiki.message.wiki_bot.toggle.enable": "已啟用機器人帳戶。",
     "wiki.message.wiki_inline.flies": "此頁面含有以下檔案：\n${file}"
