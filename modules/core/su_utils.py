@@ -362,7 +362,7 @@ async def _(msg: Bot.MessageSession):
             write_version_cache(msg)
             if Info.version:
                 pull_repo_result = pull_repo()
-                if pull_repo_result != '':
+                if pull_repo_result:
                     await msg.send_message(pull_repo_result)
                 else:
                     Logger.warning('Failed to get Git repository result.')
