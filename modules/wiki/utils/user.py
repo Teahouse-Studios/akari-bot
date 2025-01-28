@@ -23,6 +23,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
                 wiki.wiki_info.interwiki[match_interwiki.group(1)],
                 match_interwiki.group(2),
             )
+
     data = {}
     base_user_info = (
         await wiki.get_json(
@@ -38,12 +39,15 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
     data["url"] = re.sub(
         r"\$1", urllib.parse.quote("User:" + username), wiki.wiki_info.articlepath
     )
+
     groups = {}
     get_groups = await wiki.get_json(
         action="query", meta="allmessages", amprefix="group-"
     )
-    for a in get_groups["query"]["allmessages"]:
-        groups[re.sub("^group-", "", a["name"])] = a["*"]
+    if "query" in get_groups:
+        for a in get_groups["query"]["allmessages"]:
+            groups[re.sub("^group-", "", a["name"])] = a["*"]
+
     user_central_auth_data = {}
     if "CentralAuth" in wiki.wiki_info.extensions:
         user_central_auth_data = await wiki.get_json(
@@ -58,38 +62,39 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
         if x != "*":
             data["users_groups"].append(groups[x] if x in groups else x)
     data["global_users_groups"] = []
-    if user_central_auth_data:
+    if "query" in user_central_auth_data:
         data["global_edit_count"] = str(
             user_central_auth_data["query"]["globaluserinfo"]["editcount"]
         )
         data["global_home"] = user_central_auth_data["query"]["globaluserinfo"]["home"]
         for g in user_central_auth_data["query"]["globaluserinfo"]["groups"]:
             data["global_users_groups"].append(groups[g] if g in groups else g)
-    data["registration_time"] = base_user_info["registration"]
+
+    data["registration_time"] = base_user_info.get("registration")
     data["registration_time"] = (
         msg.ts2strftime(strptime2ts(data["registration_time"]))
         if data["registration_time"]
         else msg.locale.t("message.unknown")
     )
-    data["edited_count"] = str(base_user_info["editcount"])
-    data["gender"] = base_user_info["gender"]
+    data["edited_count"] = str(base_user_info.get("editcount", 0))
+    data["gender"] = base_user_info.get("gender")
     if data["gender"] == "female":
         data["gender"] = msg.locale.t("wiki.message.user.gender.female")
     elif data["gender"] == "male":
         data["gender"] = msg.locale.t("wiki.message.user.gender.male")
-    elif data["gender"] == "unknown":
+    else:
         data["gender"] = msg.locale.t("message.unknown")
     # if one day LGBTers...
 
     if "blockedby" in base_user_info:
-        data["blocked_by"] = base_user_info["blockedby"]
-        data["blocked_time"] = base_user_info["blockedtimestamp"]
+        data["blocked_by"] = base_user_info.get("blockedby")
+        data["blocked_time"] = base_user_info.get("blockedtimestamp")
         data["blocked_time"] = (
             msg.ts2strftime(strptime2ts(data["blocked_time"]))
             if data["blocked_time"]
             else msg.locale.t("message.unknown")
         )
-        data["blocked_expires"] = base_user_info.get("blockexpiry", None)
+        data["blocked_expires"] = base_user_info.get("blockexpiry")
         if data["blocked_expires"]:
             if data["blocked_expires"] != "infinite":
                 data["blocked_expires"] = msg.ts2strftime(
@@ -97,7 +102,7 @@ async def get_user_info(msg: Bot.MessageSession, wikiurl, username):
                 )
         else:
             data["blocked_expires"] = msg.locale.t("message.unknown")
-        data["blocked_reason"] = base_user_info["blockreason"]
+        data["blocked_reason"] = base_user_info.get("blockreason")
         data["blocked_reason"] = (
             data["blocked_reason"]
             if data["blocked_reason"]
