@@ -1,3 +1,5 @@
+import re
+
 from core.builtins import Bot
 from core.config import Config
 from core.constants.default import issue_url_default
@@ -69,8 +71,7 @@ async def warn_user(user: str, count: int = 1):
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
     if report_targets:
         warn_template = [f"[i18n:tos.message.report,sender={sender},target={target}]"]
-        if reason.startswith("{") and reason.endswith("}"):
-            reason = f"[i18n:{reason[1:-1]}]"
+        reason = re.sub(r"\{([^}]+)\}", lambda match: f"[i18n:{match.group(1)}]", reason)
         warn_template.append("[i18n:tos.message.reason]" + reason)
         if banned:
             action = "[i18n:tos.message.action.blocked]"
