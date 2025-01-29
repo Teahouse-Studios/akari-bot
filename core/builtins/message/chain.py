@@ -178,27 +178,23 @@ class MessageChain:
             elif isinstance(x, PlainElement):
                 if x.text != "":
                     if msg:
-                        pattern = r'\[i18n:([^\s,]+)(?:,([^\]]+))?\]'
-                        matches = re.findall(pattern, x.text)
+                        pattern = r'\[i18n:([^\s,\]]+)(?:,([^\]]+))?\]'
 
-                        for match in matches:
-                            key = html.unescape(match[0])
+                        def match_i18ncode(match):
+                            key = html.unescape(match.group(1))
                             kwargs = {}
 
-                            if match[1]:
-                                params = match[1].split(',')
+                            if match.group(2):
+                                params = match.group(2).split(',')
                                 for param in params:
-                                    k, v = param.split('=')
-                                    kwargs[html.unescape(k)] = html.unescape(v)
+                                    if '=' in param:
+                                        k, v = param.split('=', 1)
+                                        kwargs[html.unescape(k.strip())] = html.unescape(v.strip())
 
-                            t_value = msg.locale.t(key, **kwargs)
-                            if isinstance(t_value, str):
-                                x.text = x.text.replace(
-                                    f"[i18n:{
-                                        match[0]}{
-                                        ',' +
-                                        match[1] if match[1] else ''}]",
-                                    t_value)
+                            t_value = msg.locale.t(key, **kwargs)  # 翻译 key
+                            return t_value if isinstance(t_value, str) else match.group(0)
+
+                        x.text = re.sub(pattern, match_i18ncode, x.text)
 
                     value.append(x)
                 else:
@@ -329,16 +325,18 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
     split_all = re.split(r"(\[Ke:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
+    args = []
 
     for e in split_all:
-        match = re.match(r"\[Ke:(.*?),(.*)]", e)
+        match = re.match(r"\[Ke:(.*?)(?:,(.*?))?]", e)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e))
         else:
             element_type = match.group(1).lower()
-            args = re.split(r",|,.\s", match.group(2))
 
+            if args:
+                args = re.split(r",|,.\s", match.group(2))
             args = [x for x in args if x]
 
             if element_type == "plain":

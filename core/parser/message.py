@@ -28,7 +28,6 @@ from core.utils.message import remove_duplicate_space
 qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
 qq_limited_emoji = str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp'))
 
-default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
 report_targets = Config('report_targets', [])
@@ -508,8 +507,7 @@ async def parser(msg: Bot.MessageSession,
                     if not timeout and report_targets:
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
-                                await f.send_direct_message(
-                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), enable_parse_message=False, disable_secret_check=True)
+                                await f.send_direct_message(f"[i18n:error.message.report,module={msg.trigger_msg}]\n{tb}".strip(), enable_parse_message=False, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                     msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -654,8 +652,7 @@ async def parser(msg: Bot.MessageSession,
                             if not timeout and report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
-                                        await f.send_direct_message(
-                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), enable_parse_message=False, disable_secret_check=True)
+                                        await f.send_direct_message(f"[i18n:error.message.report,module={msg.trigger_msg}]\n{tb}".strip(), enable_parse_message=False, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 

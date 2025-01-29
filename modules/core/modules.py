@@ -313,11 +313,7 @@ async def config_modules(msg: Bot.MessageSession):
 
         locale_err = load_locale_file()
         if len(locale_err) != 0:
-            msglist.append(
-                msg.locale.t(
-                    "core.message.locale.reload.failed", detail="\n".join(locale_err)
-                )
-            )
+            msglist.append(f"msg.locale.t('core.message.locale.reload.failed')\n{'\n'.join(locale_err)}")
     elif msg.parsed_msg.get("load", False):
         for module_ in wait_config_list:
             if module_ not in current_unloaded_modules:

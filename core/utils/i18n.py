@@ -75,7 +75,7 @@ def flatten(d: Dict[str, Any], parent_key="", sep="."):
     return dict(items)
 
 
-def load_locale_file() -> Optional[List[str]]:
+def load_locale_file() -> List[str]:
     locale_dict = {}
     err_prompt = []
 

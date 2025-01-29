@@ -209,8 +209,7 @@ async def _(event: Event):
         if event.duration >= 259200:
             result = True
         if result and not sender_info.is_super_user:
-            reason = Locale(default_locale).t('tos.message.reason.mute')
-            await tos_report(sender_id, target_id, reason, banned=True)
+            await tos_report(sender_id, target_id, "{tos.message.reason.mute}", banned=True)
             BotDBUtil.GroupBlockList.add(target_id)
             await bot.call_action('set_group_leave', group_id=event.group_id)
             sender_info.edit('isInAllowList', False)
@@ -226,8 +225,7 @@ async def _(event: Event):
         sender_id = f'{sender_prefix}|{event.operator_id}'
         sender_info = BotDBUtil.SenderInfo(sender_id)
         if not sender_info.is_super_user:
-            reason = Locale(default_locale).t('tos.message.reason.kick')
-            await tos_report(sender_id, target_id, reason, banned=True)
+            await tos_report(sender_id, target_id, "{tos.message.reason.kick}", banned=True)
             BotDBUtil.GroupBlockList.add(target_id)
             sender_info.edit('isInAllowList', False)
             sender_info.edit('isInBlockList', True)
