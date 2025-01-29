@@ -16,12 +16,8 @@ n = module("nbnhhsh",
 
 @n.command("<term> {{nbnhhsh.help}}")
 async def _(msg: Bot.MessageSession, term: str):
-    res_nbnhhsh = await nbnhhsh(msg, term)
-    chk = await check(res_nbnhhsh)
-    res = f"{term.lower()}\n"
-    for i in chk:
-        res += i["content"]
-    await msg.finish(res.strip())
+    res = await nbnhhsh(msg, term)
+    await msg.finish(f"{term.lower()}\n{res}")
 
 
 async def nbnhhsh(msg: Bot.MessageSession, term: str):
@@ -38,9 +34,12 @@ async def nbnhhsh(msg: Bot.MessageSession, term: str):
         await msg.finish(msg.locale.t("nbnhhsh.message.not_found"))
     if 'trans' in result:
         trans = result['trans']
-        return "、".join(trans)
+        if trans:
+            chk = await check(trans)
+            return "、".join(i['content'] for i in chk)
     if 'inputting' in result:
         inputting = result['inputting']
         if inputting:
-            return f'{msg.locale.t("nbnhhsh.message.guess", term=term)}{"、".join(inputting)}'
+            chk = await check(inputting)
+            return f'{msg.locale.t("nbnhhsh.message.guess", term=term)}{"、".join(i['content'] for i in chk)}'
         await msg.finish(msg.locale.t("nbnhhsh.message.not_found"))
