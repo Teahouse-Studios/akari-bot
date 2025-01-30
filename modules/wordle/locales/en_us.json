@@ -3,7 +3,7 @@
     "wordle.help.desc": "Play Wordle.",
     "wordle.help.hard": "Use hard mode.",
     "wordle.help.theme": "Set whether to use dark theme.",
-    "wordle.message.finish": "Game over. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
+    "wordle.message.finish": "Game over. The answer is ${answer}.\\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "Congratulations! You complete the game in ${attempt} turn(s).",
     "wordle.message.hard": "Tips: Hard mode is enabled. The letters that were color-coded in the previous turn must appear in the following turn and must meet the corresponding requirements.",
     "wordle.message.hard.not_matched": "The word does not correspond.",
