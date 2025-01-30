@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 
 from core.builtins.utils import Secret
 from core.logger import Logger
-
 from core.utils.http import url_pattern
 
 from cattrs import structure, unstructure
@@ -178,24 +177,7 @@ class MessageChain:
             elif isinstance(x, PlainElement):
                 if x.text != "":
                     if msg:
-                        pattern = r'\[i18n:([^\s,\]]+)(?:,([^\]]+))?\]'
-
-                        def match_i18ncode(match):
-                            key = html.unescape(match.group(1))
-                            kwargs = {}
-
-                            if match.group(2):
-                                params = match.group(2).split(',')
-                                for param in params:
-                                    if '=' in param:
-                                        k, v = param.split('=', 1)
-                                        kwargs[html.unescape(k.strip())] = html.unescape(v.strip())
-
-                            t_value = msg.locale.t(key, **kwargs)  # 翻译 key
-                            return t_value if isinstance(t_value, str) else match.group(0)
-
-                        x.text = re.sub(pattern, match_i18ncode, x.text)
-
+                        x.text = match_i18ncode(msg, x.text)
                     value.append(x)
                 else:
                     value.append(
@@ -325,22 +307,22 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
     split_all = re.split(r"(\[Ke:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
-    args = []
+    params = []
 
     for e in split_all:
-        match = re.match(r"\[Ke:(.*?)(?:,(.*?))?]", e)
+        match = re.match(r'\[Ke:([^\s,\]]+)(?:,([^\]]+))?\]', e)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e))
         else:
             element_type = match.group(1).lower()
 
-            if args:
-                args = re.split(r",|,.\s", match.group(2))
-            args = [x for x in args if x]
+            if match.group(2):
+                params = match.group(2).split(',')
+                params = [x for x in params if x]
 
             if element_type == "plain":
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "text":
@@ -353,7 +335,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                         a = html.unescape(a)
                         elements.append(PlainElement.assign(a))
             elif element_type == "image":
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         img = None
@@ -372,7 +354,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                         a = html.unescape(a)
                         elements.append(ImageElement.assign(a))
             elif element_type == "voice":
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "path":
@@ -388,7 +370,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
             elif element_type == "i18n":
                 i18nkey = None
                 kwargs = {}
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "i18nkey":
@@ -399,6 +381,32 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                     elements.append(I18NContextElement.assign(i18nkey, **kwargs))
 
     return elements
+
+
+def match_i18ncode(msg: MessageSession, text: str) -> str:
+    split_all = re.split(r"(\[I18N:.*?])", text)
+    split_all = [x for x in split_all if x]
+    msgs = []
+    kwargs = {}
+
+    for e in split_all:
+        match = re.match(r'\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]', e)
+        if not match:
+            msgs.append(e)
+        else:
+            i18nkey = html.unescape(match.group(1))
+
+            if match.group(2):
+                params = match.group(2).split(',')
+                params = [x for x in params if x]
+                for a in params:
+                    ma = re.match(r"(.*?)=(.*)", a)
+                    if ma:
+                        kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
+            t_value = msg.locale.t(i18nkey, **kwargs)
+            msgs.append(t_value if isinstance(t_value, str) else match.group(0))
+
+    return "".join(msgs)
 
 
 __all__ = ["MessageChain"]

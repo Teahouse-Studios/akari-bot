@@ -237,7 +237,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
     board = WordleBoard.from_random_word()
-    hard_mode = bool(msg.parsed_msg)
+    hard_mode = bool(msg.parsed_msg and "hard" in msg.parsed_msg)
     last_word = None
     board_image = WordleBoardImage(
         wordle_board=board, dark_theme=msg.data.options.get("wordle_dark_theme")

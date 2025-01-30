@@ -43,17 +43,17 @@ def parse_data(result: dict, additional_text=None) -> Dict:
                         if "positions" in itemContext:
                             for pos in itemContext["positions"]:
                                 filter_words_length = pos["endPos"] - pos["startPos"]
-                                reason = f"[i18n:check.redacted,reason={itemDetail['label']}]"
+                                reason = f"[I18N:check.redacted,reason={itemDetail['label']}]"
                                 content = (content[: pos["startPos"] + _offset] +
                                            reason + content[pos["endPos"] + _offset:])
                                 if additional_text:
                                     content += "\n" + additional_text + "\n"
                                 _offset += len(reason) - filter_words_length
                         else:
-                            content = f"[i18n:check.redacted,reason={itemDetail['label']}]"
+                            content = f"[I18N:check.redacted,reason={itemDetail['label']}]"
                         status = False
                 else:
-                    content = f"[i18n:check.redacted.all,reason={itemDetail['label']}]"
+                    content = f"[I18N:check.redacted.all,reason={itemDetail['label']}]"
 
                     if additional_text:
                         content += "\n" + additional_text + "\n"
@@ -173,4 +173,4 @@ def rickroll() -> str:
     """
     if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
         return Config("rickroll_msg", cfg_type=str)
-    return "[i18n:error.message.chain.unsafe]"
+    return "[I18N:error.message.chain.unsafe]"
