@@ -1,6 +1,6 @@
 {
-    "nbnhhsh.help.desc": "能不能好好说话？拼音首字母缩写转义工具。",
-    "nbnhhsh.help": "输入含有首字母缩写的文字获取含义。",
+    "nbnhhsh.help.desc": "能不能好好說話？ 拼音首字母縮寫釋義工具。",
+    "nbnhhsh.help": "輸入含有首字母縮寫的文字取得含義。",
     "nbnhhsh.message.guess": "有可能是：",
-    "nbnhhsh.message.not_found": "没有匹配到拼音首字母缩写。"
+    "nbnhhsh.message.not_found": "沒有符合的拼音首字母縮寫含義。"
 }
