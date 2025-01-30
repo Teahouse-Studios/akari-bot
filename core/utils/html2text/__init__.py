@@ -454,8 +454,8 @@ class HTML2Text(html.parser.HTMLParser):
 
         def link_url(self: HTML2Text, link: str, title: str = "") -> None:
             url = str(Url(urlparse.urljoin(self.baseurl, link)))
-            # title = ' "{}"'.format(title) if title.strip() else ""
-            self.o("]({url})".format(url=escape_md(url)))
+            # title = f' "{title}"' if title.strip() else ""
+            self.o(f"]({escape_md(url)})")
 
         if tag == "a" and not self.ignore_links:
             if start:
@@ -618,14 +618,14 @@ class HTML2Text(html.parser.HTMLParser):
                     self.soft_br()
                 if tag in ["td", "th"]:
                     if start:
-                        self.o("<{}>\n\n".format(tag))
+                        self.o(f"<{tag}>\n\n")
                     else:
-                        self.o("\n</{}>".format(tag))
+                        self.o(f"\n</{tag}>")
                 else:
                     if start:
-                        self.o("<{}>".format(tag))
+                        self.o(f"<{tag}>")
                     else:
-                        self.o("</{}>".format(tag))
+                        self.o(f"</{tag}>")
 
             else:
                 if tag == "table":

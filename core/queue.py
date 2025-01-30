@@ -7,7 +7,7 @@ import orjson as json
 
 from core.builtins import Bot, MessageChain
 from core.config import Config
-from core.constants import Info, default_locale
+from core.constants import Info
 from core.database import BotDBUtil
 from core.database.tables import JobQueueTable
 from core.logger import Logger
@@ -130,9 +130,8 @@ async def check_job_queue():
             try:
                 for target in report_targets:
                     if ft := await Bot.FetchTarget.fetch_target(target):
-                        await ft.send_direct_message(
-                            Locale(default_locale).t('error.message.report', module=tsk.action, detail=f),
-                            enable_parse_message=False, disable_secret_check=True)
+                        await ft.send_direct_message(f"[I18N:error.message.report,module={tsk.action}]\n{f}".strip(),
+                                                     enable_parse_message=False, disable_secret_check=True)
             except Exception:
                 Logger.error(traceback.format_exc())
 

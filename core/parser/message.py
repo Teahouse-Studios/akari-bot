@@ -3,6 +3,7 @@ import inspect
 import re
 import traceback
 from datetime import datetime
+from string import Template
 from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
@@ -25,8 +26,8 @@ from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
 qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
+qq_limited_emoji = str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp'))
 
-default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
 report_targets = Config('report_targets', [])
@@ -104,16 +105,16 @@ async def temp_ban_check(msg: Bot.MessageSession):
 
 async def check_target_cooldown(msg: Bot.MessageSession):
     cooldown_time = int(msg.options.get('cooldown_time', 0))
-    neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
+    neutralized = bool(await msg.check_permission() or msg.check_super_user())
 
     if cooldown_time and not neutralized:
-        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id) is not None:
-            time = int(datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts'])
+        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id):
+            time = datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]['ts']
             if time > cooldown_time:
                 cooldown_counter[msg.target.target_id].update(
                     {msg.target.sender_id: {'ts': datetime.now().timestamp()}})
             else:
-                await msg.finish(msg.locale.t('message.cooldown.manual', time=cooldown_time - time))
+                await msg.finish(msg.locale.t('message.cooldown.manual', time=int(cooldown_time - time)))
         else:
             cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {'ts': datetime.now().timestamp()}}
 
@@ -127,7 +128,6 @@ def transform_alias(msg, command: str):
             pattern = re.sub(r'(\$\{\w+\})(?=\$\{\w+\})', r'\1 ', pattern)
             # 匹配占位符
             pattern_placeholders = re.findall(r'\$\{([^{}$]+)\}', pattern)
-            replacement_placeholders = re.findall(r'\$\{([^{}$]+)\}', replacement)
 
             regex_pattern = re.escape(pattern)
             for placeholder in pattern_placeholders:
@@ -135,20 +135,10 @@ def transform_alias(msg, command: str):
 
             match = re.match(regex_pattern, command)
             if match:
-                result = replacement
                 groups = match.groups()
-                # 替换模板中的占位符
-                for i, placeholder in enumerate(pattern_placeholders):
-                    if i < len(groups):
-                        result = result.replace(f'${{{placeholder}}}', groups[i])
-                    else:
-                        result = result.replace(f'${{{placeholder}}}', '')
-                # 检查未匹配的占位符并保留原始文本
-                for placeholder in replacement_placeholders:
-                    if placeholder not in pattern_placeholders:
-                        result = result.replace(f'${{{placeholder}}}', f'${{{placeholder}}}')
-                    else:
-                        result = result.replace(f'${{{placeholder}}}', '')
+                placeholder_dict = {placeholder: groups[i] for i,
+                                    placeholder in enumerate(pattern_placeholders) if i < len(groups)}
+                result = Template(replacement).safe_substitute(placeholder_dict)
 
                 Logger.debug(msg.prefixes[0] + result)
                 return msg.prefixes[0] + result
@@ -456,15 +446,24 @@ async def parser(msg: Bot.MessageSession,
                 except SendMessageFailed:
                     if msg.target.target_from == qq_group_prefix:  # wtf onebot 11
                         obi = await get_onebot_implementation()
-                        if obi == 'ntqq':
-                            await msg.call_api('set_msg_emoji_like', message_id=msg.session.message.message_id,
-                                               emoji_id=str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp')))
-                        elif obi == 'lagrange':
-                            await msg.call_api('group_poke', group_id=msg.session.target, user_id=int(qq_account))
-                        elif obi == 'shamrock':
-                            await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:touch,id={qq_account}]')
-                        elif obi == 'go-cqhttp':
-                            await msg.call_api('send_group_msg', group_id=msg.session.target, message=f'[CQ:poke,qq={qq_account}]')
+                        if obi in ["llonebot", "napcat"]:
+                            await msg.call_api("set_msg_emoji_like",
+                                               message_id=msg.session.message.message_id,
+                                               emoji_id=qq_limited_emoji)
+                        elif obi == "lagrange":
+                            await msg.call_api("set_group_reaction",
+                                               group_id=msg.session.target,
+                                               message_id=msg.session.message.message_id,
+                                               code=qq_limited_emoji,
+                                               is_add=True)
+                        elif obi == "shamrock":
+                            await msg.call_api("send_group_msg",
+                                               group_id=msg.session.target,
+                                               message=f"[CQ:touch,id={qq_account}]")
+                        elif obi == "go-cqhttp":
+                            await msg.call_api("send_group_msg",
+                                               group_id=msg.session.target,
+                                               message=f"[CQ:poke,qq={qq_account}]")
                         else:
                             pass
                     await msg.send_message(msg.locale.t("error.message.limited"))
@@ -508,8 +507,7 @@ async def parser(msg: Bot.MessageSession,
                     if not timeout and report_targets:
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
-                                await f.send_direct_message(
-                                    Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), enable_parse_message=False, disable_secret_check=True)
+                                await f.send_direct_message(f"[I18N:error.message.report,module={msg.trigger_msg}]\n{tb}".strip(), enable_parse_message=False, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                     msg.locale.t('parser.module.unloaded', module=command_first_word))
@@ -550,7 +548,7 @@ async def parser(msg: Bot.MessageSession,
                         try:
                             matched = False
                             matched_hash = 0
-                            trigger_msg = msg.as_display(msg.trigger_msg)
+                            trigger_msg = msg.as_display(text_only=rfunc.text_only)
                             if rfunc.mode.upper() in ['M', 'MATCH']:
                                 msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg:
@@ -654,8 +652,7 @@ async def parser(msg: Bot.MessageSession,
                             if not timeout and report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
-                                        await f.send_direct_message(
-                                            Locale(default_locale).t('error.message.report', module=msg.trigger_msg, detail=tb), enable_parse_message=False, disable_secret_check=True)
+                                        await f.send_direct_message(f"[I18N:error.message.report,module={msg.trigger_msg}]\n{tb}".strip(), enable_parse_message=False, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 

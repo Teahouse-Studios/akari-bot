@@ -15,7 +15,7 @@ async def mcmod(msg, keyword: str, detail: bool = False):
     endpoint = api_details if detail else api
     search_url = endpoint + quote(keyword)
     html = await get_url(
-        webrender("source", quote(search_url)), 200, request_private_ip=True
+        webrender("source", search_url), 200, request_private_ip=True
     )
     Logger.debug(html)
     bs = BeautifulSoup(html, "html.parser")

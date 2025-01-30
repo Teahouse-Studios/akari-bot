@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await msg.finish(msg.locale.t("message.success"))
+            await msg.finish(msg.locale.t("core.message.superuser.add.success"))
 
 
 @su.command('remove <user>')
@@ -44,12 +44,12 @@ async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user == msg.target.sender_id:
-        confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"), append_instruction=False)
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.superuser.remove.confirm"), append_instruction=False)
         if not confirm:
             await msg.finish()
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await msg.finish(msg.locale.t("message.success"))
+            await msg.finish(msg.locale.t("core.message.superuser.remove.success"))
 
 
 purge = module('purge', required_superuser=True, base=True, doc=True)
@@ -143,7 +143,12 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("message.success"))
 
 
-post_whitelist = module('post_whitelist', required_superuser=True, base=True, doc=True, load=Bot.client_name == 'QQ')
+post_whitelist = module(
+    'post_whitelist',
+    required_superuser=True,
+    base=True,
+    doc=True,
+    load=Bot.FetchTarget.name == 'QQ')
 
 
 @post_whitelist.command('<group_id>')
@@ -245,7 +250,7 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
 
-@ae.command('block <target>', load=Bot.client_name == 'QQ')
+@ae.command('block <target>', load=Bot.FetchTarget.name == 'QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -255,7 +260,7 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
 
-@ae.command('unblock <target>', load=Bot.client_name == 'QQ')
+@ae.command('unblock <target>', load=Bot.FetchTarget.name == 'QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -306,7 +311,7 @@ def restart():
 
 
 def write_version_cache(msg: Bot.MessageSession):
-    update = os.path.join(PrivateAssets.path, 'cache_restart_author')
+    update = os.path.join(PrivateAssets.path, '.cache_restart_author')
     with open(update, 'wb') as write_version:
         write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
 
@@ -357,7 +362,7 @@ async def _(msg: Bot.MessageSession):
             write_version_cache(msg)
             if Info.version:
                 pull_repo_result = pull_repo()
-                if pull_repo_result != '':
+                if pull_repo_result:
                     await msg.send_message(pull_repo_result)
                 else:
                     Logger.warning('Failed to get Git repository result.')
@@ -446,7 +451,15 @@ async def _(msg: Bot.MessageSession):
 echo = module('echo', required_superuser=True, base=True, doc=True)
 
 
-@echo.command('<display_msg>')
+@echo.command()
+async def _(msg: Bot.MessageSession):
+    dis = await msg.wait_next_message()
+    if dis:
+        dis = dis.as_display()
+        await msg.finish(dis, enable_parse_message=False)
+
+
+@echo.command('[<display_msg>]')
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     await msg.finish(dis, enable_parse_message=False)
 
@@ -464,7 +477,7 @@ rse = module('raise', required_superuser=True, base=True, doc=True)
 
 @rse.command()
 async def _(msg: Bot.MessageSession):
-    e = msg.locale.t("core.message.raise")
+    e = "[I18N:core.message.raise]"
     raise TestException(e)
 
 
@@ -487,7 +500,7 @@ post_ = module('post', required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f'{msg.target.client_name}|'):
         await msg.finish(msg.locale.t('message.id.invalid.target', target=msg.target.target_from))
-    post_msg = f'{Locale(Config('default_locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
     session = await Bot.FetchTarget.fetch_target(target)
     confirm = await msg.wait_confirm(msg.locale.t("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False)
     if confirm:
@@ -499,7 +512,7 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 
 @post_.command('global <post_msg>')
 async def _(msg: Bot.MessageSession, post_msg: str):
-    post_msg = f'{Locale(Config('default_locale', 'zh_cn')).t("core.message.post.prefix")} {post_msg}'
+    post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
     confirm = await msg.wait_confirm(msg.locale.t("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False)
     if confirm:
         await Bot.FetchTarget.post_global_message(post_msg)

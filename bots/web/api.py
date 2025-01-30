@@ -1,4 +1,3 @@
-from datetime import datetime
 import glob
 import os
 import psutil
@@ -275,7 +274,7 @@ async def change_password(request: Request):
     except HTTPException as e:
         raise e
     except Exception as e:
-        # 这里可以记录日志
+        Logger.error(str(e))
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -538,7 +537,6 @@ async def get_locale(request: Request, locale: str, string: str):
 async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
-    global logs_history
     if logs_history:
         await websocket.send_text("\n".join(logs_history))
 
@@ -593,8 +591,11 @@ def extract_timestamp(log_line: str):
 
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
     while True:
-        Info.client_name = client_name
-        uvicorn.run(app, port=API_PORT, log_level="info")
-        Logger.error("API Server crashed, is the port occupied?")
-        Logger.error("Retrying in 5 seconds...")
-        time.sleep(5)
+        try:
+            Info.client_name = client_name
+            uvicorn.run(app, port=API_PORT, log_level="info")
+            break
+        except Exception as e:
+            Logger.error(f"API Server crashed: {e}")
+            Logger.error("Retrying in 5 seconds...")
+            time.sleep(5)

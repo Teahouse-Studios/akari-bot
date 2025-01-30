@@ -71,8 +71,9 @@ class Bind:
             available_for: Union[str, list, tuple] = "*",
             exclude_from: Union[str, list, tuple] = "",
             load: bool = True,
-            show_typing: bool = True,
             logging: bool = True,
+            show_typing: bool = True,
+            text_only: bool = True,
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -89,8 +90,9 @@ class Bind:
                         available_for=available_for,
                         exclude_from=exclude_from,
                         load=load,
-                        show_typing=show_typing,
                         logging=logging,
+                        show_typing=show_typing,
+                        text_only=text_only,
                     ),
                 )
                 return function

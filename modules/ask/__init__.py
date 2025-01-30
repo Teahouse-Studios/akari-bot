@@ -62,8 +62,8 @@ async def _(msg: Bot.MessageSession):
     if Config("enable_petal", False) and not is_superuser and msg.petal <= 0:  # refuse
         await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
 
-    qc = CoolDown("call_openai", msg)
-    c = qc.check(60)
+    qc = CoolDown("call_openai", msg, 60)
+    c = qc.check()
     if c == 0 or msg.target.client_name == "TEST" or is_superuser:
         if hasattr(msg, "parsed_msg"):
             question = msg.parsed_msg["<question>"]
@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession):
             question = msg.matched_msg[0]
             # gpt4 = False
         if await check_bool(question):
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
 
         thread = await client.beta.threads.create(
             messages=[{"role": "user", "content": question}]
@@ -107,7 +107,7 @@ async def _(msg: Bot.MessageSession):
         petal = await count_token_petal(msg, tokens)
         # petal = await count_token_petal(msg, tokens, gpt4)
 
-        res = await check(res, msg=msg)
+        res = await check(res)
         resm = ""
         for m in res:
             resm += m["content"]
@@ -153,15 +153,15 @@ async def _(msg: Bot.MessageSession):
             qc.reset()
         await msg.finish(chain)
     else:
-        await msg.finish(msg.locale.t("message.cooldown", time=int(60 - c)))
+        await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
 
 def parse_markdown(md: str):
-    regex = r"(```[\s\S]*?\n```|\\\[[\s\S]*?\\\]|[^\n]+)"
+    regex = r"```[\s\S]*?\n```|\$\$[\s\S]*?\$\$|\$.*?\$|\\\[[\s\S]*?\\\]|[^`$\n]+"
 
     blocks = []
     for match in re.finditer(regex, md):
-        content = match.group(1)
+        content = match.group(0)
 
         if content.startswith("```"):
             block = "code"
@@ -170,11 +170,18 @@ def parse_markdown(md: str):
             except AttributeError:
                 raise ValueError("Code block is missing language or code.")
             content = {"language": language, "code": code}
-        elif content.startswith("\\["):
+        elif content.startswith("$$") and content.endswith("$$"):
+            block = "latex"
+            content = content[2:-2].strip()
+        elif content.startswith("$") and content.endswith("$"):
+            block = "latex"
+            content = content[1:-1].strip()
+        elif content.startswith("\\[") and content.endswith("\\]"):
             block = "latex"
             content = content[2:-2].strip()
         else:
             block = "text"
+
         blocks.append({"type": block, "content": content})
 
     return blocks

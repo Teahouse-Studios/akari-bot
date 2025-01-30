@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
-import aiohttp
+import httpx
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
@@ -217,7 +217,7 @@ class ErrorMessageElement(MessageElement):
                 )
             ):
                 error_message += "\n" + locale.t(
-                    "error.prompt.address", url=str(report_url)
+                    "error.prompt.address", url=str(report_url.url)
                 )
 
         return deepcopy(cls(error_message))
@@ -269,14 +269,14 @@ class ImageElement(MessageElement):
         从网络下载图片。
         """
         url = self.path
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                raw = await req.read()
-                ft = filetype.match(raw).extension
-                img_path = f"{random_cache_path()}.{ft}"
-                with open(img_path, "wb+") as image_cache:
-                    image_cache.write(raw)
-                return img_path
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, timeout=20.0)
+            raw = resp.content
+            ft = filetype.match(raw).extension
+            img_path = f"{random_cache_path()}.{ft}"
+            with open(img_path, "wb+") as image_cache:
+                image_cache.write(raw)
+            return img_path
 
     async def get_base64(self):
         file = await self.get()
@@ -355,15 +355,15 @@ class EmbedElement(MessageElement):
     :param footer: 页脚。
     """
 
-    title: Optional[str] = (None,)
-    description: Optional[str] = (None,)
-    url: Optional[str] = (None,)
-    timestamp: float = (datetime.now().timestamp(),)
-    color: int = (0x0091FF,)
-    image: Optional[ImageElement] = (None,)
-    thumbnail: Optional[ImageElement] = (None,)
-    author: Optional[str] = (None,)
-    footer: Optional[str] = (None,)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    url: Optional[str] = None
+    timestamp: float = datetime.now().timestamp()
+    color: int = 0x0091FF
+    image: Optional[ImageElement] = None
+    thumbnail: Optional[ImageElement] = None
+    author: Optional[str] = None
+    footer: Optional[str] = None
     fields: Optional[List[EmbedFieldElement]] = None
 
     @classmethod

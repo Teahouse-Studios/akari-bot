@@ -36,8 +36,8 @@ async def _(msg: Bot.MessageSession):
     if Config("enable_petal", False) and not is_superuser and msg.petal <= 0:  # refuse
         await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
 
-    qc = CoolDown("call_openai", msg)
-    c = qc.check(60)
+    qc = CoolDown("call_openai", msg, 60)
+    c = qc.check()
     if c == 0 or msg.target.client_name == "TEST" or is_superuser:
         f_msg = await msg.wait_next_message(
             msg.locale.t("summary.message"), append_instruction=False
@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
         msgs = data["messages"]
         texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
         if await check_bool("".join(texts)):
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
 
         char_count = sum(len(i) for i in texts)
         wait_msg = await msg.send_message(
@@ -106,10 +106,10 @@ async def _(msg: Bot.MessageSession):
         if msg.target.client_name != "TEST" and not is_superuser:
             qc.reset()
 
-        output = await check(output, msg=msg)
+        output = await check(output)
         o = ""
         for m in output:
             o += m["content"]
         await msg.finish(o)
     else:
-        await msg.finish(msg.locale.t("message.cooldown", time=int(60 - c)))
+        await msg.finish(msg.locale.t("message.cooldown", time=int(c)))

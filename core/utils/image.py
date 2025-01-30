@@ -3,7 +3,6 @@ import traceback
 from io import BytesIO
 from typing import List, Optional, Union
 
-import aiohttp
 import filetype as ft
 import orjson as json
 from PIL import Image as PILImage

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import html
 import re
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
@@ -26,7 +27,6 @@ if TYPE_CHECKING:
 
 from core.builtins.utils import Secret
 from core.logger import Logger
-
 from core.utils.http import url_pattern
 
 from cattrs import structure, unstructure
@@ -176,6 +176,8 @@ class MessageChain:
                 value += x.to_message_chain(msg)
             elif isinstance(x, PlainElement):
                 if x.text != "":
+                    if msg:
+                        x.text = match_i18ncode(msg, x.text)
                     value.append(x)
                 else:
                     value.append(
@@ -301,65 +303,110 @@ class MessageChain:
         return self
 
 
-def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceElement]]:
+def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceElement, I18NContextElement]]:
     split_all = re.split(r"(\[Ke:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
+    params = []
+
     for e in split_all:
-        match = re.match(r"\[Ke:(.*?),(.*)]", e)
+        match = re.match(r'\[Ke:([^\s,\]]+)(?:,([^\]]+))?\]', e)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e))
         else:
             element_type = match.group(1).lower()
-            args = re.split(r",|,.\s", match.group(2))
-            for x in args:
-                if not x:
-                    args.remove("")
+
+            if match.group(2):
+                params = match.group(2).split(',')
+                params = [x for x in params if x]
+
             if element_type == "plain":
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "text":
-                            elements.append(PlainElement.assign(ma.group(2)))
+                            ua = html.unescape(ma.group(2))
+                            elements.append(PlainElement.assign(ua))
                         else:
+                            a = html.unescape(a)
                             elements.append(PlainElement.assign(a))
                     else:
+                        a = html.unescape(a)
                         elements.append(PlainElement.assign(a))
             elif element_type == "image":
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         img = None
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(
-                                parse_url[1]
-                            ):
+                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 img = ImageElement.assign(path=ma.group(2))
-                        if ma.group(1) == "headers":
-                            img.headers = json.loads(
-                                str(base64.b64decode(ma.group(2)), "UTF-8")
-                            )
+                        if ma.group(1) == "headers" and img:
+                            img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
                         if img:
                             elements.append(img)
+                        else:
+                            a = html.unescape(a)
+                            elements.append(ImageElement.assign(a))
                     else:
+                        a = html.unescape(a)
                         elements.append(ImageElement.assign(a))
             elif element_type == "voice":
-                for a in args:
+                for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
                     if ma:
                         if ma.group(1) == "path":
                             parse_url = urlparse(ma.group(2))
-                            if parse_url[0] == "file" or url_pattern.match(
-                                parse_url[1]
-                            ):
+                            if parse_url[0] == "file" or url_pattern.match(parse_url[1]):
                                 elements.append(VoiceElement.assign(ma.group(2)))
                         else:
+                            a = html.unescape(a)
                             elements.append(VoiceElement.assign(a))
                     else:
+                        a = html.unescape(a)
                         elements.append(VoiceElement.assign(a))
+            elif element_type == "i18n":
+                i18nkey = None
+                kwargs = {}
+                for a in params:
+                    ma = re.match(r"(.*?)=(.*)", a)
+                    if ma:
+                        if ma.group(1) == "i18nkey":
+                            i18nkey = html.unescape(ma.group(2))
+                        else:
+                            kwargs[ma.group(1)] = html.unescape(ma.group(2))
+                if i18nkey:
+                    elements.append(I18NContextElement.assign(i18nkey, **kwargs))
+
     return elements
+
+
+def match_i18ncode(msg: MessageSession, text: str) -> str:
+    split_all = re.split(r"(\[I18N:.*?])", text)
+    split_all = [x for x in split_all if x]
+    msgs = []
+    kwargs = {}
+
+    for e in split_all:
+        match = re.match(r'\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]', e)
+        if not match:
+            msgs.append(e)
+        else:
+            i18nkey = html.unescape(match.group(1))
+
+            if match.group(2):
+                params = match.group(2).split(',')
+                params = [x for x in params if x]
+                for a in params:
+                    ma = re.match(r"(.*?)=(.*)", a)
+                    if ma:
+                        kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
+            t_value = msg.locale.t(i18nkey, **kwargs)
+            msgs.append(t_value if isinstance(t_value, str) else match.group(0))
+
+    return "".join(msgs)
 
 
 __all__ = ["MessageChain"]

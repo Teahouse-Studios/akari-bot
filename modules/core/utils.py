@@ -93,18 +93,13 @@ admin = module(
 
 
 @admin.command(
-    [
-        "add <user> {{core.help.admin.add}}",
-        "remove <user> {{core.help.admin.remove}}",
-        "list {{core.help.admin.list}}",
-    ]
-)
+    "add <user> {{core.help.admin.add}}",
+    "remove <user> {{core.help.admin.remove}}",
+    "list {{core.help.admin.list}}")
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.custom_admins:
-            await msg.finish(
-                msg.locale.t("core.message.admin.list") + "\n".join(msg.custom_admins)
-            )
+            await msg.finish(f"{msg.locale.t('core.message.admin.list')}\n{'\n'.join(msg.custom_admins)}")
         else:
             await msg.finish(msg.locale.t("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -146,9 +141,7 @@ async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.options.get("ban", [])
     if "list" in msg.parsed_msg:
         if admin_ban_list:
-            await msg.finish(
-                msg.locale.t("core.message.admin.ban.list") + "\n".join(admin_ban_list)
-            )
+            await msg.finish(f"{msg.locale.t('core.message.admin.ban.list')}\n{'\n'.join(admin_ban_list)}")
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -165,16 +158,16 @@ async def _(msg: Bot.MessageSession):
     if "ban" in msg.parsed_msg:
         if user not in admin_ban_list:
             msg.data.edit_option("ban", admin_ban_list + [user])
-            await msg.finish(msg.locale.t("message.success"))
+            await msg.finish(msg.locale.t("core.message.admin.ban.success"))
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if "unban" in msg.parsed_msg:
         if user in (banlist := admin_ban_list):
             banlist.remove(user)
             msg.data.edit_option("ban", banlist)
-            await msg.finish(msg.locale.t("message.success"))
+            await msg.finish(msg.locale.t("core.message.admin.unban.success"))
         else:
-            await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
+            await msg.finish(msg.locale.t("core.message.admin.unban.none"))
 
 
 locale = module(
@@ -222,9 +215,7 @@ async def _(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("message.success"))
     else:
-        await msg.finish(
-            msg.locale.t("core.message.locale.reload.failed", detail="\n".join(err))
-        )
+        await msg.finish(f"{msg.locale.t('core.message.locale.reload.failed')}\n{'\n'.join(err)}")
 
 
 whoami = module("whoami", base=True, doc=True)

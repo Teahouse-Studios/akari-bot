@@ -1,3 +1,5 @@
+import re
+
 from core.builtins import Bot
 from core.config import Config
 from core.constants.default import issue_url_default
@@ -6,7 +8,6 @@ from core.utils.i18n import Locale
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
-default_locale = Config("default_locale", cfg_type=str)
 
 
 async def warn_target(msg: Bot.MessageSession, reason: str):
@@ -14,8 +15,7 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
         current_warns = int(msg.info.warns) + 1
         msg.info.edit("warns", current_warns)
         warn_template = [msg.locale.t("tos.message.warning")]
-        i18n_reason = msg.locale.t_str(reason)
-        warn_template.append(msg.locale.t("tos.message.reason") + i18n_reason)
+        warn_template.append(msg.locale.t("tos.message.reason") + msg.locale.t_str(reason))
         if current_warns < WARNING_COUNTS or msg.info.is_in_allow_list:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(
@@ -68,17 +68,16 @@ async def warn_user(user: str, count: int = 1):
     return current_warns
 
 
-async def tos_report(sender, target, reason, banned=False):
-    locale = Locale(default_locale)
+async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
     if report_targets:
-        warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
-        reason = locale.t_str(reason)
-        warn_template.append(locale.t("tos.message.reason") + reason)
+        warn_template = [f"[I18N:tos.message.report,sender={sender},target={target}]"]
+        reason = re.sub(r"\{([^}]+)\}", lambda match: f"[I18N:{match.group(1)}]", reason)
+        warn_template.append("[I18N:tos.message.reason]" + reason)
         if banned:
-            action = locale.t("tos.message.action.blocked")
+            action = "[I18N:tos.message.action.blocked]"
         else:
-            action = locale.t("tos.message.action.warning")
-        warn_template.append(locale.t("tos.message.action") + action)
+            action = "[I18N:tos.message.action.warning]"
+        warn_template.append("[I18N:tos.message.action]" + action)
 
         for target_ in report_targets:
             if f := await Bot.FetchTarget.fetch_target(target_):

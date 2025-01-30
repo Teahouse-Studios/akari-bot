@@ -24,28 +24,29 @@ m = module(
 
 
 @m.command(
-    ["reload <module> ...", "load <module> ...", "unload <module> ..."],
+    ["reload <module> ...",
+     "load <module> ...",
+     "unload <module> ..."
+     ],
     required_superuser=True,
 )
 @m.command(
-    [
-        "enable <module>... {{core.help.module.enable}}",
-        "enable all {{core.help.module.enable_all}}",
-        "disable <module>... {{core.help.module.disable}}",
-        "disable all {{core.help.module.disable_all}}",
-        "list [--legacy] {{core.help.module.list}}",
-    ],
+    ["enable <module>... {{core.help.module.enable}}",
+     "enable all {{core.help.module.enable_all}}",
+     "disable <module>... {{core.help.module.disable}}",
+     "disable all {{core.help.module.disable_all}}",
+     "list [--legacy] {{core.help.module.list}}",
+     ],
     options_desc={"--legacy": "{help.option.legacy}"},
     exclude_from=["QQ|Guild"],
 )
 @m.command(
-    [
-        "enable [-g] <module> ... {{core.help.module.enable}}",
-        "enable all [-g] {{core.help.module.enable_all}}",
-        "disable [-g] <module> ... {{core.help.module.disable}}",
-        "disable all [-g] {{core.help.module.disable_all}}",
-        "list [--legacy] {{core.help.module.list}}",
-    ],
+    ["enable [-g] <module> ... {{core.help.module.enable}}",
+     "enable all [-g] {{core.help.module.enable_all}}",
+     "disable [-g] <module> ... {{core.help.module.disable}}",
+     "disable all [-g] {{core.help.module.disable_all}}",
+     "list [--legacy] {{core.help.module.list}}",
+     ],
     options_desc={
         "-g": "{core.help.option.module.g}",
         "--legacy": "{help.option.legacy}",
@@ -312,11 +313,7 @@ async def config_modules(msg: Bot.MessageSession):
 
         locale_err = load_locale_file()
         if len(locale_err) != 0:
-            msglist.append(
-                msg.locale.t(
-                    "core.message.locale.reload.failed", detail="\n".join(locale_err)
-                )
-            )
+            msglist.append(f"msg.locale.t('core.message.locale.reload.failed')\n{'\n'.join(locale_err)}")
     elif msg.parsed_msg.get("load", False):
         for module_ in wait_config_list:
             if module_ not in current_unloaded_modules:

@@ -233,7 +233,7 @@ async def query_pages(
                     if (
                         r.link
                         and r.selected_section
-                        and r.info.in_allowlist
+                        and (r.info.in_allowlist or not Info.use_url_manager)
                         and not r.invalid_section
                         and Info.web_render_status
                     ):
@@ -242,7 +242,7 @@ async def query_pages(
                                 r.link: {
                                     "url": r.info.realurl,
                                     "section": r.selected_section,
-                                    "in_allowlist": r.info.in_allowlist,
+                                    "in_allowlist": r.info.in_allowlist or not Info.use_url_manager,
                                 }
                             }
                         )
@@ -255,7 +255,7 @@ async def query_pages(
 
                     if r.link:
                         plain_slice.append(
-                            str(Url(r.link, use_mm=not r.info.in_allowlist))
+                            str(Url(r.link, use_mm=not r.info.in_allowlist or not Info.use_url_manager))
                         )
 
                     if r.file:
@@ -269,7 +269,7 @@ async def query_pages(
                                 {
                                     r.link: {
                                         "url": r.info.realurl,
-                                        "in_allowlist": r.info.in_allowlist,
+                                        "in_allowlist": r.info.in_allowlist or not Info.use_url_manager,
                                         "content_mode": r.has_template_doc
                                         or r.title.split(":")[0] in ["User"]
                                         or (
@@ -287,7 +287,7 @@ async def query_pages(
                     if plain_slice:
                         msg_list.append(Plain("\n".join(plain_slice)))
                     if Info.web_render_status:
-                        if (r.invalid_section and r.info.in_allowlist) or (
+                        if (r.invalid_section and (r.info.in_allowlist or not Info.use_url_manager)) or (
                             r.is_talk_page and not r.selected_section
                         ):
                             if (
@@ -304,7 +304,7 @@ async def query_pages(
                                     Plain(
                                         session.locale.t(
                                             "wiki.message.invalid_section.prompt"
-                                            if r.invalid_section and r.info.in_allowlist
+                                            if r.invalid_section and (r.info.in_allowlist or not Info.use_url_manager)
                                             else "wiki.message.talk_page.prompt"
                                         )
                                     )
@@ -354,7 +354,7 @@ async def query_pages(
                                     i_msg_lst, callback=_callback
                                 )
                             else:
-                                if r.invalid_section and r.info.in_allowlist:
+                                if r.invalid_section and (r.info.in_allowlist or not Info.use_url_manager):
                                     msg_list.append(
                                         Plain(
                                             session.locale.t(

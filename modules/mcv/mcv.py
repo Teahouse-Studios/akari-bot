@@ -34,7 +34,7 @@ async def mcjv(msg: Bot.MessageSession):
             release_time=msg.ts2strftime(time_release),
             snapshot_time=msg.ts2strftime(time_snapshot),
         )
-    except ConnectionError:  # Probably...
+    except Exception:  # Probably...
         message1 = msg.locale.t("mcv.message.mcv.launcher.failed")
     try:
         mojira = json.loads(
@@ -87,10 +87,8 @@ async def mcbv(msg: Bot.MessageSession):
                 "https://bugs.mojang.com/rest/api/2/project/10200/versions", 200
             )
         )
-    except ConnectionError:  # Probably...
-        return ErrorMessage(
-            "{mcv.message.error.server}", locale=msg.locale.locale, enable_report=False
-        )
+    except Exception:  # Probably...
+        await msg.finish(msg.locale.t("mcv.message.error.server"))
     beta = []
     preview = []
     release = []
@@ -127,10 +125,8 @@ async def mcdv(msg: Bot.MessageSession):
                 "https://bugs.mojang.com/rest/api/2/project/11901/versions", 200
             )
         )
-    except ConnectionError:  # Probably...
-        return ErrorMessage(
-            "{mcv.message.error.server}", locale=msg.locale.locale, enable_report=False
-        )
+    except Exception:  # Probably...
+        await msg.finish(msg.locale.t("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:
@@ -147,10 +143,8 @@ async def mcev(msg: Bot.MessageSession):
         Logger.debug(data)
         version = re.search(r"(?<=\[)(.*?)(?=])", data)[0]
         Logger.debug(version)
-    except ConnectionError:  # Probably...
-        return ErrorMessage(
-            "{mcv.message.error.server}", locale=msg.locale.locale, enable_report=False
-        )
+    except Exception:  # Probably...
+        await msg.finish(msg.locale.t("mcv.message.error.server"))
     return msg.locale.t("mcv.message.mcev", version=version)
 
 
@@ -161,10 +155,8 @@ async def mclgv(msg: Bot.MessageSession):
                 "https://bugs.mojang.com/rest/api/2/project/12200/versions", 200
             )
         )
-    except ConnectionError:  # Probably...
-        return ErrorMessage(
-            "{mcv.message.error.server}", locale=msg.locale.locale, enable_report=False
-        )
+    except Exception:  # Probably...
+        await msg.finish(msg.locale.t("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:

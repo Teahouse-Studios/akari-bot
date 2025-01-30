@@ -1,6 +1,6 @@
 import re
 
-import aiohttp
+import httpx
 
 from core.builtins import Bot
 from core.component import module
@@ -31,12 +31,10 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         query = f"?aid={bid[2:]}"
     else:
         return await msg.finish(msg.locale.t("bilibili.message.invalid"))
-    res = await get_video_info(msg, query, get_detail)
-    if res:
-        await msg.finish(msg.locale.t("message.cooldown", time=int(30 - res)))
+    await get_video_info(msg, query, get_detail)
 
 
-@bili.regex(r"\bav(\d+)\b", flags=re.I, mode="A", desc="{bilibili.help.regex.av}")
+@bili.regex(r"av(\d+)\b", flags=re.I, mode="A", desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
@@ -45,7 +43,7 @@ async def _(msg: Bot.MessageSession):
             await get_video_info(msg, query)
 
 
-@bili.regex(r"\bBV[a-zA-Z0-9]{10}\b", mode="A", desc="{bilibili.help.regex.bv}")
+@bili.regex(r"BV[a-zA-Z0-9]{10}", mode="A", desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
@@ -54,9 +52,11 @@ async def _(msg: Bot.MessageSession):
             await get_video_info(msg, query)
 
 
-@bili.regex(r"\b(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)\b",
+@bili.regex(r"(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)",
             mode="A",
             desc="{bilibili.help.regex.url}",
+            show_typing=False,
+            text_only=False
             )
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
@@ -70,10 +70,9 @@ async def _(msg: Bot.MessageSession):
 
 async def parse_shorturl(shorturl):
     try:
-        async with aiohttp.ClientSession() as session, session.get(
-            shorturl, allow_redirects=False
-        ) as response:
-            target_url = response.headers.get("Location")
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(shorturl, follow_redirects=False)
+            target_url = resp.headers.get("Location")
 
         video = re.search(r"/video/([^/?]+)", target_url)
         if video:

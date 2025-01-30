@@ -101,11 +101,9 @@ class MessageSession(MessageSessionT):
 
         return FinishedSession(self, msg_ids, send)
 
-
     async def check_native_permission(self):
-        if self.session.message.channel.permissions_for(
-            self.session.message.author
-        ).administrator or isinstance(self.session.message.channel, discord.DMChannel):
+        if self.session.message.channel.permissions_for(self.session.message.author).administrator or \
+                isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 

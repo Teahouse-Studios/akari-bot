@@ -230,14 +230,14 @@ async def _(msg: Bot.MessageSession):
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))
 
-    qc = CoolDown("wordle", msg)
+    qc = CoolDown("wordle", msg, 180)
     if not msg.target.client_name == "TEST" and not msg.check_super_user():
-        c = qc.check(150)
+        c = qc.check()
         if c != 0:
-            await msg.finish(msg.locale.t("message.cooldown", time=int(150 - c)))
+            await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
     board = WordleBoard.from_random_word()
-    hard_mode = bool(msg.parsed_msg)
+    hard_mode = bool(msg.parsed_msg and "hard" in msg.parsed_msg)
     last_word = None
     board_image = WordleBoardImage(
         wordle_board=board, dark_theme=msg.data.options.get("wordle_dark_theme")
@@ -299,7 +299,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
     play_state = PlayState("wordle", msg)
-    qc = CoolDown("wordle", msg)
+    qc = CoolDown("wordle", msg, 180)
     if play_state.check():
         play_state.disable()
         board.reset_board()

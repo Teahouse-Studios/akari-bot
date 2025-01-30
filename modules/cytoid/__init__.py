@@ -42,8 +42,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if msg.target.client_name == "TEST":
             c = 0
         else:
-            qc = CoolDown("cytoid_rank", msg)
-            c = qc.check(150)
+            qc = CoolDown("cytoid_rank", msg, 150)
+            c = qc.check()
         if c == 0:
             img = await get_rating(msg, query_id, query)
             if msg.target.client_name != "TEST" and img["status"]:
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
             elif "text" in img:
                 await msg.finish(img["text"])
         else:
-            res = msg.locale.t("message.cooldown", time=int(150 - c)) + msg.locale.t(
+            res = msg.locale.t("message.cooldown", time=int(c)) + msg.locale.t(
                 "cytoid.message.b30.cooldown"
             )
             await msg.finish(res)

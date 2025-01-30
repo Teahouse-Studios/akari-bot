@@ -36,7 +36,7 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
 
         is_dirty = await dirty_check(message, result["login"]) or dark_check(message)
         if is_dirty:
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
 
         await msg.finish(message)
     except ValueError as e:

@@ -7,7 +7,6 @@ import traceback
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
-import core.scripts.config_generate  # noqa
 from core.config import Config
 from core.constants.default import db_path_default
 from core.constants.info import Info
@@ -67,7 +66,7 @@ async def console_command():
     try:
         session = PromptSession(history=FileHistory(console_history_path))
         while True:
-            m = await asyncio.to_thread(session.prompt, "> ")
+            m = await asyncio.to_thread(session.prompt)
             await send_command(m)
     except Exception:
         Logger.error(traceback.format_exc())
