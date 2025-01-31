@@ -119,7 +119,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
             Logger.error('[WebRender] Generation Failed.')
             return False
 
-    with open(pic) as read:
+    with open(pic, "rb") as read:
         load_img = json.loads(read.read())
     img_lst = []
     for x in load_img:
@@ -184,7 +184,7 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILIm
             Logger.error('[WebRender] Generation Failed.')
             return False
 
-    with open(pic) as read:
+    with open(pic, "rb") as read:
         load_img = json.loads(read.read())
 
     img_lst = []

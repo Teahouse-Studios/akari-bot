@@ -73,6 +73,7 @@
     "config.comments.use_secrets_random": "是否使用基於 secrets 庫的隨機數產生器。",
     "config.comments.web_render": "WebRender 服務的 URL 位址。",
     "config.comments.web_render_local": "本地 WebRender 服務位址。",
+    "config.comments.webui_host": "WebUI 服務的主機位址。",
     "config.comments.webui_port": "WebUI 服務的連接埠號。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
     "config.header.line.2": "注意：TOML 不是 Python。請不要在此處使用 Python 語法。",

@@ -13,7 +13,7 @@ from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.game import PlayState
+from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.http import get_url, download
 from core.utils.petal import gained_petal
 from core.utils.random import Random
@@ -291,7 +291,7 @@ async def chemical_code(
     set_timeout = max(set_timeout, 2)
 
     async def ans(msg: Bot.MessageSession, random_mode):
-        wait = await msg.wait_next_message(timeout=None)
+        wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
         if play_state.check():
             if (wait_text := wait.as_display(text_only=True)) != play_state.get(
                 "answer"
@@ -402,7 +402,7 @@ async def chemical_code(
                 Image(newpath),
                 I18NContext("chemical_code.message.captcha", times=set_timeout),
             ],
-            timeout=None,
+            timeout=GAME_EXPIRED,
             append_instruction=False,
         )
         if play_state.check():

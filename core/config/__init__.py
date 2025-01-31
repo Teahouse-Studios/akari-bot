@@ -3,6 +3,7 @@ import re
 from time import sleep
 from typing import Optional, Union, Any
 
+import orjson as json
 from loguru import logger
 from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, comment as toml_comment, \
     document as toml_document, nl
@@ -173,26 +174,24 @@ class CFGManager:
             return None
 
         if value is None:  # if the value is not found, write the default value to the config file
+            if isinstance(default, dict):
+                default = json.dumps(default).decode()
             logger.debug(f'[Config] Config {q} not found, filled with default value.')
             cls.write(q, default, cfg_type, secret, table_name, _generate)
 
             return default
         if cfg_type:
             if isinstance(cfg_type, (type, tuple)):
-                if isinstance(cfg_type, tuple):
-                    cfg_type_str = ', '.join(map(lambda t: t.__name__, cfg_type))
-                    if value is not None and not isinstance(value, cfg_type):
-                        logger.warning(f'[Config] Config {q} has a wrong type, expected {
-                                       cfg_type_str}, got {type(value).__name__}.')
+                if isinstance(cfg_type, tuple) and dict in cfg_type:
+                    logger.error(f'[Config] Config {q} has a dict type in cfg_type, which is not supported.')
+                elif isinstance(cfg_type, type) and cfg_type is dict:
+                    logger.error(f'[Config] Config {q} is of type dict, which is not supported.')
                 else:
                     if value is not None and not isinstance(value, cfg_type):
-                        logger.warning(
-                            f'[Config] Config {q} has a wrong type, expected {
-                                cfg_type.__name__}, got {
-                                type(value).__name__}.')
+                        expected_type = ', '.join(map(lambda t: t.__name__, cfg_type)) if isinstance(cfg_type, tuple) else cfg_type.__name__
+                        logger.warning(f'[Config] Config {q} has a wrong type, expected {expected_type}, got {type(value).__name__}.')
             else:
-                logger.error(f'[Config] Invalid cfg_type provided in config {
-                    q}. cfg_type should be a type or a tuple of types.')
+                logger.error(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
         elif default:
             if not isinstance(value, type(default)):
                 logger.warning(
@@ -222,7 +221,11 @@ class CFGManager:
                         cfg_type_str = '(' + ', '.join(map(lambda ty: ty.__name__, cfg_type)) + ')'
                     else:
                         cfg_type_str = cfg_type.__name__
-                    value = f"<Replace me with {cfg_type_str} value>"
+                if cfg_type_str:
+                    if cfg_type_str == "list":
+                        value = []
+                    else:
+                        value = f"<Replace me with {cfg_type_str} value>"
                 else:
                     value = "<Replace me>"
             else:  # if the value is None, skip to autofill

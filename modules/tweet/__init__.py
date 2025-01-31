@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         ),
         request_private_ip=True,
     )
-    with open(pic) as read:
+    with open(pic, "rb") as read:
         load_img = json.loads(read.read())
     img_lst = []
     for x in load_img:

@@ -121,7 +121,7 @@ async def image_table_render(
     except Exception:
         Logger.error(traceback.format_exc())
         return False
-    with open(pic) as read:
+    with open(pic, "rb") as read:
         load_img = json.loads(read.read())
     img_lst = []
     for x in load_img:

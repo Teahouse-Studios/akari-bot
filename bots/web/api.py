@@ -25,7 +25,7 @@ from slowapi.util import get_remote_address
 
 sys.path.append(os.getcwd())
 
-from bots.web.bot import API_PORT  # noqa: E402
+from bots.web.bot import API_PORT, WEBUI_HOST, WEBUI_PORT  # noqa: E402
 from bots.web.info import client_name  # noqa: E402
 from core.bot_init import init_async  # noqa: E402
 from core.builtins import PrivateAssets  # noqa: E402
@@ -48,12 +48,14 @@ app = FastAPI()
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
-ALLOW_ORIGINS = Config("api_allow_origins", default=['*'], cfg_type=(str, list), secret=True, table_name="bot_web")
+ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 CSRF_TOKEN_PATH = os.path.join(PrivateAssets.path, ".CSRF_token")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 CSRF_TOKEN_EXPIRY = 3600
 MAX_LOG_HISTORY = 1000
+
+ALLOW_ORIGINS.append(f"http://{WEBUI_HOST}:{WEBUI_PORT}")
 
 last_file_line_count = {}
 logs_history = []
@@ -538,7 +540,8 @@ async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
     if logs_history:
-        await websocket.send_text("\n".join(logs_history))
+        expanded_history = ["\n".join(item) if isinstance(item, list) else item for item in logs_history]
+        await websocket.send_text("\n".join(expanded_history))
 
     while True:
         today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime('%Y-%m-%d')}.log")
@@ -554,22 +557,47 @@ async def websocket_logs(websocket: WebSocket):
                         for i, line in enumerate(f):
                             if i >= last_file_line_count.get(log_file, 0):
                                 if line:
-                                    new_lines.append(line[:-1])  # 移除行尾换行符
-                            current_line_count = i + 1  # 文件的总行数
+                                    new_lines.append(line.rstrip())  # 移除行尾换行符
+                            current_line_count = i + 1  # 记录当前文件行数
 
                     if new_lines:
-                        await websocket.send_text("\n".join(new_lines))
-                        logs_history.extend(new_lines)
+                        processed_lines = []
+                        for line in new_lines:
+                            if is_log_line_valid(line):
+                                # 新的日志行，结束之前的日志组
+                                logs_history.append(line)
+                            else:
+                                # 非日志行，追加到最后一个日志行的列表
+                                if logs_history and isinstance(
+                                        logs_history[-1], str) and is_log_line_valid(logs_history[-1]):
+                                    logs_history.append([logs_history.pop(), line])
+                                elif logs_history and isinstance(logs_history[-1], list):
+                                    logs_history[-1].append(line)
+                                else:
+                                    logs_history.append(line)  # 兜底处理
+                            processed_lines.append(line)
 
-                        logs_history.sort(key=lambda line: extract_timestamp(line) or datetime.min)
+                        logs_history.sort(
+                            key=lambda line: (
+                                extract_timestamp(
+                                    line[0]) if isinstance(
+                                    line,
+                                    list) else extract_timestamp(line)) or datetime.min)
+                        # 发送日志数据，展开 logs_history 里的列表
+                        expanded_logs = [
+                            "\n".join(item) if isinstance(
+                                item, list) else item for item in processed_lines]
+                        await websocket.send_text("\n".join(expanded_logs))
+
+                        # 维护 logs_history 长度
                         while len(logs_history) > MAX_LOG_HISTORY:
                             logs_history.pop(0)
 
+                        # 清理无效日志行（直接移除整个列表）
                         while logs_history and not is_log_line_valid(logs_history[0]):
                             logs_history.pop(0)
 
                     last_file_line_count[log_file] = current_line_count
-
                 except Exception:
                     continue
 
@@ -590,12 +618,5 @@ def extract_timestamp(log_line: str):
 
 
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
-    while True:
-        try:
-            Info.client_name = client_name
-            uvicorn.run(app, port=API_PORT, log_level="info")
-            break
-        except Exception as e:
-            Logger.error(f"API Server crashed: {e}")
-            Logger.error("Retrying in 5 seconds...")
-            time.sleep(5)
+    Info.client_name = client_name
+    uvicorn.run(app, port=API_PORT, log_level="info")

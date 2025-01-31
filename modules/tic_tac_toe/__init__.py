@@ -2,7 +2,7 @@ from typing import Awaitable, Callable, List, Tuple
 
 from core.builtins import Bot
 from core.component import module
-from core.utils.game import PlayState
+from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal
 from core.utils.random import Random
 
@@ -94,7 +94,7 @@ def generate_human_callback(msg: Bot.MessageSession, player: str):
         while True:
             if not play_state.check():
                 raise TerminationError
-            wait = await msg.wait_next_message(timeout=None)
+            wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
             text = wait.as_display(text_only=True)
             if text == "stop":
                 raise TerminationError

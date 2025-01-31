@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from core.builtins import MessageSession
 from core.logger import Logger
