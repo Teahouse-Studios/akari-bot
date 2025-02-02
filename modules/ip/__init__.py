@@ -16,7 +16,7 @@ async def _(msg: Bot.MessageSession, ip_address: str):
         ip = ipaddress.ip_address(ip_address)
         if isinstance(ip, ipaddress.IPv6Address) and '::' in ip_address:
             ip_address = ip.exploded
-    except BaseException:
+    except Exception:
         await msg.finish(msg.locale.t('ip.message.invalid'))
     res = await check_ip(ip_address)
     await msg.finish(await format_ip(msg, res), disable_secret_check=True)

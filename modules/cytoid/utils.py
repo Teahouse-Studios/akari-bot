@@ -7,7 +7,7 @@ async def get_profile_name(userid):
     try:
         profile_url = f"http://services.cytoid.io/profile/{userid}"
         profile = json.loads(await get_url(profile_url, 200))
-    except BaseException:
+    except Exception:
         return False
     uid = profile["user"]["uid"]
     nick = profile["user"]["name"]

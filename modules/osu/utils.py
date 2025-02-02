@@ -22,7 +22,7 @@ async def get_profile_name(msg: Bot.MessageSession, uid):
             raise ConfigValueError(msg.locale.t("error.config.invalid"))
         Logger.error(traceback.format_exc())
         return False
-    except BaseException:
+    except Exception:
         return False
 
     return userid, username

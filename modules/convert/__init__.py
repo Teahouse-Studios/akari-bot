@@ -23,7 +23,7 @@ async def _(msg: Bot.MessageSession, from_val: str, to_unit: str):
     try:
         ori = ureg.parse_expression(from_val)
         res = ureg.parse_expression(from_val).to(to_unit)
-    except BaseException:
+    except Exception:
         await msg.finish(msg.locale.t("convert.message.invalid"))
 
     await msg.finish(f"{ori:~Pg} = {res:~Pg}")

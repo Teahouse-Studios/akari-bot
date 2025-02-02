@@ -72,25 +72,25 @@ async def find_solution(numbers):
             try:
                 if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
                     return exp
-            except BaseException:
+            except Exception:
                 pass
             exp = f"({perm[0]}{expr[0]}{perm[1]}){expr[1]}({perm[2]}{expr[2]}{perm[3]})"
             try:
                 if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
                     return exp
-            except BaseException:
+            except Exception:
                 pass
             exp = f"{perm[0]}{expr[0]}({perm[1]}{expr[1]}({perm[2]}{expr[2]}{perm[3]}))"
             try:
                 if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
                     return exp
-            except BaseException:
+            except Exception:
                 pass
             exp = f"{perm[0]}{expr[0]}({perm[1]}{expr[1]}{perm[2]}){expr[2]}{perm[3]}"
             try:
                 if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
                     return exp
-            except BaseException:
+            except Exception:
                 pass
     return None
 

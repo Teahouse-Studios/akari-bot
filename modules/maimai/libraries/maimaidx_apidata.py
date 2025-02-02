@@ -53,7 +53,7 @@ async def update_alias() -> bool:
         data = await get_url(url, 200, fmt="json")
 
         with open(mai_alias_path, "wb") as file:
-            file.write(json.dumps(data))
+            file.write(json.dumps(data, option=json.OPT_INDENT_2))
     except Exception:
         Logger.error(traceback.format_exc())
         return False

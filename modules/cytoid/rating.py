@@ -173,7 +173,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 output.putalpha(mask)
                 output.convert("RGBA")
                 b30img.alpha_composite(output, (1825, 22))
-            except BaseException:
+            except Exception:
                 Logger.error(traceback.format_exc())
 
         font4 = ImageFont.truetype(nunito_regular_path, 35)
@@ -310,7 +310,7 @@ async def make_songcard(
     if havecover:
         try:
             img = Image.open(coverpath)
-        except BaseException:
+        except Exception:
             os.remove(coverpath)
             img = Image.new("RGBA", (384, 240), "black")
     else:

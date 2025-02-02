@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import string
+import traceback
 
 import orjson as json
 
@@ -14,7 +15,6 @@ from core.utils.http import get_url, download
 pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
 rating_path = os.path.join(pgr_assets_path, "rating.json")
 json_url = "https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json"
-json_url_mirror = "https://gh.api.99988866.xyz/https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json"
 
 p_headers = {
     "Accept": "application/json",
@@ -44,45 +44,42 @@ async def update_assets():
     file_path = f"{random_cache_path()}.json"
     data = {}
     try:
-        update = await get_url(json_url, 200)
-    except TimeoutError:
-        try:
-            update = await get_url(json_url_mirror, 200)
-        except BaseException:
-            return False
-    update_json = json.loads(update)
-    for song in update_json:
-        diff = {}
-        for c in update_json[song]["chart"]:
-            diff[c] = update_json[song]["chart"][c]["difficulty"]
-        data[
-            remove_punctuations(update_json[song]["song"])
-            + "."
-            + remove_punctuations(update_json[song]["composer"])
-        ] = diff
+        update = await get_url(json_url, 200, fmt='json')
+    except Exception:
+        traceback.format_exc()
+        return False
+    print(update)
+    if update:
+        for song in update:
+            diff = {}
+            for c in update[song]["chart"]:
+                diff[c] = update[song]["chart"][c]["difficulty"]
+            data[
+                remove_punctuations(update[song]["song"])
+                + "."
+                + remove_punctuations(update[song]["composer"])
+            ] = diff
 
-        song_name = remove_punctuations(update_json[song]["song"])
-        if song_name not in illustration_list:
-            try:
-                download_file = await download(update_json[song]["illustration"])
-                if download_file:
-                    shutil.move(
-                        download_file, os.path.join(illustration_path, song_name)
-                    )
-            except Exception:
-                shutil.copy(
-                    os.path.join(pgr_assets_path, "unknown"),
-                    os.path.join(illustration_path, song_name),
-                )
-    Logger.success("Phigros illustrations download completed.")
-    another_assets_url = (
-        "https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
-    )
-    another_assets_url_mirror = "https://gh.api.99988866.xyz/https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
+            song_name = remove_punctuations(update[song]["song"])
+            if song_name not in illustration_list:
+                try:
+                    download_file = await download(update[song]["illustration_big"])
+                    if download_file:
+                        shutil.move(
+                            download_file, os.path.join(illustration_path, song_name)
+                        )
+                except Exception:
+                    pass
+        Logger.success("Phigros illustrations download completed.")
+    else:
+        return False
+
+    another_assets_url = "https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
     try:
         download_file = await download(another_assets_url)
-    except TimeoutError:
-        download_file = await download(another_assets_url_mirror)
+    except Exception:
+        traceback.format_exc()
+        return False
     if download_file:
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
@@ -101,7 +98,7 @@ async def update_assets():
         os.remove(download_file)
     else:
         return False
-    with open(file_path, "wb", encoding="utf-8") as f:
+    with open(file_path, "wb") as f:
         f.write(json.dumps(data, option=json.OPT_INDENT_2))
     shutil.move(file_path, rating_path)
     return True

@@ -49,12 +49,15 @@ class CQCodeHandler:
         if "type" in data and "data" in data:
             cq_type = data["type"]
             params = data["data"]
-            param_str = [
-                f"{key}={CQCodeHandler.escape_special_char(str(value))}"
-                for key, value in params.items()
-            ]
-            cq_code = f"[CQ:{cq_type}," + ",".join(param_str) + "]"
-            return cq_code
+
+            if params:
+                param_str = [
+                    f"{key}={CQCodeHandler.escape_special_char(str(value))}"
+                    for key, value in params.items()
+                ]
+                return f"[CQ:{cq_type},{','.join(param_str)}]"
+            else:
+                return f"[CQ:{cq_type}]"
         return None
 
     @staticmethod
@@ -65,25 +68,23 @@ class CQCodeHandler:
         :param cq_code: CQ码字符串。
         :return: 包含CQ类型和参数的字典；如果CQ码格式不正确，返回None。
         """
-        match = re.match(r"\[CQ:(\w+),(.+?)\]", cq_code)
+        kwargs = {}
+        match = re.match(r"\[CQ:([^\s,\]]+)(?:,([^\]]+))?\]", cq_code)
         if not match:
             return None
-
-        cq_type = match.group(1)
-        parameters = match.group(2)
-
-        param_dict = {}
-        if cq_type == "json":
-            for param in parameters.split(","):
-                key, value = param.split("=", 1)
-                value = html.unescape(value)
-                param_dict[key] = json.loads(value)
         else:
-            for param in parameters.split(","):
-                key, value = param.split("=", 1)
-                param_dict[key] = html.unescape(value)
-
-        data = {"type": cq_type, "data": param_dict}
+            cq_type = match.group(1)
+            if match.group(2):
+                params = match.group(2).split(',')
+                params = [x for x in params if x]
+                for a in params:
+                    ma = re.match(r"(.*?)=(.*)", a)
+                    if ma:
+                        if cq_type == "json":
+                            kwargs[html.unescape(ma.group(1))] = json.loads(ma.group(2))
+                        else:
+                            kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
+        data = {"type": cq_type, "data": kwargs}
 
         return data
 

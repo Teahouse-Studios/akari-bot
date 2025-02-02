@@ -274,7 +274,7 @@ class ModulesManager:
             ) in err_modules:
                 err_modules.remove(m.group(1))
             return cnt + 1
-        except BaseException:
+        except Exception:
             tb = traceback.format_exc()
             errmsg = f"Failed to reload {module_name}: \n{tb}"
             Logger.error(errmsg)

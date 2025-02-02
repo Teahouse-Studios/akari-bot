@@ -91,7 +91,7 @@ class WikiTargetInfo:
             self.query.headers = json.dumps(headers_)
             session.commit()
             return True
-        except BaseException:
+        except Exception:
             return False
 
     def get_headers(self):
@@ -254,7 +254,7 @@ class BotAccount:
             session.commit()
             session.expire_all()
             return True
-        except BaseException:
+        except Exception:
             session.rollback()
             return False
 
