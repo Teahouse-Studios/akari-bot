@@ -75,12 +75,12 @@ class CQCodeHandler:
         param_dict = {}
         if cq_type == "json":
             for param in parameters.split(","):
-                key, value = param.split("=")
+                key, value = param.split("=", 1)
                 value = html.unescape(value)
                 param_dict[key] = json.loads(value)
         else:
             for param in parameters.split(","):
-                key, value = param.split("=")
+                key, value = param.split("=", 1)
                 param_dict[key] = html.unescape(value)
 
         data = {"type": cq_type, "data": param_dict}
