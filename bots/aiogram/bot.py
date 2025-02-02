@@ -36,7 +36,7 @@ async def msg_handler(message: types.Message):
             sender_id=sender_id,
             target_from=target_from,
             sender_from=sender_prefix,
-            sender_prefix=message.from_user.username,
+            sender_name=message.from_user.username,
             client_name=client_name,
             message_id=message.message_id,
             reply_id=reply_id,

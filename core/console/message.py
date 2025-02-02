@@ -152,7 +152,7 @@ class MessageSession(MessageSessionT):
             target=MsgInfo(
                 target_id=f"{target_prefix}|0",
                 sender_id=f"{sender_prefix}|0",
-                sender_prefix="Console",
+                sender_name="Console",
                 target_from=target_prefix,
                 sender_from=sender_prefix,
                 client_name=client_name,

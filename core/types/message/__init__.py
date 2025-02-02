@@ -9,7 +9,7 @@ from attrs import define
 class MsgInfo:
     target_id: str
     sender_id: str
-    sender_prefix: str
+    sender_name: str
     target_from: str
     sender_from: str
     client_name: str

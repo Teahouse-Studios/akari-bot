@@ -628,7 +628,7 @@ class FetchedSession:
             sender_id=f"{sender_from}|{sender_id}",
             target_from=target_from,
             sender_from=sender_from,
-            sender_prefix="",
+            sender_name="",
             client_name="",
             message_id=0,
         )

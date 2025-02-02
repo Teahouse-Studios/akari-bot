@@ -26,7 +26,7 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
         target=MsgInfo(
             target_id=target_id,
             sender_id=sender_id,
-            sender_prefix=(
+            sender_name=(
                 ctx.author.name
                 if isinstance(ctx, discord.ApplicationContext)
                 else ctx.interaction.user.name

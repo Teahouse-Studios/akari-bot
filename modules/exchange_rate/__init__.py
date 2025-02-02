@@ -24,31 +24,27 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
     base = base.upper()
     target = target.upper()
 
-    amount_str = base[:-3]
+    amount = base[:-3]
     base_currency = base[-3:]
 
     if not api_key:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
 
     try:
-        if amount_str:
-            amount = float(amount_str)
-        else:
-            amount = 1.0
-
-        if amount <= 0:
+        amount = amount if amount else 1
+        if float(amount) <= 0:
             await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_positive"))
     except ValueError:
         await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_digital"))
-    await msg.finish(await exchange(base_currency, target, amount, msg))
+    await msg.finish(await exchange(msg, base_currency, target, amount))
 
 
-async def exchange(base_currency, target_currency, amount: float, msg):
+async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amount):
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/codes"
     data = await get_url(url, 200, fmt="json")
     supported_currencies = data["supported_codes"]
     unsupported_currencies = []
-    if data["result"] == "success":
+    if data and data["result"] == "success":
         for currencie_names in supported_currencies:
             if base_currency in currencie_names:
                 break
@@ -69,12 +65,12 @@ async def exchange(base_currency, target_currency, amount: float, msg):
     time = msg.ts2strftime(
         datetime.datetime.now().timestamp(), time=False, timezone=False
     )
-    if data["result"] == "success":
+    if data and data["result"] == "success":
         exchange_rate = data["conversion_result"]
         await msg.finish(
             msg.locale.t(
                 "exchange_rate.message",
-                amount=amount,
+                amount=float(amount),
                 base=base_currency,
                 exchange_rate=exchange_rate,
                 target=target_currency,
@@ -95,4 +91,4 @@ async def _(msg: Bot.MessageSession):
     base = matched_msg.group(2).upper()
     target = matched_msg.group(3).upper()
     if base != target:
-        await msg.finish(await exchange(base, target, float(amount), msg))
+        await msg.finish(await exchange(base, target, amount, msg))

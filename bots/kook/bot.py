@@ -43,7 +43,7 @@ async def msg_handler(message: Message):
             sender_id=sender_id,
             target_from=target,
             sender_from=sender_prefix,
-            sender_prefix=message.author.nickname,
+            sender_name=message.author.nickname,
             client_name=client_name,
             message_id=message.id,
             reply_id=reply_id,

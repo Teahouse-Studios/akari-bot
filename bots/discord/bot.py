@@ -114,7 +114,7 @@ async def on_message(message):
         target=MsgInfo(
             target_id=target_id,
             sender_id=sender_id,
-            sender_prefix=message.author.name,
+            sender_name=message.author.name,
             target_from=target_from,
             sender_from=sender_prefix,
             client_name=client_name,
