@@ -49,7 +49,6 @@
     "config.comments.no_confirm": "Whether to execute the command without the sender confirming the message.",
     "config.comments.proxy": "Proxy service address.",
     "config.comments.qq_access_token": "Access Token for connecting to the WebSocket server when using the Onebot protocol.",
-    "config.comments.qq_account": "Bot QQ number. (Required when using the Onebot Protocol side to deploy the QQ bot)",
     "config.comments.qq_allow_approve_friend": "Whether to automatically approve friend requests when using the Onebot protocol.",
     "config.comments.qq_allow_approve_group_invite": "Whether to automatically accept group invitations when using the Onebot protocol.",
     "config.comments.qq_bot_appid": "The QQ official robot AppID.",
