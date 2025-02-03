@@ -5,7 +5,7 @@ import random
 import re
 import traceback
 from pathlib import Path
-from typing import List, Union
+from typing import List, Union, Optional, Dict
 
 import aiocqhttp.exceptions
 import orjson as json
@@ -343,6 +343,25 @@ class MessageSession(MessageSessionT):
                 group_id=int(self.session.target),
                 messages=nodelist,
             )
+
+    async def msgchain2nodelist(
+        self,
+        msg_chain_list: List[MessageChain],
+        name: Optional[str] = None,
+    ) -> list[Dict]:
+        """将消息链列表转换为节点列表。"""
+        node_list = []
+        for message in msg_chain_list:
+            template = {
+                "type": "node",
+                "data": {
+                    "name": name if name else (await bot.call_action('get_login_info')).get('data').get('nickname'),
+                    "uin": int((await bot.call_action('get_login_info')).get('data').get('user_id')),
+                    "content": message.as_sendable()
+                }
+            }
+            node_list.append(template)
+        return node_list
 
     async def delete(self):
         if self.target.target_from in [target_private_prefix, target_group_prefix]:

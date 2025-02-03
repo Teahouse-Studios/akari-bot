@@ -22,21 +22,6 @@ async def get_onebot_implementation() -> Optional[str]:
 
     return app_name.lower()
 
-async def msgchain2nodelist(msg:Bot.MessageSession, msg_chain_list: List[MessageChain]) -> list[Dict]:
-    """将消息链列表转换为节点列表。"""
-    node_list = []
-    for message in msg_chain_list:
-        template = {
-            "type": "node",
-            "data": {
-                "name": msg.call_api('get_login_info').get('nickname'),
-                "uin": msg.call_api('get_login_info').get('user_id'),
-                "content": message.as_sendable()
-            }
-        }
-        node_list.append(template)
-    return node_list
-
 
 class CQCodeHandler:
     get_supported = ["at", "face", "forward", "image", "json", "record", "text"]

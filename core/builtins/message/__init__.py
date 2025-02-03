@@ -606,6 +606,9 @@ class MessageSession:
         typing = False
         wait = False
 
+    async def msgchain2nodelist(self, msgchain_lst):
+        pass
+
 
 class FetchedSession:
     """

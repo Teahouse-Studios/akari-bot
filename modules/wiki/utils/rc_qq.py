@@ -1,5 +1,4 @@
-from core.builtins import MessageSession
-from core.config import Config
+from core.builtins import MessageSession, MessageChain, Plain, Image
 from core.logger import Logger
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
@@ -7,7 +6,6 @@ from modules.wiki.utils.wikilib import WikiLib
 
 async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
-    qq_account = Config("qq_account", cfg_type=(int, str), table_name="bot_aiocqhttp")
     query = await wiki.get_json(
         action="query",
         list="recentchanges",
@@ -18,29 +16,19 @@ async def rc_qq(msg: MessageSession, wiki_url):
     )
     wiki_info = wiki.wiki_info
 
-    nodelist = [
-        {
-            "type": "node",
-            "data": {
-                "name": msg.locale.t("wiki.message.rc.qq.link.title"),
-                "uin": int(qq_account),
-                "content": [
-                    {
-                        "type": "text",
-                        "data": {
-                            "text": wiki_info.articlepath.replace(
-                                "$1", "Special:RecentChanges"
-                            )
-                            + (
-                                "\n" + msg.locale.t("wiki.message.rc.qq.link.prompt")
-                                if wiki.wiki_info.in_allowlist
-                                else ""
-                            )
-                        },
-                    }
-                ],
-            },
-        }
+    msgchain_lst = [
+        MessageChain([Plain(msg.locale.t("wiki.message.rc.qq.link.title"))]),
+        MessageChain([Plain(wiki_info.articlepath.replace(
+            "$1", "Special:RecentChanges"
+        )
+        + (
+            "\n" + msg.locale.t("wiki.message.rc.qq.link.prompt")
+            if wiki.wiki_info.in_allowlist
+            else ""
+            )
+        )
+        ]),
+        MessageChain([Plain(msg.locale.t("wiki.message.rc.qq.title"))])
     ]
 
     rclist = await convert_rc_to_detailed_format(
@@ -48,16 +36,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
     )
 
     for x in rclist:
-        nodelist.append(
-            {
-                "type": "node",
-                "data": {
-                    "name": msg.locale.t("wiki.message.rc.qq.title"),
-                    "uin": int(qq_account),
-                    "content": [{"type": "text", "data": {"text": x}}],
-                },
-            }
-        )
+        msgchain_lst.append(MessageChain([Plain(x)]))
+    nodelist = await msg.msgchain2nodelist(msgchain_lst)
     Logger.debug(nodelist)
     return nodelist
 
