@@ -13,7 +13,8 @@ from bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
-from core.config import Config
+from core.builtins.temp import Temp
+from core.config import Config, CFGManager
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
 from core.constants.path import assets_path
@@ -28,7 +29,7 @@ from hypercorn import Config as HyperConfig
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
-qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
+qq_account = None
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
@@ -37,6 +38,8 @@ default_locale = Config("default_locale", cfg_type=str)
 @bot.on_startup
 async def startup():
     await init_async()
+    qq_account = (await bot.call_action('get_login_info')).get('data').get('user_id')
+    Temp().data['qq_account'] = qq_account
     bot.logger.setLevel(logging.WARNING)
 
 

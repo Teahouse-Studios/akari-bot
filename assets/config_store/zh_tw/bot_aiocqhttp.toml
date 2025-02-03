@@ -4,7 +4,6 @@
 
 [bot_aiocqhttp]
 # 平台端的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
-qq_account = "<Replace me with (int, str) value>" # 機器人 QQ 號。（使用 Onebot 協定端部署 QQ 機器人時需要）
 qq_enable_listening_self_message = false # 使用 Onebot 協定時，是否啟用自身訊息監聽。
 qq_disable_temp_session = true # 使用 Onebot 協定時，是否啟用臨時會話。
 qq_allow_approve_friend = false # 使用 Onebot 協定時，是否自動同意好友請求。

@@ -9,7 +9,7 @@ from typing import Optional
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
-    base_superuser_list
+    base_superuser_list, Temp
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
@@ -25,7 +25,7 @@ from core.utils.i18n import Locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
-qq_account = Config("qq_account", cfg_type=(int, str), table_name='bot_aiocqhttp')
+qq_account = Temp().data.get('qq_account')
 qq_limited_emoji = str(Config('qq_limited_emoji', 10060, (str, int), table_name='bot_aiocqhttp'))
 
 enable_tos = Config('enable_tos', True)

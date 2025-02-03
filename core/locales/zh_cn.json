@@ -49,7 +49,6 @@
     "config.comments.no_confirm": "是否无需发送者确认消息后再执行命令。",
     "config.comments.proxy": "代理服务地址。",
     "config.comments.qq_access_token": "使用 Onebot 协议时，连接 WebSocket 服务器的 Access Token。",
-    "config.comments.qq_account": "机器人 QQ 号。（使用 Onebot 协议端部署 QQ 机器人时需要）",
     "config.comments.qq_allow_approve_friend": "使用 Onebot 协议时，是否自动同意好友请求。",
     "config.comments.qq_allow_approve_group_invite": "使用 Onebot 协议时，是否自动同意群邀请。",
     "config.comments.qq_bot_appid": "QQ 机器人（官方）的 AppID。",

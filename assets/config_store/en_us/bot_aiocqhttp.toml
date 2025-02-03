@@ -4,7 +4,6 @@
 
 [bot_aiocqhttp]
 # The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
-qq_account = "<Replace me with (int, str) value>" # Bot QQ number. (Required when using the Onebot Protocol side to deploy the QQ bot)
 qq_enable_listening_self_message = false # Whether to enable self-message monitoring when using the Onebot protocol.
 qq_disable_temp_session = true # Whether to enable temp sessions when using the Onebot Protocol.
 qq_allow_approve_friend = false # Whether to automatically approve friend requests when using the Onebot protocol.

@@ -174,7 +174,6 @@ if 'initialized' not in config.value:
         # aiocqhttp
         Reorganize.table = 'aiocqhttp'
         Reorganize.bot_add_enabled_flag()
-        Reorganize.reorganize_bot_key("qq_account")
         Reorganize.reorganize_bot_key("qq_access_token", True)
         Reorganize.reorganize_bot_key("qq_allow_approve_friend")
         Reorganize.reorganize_bot_key("qq_allow_approve_group_invite")
