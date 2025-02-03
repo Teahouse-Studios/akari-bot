@@ -1,11 +1,12 @@
 import html
 import re
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 import orjson as json
 
 from bots.aiocqhttp.client import bot
 from core.logger import Logger
+from core.builtins import MessageChain, Bot
 
 
 async def get_onebot_implementation() -> Optional[str]:
@@ -20,6 +21,21 @@ async def get_onebot_implementation() -> Optional[str]:
         app_name = "lagrange"
 
     return app_name.lower()
+
+async def msgchain2nodelist(msg:Bot.MessageSession, msg_chain_list: List[MessageChain]) -> list[Dict]:
+    """将消息链列表转换为节点列表。"""
+    node_list = []
+    for message in msg_chain_list:
+        template = {
+            "type": "node",
+            "data": {
+                "name": msg.call_api('get_login_info').get('nickname'),
+                "uin": msg.call_api('get_login_info').get('user_id'),
+                "content": message.as_sendable()
+            }
+        }
+        node_list.append(template)
+    return node_list
 
 
 class CQCodeHandler:

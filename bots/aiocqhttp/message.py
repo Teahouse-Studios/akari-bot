@@ -118,6 +118,7 @@ class MessageSession(MessageSessionT):
         callback=None,
     ) -> FinishedSession:
 
+        send = None
         message_chain = MessageChain(message_chain)
         message_chain_assendable = message_chain.as_sendable(self, embed=False)
 
