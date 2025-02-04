@@ -363,9 +363,9 @@ class MessageSession(MessageSessionT):
                 if all(
                     (
                         isinstance(element, PlainElement),
-                        message.as_sendable().index(element)==len(message.as_sendable())-1
-                        or len(message.as_sendable())==0,
-                     )
+                        message.as_sendable().index(element) == len(message.as_sendable()) - 1
+                        or len(message.as_sendable()) == 0,
+                    )
                 ):
                     content += element.text
                 elif isinstance(element, ImageElement):
@@ -373,7 +373,7 @@ class MessageSession(MessageSessionT):
                 elif isinstance(element, VoiceElement):
                     content += '[Voice]'
                 else:
-                    content += element.text+'\n'
+                    content += element.text + '\n'
             template = {
                 "type": "node",
                 "data": {
