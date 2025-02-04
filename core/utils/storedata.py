@@ -8,14 +8,14 @@ if TYPE_CHECKING:
     from core.builtins.message import FetchTarget
 
 
-def get_stored_list(bot: Union["FetchTarget", str], name: str) -> list:
+def get_stored_list(bot: Union["FetchTarget", str], name: str) -> Union[list, dict, None]:
     get = BotDBUtil.Data(bot).get(name=name)
     if not get:
         return []
     return json.loads(get.value)
 
 
-def update_stored_list(bot: Union["FetchTarget", str], name: str, value: list):
+def update_stored_list(bot: Union["FetchTarget", str], name: str, value: Union[list, dict]) -> bool:
     edit = BotDBUtil.Data(bot).update(name=name, value=json.dumps(value))
     return edit
 
