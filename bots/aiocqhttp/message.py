@@ -363,8 +363,8 @@ class MessageSession(MessageSessionT):
             template = {
                 "type": "node",
                 "data": {
-                    "name": name if name else Temp().data.get("qq_nickname"),
-                    "uin": str(Temp().data.get("qq_account")),
+                    "nickname": name if name else Temp().data.get("qq_nickname"),
+                    "user_id": str(Temp().data.get("qq_account")),
                     "content": content
                 }
             }
