@@ -45,9 +45,9 @@ async def startup():
 async def _(event: Event):
     await load_prompt(FetchTarget)
     qq_login_info = await bot.call_action('get_login_info')
-    qq_account = qq_login_info.get('data').get('user_id')
+    qq_account = qq_login_info.get('user_id')
     Temp().data['qq_account'] = qq_account
-    Temp().data['qq_nickname'] = await qq_login_info.get('data').get('nickname')
+    Temp().data['qq_nickname'] = qq_login_info.get('nickname')
 
 
 async def message_handler(event: Event):
