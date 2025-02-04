@@ -261,9 +261,10 @@ class MessageSession(MessageSessionT):
                 ):
                     return FinishedSession(self, 0, [{}])
                 raise e
-        if callback:
-            MessageTaskManager.add_callback(send["message_id"], callback)
-        return FinishedSession(self, send["message_id"], [send])
+        if send:
+            if callback:
+                MessageTaskManager.add_callback(send["message_id"], callback)
+            return FinishedSession(self, send["message_id"], [send])
 
     async def check_native_permission(self):
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
