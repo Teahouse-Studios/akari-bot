@@ -364,7 +364,7 @@ class MessageSession(MessageSessionT):
                 "type": "node",
                 "data": {
                     "name": name if name else Temp().data.get("qq_nickname"),
-                    "uin": int(Temp().data.get("qq_account")),
+                    "uin": str(Temp().data.get("qq_account")),
                     "content": content
                 }
             }
