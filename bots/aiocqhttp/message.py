@@ -333,7 +333,7 @@ class MessageSession(MessageSessionT):
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == target_group_prefix:
             get_ = get_stored_list(Bot.FetchTarget, "forward_msg")
-            if not get_["status"]:
+            if not get_.get("status"):
                 await self.send_message(
                     self.locale.t("core.message.forward_msg.disabled")
                 )
@@ -360,12 +360,20 @@ class MessageSession(MessageSessionT):
         for message in msg_chain_list:
             content = ''
             for element in message.as_sendable():
-                if isinstance(element, PlainElement):
-                    content += element.text+'\n'
+                if all(
+                    (
+                        isinstance(element, PlainElement),
+                        msg_chain_list.index(element)==len(msg_chain_list)-1
+                        or len(msg_chain_list)==0,
+                     )
+                ):
+                    content += element.text
                 elif isinstance(element, ImageElement):
                     content += f"[CQ:image,file=base64://{element.get_base64()}]\n"
                 elif isinstance(element, VoiceElement):
                     content += '[Voice]'
+                else:
+                    content += element.text+'\n'
             template = {
                 "type": "node",
                 "data": {
