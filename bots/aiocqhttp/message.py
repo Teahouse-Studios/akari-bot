@@ -363,8 +363,8 @@ class MessageSession(MessageSessionT):
                 if all(
                     (
                         isinstance(element, PlainElement),
-                        msg_chain_list.index(element)==len(msg_chain_list)-1
-                        or len(msg_chain_list)==0,
+                        message.as_sendable().index(element)==len(message.as_sendable())-1
+                        or len(message.as_sendable())==0,
                      )
                 ):
                     content += element.text
