@@ -44,8 +44,10 @@ async def startup():
 @bot.on_websocket_connection
 async def _(event: Event):
     await load_prompt(FetchTarget)
-    qq_account = (await bot.call_action('get_login_info')).get('data').get('user_id')
+    qq_login_info = await bot.call_action('get_login_info')
+    qq_account = qq_login_info.get('data').get('user_id')
     Temp().data['qq_account'] = qq_account
+    Temp().data['qq_nickname'] = await qq_login_info.get('data').get('nickname')
 
 
 async def message_handler(event: Event):

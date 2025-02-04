@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await msg.finish(msg.locale.t("core.message.superuser.add.success"))
+            await msg.finish(msg.locale.t("core.message.superuser.add.success", user=user))
 
 
 @su.command('remove <user>')
@@ -49,7 +49,7 @@ async def _(msg: Bot.MessageSession, user: str):
             await msg.finish()
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await msg.finish(msg.locale.t("core.message.superuser.remove.success"))
+            await msg.finish(msg.locale.t("core.message.superuser.remove.success", user=user))
 
 
 purge = module('purge', required_superuser=True, base=True, doc=True)

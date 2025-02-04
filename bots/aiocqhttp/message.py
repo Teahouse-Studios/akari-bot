@@ -355,8 +355,8 @@ class MessageSession(MessageSessionT):
             template = {
                 "type": "node",
                 "data": {
-                    "name": name if name else (await bot.call_action('get_login_info')).get('data').get('nickname'),
-                    "uin": int((await bot.call_action('get_login_info')).get('data').get('user_id')),
+                    "name": name if name else Temp().data.get("qq_nickname"),
+                    "uin": int(Temp().data.get("qq_account")),
                     "content": message.as_sendable()
                 }
             }
