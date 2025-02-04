@@ -343,6 +343,12 @@ class MessageSession(MessageSessionT):
                 group_id=int(self.session.target),
                 messages=nodelist,
             )
+        elif self.target.target_from == target_private_prefix:
+            await bot.call_action(
+                'send_private_forward_msg',
+                user_id=int(self.target.sender_id.split('|')[1]),
+                messages=nodelist
+            )
 
     async def msgchain2nodelist(
         self,

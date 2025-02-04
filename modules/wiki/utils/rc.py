@@ -70,7 +70,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             if x['comment']:
                 comment = msg.locale.t('message.brackets', msg=replace_brackets(x['comment']))
                 d.append(comment)
-    y = await check(*d, msg=msg)
+    y = await check(*d)
     yy = '\n'.join(z['content'] for z in y)
     st = True
     for z in y:
