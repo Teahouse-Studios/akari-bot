@@ -352,12 +352,20 @@ class MessageSession(MessageSessionT):
         """将消息链列表转换为节点列表。"""
         node_list = []
         for message in msg_chain_list:
+            content = ''
+            for element in message.as_sendable():
+                if isinstance(element, PlainElement):
+                    content += element.text+'\n'
+                elif isinstance(element, ImageElement):
+                    content += f"[CQ:image,file=base64://{element.get_base64()}]\n"
+                elif isinstance(element, VoiceElement):
+                    content += '[Voice]'
             template = {
                 "type": "node",
                 "data": {
                     "name": name if name else Temp().data.get("qq_nickname"),
                     "uin": int(Temp().data.get("qq_account")),
-                    "content": message.as_sendable()
+                    "content": content
                 }
             }
             node_list.append(template)

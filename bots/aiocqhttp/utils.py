@@ -6,7 +6,6 @@ import orjson as json
 
 from bots.aiocqhttp.client import bot
 from core.logger import Logger
-from core.builtins import MessageChain, Bot
 
 
 async def get_onebot_implementation() -> Optional[str]:
