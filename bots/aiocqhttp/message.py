@@ -24,13 +24,14 @@ from core.builtins import (
     MessageTaskManager,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
+    At,
     Plain,
     Image,
     Voice,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
+from core.builtins.message.elements import AtElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
 from core.database import BotDBUtil
@@ -208,6 +209,8 @@ class MessageSession(MessageSessionT):
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(
                         file=Path(x.path).as_uri()
                     )
+            elif isinstance(x, AtElement):
+                convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
             count += 1
         Logger.info(f"[Bot] -> [{self.target.target_id}]: {message_chain_assendable}")
         if self.target.target_from == target_group_prefix:
@@ -436,6 +439,8 @@ class MessageSession(MessageSessionT):
                                 lst.append(Image(img_src))
                         elif cq_data["type"] == "record":
                             lst.append(Voice(cq_data["data"].get("file")))
+                        elif cq_data["type"] == "at":
+                            lst.append(At('QQ|' + cq_data["data"].get("qq")))
                         else:
                             lst.append(Plain(s))
                     else:
@@ -454,6 +459,8 @@ class MessageSession(MessageSessionT):
                         lst.append(Image(item["data"]["url"]))
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
+                elif item["type"] == "at":
+                    lst.append(At('QQ|' + item["data"].get("qq")))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
