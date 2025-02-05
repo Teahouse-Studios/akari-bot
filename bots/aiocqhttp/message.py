@@ -216,7 +216,10 @@ class MessageSession(MessageSessionT):
             elif isinstance(x, MentionElement):
                 if x.client == client_name and self.target.target_from == target_group_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
-                    count += 1
+                else:
+                    convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
+                count += 1
+
         Logger.info(f"[Bot] -> [{self.target.target_id}]: {message_chain_assendable}")
         if self.target.target_from == target_group_prefix:
             try:

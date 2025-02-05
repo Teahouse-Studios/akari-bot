@@ -441,9 +441,9 @@ async def _(msg: Bot.MessageSession):
     alist['status'] = not alist['status']
     update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
     if alist['status']:
-        await msg.finish(msg.locale.t('core.message.forward_msg.enable'))
-    else:
         await msg.finish(msg.locale.t('core.message.forward_msg.disable'))
+    else:
+        await msg.finish(msg.locale.t('core.message.forward_msg.enable'))
 
 
 echo = module('echo', required_superuser=True, base=True, doc=True)

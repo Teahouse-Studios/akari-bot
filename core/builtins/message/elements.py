@@ -35,26 +35,6 @@ class MessageElement:
 
 
 @define
-class MentionElement(MessageElement):
-    """
-    提及元素。
-
-    :param id: 提及用户ID。
-    :param client: 平台。
-    """
-
-    client: str
-    id: str
-
-    @classmethod
-    def assign(cls, user_id: str):
-        """
-        :param _id: 用户id。
-        """
-        return deepcopy(cls(id=user_id.split('|')[-1], client=user_id.split('|')[0]))
-
-
-@define
 class PlainElement(MessageElement):
     """
     文本元素。
@@ -335,6 +315,26 @@ class VoiceElement(MessageElement):
         :param path: 语音路径。
         """
         return deepcopy(cls(path))
+
+
+@define
+class MentionElement(MessageElement):
+    """
+    提及元素。
+
+    :param id: 提及用户ID。
+    :param client: 平台。
+    """
+
+    client: str
+    id: str
+
+    @classmethod
+    def assign(cls, user_id: str):
+        """
+        :param _id: 用户id。
+        """
+        return deepcopy(cls(client=user_id.split('|')[0], id=user_id.split('|')[-1]))
 
 
 @define

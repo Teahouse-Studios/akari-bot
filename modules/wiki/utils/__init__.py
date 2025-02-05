@@ -29,13 +29,15 @@ async def _(msg: Bot.MessageSession):
         from bots.aiocqhttp.utils import get_onebot_implementation
 
         obi = await get_onebot_implementation()
-        if obi == "ntqq":
+        if obi in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await rc_qq(msg, start_wiki)
                 await msg.fake_forward_msg(nodelist)
+            except ValueError:
+                await msg.send_message(msg.locale.t("wiki.message.rollback"))
             except Exception:
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
@@ -88,13 +90,15 @@ async def _(msg: Bot.MessageSession):
         from bots.aiocqhttp.utils import get_onebot_implementation
 
         obi = await get_onebot_implementation()
-        if obi == "ntqq":
+        if obi in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await ab_qq(msg, start_wiki)
                 await msg.fake_forward_msg(nodelist)
+            except ValueError:
+                await msg.send_message(msg.locale.t("wiki.message.rollback"))
             except Exception:
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
