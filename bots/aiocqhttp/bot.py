@@ -14,7 +14,7 @@ from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
-from core.config import Config, CFGManager
+from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
 from core.constants.path import assets_path
