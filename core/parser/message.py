@@ -330,7 +330,7 @@ async def parser(msg: Bot.MessageSession,
                                                                command_prefixes=msg.prefixes)
                                 try:
                                     parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
-                                    submodule = parsed_msg[0]
+                                    submodule: Module = parsed_msg[0]
                                     msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
                                     Logger.debug(msg.parsed_msg)
 
@@ -350,8 +350,10 @@ async def parser(msg: Bot.MessageSession,
 
                                     if not submodule.load or \
                                         msg.target.target_from in submodule.exclude_from or \
+                                        msg.target.client_name in submodule.exclude_from or \
                                         ('*' not in submodule.available_for and
-                                         msg.target.target_from not in submodule.available_for):
+                                         msg.target.target_from not in submodule.available_for and
+                                         msg.target.client_name not in submodule.available_for):
                                         raise InvalidCommandFormatError
 
                                     kwargs = {}
@@ -525,7 +527,7 @@ async def parser(msg: Bot.MessageSession,
         for m in modules:  # 遍历模块
             try:
                 if m in msg.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
-                    regex_module = modules[m]
+                    regex_module: Module = modules[m]
 
                     if regex_module.required_base_superuser:
                         if msg.target.sender_id not in base_superuser_list:
@@ -539,8 +541,10 @@ async def parser(msg: Bot.MessageSession,
 
                     if not regex_module.load or \
                         msg.target.target_from in regex_module.exclude_from or \
+                        msg.target.client_name in regex_module.exclude_from or \
                         ('*' not in regex_module.available_for and
-                         msg.target.target_from not in regex_module.available_for):
+                         msg.target.target_from not in regex_module.available_for and
+                         msg.target.client_name not in regex_module.available_for):
                         continue
 
                     for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
@@ -561,9 +565,12 @@ async def parser(msg: Bot.MessageSession,
                                     matched = True
                                     matched_hash = hash(msg.matched_msg)
 
-                            if matched and not (not regex_module.load or msg.target.target_from in regex_module.exclude_from or
-                                                ('*' not in regex_module.available_for and
-                                                 msg.target.target_from not in regex_module.available_for)):  # 如果匹配成功
+                            if matched and regex_module.load and not (
+                                msg.target.target_from in regex_module.exclude_from or
+                                msg.target.client_name in regex_module.exclude_from or
+                                ('*' not in regex_module.available_for and
+                                 msg.target.target_from not in regex_module.available_for and
+                                 msg.target.client_name not in regex_module.available_for)):  # 如果匹配成功
 
                                 if rfunc.logging:
                                     Logger.info(

@@ -148,7 +148,7 @@ post_whitelist = module(
     required_superuser=True,
     base=True,
     doc=True,
-    load=Bot.FetchTarget.name == 'QQ')
+    available_for='QQ')
 
 
 @post_whitelist.command('<group_id>')
@@ -250,7 +250,7 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.distrust.success", user=user))
 
 
-@ae.command('block <target>', load=Bot.FetchTarget.name == 'QQ')
+@ae.command('block <target>', available_for='QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -260,7 +260,7 @@ async def _(msg: Bot.MessageSession, target: str):
         await msg.finish(msg.locale.t("core.message.abuse.block.success", target=target))
 
 
-@ae.command('unblock <target>', load=Bot.FetchTarget.name == 'QQ')
+@ae.command('unblock <target>', available_for='QQ')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith('QQ|Group|'):
         await msg.finish(msg.locale.t("message.id.invalid.target", target='QQ|Group'))
@@ -386,7 +386,7 @@ async def _(msg: Bot.MessageSession):
         sys.exit()
 
 
-resume = module('resume', required_base_superuser=True, base=True, doc=True, load=Bot.FetchTarget.name == 'QQ')
+resume = module('resume', required_base_superuser=True, base=True, doc=True, available_for='QQ')
 
 
 @resume.command()
@@ -432,7 +432,7 @@ async def _(msg: Bot.MessageSession):
     Temp.data['waiting_for_send_group_message'] = []
     await msg.finish(msg.locale.t("core.message.resume.clear"))
 
-forward_msg = module('forward_msg', required_superuser=True, base=True, doc=True, load=Bot.FetchTarget.name == 'QQ')
+forward_msg = module('forward_msg', required_superuser=True, base=True, doc=True, available_for='QQ')
 
 
 @forward_msg.command()
@@ -462,7 +462,6 @@ async def _(msg: Bot.MessageSession):
 @echo.command('[<display_msg>]')
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
     await msg.finish(dis, enable_parse_message=False)
-
 
 say = module('say', required_superuser=True, base=True, doc=True)
 

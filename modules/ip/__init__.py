@@ -97,7 +97,7 @@ async def check_ip(ip: str):
 
 
 def zzzq(msg: Bot.MessageSession, country: str):
-    if msg.target.client_name in ["KOOK", "QQ", "QQ|Bot"] and \
+    if msg.target.client_name in ["KOOK", "QQ", "QQBot"] and \
             country in ["Hong Kong", "Macao", "Taiwan"]:
         return "China"
     return country

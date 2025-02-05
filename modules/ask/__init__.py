@@ -48,7 +48,7 @@ if Config("openai_api_key", secret=True, cfg_type=str):
 else:
     INSTRUCTIONS = ""
 
-a = module("ask", developers=["Dianliang233"], desc="{ask.help.desc}", doc=True)
+a = module("ask", developers=["Dianliang233"], desc="{ask.help.desc}", doc=True, exclude_from="QQBot")
 
 
 @a.command("[-4] <question> {{ask.help}}")

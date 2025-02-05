@@ -3,9 +3,9 @@ from core.component import module
 
 mcr = module(
     "mc_crowdin",
-    developers=["OasisAkari"],
+    developers="OasisAkari",
     alias="mccrowdin",
-    exclude_from=["QQ|Private", "QQ|Group", "QQ|Guild"],
+    exclude_from="QQ",
     rss=True,
     required_superuser=True,
 )

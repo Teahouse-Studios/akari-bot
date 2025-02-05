@@ -3,7 +3,7 @@ import os
 import re
 import sys
 import traceback
-from typing import Dict, Union, Callable
+from typing import Dict, Optional, Union, Callable
 
 import orjson as json
 
@@ -184,22 +184,27 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, target_from: str = None) -> Dict[str, Module]:
+    def return_modules_list(cls, target_from: Optional[str] = None) -> Dict[str, Module]:
         modules = {
             bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)
         }
         if target_from:
+            if "|" in target_from:
+                client_name = target_from.split("|")[0]
+            else:
+                client_name = target_from
             if target_from in cls._return_cache:
                 return cls._return_cache[target_from]
             returns = {}
             for m in modules:
                 if isinstance(modules[m], Module):
+                    available = modules[m].available_for
+                    exclude = modules[m].exclude_from
                     if not modules[m].load:
                         continue
-                    if target_from in modules[m].exclude_from:
+                    if target_from in exclude or client_name in exclude:
                         continue
-                    available = modules[m].available_for
-                    if target_from in available or "*" in available:
+                    if target_from in available or client_name in available or "*" in available:
                         returns.update({m: modules[m]})
             cls._return_cache.update({target_from: returns})
             return returns
