@@ -34,6 +34,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = False
+        mention = False
         embed = False
         forward = False
         delete = False

@@ -22,6 +22,7 @@ from core.builtins.message.elements import (
     PlainElement,
     ImageElement,
     VoiceElement,
+    MentionElement,
     EmbedElement,
 )
 from core.builtins.message.internal import I18NContext, Voice
@@ -80,6 +81,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = True
         forward = False
         delete = True
@@ -139,7 +141,19 @@ class MessageSession(MessageSessionT):
                 Logger.info(
                     f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
                 )
-
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from == target_channel_prefix:
+                    send_ = await self.session.target.send(
+                        f"<@{x.id}>",
+                        reference=(
+                            self.session.message
+                            if quote and count == 0 and self.session.message
+                            else None
+                        ),
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
+                    )
             elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x)
                 send_ = await self.session.target.send(

@@ -18,7 +18,7 @@ from core.builtins import (
     FinishedSession as FinishedSessionT,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -41,6 +41,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = False
         forward = False
         delete = True
@@ -127,6 +128,21 @@ class MessageSession(MessageSessionT):
                 )
                 send.append(send_)
                 count += 1
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from in [
+                        f"{client_name}|Group", f"{client_name}|Supergroup"]:
+                    send_ = await bot.send_message(
+                        self.session.target,
+                        f'<a href="tg://user?id={x.id}">@{x.id}</a>',
+                        reply_to_message_id=(
+                            self.session.message.message_id
+                            if quote and count == 0 and self.session.message
+                            else None
+                        ),
+                    )
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{x.id}")
+                    send.append(send_)
+                    count += 1
 
         msg_ids = []
         for x in send:

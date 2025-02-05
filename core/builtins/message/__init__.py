@@ -334,7 +334,7 @@ class MessageSession:
         raise NotImplementedError
 
     async def msgchain2nodelist(self, msg_chain_list: List[MessageChain], name: Optional[str] = None,
-    ) -> list[Dict]:
+                                ) -> list[Dict]:
         """
         用于将消息链列表转换为节点列表。(QQ)
         :param msg_chain_list: 消息链列表，详情参考小可文档。
@@ -606,6 +606,7 @@ class MessageSession:
 
         image = False
         voice = False
+        mention = False
         embed = False
         forward = False
         delete = False

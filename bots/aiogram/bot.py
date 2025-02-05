@@ -27,9 +27,11 @@ async def msg_handler(message: types.Message):
     sender_id = f"{sender_prefix}|{message.from_user.id}"
     if sender_id in ignored_sender:
         return
+
     reply_id = None
     if message.reply_to_message:
         reply_id = message.reply_to_message.message_id
+
     msg = MessageSession(
         MsgInfo(
             target_id=target_id,

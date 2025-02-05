@@ -11,7 +11,7 @@ from bots.matrix.info import *
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
     FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -33,6 +33,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = False
         forward = False
         delete = True
@@ -234,6 +235,11 @@ class MessageSession(MessageSessionT):
                     f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
                 )
                 await sendMsg(content)
+            elif isinstance(x, MentionElement):
+                if x.client == client_name:
+                    content = {"msgtype": "m.notice", "body": x.id}
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{x.id}")
+                    await sendMsg(content)
         if callback:
             for x in sentMessages:
                 MessageTaskManager.add_callback(x.event_id, callback)

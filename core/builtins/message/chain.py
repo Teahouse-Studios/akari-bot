@@ -20,6 +20,7 @@ from core.builtins.message.elements import (
     URLElement,
     ImageElement,
     VoiceElement,
+    MentionElement,
 )
 
 if TYPE_CHECKING:
@@ -379,6 +380,19 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
                             kwargs[ma.group(1)] = html.unescape(ma.group(2))
                 if i18nkey:
                     elements.append(I18NContextElement.assign(i18nkey, **kwargs))
+            elif element_type == "mention":
+                for a in params:
+                    ma = re.match(r"(.*?)=(.*)", a)
+                    if ma:
+                        if ma.group(1) == "userid":
+                            ua = html.unescape(ma.group(2))
+                            elements.append(MentionElement.assign(ua))
+                        else:
+                            a = html.unescape(a)
+                            elements.append(MentionElement.assign(a))
+                    else:
+                        a = html.unescape(a)
+                        elements.append(MentionElement.assign(a))
 
     return elements
 

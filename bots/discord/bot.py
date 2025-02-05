@@ -12,6 +12,7 @@ from bots.discord.info import *
 from bots.discord.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
+from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -101,14 +102,20 @@ async def on_message(message):
     sender_id = f"{sender_prefix}|{message.author.id}"
     if sender_id in ignored_sender:
         return
+
     reply_id = None
     if message.reference:
         reply_id = message.reference.message_id
+
     prefix = None
     if match_at := re.match(r"^<@(.*?)>", message.content):
         if match_at.group(1) == str(client.user.id):
-            prefix = [""]
             message.content = re.sub(r"<@(.*?)>", "", message.content)
+            if message.content in ['', ' ']:
+                message.content = f'{command_prefix[0]}help'
+                prefix = command_prefix
+        else:
+            return
 
     msg = MessageSession(
         target=MsgInfo(

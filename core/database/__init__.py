@@ -455,10 +455,10 @@ class BotDBUtil:
                     datetime.datetime.now().timestamp() - criminal.timestamp.timestamp()
                     < 86400
                 ):
-                    if criminal.sender_id not in count:
-                        count[criminal.sender_id] = 0
+                    if criminal.senderId not in count:
+                        count[criminal.senderId] = 0
                     else:
-                        count[criminal.sender_id] += 1
+                        count[criminal.senderId] += 1
             if len(count) >= 3:
                 return True
             for convict in count:

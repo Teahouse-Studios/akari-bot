@@ -33,24 +33,26 @@ class MessageElement:
     def __name__(cls):
         return cls.__name__
 
+
 @define
-class AtElement(MessageElement):
+class MentionElement(MessageElement):
     """
-    At元素。
+    提及元素。
 
-    :param id: 目标。
-    :param target_from: 平台。
+    :param id: 提及用户ID。
+    :param client: 平台。
     """
 
-    target_from: str
+    client: str
     id: str
 
     @classmethod
-    def assign(cls, _id: str):
+    def assign(cls, user_id: str):
         """
         :param _id: 用户id。
         """
-        return deepcopy(cls(id=_id.split('|')[1], target_from=_id.split('|')[0]))
+        return deepcopy(cls(id=user_id.split('|')[-1], client=user_id.split('|')[0]))
+
 
 @define
 class PlainElement(MessageElement):
@@ -451,7 +453,6 @@ class EmbedElement(MessageElement):
 elements_map = {
     x.__name__: x
     for x in [
-        AtElement,
         PlainElement,
         URLElement,
         FormattedTimeElement,
@@ -461,10 +462,10 @@ elements_map = {
         VoiceElement,
         EmbedFieldElement,
         EmbedElement,
+        MentionElement,
     ]
 }
 __all__ = [
-    "AtElement",
     "MessageElement",
     "PlainElement",
     "URLElement",
@@ -475,5 +476,6 @@ __all__ = [
     "VoiceElement",
     "EmbedFieldElement",
     "EmbedElement",
+    "MentionElement",
     "elements_map",
 ]

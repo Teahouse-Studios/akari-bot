@@ -31,6 +31,7 @@ async def msg_handler(message: Message):
     sender_id = f"{sender_prefix}|{message.author_id}"
     if sender_id in ignored_sender:
         return
+
     reply_id = None
     if "quote" in message.extra:
         reply_id = message.extra["quote"]["rong_id"]

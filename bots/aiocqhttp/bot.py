@@ -29,7 +29,6 @@ from hypercorn import Config as HyperConfig
 PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
-qq_account = None
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
@@ -51,6 +50,7 @@ async def _(event: Event):
 
 
 async def message_handler(event: Event):
+    qq_account = Temp().data.get('qq_account')
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
@@ -203,6 +203,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
+    qq_account = Temp().data.get('qq_account')
     if event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)

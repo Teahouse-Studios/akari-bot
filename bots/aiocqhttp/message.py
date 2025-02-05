@@ -24,14 +24,14 @@ from core.builtins import (
     MessageTaskManager,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
-    At,
+    Mention,
     Plain,
     Image,
     Voice,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import AtElement, PlainElement, ImageElement, VoiceElement
+from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
 from core.database import BotDBUtil
@@ -100,6 +100,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = False
         forward = True
         delete = True
@@ -200,21 +201,22 @@ class MessageSession(MessageSessionT):
                     convert_msg_segments = convert_msg_segments + MessageSegment.text(
                         ("\n" if count != 0 else "") + x.text
                     )
+                count += 1
             elif isinstance(x, ImageElement):
                 convert_msg_segments = convert_msg_segments + MessageSegment.image(
                     "base64://" + await x.get_base64()
                 )
+                count += 1
             elif isinstance(x, VoiceElement):
                 if self.target.target_from != target_guild_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(
                         file=Path(x.path).as_uri()
                     )
-            elif isinstance(x, AtElement):
-                if self.target.target_from == target_group_prefix:
+                    count += 1
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from == target_group_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
-                else:
-                    convert_msg_segments = convert_msg_segments + MessageSegment.text(' ')
-            count += 1
+                    count += 1
         Logger.info(f"[Bot] -> [{self.target.target_id}]: {message_chain_assendable}")
         if self.target.target_from == target_group_prefix:
             try:
@@ -422,7 +424,7 @@ class MessageSession(MessageSessionT):
         lst = []
         if isinstance(self.session.message.message, str):
             spl = re.split(
-                r"(\[CQ:(?:text|image|record).*?])", self.session.message.message
+                r"(\[CQ:(?:text|image|record|at).*?])", self.session.message.message
             )
             for s in spl:
                 if not s:
@@ -443,7 +445,7 @@ class MessageSession(MessageSessionT):
                         elif cq_data["type"] == "record":
                             lst.append(Voice(cq_data["data"].get("file")))
                         elif cq_data["type"] == "at":
-                            lst.append(At('QQ|' + cq_data["data"].get("qq")))
+                            lst.append(Mention(f"{sender_prefix}|{cq_data['data'].get('qq')}"))
                         else:
                             lst.append(Plain(s))
                     else:
@@ -463,7 +465,7 @@ class MessageSession(MessageSessionT):
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
                 elif item["type"] == "at":
-                    lst.append(At('QQ|' + item["data"].get("qq")))
+                    lst.append(Mention(f"{sender_prefix}|{cq_data['data'].get('qq')}"))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 

@@ -20,7 +20,7 @@ from core.builtins import (
     FinishedSession as FinishedSessionT,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement
+from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -57,6 +57,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = False
+        mention = True
         embed = False
         forward = False
         delete = True
@@ -87,6 +88,9 @@ class MessageSession(MessageSessionT):
                 plains.append(x)
             elif isinstance(x, ImageElement):
                 images.append(x)
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from == target_guild_prefix:
+                    plains.append(PlainElement(text=f"<@{x.id}>"))
         sends = []
         if len(plains + images) != 0:
             msg = "\n".join([x.text for x in plains]).strip()
