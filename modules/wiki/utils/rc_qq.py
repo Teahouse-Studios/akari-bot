@@ -1,4 +1,4 @@
-from core.builtins import MessageSession, MessageChain, Plain
+from core.builtins import MessageSession, MessageChain, Plain, Url
 from core.logger import Logger
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
@@ -18,15 +18,11 @@ async def rc_qq(msg: MessageSession, wiki_url):
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
     msgchain_lst = [
         MessageChain([Plain(msg.locale.t("wiki.message.rc.qq.title")),
-                      Plain(pageurl + (
-                          "\n" + msg.locale.t("wiki.message.rc.qq.link.prompt")
-                          if wiki.wiki_info.in_allowlist
-                          else ""
-                      )
-        )
-        ])
-    ]
-
+                      Url(pageurl)])
+        ]
+    if wiki.wiki_info.in_allowlist:
+        msgchain_lst.append(
+            MessageChain([Plain(msg.locale.t("wiki.message.rc.qq.link.prompt"))]))
     rclist = await convert_rc_to_detailed_format(
         query["query"]["recentchanges"], wiki_info, msg
     )
