@@ -10,6 +10,7 @@ from bots.kook.client import bot
 from bots.kook.info import *
 from core.builtins import (
     Bot,
+    At,
     Plain,
     Image,
     Voice,
@@ -20,7 +21,7 @@ from core.builtins import (
     FinishedSession as FinishedSessionT,
 )
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
+from core.builtins.message.elements import AtElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database import BotDBUtil
 from core.logger import Logger
@@ -132,6 +133,27 @@ class MessageSession(MessageSessionT):
                 )
                 send.append(send_)
                 count += 1
+            elif isinstance(x, AtElement):
+                if self.target.target_from == target_group_prefix:
+                    send_ = await self.session.message.reply(
+                        f"(met){x.id}(met)",
+                        quote=(
+                            quote if quote and count == 0 and self.session.message else None
+                        ),
+                    )
+                else:
+                    send_ = await self.session.message.reply(
+                        f" ",
+                        type=MessageTypes.KMD,
+                        quote=(
+                            quote if quote and count == 0 and self.session.message else None
+                        ),
+                    )
+                Logger.info(
+                    f"[Bot] -> [{self.target.target_id}]: At: {str(x.target_from)}{str(x.id)}"
+                )
+                send.append(send_)
+                count += 1
 
         msg_ids = []
         for x in send:
@@ -178,6 +200,10 @@ class MessageSession(MessageSessionT):
             lst.append(Image(self.session.message.content))
         elif self.session.message.type == MessageTypes.AUDIO:
             lst.append(Voice(self.session.message.content))
+        elif self.session.message.type == MessageTypes.KMD:
+            match = re.match(r'\(met\)(.*?)\(met\)', self.session.message.content)
+            if match.group(1):
+                lst.append(At(target_person_prefix + str(match.group(1))))
         return MessageChain(lst)
 
     async def delete(self):
