@@ -226,20 +226,21 @@ class WordleBoardImage:
 @wordle.command("[--multi] {{wordle.help}}", options_desc={'--multi': '{wordle.option.multi}'})
 @wordle.command("hard [--multi] {{wordle.help.hard}}", options_desc={'--multi': '{wordle.option.multi}'})
 async def _(msg: Bot.MessageSession):
+    last_word = None
     multiplayer = bool(msg.parsed_msg and "--multi" in msg.parsed_msg)
+    hard_mode = bool(msg.parsed_msg and "hard" in msg.parsed_msg)
+
     play_state = PlayState("wordle", msg, whole_target=multiplayer)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))
 
-    qc = CoolDown("wordle", msg, 180)
+    qc = CoolDown("wordle", msg, 180, whole_target=multiplayer)
     if not msg.target.client_name == "TEST" and not msg.check_super_user():
         c = qc.check()
         if c != 0:
             await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
     board = WordleBoard.from_random_word()
-    hard_mode = bool(msg.parsed_msg and "hard" in msg.parsed_msg)
-    last_word = None
     board_image = WordleBoardImage(
         wordle_board=board, dark_theme=msg.data.options.get("wordle_dark_theme")
     )
@@ -304,17 +305,22 @@ async def _(msg: Bot.MessageSession):
 @wordle.command("stop {{game.help.stop}}")
 async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
-    play_state = PlayState("wordle", msg)
-    qc = CoolDown("wordle", msg, 180)
+    play_state, target_play_state = PlayState("wordle", msg), PlayState("wordle", msg, True)
+    qc, t_qc = CoolDown("wordle", msg, 180), CoolDown("wordle", msg, 180, True)
+    send = msg.locale.t("game.message.stop.none")
     if play_state.check():
         play_state.disable()
         board.reset_board()
         qc.reset()
-        await msg.finish(
-            msg.locale.t("wordle.message.stop", answer=play_state.get("answer"))
-        )
+        send = msg.locale.t("wordle.message.stop", answer=play_state.get("answer"))
+    elif target_play_state.check():
+        target_play_state.disable()
+        board.reset_board()
+        t_qc.reset()
+        send = msg.locale.t("wordle.message.stop", answer=target_play_state.get("answer"))
     else:
         await msg.finish(msg.locale.t("game.message.stop.none"))
+    await msg.finish(send)
 
 
 @wordle.command("theme {{wordle.help.theme}}", load=not text_mode)
