@@ -41,10 +41,10 @@ class TerminationError(Exception):
 
 
 async def game(
-    msg: Bot.MessageSession, x_callback: GameCallback, o_callback: GameCallback
+    msg: Bot.MessageSession, x_callback: GameCallback, o_callback: GameCallback, duo: bool = False
 ) -> 0 | 1 | 2:
     # 0 = empty; 1 = x; 2 = o
-    play_state = PlayState("tic_tac_toe", msg)
+    play_state = PlayState("tic_tac_toe", msg, whole_target=duo)
     board = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     while True:
         if not play_state.check():
@@ -83,9 +83,9 @@ def format_board(board: GameBoard):
     )
 
 
-def generate_human_callback(msg: Bot.MessageSession, player: str):
+def generate_human_callback(msg: Bot.MessageSession, player: str, duo: bool = False):
     async def callback(board: List[List[int]]):
-        play_state = PlayState("tic_tac_toe", msg)
+        play_state = PlayState("tic_tac_toe", msg, whole_target=duo)
         await msg.send_message(
             format_board(board)
             + f'\n{msg.locale.t("tic_tac_toe.message.turn", player=player)}',
@@ -321,7 +321,7 @@ async def _(msg: Bot.MessageSession):
 
     try:
         winner, board = await game(
-            msg, generate_human_callback(msg, "X"), generate_human_callback(msg, "O")
+            msg, generate_human_callback(msg, "X", True), generate_human_callback(msg, "O", True)
         )
     except TerminationError:
         return
