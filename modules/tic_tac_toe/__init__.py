@@ -313,7 +313,7 @@ async def _(msg: Bot.MessageSession):
 
 @tic_tac_toe.command("duo {{tic_tac_toe.help.duo}}")
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState("tic_tac_toe", msg)
+    play_state = PlayState("tic_tac_toe", msg, whole_target=True)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))
     else:
