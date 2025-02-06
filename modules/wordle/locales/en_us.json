@@ -12,5 +12,7 @@
     "wordle.message.stop": "Stopped. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.theme.disable": "Dark theme disabled.",
     "wordle.message.theme.enable": "Dark theme enabled.",
+    "wordle.message.multi.warning": "提示：正在多人游戏中，无法获得花瓣。",
+    "wordle.option.multi": "多人游戏",
     "config.comments.wordle_disable_image": "Whether to disable images of wordle module."
 }
