@@ -223,8 +223,8 @@ class WordleBoardImage:
                 draw.text(text_position, letter, fill="white", font=font)
 
 
-@wordle.command("[--multi] {{wordle.help}}", options_desc={'--multi': '{wordle.help.multi}'})
-@wordle.command("hard [--multi] {{wordle.help.hard}}", options_desc={'--multi': '{wordle.help.multi}'})
+@wordle.command("[--multi] {{wordle.help}}", options_desc={'--multi': '{wordle.option.multi}'})
+@wordle.command("hard [--multi] {{wordle.help.hard}}", options_desc={'--multi': '{wordle.option.multi}'})
 async def _(msg: Bot.MessageSession):
     multiplayer = bool(msg.parsed_msg and "--multi" in msg.parsed_msg)
     play_state = PlayState("wordle", msg, whole_target=multiplayer)
