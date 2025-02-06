@@ -19,12 +19,12 @@ def clear_cd_list():
                 if "timestamp" in sender_data and (now - sender_data["timestamp"] >= sender_data["delay"]):
                     del target_data[sender]
                     continue
-
+            elif isinstance(sender_data, str):
                 for cd in list(sender_data.keys()):
                     cd_data = sender_data[cd]
 
-                    if "timestamp" in cd_data and (now - cd_data["timestamp"] >= cd_data["delay"]):
-                        del sender_data[cd]
+                if "timestamp" in cd_data and (now - cd_data["timestamp"] >= cd_data["delay"]):
+                    del sender_data[cd]
 
                 if not sender_data:
                     del target_data[sender]
