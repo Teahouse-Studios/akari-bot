@@ -253,12 +253,17 @@ async def random_bot_callback(board: GameBoard):
 
 @tic_tac_toe.command("stop {{game.help.stop}}")
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState("tic_tac_toe", msg)
+    play_state, target_play_state = PlayState("tic_tac_toe", msg), PlayState("tic_tac_toe", msg, whole_target=True)
+    send = msg.locale.t("game.message.stop.none")
     if play_state.check():
         play_state.disable()
-        await msg.finish(msg.locale.t("game.message.stop"))
-    else:
+        send = msg.locale.t("game.message.stop")
+    if target_play_state.check():
+        target_play_state.disable()
+        send = msg.locale.t("game.message.stop")
+    if not play_state.check() and not target_play_state.check():
         await msg.finish(msg.locale.t("game.message.stop.none"))
+    await msg.finish(send)
 
 
 @tic_tac_toe.command("{{tic_tac_toe.help}}")
@@ -321,7 +326,7 @@ async def _(msg: Bot.MessageSession):
 
     try:
         winner, board = await game(
-            msg, generate_human_callback(msg, "X", True), generate_human_callback(msg, "O", True)
+            msg, generate_human_callback(msg, "X", True), generate_human_callback(msg, "O", True), True
         )
     except TerminationError:
         return
