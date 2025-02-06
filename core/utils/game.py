@@ -22,14 +22,14 @@ def clear_ps_list():
                 if "_timestamp" in sender_data and (now - sender_data["_timestamp"] >= GAME_EXPIRED):
                     del target_data[sender]
                     continue
-
+            elif isinstance(sender_data, str):
                 for game in list(sender_data.keys()):
                     game_data = sender_data[game]
                     if isinstance(game_data, dict) and "_timestamp" in game_data and (now - game_data["_timestamp"] >= GAME_EXPIRED):
                         del sender_data[game]
 
-                if not sender_data:
-                    del target_data[sender]
+            if not sender_data:
+                del target_data[sender]
 
         if not target_data:
             del _ps_lst[target]
