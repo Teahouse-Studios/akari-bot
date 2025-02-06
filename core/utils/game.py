@@ -25,10 +25,7 @@ def clear_ps_list():
 
                 for game in list(sender_data.keys()):
                     game_data = sender_data[game]
-                    try:
-                        if "_timestamp" in game_data and (now - game_data["_timestamp"] >= GAME_EXPIRED):
-                            del sender_data[game]
-                    except TypeError:
+                    if isinstance(game_data, dict) and "_timestamp" in game_data and (now - game_data["_timestamp"] >= GAME_EXPIRED):
                         del sender_data[game]
 
                 if not sender_data:
