@@ -223,10 +223,11 @@ class WordleBoardImage:
                 draw.text(text_position, letter, fill="white", font=font)
 
 
-@wordle.command("{{wordle.help}}")
-@wordle.command("hard {{wordle.help.hard}}")
+@wordle.command("[--multi] {{wordle.help}}", options_desc={'--multi': '{wordle.help.multi}'})
+@wordle.command("hard [--multi] {{wordle.help.hard}}", options_desc={'--multi': '{wordle.help.multi}'})
 async def _(msg: Bot.MessageSession):
-    play_state = PlayState("wordle", msg)
+    multiplayer = bool(msg.parsed_msg and "--multi" in msg.parsed_msg)
+    play_state = PlayState("wordle", msg, whole_target=multiplayer)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))
 
@@ -250,10 +251,14 @@ async def _(msg: Bot.MessageSession):
         start_msg = msg.locale.t("wordle.message.start")
         if hard_mode:
             start_msg += "\n" + msg.locale.t("wordle.message.hard")
+        if multiplayer:
+            start_msg += "\n" + msg.locale.t("wordle.message.multi.warning")
     else:
         start_msg = [BImage(board_image.image), I18NContext("wordle.message.start")]
         if hard_mode:
             start_msg.append(I18NContext("wordle.message.hard"))
+        if multiplayer:
+            start_msg.append(I18NContext("wordle.message.multi.warning"))
     await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
@@ -284,10 +289,11 @@ async def _(msg: Bot.MessageSession):
         g_msg = msg.locale.t("wordle.message.finish", answer=board.word)
         if board.board[-1] == board.word:
             g_msg = msg.locale.t("wordle.message.finish.success", attempt=attempt)
-            petal = 2 if attempt <= 3 else 1
-            petal += 1 if hard_mode else 0
-            if reward := await gained_petal(msg, petal):
-                g_msg += "\n" + reward
+            if not multiplayer:
+                petal = 2 if attempt <= 3 else 1
+                petal += 1 if hard_mode else 0
+                if reward := await gained_petal(msg, petal):
+                    g_msg += "\n" + reward
         qc.reset()
         if text_mode:
             await msg.finish(board.format_board() + "\n" + g_msg, quote=False)

@@ -12,5 +12,7 @@
     "wordle.message.stop": "已停止，答案为：${answer}。\n查询词典：https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.theme.disable": "已关闭深色主题。",
     "wordle.message.theme.enable": "已开启深色主题。",
+    "wordle.message.multi.warning": "提示：正在多人游戏中，无法获得花瓣。",
+    "wordle.option.multi": "多人游戏",
     "config.comments.wordle_disable_image": "wordle 模块是否禁用图片。"
 }
