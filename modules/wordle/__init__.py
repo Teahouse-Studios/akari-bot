@@ -53,6 +53,8 @@ async def _(msg: Bot.MessageSession):
         start_msg = [BImage(board_image.image), I18NContext("wordle.message.start")]
         if hard_mode:
             start_msg.append(I18NContext("wordle.message.start.hard"))
+        if multiplayer:
+            start_msg.append(I18NContext("wordle.message.start.multi"))
     await msg.send_message(start_msg)
 
     while _board.get_trials() <= 6 and play_state.check() and not _board.is_game_over():
