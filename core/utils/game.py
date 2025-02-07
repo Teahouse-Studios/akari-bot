@@ -25,7 +25,9 @@ def clear_ps_list():
             elif isinstance(sender_data, str):
                 for game in list(sender_data.keys()):
                     game_data = sender_data[game]
-                    if isinstance(game_data, dict) and "_timestamp" in game_data and (now - game_data["_timestamp"] >= GAME_EXPIRED):
+                    if isinstance(
+                            game_data, dict) and "_timestamp" in game_data and (
+                            now - game_data["_timestamp"] >= GAME_EXPIRED):
                         del sender_data[game]
 
             if not sender_data:
@@ -130,6 +132,7 @@ class PlayState:
         :return: 值。
         :default: 默认值。
         """
+        print(str(_ps_lst))
         if self.target_id not in _ps_lst:
             return None
         target_dict = _ps_lst[self.target_id]

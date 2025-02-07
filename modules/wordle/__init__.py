@@ -1,3 +1,4 @@
+
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.config import Config
@@ -17,32 +18,22 @@ wordle = module(
 )
 
 
-@wordle.command()
-@wordle.command("[--hard] [--trial] {{wordle.help}}",
-                options_desc={"--hard": "{wordle.help.option.hard}",
-                              "--trial": "{wordle.help.option.trial}"})
+@wordle.command("{{wordle.help}}")
+@wordle.command("hard {{wordle.help.hard}}")
 async def _(msg: Bot.MessageSession):
-    last_word = None
-    trial = bool(msg.parsed_msg and "--trial" in msg.parsed_msg)
-    hard_mode = bool(msg.parsed_msg and "--hard" in msg.parsed_msg)
-
-    play_state = PlayState("wordle", msg, whole_target=trial)
+    play_state = PlayState("wordle", msg)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))
 
-    if trial:
-        qc = CoolDown("wordle", msg, 86400)
+    qc = CoolDown("wordle", msg, 180)
+    if not msg.target.client_name == "TEST" and not msg.check_super_user():
         c = qc.check()
         if c != 0:
             await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
-    else:
-        qc = CoolDown("wordle", msg, 180, whole_target=True)
-        if not msg.target.client_name == "TEST" and not msg.check_super_user():
-            c = qc.check()
-            if c != 0:
-                await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
     board = WordleBoard.from_random_word()
+    hard_mode = bool(msg.parsed_msg and "hard" in msg.parsed_msg)
+    last_word = None
     board_image = WordleBoardImage(
         wordle_board=board, dark_theme=msg.data.options.get("wordle_dark_theme")
     )
@@ -54,21 +45,14 @@ async def _(msg: Bot.MessageSession):
         start_msg = msg.locale.t("wordle.message.start")
         if hard_mode:
             start_msg += "\n" + msg.locale.t("wordle.message.start.hard")
-        if trial:
-            start_msg += "\n" + msg.locale.t("wordle.message.start.trial")
     else:
         start_msg = [BImage(board_image.image), I18NContext("wordle.message.start")]
         if hard_mode:
             start_msg.append(I18NContext("wordle.message.start.hard"))
-        if trial:
-            start_msg.append(I18NContext("wordle.message.start.trial"))
     await msg.send_message(start_msg)
 
     while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
-        if trial:
-            wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
-        else:
-            wait = await msg.wait_anyone(timeout=GAME_EXPIRED)
+        wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue
@@ -95,11 +79,10 @@ async def _(msg: Bot.MessageSession):
         g_msg = msg.locale.t("wordle.message.finish", answer=board.word)
         if board.board[-1] == board.word:
             g_msg = msg.locale.t("wordle.message.finish.success", attempt=attempt)
-            if trial:
-                petal = 2 if attempt <= 3 else 1
-                petal += 1 if hard_mode else 0
-                if reward := await gained_petal(msg, petal):
-                    g_msg += "\n" + reward
+            petal = 2 if attempt <= 3 else 1
+            petal += 1 if hard_mode else 0
+            if reward := await gained_petal(msg, petal):
+                g_msg += "\n" + reward
         qc.reset()
         if text_mode:
             await msg.finish(board.format_board() + "\n" + g_msg, quote=False)
@@ -107,19 +90,16 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(board_image.image), Plain(g_msg)], quote=False)
 
 
-@wordle.command("stop [--trial] {{game.help.stop}}")
+@wordle.command("stop {{game.help.stop}}")
 async def _(msg: Bot.MessageSession):
-    trial = bool(msg.parsed_msg and "--trial" in msg.parsed_msg)
-    play_state = PlayState("wordle", msg, whole_target=trial)
-    if trial:
-        qc = CoolDown("wordle", msg, 86400)
-    else:
-        qc = CoolDown("wordle", msg, 180, whole_target=True)
-
+    play_state = PlayState("wordle", msg)
+    qc = CoolDown("wordle", msg, 180)
     if play_state.check():
         play_state.disable()
         qc.reset()
-        await msg.finish(msg.locale.t("wordle.message.stop", answer=play_state.get("answer")))
+        await msg.finish(
+            msg.locale.t("wordle.message.stop", answer=play_state.get("answer"))
+        )
     else:
         await msg.finish(msg.locale.t("game.message.stop.none"))
 
