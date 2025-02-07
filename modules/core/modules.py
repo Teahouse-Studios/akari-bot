@@ -383,9 +383,7 @@ async def config_modules(msg: Bot.MessageSession):
             await msg.finish(msglist)
         else:
             await msg.send_message(msglist)
-    if recommend_modules_help_doc_list and (
-        "-g" not in msg.parsed_msg or not msg.parsed_msg["-g"]
-    ):
+    if recommend_modules_help_doc_list and not ("-g" in msg.parsed_msg and msg.parsed_msg["-g"]):
         confirm = await msg.wait_confirm(
             msg.locale.t(
                 "core.message.module.recommends",

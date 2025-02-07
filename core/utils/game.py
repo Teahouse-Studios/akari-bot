@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from core.builtins import MessageSession
 from core.logger import Logger
@@ -81,26 +81,22 @@ class PlayState:
         if self.target_id not in _ps_lst:
             return
         target_dict = _ps_lst[self.target_id]
-        if self.whole_target:
-            game_dict = target_dict.get(self.game)
-            if game_dict:
-                game_dict["_status"] = False
-        else:
-            sender_dict = target_dict.get(self.sender_id)
-            if sender_dict:
-                game_dict = sender_dict.get(self.game)
-                if game_dict:
-                    game_dict["_status"] = False
-        if self.whole_target:
+        game_dict = target_dict.get(self.game)
+        if game_dict and game_dict.get("_status"):
+            game_dict["_status"] = False
             Logger.info(
                 f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}."
             )
-        else:
-            Logger.info(
-                f"[{self.sender_id}]: Disabled {self.game} at {self.target_id}."
-            )
+        sender_dict = target_dict.get(self.sender_id)
+        if sender_dict:
+            game_dict = sender_dict.get(self.game)
+            if game_dict and game_dict.get("_status"):
+                game_dict["_status"] = False
+                Logger.info(
+                    f"[{self.sender_id}]: Disabled {self.game} at {self.target_id}."
+                )
 
-    def update(self, **kwargs: Dict[str, Any]) -> None:
+    def update(self, **kwargs) -> None:
         """
         更新游戏事件中需要的值。
 
@@ -132,7 +128,6 @@ class PlayState:
         :return: 值。
         :default: 默认值。
         """
-        print(str(_ps_lst))
         if self.target_id not in _ps_lst:
             return None
         target_dict = _ps_lst[self.target_id]
