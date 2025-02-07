@@ -1,5 +1,4 @@
 {
-    "config.comments.wiki_whitelist_url": "Wiki whitelist application URL.",
     "tos.message.reason.too_many_redirects": "Causes the bot to redirect the page too many times.",
     "tos.message.reason.wiki_abuse": "Queried more than 15 pages at one time.",
     "wiki.help": "Query a wiki page.",
@@ -181,11 +180,11 @@
     "wiki.message.wiki_audit.remove.success": "Successfully removed from ${list_name}: ${api}",
     "wiki.message.wiki_audit.untrust": "Note: This wiki is not currently in the whitelist, and the returned content will be restricted when querying this wiki.",
     "wiki.message.wiki_audit.untrust.address": "If you need to remove restrictions, please apply for whitelist here: ${url}",
-    "wiki.message.wiki_bot.login.already": "Login failed: Wiki bot account already exists, please logout first.",
     "wiki.message.wiki_bot.login.failed": "Login failed:\n${detail}",
     "wiki.message.wiki_bot.login.success": "Login success.",
     "wiki.message.wiki_bot.login.already": "Login failed: Wiki bot account already exists, please logout first.",
     "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
     "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
-    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}"
+    "wiki.message.wiki_inline.flies": "This page includes the following files:\n${file}",
+    "config.comments.wiki_whitelist_url": "Wiki whitelist application URL."
 }
