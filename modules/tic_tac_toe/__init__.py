@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, List, Tuple
+from typing import Callable, List, Tuple, Coroutine, Any
 
 from core.builtins import Bot
 from core.component import module
@@ -33,7 +33,7 @@ def check_winner(board: List[List[int]]):
 
 
 GameBoard = List[List[int]]
-GameCallback = Callable[[List[List[int]]], Awaitable[Tuple[int]]]
+GameCallback = Callable[[List[List[int]]], Coroutine[Any, Any, Tuple[int,int]]]
 
 
 class TerminationError(Exception):
@@ -271,6 +271,8 @@ async def _(msg: Bot.MessageSession):
 @tic_tac_toe.command("expert {{tic_tac_toe.help.expert}}")
 @tic_tac_toe.command("master {{tic_tac_toe.help.master}}")
 async def _(msg: Bot.MessageSession):
+    game_type = "random"
+    bot_callback = random_bot_callback
     if msg.parsed_msg:
         if "expert" in msg.parsed_msg:
             game_type = "expert"
@@ -281,9 +283,6 @@ async def _(msg: Bot.MessageSession):
         elif "noob" in msg.parsed_msg:
             game_type = "noob"
             bot_callback = noob_bot_callback
-    else:
-        game_type = "random"
-        bot_callback = random_bot_callback
     play_state = PlayState("tic_tac_toe", msg)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))

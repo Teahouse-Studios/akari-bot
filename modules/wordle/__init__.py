@@ -313,12 +313,12 @@ async def _(msg: Bot.MessageSession):
         board.reset_board()
         qc.reset()
         send = msg.locale.t("wordle.message.stop", answer=play_state.get("answer"))
-    elif target_play_state.check():
+    if target_play_state.check():
         target_play_state.disable()
         board.reset_board()
         t_qc.reset()
         send = msg.locale.t("wordle.message.stop", answer=target_play_state.get("answer"))
-    else:
+    if not play_state.check() and not target_play_state.check():
         await msg.finish(msg.locale.t("game.message.stop.none"))
     await msg.finish(send)
 
