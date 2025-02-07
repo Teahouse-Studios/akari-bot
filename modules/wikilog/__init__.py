@@ -40,7 +40,7 @@ rcshows = [
 ]
 
 wikilog = module(
-    "wikilog", developers=["OasisAkari"], required_admin=True, doc=True, rss=True
+    "wikilog", developers=["OasisAkari"], required_admin=True, doc=True, rss=True, required_superuser=True
 )
 
 
