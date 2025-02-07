@@ -258,12 +258,13 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        return FetchedSession(
-            target_from=target_prefix,
-            target_id="0",
-            sender_from=sender_prefix,
-            sender_id="0",
-        )
+        if target_id == "TEST|Console|0":
+            return FetchedSession(
+                target_from=target_prefix,
+                target_id="0",
+                sender_from=sender_prefix,
+                sender_id="0",
+            )
 
     @staticmethod
     async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
