@@ -1,6 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from core.builtins import MessageSession
 from core.logger import Logger
@@ -96,7 +96,7 @@ class PlayState:
                     f"[{self.sender_id}]: Disabled {self.game} at {self.target_id}."
                 )
 
-    def update(self, **kwargs: Dict[str, Any]) -> None:
+    def update(self, **kwargs) -> None:
         """
         更新游戏事件中需要的值。
 
@@ -120,7 +120,7 @@ class PlayState:
             return False
         return True
 
-    def get(self, key: str, default: Any = None, whole_target: bool = None) -> Any:
+    def get(self, key: str, default: Any = None, whole_target: Optional[bool] = None) -> Any:
         """
         获取游戏事件中需要的值。
 
@@ -130,7 +130,6 @@ class PlayState:
         :return: 值。
         """
         whole_target = self.whole_target if whole_target is None else whole_target
-        print(str(_ps_lst))
         if self.target_id not in _ps_lst:
             return None
         target_dict = _ps_lst[self.target_id]
