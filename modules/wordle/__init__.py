@@ -1,4 +1,3 @@
-
 from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.config import Config
