@@ -81,24 +81,20 @@ class PlayState:
         if self.target_id not in _ps_lst:
             return
         target_dict = _ps_lst[self.target_id]
-        if self.whole_target:
-            game_dict = target_dict.get(self.game)
-            if game_dict:
-                game_dict["_status"] = False
-        else:
-            sender_dict = target_dict.get(self.sender_id)
-            if sender_dict:
-                game_dict = sender_dict.get(self.game)
-                if game_dict:
-                    game_dict["_status"] = False
-        if self.whole_target:
+        game_dict = target_dict.get(self.game)
+        if game_dict and game_dict.get("_status"):
+            game_dict["_status"] = False
             Logger.info(
                 f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}."
             )
-        else:
-            Logger.info(
-                f"[{self.sender_id}]: Disabled {self.game} at {self.target_id}."
-            )
+        sender_dict = target_dict.get(self.sender_id)
+        if sender_dict:
+            game_dict = sender_dict.get(self.game)
+            if game_dict and game_dict.get("_status"):
+                game_dict["_status"] = False
+                Logger.info(
+                    f"[{self.sender_id}]: Disabled {self.game} at {self.target_id}."
+                )
 
     def update(self, **kwargs: Dict[str, Any]) -> None:
         """
@@ -119,24 +115,26 @@ class PlayState:
         """
         检查游戏事件状态。
         """
-        if self.target_id not in _ps_lst:
+        status = self.get("_status", False, True)
+        if not (self.target_id in _ps_lst and status):
             return False
-        status = self.get("_status", False)
-        return status
+        return True
 
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(self, key: str, default: Any = None, whole_target: bool = None) -> Any:
         """
         获取游戏事件中需要的值。
 
         :param key: 键名。
+        :param default: 默认值。
+        :param whole_target: 是否取全对话的值。（默认跟随类定义）
         :return: 值。
-        :default: 默认值。
         """
+        whole_target = self.whole_target if whole_target is None else whole_target
         print(str(_ps_lst))
         if self.target_id not in _ps_lst:
             return None
         target_dict = _ps_lst[self.target_id]
-        if self.whole_target:
+        if whole_target:
             return target_dict.get(self.game, {}).get(key, default)
         sender_dict = target_dict.get(self.sender_id, {})
         return sender_dict.get(self.game, {}).get(key, default)
