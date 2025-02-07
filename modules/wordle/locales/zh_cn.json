@@ -6,7 +6,7 @@
     "wordle.help.option.trial": "使用挑战模式。",
     "wordle.help.theme": "设置是否使用深色主题。",
     "wordle.message.occupied": "此会话内有游戏正在进行。",
-    "wordle.message.finish": "游戏结束，答案为：${answer}。\n查询词典：https://dictionary.cambridge.org/dictionary/english-chinese-simplified/${answer}",
+    "wordle.message.finish": "游戏结束，答案为：${answer}。\n查询词典：https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "祝贺！你在 ${attempt} 回合内完成了游戏。",
     "wordle.message.hard.not_matched": "输入的单词不符合要求。",
     "wordle.message.not_a_word": "这不是一个有效的单词。",

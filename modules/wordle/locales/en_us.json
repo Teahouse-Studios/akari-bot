@@ -6,7 +6,7 @@
     "wordle.help.option.trial": "Use trial mode.",
     "wordle.help.theme": "Set whether to use dark theme.",
     "wordle.message.occupied": "There is the game running in this session.",
-    "wordle.message.finish": "Game over. The answer is ${answer}.\\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
+    "wordle.message.finish": "Game over. The answer is ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "Congratulations! You complete the game in ${attempt} turn(s).",
     "wordle.message.hard.not_matched": "The word does not correspond.",
     "wordle.message.not_a_word": "This is not a valid word.",
