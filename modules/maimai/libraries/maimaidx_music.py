@@ -207,7 +207,7 @@ class TotalList:
             data = await get_url(url, 200, fmt="json")
             if data:
                 with open(mai_song_info_path, "wb") as f:
-                    f.write(json.dumps(data))
+                    f.write(json.dumps(data, option=json.OPT_INDENT_2))
             return data
         except Exception:
             Logger.error(traceback.format_exc())
