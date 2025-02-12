@@ -6,9 +6,9 @@ from core.utils.http import download, get_url
 from modules.github.utils import time_diff, dirty_check, dark_check
 
 
-async def repo(msg: Bot.MessageSession, name: str):
+async def repo(msg: Bot.MessageSession, name: str, pat: str):
     try:
-        result = await get_url("https://api.github.com/repos/" + name, 200, fmt="json")
+        result = await get_url("https://api.github.com/repos/" + name, 200, fmt="json", headers=[("Authorization", f"Bearer {pat}")] if pat else [])
         rlicense = "Unknown"
         if "license" in result and result["license"]:
             if "spdx_id" in result["license"]:

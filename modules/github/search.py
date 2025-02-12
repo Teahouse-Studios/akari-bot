@@ -6,9 +6,9 @@ from modules.github.utils import dirty_check, dark_check
 SEARCH_LIMIT = 5
 
 
-async def search(msg: Bot.MessageSession, keyword: str):
+async def search(msg: Bot.MessageSession, keyword: str, pat: str):
     result = await get_url(
-        "https://api.github.com/search/repositories?q=" + keyword, 200, fmt="json"
+        "https://api.github.com/search/repositories?q=" + keyword, 200, fmt="json", headers=[("Authorization", f"Bearer {pat}")] if pat else []
     )
     if result["total_count"] == 0:
         message = msg.locale.t("github.message.search.not_found")
