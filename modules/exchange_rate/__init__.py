@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
             await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_positive"))
     except ValueError:
         await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_digital"))
-    await msg.finish(await exchange(msg, base_currency, target, amount))
+    await exchange(msg, base_currency, target, amount)
 
 
 async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amount):
@@ -91,4 +91,4 @@ async def _(msg: Bot.MessageSession):
     base = matched_msg.group(2).upper()
     target = matched_msg.group(3).upper()
     if base != target:
-        await msg.finish(await exchange(base, target, amount, msg))
+        await exchange(msg, base, target, amount)
