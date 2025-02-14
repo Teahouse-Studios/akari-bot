@@ -8,30 +8,24 @@ from core.logger import Logger
 _ps_lst = defaultdict(lambda: defaultdict(dict))
 GAME_EXPIRED = 3600
 
-
+"""
+目前ps_lst的结构如下
+{target_id: {game: {_status: bool, _timestamp: float}}
+"""
 def clear_ps_list():
     now = datetime.now().timestamp()
 
     for target in list(_ps_lst.keys()):
         target_data = _ps_lst[target]
 
-        for sender in list(target_data.keys()):
-            sender_data = target_data[sender]
+        for game in list(target_data.keys()):
+            game_data = target_data[game]
+            if "_timestamp" in game_data and (now - game_data["_timestamp"] >= GAME_EXPIRED):
+                del target_data[game]
+                continue
 
-            if isinstance(sender_data, dict):
-                if "_timestamp" in sender_data and (now - sender_data["_timestamp"] >= GAME_EXPIRED):
-                    del target_data[sender]
-                    continue
-            elif isinstance(sender_data, str):
-                for game in list(sender_data.keys()):
-                    game_data = sender_data[game]
-                    if isinstance(
-                            game_data, dict) and "_timestamp" in game_data and (
-                            now - game_data["_timestamp"] >= GAME_EXPIRED):
-                        del sender_data[game]
-
-            if not sender_data:
-                del target_data[sender]
+            if not game_data:
+                del target_data[game]
 
         if not target_data:
             del _ps_lst[target]
@@ -43,24 +37,19 @@ class PlayState:
 
     :param game: 游戏事件名称。
     :param msg: 消息会话。
-    :param whole_target: 是否应用至全对话。（默认为False）
     """
 
-    def __init__(self, game: str, msg: MessageSession, whole_target: bool = False):
+    def __init__(self, game: str, msg: MessageSession):
         self.game = game
         self.msg = msg
-        self.whole_target = whole_target
         self.target_id = self.msg.target.target_id
         self.sender_id = self.msg.target.sender_id
 
     def _get_ps_dict(self):
         target_dict = _ps_lst[self.target_id]
-        if self.whole_target:
-            return target_dict.setdefault(
-                self.game, {"_status": False, "_timestamp": 0.0}
-            )
-        sender_dict = target_dict.setdefault(self.sender_id, {})
-        return sender_dict.setdefault(self.game, {"_status": False, "_timestamp": 0.0})
+        return target_dict.setdefault(
+            self.game, {"_status": False, "_timestamp": 0.0}
+        )
 
     def enable(self) -> None:
         """
@@ -69,10 +58,7 @@ class PlayState:
         playstate_dict = self._get_ps_dict()
         playstate_dict["_status"] = True
         playstate_dict["_timestamp"] = datetime.now().timestamp()
-        if self.whole_target:
-            Logger.info(f"[{self.target_id}]: Enabled {self.game} by {self.sender_id}.")
-        else:
-            Logger.info(f"[{self.sender_id}]: Enabled {self.game} at {self.target_id}.")
+        Logger.info(f"[{self.target_id}]: Enabled {self.game} by {self.sender_id}.")
 
     def disable(self) -> None:
         """
@@ -87,14 +73,6 @@ class PlayState:
             Logger.info(
                 f"[{self.target_id}]: Disabled {self.game} by {self.sender_id}."
             )
-        sender_dict = target_dict.get(self.sender_id)
-        if sender_dict:
-            game_dict = sender_dict.get(self.game)
-            if game_dict and game_dict.get("_status"):
-                game_dict["_status"] = False
-                Logger.info(
-                    f"[{self.sender_id}]: Disabled {self.game} at {self.target_id}."
-                )
 
     def update(self, **kwargs) -> None:
         """
@@ -104,12 +82,7 @@ class PlayState:
         """
         playstate_dict = self._get_ps_dict()
         playstate_dict.update(kwargs)
-        if self.whole_target:
-            Logger.debug(f"[{self.game}]: Updated {str(kwargs)} at {self.target_id}.")
-        else:
-            Logger.debug(
-                f"[{self.game}]: Updated {str(kwargs)} at {self.sender_id} ({self.target_id})."
-            )
+        Logger.debug(f"[{self.game}]: Updated {str(kwargs)} at {self.target_id}.")
 
     def check(self) -> bool:
         """
@@ -125,13 +98,10 @@ class PlayState:
         获取游戏事件中需要的值。
 
         :param key: 键名。
+        :param default: 默认值。
         :return: 值。
-        :default: 默认值。
         """
         if self.target_id not in _ps_lst:
             return None
         target_dict = _ps_lst[self.target_id]
-        if self.whole_target:
-            return target_dict.get(self.game, {}).get(key, default)
-        sender_dict = target_dict.get(self.sender_id, {})
-        return sender_dict.get(self.game, {}).get(key, default)
+        return target_dict.get(self.game, {}).get(key, default)
