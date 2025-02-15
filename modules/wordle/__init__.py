@@ -25,13 +25,13 @@ async def _(msg: Bot.MessageSession):
     hard_mode = bool(msg.parsed_msg and msg.parsed_msg.get("--hard", False))
     trial = bool(msg.parsed_msg and msg.parsed_msg.get("--trial", False))
 
-    play_state = PlayState("wordle", msg, whole_target=not trial)
+    play_state = PlayState("wordle", msg)
     if play_state.check():
         await msg.finish(msg.locale.t("game.message.running"))
-    if PlayState("wordle", msg, whole_target=trial).check():
+    if PlayState("wordle", msg).check():
         await msg.finish(msg.locale.t("wordle.message.occupied"))
 
-    qc = CoolDown("wordle", msg, 180, whole_target=not trial)
+    qc = CoolDown("wordle", msg, 180)
     if not msg.target.client_name == "TEST" and not msg.check_super_user():
         c = qc.check()
         if c != 0:
@@ -101,16 +101,11 @@ async def _(msg: Bot.MessageSession):
 
 @wordle.command("stop {{game.help.stop}}")
 async def _(msg: Bot.MessageSession):
-    target_play_state = PlayState("wordle", msg, whole_target=True)
-    sender_play_state = PlayState("wordle", msg)
-    if target_play_state.check():
-        target_play_state.disable()
-        CoolDown("wordle", msg, 180, whole_target=True).reset()
-        await msg.finish(msg.locale.t("wordle.message.stop", answer=target_play_state.get("answer")))
-    elif sender_play_state.check():
-        sender_play_state.disable()
+    play_state = PlayState("wordle", msg)
+    if play_state.check():
+        play_state.disable()
         CoolDown("wordle", msg, 180).reset()
-        await msg.finish(msg.locale.t("wordle.message.stop", answer=sender_play_state.get("answer")))
+        await msg.finish(msg.locale.t("wordle.message.stop", answer=play_state.get("answer")))
     else:
         await msg.finish(msg.locale.t("game.message.stop.none"))
 
