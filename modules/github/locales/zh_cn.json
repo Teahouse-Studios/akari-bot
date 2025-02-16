@@ -7,5 +7,6 @@
     "github.message.repo.not_found": "此存储库不存在，请检查输入。",
     "github.message.search": "搜索结果：",
     "github.message.search.not_found": "未找到结果。",
-    "github.message.user.not_found": "查无此人，请检查输入。"
+    "github.message.user.not_found": "查无此人，请检查输入。",
+    "config.comments.github_pat": "GitHub 的 Personal Access Token。（用于提高 API 请求速率限制）"
 }

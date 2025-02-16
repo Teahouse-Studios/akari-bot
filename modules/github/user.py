@@ -4,9 +4,9 @@ from core.utils.http import get_url
 from modules.github.utils import time_diff, dirty_check, dark_check
 
 
-async def user(msg: Bot.MessageSession, name: str):
+async def user(msg: Bot.MessageSession, name: str, pat: str):
     try:
-        result = await get_url("https://api.github.com/users/" + name, 200, fmt="json")
+        result = await get_url("https://api.github.com/users/" + name, 200, fmt="json", headers=[("Authorization", f"Bearer {pat}")] if pat else [])
         optional = []
         if "hireable" in result and result["hireable"]:
             optional.append("Hireable")
