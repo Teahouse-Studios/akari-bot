@@ -2,18 +2,19 @@ import orjson as json
 
 from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
-from .dbutils import CytoidBindInfoManager
+from .models import CytoidBindInfo
 
 
 async def cytoid_profile(msg: Bot.MessageSession, username):
     if username:
         query_id = username.lower()
     else:
-        query_id = CytoidBindInfoManager(msg).get_bind_username()
-        if not query_id:
+        bind_info = await CytoidBindInfo.get_or_none(sender_id=msg.target.sender_id)
+        if not bind_info:
             await msg.finish(
                 msg.locale.t("cytoid.message.user_unbound", prefix=msg.prefixes[0])
             )
+        query_id = bind_info.username
     profile_url = f"http://services.cytoid.io/profile/{query_id}"
     try:
         profile = json.loads(await get_url(profile_url, 200))
@@ -74,5 +75,4 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
         + f"Rating: {rating}\n"
         + f'Grade: {", ".join(grade_t)}'
     )
-    message_chain = [Image(path=avatar), Plain(text)]
-    await msg.finish(message_chain)
+    await msg.finish([Image(path=avatar), Plain(text)])

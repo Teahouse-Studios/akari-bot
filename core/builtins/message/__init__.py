@@ -11,6 +11,8 @@ from core.builtins.message.internal import *
 from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
+
+from core.database_v2.models import SenderInfo, TargetInfo
 from core.exports import exports
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
@@ -199,17 +201,36 @@ class MessageSession:
         self.matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
         self.parsed_msg: Optional[dict] = None
         self.prefixes: List[str] = []
-        self.data = exports.get("BotDBUtil").TargetInfo(self.target.target_id)
-        self.info = exports.get("BotDBUtil").SenderInfo(self.target.sender_id)
-        self.muted = self.data.is_muted
-        self.options = self.data.options
-        self.custom_admins = self.data.custom_admins
-        self.enabled_modules = self.data.enabled_modules
-        self.locale = Locale(self.data.locale)
-        self.name = self.locale.t("bot_name")
-        self.petal = self.info.petal
+        self.target_info: TargetInfo = None
+        self.sender_info: SenderInfo = None
+        self.muted: bool = None
+        self.sender_data: dict = None
+        self.target_data: dict = None
+        self.custom_admins: list = None
+        self.enabled_modules: dict = None
+        self.locale: Locale = None
+        self.name: str = None
+        self._tz_offset = None
+        self.timezone_offset: float = None
+        self.petal: int = None
+
         self.tmp = {}
-        self._tz_offset = self.options.get(
+        asyncio.create_task(self.data_init())
+
+    async def data_init(self):
+        get_sender_info = (await SenderInfo.get_or_create(sender_id=self.target.sender_id))[0]
+        get_target_info = (await TargetInfo.get_or_create(target_id=self.target.target_id))[0]
+        self.target_info = get_target_info
+        self.sender_info = get_sender_info
+        self.muted = self.target_info.muted
+        self.sender_data = self.sender_info.sender_data
+        self.target_data = self.target_info.target_data
+        self.petal = self.sender_info.petal
+        self.custom_admins = self.target_info.custom_admins
+        self.enabled_modules = self.target_info.modules
+        self.locale = Locale(self.target_info.locale)
+        self.name = self.locale.t("bot_name")
+        self._tz_offset = self.target_data.get(
             "timezone_offset", Config("timezone_offset", "+8")
         )
         self.timezone_offset = parse_time_string(self._tz_offset)
@@ -537,13 +558,13 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
-        return bool(self.info.is_super_user)
+        return bool(self.sender_info.superuser)
 
     async def check_permission(self) -> bool:
         """
         用于检查消息发送者在对话内的权限。
         """
-        if self.target.sender_id in self.custom_admins or self.info.is_super_user:
+        if self.target.sender_id in self.custom_admins or self.sender_info.superuser:
             return True
         return await self.check_native_permission()
 

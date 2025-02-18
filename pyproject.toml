@@ -69,6 +69,7 @@ qq-botpy = "^1.2.1"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 tomlkit = "^0.13.2"
 cattrs = "^24.1.2"
+tortoise-orm = {extras = ["asyncmy"], version = "^0.23.0"}
 argon2-cffi = "^23.1.0"
 slowapi = "^0.1.9"
 

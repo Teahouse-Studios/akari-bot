@@ -5,7 +5,7 @@ import traceback
 import orjson as json
 
 from core.constants.path import schedulars_path
-from core.database import BotDBUtil
+from core.database_v2.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.info import Info
@@ -15,8 +15,8 @@ def load_extra_schedulers():
     @Scheduler.scheduled_job(IntervalTrigger(hours=12))
     async def clear_queue():
         Logger.info("Clearing job queue...")
-        BotDBUtil.JobQueue.clear()
-        Logger.success("Job queue cleared.")
+        await JobQueuesTable.clear_task()
+        Logger.info("Job queue cleared.")
 
     fun_file = None
     Logger.info("Attempting to load schedulers...")

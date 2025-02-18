@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
     last_word = None
     board_image = WordleBoardImage(
-        wordle_board=board, dark_theme=msg.data.options.get("wordle_dark_theme")
+        wordle_board=board, dark_theme=msg.target_data.get("wordle_dark_theme")
     )
 
     play_state.enable()
@@ -112,11 +112,11 @@ async def _(msg: Bot.MessageSession):
 
 @wordle.command("theme {{wordle.help.theme}}", load=not text_mode)
 async def _(msg: Bot.MessageSession):
-    dark_theme = msg.data.options.get("wordle_dark_theme")
+    dark_theme = msg.target_data.get("wordle_dark_theme")
 
     if dark_theme:
-        msg.data.edit_option("wordle_dark_theme", False)
+        await msg.target_info.edit_target_data("wordle_dark_theme", False)
         await msg.finish(msg.locale.t("wordle.message.theme.disable"))
     else:
-        msg.data.edit_option("wordle_dark_theme", True)
+        await msg.target_info.edit_target_data("wordle_dark_theme", True)
         await msg.finish(msg.locale.t("wordle.message.theme.enable"))

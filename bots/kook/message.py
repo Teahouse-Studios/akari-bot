@@ -23,9 +23,8 @@ from core.builtins import (
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
-from core.database import BotDBUtil
+from core.database_v2.models import AnalyticsData, TargetInfo
 from core.logger import Logger
-
 enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"
 kook_headers = {
@@ -322,17 +321,21 @@ class FetchTarget(FetchTargetT):
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
+                        await AnalyticsData.add_analytics(target_id=x.target.target_id,
+                                                          sender_id=x.target.sender_id,
+                                                          command="",
+                                                          module_name=module_name,
+                                                          module_type="schedule")
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(
+            get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
             )
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
+                fetch = await FetchTarget.fetch_target(x.target_id)
                 if fetch:
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
+                    if x.muted:
                         continue
                     try:
                         msgchain = message
@@ -346,7 +349,11 @@ class FetchTarget(FetchTargetT):
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
+                            await AnalyticsData.add_analytics(target_id=fetch.target.target_id,
+                                                              sender_id=fetch.target.sender_id,
+                                                              command="",
+                                                              module_name=module_name,
+                                                              module_type="schedule")
                     except Exception:
                         Logger.error(traceback.format_exc())
 
