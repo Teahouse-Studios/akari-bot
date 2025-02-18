@@ -35,7 +35,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
             }
             p = [p]
             await msg.sender_info.modify_petal(amount)
-            update_stored_list(msg.target.client_name, "gainedpetal", p)
+            await update_stored_list(msg.target.client_name, "gainedpetal", p)
             return msg.locale.t("petal.message.gained.success", amount=amount)
         if limit > 0:
             if p[msg.target.sender_id]["amount"] >= limit:
@@ -45,7 +45,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> str:
         p[msg.target.sender_id]["amount"] += amount
         p = [p]
         await msg.sender_info.modify_petal(amount)
-        update_stored_list(msg.target.client_name, "gainedpetal", p)
+        await update_stored_list(msg.target.client_name, "gainedpetal", p)
         return msg.locale.t("petal.message.gained.success", amount=amount)
 
 
@@ -79,7 +79,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
             }
             p = [p]
             await msg.sender_info.modify_petal(-amount)
-            update_stored_list(msg.target.client_name, "lostpetal", p)
+            await update_stored_list(msg.target.client_name, "lostpetal", p)
             return msg.locale.t("petal.message.lost.success", amount=amount)
         if limit > 0:
             if p[msg.target.sender_id]["amount"] >= limit:
@@ -89,7 +89,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> str:
         p[msg.target.sender_id]["amount"] += amount
         p = [p]
         await msg.sender_info.modify_petal(-amount)
-        update_stored_list(msg.target.client_name, "lostpetal", p)
+        await update_stored_list(msg.target.client_name, "lostpetal", p)
         return msg.locale.t("petal.message.lost.success", amount=amount)
 
 

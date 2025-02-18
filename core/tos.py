@@ -14,6 +14,7 @@ default_locale = Config("default_locale", cfg_type=str)
 async def warn_target(msg: Bot.MessageSession, reason: str):
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         await msg.sender_info.warn_user()
+        current_warns = await msg.sender_info.warns
         warn_template = [msg.locale.t("tos.message.warning")]
         warn_template.append(msg.locale.t("tos.message.reason") + msg.locale.t_str(reason))
         if current_warns < WARNING_COUNTS or msg.info.is_in_allow_list:

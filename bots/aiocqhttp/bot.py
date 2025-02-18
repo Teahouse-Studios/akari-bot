@@ -32,6 +32,7 @@ Info.use_url_manager = Config('enable_urlmanager', False)
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
+qq_account = 0
 
 
 @bot.on_startup

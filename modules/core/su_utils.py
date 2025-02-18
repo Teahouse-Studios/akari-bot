@@ -227,10 +227,11 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command('ban <user>')
 async def _(msg: Bot.MessageSession, user: str):
+    sender_info = await SenderInfo.get(sender_id=user)
     if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
         await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
-    sender_info = BotDBUtil.SenderInfo(user)
-    if sender_info.edit('isInBlockList', True) and sender_info.edit('isInAllowList', False):
+    await sender_info.switch_identity(trust=False, enable=False)
+    if not sender_info.trusted and sender_info.blocked:
         await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
 
 

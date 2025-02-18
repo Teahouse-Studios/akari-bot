@@ -458,7 +458,7 @@ class MessageSession(MessageSessionT):
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
                 elif item["type"] == "at":
-                    lst.append(Mention(f"{sender_prefix}|{cq_data['data'].get('qq')}"))
+                    lst.append(Mention(f"{sender_prefix}|{item["data"].get('qq')}"))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
