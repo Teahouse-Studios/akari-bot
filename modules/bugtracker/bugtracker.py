@@ -58,13 +58,13 @@ async def bugtracker_get(msg, mojira_id: str):
         json_url = 'https://bugs.mojang.com/api/jql-search-post'
         get_json = (await post_url(
             json_url,
-            {
-                "advanced": True,
-                "project": id_.split("-",1)[0],
-                "search": "key = " + id_,
+            f'''{{
+                "advanced": true,
+                "project": "{id_.split("-", 1)[0]}",
+                "search": "key = {id_}",
                 "maxResults": 1
-            },
-            200,
+            }}''',
+            201,
             headers={"Content-Type": "application/json"},
         ))
         load_json = json.loads(get_json).get("issues")[0]
