@@ -70,6 +70,7 @@ web_render = "<Replace me with str value>" # WebRender service URL.
 openai_api_key = "<Replace me with str value>" # OpenAI API Key. (For ask modules etc.)
 exchange_rate_api_key = "<Replace me with str value>" # API Key for ExchangeRate-API. (For exchange_rate module and exchange rate calculation)
 wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha AppID. (For wolframalpha module)
+github_pat = "<Replace me with str value>" # GitHub 的 Personal Access Token。（用于提高 API 请求速率限制）
 diving_fish_developer_token = "<Replace me with str value>" # Developer token for Diving Fish prober. (For maimai module)
 curseforge_api_key = "<Replace me with str value>" # CurseForge API key. (For mod_dl module)
 ncmusic_api = "<Replace me with str value>" # API address of NetEase Cloud Music API. (For ncmusic module)

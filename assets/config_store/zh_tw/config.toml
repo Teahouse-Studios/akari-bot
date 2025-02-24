@@ -70,6 +70,7 @@ web_render = "<Replace me with str value>" # WebRender 服務的 URL 位址。
 openai_api_key = "<Replace me with str value>" # OpenAI 的 API Key。（用於 ask 等模組）
 exchange_rate_api_key = "<Replace me with str value>" # ExchangeRate-API 的 API Key。（用於 exchange_rate 模組與計算匯率用）
 wolfram_alpha_appid = "<Replace me with str value>" # WolframAlpha 的 AppID。（用於 wolframalpha 模組）
+github_pat = "<Replace me with str value>" # GitHub 的 Personal Access Token。（用于提高 API 请求速率限制）
 diving_fish_developer_token = "<Replace me with str value>" # Diving Fish 查分器的開發者令牌。（用於 maimai 模組）
 curseforge_api_key = "<Replace me with str value>" # CurseForge 的 API Key。（用於 mod_dl 模組）
 ncmusic_api = "<Replace me with str value>" # 網易雲音樂 API 的 API 位址。（用於 ncmusic 模組）
