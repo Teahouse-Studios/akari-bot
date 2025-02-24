@@ -6,10 +6,10 @@ from PIL import Image as PILImage
 
 from core.constants.info import Info
 from core.logger import Logger
-from core.utils.http import download, get_url
+from core.utils.http import download, post_url, get_url
 from core.utils.web_render import webrender
 
-elements = ["div#descriptionmodule"]
+elements = [".MuiBox-root.css-1jpkv3d"]
 
 spx_cache = {}
 
@@ -55,8 +55,19 @@ async def bugtracker_get(msg, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
     try:
-        json_url = "https://bugs.mojang.com/rest/api/2/issue/" + id_
-        get_json = await get_url(json_url, 200)
+        json_url = 'https://bugs.mojang.com/api/jql-search-post'
+        get_json = (await post_url(
+            json_url,
+            f'''{{
+                "advanced": true,
+                "project": "{id_.split("-", 1)[0]}",
+                "search": "key = {id_}",
+                "maxResults": 1
+            }}''',
+            201,
+            headers={"Content-Type": "application/json"},
+        ))
+        load_json = json.loads(get_json).get("issues")[0]
     except ValueError as e:
         if str(e).startswith("401"):
             return msg.locale.t("bugtracker.message.get_failed"), None
@@ -70,7 +81,6 @@ async def bugtracker_get(msg, mojira_id: str):
     if id_ in spx_cache and msg.locale.locale == "zh_cn":
         data["translation"] = spx_cache[id_]
     if get_json:
-        load_json = json.loads(get_json)
         errmsg = ""
         if "errorMessages" in load_json:
             for msgs in load_json["errorMessages"]:
