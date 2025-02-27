@@ -276,13 +276,9 @@ async def _(msg: Bot.MessageSession, offset: str):
         tstr_split = [int(part) for part in offset.split(":")]
         hour = tstr_split[0]
         minute = tstr_split[1] if len(tstr_split) > 1 else 0
-        if minute == 0:
-            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
-        else:
-            symbol = offset[0] if offset.startswith(("+", "-")) else "+"
-            offset = f"{symbol}{abs(hour)}:{abs(minute):02d}"
         if hour > 12 or minute >= 60:
             raise ValueError
+        offset = f"{hour:+}" if minute == 0 else f"{hour:+}:{abs(minute):02d}"
     except ValueError:
         await msg.finish(msg.locale.t("core.message.setup.timeoffset.invalid"))
     msg.data.edit_option("timezone_offset", offset)
