@@ -17,18 +17,12 @@ async def get_video_info(
         )
         if res["code"] != 0:
             if res["code"] == -400:
-                await msg.finish(msg.locale.t("bilibili.message.invalid"))
-            else:
-                await msg.finish(msg.locale.t("bilibili.message.not_found"))
+                return msg.locale.t("bilibili.message.invalid")
+            return msg.locale.t("bilibili.message.not_found")
     except ValueError as e:
         if str(e).startswith("412"):
-            await msg.finish(
-                ErrorMessage(
-                    "{bilibili.message.error.rejected}", locale=msg.locale.locale
-                )
-            )
-        else:
-            raise e
+            return ErrorMessage("{bilibili.message.error.rejected}", locale=msg.locale.locale)
+        raise e
 
     view = res["data"]["View"]
     stat = view["stat"]
@@ -59,61 +53,59 @@ async def get_video_info(
     fans = msg.locale.num(res["data"]["Card"]["card"]["fans"], 1)
 
     if use_embed:
-        await msg.send_message(
-            Embed(
-                title=f"{title}{pages}",
-                description=desc,
-                url=video_url,
-                author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
-                footer="Bilibili",
-                image=Image(pic),
-                thumbnail=Image(avatar),
-                fields=[
-                    EmbedField(msg.locale.t("bilibili.message.embed.type"), tname),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.view"),
-                        stat_view,
-                        inline=True,
-                    ),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.danmaku"),
-                        stat_danmaku,
-                        inline=True,
-                    ),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.reply"),
-                        stat_reply,
-                        inline=True,
-                    ),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.like"),
-                        stat_like,
-                        inline=True,
-                    ),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.coin"),
-                        stat_coin,
-                        inline=True,
-                    ),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.favorite"),
-                        stat_favorite,
-                        inline=True,
-                    ),
-                    EmbedField(
-                        msg.locale.t("bilibili.message.embed.share"),
-                        stat_share,
-                        inline=True,
-                    ),
-                    EmbedField(msg.locale.t("bilibili.message.embed.time"), time),
-                ],
-            )
+        return Embed(
+            title=f"{title}{pages}",
+            description=desc,
+            url=video_url,
+            author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
+            footer="Bilibili",
+            image=Image(pic),
+            thumbnail=Image(avatar),
+            fields=[
+                EmbedField(msg.locale.t("bilibili.message.embed.type"), tname),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.view"),
+                    stat_view,
+                    inline=True,
+                ),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.danmaku"),
+                    stat_danmaku,
+                    inline=True,
+                ),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.reply"),
+                    stat_reply,
+                    inline=True,
+                ),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.like"),
+                    stat_like,
+                    inline=True,
+                ),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.coin"),
+                    stat_coin,
+                    inline=True,
+                ),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.favorite"),
+                    stat_favorite,
+                    inline=True,
+                ),
+                EmbedField(
+                    msg.locale.t("bilibili.message.embed.share"),
+                    stat_share,
+                    inline=True,
+                ),
+                EmbedField(msg.locale.t("bilibili.message.embed.time"), time),
+            ],
         )
-    elif not get_detail:
+
+    if not get_detail:
         output = msg.locale.t(
             "bilibili.message", title=title, tname=tname, owner=owner, time=time
         )
-        await msg.send_message([Image(pic), Url(video_url), Plain(output)])
     else:
         output = msg.locale.t(
             "bilibili.message.detail",
@@ -132,4 +124,4 @@ async def get_video_info(
             desc=desc,
             time=time,
         )
-        await msg.send_message([Image(pic), Url(video_url), Plain(output)])
+    return [Image(pic), Url(video_url), Plain(output)]
