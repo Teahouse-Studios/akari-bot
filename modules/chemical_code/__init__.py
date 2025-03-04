@@ -1,8 +1,10 @@
 import asyncio
+import io
 import re
 import traceback
 from datetime import datetime
 from typing import Optional
+from PIL import Image as PImage
 
 from tenacity import retry, stop_after_attempt
 from rdkit import Chem
@@ -17,7 +19,7 @@ from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.http import get_url
 from core.utils.petal import gained_petal
 from core.utils.random import Random
-from core.utils.text import isint
+from .coloring import element_colors
 
 ID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
@@ -263,7 +265,15 @@ async def chemical_code(
     num_atoms = mol.GetNumAtoms()
     size = max(num_atoms * 500 // 100, 500)
 
-    image = Draw.MolToImage(mol, size=(size, size))
+    drawer = Draw.rdMolDraw2D.MolDraw2DCairo(size, size)
+    options = drawer.drawOptions()
+    options.atomColours = element_colors
+    drawer.SetDrawOptions(options)
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+    
+    image_bytes = drawer.GetDrawingText()
+    image = PImage.open(io.BytesIO(image_bytes))
     newpath = f"{random_cache_path()}.png"
     image.save(newpath)
 
