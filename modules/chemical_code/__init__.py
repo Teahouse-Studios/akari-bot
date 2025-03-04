@@ -1,12 +1,14 @@
 import asyncio
-import os
+import io
 import re
 import traceback
 from datetime import datetime
+from typing import Optional
+from PIL import Image as PImage
 
-from PIL import Image as PILImage
-from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt
+from rdkit import Chem
+from rdkit.Chem import AllChem, Draw, rdMolDescriptors
 
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
@@ -14,21 +16,14 @@ from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState, GAME_EXPIRED
-from core.utils.http import get_url, download
+from core.utils.http import get_url
 from core.utils.petal import gained_petal
 from core.utils.random import Random
-from core.utils.text import isint
+from .coloring import element_colors
 
-CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
+ID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
 
-csr_link = "https://legacy.chemspider.com"
-
-special_id_path = os.path.join(
-    assets_path, "modules", "chemical_code", "special_id"
-)  # 去掉文件扩展名并存储在 special_id 列表中
-special_id = [
-    os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)
-]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+pubchem_link = "https://pubchem.ncbi.nlm.nih.gov/rest/pug"
 
 element_lists = [
     "He",
@@ -172,39 +167,31 @@ def parse_elements(formula: str) -> dict:
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
-async def search_csr(id=None):
+async def search_pubchem(id: Optional[int] = None):
     if id:
         answer_id = id
     else:
-        answer_id = Random.randint(1, CSID_RANGE_MAX)
+        answer_id = Random.randint(1, ID_RANGE_MAX)
     answer_id = str(answer_id)
-    Logger.info(f"ChemSpider ID: {answer_id}")
-    get = await get_url(f"{csr_link}/Search.aspx?q={answer_id}", 200, fmt="text")
-    # Logger.info(get)
-    soup = BeautifulSoup(get, "html.parser")
-    name = soup.find(
-        "span",
-        id="ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF",
-    ).text  # 获取化学式名称
-    elements = parse_elements(name)
-    value = 0
-    for _, v in elements.items():
-        value += v
-    wh = 500 * value // 100
-    wh = max(wh, 500)
-    return {
-        "id": answer_id,
-        "answer": name,
-        "image": f"{csr_link}/ImagesHandler.ashx?id={answer_id}"
-        + (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
-        "length": value,
-        "elements": elements,
-    }
+    Logger.info(f"PubChem CID: {answer_id}")
+    get = await get_url(f"{pubchem_link}/compound/cid/{answer_id}/property/IsomericSMILES,Title/JSON", 200, fmt="json")
+    if get:
+        compound_info = get['PropertyTable']['Properties'][0]
+        smiles = compound_info['IsomericSMILES']
+        mol = Chem.MolFromSmiles(smiles)
+        formula = rdMolDescriptors.CalcMolFormula(mol)
+        elements = parse_elements(formula)
+        return {
+            "id": answer_id,
+            "answer": formula,
+            "smiles": smiles,
+            "elements": elements,
+        }
 
 
 ccode = module(
     "chemical_code",
-    developers=["OasisAkari"],
+    developers=["OasisAkari", "DoroWolf"],
     desc="{chemical_code.help.desc}",
     doc=True,
     alias={
@@ -242,20 +229,17 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("game.message.stop.none"))
 
 
-@ccode.command("<csid> {{chemical_code.help.csid}}")
-async def _(msg: Bot.MessageSession):
-    id = msg.parsed_msg["<csid>"]
-    if isint(id):
-        if int(id) == 0:  # 若 id 为 0，则随机
-            await chemical_code(msg)
-        else:
-            await chemical_code(msg, id, random_mode=False)
+@ccode.command("<pcid> {{chemical_code.help.pcid}}")
+async def _(msg: Bot.MessageSession, pcid: int):
+    if int(pcid) < 0:
+        await msg.finish(msg.locale.t("chemical_code.message.pcid.invalid"))
+    elif int(pcid) == 0:  # 若 id 为 0，则随机
+        await chemical_code(msg)
     else:
-        await msg.finish(msg.locale.t("chemical_code.message.csid.invalid"))
-
+        await chemical_code(msg, pcid, random_mode=False)
 
 async def chemical_code(
-    msg: Bot.MessageSession, id=None, random_mode=True, captcha_mode=False
+    msg: Bot.MessageSession, id: Optional[int] = None, random_mode=True, captcha_mode=False
 ):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
@@ -263,32 +247,38 @@ async def chemical_code(
     else:
         play_state.enable()
     try:
-        csr = await search_csr(id)
+        csr = await search_pubchem(id)
     except Exception:
         Logger.error(traceback.format_exc())
         play_state.disable()
         await msg.finish(msg.locale.t("chemical_code.message.error"))
-    # print(csr)
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
     Logger.info(f'Answer: {play_state.get("answer")}')
-    dl_image = False
-    if play_state.get("id") in special_id:  # 如果正确答案在 special_id 中
-        file_path = os.path.join(special_id_path, f'{play_state.get("id")}.png')
-        exists_file = os.path.exists(file_path)
-        if exists_file:
-            dl_image = file_path
-    if not dl_image:
-        dl_image = await download(play_state.get("image"))
 
-    with PILImage.open(dl_image) as im:
-        im = im.convert("RGBA")
-        image = PILImage.new("RGBA", im.size, "white")
-        image.alpha_composite(im, (0, 0))
-        newpath = f"{random_cache_path()}.png"
-        image.save(newpath)
+    mol = Chem.MolFromSmiles(play_state.get("smiles"))
+    if not mol:
+        play_state.disable()
+        await msg.finish(msg.locale.t("chemical_code.message.error"))
 
-    set_timeout = play_state.get("length") // 30
-    set_timeout = max(set_timeout, 2)
+    AllChem.Compute2DCoords(mol)
+
+    num_atoms = mol.GetNumAtoms()
+    size = max(num_atoms * 500 // 100, 500)
+
+    drawer = Draw.rdMolDraw2D.MolDraw2DCairo(size, size)
+    options = drawer.drawOptions()
+    options.padding = min(0.2 * (10 / num_atoms), 0.2)
+    options.setAtomPalette(element_colors)
+    drawer.SetDrawOptions(options)
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+    
+    image_bytes = drawer.GetDrawingText()
+    image = PImage.open(io.BytesIO(image_bytes))
+    newpath = f"{random_cache_path()}.png"
+    image.save(newpath)
+
+    set_timeout = max(num_atoms // 30, 2)
 
     async def ans(msg: Bot.MessageSession, random_mode):
         wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
@@ -302,7 +292,7 @@ async def chemical_code(
                         value = 0
                         for _, v in parse_.items():
                             value += v
-                        v_ = play_state.get("length") - value
+                        v_ = num_atoms - value
                         if v_ < 0:
                             v_ = -v_
                         if v_ > 6:
