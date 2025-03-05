@@ -97,7 +97,7 @@ pillow==11.1.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.
 pint==0.24.4 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 platformdirs==4.3.6 ; python_version >= "3.12" and python_version < "4.0"
 pre-commit==4.1.0 ; python_version >= "3.12" and python_version < "4.0"
-primp==0.10.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
+primp==0.14.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 priority==2.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 prompt-toolkit==3.0.50 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 propcache==0.2.1 ; python_version >= "3.12" and python_version < "4.0"
