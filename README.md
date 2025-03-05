@@ -80,7 +80,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 ### 自搭建
 
-推荐前往[此项目](https://github.com/Teahouse-Studios/akari-bot-core)通过小可核心版进行搭建，你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
+你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 
