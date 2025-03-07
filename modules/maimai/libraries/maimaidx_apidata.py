@@ -49,7 +49,7 @@ async def update_cover() -> bool:
 
 async def update_alias() -> bool:
     try:
-        url = "https://download.fanyu.site/maimai/alias.json"
+        url = "https://download.xraybot.site/maimai/alias.json"
         data = await get_url(url, 200, fmt="json")
 
         with open(mai_alias_path, "wb") as file:
