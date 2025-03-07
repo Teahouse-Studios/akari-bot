@@ -1,4 +1,11 @@
 {
+    "config.comments.dice_count_limit": "dice 模組骰子表示式項數上限。",
+    "config.comments.dice_detail_count": "dice 模組 n 次投擲的骰子的總量超過該值時將不再顯示詳細資訊。",
+    "config.comments.dice_limit": "dice 模組一次投擲骰子數量上限。",
+    "config.comments.dice_output_count": "dice 模組輸出資訊量上限。",
+    "config.comments.dice_output_digit": "dice 模組輸出資訊數字上限，超過則使用 10 的指數冪形式。",
+    "config.comments.dice_output_len": "dice 模組輸出最大長度。",
+    "config.comments.dice_roll_limit": "dice 模組一次指令投擲次數上限。",
     "dice.help": "投擲指定骰子。",
     "dice.help.desc": "隨機骰子，可指定投骰次數與 DC 判斷判定。",
     "dice.help.rule": "修改 DC 的判定規則。",
@@ -30,11 +37,5 @@
     "dice.message.rule.enable": "判定規則已更改為反向。",
     "dice.message.set.clear": "成功清除預設骰子面數。",
     "dice.message.set.success": "成功設定預設骰子面數為 ${sides}。",
-    "dice.message.too_long": "輸出過長……",
-    "config.comments.dice_count_limit": "dice 模組骰子表示式項數上限。",
-    "config.comments.dice_detail_count": "dice 模組 n 次投擲的骰子的總量超過該值時將不再顯示詳細資訊。",
-    "config.comments.dice_limit": "dice 模組一次投擲骰子數量上限。",
-    "config.comments.dice_output_count": "dice 模組輸出資訊量上限。",
-    "config.comments.dice_output_len": "dice 模組輸出最大長度。",
-    "config.comments.dice_roll_limit": "dice 模組一次指令投擲次數上限。"
+    "dice.message.too_long": "輸出過長……"
 }

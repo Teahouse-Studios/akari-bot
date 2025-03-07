@@ -15,9 +15,7 @@ MAX_DICE_COUNT = Config("dice_limit", 100)  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = Config("dice_roll_limit", 10)  # 一次命令最多的摇动次数
 MAX_OUTPUT_CNT = Config("dice_output_count", 50)  # 输出的最多数据量
 MAX_OUTPUT_LEN = Config("dice_output_len", 200)  # 输出的最大长度
-MAX_DETAIL_CNT = Config(
-    "dice_detail_count", 5
-)  # n次投掷的骰子的总量超过该值时将不再显示详细信息
+MAX_DETAIL_CNT = Config("dice_detail_count", 5)  # n次投掷的骰子的总量超过该值时将不再显示详细信息
 MAX_ITEM_COUNT = Config("dice_count_limit", 10)  # 骰子表达式最多的项数
 
 dice_patterns = [
@@ -74,6 +72,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
 
 
 def parse_dice_expression(msg: Bot.MessageSession, dices: str):
+    '''解析骰子表达式'''
     dice_item_list = []
     math_func_pattern = (
         "(" + "|".join(re.escape(func) for func in math_funcs) + ")"
@@ -172,10 +171,8 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     return dice_expr_list, dice_count, int(times), None
 
 
-# 在数字与数字之间加上乘号
-
-
 def insert_multiply(msg: Bot.MessageSession, lst: list):
+    '''在各项之间加上乘号'''
     result = []
     asterisk = "\\*" if msg.Feature.markdown else "*"
     for i, item in enumerate(lst):
@@ -194,9 +191,6 @@ def insert_multiply(msg: Bot.MessageSession, lst: list):
     return result
 
 
-# 开始投掷并生成消息
-
-
 def generate_dice_message(
     msg: Bot.MessageSession,
     expr: str,
@@ -205,6 +199,7 @@ def generate_dice_message(
     times: int,
     dc: str,
 ):
+    '''开始投掷并生成消息'''
     success_num = 0
     fail_num = 0
     output = msg.locale.t("dice.message.output")
@@ -231,10 +226,8 @@ def generate_dice_message(
                 if times * dice_count < MAX_DETAIL_CNT:
                     dice_detail_list[i] = f"({item.GetDetail()})"
                 else:
-                    dice_detail_list[i] = (
-                        f"({str(res)})" if res < 0 else str(res)
-                    )  # 负数加括号
-                dice_res_list[i] = f"({str(res)})" if res < 0 else str(res)
+                    dice_detail_list[i] = f"({res})" if res < 0 else str(res)  # 负数加括号
+                dice_res_list[i] = f"({res})" if res < 0 else str(res)
             else:
                 continue
         dice_detail_list = insert_multiply(msg, dice_detail_list)
@@ -257,11 +250,7 @@ def generate_dice_message(
                 msg, msg.locale.t("dice.message.error") + "\n" + str(e)
             ).message
         try:
-            if abs(result) >= 10**9:
-                result = f"{result:.10e}"
-            else:
-                result = str(result)
-            output_line += "=" + result
+            output_line += f"={fmt_num(result, sep=True)}"
         except Exception:
             return DiceValueError(
                 msg,

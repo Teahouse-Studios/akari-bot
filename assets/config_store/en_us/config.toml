@@ -50,6 +50,7 @@ locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL
 dice_limit = 100 # The maximum number of dice rolled at one time of dice module.
 dice_output_count = 50 # The maximum amount of information output of dice module.
 dice_output_len = 200 # The maximum length output of dice module.
+dice_output_digit = 9 # The maximum digits of information output of dice module, exceeding which an exponent of 10 is used.
 dice_roll_limit = 10 # The maximum number of dice rolled per command of dice module.
 dice_detail_count = 5 # The total number of dice rolled n times of dice module, it will no longer show details when this value is exceeded.
 dice_count_limit = 10 # The maximum number of items in dice expressions of dice module.

@@ -1,4 +1,5 @@
 import re
+from typing import Optional, Union
 
 import numpy as np
 
@@ -10,6 +11,17 @@ from core.utils.text import isint
 MAX_DICE_COUNT = Config("dice_limit", 100)  # 一次摇动最多的骰子数量
 MAX_OUTPUT_CNT = Config("dice_output_count", 50)  # 输出的最多数据量
 MAX_OUTPUT_LEN = Config("dice_output_len", 200)  # 输出的最大长度
+MAX_OUTPUT_EXP = Config("dice_output_digit", 9)  # 输出的最大位数
+
+
+def fmt_num(num: int, sep: bool = False):
+    if MAX_OUTPUT_EXP > 0 and abs(num) >= 10**MAX_OUTPUT_EXP:
+        fmt_num = f"{num:.{MAX_OUTPUT_EXP}e}"
+        if not sep:
+            fmt_num = f"({fmt_num})"
+    else:
+        fmt_num = str(num)
+    return fmt_num
 
 
 # 异常类定义
@@ -23,7 +35,7 @@ class DiceSyntaxError(Exception):
 class DiceValueError(Exception):
     """骰子参数值错误"""
 
-    def __init__(self, msg: Bot.MessageSession, message: str, value: int = None):
+    def __init__(self, msg: Bot.MessageSession, message: str, value: Optional[Union[int, str]] = None):
         if value:
             self.message = (
                 msg.locale.t("dice.message.error.value", value=value) + message
@@ -38,13 +50,13 @@ class DiceItemBase:
 
     def __init__(self, dice_code: str):
         self.code = dice_code
-        self.result = None
+        self.result = 0
         self.detail = ""
 
-    def GetResult(self):
+    def GetResult(self) -> int:
         return self.result
 
-    def GetDetail(self):
+    def GetDetail(self) -> str:
         return self.detail
 
     def Roll(self, msg: Bot.MessageSession):
@@ -141,7 +153,7 @@ class Dice(DiceItemBase):
             indexes = indexes[-adv:] if positive == 1 else indexes[:adv]
             output_buffer = "=["
             for i in range(self.count):
-                output_buffer += str(dice_results[i])
+                output_buffer += fmt_num(dice_results[i])
                 if i in indexes:
                     new_results.append(dice_results[i])
                     output_buffer += "*"
@@ -162,11 +174,11 @@ class Dice(DiceItemBase):
             output_buffer = "=["
             for i in range(length):
                 result += dice_results[i]
-                output_buffer += str(dice_results[i])
+                output_buffer += fmt_num(dice_results[i])
                 if i < length - 1:
                     output_buffer += "+"
             output_buffer += "]"
-            if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
+            if self.count > MAX_OUTPUT_CNT:
                 output_buffer = (
                     "=["
                     + msg.locale.t("dice.message.output.too_long", length=self.count)
@@ -175,7 +187,7 @@ class Dice(DiceItemBase):
             output += output_buffer
         else:
             result = dice_results[0]
-        output += f"={result}"
+        output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output
@@ -237,7 +249,7 @@ class FudgeDice(DiceItemBase):
             elif res == "+":
                 result += 1
 
-        output += f"={result}"
+        output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output
@@ -317,20 +329,20 @@ class BonusPunishDice(DiceItemBase):
             else:
                 output_buffer = "=["
                 for i in range(self.count):
-                    output_buffer += str(dice_results[i])
+                    output_buffer += fmt_num(dice_results[i])
                     if i < self.count - 1:
                         output_buffer += ", "
                 output_buffer += "]"
             output += output_buffer
         else:
-            output += "=" + str(dice_results[0])
+            output += f"={fmt_num(dice_results[0], sep=True)}"
 
         if positive:
             result = max(new_results)
         else:
             result = min(new_results)
 
-        output += f"={result}"
+        output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output
@@ -458,13 +470,13 @@ class WODDice(DiceItemBase):
                 if dice_exceed_results[i]:
                     exceed_result += 1
                     output_buffer += "<"
-                    output_buffer += str(dice_results[i])
+                    output_buffer += fmt_num(dice_results[i])
                     if i in indexes:
                         success_count += 1
                         output_buffer += "*"
                     output_buffer += ">"
                 else:
-                    output_buffer += str(dice_results[i])
+                    output_buffer += fmt_num(dice_results[i])
                     if i in indexes:
                         success_count += 1
                         output_buffer += "*"
@@ -483,7 +495,7 @@ class WODDice(DiceItemBase):
         output += output_buffer
 
         result = success_count
-        output += f"={result}"
+        output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output
@@ -576,10 +588,10 @@ class DXDice(DiceItemBase):
                 if dice_exceed_results[i]:
                     exceed_result += 1
                     output_buffer += "<"
-                    output_buffer += str(dice_results[i])
+                    output_buffer += fmt_num(dice_results[i])
                     output_buffer += ">"
                 else:
-                    output_buffer += str(dice_results[i])
+                    output_buffer += fmt_num(dice_results[i])
                 if i < dice_count - 1:
                     output_buffer += ", "
             output_buffer += "}, "
@@ -595,7 +607,7 @@ class DXDice(DiceItemBase):
         output += output_buffer
 
         result = (dice_rounds - 1) * self.sides + max(dice_results)
-        output += f"={result}"
+        output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
             output = msg.locale.t("dice.message.too_long")
         self.detail = output

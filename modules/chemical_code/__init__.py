@@ -12,7 +12,6 @@ from rdkit.Chem import AllChem, Draw, rdMolDescriptors
 
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
-from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.game import PlayState, GAME_EXPIRED
@@ -238,6 +237,7 @@ async def _(msg: Bot.MessageSession, pcid: int):
     else:
         await chemical_code(msg, pcid, random_mode=False)
 
+
 async def chemical_code(
     msg: Bot.MessageSession, id: Optional[int] = None, random_mode=True, captcha_mode=False
 ):
@@ -272,7 +272,7 @@ async def chemical_code(
     drawer.SetDrawOptions(options)
     drawer.DrawMolecule(mol)
     drawer.FinishDrawing()
-    
+
     image_bytes = drawer.GetDrawingText()
     image = PImage.open(io.BytesIO(image_bytes))
     newpath = f"{random_cache_path()}.png"

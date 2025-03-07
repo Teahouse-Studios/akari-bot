@@ -24,27 +24,16 @@ async def _(msg: Bot.MessageSession):
         aliases = {}
     if "add" in msg.parsed_msg:
         # 处理下划线与空格的情况
-        alias = alias.replace("_", " ")
         alias = re.sub(
             r"\$\{([^}]*)\}",
             lambda match: "${" + match.group(1).replace(" ", "_") + "}",
-            alias,
+            alias.replace("_", " "),
         )
         command = re.sub(
             r"\$\{([^}]*)\}",
             lambda match: "${" + match.group(1).replace(" ", "_") + "}",
             command,
         )
-        # 检查占位符有效性
-
-        def check_valid_placeholder(alias):
-            alias_noph = alias
-            phs = re.findall(r"\${(.*?)}", alias)
-            for ph in phs:
-                if not ph or "$" in ph or "}" in ph or "{" in ph:
-                    return False
-                alias_noph = alias_noph.replace(f"${{{ph}}}", "")
-            return alias_noph.strip()
 
         if not (check_valid_placeholder(alias) and check_valid_placeholder(command)):
             await msg.finish(msg.locale.t("core.message.alias.add.invalid_placeholder"))
@@ -68,7 +57,11 @@ async def _(msg: Bot.MessageSession):
                 msg.locale.t("core.message.alias.add.already", alias=alias)
             )
     elif "remove" in msg.parsed_msg:
-        alias = alias.replace("_", " ").replace("${ }", "${_}")
+        alias = re.sub(
+            r"\$\{([^}]*)\}",
+            lambda match: "${" + match.group(1).replace(" ", "_") + "}",
+            alias.replace("_", " "),
+        )
         if alias in aliases:
             del aliases[alias]
             msg.data.edit_option("command_alias", aliases)
@@ -169,3 +162,14 @@ async def _(msg: Bot.MessageSession):
                     ]
                 )
             )
+
+
+def check_valid_placeholder(alias):
+    '''检查占位符有效性'''
+    alias_noph = alias
+    phs = re.findall(r"\${(.*?)}", alias)
+    for ph in phs:
+        if not ph or "$" in ph or "}" in ph or "{" in ph:
+            return False
+        alias_noph = alias_noph.replace(f"${{{ph}}}", "")
+    return alias_noph.strip()
