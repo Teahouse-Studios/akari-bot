@@ -1,4 +1,11 @@
 {
+    "config.comments.dice_count_limit": "dice 模块骰子表达式项数上限。",
+    "config.comments.dice_detail_count": "dice 模块 n 次投掷的骰子的总量超过该值时将不再显示详细信息。",
+    "config.comments.dice_limit": "dice 模块一次投掷骰子数量上限。",
+    "config.comments.dice_output_count": "dice 模块输出数据量上限。",
+    "config.comments.dice_output_digit": "dice 模块输出数据数位上限，超过则使用 10 的指数幂形式。",
+    "config.comments.dice_output_len": "dice 模块输出最大长度。",
+    "config.comments.dice_roll_limit": "dice 模块一次命令投掷次数上限。",
     "dice.help": "投掷指定骰子。",
     "dice.help.desc": "随机骰子，可指定投骰次数与 DC 判断判定。",
     "dice.help.rule": "修改 DC 的判定规则。",
@@ -30,11 +37,5 @@
     "dice.message.rule.enable": "判定规则已更改为反向。",
     "dice.message.set.clear": "成功清除骰子默认面数。",
     "dice.message.set.success": "成功设置骰子默认面数为 ${sides}。",
-    "dice.message.too_long": "输出过长……",
-    "config.comments.dice_count_limit": "dice 模块骰子表达式项数上限。",
-    "config.comments.dice_detail_count": "dice 模块 n 次投掷的骰子的总量超过该值时将不再显示详细信息。",
-    "config.comments.dice_limit": "dice 模块一次投掷骰子数量上限。",
-    "config.comments.dice_output_count": "dice 模块输出数据量上限。",
-    "config.comments.dice_output_len": "dice 模块输出最大长度。",
-    "config.comments.dice_roll_limit": "dice 模块一次命令投掷次数上限。"
+    "dice.message.too_long": "输出过长……"
 }
