@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
             await msg.send_message(output)
 
 
-@bili.regex(r"(?:http[s]?://)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)",
+@bili.regex(r"(?:http[s]?:\/\/)?(?:bili(?:22|33|2233)\.cn|b23\.tv)\/([A-Za-z0-9]{7})(?:\/.*?|)",
             mode="A",
             desc="{bilibili.help.regex.url}",
             show_typing=False,

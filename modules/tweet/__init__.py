@@ -23,16 +23,23 @@ t = module(
 
 
 @t.command("<tweet> {{tweet.help}}")
-async def _(msg: Bot.MessageSession, tweet: str):
-    if isint(tweet):
-        tweet_id = tweet
-    else:
-        match = re.search(r"status/(\d+)", tweet)
-        if match:
-            tweet_id = match.group(1)
-        else:
-            await msg.finish(msg.locale.t("tweet.message.invalid"))
+async def _(msg: Bot.MessageSession, tweet: int):
+    await get_tweet(msg, tweet)
 
+
+@t.regex(r"(?:http[s]?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/\S+\/status\/(\d+)",
+         mode="M",
+         desc="{tweet.help.regex.url}",
+         show_typing=False,
+         text_only=False
+         )
+async def _(msg: Bot.MessageSession):
+    tweet = msg.matched_msg.group(1)
+    if isint(tweet):
+        await get_tweet(msg, int(tweet))
+
+
+async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
     web_render = webrender("element_screenshot")
     if not web_render:
         await msg.finish(msg.locale.t("error.config.webrender.invalid"))
