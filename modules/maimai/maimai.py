@@ -446,16 +446,16 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
 
 @mai.command(
-    "info <id_or_alias> [-u <username>] {{maimai.help.info}}",
+    "score <id_or_alias> [-u <username>] {{maimai.help.score}}",
     options_desc={"-u": "{maimai.help.option.u}"},
 )
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     get_user = msg.parsed_msg.get("-u", False)
     username = get_user["<username>"] if get_user else None
-    await query_song_info(msg, id_or_alias, username)
+    await query_song_score(msg, id_or_alias, username)
 
 
-async def query_song_info(msg, query, username):
+async def query_song_score(msg, query, username):
     if query[:2].lower() == "id":
         sid = query[2:]
     else:
