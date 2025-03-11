@@ -1,4 +1,4 @@
-"""基于loguru的日志器。"""
+"""机器人内置的基于`loguru`的日志工具。"""
 
 import os
 import re

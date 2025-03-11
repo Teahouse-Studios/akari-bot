@@ -1,6 +1,6 @@
 """利用阿里云API检查字符串是否合规。
 
-在使用前，应该在配置中填写"check_access_key_id"和"check_access_key_secret"以便进行鉴权。
+在使用前，请在配置文件中填写`check_access_key_id`和`check_access_key_secret`，以便进行鉴权。
 """
 
 import base64

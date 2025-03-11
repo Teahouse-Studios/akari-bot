@@ -157,7 +157,7 @@
     "wiki.message.utils.wikilib.get_failed.may_not_mediawiki": "此網站也許不是一個有效的 Mediawiki：",
     "wiki.message.utils.wikilib.get_failed.moegirl": "萌娘百科的 API 接口不穩定，請稍後再試或直接訪問網站。",
     "wiki.message.utils.wikilib.get_failed.no_http_or_https_headers": "所給的連結沒有指明協議頭（連結應以「http://」或「https://」開頭）。",
-    "wiki.message.utils.wikilib.get_failed.not_mediawiki": "此網站也許不是一個有效的 Mediawiki。",
+    "wiki.message.utils.wikilib.get_failed.not_mediawiki": "此網站不是一個有效的 Mediawiki。",
     "wiki.message.utils.wikilib.get_failed.timeout": "嘗試建立連結逾時。",
     "wiki.message.utils.wikilib.invalid.empty_title": "請求的頁面標題為空的或僅含命名空間名稱。",
     "wiki.message.utils.wikilib.invalid.invalid_character": "請求的頁面標題包含無效的字元：「${char}」。",

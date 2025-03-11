@@ -251,7 +251,7 @@ class WikiLib:
             except Exception as e:
                 if Config("debug", False):
                     Logger.error(traceback.format_exc())
-                if e.args == (403,):
+                if str(e).startswith("403"):
                     message = self.locale.t(
                         "wiki.message.utils.wikilib.get_failed.forbidden"
                     )

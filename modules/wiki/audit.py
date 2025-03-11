@@ -56,8 +56,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @aud.command(["distrust <apilink>", "unblock <apilink>"])
 async def _(msg: Bot.MessageSession, apilink: str):
-    if not re.match(r"^.*(/api\.php)$", apilink):
-        await msg.finish(msg.locale.t("wiki.message.wiki_audit.remove.failed.not_api"))
+    check = await WikiLib(apilink).check_wiki_info_from_database_cache()
+    if check.available:
+        apilink = check.value.api
     if msg.parsed_msg.get("distrust", False):
         res = Audit(apilink).remove_from_AllowList()  # 已关闭的站点无法验证有效性
         if not res:

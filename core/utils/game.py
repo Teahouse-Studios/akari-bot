@@ -6,12 +6,14 @@ from core.builtins import MessageSession
 from core.logger import Logger
 
 _ps_lst = defaultdict(lambda: defaultdict(dict))
+"""
+目前 _ps_lst 的结构如下：
+`{target_id: {game: {_status: bool, _timestamp: float}}`
+"""
 GAME_EXPIRED = 3600
+"""游戏事件的过期时间。"""
 
-"""
-目前ps_lst的结构如下
-{target_id: {game: {_status: bool, _timestamp: float}}
-"""
+
 def clear_ps_list():
     now = datetime.now().timestamp()
 

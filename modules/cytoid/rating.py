@@ -255,7 +255,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             # shutil.rmtree(workdir)
             return {"status": True, "path": savefilename}
     except Exception as e:
-        if e.args == (404,):
+        if str(e).startswith("404"):
             await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
         Logger.error(traceback.format_exc())
         return {"status": False, "text": msg.locale.t("message.error") + str(e)}

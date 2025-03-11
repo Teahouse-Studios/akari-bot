@@ -617,7 +617,7 @@ class FetchTarget(FetchTargetT):
                     BotDBUtil.Analytics(fetch_).add("", module_name, "schedule")
                 await asyncio.sleep(0.5)
             except SendMessageFailed as e:
-                if e.args[0] == "send group message failed: blocked by server":
+                if str(e).startswith("send group message failed: blocked by server"):
                     if len(_tsk) >= 3:
                         blocked = True
                     if not blocked:
