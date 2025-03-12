@@ -50,15 +50,15 @@ class CQCodeHandler:
             cq_type = data["type"]
             params = data["data"]
 
-            if params:
-                param_str = [
-                    f"{key}={CQCodeHandler.escape_special_char(str(value))}"
-                    for key, value in params.items()
-                ]
-                return f"[CQ:{cq_type},{','.join(param_str)}]"
-            else:
+            if not params:
                 return f"[CQ:{cq_type}]"
-        return None
+            param_str = [
+                f"{key}={CQCodeHandler.escape_special_char(str(value))}"
+                for key, value in params.items()
+            ]
+            return f"[CQ:{cq_type},{','.join(param_str)}]"
+        else:
+            return None
 
     @staticmethod
     def parse_cq(cq_code: str) -> Optional[Dict[str, Union[str, Dict[str, Any]]]]:
@@ -72,18 +72,17 @@ class CQCodeHandler:
         match = re.match(r"\[CQ:([^\s,\]]+)(?:,([^\]]+))?\]", cq_code)
         if not match:
             return None
-        else:
-            cq_type = match.group(1)
-            if match.group(2):
-                params = match.group(2).split(',')
-                params = [x for x in params if x]
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        if cq_type == "json":
-                            kwargs[html.unescape(ma.group(1))] = json.loads(ma.group(2))
-                        else:
-                            kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
+        cq_type = match.group(1)
+        if match.group(2):
+            params = match.group(2).split(',')
+            params = [x for x in params if x]
+            for a in params:
+                ma = re.match(r"(.*?)=(.*)", a)
+                if ma:
+                    if cq_type == "json":
+                        kwargs[html.unescape(ma.group(1))] = json.loads(ma.group(2))
+                    else:
+                        kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
         data = {"type": cq_type, "data": kwargs}
 
         return data
