@@ -65,6 +65,7 @@
     "config.comments.shuffle_rate": "玩笑的随机发生率。",
     "config.comments.slower_schedule": "是否启用更慢的计划任务调度器。（减少请求压力用）",
     "config.comments.telegram_token": "Telegram 机器人令牌。",
+    "config.comments.telegram_api_url": "Telegram 自定义 API URL。",
     "config.comments.timezone_offset": "机器人的默认时区偏移量。",
     "config.comments.tos_temp_ban_time": "违反 ToS 时的临时封禁时间。",
     "config.comments.tos_warning_counts": "违反 ToS 时的警告次数。",

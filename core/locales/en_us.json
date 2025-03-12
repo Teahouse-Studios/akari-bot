@@ -64,6 +64,7 @@
     "config.comments.rickroll_msg": "Rickroll message when text filter check fails.",
     "config.comments.shuffle_rate": "The random occurrence rate of jokes.",
     "config.comments.slower_schedule": "Whether to enable a slower scheduled task scheduler. (To reduce request pressure)",
+    "config.comments.telegram_api_url": "Telegram custom API URL。",
     "config.comments.telegram_token": "Telegram bot token.",
     "config.comments.timezone_offset": "The bot's default timezone offset.",
     "config.comments.tos_temp_ban_time": "Temporary ban duration for ToS violations.",

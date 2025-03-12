@@ -22,6 +22,7 @@ megolm_backup_passphrase = Config(
     secret=True,
     table_name="bot_matrix",
 )
+proxy = Config("proxy", cfg_type=str, secret=True)
 
 store_path = os.path.abspath("./matrix_store")
 store_path_nio = os.path.join(store_path, "nio")
@@ -53,6 +54,7 @@ if homeserver and user and device_id and token:
         user,
         store_path=store_path_nio,
         config=AsyncClientConfig(store_sync_tokens=True),
+        proxy=proxy
     )
     bot.restore_login(user, device_id, token)
     if bot.olm:
