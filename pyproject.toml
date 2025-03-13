@@ -50,7 +50,7 @@ tiktoken = "^0.8.0"
 pycryptodome = "^3.18.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
-attrs = "^24.2.0"
+attrs = "^25.0.0"
 uvicorn = {extras = ["standard"], version = "^0.34.0"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 python-whois = "^0.9.0"
