@@ -30,6 +30,7 @@ PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
+enable_tos = Config('enable_tos', True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
 
@@ -198,7 +199,7 @@ async def _(event: Event):
 @bot.on_notice('group_ban')
 async def _(event: Event):
     qq_account = Temp().data.get('qq_account')
-    if event.user_id == int(qq_account):
+    if enable_tos and event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
@@ -219,7 +220,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_decrease')
 async def _(event: Event):
-    if event.sub_type == 'kick_me':
+    if enable_tos and event.sub_type == 'kick_me':
         BotDBUtil.UnfriendlyActions(target_id=event.group_id, sender_id=event.operator_id).add('kick')
         target_id = f'{target_group_prefix}|{event.group_id}'
         sender_id = f'{sender_prefix}|{event.operator_id}'
@@ -234,15 +235,16 @@ async def _(event: Event):
 
 @bot.on_message('group')
 async def _(event: Event):
-    target_id = f'{target_group_prefix}|{event.group_id}'
-    result = BotDBUtil.GroupBlockList.check(target_id)
-    if result:
-        res = Locale(default_locale).t('tos.message.in_group_blocklist')
-        if Config('issue_url', issue_url_default, cfg_type=str):
-            res += '\n' + Locale(default_locale).t('tos.message.appeal',
-                                                   issue_url=Config('issue_url', issue_url_default, cfg_type=str))
-        await bot.send(event=event, message=res)
-        await bot.call_action('set_group_leave', group_id=event.group_id)
+    if enable_tos:
+        target_id = f'{target_group_prefix}|{event.group_id}'
+        result = BotDBUtil.GroupBlockList.check(target_id)
+        if result:
+            res = Locale(default_locale).t('tos.message.in_group_blocklist')
+            if Config('issue_url', issue_url_default, cfg_type=str):
+                res += '\n' + Locale(default_locale).t('tos.message.appeal',
+                                                       issue_url=Config('issue_url', issue_url_default, cfg_type=str))
+            await bot.send(event=event, message=res)
+            await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name='bot_aiocqhttp')

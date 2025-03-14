@@ -10,6 +10,7 @@ initialized = true
 # The basic config section. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
 enable_dirty_check = false # Whether to enable text filtering detection, requires the AccessKey ID and AccessKey Secret of Alibaba Cloud Content Security Service.
 enable_urlmanager = false # Whether to enable URLManager for URL springboard. (Declare this URL is not an official link, etc.)
+enable_tos = true # Whether to enable built-in ToS checking rules.
 ignored_sender = ["QQ|2854196310"] # Ignore user list. Users matching this list will be ignored.
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # Issue feedback URL.
 enable_analytics = false # Whether to enable built-in statistics features.
@@ -28,7 +29,6 @@ timezone_offset = "+8" # The bot's default timezone offset.
 no_confirm = false # Whether to execute the command without the sender confirming the message.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword of the confirmation command. The value filled in here will be recognized as the confirmation command.
 command_prefix = ["~", "～"] # Command prefix. The value filled in here will be recognized as the command prefix.
-enable_tos = true # Whether to enable built-in ToS checking rules.
 tos_temp_ban_time = 300 # Temporary ban duration for ToS violations.
 allow_request_private_ip = false # Whether to allow bot to request local private IP addresses. (Prevent possible leakage)
 enable_get_petal = false # Whether to allow get petals.

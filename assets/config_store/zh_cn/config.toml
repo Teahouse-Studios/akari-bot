@@ -10,6 +10,7 @@ initialized = true
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 enable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
 enable_urlmanager = false # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）
+enable_tos = true # 是否启用内置的 ToS 检查规则。
 ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
 enable_analytics = false # 是否启用内置的统计功能。
@@ -28,7 +29,6 @@ timezone_offset = "+8" # 机器人的默认时区偏移量。
 no_confirm = false # 是否无需发送者确认消息后再执行命令。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
 command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
-enable_tos = true # 是否启用内置的 ToS 检查规则。
 tos_temp_ban_time = 300 # 违反 ToS 时的临时封禁时间。
 allow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）
 enable_get_petal = false # 是否允许获取花瓣。
