@@ -1,0 +1,11 @@
+{
+    "ai.help": "Answer your question via LLMs.",
+    "ai.help.desc": "Ask AkariBot anything!",
+    "ai.help.set": "Set the default LLM in session.",
+    "ai.help.option.llm": "Specify the LLM to use.",
+    "ai.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into images. Here is the original text output:\n${text}) ",
+    "ai.message.llm.invalid": "Invalid LLM.",
+    "config.comments.ai_claude_api_key": "Claude API Key. (For ai modules)",
+    "config.comments.ai_deepseek_api_key": "DeepSeek API Key. (For ai modules)",
+    "config.comments.ai_openai_api_key": "OpenAI API Key. (For ai modules)"
+}
