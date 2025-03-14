@@ -177,10 +177,7 @@ async def _(event: Event):
     sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
-    if not Config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
-        await bot.send_private_msg(user_id=event.user_id,
-                                   message=Locale(default_locale).t('qq.prompt.disable_friend_request'))
-    else:
+    if Config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
         if sender_info.is_in_block_list:
             return {'approve': False}
         return {'approve': True}
@@ -192,10 +189,7 @@ async def _(event: Event):
     sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
         return {'approve': True}
-    if not Config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
-        await bot.send_private_msg(user_id=event.user_id,
-                                   message=Locale(default_locale).t('qq.prompt.disable_group_invite'))
-    else:
+    if Config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
         if BotDBUtil.GroupBlockList.check(f'{target_group_prefix}|{event.group_id}'):
             return {'approve': False}
         return {'approve': True}
