@@ -91,4 +91,4 @@ async def _(msg: Bot.MessageSession, question: str):
 @ai.command("set <llm> {{ai.help.set}}")
 async def _(msg: Bot.MessageSession, llm: str):
     msg.data.edit_option("ai_default_llm", llm)
-    await msg.finish(msg.locale.t("success"))
+    await msg.finish(msg.locale.t("message.success"))
