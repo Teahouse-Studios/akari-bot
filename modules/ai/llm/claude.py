@@ -9,7 +9,7 @@ from core.constants.exceptions import ConfigValueError, NoReportException
 from core.logger import Logger
 from ..formatting import INSTRUCTIONS, parse_markdown
 
-api_key = Config("ai_claude_api_key", secret=True, cfg_type=str)
+api_key = Config("claude_api_key", secret=True, cfg_type=str)
 if api_key:
     client = anthropic.Anthropic(api_key=api_key)
 else:

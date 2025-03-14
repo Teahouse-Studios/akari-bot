@@ -10,7 +10,7 @@ from core.dirty_check import check
 from core.logger import Logger
 from ..formatting import INSTRUCTIONS, parse_markdown
 
-api_key = Config("ai_openai_api_key", secret=True, cfg_type=str)
+api_key = Config("openai_api_key", secret=True, cfg_type=str)
 if api_key:
     client = AsyncOpenAI(api_key=api_key)
     sync_client = OpenAI(api_key=api_key)

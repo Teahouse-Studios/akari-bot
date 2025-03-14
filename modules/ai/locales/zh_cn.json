@@ -5,7 +5,6 @@
     "ai.help.option.llm": "指定使用的大语言模型。",
     "ai.message.llm.invalid": "无效的大语言模型。",
     "ai.message.text2img.error": "（发生错误：无法正确将以下内容转换为图片，尝试原文输出：\n${text}）",
-    "config.comments.ai_claude_api_key": "Claude 的 API Key。（用于 ai 模块）",
-    "config.comments.ai_deepseek_api_key": "DeepSeek 的 API Key。（用于 ai 模块）",
-    "config.comments.ai_openai_api_key": "OpenAI 的 API Key。（用于 ai 模块）"
+    "config.comments.claude_api_key": "Claude 的 API Key。（用于 ai 模块）",
+    "config.comments.deepseek_api_key": "DeepSeek 的 API Key。（用于 ai 模块）"
 }

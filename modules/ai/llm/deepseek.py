@@ -10,7 +10,7 @@ from core.logger import Logger
 from core.utils.http import post_url
 from ..formatting import INSTRUCTIONS, parse_markdown
 
-api_key = Config("ai_deepseek_api_key", secret=True, cfg_type=str)
+api_key = Config("deepseek_api_key", secret=True, cfg_type=str)
 api_url = "https://api.deepseek.com/v1/chat/completions"
 model_name = "deepseek-chat"
 
