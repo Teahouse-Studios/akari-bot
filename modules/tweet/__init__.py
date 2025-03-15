@@ -1,5 +1,4 @@
 import base64
-import re
 from io import BytesIO
 
 import orjson as json

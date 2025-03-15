@@ -11,7 +11,6 @@ from core.constants import Info
 from core.database import BotDBUtil
 from core.database.tables import JobQueueTable
 from core.logger import Logger
-from core.utils.i18n import Locale
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
 from core.utils.web_render import check_web_render

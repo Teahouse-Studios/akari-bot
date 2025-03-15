@@ -5,7 +5,7 @@
 [module_ai]
 # 模块的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 llm_max_tokens = 4096 # 限制大语言模型的最大 Token 数。
-llm_temperature = 1 # 大语言模型的采样温度，范围 0-2，不建议与 top_p 同时修改。
+llm_temperature = 1 # 大语言模型的温度采样，范围 0-2，不建议与 top_p 同时修改。
 llm_top_p = 1 # 大语言模型的核采样，范围 0-1，不建议与 temperature 同时修改。
 ai_default_llm = "<Replace me with str value>" # 默认使用的大语言模型。
 anthropic_api_url = "<Replace me with str value>" # Anthropic 的 API 地址。（用于 ai 模块）

@@ -248,9 +248,8 @@ if 'config_version' not in config:
 if config['config_version'] < config_version:
     logger.info(f'Updating Config file from {config['config_version']} to {config_version}...')
     if config['config_version'] < 1:
-        with open(cfg_file_path, 'w', encoding='utf-8') as f:
-            f.write(toml_dumps(config))
-        config = toml_parser(open(cfg_file_path, 'r', encoding='utf-8').read())
+        with open(cfg_file_path, 'r', encoding='utf-8') as f:
+            config = toml_parser(f.read())
         locale = Locale(config.get('locale', 'zh_cn'))
         configs = {}
 

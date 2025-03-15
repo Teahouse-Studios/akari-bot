@@ -4,7 +4,7 @@ from datetime import datetime
 import orjson as json
 from google_play_scraper import app as google_play_scraper
 
-from core.builtins import Bot, ErrorMessage
+from core.builtins import Bot
 from core.constants.info import Secret
 from core.logger import Logger
 from core.utils.http import get_url, post_url

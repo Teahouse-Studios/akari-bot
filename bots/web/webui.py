@@ -1,7 +1,6 @@
 import os
 import sys
 from flask import Flask, redirect, send_from_directory, url_for
-from urllib.parse import urlparse
 
 import orjson as json
 

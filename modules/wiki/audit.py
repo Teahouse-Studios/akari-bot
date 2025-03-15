@@ -1,4 +1,3 @@
-import re
 from datetime import timezone
 
 from core.builtins import Bot, I18NContext, Image
