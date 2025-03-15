@@ -8,7 +8,7 @@ from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 from core.utils.text import isfloat
 
-api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True)
+api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True, table_name="module_exchange_rate")
 
 excr = module(
     "exchange_rate",

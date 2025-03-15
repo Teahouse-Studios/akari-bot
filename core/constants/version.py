@@ -1,2 +1,2 @@
-config_version = 0
+config_version = 1
 database_version = 6

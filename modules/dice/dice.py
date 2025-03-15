@@ -8,10 +8,10 @@ from core.config import Config
 from core.utils.random import Random
 from core.utils.text import isint
 
-MAX_DICE_COUNT = Config("dice_limit", 100)  # 一次摇动最多的骰子数量
-MAX_OUTPUT_CNT = Config("dice_output_count", 50)  # 输出的最多数据量
-MAX_OUTPUT_LEN = Config("dice_output_len", 200)  # 输出的最大长度
-MAX_OUTPUT_EXP = Config("dice_output_digit", 9)  # 输出的最大位数
+MAX_DICE_COUNT = Config("dice_limit", 100, table_name="module_dice")  # 一次摇动最多的骰子数量
+MAX_OUTPUT_CNT = Config("dice_output_count", 50, table_name="module_dice")  # 输出的最多数据量
+MAX_OUTPUT_LEN = Config("dice_output_len", 200, table_name="module_dice")  # 输出的最大长度
+MAX_OUTPUT_EXP = Config("dice_output_digit", 9, table_name="module_dice")  # 输出的最大位数
 
 
 def fmt_num(num: int, sep: bool = False):

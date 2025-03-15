@@ -10,7 +10,7 @@ from tomlkit import parse as toml_parser, dumps as toml_dumps, TOMLDocument, com
 from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
-from . import update  # noqa
+import core.config.update  # noqa
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
@@ -188,10 +188,13 @@ class CFGManager:
                     logger.error(f'[Config] Config {q} is of type dict, which is not supported.')
                 else:
                     if value is not None and not isinstance(value, cfg_type):
-                        expected_type = ', '.join(map(lambda t: t.__name__, cfg_type)) if isinstance(cfg_type, tuple) else cfg_type.__name__
-                        logger.warning(f'[Config] Config {q} has a wrong type, expected {expected_type}, got {type(value).__name__}.')
+                        expected_type = ', '.join(map(lambda t: t.__name__, cfg_type)) if isinstance(
+                            cfg_type, tuple) else cfg_type.__name__
+                        logger.warning(f'[Config] Config {q} has a wrong type, expected {
+                                       expected_type}, got {type(value).__name__}.')
             else:
-                logger.error(f'[Config] Invalid cfg_type provided in config {q}. cfg_type should be a type or a tuple of types.')
+                logger.error(f'[Config] Invalid cfg_type provided in config {
+                             q}. cfg_type should be a type or a tuple of types.')
         elif default:
             if not isinstance(value, type(default)):
                 logger.warning(
@@ -315,10 +318,16 @@ class CFGManager:
                     table_comment_key = 'config.table.config'  # i18n comment
                 elif target == 'secret':
                     table_comment_key = 'config.table.secret'
-                elif '_secret' in target:
-                    table_comment_key = 'config.table.secret_bot'
-                else:
-                    table_comment_key = 'config.table.config_bot'
+                elif target.startswith("bot_"):
+                    if target.endswith("_secret"):
+                        table_comment_key = 'config.table.secret_bot'
+                    else:
+                        table_comment_key = 'config.table.config_bot'
+                elif target.startswith("module_"):
+                    if target.endswith("_secret"):
+                        table_comment_key = 'config.table.secret_module'
+                    else:
+                        table_comment_key = 'config.table.config_module'
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))

@@ -11,7 +11,7 @@ from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from .check import secret_check
 
-appid = Config("wolfram_alpha_appid", cfg_type=str, secret=True)
+appid = Config("wolfram_alpha_appid", cfg_type=str, secret=True, table_name="module_wolframalpha")
 
 w = module(
     "wolframalpha",

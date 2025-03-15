@@ -7,7 +7,7 @@ from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal
 from .board import WordleBoard, WordleBoardImage
 
-text_mode = Config("wordle_disable_image", False)
+text_mode = Config("wordle_disable_image", False, table_name="module_wordle")
 
 wordle = module(
     "wordle",

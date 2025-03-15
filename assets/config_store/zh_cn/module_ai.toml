@@ -1,0 +1,19 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+[module_ai]
+# 模块的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+llm_max_tokens = 4096 # 限制大语言模型的最大 Token 数。
+llm_temperature = 1 # 大语言模型的采样温度，范围 0-2，不建议与 top_p 同时修改。
+llm_top_p = 1 # 大语言模型的核采样，范围 0-1，不建议与 temperature 同时修改。
+ai_default_llm = "<Replace me with str value>" # 默认使用的大语言模型。
+anthropic_api_url = "<Replace me with str value>" # Anthropic 的 API 地址。（用于 ai 模块）
+deepseek_api_url = "<Replace me with str value>" # DeepSeek 的 API 地址。（用于 ai 模块）
+openai_api_url = "<Replace me with str value>" # OpenAI 的 API 地址。（用于 ai 模块）
+
+[module_ai_secret]
+# 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+anthropic_api_key = "<Replace me with str value>" # Anthropic 的 API Key。（用于 ai 模块）
+deepseek_api_key = "<Replace me with str value>" # DeepSeek 的 API Key。（用于 ai 模块）
+openai_api_key = "<Replace me with str value>" # OpenAI 的 API Key。（用于 ai 模块）

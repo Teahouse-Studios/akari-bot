@@ -1,0 +1,7 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[module_exchange_rate_secret]
+# 模組的金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+exchange_rate_api_key = "<Replace me with str value>" # ExchangeRate-API 的 API Key。（用於 exchange_rate 模組與計算匯率用）

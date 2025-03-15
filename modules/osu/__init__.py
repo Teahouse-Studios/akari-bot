@@ -1,8 +1,11 @@
 from core.builtins import Bot
 from core.component import module
+from core.config import Config
 from .dbutils import OsuBindInfoManager
 from .profile import osu_profile
 from .utils import get_profile_name
+
+api_key = Config('osu_api_key', cfg_type=str, secret=True, table_name="module_osu")
 
 osu = module("osu", developers=["DoroWolf"], desc="{osu.help.desc}", doc=True)
 
@@ -22,13 +25,13 @@ async def _(msg: Bot.MessageSession, username: str = None):
             )
     get_mode = msg.parsed_msg.get("-t", False)
     mode = get_mode["<mode>"] if get_mode else "0"
-    await osu_profile(msg, query_id, mode)
+    await osu_profile(msg, query_id, mode, api_key)
 
 
 @osu.command("bind <username> {{osu.help.bind}}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
-    getcode = await get_profile_name(msg, code)
+    getcode = await get_profile_name(msg, code, api_key)
     if getcode:
         bind = OsuBindInfoManager(msg).set_bind_info(username=getcode[0])
         if bind:

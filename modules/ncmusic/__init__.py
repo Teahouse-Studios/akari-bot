@@ -6,7 +6,7 @@ from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
 
-API = Config("ncmusic_api", cfg_type=str, secret=True)
+API = Config("ncmusic_api", cfg_type=str, secret=True, table_name="module_ncmusic")
 SEARCH_LIMIT = 10
 
 ncmusic = module(
@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
 @ncmusic.command("<sid> {{ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])
 async def _(msg: Bot.MessageSession, sid: int):
-    if Config("ncmusic_enable_card", False):
+    if Config("ncmusic_enable_card", False, table_name="module_ncmusic"):
         await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
     else:
         await info(msg, sid)

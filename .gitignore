@@ -10,6 +10,7 @@ test*
 cache/*
 assets/arcaea*
 assets/maimai*
+assets/modules/ai
 assets/modules/arcaea
 assets/arc.apk
 assets/modules/maimai*
@@ -26,7 +27,6 @@ version*
 .console_history
 *.log
 matrix_store
-modules/ask/tools/self_knowledge
 output/*
 assets/bots_list.json
 assets/discord_slash_list.json

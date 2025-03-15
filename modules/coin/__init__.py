@@ -4,10 +4,10 @@ from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.random import Random
 
-MAX_COIN_NUM = Config("coin_limit", 10000)
-FACE_UP_WEIGHT = Config("coin_faceup_weight", 4997)
-FACE_DOWN_WEIGHT = Config("coin_facedown_weight", 4997)
-STAND_WEIGHT = Config("coin_stand_weight", 6)
+MAX_COIN_NUM = Config("coin_limit", 10000, table_name="module_coin")
+FACE_UP_WEIGHT = Config("coin_faceup_weight", 4997, table_name="module_coin")
+FACE_DOWN_WEIGHT = Config("coin_facedown_weight", 4997, table_name="module_coin")
+STAND_WEIGHT = Config("coin_stand_weight", 6, table_name="module_coin")
 
 coin = module("coin", developers=["Light-Beacon"], desc="{coin.help.desc}", doc=True)
 

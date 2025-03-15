@@ -5,13 +5,15 @@ import orjson as json
 from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
-from core.constants import Info
+from core.constants import Info, wiki_whitelist_url_default
 from core.logger import Logger
 from modules.wiki.utils.wikilib import WikiLib
 from .dbutils import WikiLogUtil
 from .utils import convert_data_to_text
 from ..wiki.utils.ab import convert_ab_to_detailed_format
 from ..wiki.utils.rc import convert_rc_to_detailed_format
+
+wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")
 
 type_map = {
     "abuselog": "AbuseLog",
@@ -61,11 +63,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
             )
     if not in_allowlist:
         prompt = msg.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
-        if Config("wiki_whitelist_url", cfg_type=str):
-            prompt += "\n" + msg.locale.t(
-                "wiki.message.wiki_audit.untrust.address",
-                url=Config("wiki_whitelist_url", cfg_type=str),
-            )
+        if wiki_whitelist_url:
+            prompt += "\n" + msg.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
         await msg.finish(prompt)
         return
     if status.available:
