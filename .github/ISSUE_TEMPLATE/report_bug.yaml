@@ -55,11 +55,11 @@ body:
     id: throw
     attributes:
       label: 错误信息
-      description: 请复制粘贴机器人的报错信息（若有）。
+      description: 请复制粘贴机器人的异常信息（若有）。
       placeholder: |
         执行命令时发生错误：
         object bool can't be used in 'await' expression
-        请将此信息报告给机器人开发者。
+        请将此信息报告给机器人所有者。
         错误汇报地址：https://s.wd-ljt.com/botreportbug
     validations:
       required: false

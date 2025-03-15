@@ -22,7 +22,8 @@ from core.utils.http import download
 from core.utils.web_render import webrender
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
-
+help_url = Config('help_url', help_url_default, cfg_type=str)
+donate_url = Config('donate_url', donate_url_default, cfg_type=str)
 
 hlp = module('help', base=True, doc=True)
 
@@ -204,12 +205,10 @@ async def _(msg: Bot.MessageSession):
 
             help_msg_list = [I18NContext("core.message.help.all_modules",
                                          prefix=msg.prefixes[0])]
-            if Config('help_url', help_url_default, cfg_type=str):
-                help_msg_list.append(I18NContext("core.message.help.document",
-                                                 url=Config('help_url', help_url_default, cfg_type=str)))
-            if Config('donate_url', donate_url_default, cfg_type=str):
-                help_msg_list.append(I18NContext("core.message.help.donate",
-                                                 url=Config('donate_url', donate_url_default, cfg_type=str)))
+            if help_url:
+                help_msg_list.append(I18NContext("core.message.help.document", url=help_url))
+            if donate_url:
+                help_msg_list.append(I18NContext("core.message.help.donate", url=donate_url))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.target.sender_id in base_superuser_list
@@ -234,24 +233,12 @@ async def _(msg: Bot.MessageSession):
         if module_:
             help_msg.append(msg.locale.t("core.message.help.legacy.external"))
             help_msg.append(' | '.join(module_))
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.detail",
-                prefix=msg.prefixes[0]))
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.all_modules",
-                prefix=msg.prefixes[0]))
-        if Config('help_url', help_url_default, cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.document",
-                    url=Config('help_url', help_url_default, cfg_type=str)))
-        if Config('donate_url', donate_url_default, cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.donate",
-                    url=Config('donate_url', donate_url_default, cfg_type=str)))
+        help_msg.append(msg.locale.t("core.message.help.detail", prefix=msg.prefixes[0]))
+        help_msg.append(msg.locale.t("core.message.help.all_modules", prefix=msg.prefixes[0]))
+        if help_url:
+            help_msg.append(msg.locale.t("core.message.help.document", url=help_url))
+        if donate_url:
+            help_msg.append(msg.locale.t("core.message.help.donate", url=donate_url))
         await msg.finish(help_msg)
 
 

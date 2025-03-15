@@ -4,8 +4,8 @@ import anthropic
 
 from core.builtins import Bot
 from core.config import Config
-from core.dirty_check import check
 from core.constants.exceptions import ConfigValueError
+from core.dirty_check import check
 from ..formatting import INSTRUCTIONS, parse_markdown
 
 api_base_url = Config("anthropic_api_url", cfg_type=str, table_name="module_ai")

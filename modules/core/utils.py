@@ -185,10 +185,11 @@ async def _(msg: Bot.MessageSession):
         + "\n"
         + msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     )
-    if Config("locale_url", locale_url_default, cfg_type=str):
+
+    if locale_url := Config("locale_url", locale_url_default, cfg_type=str):
         res += "\n" + msg.locale.t(
             "core.message.locale.contribute",
-            url=Config("locale_url", locale_url_default, cfg_type=str),
+            url=locale_url,
         )
     await msg.finish(res)
 

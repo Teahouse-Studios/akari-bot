@@ -8,6 +8,5 @@
     "phigros.message.bind.warning": "Warning: you are binding user data in PUBLIC SESSIONS, which may lead to DATA CORRUPTION of your Cloud Save since your token is LEAKED here. Please bind user data in private chats to avoid this.\nYou can reset your SessionToken by logging out and then logging back in again.",
     "phigros.message.unbind.success": "Unbound successfully.",
     "phigros.message.bind.failed": "Binding failed. Please check the input.",
-    "phigros.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}phigros bind\".",
-    "phigros.message.b19.get_failed": "Failed to get the data. Please rebind your SessionToken or report the following to developers:\n${err}"
+    "phigros.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}phigros bind\"."
 }

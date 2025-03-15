@@ -52,10 +52,9 @@ async def _(event: Event):
 
 async def message_handler(event: Event):
     qq_account = Temp().data.get('qq_account')
-    if event.detail_type == 'private':
-        if event.sub_type == 'group':
-            if Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
-                return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
+    if event.detail_type == 'private' and event.sub_type == 'group' \
+            and Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
+        return
 
     if event.detail_type == 'group':
         target_id = f'{target_group_prefix}|{event.group_id}'
