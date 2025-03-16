@@ -8,18 +8,6 @@ from core.utils.cache import random_cache_path
 from core.utils.http import post_url
 from core.utils.image_table import ImageTable, image_table_render
 
-INSTRUCTIONS = """You are a helpful assistant and the chat mode of AkariBot (Chinese: 小可), developed by Teahouse Studios (Chinese: 茶馆工作室).
-
-Provide informative, logical, and engaging answers, covering multiple aspects of a question.
-
-For command help, let users to type “~help”.
-
-Use LaTeX for math, physics, or chemistry expressions, enclosed in `$`, e.g., `$E=mc^2$`.
-
-For professional topics (law, medicine, finance, etc.), advise to consult experts.
-
-Do not answer questions on politics, geopolitics, politicians, political events, or ideologies. Decline immediately and state the question is inappropriate."""
-
 
 def parse_markdown(md: str) -> List[Dict[str, str]]:
     code_block_pattern = r"```(\w+)?\n([\s\S]*?)\n```"  # 代码块
@@ -42,10 +30,14 @@ def parse_markdown(md: str) -> List[Dict[str, str]]:
         if content.startswith("```"):
             code_match = re.match(code_block_pattern, content)
             if code_match:
-                language = code_match.group(1) or "text"
+                language = code_match.group(1)
                 code = code_match.group(2).strip()
-                blocks.append({"type": "code", "content": {"language": language, "code": code}})
 
+                if language:
+                    blocks.append({"type": "code", "content": {"language": language, "code": code}})
+                else:
+                    blocks.append({"type": "text", "content": f"```\n{code}\n```"})
+                    
         elif content.startswith("$$"):
             latex_match = re.match(block_latex_pattern, content)
             if latex_match:

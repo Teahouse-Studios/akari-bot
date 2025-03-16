@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession, question: str):
             elif is_superuser:
                 for llm_ in avaliable_llms:
                     if llm_.startswith("!") and llm == llm_[1:]:
-                        matched_llm = llm_[1:]
+                        matched_llm = llm_
                         break
 
             if matched_llm:
@@ -133,7 +133,9 @@ async def _(msg: Bot.MessageSession, llm: str):
 
 @ai.command("list {{ai.help.list}}")
 async def _(msg: Bot.MessageSession):
-    if visible_llms:
-        await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(avaliable_llms)}")
+    llms_lst = avaliable_llms if msg.check_super_user() else visible_llms
+    llms_lst = [llm.lstrip("!") for llm in llms_lst]  # 去除超级用户标记
+    if llms_lst:
+        await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(llms_lst)}")
     else:
         await msg.finish(msg.locale.t("ai.message.list.none"))

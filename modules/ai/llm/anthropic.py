@@ -6,7 +6,8 @@ from core.builtins import Bot
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
-from ..formatting import INSTRUCTIONS, parse_markdown
+from ..formatting import parse_markdown
+from ..models import INSTRUCTIONS
 
 api_base_url = Config("anthropic_api_url", cfg_type=str, table_name="module_ai")
 api_key = Config("anthropic_api_key", secret=True, cfg_type=str, table_name="module_ai")
@@ -31,6 +32,7 @@ async def ask_claude(msg: Bot.MessageSession,
                      top_p: float = 1) -> Tuple[List[Dict[str, str]], int]:
     if not client:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+    model_name = model_name.lstrip("!")  # 去除超级用户标记
 
     response = client.messages.create(
         model=model_name,

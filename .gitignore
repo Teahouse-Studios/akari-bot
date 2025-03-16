@@ -10,8 +10,8 @@ test*
 cache/*
 assets/arcaea*
 assets/maimai*
-assets/modules/ai
-assets/modules/arcaea
+assets/modules/ai*
+assets/modules/arcaea*
 assets/arc.apk
 assets/modules/maimai*
 !assets/modules/maimai/mai_utage_info.json

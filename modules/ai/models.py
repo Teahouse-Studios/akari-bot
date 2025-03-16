@@ -4,6 +4,13 @@ from core.constants.path import assets_path
 
 ai_assets_path = os.path.join(assets_path, "modules", "ai")
 
+instructions_path = os.path.join(ai_assets_path, "instructions.txt")
+if os.path.exists(instructions_path):
+    with open(instructions_path, "r", encoding="utf-8") as f:
+        INSTRUCTIONS = f.read()
+else:
+    INSTRUCTIONS = ""
+
 chatgpt_llms_path = os.path.join(ai_assets_path, "chatgpt_llms.txt")
 if os.path.exists(chatgpt_llms_path):
     with open(chatgpt_llms_path, "r", encoding="utf-8") as f:

@@ -7,7 +7,8 @@ from core.builtins import Bot
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
-from ..formatting import INSTRUCTIONS, parse_markdown
+from ..formatting import parse_markdown
+from ..models import INSTRUCTIONS
 
 api_base_url = Config("openai_api_url", cfg_type=str, table_name="module_ai")
 api_key = Config("openai_api_key", secret=True, cfg_type=str, table_name="module_ai")
@@ -34,6 +35,7 @@ async def ask_chatgpt(msg: Bot.MessageSession,
                       presence_penalty: float = 0) -> Tuple[List[Dict[str, str]], int]:
     if not client:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+    model_name = model_name.lstrip("!")  # 去除超级用户标记
 
     response = client.chat.completions.create(
         model=model_name,
