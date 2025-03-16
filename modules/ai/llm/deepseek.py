@@ -6,6 +6,7 @@ from core.builtins import Bot
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
+from core.logger import Logger
 from core.utils.http import post_url
 from ..formatting import INSTRUCTIONS, parse_markdown
 
@@ -27,8 +28,8 @@ async def ask_deepseek(msg: Bot.MessageSession, question: str, model_name: str, 
     payload = {
         "model": model_name,
         "messages": [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": question}],
-        "temperature": temperature,
-        "top_p": top_p,
+        "temperature": float(temperature),
+        "top_p": float(top_p),
         "max_tokens": max_tokens
     }
 
@@ -40,6 +41,9 @@ async def ask_deepseek(msg: Bot.MessageSession, question: str, model_name: str, 
                           attempt=1)
     if resp:
         res = resp["choices"][0]["message"]["content"]
+        r_res = resp["choices"][0]["message"].get("reasoning_content")
+        if r_res:
+            Logger.info(f"Thinking: {r_res}")
         tokens = int(resp["usage"]["total_tokens"])
 
         res = await check(res)

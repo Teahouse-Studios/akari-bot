@@ -8,7 +8,7 @@ from core.config import Config
 from core.dirty_check import check_bool, rickroll
 from core.utils.cooldown import CoolDown
 from core.logger import Logger
-from .formatting import generate_latex, generate_code_snippet
+from .formatting import generate_latex, generate_code_snippet, rendering_md_table
 from .llm.anthropic import ask_claude
 from .llm.deepseek import ask_deepseek
 from .llm.openai import ask_chatgpt
@@ -74,9 +74,8 @@ async def _(msg: Bot.MessageSession, question: str):
             elif block["type"] == "latex":
                 content = block["content"]
                 try:
-                    content = await generate_latex(content)
-                    img = PILImage.open(io.BytesIO(content))
-                    chain.append(Image(img))
+                    path = generate_latex(content)
+                    chain.append(Image(path))
                 except Exception:
                     chain.append(I18NContext("ai.message.text2img.error", text=content))
             elif block["type"] == "code":
@@ -85,6 +84,14 @@ async def _(msg: Bot.MessageSession, question: str):
                     content = await generate_code_snippet(content, block["content"]["language"])
                     img = PILImage.open(io.BytesIO(content))
                     chain.append(Image(img))
+                except Exception:
+                    chain.append(I18NContext("ai.message.text2img.error", text=content))
+            elif block["type"] == "table":
+                content = block["content"]
+                try:
+                    path_lst = await rendering_md_table(content)
+                    for path in path_lst:
+                        chain.append(Image(path))
                 except Exception:
                     chain.append(I18NContext("ai.message.text2img.error", text=content))
 

@@ -20,6 +20,7 @@ from core.utils.web_render import webrender
 class ImageTable:
     """
     图片表格。
+
     :param data: 表格内容，表格行数需与表格标头的数量相符。
     :param headers: 表格表头。
     """
