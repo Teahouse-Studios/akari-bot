@@ -12,8 +12,10 @@
     "config.comments.deepseek_api_key": "DeepSeek API Key. (For ai module)",
     "config.comments.deepseek_api_url": "API address of DeepSeek API. (For ai module)",
     "config.comments.llm_max_tokens": "Limit the maximum number of tokens for LLMs.",
-    "config.comments.llm_temperature": "The temperature sampling of the LLMs, ranging from 0-2. It is not recommended to modify it at the same time as top_p.",
-    "config.comments.llm_top_p": "The nucleus sampling of the LLM, ranging from 0-1. It is not recommended to modify it at the same time as temperature.",
+    "config.comments.llm_temperature": "The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.",
+    "config.comments.llm_top_p": "The nucleus sampling of the LLM, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature.",
+    "config.comments.llm_frequency_penalty": "The frequency penalty of the LLM, ranging from -2 to 2.",
+    "config.comments.llm_presence_penalty": "The presence penalty of the LLM, ranging from -2 to 2.",
     "config.comments.openai_api_key": "OpenAI API Key. (For ai module)",
     "config.comments.openai_api_url": "API address of OpenAI API. (For ai module)"
 }

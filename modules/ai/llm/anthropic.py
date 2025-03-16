@@ -23,7 +23,12 @@ def count_claude_token(text: str) -> int:
     return len(text) + INSTRUCTIONS_LENGTH
 
 
-async def ask_claude(msg: Bot.MessageSession, question: str, model_name: str, max_tokens: int = 4096, temperature: float = 1, top_p: float = 1) -> Tuple[List[Dict[str, str]], int]:
+async def ask_claude(msg: Bot.MessageSession,
+                     question: str,
+                     model_name: str,
+                     max_tokens: int = 4096,
+                     temperature: float = 1,
+                     top_p: float = 1) -> Tuple[List[Dict[str, str]], int]:
     if not client:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
 

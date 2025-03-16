@@ -12,7 +12,7 @@ INSTRUCTIONS = """You are a helpful assistant and the chat mode of AkariBot (Chi
 
 Provide informative, logical, and engaging answers, covering multiple aspects of a question.
 
-For command help, ask users to type “~help”.
+For command help, let users to type “~help”.
 
 Use LaTeX for math, physics, or chemistry expressions, enclosed in `$`, e.g., `$E=mc^2$`.
 

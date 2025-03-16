@@ -18,6 +18,9 @@ from .models import *
 llm_max_tokens = Config("llm_max_tokens", 4096, table_name="module_ai")
 llm_temperature = Config("llm_temperature", 1, cfg_type=(int, float), table_name="module_ai")
 llm_top_p = Config("llm_top_p", 1, cfg_type=(int, float), table_name="module_ai")
+llm_frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=(int, float), table_name="module_ai")
+llm_presence_penalty = Config("llm_presence_penalty", 0, cfg_type=(int, float), table_name="module_ai")
+
 default_llm = Config("ai_default_llm", cfg_type=str, table_name="module_ai")
 default_llm = default_llm if default_llm in avaliable_llms else None
 
@@ -48,25 +51,38 @@ async def _(msg: Bot.MessageSession, question: str):
         if await check_bool(question):
             await msg.finish(rickroll())
         if not llm:
-            if target_llm:
-                llm = target_llm
-            else:
-                llm = default_llm
+            llm = target_llm if target_llm else default_llm
 
         if llm:
-            if llm in chatgpt_llms:
-                blocks, tokens = await ask_chatgpt(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p)
-            elif llm in claude_llms:
-                blocks, tokens = await ask_claude(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p)
-            elif llm in deepseek_llms:
-                blocks, tokens = await ask_deepseek(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p)
+            matched_llm = None
+
+            if llm in visible_llms:
+                matched_llm = llm
+            elif is_superuser:
+                for llm_ in avaliable_llms:
+                    if llm_.startswith("!") and llm == llm_[1:]:
+                        matched_llm = llm_[1:]
+                        break
+
+            if matched_llm:
+                llm = matched_llm
+
+                if llm in chatgpt_llms:
+                    blocks, tokens = await ask_chatgpt(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p, llm_frequency_penalty, llm_presence_penalty)
+                elif llm in claude_llms:
+                    blocks, tokens = await ask_claude(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p)
+                elif llm in deepseek_llms:
+                    blocks, tokens = await ask_deepseek(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p, llm_frequency_penalty, llm_presence_penalty)
+                else:
+                    await msg.finish(msg.locale.t("ai.message.llm.invalid"))
             else:
                 await msg.finish(msg.locale.t("ai.message.llm.invalid"))
         else:
             await msg.finish(msg.locale.t("ai.message.llm.invalid"))
 
-        Logger.info(f"{tokens} tokens used while calling ai.")
+        Logger.info(f"{tokens} tokens used while calling AI.")
 #        petal = await count_token_petal(msg, tokens)
+
         chain = []
         for block in blocks:
             if block["type"] == "text":
@@ -108,7 +124,7 @@ async def _(msg: Bot.MessageSession, question: str):
 @ai.command("set <llm> {{ai.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, llm: str):
     llm = llm.lower()
-    if llm in avaliable_llms:
+    if llm in visible_llms:
         msg.data.edit_option("ai_default_llm", llm)
         await msg.finish(msg.locale.t("message.success"))
     else:
@@ -117,7 +133,7 @@ async def _(msg: Bot.MessageSession, llm: str):
 
 @ai.command("list {{ai.help.list}}")
 async def _(msg: Bot.MessageSession):
-    if avaliable_llms:
+    if visible_llms:
         await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(avaliable_llms)}")
     else:
         await msg.finish(msg.locale.t("ai.message.list.none"))

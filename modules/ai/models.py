@@ -27,3 +27,4 @@ else:
 
 
 avaliable_llms = chatgpt_llms + claude_llms + deepseek_llms
+visible_llms = [llm for llm in avaliable_llms if not llm.startswith("!")]

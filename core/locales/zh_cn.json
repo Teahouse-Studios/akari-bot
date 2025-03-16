@@ -62,7 +62,7 @@
     "config.comments.qq_typing_emoji": "使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji",
     "config.comments.report_targets": "上报会话列表，此处填写的值将会被识别为上报会话。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应会话）",
     "config.comments.rickroll_msg": "文字过滤检测失败时的 Rickroll 消息。",
-    "config.comments.shuffle_rate": "玩笑的随机发生率。",
+    "config.comments.shuffle_rate": "玩笑的随机发生率，范围 0 到 1 之间。",
     "config.comments.slower_schedule": "是否启用更慢的计划任务调度器。（减少请求压力用）",
     "config.comments.telegram_token": "Telegram 机器人令牌。",
     "config.comments.telegram_api_url": "Telegram 自定义 API URL。",

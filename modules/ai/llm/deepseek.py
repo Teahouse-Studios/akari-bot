@@ -21,13 +21,22 @@ else:
     headers = None
 
 
-async def ask_deepseek(msg: Bot.MessageSession, question: str, model_name: str, max_tokens: int = 4096, temperature: float = 1, top_p: float = 1) -> Tuple[List[Dict[str, str]], int]:
+async def ask_deepseek(msg: Bot.MessageSession,
+                       question: str,
+                       model_name: str,
+                       max_tokens: int = 4096,
+                       temperature: float = 1,
+                       top_p: float = 1,
+                       frequency_penalty: float = 0,
+                       presence_penalty: float = 0) -> Tuple[List[Dict[str, str]], int]:
     if not headers:
         raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
 
     payload = {
         "model": model_name,
         "messages": [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": question}],
+        "frequency_penalty": float(frequency_penalty),
+        "presence_penalty": float(presence_penalty),
         "temperature": float(temperature),
         "top_p": float(top_p),
         "max_tokens": max_tokens
@@ -41,9 +50,9 @@ async def ask_deepseek(msg: Bot.MessageSession, question: str, model_name: str, 
                           attempt=1)
     if resp:
         res = resp["choices"][0]["message"]["content"]
-        r_res = resp["choices"][0]["message"].get("reasoning_content")
-        if r_res:
-            Logger.info(f"Thinking: {r_res}")
+        thought = resp["choices"][0]["message"].get("reasoning_content")
+        if thought:
+            Logger.info(f"Thought: {thought}")
         tokens = int(resp["usage"]["total_tokens"])
 
         res = await check(res)
