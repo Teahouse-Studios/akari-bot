@@ -276,6 +276,7 @@ def pull_repo():
 
 
 def update_dependencies():
+    os.popen('poetry lock --no-update')
     poetry_install = os.popen('poetry install').read()[:-1]
     if poetry_install != '':
         return poetry_install
