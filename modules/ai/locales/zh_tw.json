@@ -5,7 +5,7 @@
     "ai.help.option.llm": "指定使用的大語言模型。",
     "ai.help.set": "設定會話內預設大語言模型。",
     "ai.message.llm.invalid": "無效的大語言模型。",
-    "ai.message.text2img.error": "（發生錯誤：無法正確將以下內容轉換為圖片，嘗試原文輸出：\n${text}）",
+    "ai.message.text2img.error": "（發生錯誤：無法正確將以下內容轉換為圖片：\n${text}）",
     "config.comments.ai_default_llm": "預設使用的大語言模型。",
     "config.comments.anthropic_api_key": "Anthropic 的 API Key。（用於 ai 模組）",
     "config.comments.anthropic_api_url": "Anthropic 的 API 位址。（用於 ai 模組）",

@@ -8,7 +8,7 @@ from core.config import Config
 from core.dirty_check import check_bool, rickroll
 from core.utils.cooldown import CoolDown
 from core.logger import Logger
-from .formatting import generate_latex, generate_code_snippet, rendering_md_table
+from .formatting import generate_code_snippet, generate_latex, generate_md_table
 from .llm.anthropic import ask_claude
 from .llm.deepseek import ask_deepseek
 from .llm.google import ask_gemini
@@ -88,6 +88,7 @@ async def _(msg: Bot.MessageSession, question: str):
         else:
             await msg.finish(msg.locale.t("ai.message.llm.invalid"))
 
+        Logger.debug(blocks)
         Logger.info(f"{tokens} tokens used while calling AI.")
 #        petal = await count_token_petal(msg, tokens)
 
@@ -113,7 +114,7 @@ async def _(msg: Bot.MessageSession, question: str):
             elif block["type"] == "table":
                 content = block["content"]
                 try:
-                    path_lst = await rendering_md_table(content)
+                    path_lst = await generate_md_table(content)
                     for path in path_lst:
                         chain.append(Image(path))
                 except Exception:

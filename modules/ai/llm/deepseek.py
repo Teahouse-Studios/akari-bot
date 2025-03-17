@@ -53,6 +53,7 @@ async def ask_deepseek(prompt: str,
         thought = resp["choices"][0]["message"].get("reasoning_content")
         if thought:
             Logger.info(f"Thought: {thought}")
+        Logger.info(res)
         tokens = int(resp["usage"]["total_tokens"])
 
         res = await check(res)

@@ -17,7 +17,7 @@ from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.types import Param
-from core.utils.bash import run_command
+from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
@@ -270,18 +270,17 @@ upd = module('update', required_superuser=True, base=True, doc=True)
 
 
 async def pull_repo():
-    returncode, output, error = await run_command(["git", "pull"])
+    returncode, output, error = await run_sys_command(["git", "pull"])
     if returncode != 0:
         return error
     return output
 
 
 async def update_dependencies():
-    await run_command(["poetry", "lock"], timeout=180)
-    returncode, poetry_install, _ = await run_command(["poetry", "install"])
+    returncode, poetry_install, _ = await run_sys_command(["poetry", "install"])
     if returncode == 0 and poetry_install:
         return poetry_install
-    _, pip_install, _ = await run_command(["pip", "install", "-r", "requirements.txt"])
+    _, pip_install, _ = await run_sys_command(["pip", "install", "-r", "requirements.txt"])
     return '...' + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
@@ -383,7 +382,7 @@ git = module('git', required_superuser=True, base=True, doc=True, load=bool(Info
 @git.command('<command>')
 async def _(msg: Bot.MessageSession, command: str):
     cmd_lst = ["git"] + command.split()
-    returncode, output, error = await run_command(cmd_lst)
+    returncode, output, error = await run_sys_command(cmd_lst)
     if returncode == 0:
         await msg.finish(output)
     else:

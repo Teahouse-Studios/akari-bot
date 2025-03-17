@@ -7,7 +7,7 @@
     "ai.message.list.none": "找不到可用的大语言模型，请联系机器人拥有者添加。",
     "ai.message.list.prompt": "以下为可用的大语言模型：",
     "ai.message.llm.invalid": "无效的大语言模型。",
-    "ai.message.text2img.error": "（发生错误：无法正确将以下内容转换为图片，尝试原文输出：\n${text}）",
+    "ai.message.text2img.error": "（发生错误：无法正确将以下内容转换为图片：\n${text}）",
     "config.comments.ai_default_llm": "默认使用的大语言模型。",
     "config.comments.anthropic_api_key": "Anthropic 的 API Key。（用于 ai 模块）",
     "config.comments.anthropic_api_url": "Anthropic 的 API 地址。（用于 ai 模块）",

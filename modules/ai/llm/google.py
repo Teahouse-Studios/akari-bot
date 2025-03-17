@@ -6,6 +6,7 @@ from google.genai import types
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
+from core.logger import Logger
 from ..formatting import parse_markdown
 from ..models import INSTRUCTIONS
 
@@ -48,8 +49,8 @@ async def ask_gemini(prompt: str,
     )
 
     res = response.text
+    Logger.info(res)
     tokens = count_gemini_token(res)
-
     res = await check(res)
     resm = "".join(m["content"] for m in res)
     return parse_markdown(resm), tokens

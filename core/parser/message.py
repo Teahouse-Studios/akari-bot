@@ -218,6 +218,7 @@ async def parser(msg: Bot.MessageSession,
                 command = msg.trigger_msg
             else:
                 command = msg.trigger_msg[len(display_prefix):]
+            command = command.strip()
 
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)

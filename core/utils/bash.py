@@ -3,12 +3,10 @@ from typing import List, Tuple
 import asyncio
 
 
-async def run_command(command: List[str], timeout: float = 10) -> Tuple[int, str, str]:
-    """执行系统命令并返回执行结果。
+async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int, str, str]:
+    """执行系统命令并返回执行结果。此函数仅在安全环境中调用，确保知道你正在干什么。
 
-    此函数仅在安全环境中调用，禁止直接使用用户输入，确保你知道你正在干什么。
-
-    :param command: 需要执行的命令（List）。
+    :param command: 需要执行的命令（List），禁止直接使用用户输入。
     :param timeout: 命令的最大执行时间（默认为 10）。
     :returns: 一个包含返回码、标准输出和标准错误的 Tuple (returncode, stdout, stderr)。
     """

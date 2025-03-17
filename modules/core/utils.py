@@ -9,7 +9,7 @@ from core.component import module
 from core.config import Config
 from core.constants import locale_url_default
 from core.database import BotDBUtil
-from core.utils.bash import run_command
+from core.utils.bash import run_sys_command
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 
@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession):
         commit = Info.version[0:6]
         send_msgs = [I18NContext("core.message.version", commit=commit)]
         if Config("enable_commit_url", True):
-            returncode, repo_url, _ = await run_command(["git", "config", "--get", "remote.origin.url"])
+            returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:
                 repo_url = repo_url.strip().replace(".git", "")
                 commit_url = f"{repo_url}/commit/{commit}"

@@ -1,4 +1,4 @@
-from core.builtins import Image as BImage
+from core.builtins import Plain, Image as BImage
 from core.component import module
 from core.utils.text import isint
 from .dbutils import DivingProberBindInfoManager

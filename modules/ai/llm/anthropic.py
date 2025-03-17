@@ -5,6 +5,7 @@ import anthropic
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
+from core.logger import Logger
 from ..formatting import parse_markdown
 from ..models import INSTRUCTIONS
 
@@ -42,6 +43,7 @@ async def ask_claude(prompt: str,
     )
 
     res = response.content[0].text
+    Logger.info(res)
     tokens = count_claude_token(res)
 
     res = await check(res)

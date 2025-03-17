@@ -6,6 +6,7 @@ import openai
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
+from core.logger import Logger
 from ..formatting import parse_markdown
 from ..models import INSTRUCTIONS
 
@@ -49,6 +50,7 @@ async def ask_chatgpt(prompt: str,
     )
 
     res = response.choices[0].message.content
+    Logger.info(res)
     tokens = count_openai_token(model_name, res)
 
     res = await check(res)
