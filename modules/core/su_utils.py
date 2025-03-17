@@ -17,6 +17,7 @@ from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.types import Param
+from core.utils.bash import run_command
 from core.utils.decrypt import decrypt_string
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
@@ -268,35 +269,30 @@ async def _(msg: Bot.MessageSession, target: str):
 upd = module('update', required_superuser=True, base=True, doc=True)
 
 
-def pull_repo():
-    pull_repo_result = os.popen('git pull', 'r').read()[:-1]
-    if pull_repo_result == '':
-        return False
-    return pull_repo_result
+async def pull_repo():
+    returncode, output, error = await run_command(["git", "pull"])
+    if returncode != 0:
+        return error
+    return output
 
 
-def update_dependencies():
-    os.popen('poetry lock --no-update')
-    poetry_install = os.popen('poetry install').read()[:-1]
-    if poetry_install != '':
+async def update_dependencies():
+    await run_command(["poetry", "lock", "--no-update"])
+    returncode, poetry_install, _ = await run_command(["poetry", "install"])
+    if returncode == 0 and poetry_install:
         return poetry_install
-    pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
-    if len(pip_install) > 500:
-        return '...' + pip_install[-500:]
-    return pip_install
+    _, pip_install, _ = await run_command(["pip", "install", "-r", "requirements.txt"])
+    return '...' + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
 @upd.command()
 async def _(msg: Bot.MessageSession):
     if not Info.binary_mode:
         if Info.version:
-            pull_repo_result = pull_repo()
+            pull_repo_result = await pull_repo()
             if pull_repo_result:
                 await msg.send_message(pull_repo_result)
-            else:
-                Logger.warning('Failed to get Git repository result.')
-                await msg.send_message(msg.locale.t("core.message.update.failed"))
-        await msg.finish(update_dependencies())
+        await msg.finish(await update_dependencies())
     else:
         await msg.finish(msg.locale.t("core.message.update.binary_mode"))
 
@@ -359,13 +355,10 @@ async def _(msg: Bot.MessageSession):
             await wait_for_restart(msg)
             write_version_cache(msg)
             if Info.version:
-                pull_repo_result = pull_repo()
+                pull_repo_result = await pull_repo()
                 if pull_repo_result:
                     await msg.send_message(pull_repo_result)
-                else:
-                    Logger.warning('Failed to get Git repository result.')
-                    await msg.send_message(msg.locale.t("core.message.update.failed"))
-            await msg.send_message(update_dependencies())
+            await msg.send_message(await update_dependencies())
             restart()
         else:
             await msg.finish()
@@ -382,6 +375,19 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         await msg.sleep(0.5)
         sys.exit()
+
+
+git = module('git', required_superuser=True, base=True, doc=True, load=bool(Info.version))
+
+
+@git.command('<command>')
+async def _(msg: Bot.MessageSession, command: str):
+    cmd_lst = ["git"] + command.split()
+    returncode, output, error = await run_command(cmd_lst)
+    if returncode == 0:
+        await msg.finish(output)
+    else:
+        await msg.finish(error)
 
 
 resume = module('resume', required_base_superuser=True, base=True, doc=True, available_for='QQ')

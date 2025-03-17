@@ -1,5 +1,4 @@
 import platform
-import subprocess
 from datetime import datetime
 
 import psutil
@@ -10,6 +9,7 @@ from core.component import module
 from core.config import Config
 from core.constants import locale_url_default
 from core.database import BotDBUtil
+from core.utils.bash import run_command
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 
@@ -22,14 +22,11 @@ async def _(msg: Bot.MessageSession):
         commit = Info.version[0:6]
         send_msgs = [I18NContext("core.message.version", commit=commit)]
         if Config("enable_commit_url", True):
-            repo_url = (
-                subprocess.check_output(["git", "config", "--get", "remote.origin.url"])
-                .decode()
-                .strip()
-            )
-            repo_url = repo_url.replace(".git", "")  # Remove .git from the repo URL
-            commit_url = f"{repo_url}/commit/{commit}"
-            send_msgs.append(Url(commit_url))
+            returncode, repo_url, _ = await run_command(["git", "config", "--get", "remote.origin.url"])
+            if returncode == 0:
+                repo_url = repo_url.strip().replace(".git", "")
+                commit_url = f"{repo_url}/commit/{commit}"
+                send_msgs.append(Url(commit_url))
         await msg.finish(send_msgs)
     else:
         await msg.finish(msg.locale.t("core.message.version.unknown"))
