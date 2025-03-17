@@ -277,7 +277,7 @@ async def pull_repo():
 
 
 async def update_dependencies():
-    await run_command(["poetry", "lock", "--no-update"])
+    await run_command(["poetry", "lock"])
     returncode, poetry_install, _ = await run_command(["poetry", "install"])
     if returncode == 0 and poetry_install:
         return poetry_install
