@@ -1,5 +1,4 @@
 import platform
-import subprocess
 from datetime import datetime
 
 import psutil

@@ -10,12 +10,14 @@ test*
 cache/*
 assets/arcaea*
 assets/maimai*
+assets/bots_list.json
+assets/discord_slash_list.json
+assets/modules_list.json
+assets/schedulers_list.json
 assets/modules/ai*
 assets/modules/arcaea*
 assets/arc.apk
 assets/modules/maimai*
-!assets/modules/maimai/mai_utage_info.json
-!assets/modules/maimai/mai_grade_info.json
 assets/modules/phigros*
 assets/private*
 bots/**/assets
@@ -28,7 +30,3 @@ version*
 *.log
 matrix_store
 output/*
-assets/bots_list.json
-assets/discord_slash_list.json
-assets/modules_list.json
-assets/schedulers_list.json

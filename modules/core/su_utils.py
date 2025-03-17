@@ -271,14 +271,13 @@ upd = module('update', required_superuser=True, base=True, doc=True)
 
 async def pull_repo():
     returncode, output, error = await run_command(["git", "pull"])
-    if returncode == 0:
-        return output
-    else:
+    if returncode != 0:
         return error
+    return output
 
 
 async def update_dependencies():
-    await run_command(["poetry", "lock", "--no-update"])
+    await run_command(["poetry", "lock"])
     returncode, poetry_install, _ = await run_command(["poetry", "install"])
     if returncode == 0 and poetry_install:
         return poetry_install
@@ -293,9 +292,6 @@ async def _(msg: Bot.MessageSession):
             pull_repo_result = await pull_repo()
             if pull_repo_result:
                 await msg.send_message(pull_repo_result)
-            else:
-                Logger.warning('Failed to get Git repository result.')
-                await msg.send_message(msg.locale.t("core.message.git.error"))
         await msg.finish(await update_dependencies())
     else:
         await msg.finish(msg.locale.t("core.message.update.binary_mode"))
