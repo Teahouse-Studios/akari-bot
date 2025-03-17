@@ -18,4 +18,5 @@ openai_api_url = "<Replace me with str value>" # OpenAI 的 API 地址。（用�
 # 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
 anthropic_api_key = "<Replace me with str value>" # Anthropic 的 API Key。（用于 ai 模块）
 deepseek_api_key = "<Replace me with str value>" # DeepSeek 的 API Key。（用于 ai 模块）
+google_gemini_api_key = "<Replace me with str value>" # Google Gemini 的 API Key。（用于 ai 模块）
 openai_api_key = "<Replace me with str value>" # OpenAI 的 API Key。（用于 ai 模块）

@@ -24,7 +24,7 @@ ncmusic = module(
 )
 async def _(msg: Bot.MessageSession, keyword: str):
     if not API:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt="json")
     song_count = result["result"]["songCount"]
@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession, sid: int):
 
 async def info(msg: Bot.MessageSession, sid: int):
     if not API:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     url = f"{API}/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt="json")
 

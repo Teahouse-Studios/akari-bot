@@ -473,8 +473,7 @@ rse = module('raise', required_superuser=True, base=True, doc=True)
 
 @rse.command()
 async def _(msg: Bot.MessageSession):
-    e = "[I18N:core.message.raise]"
-    raise TestException(e)
+    raise TestException("[I18N:core.message.raise]")
 
 
 _eval = module('eval', required_superuser=True, base=True, doc=True, load=Config('enable_eval', False))

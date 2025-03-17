@@ -32,6 +32,13 @@ if os.path.exists(deepseek_llms_path):
 else:
     deepseek_llms = []
 
+gemini_llms_path = os.path.join(ai_assets_path, "gemini_llms.txt")
+if os.path.exists(gemini_llms_path):
+    with open(gemini_llms_path, "r", encoding="utf-8") as f:
+        gemini_llms = [llm.strip().lower() for llm in f if llm.strip()]
+else:
+    gemini_llms = []
 
-avaliable_llms = chatgpt_llms + claude_llms + deepseek_llms
+
+avaliable_llms = chatgpt_llms + claude_llms + deepseek_llms + gemini_llms
 visible_llms = [llm for llm in avaliable_llms if not llm.startswith("!")]

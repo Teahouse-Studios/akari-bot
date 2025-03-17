@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple
 
 import anthropic
 
-from core.builtins import Bot
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
@@ -24,14 +23,13 @@ def count_claude_token(text: str) -> int:
     return len(text) + INSTRUCTIONS_LENGTH
 
 
-async def ask_claude(msg: Bot.MessageSession,
-                     question: str,
+async def ask_claude(prompt: str,
                      model_name: str,
                      max_tokens: int = 4096,
                      temperature: float = 1,
                      top_p: float = 1) -> Tuple[List[Dict[str, str]], int]:
     if not client:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     model_name = model_name.lstrip("!")  # 去除超级用户标记
 
     response = client.messages.create(
@@ -40,7 +38,7 @@ async def ask_claude(msg: Bot.MessageSession,
         temperature=temperature,
         top_p=top_p,
         system=INSTRUCTIONS,
-        messages=[{"role": "user", "content": question}]
+        messages=[{"role": "user", "content": prompt}]
     )
 
     res = response.content[0].text

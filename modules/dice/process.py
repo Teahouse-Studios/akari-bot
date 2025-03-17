@@ -60,7 +60,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
             MAX_ITEM_COUNT > 0,
         ]
     ):
-        raise ConfigValueError(msg.locale.t("error.config.invalid"))
+        raise ConfigValueError("[I18N:error.config.invalid]")
     if msg.Feature.markdown:
         expr = expr.replace("*", "\\*")
 

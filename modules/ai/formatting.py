@@ -12,7 +12,7 @@ from core.utils.image_table import ImageTable, image_table_render
 def parse_markdown(md: str) -> List[Dict[str, str]]:
     code_block_pattern = r"```(\w+)?\n([\s\S]*?)\n```"  # 代码块
     block_latex_pattern = r"\$\$([\s\S]*?)\$\$"  # 块级 LaTeX
-    inline_latex_pattern = r"(?<!\$)\$([^\n\$]+?)\$(?!\$)"  # 行内 LaTeX
+    inline_latex_pattern = r"(?<!\$)`?\$([^\n\$]+?)\$`?(?!\$)"  # 行内 LaTeX
     table_pattern = r"(?:\|.*\|\n)+\|(?:[-:| ]+)\|\n(?:\|.*\|\n)+"  # Markdown 表格
     # 先分块
     text_split_pattern = r"(```[\s\S]*?```|\$\$[\s\S]*?\$\$|\$[^\n\$]+?\$|(?:\|.*\|\n)+\|(?:[-:| ]+)\|\n(?:\|.*\|\n)+)"
@@ -37,7 +37,7 @@ def parse_markdown(md: str) -> List[Dict[str, str]]:
                     blocks.append({"type": "code", "content": {"language": language, "code": code}})
                 else:
                     blocks.append({"type": "text", "content": f"```\n{code}\n```"})
-                    
+
         elif content.startswith("$$"):
             latex_match = re.match(block_latex_pattern, content)
             if latex_match:

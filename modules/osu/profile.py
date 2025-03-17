@@ -18,7 +18,7 @@ def second2dhm(seconds: int):
 
 async def osu_profile(msg: Bot.MessageSession, uid, mode, api_key):
     if not api_key:
-        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     profile_url = f"https://osu.ppy.sh/api/get_user?k={api_key}&u={uid}&m={mode}"
     try:
         profile = json.loads(await get_url(profile_url, 200))[0]
@@ -62,7 +62,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode, api_key):
             grade_t.append(f'A: {a}')
     except ValueError as e:
         if str(e).startswith('401'):
-            raise ConfigValueError(msg.locale.t("error.config.invalid"))
+            raise ConfigValueError("[I18N:error.config.invalid]")
         raise e
     except Exception:
         Logger.error(traceback.format_exc())

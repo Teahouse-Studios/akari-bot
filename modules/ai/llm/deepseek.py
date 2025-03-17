@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple
 
 import orjson as json
 
-from core.builtins import Bot
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.dirty_check import check
@@ -22,8 +21,7 @@ else:
     headers = None
 
 
-async def ask_deepseek(msg: Bot.MessageSession,
-                       question: str,
+async def ask_deepseek(prompt: str,
                        model_name: str,
                        max_tokens: int = 4096,
                        temperature: float = 1,
@@ -31,12 +29,12 @@ async def ask_deepseek(msg: Bot.MessageSession,
                        frequency_penalty: float = 0,
                        presence_penalty: float = 0) -> Tuple[List[Dict[str, str]], int]:
     if not headers:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     model_name = model_name.lstrip("!")  # 去除超级用户标记
 
     payload = {
         "model": model_name,
-        "messages": [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": question}],
+        "messages": [{"role": "system", "content": INSTRUCTIONS}, {"role": "user", "content": prompt}],
         "frequency_penalty": float(frequency_penalty),
         "presence_penalty": float(presence_penalty),
         "temperature": float(temperature),

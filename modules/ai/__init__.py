@@ -11,6 +11,7 @@ from core.logger import Logger
 from .formatting import generate_latex, generate_code_snippet, rendering_md_table
 from .llm.anthropic import ask_claude
 from .llm.deepseek import ask_deepseek
+from .llm.google import ask_gemini
 from .llm.openai import ask_chatgpt
 from .models import *
 # from .petal import count_token_petal
@@ -20,6 +21,11 @@ llm_temperature = Config("llm_temperature", 1, cfg_type=(int, float), table_name
 llm_top_p = Config("llm_top_p", 1, cfg_type=(int, float), table_name="module_ai")
 llm_frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=(int, float), table_name="module_ai")
 llm_presence_penalty = Config("llm_presence_penalty", 0, cfg_type=(int, float), table_name="module_ai")
+llm_settings = {"max_tokens": llm_max_tokens,
+                "temperature": llm_temperature,
+                "top_p": llm_top_p,
+                "frequency_penalty": llm_frequency_penalty,
+                "presence_penalty": llm_presence_penalty}
 
 default_llm = Config("ai_default_llm", cfg_type=str, table_name="module_ai")
 default_llm = default_llm if default_llm in avaliable_llms else None
@@ -68,11 +74,13 @@ async def _(msg: Bot.MessageSession, question: str):
                 llm = matched_llm
 
                 if llm in chatgpt_llms:
-                    blocks, tokens = await ask_chatgpt(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p, llm_frequency_penalty, llm_presence_penalty)
+                    blocks, tokens = await ask_chatgpt(question, llm, **llm_settings)
                 elif llm in claude_llms:
-                    blocks, tokens = await ask_claude(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p)
+                    blocks, tokens = await ask_claude(question, llm, **llm_settings)
                 elif llm in deepseek_llms:
-                    blocks, tokens = await ask_deepseek(msg, question, llm, llm_max_tokens, llm_temperature, llm_top_p, llm_frequency_penalty, llm_presence_penalty)
+                    blocks, tokens = await ask_deepseek(question, llm, **llm_settings)
+                elif llm in gemini_llms:
+                    blocks, tokens = await ask_gemini(question, llm, **llm_settings)
                 else:
                     await msg.finish(msg.locale.t("ai.message.llm.invalid"))
             else:

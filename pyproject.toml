@@ -40,6 +40,7 @@ simpleeval = "^1.0.0"
 pywin32 = { version = "^308", platform = "win32" }
 tenacity = "^9.0.0"
 anthropic = "^0.49.0"
+google-genai = "^1.5.0"
 openai = "^1.6.1"
 cryptography = "^44.0.0"
 pre-commit = "^4.0.0"

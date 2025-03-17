@@ -203,7 +203,7 @@ async def get_song_record(
             return data
         except Exception as e:
             if str(e).startswith("400"):
-                raise ConfigValueError(msg.locale.t("error.config.invalid"))
+                raise ConfigValueError("[I18N:error.config.invalid]")
             Logger.error(traceback.format_exc())
             if use_cache and os.path.exists(cache_dir):
                 try:
@@ -216,7 +216,7 @@ async def get_song_record(
             else:
                 raise e
     else:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
 
 
 async def get_total_record(
