@@ -20,10 +20,13 @@ if os.path.exists(llm_api_list_path):
 else:
     llm_api_list = []
 
-# 处理缺失 name 的情况
 for l in llm_api_list:
     if not l.get("name"):
         l["name"] = l["model_name"]
+    if not l.get("price_in"):
+        l["price_in"] = 0
+    if not l.get("price_out"):
+        l["price_out"] = 0
 
 _name_count = {}
 for l in llm_api_list:
@@ -40,6 +43,3 @@ llm_api_list = _llm_api_list
 
 llm_list = [l["name"] for l in llm_api_list if not l.get("superuser", False)]
 llm_su_list = [l["name"] for l in llm_api_list if l.get("superuser", False)]
-
-
-__all__ = ["INSTRUCTIONS", "llm_api_list", "llm_list", "llm_su_list"]

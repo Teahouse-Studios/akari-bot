@@ -1,6 +1,5 @@
 import datetime
 import uuid
-from decimal import Decimal, ROUND_HALF_UP
 from typing import Union, List
 
 import orjson as json
@@ -12,7 +11,6 @@ from core.constants import database_version
 from core.database.orm import Session
 from core.database.tables import *
 from core.exports import add_export
-from core.utils.text import isint
 
 session = Session.session
 
@@ -274,10 +272,7 @@ class BotDBUtil:
             if not self.query:
                 self.query = self.init()
             petal = self.petal
-            if not isint(amount):
-                amount = Decimal(amount).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-            new_petal = petal + int(amount)
-            new_petal = 0 if new_petal < 0 else new_petal
+            new_petal = petal + amount
             self.query.petal = new_petal
             session.commit()
             return True
