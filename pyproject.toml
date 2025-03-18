@@ -77,11 +77,9 @@ matplotlib = "^3.6.3"
 py-cpuinfo = "^9.0.0"
 
 # modules
-anthropic = "^0.49.0"
 beautifulsoup4 = "^4.11.1"
 emoji = "^2.12.1"
 feedparser = "^6.0.10"
-google-genai = "^1.5.0"
 google-play-scraper = "^1.2.2"
 gql = "^3.4.0"
 langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
@@ -93,7 +91,6 @@ pint = "^0.24.0"
 python-whois = "^0.9.0"
 rdkit = "^2024.9.5"
 simpleeval = "^1.0.0"
-tiktoken = "^0.8.0"
 webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 

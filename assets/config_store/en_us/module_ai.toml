@@ -10,13 +10,3 @@ llm_top_p = 1 # The nucleus sampling of the LLM, ranging from 0 to 1. It is not 
 llm_frequency_penalty = 0 # The frequency penalty of the LLM, ranging from -2 to 2.
 llm_presence_penalty = 0 # The presence penalty of the LLM, ranging from -2 to 2.
 ai_default_llm = "<Replace me with str value>" # The LLM used by default.
-anthropic_api_url = "<Replace me with str value>" # API address of Anthropic API. (For ai module)
-deepseek_api_url = "<Replace me with str value>" # API address of DeepSeek API. (For ai module)
-openai_api_url = "<Replace me with str value>" # API address of OpenAI API. (For ai module)
-
-[module_ai_secret]
-# The secret config section of the module. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
-anthropic_api_key = "<Replace me with str value>" # Anthropic API Key. (For ai module)
-deepseek_api_key = "<Replace me with str value>" # DeepSeek API Key. (For ai module)
-google_gemini_api_key = "<Replace me with str value>" # Google Gemini API Key. (For ai module)
-openai_api_key = "<Replace me with str value>" # OpenAI API Key. (For ai module)

@@ -9,30 +9,16 @@ from core.dirty_check import check_bool, rickroll
 from core.utils.cooldown import CoolDown
 from core.logger import Logger
 from .formatting import generate_code_snippet, generate_latex, generate_md_table
-from .llm.anthropic import ask_claude
-from .llm.deepseek import ask_deepseek
-from .llm.google import ask_gemini
-from .llm.openai import ask_chatgpt
-from .models import *
+from .llm import ask_llm
+from .setting import *
 # from .petal import count_token_petal
 
-llm_max_tokens = Config("llm_max_tokens", 4096, table_name="module_ai")
-llm_temperature = Config("llm_temperature", 1, cfg_type=(int, float), table_name="module_ai")
-llm_top_p = Config("llm_top_p", 1, cfg_type=(int, float), table_name="module_ai")
-llm_frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=(int, float), table_name="module_ai")
-llm_presence_penalty = Config("llm_presence_penalty", 0, cfg_type=(int, float), table_name="module_ai")
-llm_settings = {"max_tokens": llm_max_tokens,
-                "temperature": llm_temperature,
-                "top_p": llm_top_p,
-                "frequency_penalty": llm_frequency_penalty,
-                "presence_penalty": llm_presence_penalty}
-
 default_llm = Config("ai_default_llm", cfg_type=str, table_name="module_ai")
-default_llm = default_llm if default_llm in avaliable_llms else None
+default_llm = default_llm if default_llm in llm_list else None
 
 
 ai = module("ai",
-            developers=["Dianliang233", "DoroWolf"],
+            developers=["DoroWolf", "Dianliang233"],
             desc="{ai.help.desc}",
             doc=True,
             exclude_from="QQBot",
@@ -56,35 +42,17 @@ async def _(msg: Bot.MessageSession, question: str):
 
         if await check_bool(question):
             await msg.finish(rickroll())
+
+        avaliable_llms = llm_list + (llm_su_list if is_superuser else [])
+
         if not llm:
             llm = target_llm if target_llm else default_llm
 
-        if llm:
-            matched_llm = None
-
-            if llm in visible_llms:
-                matched_llm = llm
-            elif is_superuser:
-                for llm_ in avaliable_llms:
-                    if llm_.startswith("!") and llm == llm_[1:]:
-                        matched_llm = llm_
-                        break
-
-            if matched_llm:
-                llm = matched_llm
-
-                if llm in chatgpt_llms:
-                    blocks, tokens = await ask_chatgpt(question, llm, **llm_settings)
-                elif llm in claude_llms:
-                    blocks, tokens = await ask_claude(question, llm, **llm_settings)
-                elif llm in deepseek_llms:
-                    blocks, tokens = await ask_deepseek(question, llm, **llm_settings)
-                elif llm in gemini_llms:
-                    blocks, tokens = await ask_gemini(question, llm, **llm_settings)
-                else:
-                    await msg.finish(msg.locale.t("ai.message.llm.invalid"))
-            else:
-                await msg.finish(msg.locale.t("ai.message.llm.invalid"))
+        llm_info = None
+        if llm in avaliable_llms:
+            llm_info = next(l for l in llm_api_list if l["name"] == llm)
+        if llm_info:
+            blocks, tokens = await ask_llm(question, llm_info["model_name"], llm_info["api_url"], llm_info["api_key"])
         else:
             await msg.finish(msg.locale.t("ai.message.llm.invalid"))
 
@@ -133,7 +101,7 @@ async def _(msg: Bot.MessageSession, question: str):
 @ai.command("set <llm> {{ai.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, llm: str):
     llm = llm.lower()
-    if llm in visible_llms:
+    if llm in llm_list:
         msg.data.edit_option("ai_default_llm", llm)
         await msg.finish(msg.locale.t("message.success"))
     else:
@@ -142,9 +110,9 @@ async def _(msg: Bot.MessageSession, llm: str):
 
 @ai.command("list {{ai.help.list}}")
 async def _(msg: Bot.MessageSession):
-    llms_lst = avaliable_llms if msg.check_super_user() else visible_llms
-    llms_lst = [llm.lstrip("!") for llm in llms_lst]  # 去除超级用户标记
-    if llms_lst:
-        await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(llms_lst)}")
+    avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
+
+    if avaliable_llms:
+        await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(avaliable_llms)}")
     else:
         await msg.finish(msg.locale.t("ai.message.list.none"))

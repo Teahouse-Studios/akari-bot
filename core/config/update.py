@@ -289,15 +289,11 @@ if config['config_version'] < config_version:
 
         Reorganize.table = 'ai'
         Reorganize.reorganize_module_key('ai_default_llm')
+        Reorganize.reorganize_module_key('llm_frequency_penalty')
         Reorganize.reorganize_module_key('llm_max_tokens')
+        Reorganize.reorganize_module_key('llm_presence_penalty')
         Reorganize.reorganize_module_key('llm_temperature')
         Reorganize.reorganize_module_key('llm_top_p')
-        Reorganize.reorganize_module_key('anthropic_api_url')
-        Reorganize.reorganize_module_key('anthropic_api_key', True)
-        Reorganize.reorganize_module_key('deepseek_api_url')
-        Reorganize.reorganize_module_key('deepseek_api_key', True)
-        Reorganize.reorganize_module_key('openai_api_url')
-        Reorganize.reorganize_module_key('openai_api_key', True)
 
         Reorganize.table = 'coin'
         Reorganize.reorganize_module_key('coin_limit')

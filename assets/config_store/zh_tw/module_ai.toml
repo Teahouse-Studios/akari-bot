@@ -10,13 +10,3 @@ llm_top_p = 1 # 大語言模型的核取樣，範圍 0 到 1 之間。不建議�
 llm_frequency_penalty = 0 # 大語言模型的頻率懲罰，範圍 -2 到 2 之間。
 llm_presence_penalty = 0 # 大語言模型的存在懲罰，範圍 -2 到 2 之間。
 ai_default_llm = "<Replace me with str value>" # 預設使用的大語言模型。
-anthropic_api_url = "<Replace me with str value>" # Anthropic 的 API 位址。（用於 ai 模組）
-deepseek_api_url = "<Replace me with str value>" # DeepSeek 的 API 位址。（用於 ai 模組）
-openai_api_url = "<Replace me with str value>" # OpenAI 的 API 位址。（用於 ai 模組）
-
-[module_ai_secret]
-# 模組的金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
-anthropic_api_key = "<Replace me with str value>" # Anthropic 的 API Key。（用於 ai 模組）
-deepseek_api_key = "<Replace me with str value>" # DeepSeek 的 API Key。（用於 ai 模組）
-google_gemini_api_key = "<Replace me with str value>" # Google Gemini 的 API Key。（用於 ai 模組）
-openai_api_key = "<Replace me with str value>" # OpenAI 的 API Key。（用於 ai 模組）
