@@ -39,13 +39,13 @@ async def _(msg: Bot.MessageSession, question: str):
     if llm_info:
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
             await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
-
+            
+        if await check_bool(question):
+            await msg.finish(rickroll())
+                        
         qc = CoolDown("call_ai", msg, 60)
         c = qc.check()
         if c == 0 or msg.target.client_name == "TEST" or is_superuser:
-            if await check_bool(question):
-                await msg.finish(rickroll())
-
             chain, input_tokens, output_tokens = await ask_llm(question, llm_info["model_name"], llm_info["api_url"], llm_info["api_key"])
 
             Logger.info(f"{input_tokens + output_tokens} tokens used while calling AI.")

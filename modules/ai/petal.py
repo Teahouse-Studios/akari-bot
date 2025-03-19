@@ -17,6 +17,9 @@ def precount_petal(msg: Bot.MessageSession,
         input_petal = int(ceil(input_tokens * Decimal(input_price)))
         output_petal = int(ceil(output_tokens * Decimal(output_price)))
         petal = input_petal + output_petal
+        petal = petal if petal > 0 else 0
+        if petal == 0:
+            return True
         return msg.petal >= petal
     return True
 
@@ -30,6 +33,8 @@ def count_token_petal(msg: Bot.MessageSession,
         input_petal = int(ceil(input_tokens * Decimal(input_price)))
         output_petal = int(ceil(output_tokens * Decimal(output_price)))
         petal = input_petal + output_petal
-        msg.info.modify_petal(-petal)
-        return petal
+        petal = petal if petal > 0 else 0
+        if petal != 0:
+            msg.info.modify_petal(-petal)
+            return petal
     return 0
