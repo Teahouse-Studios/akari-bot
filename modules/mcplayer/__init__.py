@@ -23,7 +23,7 @@ async def _(msg: Bot.MessageSession, username_or_uuid: str):
         else:
             name = arg
             uuid = await name_to_uuid(arg)
-        namemc = "https://namemc.com/profile/" + name
+        namemc = f"https://namemc.com/profile/{name}"
         sac = await uuid_to_skin_and_cape(uuid)
         if sac:
             render = sac["render"]

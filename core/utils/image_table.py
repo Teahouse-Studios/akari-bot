@@ -10,7 +10,7 @@ from PIL import Image as PILImage
 from tabulate import tabulate
 
 from core.constants.info import Info
-from core.joke import joke
+from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download
