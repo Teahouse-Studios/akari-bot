@@ -48,7 +48,6 @@ async def update_assets():
     except Exception:
         traceback.format_exc()
         return False
-    print(update)
     if update:
         for song in update:
             diff = {}

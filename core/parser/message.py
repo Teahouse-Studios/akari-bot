@@ -582,7 +582,6 @@ async def parser(msg: Bot.MessageSession,
                                     if datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
                                             matched_hash] < int((msg.options.get('cooldown_time', 0)) or 3):
                                         Logger.warning('Match loop detected, skipping...')
-                                        await msg.send_message(msg.locale.t("parser.matched.but_try_again_later"))
                                         continue
                                 match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
 

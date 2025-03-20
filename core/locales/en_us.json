@@ -150,7 +150,6 @@
     "parser.command.format.invalid": "Syntax error.\nUse \"${prefix}help ${module}\" for help.",
     "parser.command.running.prompt": "There are currently commands executing. Please try again later.",
     "parser.command.running.prompt2": "The previous command is being executed.",
-    "parser.matched.but_try_again_later": "Please try again later.",
     "parser.module.desc": "Description:\n${desc}",
     "parser.module.disabled.prompt": "\"${module}\" module is not enabled. Please use \"${prefix}enable ${module}\" to enable the module.",
     "parser.module.disabled.to_enable": "Do you want to enable the module and continue executing this command?",

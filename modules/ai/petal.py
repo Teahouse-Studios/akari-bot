@@ -5,7 +5,7 @@ from core.builtins import Bot
 from core.config import Config
 
 PREDICT_INPUT_TOKEN = 10
-PREDICT_OUTPUT_TOKEN = 500
+PREDICT_OUTPUT_TOKEN = 1000
 
 
 def precount_petal(msg: Bot.MessageSession,
