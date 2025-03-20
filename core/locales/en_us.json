@@ -1,5 +1,5 @@
 {
-    "bot_name": "AkariBot",
+    "bot_name": "DoroBot",
     "check.redacted": "<REDACTED:${reason}>",
     "check.redacted.all": "<ALL REDACTED:${reason}>",
     "config.comments.allow_reload_base": "Whether to allow reloading of the base modules.",

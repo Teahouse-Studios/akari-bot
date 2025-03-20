@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
     if PlayState("wordle", msg).check():
         await msg.finish(msg.locale.t("wordle.message.occupied"))
 
-    qc = CoolDown("wordle", msg, 180)
+    qc = CoolDown("wordle", msg, 410)
     if not msg.target.client_name == "TEST" and not msg.check_super_user():
         c = qc.check()
         if c != 0:
@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
         start_msg.append(I18NContext("wordle.message.start.trial"))
     await msg.send_message(start_msg)
 
-    while board.get_trials() <= 6 and play_state.check() and not board.is_game_over():
+    while board.get_trials() <= 10 and play_state.check() and not board.is_game_over():
         if trial:
             wait = await msg.wait_next_message(timeout=GAME_EXPIRED)
         else:
@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
             last_word = word
         board_image.update_board()
 
-        if not board.is_game_over() and board.get_trials() <= 6:
+        if not board.is_game_over() and board.get_trials() <= 10:
             Logger.info(f"{word} != {board.word}, attempt {board.get_trials() - 1}")
             if text_mode:
                 await wait.send_message(board.format_board())
@@ -88,8 +88,7 @@ async def _(msg: Bot.MessageSession):
         if board.board[-1] == board.word:
             g_msg = msg.locale.t("wordle.message.finish.success", attempt=attempt)
             if trial:
-                petal = 2 if attempt <= 3 else 1
-                petal += 1 if hard_mode else 0
+                petal = 0
                 if reward := await gained_petal(msg, petal):
                     g_msg += "\n" + reward
         qc.reset()
@@ -104,7 +103,7 @@ async def _(msg: Bot.MessageSession):
     play_state = PlayState("wordle", msg)
     if play_state.check():
         play_state.disable()
-        CoolDown("wordle", msg, 180).reset()
+        CoolDown("wordle", msg, 410).reset()
         await msg.finish(msg.locale.t("wordle.message.stop", answer=play_state.get("answer")))
     else:
         await msg.finish(msg.locale.t("game.message.stop.none"))

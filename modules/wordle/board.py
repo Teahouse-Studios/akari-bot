@@ -1,4 +1,3 @@
-import os
 from collections import Counter
 from enum import Enum
 from typing import List, Optional
@@ -7,15 +6,8 @@ import unicodedata
 from PIL import Image, ImageDraw, ImageFont
 from attrs import define, field
 
-from core.constants.path import assets_path, noto_sans_bold_path
+from core.constants.path import noto_sans_bold_path
 from core.utils.random import Random
-
-words_txt = os.path.join(assets_path, "modules", "wordle", "words.txt")
-answers_txt = os.path.join(assets_path, "modules", "wordle", "answers.txt")
-with open(words_txt, encoding="utf8") as handle:
-    word_list = handle.read().splitlines()
-with open(answers_txt, encoding="utf8") as handle:
-    answers_list = handle.read().splitlines()
 
 
 class WordleState(Enum):
@@ -52,7 +44,7 @@ class WordleBoard:
 
     @staticmethod
     def verify_word(word: str):
-        return word in word_list
+        return True
 
     def test_board(self):
         state: List[List[WordleState]] = []
@@ -120,12 +112,15 @@ class WordleBoard:
     def is_game_over(self):
         return bool(
             len(self.board) != 0
-            and (self.word == self.board[-1] or len(self.board) >= 6)
+            and (self.word == self.board[-1] or len(self.board) >= 10)
         )
 
     @staticmethod
     def from_random_word():
-        return WordleBoard(Random.choice(answers_list))
+        word = ""
+        for _ in range(5):
+            word += Random.choice('abcdefghijklmnopqrstuvwxyz')
+        return WordleBoard(word)
 
     def reset_board(self):
         self.word = ""
@@ -142,7 +137,7 @@ class WordleBoardImage:
     cell_size = 50
     margin = 10
     outline_width = 2
-    rows = 6
+    rows = 10
     columns = 5
     green_color = (107, 169, 100)
     yellow_color = (201, 180, 88)

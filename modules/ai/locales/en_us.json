@@ -1,6 +1,6 @@
 {
     "ai.help": "Answer your question via LLMs.",
-    "ai.help.desc": "Ask AkariBot anything!",
+    "ai.help.desc": "Ask DoroBot anything!",
     "ai.help.list": "See the list of supported LLMs.",
     "ai.help.option.llm": "Specify the LLM to use.",
     "ai.help.set": "Set the default LLM in session.",
