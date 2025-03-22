@@ -56,7 +56,7 @@ def check_valid(expr):
                 return False
         else:
             return False
-    if num_numbers > 13:
+    if num_numbers > 9:
         return False
     return True
 
@@ -134,7 +134,7 @@ async def _(msg: Bot.MessageSession):
     else:
         play_state.enable()
 
-    numbers = [Random.randint(1, 100) for _ in range(4)]
+    numbers = [Random.randint(1, 99) for _ in range(4)]
     solution = await find_solution(numbers)
 
     answer = await msg.wait_next_message(
