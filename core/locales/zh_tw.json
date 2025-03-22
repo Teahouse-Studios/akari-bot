@@ -150,7 +150,6 @@
     "parser.command.format.invalid": "語法錯誤。\n使用「${prefix}help ${module}」檢視說明。",
     "parser.command.running.prompt": "當前有指令正在執行，請稍後再試。",
     "parser.command.running.prompt2": "先前的指令正在執行中。",
-    "parser.matched.but_try_again_later": "請稍後再試。",
     "parser.module.desc": "描述：\n${desc}",
     "parser.module.disabled.prompt": "「${module}」模組未啟用，請使用「${prefix}enable ${module}」啟用此模組。",
     "parser.module.disabled.to_enable": "是否啟用模組並繼續執行此指令？",
