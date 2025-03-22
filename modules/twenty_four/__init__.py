@@ -56,7 +56,7 @@ def check_valid(expr):
                 return False
         else:
             return False
-    if num_numbers > 9:
+    if num_numbers > 13:
         return False
     return True
 
