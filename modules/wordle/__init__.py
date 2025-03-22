@@ -2,7 +2,6 @@ from core.builtins import Bot, I18NContext, Image as BImage, Plain
 from core.component import module
 from core.config import Config
 from core.logger import Logger
-from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal
 from .board import WordleBoard, WordleBoardImage
@@ -30,12 +29,6 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("game.message.running"))
     if PlayState("wordle", msg).check():
         await msg.finish(msg.locale.t("wordle.message.occupied"))
-
-    qc = CoolDown("wordle", msg, 410)
-    if not msg.target.client_name == "TEST" and not msg.check_super_user():
-        c = qc.check()
-        if c != 0:
-            await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
 
     board = WordleBoard.from_random_word()
     last_word = None
@@ -103,7 +96,6 @@ async def _(msg: Bot.MessageSession):
     play_state = PlayState("wordle", msg)
     if play_state.check():
         play_state.disable()
-        CoolDown("wordle", msg, 410).reset()
         await msg.finish(msg.locale.t("wordle.message.stop", answer=play_state.get("answer")))
     else:
         await msg.finish(msg.locale.t("game.message.stop.none"))
