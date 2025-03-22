@@ -148,7 +148,7 @@ async def _(msg: Bot.MessageSession):
                 send = msg.locale.t(
                     "twenty_four.message.incorrect.have_solution", solution=solution
                 )
-                if g_msg := (g_msg := await lost_petal(msg, 1)):
+                if g_msg := (g_msg := await lost_petal(msg, 0)):
                     send += "\n" + g_msg
             else:
                 send = msg.locale.t("twenty_four.message.correct")
