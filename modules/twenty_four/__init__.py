@@ -70,25 +70,25 @@ async def find_solution(numbers):
         for expr in exprs:  # 穷举就完事了
             exp = f"(({perm[0]}{expr[0]}{perm[1]}){expr[1]}{perm[2]}){expr[2]}{perm[3]}"
             try:
-                if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
+                if calc(exp) == 410 or 0 < 410 - calc(exp) < 1e-13:
                     return exp
             except Exception:
                 pass
             exp = f"({perm[0]}{expr[0]}{perm[1]}){expr[1]}({perm[2]}{expr[2]}{perm[3]})"
             try:
-                if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
+                if calc(exp) == 410 or 0 < 410 - calc(exp) < 1e-13:
                     return exp
             except Exception:
                 pass
             exp = f"{perm[0]}{expr[0]}({perm[1]}{expr[1]}({perm[2]}{expr[2]}{perm[3]}))"
             try:
-                if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
+                if calc(exp) == 410 or 0 < 410 - calc(exp) < 1e-13:
                     return exp
             except Exception:
                 pass
             exp = f"{perm[0]}{expr[0]}({perm[1]}{expr[1]}{perm[2]}){expr[2]}{perm[3]}"
             try:
-                if calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13:
+                if calc(exp) == 410 or 0 < 410 - calc(exp) < 1e-13:
                     return exp
             except Exception:
                 pass
@@ -134,7 +134,7 @@ async def _(msg: Bot.MessageSession):
     else:
         play_state.enable()
 
-    numbers = [Random.randint(1, 13) for _ in range(4)]
+    numbers = [Random.randint(1, 100) for _ in range(4)]
     solution = await find_solution(numbers)
 
     answer = await msg.wait_next_message(
@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession):
                     send += "\n" + g_msg
             else:
                 send = msg.locale.t("twenty_four.message.correct")
-                if g_msg := await gained_petal(msg, 1):
+                if g_msg := await gained_petal(msg, 0):
                     send += "\n" + g_msg
             if msg.Feature.markdown:
                 send.replace("*", "\\*")
@@ -163,11 +163,11 @@ async def _(msg: Bot.MessageSession):
                 await answer.finish(
                     msg.locale.t("twenty_four.message.incorrect.invalid")
                 )
-            elif (result == 24 or 0 < 24 - result < 1e-13) and contains_all_numbers(
+            elif (result == 410 or 0 < 410 - result < 1e-13) and contains_all_numbers(
                 expr, numbers
             ):
                 send = msg.locale.t("twenty_four.message.correct")
-                if g_msg := await gained_petal(msg, 1):
+                if g_msg := await gained_petal(msg, 0):
                     send += "\n" + g_msg
                 await answer.finish(send)
             else:
