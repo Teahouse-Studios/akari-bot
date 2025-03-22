@@ -355,7 +355,7 @@ async def chemical_code(
                 return await ans(wait, random_mode)
             send_ = wait.locale.t("chemical_code.message.correct")
             if random_mode:
-                if g_msg := await gained_petal(wait, 1):
+                if g_msg := await gained_petal(wait, 0):
                     send_ += "\n" + g_msg
             play_state.disable()
             await wait.finish(send_)
@@ -399,7 +399,7 @@ async def chemical_code(
             play_state.disable()
             if result.as_display(text_only=True) == play_state.get("answer"):
                 send_ = msg.locale.t("chemical_code.message.correct")
-                if g_msg := await gained_petal(msg, 2):
+                if g_msg := await gained_petal(msg, 0):
                     send_ += "\n" + g_msg
                 await result.finish(send_)
             else:
