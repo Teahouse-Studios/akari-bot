@@ -150,7 +150,6 @@
     "parser.command.format.invalid": "语法错误。\n使用“${prefix}help ${module}”查看帮助。",
     "parser.command.running.prompt": "当前有命令正在执行，请稍后再试。",
     "parser.command.running.prompt2": "先前的命令正在执行中。",
-    "parser.matched.but_try_again_later": "请稍后再试。",
     "parser.module.desc": "介绍：\n${desc}",
     "parser.module.disabled.prompt": "“${module}”模块未开启，请使用“${prefix}enable ${module}”开启本模块。",
     "parser.module.disabled.to_enable": "是否开启模块并继续执行此命令？",
