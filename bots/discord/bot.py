@@ -22,11 +22,10 @@ from core.types import MsgInfo, Session
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, "private", "discord"))
+dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 count = 0
-
-dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
 
 @client.event

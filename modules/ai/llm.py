@@ -12,10 +12,10 @@ from .formatting import parse_markdown, generate_code_snippet, generate_latex, g
 from .setting import INSTRUCTIONS
 
 max_tokens = Config("llm_max_tokens", 4096, table_name="module_ai")
-temperature = Config("llm_temperature", 1, cfg_type=(int, float), table_name="module_ai")
-top_p = Config("llm_top_p", 1, cfg_type=(int, float), table_name="module_ai")
-frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=(int, float), table_name="module_ai")
-presence_penalty = Config("llm_presence_penalty", 0, cfg_type=(int, float), table_name="module_ai")
+temperature = Config("llm_temperature", 1, cfg_type=float, table_name="module_ai")
+top_p = Config("llm_top_p", 1, cfg_type=float, table_name="module_ai")
+frequency_penalty = Config("llm_frequency_penalty", 0, cfg_type=float, table_name="module_ai")
+presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name="module_ai")
 
 
 async def ask_llm(prompt: str,

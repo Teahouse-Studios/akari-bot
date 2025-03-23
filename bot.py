@@ -51,18 +51,14 @@ def init_bot():
         session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
-    if (current_ver := int(query_dbver.value)) < (
-        target_ver := BotDBUtil.database_version
-    ):
+    if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
         Logger.info(f"Updating database from {current_ver} to {target_ver}...")
         from core.database.update import update_database
 
         update_database()
         Logger.success("Database updated successfully!")
     Logger.info(ascii_art)
-    base_superuser = Config(
-        "base_superuser", base_superuser_default, cfg_type=(str, list)
-    )
+    base_superuser = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
     if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
@@ -70,9 +66,7 @@ def init_bot():
             BotDBUtil.SenderInfo(bu).init()
             BotDBUtil.SenderInfo(bu).edit("isSuperUser", True)
     else:
-        Logger.warning(
-            "The base superuser is not found, please setup it in the config file."
-        )
+        Logger.warning("The base superuser is not found, please setup it in the config file.")
 
 
 def multiprocess_run_until_complete(func):

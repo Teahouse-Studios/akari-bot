@@ -31,6 +31,7 @@ enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
 report_targets = Config('report_targets', [])
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300) if Config('tos_temp_ban_time', 300) > 0 else 300
+bug_report_url = Config('bug_report_url', bug_report_url_default)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -496,13 +497,7 @@ async def parser(msg: Bot.MessageSession,
                         timeout = False
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                    if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                        bug_report_url = Url(
-                            Config(
-                                'bug_report_url',
-                                bug_report_url_default,
-                                cfg_type=str),
-                            use_mm=False)
+                    if bug_report_url:
                         errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                     await msg.send_message(errmsg)
 
@@ -645,13 +640,7 @@ async def parser(msg: Bot.MessageSession,
                                 timeout = False
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                            if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                                bug_report_url = Url(
-                                    Config(
-                                        'bug_report_url',
-                                        bug_report_url_default,
-                                        cfg_type=str),
-                                    use_mm=False)
+                            if bug_report_url:
                                 errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                             await msg.send_message(errmsg)
 

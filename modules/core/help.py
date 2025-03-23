@@ -22,8 +22,8 @@ from core.utils.http import download
 from core.utils.web_render import webrender
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
-help_url = Config('help_url', help_url_default, cfg_type=str)
-donate_url = Config('donate_url', donate_url_default, cfg_type=str)
+help_url = Config('help_url', help_url_default)
+donate_url = Config('donate_url', donate_url_default)
 
 hlp = module('help', base=True, doc=True)
 
@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 if help_page_url := Config('help_page_url', help_page_url_default, cfg_type=str):
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=help_page_url.replace('${module}', help_name))
-                elif help_url := Config('help_url', help_url_default, get_url=True):
+                elif help_url:
                     wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=help_url + help_name)
                 else:
@@ -253,10 +253,9 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
                 imgchain.append(Image(img))
 
             help_msg = []
-            if Config('help_url', help_url_default, cfg_type=str):
+            if help_url:
                 help_msg.append(I18NContext(
-                    "core.message.help.document",
-                                url=Config('help_url', help_url_default, cfg_type=str)))
+                    "core.message.help.document", url=help_url))
             await msg.finish(imgchain + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
@@ -277,11 +276,8 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             msg.locale.t(
                 "core.message.help.detail",
                 prefix=msg.prefixes[0]))
-        if Config('help_url', help_url_default, cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.document",
-                    url=Config('help_url', help_url_default, cfg_type=str)))
+        if help_url:
+            help_msg.append(msg.locale.t("core.message.help.document", url=help_url))
         await msg.finish(help_msg)
 
 

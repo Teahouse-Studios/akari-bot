@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 from time import sleep
@@ -16,6 +17,9 @@ from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
 from core.exports import add_export
 from core.utils.i18n import Locale
+
+
+ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
 
 class CFGManager:
@@ -90,11 +94,8 @@ class CFGManager:
     @classmethod
     def get(cls,
             q: str,
-            default: Union[Any,
-                           None] = None,
-            cfg_type: Union[type,
-                            tuple,
-                            None] = None,
+            default: Union[Any, None] = None,
+            cfg_type: Union[type, tuple, None] = None,
             secret: bool = False,
             table_name: Optional[str] = None,
             _global: bool = False,
@@ -174,33 +175,47 @@ class CFGManager:
             return None
 
         if value is None:  # if the value is not found, write the default value to the config file
-            if isinstance(default, dict):
-                default = json.dumps(default).decode()
+            if default is not None:
+                if isinstance(default, dict):
+                    default = json.dumps(default).decode()  # if the default value is dict, convert to json str
+                elif not isinstance(default, ALLOWED_TYPES):
+                    logger.error(f'[Config] Config {q} has an unsupported default type {type(default).__name__}.')
+                    return None
+                else:
+                    cfg_type = cfg_type if cfg_type else type(default)
+
             logger.debug(f'[Config] Config {q} not found, filled with default value.')
             cls.write(q, default, cfg_type, secret, table_name, _generate)
-
             return default
+
+        # if cfg_type provided, start type check
         if cfg_type:
             if isinstance(cfg_type, (type, tuple)):
-                if isinstance(cfg_type, tuple) and dict in cfg_type:
-                    logger.error(f'[Config] Config {q} has a dict type in cfg_type, which is not supported.')
-                elif isinstance(cfg_type, type) and cfg_type is dict:
-                    logger.error(f'[Config] Config {q} is of type dict, which is not supported.')
+                if isinstance(cfg_type, tuple) and not all(issubclass(t, ALLOWED_TYPES) for t in cfg_type):
+                    logger.error(f'[Config] Config {q} has an unsupported cfg_type {cfg_type}.')
+                    return None
+                elif isinstance(cfg_type, type) and not issubclass(cfg_type, ALLOWED_TYPES):
+                    logger.error(f'[Config] Config {q} has an unsupported cfg_type {cfg_type.__name__}.')
+                    return None
                 else:
+                    # check that value matches cfg_type type
                     if value is not None and not isinstance(value, cfg_type):
-                        expected_type = ', '.join(map(lambda t: t.__name__, cfg_type)) if isinstance(
-                            cfg_type, tuple) else cfg_type.__name__
-                        logger.warning(f'[Config] Config {q} has a wrong type, expected {
-                                       expected_type}, got {type(value).__name__}.')
-            else:
-                logger.error(f'[Config] Invalid cfg_type provided in config {
-                             q}. cfg_type should be a type or a tuple of types.')
-        elif default:
-            if not isinstance(value, type(default)):
+                        if (float in (cfg_type if isinstance(cfg_type, tuple)
+                                      else [cfg_type])) and isinstance(value, int):
+                            pass  # allow int as float
+                        else:
+                            expected_type = ', '.join(map(lambda t: t.__name__, cfg_type)) if isinstance(
+                                cfg_type, tuple) else cfg_type.__name__
+                            logger.warning(f'[Config] Config {q} has a wrong type, expected {
+                                expected_type}, got {type(value).__name__}.')
+        elif default is not None and not isinstance(value, type(default)):
+            # if cfg_type is not provided but default is given, check that value is consistent with default type
+            if not (isinstance(default, float) and isinstance(value, int)):  # allow int as float
                 logger.warning(
                     f'[Config] Config {q} has a wrong type, expected {
                         type(default).__name__}, got {
                         type(value).__name__}.')
+
         return value
 
     @classmethod

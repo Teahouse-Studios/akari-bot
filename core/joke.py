@@ -8,13 +8,13 @@ from core.utils.http import url_pattern
 
 def check_apr_fools() -> bool:
     current_date = datetime.now().date()
-    enable_joke = Config("enable_joke", True, cfg_type=bool)
+    enable_joke = Config("enable_joke", True)
 
     return enable_joke and (current_date.month == 4 and current_date.day == 1)
 
 
 def shuffle_joke(text: str) -> str:
-    shuffle_rate = Config("shuffle_rate", 0.1, (float, int))
+    shuffle_rate = Config("shuffle_rate", 0.1)
 
     if check_apr_fools():
         Logger.info(text)
