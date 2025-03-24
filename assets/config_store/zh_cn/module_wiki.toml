@@ -1,0 +1,7 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+[module_wiki]
+# 模块的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+wiki_whitelist_url = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml" # Wiki 白名单申请网址。

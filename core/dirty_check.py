@@ -1,6 +1,6 @@
 """利用阿里云API检查字符串是否合规。
 
-在使用前，应该在配置中填写"check_access_key_id"和"check_access_key_secret"以便进行鉴权。
+在使用前，请在配置文件中填写`check_access_key_id`和`check_access_key_secret`，以便进行鉴权。
 """
 
 import base64
@@ -171,6 +171,6 @@ def rickroll() -> str:
 
     :returns: Rickroll消息。
     """
-    if Config("enable_rickroll", True) and Config("rickroll_msg", cfg_type=str):
-        return Config("rickroll_msg", cfg_type=str)
+    if rickroll_msg := Config("rickroll_msg", cfg_type=str) and Config("enable_rickroll", True):
+        return rickroll_msg
     return "[I18N:error.message.chain.unsafe]"

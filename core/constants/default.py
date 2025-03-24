@@ -16,6 +16,8 @@ issue_url_default = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
 bug_report_url_default = "https://s.wd-ljt.com/botreportbug"
 locale_url_default = "https://www.crowdin.com/project/akari-bot"
 
+wiki_whitelist_url_default = "https://github.com/Teahouse-Studios/akari-bot/issues/new?template=request_wiki_whitelist.yaml"
+
 ignored_sender_default = [
     "QQ|2854196310",
 ]

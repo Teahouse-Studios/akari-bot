@@ -5,6 +5,7 @@
 [bot_aiogram]
 # The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
 enable = false # Whether to enable this platform.
+telegram_api_url = "<Replace me with str value>" # Telegram custom API URL。
 
 [bot_aiogram_secret]
 # The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.

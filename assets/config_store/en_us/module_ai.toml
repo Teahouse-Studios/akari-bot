@@ -1,0 +1,12 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[module_ai]
+# The basic config section of the module. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+llm_max_tokens = 4096 # Limit the maximum number of tokens for LLMs.
+llm_temperature = 1 # The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.
+llm_top_p = 1 # The nucleus sampling of the LLM, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature.
+llm_frequency_penalty = 0 # The frequency penalty of the LLM, ranging from -2 to 2.
+llm_presence_penalty = 0 # The presence penalty of the LLM, ranging from -2 to 2.
+ai_default_llm = "<Replace me with str value>" # The LLM used by default.

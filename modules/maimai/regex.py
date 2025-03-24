@@ -8,7 +8,7 @@ from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info
-from .maimai import query_plate, query_song_info, query_process
+from .maimai import query_plate, query_song_score, query_process
 
 total_list = TotalList()
 
@@ -91,11 +91,11 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result.strip())])
 
 
-@mai_regex.regex(r"(.+)\s?有什[么麼]分\s?(.+)?", desc="{maimai.help.maimai_regex.info}")
+@mai_regex.regex(r"(.+)\s?有什[么麼]分\s?(.+)?", desc="{maimai.help.maimai_regex.score}")
 async def _(msg: Bot.MessageSession):
     songname = msg.matched_msg.groups()[0]
     username = msg.matched_msg.groups()[1]
-    await query_song_info(msg, songname, username)
+    await query_song_score(msg, songname, username)
 
 
 @mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?[进進]度\s?(.+)?", desc="{maimai.help.maimai_regex.process}")

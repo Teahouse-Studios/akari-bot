@@ -4,7 +4,6 @@ from core.builtins import Bot
 from core.config import Config
 from core.constants.default import issue_url_default
 from core.database_v2.models import SenderInfo
-from core.utils.i18n import Locale
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
@@ -12,47 +11,28 @@ default_locale = Config("default_locale", cfg_type=str)
 
 
 async def warn_target(msg: Bot.MessageSession, reason: str):
+    issue_url = Config("issue_url", issue_url_default)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         await msg.sender_info.warn_user()
         current_warns = await msg.sender_info.warns
-        warn_template = [msg.locale.t("tos.message.warning")]
-        warn_template.append(msg.locale.t("tos.message.reason") + msg.locale.t_str(reason))
+        warn_template = ["[I18N:tos.message.warning]"]
+        warn_template.append("[I18N:tos.message.reason]" + msg.locale.t_str(reason))
         if current_warns < WARNING_COUNTS or msg.info.is_in_allow_list:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
-            warn_template.append(
-                msg.locale.t("tos.message.warning.count", current_warns=msg.sender_info.warns)
-            )
+            warn_template.append(f"[I18N:tos.message.warning.count,current_warns={msg.sender_info.warns}]")
             if not msg.sender_info.trusted:
-                warn_template.append(
-                    msg.locale.t(
-                        "tos.message.warning.prompt", warn_counts=WARNING_COUNTS
-                    )
-                )
-            if msg.sender_info.warns <= 2 and Config(
-                "issue_url", issue_url_default, cfg_type=str
-            ):
-                warn_template.append(
-                    msg.locale.t(
-                        "tos.message.appeal",
-                        issue_url=Config("issue_url", issue_url_default, cfg_type=str),
-                    )
-                )
+                warn_template.append(f"[I18N:tos.message.warning.prompt,warn_counts={WARNING_COUNTS}]")
+            if msg.sender_info.warns <= 2 and issue_url:
+                warn_template.append(f"[I18N:tos.message.appeal,issue_url={issue_url}]")
         elif msg.sender_info.warns == WARNING_COUNTS:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
-            warn_template.append(msg.locale.t("tos.message.warning.last"))
+            warn_template.append("[I18N:tos.message.warning.last]")
         elif msg.sender_info.warns > WARNING_COUNTS:
             await msg.sender_info.switch_identity(trust=False)
-            await tos_report(
-                msg.target.sender_id, msg.target.target_id, reason, banned=True
-            )
-            warn_template.append(msg.locale.t("tos.message.banned"))
-            if Config("issue_url", issue_url_default, cfg_type=str):
-                warn_template.append(
-                    msg.locale.t(
-                        "tos.message.appeal",
-                        issue_url=Config("issue_url", issue_url_default, cfg_type=str),
-                    )
-                )
+            await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
+            warn_template.append("[I18N:tos.message.banned]")
+            if issue_url:
+                warn_template.append(f"[I18N:tos.message.appeal,issue_url={issue_url}]")
         await msg.send_message("\n".join(warn_template))
 
 

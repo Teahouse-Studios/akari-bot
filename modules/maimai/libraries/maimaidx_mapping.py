@@ -3,7 +3,7 @@ import os
 from core.config import Config
 from core.constants.path import assets_path
 
-DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=True)
+DEVELOPER_TOKEN = Config("diving_fish_developer_token", cfg_type=str, secret=True, table_name="module_maimai")
 SONGS_PER_PAGE = 30
 SONGS_NEED_IMG = 10
 

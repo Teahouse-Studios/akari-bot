@@ -29,10 +29,10 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 | 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | Bilibili      | IP 地址查询     | Wordle     | MC 版本更新推送     |
 | 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | 网易云音乐    | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
 | 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai          | GitHub       | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
-| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  | 色彩查看器     | 抛硬币      | 茶馆周报推送        |
-| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） | OpenAI       | 随机生成器     | 掷骰工具    |                    |
-| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |                | Emojimix   |                    |
-|   WebUI（WIP） |             |                |                | nbnhhsh       |                | 一言        |                    |
+| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  |   色彩查看器    | 抛硬币      | 茶馆周报推送        |
+| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） |   nbnhhsh    |   随机生成器    | 掷骰工具    |                    |
+| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |   大语言模型   | Emojimix   |                    |
+|   WebUI（WIP） |             |                |                |               |                | 一言        |                    |
 
 ## 运行
 
@@ -80,7 +80,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 ### 自搭建
 
-推荐前往[此项目](https://github.com/Teahouse-Studios/akari-bot-core)通过小可核心版进行搭建，你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
+你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 
@@ -95,3 +95,10 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 ## 许可
 
 小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
+
+## 赞助者
+<p align="center">
+  <a href="https://afdian.com/a/teahouse">
+    <img src='https://fe.wd-ljt.com/m3me/sP0ns0r5/sP0ns0r5.svg'>
+  </a>
+</p>

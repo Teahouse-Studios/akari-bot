@@ -5,6 +5,7 @@
 [bot_aiogram]
 # 平台端的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
 enable = false # 是否啟用此平台。
+telegram_api_url = "<Replace me with str value>" # Telegram 自訂 API URL。
 
 [bot_aiogram_secret]
 # 平台端的金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。

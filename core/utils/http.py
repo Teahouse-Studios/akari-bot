@@ -1,3 +1,8 @@
+"""基于`httpx`的互联网请求工具，用于让机器人请求外部网站。
+
+请勿在模块中导入`request`库，否则会导致阻塞问题。
+"""
+
 import os
 import re
 import socket

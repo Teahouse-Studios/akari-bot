@@ -10,7 +10,6 @@ from core.config import Config
 from core.constants import Info, default_locale
 from core.database_v2.models import JobQueuesTable
 from core.logger import Logger
-from core.utils.i18n import Locale
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
 from core.utils.web_render import check_web_render
@@ -166,6 +165,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     await Bot.send_message(args['target_id'], MessageChain(args['message']))
     await return_val(tsk, {'send': True})
+
 
 @action('verify_timezone')
 async def _(tsk: JobQueuesTable, args: dict):

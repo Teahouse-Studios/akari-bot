@@ -1,0 +1,13 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[module_dice]
+# The basic config section of the module. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+dice_limit = 100 # The maximum number of dice rolled at one time of dice module.
+dice_output_count = 50 # The maximum amount of information output of dice module.
+dice_output_len = 200 # The maximum length output of dice module.
+dice_output_digit = 9 # The maximum digits of information output of dice module, exceeding which an exponent of 10 is used.
+dice_roll_limit = 10 # The maximum number of dice rolled per command of dice module.
+dice_detail_count = 5 # The total number of dice rolled n times of dice module, it will no longer show details when this value is exceeded.
+dice_count_limit = 10 # The maximum number of items in dice expressions of dice module.

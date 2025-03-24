@@ -18,8 +18,8 @@ from core.types import MsgInfo, Session
 PrivateAssets.set(os.path.join(assets_path, "private", "qqbot"))
 Info.dirty_word_check = Config("enable_dirty_check", False)
 Info.use_url_manager = Config("enable_urlmanager", False)
-qq_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
-qq_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
+qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
+qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 
 
 class MyClient(botpy.Client):
@@ -189,4 +189,4 @@ if Config("enable", False, table_name="bot_qqbot"):
     if "subprocess" in sys.argv:
         Info.subprocess = True
 
-    client.run(appid=qq_appid, secret=qq_secret)
+    client.run(appid=qqbot_appid, secret=qqbot_secret)

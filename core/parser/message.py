@@ -21,7 +21,6 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module, Param
-from core.utils.i18n import Locale
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
@@ -32,6 +31,7 @@ enable_tos = Config('enable_tos', True)
 enable_analytics = Config('enable_analytics', False)
 report_targets = Config('report_targets', [])
 TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300) if Config('tos_temp_ban_time', 300) > 0 else 300
+bug_report_url = Config('bug_report_url', bug_report_url_default)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -220,6 +220,7 @@ async def parser(msg: Bot.MessageSession,
                 command = msg.trigger_msg
             else:
                 command = msg.trigger_msg[len(display_prefix):]
+            command = command.strip()
 
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)
@@ -501,13 +502,7 @@ async def parser(msg: Bot.MessageSession,
                         timeout = False
                         errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                    if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                        bug_report_url = Url(
-                            Config(
-                                'bug_report_url',
-                                bug_report_url_default,
-                                cfg_type=str),
-                            use_mm=False)
+                    if bug_report_url:
                         errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                     await msg.send_message(errmsg)
 
@@ -587,7 +582,6 @@ async def parser(msg: Bot.MessageSession,
                                     if datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
                                             matched_hash] < int((msg.target_data.get('cooldown_time', 0)) or 3):
                                         Logger.warning('Match loop detected, skipping...')
-                                        await msg.send_message(msg.locale.t("parser.matched.but_try_again_later"))
                                         continue
                                 match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
 
@@ -654,13 +648,7 @@ async def parser(msg: Bot.MessageSession,
                                 timeout = False
                                 errmsg = msg.locale.t('error.prompt.report', detail=str(e))
 
-                            if Config('bug_report_url', bug_report_url_default, cfg_type=str):
-                                bug_report_url = Url(
-                                    Config(
-                                        'bug_report_url',
-                                        bug_report_url_default,
-                                        cfg_type=str),
-                                    use_mm=False)
+                            if bug_report_url:
                                 errmsg += '\n' + msg.locale.t('error.prompt.address', url=bug_report_url)
                             await msg.send_message(errmsg)
 

@@ -10,7 +10,7 @@ from PIL import Image as PILImage
 from tabulate import tabulate
 
 from core.constants.info import Info
-from core.joke import joke
+from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download
@@ -20,6 +20,7 @@ from core.utils.web_render import webrender
 class ImageTable:
     """
     图片表格。
+
     :param data: 表格内容，表格行数需与表格标头的数量相符。
     :param headers: 表格表头。
     """

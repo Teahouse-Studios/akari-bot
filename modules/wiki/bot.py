@@ -36,8 +36,13 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
 
 @wb.command("logout <apilink>")
 async def _(msg: Bot.MessageSession, apilink: str):
-    BotAccountDB.remove(apilink)
-    await msg.finish(msg.locale.t("message.success"))
+    check = await WikiLib(apilink).check_wiki_info_from_database_cache()
+    if check.available:
+        apilink = check.value.api
+    if BotAccountDB.remove(apilink):
+        await msg.finish(msg.locale.t("message.success"))
+    else:
+        await msg.finish(msg.locale.t("message.failed"))
 
 
 @wb.command("toggle")

@@ -4,7 +4,7 @@ from core.config import Config
 
 from modules.github import repo, user, search
 
-pat = Config("github_pat", cfg_type=str, secret=True)
+pat = Config("github_pat", cfg_type=str, secret=True, table_name="module_github")
 
 github = module(
     "github",

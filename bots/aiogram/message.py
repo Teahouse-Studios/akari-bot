@@ -138,7 +138,7 @@ class MessageSession(MessageSessionT):
                             self.session.message.message_id
                             if quote and count == 0 and self.session.message
                             else None
-                        ),
+                        ), parse_mode="HTML"
                     )
                     Logger.info(f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{x.id}")
                     send.append(send_)

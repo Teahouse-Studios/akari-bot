@@ -1,0 +1,10 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[module_coin]
+# 模組的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+coin_limit = 10000 # coin 模組可拋硬幣的上限。
+coin_faceup_weight = 4997 # coin 模組拋硬幣時正面的權重。
+coin_facedown_weight = 4997 # coin 模組拋硬幣時反面的權重。
+coin_stand_weight = 6 # coin 模組拋硬幣時立起的權重。

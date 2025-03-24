@@ -12,16 +12,19 @@ from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler
+from core.utils.bash import run_sys_command
 from core.utils.info import Info
 from core.database_v2 import init_db
 
 
 async def init_async(start_scheduler=True) -> None:
     await init_db()
-    try:
-        Info.version = os.popen("git rev-parse HEAD", "r").read().strip('\n')
-    except Exception:
+    returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
+    if returncode == 0:
+        Info.version = commit_hash
+    else:
         Logger.warning("Failed to get Git commit hash, is it a Git repository?")
+
     load_modules()
     gather_list = []
     modules = ModulesManager.return_modules_list()

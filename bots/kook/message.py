@@ -27,8 +27,9 @@ from core.database_v2.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"
+kook_token = Config('kook_token', cfg_type=str, secret=True, table_name='bot_kook')
 kook_headers = {
-    "Authorization": f"Bot {Config('kook_token', cfg_type=str, secret=True, table_name='bot_kook')}"
+    "Authorization": f"Bot {kook_token}"
 }
 
 

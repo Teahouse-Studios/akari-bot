@@ -1,5 +1,4 @@
 import platform
-import subprocess
 from datetime import datetime
 
 import psutil
@@ -9,6 +8,7 @@ from core.builtins import Bot, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants import locale_url_default
+from core.utils.bash import run_sys_command
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 
@@ -22,14 +22,11 @@ async def _(msg: Bot.MessageSession):
         commit = Info.version[0:6]
         send_msgs = [I18NContext("core.message.version", commit=commit)]
         if Config("enable_commit_url", True):
-            repo_url = (
-                subprocess.check_output(["git", "config", "--get", "remote.origin.url"])
-                .decode()
-                .strip()
-            )
-            repo_url = repo_url.replace(".git", "")  # Remove .git from the repo URL
-            commit_url = f"{repo_url}/commit/{commit}"
-            send_msgs.append(Url(commit_url))
+            returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
+            if returncode == 0:
+                repo_url = repo_url.strip().replace(".git", "")
+                commit_url = f"{repo_url}/commit/{commit}"
+                send_msgs.append(Url(commit_url))
         await msg.finish(send_msgs)
     else:
         await msg.finish(msg.locale.t("core.message.version.unknown"))
@@ -185,10 +182,11 @@ async def _(msg: Bot.MessageSession):
         + "\n"
         + msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     )
-    if Config("locale_url", locale_url_default, cfg_type=str):
+
+    if locale_url := Config("locale_url", locale_url_default, cfg_type=str):
         res += "\n" + msg.locale.t(
             "core.message.locale.contribute",
-            url=Config("locale_url", locale_url_default, cfg_type=str),
+            url=locale_url,
         )
     await msg.finish(res)
 
@@ -274,13 +272,9 @@ async def _(msg: Bot.MessageSession, offset: str):
         tstr_split = [int(part) for part in offset.split(":")]
         hour = tstr_split[0]
         minute = tstr_split[1] if len(tstr_split) > 1 else 0
-        if minute == 0:
-            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
-        else:
-            symbol = offset[0] if offset.startswith(("+", "-")) else "+"
-            offset = f"{symbol}{abs(hour)}:{abs(minute):02d}"
         if hour > 12 or minute >= 60:
             raise ValueError
+        offset = f"{hour:+}" if minute == 0 else f"{hour:+}:{abs(minute):02d}"
     except ValueError:
         await msg.finish(msg.locale.t("core.message.setup.timeoffset.invalid"))
     await msg.target_info.edit_target_data("timezone_offset", offset)

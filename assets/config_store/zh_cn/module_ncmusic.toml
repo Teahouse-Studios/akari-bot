@@ -1,0 +1,11 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。请不要在此处使用 Python 语法。
+# 例如：TOML 中的布尔值必须是小写。
+
+[module_ncmusic_secret]
+# 模块的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
+ncmusic_api = "<Replace me with str value>" # 网易云音乐 API 的 API 地址。（用于 ncmusic 模块）
+
+[module_ncmusic]
+# 模块的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+ncmusic_enable_card = false # ncmusic 模块是否启用卡片消息。（仅在 QQ 客户端有效）

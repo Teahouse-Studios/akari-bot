@@ -30,6 +30,7 @@ PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
 Info.dirty_word_check = Config('enable_dirty_check', False)
 Info.use_url_manager = Config('enable_urlmanager', False)
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
+enable_tos = Config('enable_tos', True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
 qq_account = 0
@@ -52,10 +53,9 @@ async def _(event: Event):
 
 async def message_handler(event: Event):
     qq_account = Temp().data.get('qq_account')
-    if event.detail_type == 'private':
-        if event.sub_type == 'group':
-            if Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
-                return await bot.send(event, Locale(default_locale).t('qq.prompt.disable_temp_session'))
+    if event.detail_type == 'private' and event.sub_type == 'group' \
+            and Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
+        return
 
     if event.detail_type == 'group':
         target_id = f'{target_group_prefix}|{event.group_id}'
@@ -178,10 +178,7 @@ async def _(event: Event):
     sender_info = await SenderInfo.get(sender_id=sender_id)
     if sender_info.superuser or sender_info.trusted:
         return {'approve': True}
-    if not Config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
-        await bot.send_private_msg(user_id=event.user_id,
-                                   message=Locale(default_locale).t('qq.prompt.disable_friend_request'))
-    else:
+    if Config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
         if sender_info.blocked:
             return {'approve': False}
         return {'approve': True}
@@ -195,10 +192,7 @@ async def _(event: Event):
     target_info = await TargetInfo.get(target_id=target_id)
     if sender_info.superuser or sender_info.trusted:
         return {'approve': True}
-    if not Config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
-        await bot.send_private_msg(user_id=event.user_id,
-                                   message=Locale(default_locale).t('qq.prompt.disable_group_invite'))
-    else:
+    if Config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
         if target_info.blocked:
             return {'approve': False}
         return {'approve': True}
@@ -206,7 +200,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
-    if event.user_id == int(qq_account):
+    if enable_tos and event.user_id == int(qq_account):
         sender_id = f'{sender_prefix}|{event.operator_id}'
         sender_info = await SenderInfo.get(sender_id=sender_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
@@ -226,7 +220,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_decrease')
 async def _(event: Event):
-    if event.sub_type == 'kick_me':
+    if enable_tos and event.sub_type == 'kick_me':
         sender_id = f'{sender_prefix}|{event.operator_id}'
         sender_info = await SenderInfo.get(sender_id=sender_id)
         target_id = f'{target_group_prefix}|{event.group_id}'
@@ -242,15 +236,15 @@ async def _(event: Event):
 
 @bot.on_message('group')
 async def _(event: Event):
-    target_id = f'{target_group_prefix}|{event.group_id}'
-    target_info = await TargetInfo.get_or_none(target_id=target_id)
-    if target_info and target_info.blocked:
-        res = Locale(default_locale).t('tos.message.in_group_blocklist')
-        if Config('issue_url', issue_url_default, cfg_type=str):
-            res += '\n' + Locale(default_locale).t('tos.message.appeal',
-                                                   issue_url=Config('issue_url', issue_url_default, cfg_type=str))
-        await bot.send(event=event, message=res)
-        await bot.call_action('set_group_leave', group_id=event.group_id)
+    if enable_tos:
+        target_id = f'{target_group_prefix}|{event.group_id}'
+        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        if target_info and target_info.blocked:
+            res = Locale(default_locale).t('tos.message.in_group_blocklist')
+            if issue_url := Config('issue_url', issue_url_default):
+                res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=issue_url)
+            await bot.send(event=event, message=res)
+            await bot.call_action('set_group_leave', group_id=event.group_id)
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name='bot_aiocqhttp')

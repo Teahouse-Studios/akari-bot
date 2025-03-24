@@ -11,7 +11,7 @@ from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from .check import secret_check
 
-appid = Config("wolfram_alpha_appid", cfg_type=str, secret=True)
+appid = Config("wolfram_alpha_appid", cfg_type=str, secret=True, table_name="module_wolframalpha")
 
 w = module(
     "wolframalpha",
@@ -29,7 +29,7 @@ async def _(msg: Bot.MessageSession, query: str):
         await msg.finish(rickroll())
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession, question: str):
         await msg.finish(rickroll())
     url_query = urllib.parse.quote(question)
     if not appid:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("[I18N:error.config.secret.not_found]")
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)

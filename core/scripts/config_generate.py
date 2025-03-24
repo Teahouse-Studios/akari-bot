@@ -87,7 +87,7 @@ def generate_config(dir_path, language):
                 spl.remove(s)
         try:
             # Execute the code to generate the config file, yeah, just stupid but works
-            exec(f'Config({','.join(spl)})')
+            exec(f'Config({','.join(spl)})')  # noqa
         except (NameError, TypeError):
             # traceback.print_exc()
             ...
