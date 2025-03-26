@@ -23,8 +23,8 @@ def clear_cd_list():
                 for cd in list(sender_data.keys()):
                     cd_data = sender_data[cd]
 
-                if "timestamp" in cd_data and (now - cd_data["timestamp"] >= cd_data["delay"]):
-                    del sender_data[cd]
+                    if "timestamp" in cd_data and (now - cd_data["timestamp"] >= cd_data["delay"]):
+                        del sender_data[cd]
 
                 if not sender_data:
                     del target_data[sender]
