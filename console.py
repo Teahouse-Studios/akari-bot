@@ -8,18 +8,17 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from core.config import Config
-from core.constants.default import db_path_default
 from core.constants.info import Info
 from core.constants.path import assets_path, cache_path
 from core.logger import Logger
 
-if not Config("db_path", default=db_path_default, secret=True):
-    raise AttributeError(
-        'Wait! You need to fill a valid database address into the config.toml "db_path" field\n'
-        'Example: \ndb_path = "sqlite:///database/save.db"\n'
-        "(Also you can fill in the above example directly,"
-        ' bot will automatically create a SQLite database in the "./database/save.db")'
-    )
+if not Config("db_path", secret=True):
+    raise AttributeError("""
+Wait! You need to fill a valid database address into the config.toml \"db_path\" field.
+Example:
+db_path = \"sqlite:///database/save.db\"
+(Also you can fill in the above example directly, bot will automatically create a SQLite database in the \"./database/save.db\")"
+""")
 
 from bot import init_bot
 from core.bot_init import init_async

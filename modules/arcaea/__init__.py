@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
     )
     if resp:
         value = resp["value"][0]
-        image = os.path.join(arc_assets_path, "jacket", f'{value["song_id"]}.jpg')
+        image = os.path.join(arc_assets_path, "jacket", f"{value["song_id"]}.jpg")
         result = [Plain(value["title"]["en"])]
         if os.path.exists(image):
             result.append(BImage(path=image))
@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession):
         rank = 0
         for x in resp["value"]:
             rank += 1
-            r.append(f'{rank}. {x["title"]["en"]} ({x["status"]})')
+            r.append(f"{rank}. {x["title"]["en"]} ({x["status"]})")
         await msg.finish(r)
     else:
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))

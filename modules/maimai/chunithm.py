@@ -301,7 +301,7 @@ async def _(msg: Bot.MessageSession):
                 music = (await total_list.get()).random()
                 await msg.finish(
                     await get_info(
-                        music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")
+                        music, Plain(f"{"/".join(str(ds) for ds in music.ds)}")
                     )
                 )
             else:
@@ -319,7 +319,7 @@ async def _(msg: Bot.MessageSession):
         else:
             music = music_data.random()
             await msg.finish(
-                await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}"))
+                await get_info(music, Plain(f"{"/".join(str(ds) for ds in music.ds)}"))
             )
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.failed"))

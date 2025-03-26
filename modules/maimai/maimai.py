@@ -77,7 +77,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     end_index = page * SONGS_PER_PAGE
 
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]} - {elem[1]}{" (DX)" if elem[5] == "DX" else ""} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
@@ -126,7 +126,7 @@ async def _(msg: Bot.MessageSession, level: str):
 
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]} - {elem[1]}{" (DX)" if elem[5] == "DX" else ""} {elem[3]} {elem[4]} ({elem[2]})\n"
 
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -165,7 +165,7 @@ async def _(msg: Bot.MessageSession):
 
     s = msg.locale.t("maimai.message.new") + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
+        s += f"{elem[0]} - {elem[1]}{" (DX)" if elem[2] == "DX" else ""}\n"
 
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -208,7 +208,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
     s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
     for elem in result_set[start_index:end_index]:
-        s += f"{elem[0]} - {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
+        s += f"{elem[0]} - {elem[1]}{" (DX)" if elem[2] == "DX" else ""}\n"
     if len(data) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
@@ -236,7 +236,7 @@ async def _(msg: Bot.MessageSession, sid: str):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     title = (
-        f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+        f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""}"
     )
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
@@ -301,7 +301,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                    res += f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}\n"
             res += msg.locale.t("maimai.message.chart.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:
@@ -315,7 +315,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
         with open(mai_utage_info_path, "r", encoding="utf-8") as file:
             utage_data = json.loads(file.read())
 
-        res.append(f"「{utage_data[sid]['comment']}」")
+        res.append(f"「{utage_data[sid]["comment"]}」")
         if utage_data[sid]["referrals_num"]["mode"] == "normal":
             chart = utage_data[sid]["charts"][0]
             res.append(
@@ -410,7 +410,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                    res += f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}\n"
             res += msg.locale.t("maimai.message.song.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:
@@ -468,7 +468,7 @@ async def query_song_score(msg, query, username):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                    res += f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}\n"
             res += msg.locale.t("maimai.message.info.prompt", prefix=msg.prefixes[0])
             await msg.finish(res)
         else:
@@ -681,7 +681,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         else:
             music = music_data.random()
             await msg.finish(
-                await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}"))
+                await get_info(music, Plain(f"{"/".join(str(ds) for ds in music.ds)}"))
             )
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.failed"))
@@ -691,7 +691,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).random()
     await msg.finish(
-        await get_info(music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}"))
+        await get_info(music, Plain(f"{"/".join(str(ds) for ds in music.ds)}"))
     )
 
 
@@ -735,8 +735,8 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         )
         b2t_2000_great_prop = f"{(break_2000_reduce / total_score * 100):.4f}"
         await msg.finish(
-            f"""{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_list[diff_index]}
-{msg.locale.t('maimai.message.scoreline',
+            f"""{music["title"]}{" (DX)" if music["type"] == "DX" else ""} {diff_list[diff_index]}
+{msg.locale.t("maimai.message.scoreline",
               scoreline=score,
               tap_great=tap_great,
               tap_great_prop=tap_great_prop,

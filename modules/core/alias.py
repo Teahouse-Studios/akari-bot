@@ -154,7 +154,7 @@ async def _(msg: Bot.MessageSession):
 
         if legacy:
             await msg.finish(
-                f'{msg.locale.t("core.message.alias.list")}\n'
+                f"{msg.locale.t("core.message.alias.list")}\n"
                 + "\n".join(
                     [
                         f"{aliases_count - i} - {k} -> {msg.prefixes[0]}{aliases[k]}"
@@ -165,7 +165,7 @@ async def _(msg: Bot.MessageSession):
 
 
 def check_valid_placeholder(alias):
-    '''检查占位符有效性'''
+    """检查占位符有效性"""
     alias_noph = alias
     phs = re.findall(r"\${(.*?)}", alias)
     for ph in phs:

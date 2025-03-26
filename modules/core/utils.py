@@ -96,7 +96,7 @@ admin = module(
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.custom_admins:
-            await msg.finish(f"{msg.locale.t('core.message.admin.list')}\n{'\n'.join(msg.custom_admins)}")
+            await msg.finish(f"{msg.locale.t("core.message.admin.list")}\n{"\n".join(msg.custom_admins)}")
         else:
             await msg.finish(msg.locale.t("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -138,7 +138,7 @@ async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.options.get("ban", [])
     if "list" in msg.parsed_msg:
         if admin_ban_list:
-            await msg.finish(f"{msg.locale.t('core.message.admin.ban.list')}\n{'\n'.join(admin_ban_list)}")
+            await msg.finish(f"{msg.locale.t("core.message.admin.ban.list")}\n{"\n".join(admin_ban_list)}")
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -213,7 +213,7 @@ async def _(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("message.success"))
     else:
-        await msg.finish(f"{msg.locale.t('core.message.locale.reload.failed')}\n{'\n'.join(err)}")
+        await msg.finish(f"{msg.locale.t("core.message.locale.reload.failed")}\n{"\n".join(err)}")
 
 
 whoami = module("whoami", base=True, doc=True)
@@ -254,15 +254,15 @@ async def _(msg: Bot.MessageSession):
 
 
 """
-@setup.command('check {{core.help.setup.check}}', required_admin=True)
+@setup.command("check {{core.help.setup.check}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     state = msg.info.typo_check
     if state:
-        msg.data.edit_option('typoCheck', False)
-        await msg.finish(msg.locale.t('core.message.setup.check.enable'))
+        msg.data.edit_option("typoCheck", False)
+        await msg.finish(msg.locale.t("core.message.setup.check.enable"))
     else:
-        msg.data.edit_option('typoCheck', True)
-        await msg.finish(msg.locale.t('core.message.setup.check.disable'))
+        msg.data.edit_option("typoCheck", True)
+        await msg.finish(msg.locale.t("core.message.setup.check.disable"))
 """
 
 

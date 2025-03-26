@@ -28,7 +28,7 @@ async def query_java_server(
                 "".join(extra.get("text", "") for extra in description.get("extra", []))
             )
 
-        onlinesplayer = f"{msg.locale.t('server.message.player')}{status.players.online} / {status.players.max}"
+        onlinesplayer = f"{msg.locale.t("server.message.player")}{status.players.online} / {status.players.max}"
         query_msg.append(onlinesplayer)
 
         if showplayer:
@@ -67,7 +67,7 @@ async def query_bedrock_server(msg, address, raw=False):
         query_msg.append("[BE]")
         query_msg.append(status.motd.raw)
 
-        player_count = f"{msg.locale.t('server.message.player')}{status.players_online} / {status.players_max}"
+        player_count = f"{msg.locale.t("server.message.player")}{status.players_online} / {status.players_max}"
         query_msg.append(player_count)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):

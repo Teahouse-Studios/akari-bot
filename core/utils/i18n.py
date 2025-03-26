@@ -254,7 +254,7 @@ class Locale:
     @staticmethod
     def _fmt_num(number: Decimal, precision: int) -> str:
         number = number.quantize(
-            Decimal(f"1.{'0' * precision}"), rounding=ROUND_HALF_UP
+            Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
         )
         num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
         return num_str if precision > 0 else str(int(number))

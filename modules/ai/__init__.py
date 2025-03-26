@@ -39,10 +39,10 @@ async def _(msg: Bot.MessageSession, question: str):
     if llm_info:
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
             await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
-            
+
         if await check_bool(question):
             await msg.finish(rickroll())
-                        
+
         qc = CoolDown("call_ai", msg, 60)
         c = qc.check()
         if c == 0 or msg.target.client_name == "TEST" or is_superuser:
@@ -78,6 +78,6 @@ async def _(msg: Bot.MessageSession):
     avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 
     if avaliable_llms:
-        await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(sorted(avaliable_llms))}")
+        await msg.finish(f"{msg.locale.t("ai.message.list.prompt")}\n{"\n".join(sorted(avaliable_llms))}")
     else:
         await msg.finish(msg.locale.t("ai.message.list.none"))

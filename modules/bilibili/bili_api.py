@@ -27,7 +27,7 @@ async def get_video_info(
     view = res["data"]["View"]
     stat = view["stat"]
 
-    video_url = f"https://www.bilibili.com/video/{view['bvid']}"
+    video_url = f"https://www.bilibili.com/video/{view["bvid"]}"
     pic = view["pic"]
     title = view["title"]
     tname = view["tname"]
@@ -36,7 +36,7 @@ async def get_video_info(
     time = msg.ts2strftime(view["ctime"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
-        pages = msg.locale.t("message.brackets", msg=f"{len(view['pages'])}P")
+        pages = msg.locale.t("message.brackets", msg=f"{len(view["pages"])}P")
     else:
         pages = ""
 
@@ -57,7 +57,7 @@ async def get_video_info(
             title=f"{title}{pages}",
             description=desc,
             url=video_url,
-            author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
+            author=f"{owner}{msg.locale.t("message.brackets", msg=fans)}",
             footer="Bilibili",
             image=Image(pic),
             thumbnail=Image(avatar),

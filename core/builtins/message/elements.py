@@ -334,7 +334,7 @@ class MentionElement(MessageElement):
         """
         :param _id: 用户id。
         """
-        return deepcopy(cls(client=user_id.split('|')[0], id=user_id.split('|')[-1]))
+        return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
 
 
 @define
@@ -429,12 +429,12 @@ class EmbedElement(MessageElement):
         if self.fields:
             for f in self.fields:
                 if msg:
-                    text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
+                    text_lst.append(f"{f.name}{msg.locale.t("message.colon")}{f.value}")
                 else:
                     text_lst.append(f"{f.name}: {f.value}")
         if self.author:
             if msg:
-                text_lst.append(f"{msg.locale.t('message.embed.author')}{self.author}")
+                text_lst.append(f"{msg.locale.t("message.embed.author")}{self.author}")
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:

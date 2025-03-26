@@ -26,11 +26,11 @@ from core.utils.i18n import Locale
 
 from hypercorn import Config as HyperConfig
 
-PrivateAssets.set(os.path.join(assets_path, 'private', 'aiocqhttp'))
-Info.dirty_word_check = Config('enable_dirty_check', False)
-Info.use_url_manager = Config('enable_urlmanager', False)
-enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name='bot_aiocqhttp')
-enable_tos = Config('enable_tos', True)
+PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
+Info.dirty_word_check = Config("enable_dirty_check", False)
+Info.use_url_manager = Config("enable_urlmanager", False)
+enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
+enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
 
@@ -44,23 +44,23 @@ async def startup():
 @bot.on_websocket_connection
 async def _(event: Event):
     await load_prompt(FetchTarget)
-    qq_login_info = await bot.call_action('get_login_info')
-    qq_account = qq_login_info.get('user_id')
-    Temp().data['qq_account'] = qq_account
-    Temp().data['qq_nickname'] = qq_login_info.get('nickname')
+    qq_login_info = await bot.call_action("get_login_info")
+    qq_account = qq_login_info.get("user_id")
+    Temp().data["qq_account"] = qq_account
+    Temp().data["qq_nickname"] = qq_login_info.get("nickname")
 
 
 async def message_handler(event: Event):
-    qq_account = Temp().data.get('qq_account')
-    if event.detail_type == 'private' and event.sub_type == 'group' \
-            and Config('qq_disable_temp_session', True, table_name='bot_aiocqhttp'):
+    qq_account = Temp().data.get("qq_account")
+    if event.detail_type == "private" and event.sub_type == "group" \
+            and Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp"):
         return
 
-    if event.detail_type == 'group':
-        target_id = f'{target_group_prefix}|{event.group_id}'
+    if event.detail_type == "group":
+        target_id = f"{target_group_prefix}|{event.group_id}"
     else:
-        target_id = f'{target_private_prefix}|{event.user_id}'
-    sender_id = f'{sender_prefix}|{event.user_id}'
+        target_id = f"{target_private_prefix}|{event.user_id}"
+    sender_id = f"{sender_prefix}|{event.user_id}"
 
     if sender_id in ignored_sender:
         return
@@ -69,20 +69,20 @@ async def message_handler(event: Event):
         string_post = True
 
     if string_post:
-        match_json = re.match(r'\[CQ:json,data=(.*?)\]', event.message, re.MULTILINE | re.DOTALL)
+        match_json = re.match(r"\[CQ:json,data=(.*?)\]", event.message, re.MULTILINE | re.DOTALL)
         if match_json:
             load_json = json.loads(html.unescape(match_json.group(1)))
-            if load_json['app'] == 'com.tencent.multimsg':
-                event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
+            if load_json["app"] == "com.tencent.multimsg":
+                event.message = f"[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]"
     else:
         if event.message[0]["type"] == "json":
             load_json = json.loads(event.message[0]["data"]["data"])
-            if load_json['app'] == 'com.tencent.multimsg':
+            if load_json["app"] == "com.tencent.multimsg":
                 event.message = [{"type": "forward", "data": {"id": f"{load_json["meta"]["detail"]["resid"]}"}}]
 
     reply_id = None
     if string_post:
-        match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
+        match_reply = re.match(r"^\[CQ:reply,id=(-?\d+).*\].*", event.message)
         if match_reply:
             reply_id = int(match_reply.group(1))
     else:
@@ -91,11 +91,11 @@ async def message_handler(event: Event):
 
     prefix = None
     if string_post:
-        if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
+        if match_at := re.match(r"^\[CQ:at,qq=(\d+).*\](.*)", event.message):
             if match_at.group(1) == str(qq_account):
                 event.message = match_at.group(2)
-                if event.message in ['', ' ']:
-                    event.message = f'{command_prefix[0]}help'
+                if event.message in ["", " "]:
+                    event.message = f"{command_prefix[0]}help"
                     prefix = command_prefix
             else:
                 return
@@ -104,7 +104,7 @@ async def message_handler(event: Event):
             if event.message[0]["data"]["qq"] == str(qq_account):
                 event.message = event.message[1:]
                 if not event.message or \
-                        event.message[0]["type"] == "text" and event.message[0]["data"]["text"] == ' ':
+                        event.message[0]["type"] == "text" and event.message[0]["data"]["text"] == " ":
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
                     prefix = command_prefix
             else:
@@ -114,26 +114,26 @@ async def message_handler(event: Event):
         MsgInfo(
             target_id=target_id,
             sender_id=sender_id,
-            target_from=target_group_prefix if event.detail_type == 'group' else target_private_prefix,
+            target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
             sender_from=sender_prefix,
-            sender_name=event.sender['nickname'],
+            sender_name=event.sender["nickname"],
             client_name=client_name,
             message_id=event.message_id,
             reply_id=reply_id),
         Session(
             message=event,
-            target=event.group_id if event.detail_type == 'group' else event.user_id,
+            target=event.group_id if event.detail_type == "group" else event.user_id,
             sender=event.user_id))
     await parser(msg, running_mention=True, prefix=prefix)
 
 
 if enable_listening_self_message:
-    @bot.on('message_sent')
+    @bot.on("message_sent")
     async def _(event: Event):
         await message_handler(event)
 
 
-@bot.on_message('group', 'private')
+@bot.on_message("group", "private")
 async def _(event: Event):
     await message_handler(event)
 
@@ -142,115 +142,115 @@ class GuildAccountInfo:
     tiny_id = None
 
 
-@bot.on_message('guild')
+@bot.on_message("guild")
 async def _(event):
     if not GuildAccountInfo.tiny_id:
-        profile = await bot.call_action('get_guild_service_profile')
-        GuildAccountInfo.tiny_id = profile['tiny_id']
-    target_id = f'{target_guild_prefix}|{event.guild_id}|{event.channel_id}'
-    sender_id = f'{sender_tiny_prefix}|{event.user_id}'
+        profile = await bot.call_action("get_guild_service_profile")
+        GuildAccountInfo.tiny_id = profile["tiny_id"]
+    target_id = f"{target_guild_prefix}|{event.guild_id}|{event.channel_id}"
+    sender_id = f"{sender_tiny_prefix}|{event.user_id}"
     if sender_id in ignored_sender:
         return
     if event.user_id == GuildAccountInfo.tiny_id:
         return
     reply_id = None
-    match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
+    match_reply = re.match(r"^\[CQ:reply,id=(-?\d+).*\].*", event.message)
     if match_reply:
         reply_id = int(match_reply.group(1))
     msg = MessageSession(MsgInfo(target_id=target_id,
                                  sender_id=sender_id,
                                  target_from=target_guild_prefix,
                                  sender_from=sender_tiny_prefix,
-                                 sender_name=event.sender['nickname'],
+                                 sender_name=event.sender["nickname"],
                                  client_name=client_name,
                                  message_id=event.message_id,
                                  reply_id=reply_id),
                          Session(message=event,
-                                 target=f'{event.guild_id}|{event.channel_id}',
+                                 target=f"{event.guild_id}|{event.channel_id}",
                                  sender=event.user_id))
     await parser(msg, running_mention=True)
 
 
-@bot.on('request.friend')
+@bot.on("request.friend")
 async def _(event: Event):
-    sender_id = f'{sender_prefix}|{event.user_id}'
+    sender_id = f"{sender_prefix}|{event.user_id}"
     sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
-        return {'approve': True}
-    if Config('qq_allow_approve_friend', False, table_name='bot_aiocqhttp'):
+        return {"approve": True}
+    if Config("qq_allow_approve_friend", False, table_name="bot_aiocqhttp"):
         if sender_info.is_in_block_list:
-            return {'approve': False}
-        return {'approve': True}
+            return {"approve": False}
+        return {"approve": True}
 
 
-@bot.on('request.group.invite')
+@bot.on("request.group.invite")
 async def _(event: Event):
-    sender_id = f'{sender_prefix}|{event.user_id}'
+    sender_id = f"{sender_prefix}|{event.user_id}"
     sender_info = BotDBUtil.SenderInfo(sender_id)
     if sender_info.is_super_user or sender_info.is_in_allow_list:
-        return {'approve': True}
-    if Config('qq_allow_approve_group_invite', False, table_name='bot_aiocqhttp'):
-        if BotDBUtil.GroupBlockList.check(f'{target_group_prefix}|{event.group_id}'):
-            return {'approve': False}
-        return {'approve': True}
+        return {"approve": True}
+    if Config("qq_allow_approve_group_invite", False, table_name="bot_aiocqhttp"):
+        if BotDBUtil.GroupBlockList.check(f"{target_group_prefix}|{event.group_id}"):
+            return {"approve": False}
+        return {"approve": True}
 
 
-@bot.on_notice('group_ban')
+@bot.on_notice("group_ban")
 async def _(event: Event):
-    qq_account = Temp().data.get('qq_account')
+    qq_account = Temp().data.get("qq_account")
     if enable_tos and event.user_id == int(qq_account):
         unfriendly_actions = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
                                                          sender_id=event.operator_id)
-        target_id = f'{target_group_prefix}|{event.group_id}'
-        sender_id = f'{sender_prefix}|{event.operator_id}'
+        target_id = f"{target_group_prefix}|{event.group_id}"
+        sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_info = BotDBUtil.SenderInfo(sender_id)
-        unfriendly_actions.add('mute', str(event.duration))
+        unfriendly_actions.add("mute", str(event.duration))
         result = unfriendly_actions.check_mute()
         if event.duration >= 259200:
             result = True
         if result and not sender_info.is_super_user:
             await tos_report(sender_id, target_id, "{tos.message.reason.mute}", banned=True)
             BotDBUtil.GroupBlockList.add(target_id)
-            await bot.call_action('set_group_leave', group_id=event.group_id)
-            sender_info.edit('isInAllowList', False)
-            sender_info.edit('isInBlockList', True)
-            await bot.call_action('delete_friend', friend_id=event.operator_id)
+            await bot.call_action("set_group_leave", group_id=event.group_id)
+            sender_info.edit("isInAllowList", False)
+            sender_info.edit("isInBlockList", True)
+            await bot.call_action("delete_friend", friend_id=event.operator_id)
 
 
-@bot.on_notice('group_decrease')
+@bot.on_notice("group_decrease")
 async def _(event: Event):
-    if enable_tos and event.sub_type == 'kick_me':
-        BotDBUtil.UnfriendlyActions(target_id=event.group_id, sender_id=event.operator_id).add('kick')
-        target_id = f'{target_group_prefix}|{event.group_id}'
-        sender_id = f'{sender_prefix}|{event.operator_id}'
+    if enable_tos and event.sub_type == "kick_me":
+        BotDBUtil.UnfriendlyActions(target_id=event.group_id, sender_id=event.operator_id).add("kick")
+        target_id = f"{target_group_prefix}|{event.group_id}"
+        sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_info = BotDBUtil.SenderInfo(sender_id)
         if not sender_info.is_super_user:
             await tos_report(sender_id, target_id, "{tos.message.reason.kick}", banned=True)
             BotDBUtil.GroupBlockList.add(target_id)
-            sender_info.edit('isInAllowList', False)
-            sender_info.edit('isInBlockList', True)
-            await bot.call_action('delete_friend', friend_id=event.operator_id)
+            sender_info.edit("isInAllowList", False)
+            sender_info.edit("isInBlockList", True)
+            await bot.call_action("delete_friend", friend_id=event.operator_id)
 
 
-@bot.on_message('group')
+@bot.on_message("group")
 async def _(event: Event):
     if enable_tos:
-        target_id = f'{target_group_prefix}|{event.group_id}'
+        target_id = f"{target_group_prefix}|{event.group_id}"
         result = BotDBUtil.GroupBlockList.check(target_id)
         if result:
-            res = Locale(default_locale).t('tos.message.in_group_blocklist')
-            if issue_url := Config('issue_url', issue_url_default):
-                res += '\n' + Locale(default_locale).t('tos.message.appeal', issue_url=issue_url)
+            res = Locale(default_locale).t("tos.message.in_group_blocklist")
+            if issue_url := Config("issue_url", issue_url_default):
+                res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)
             await bot.send(event=event, message=res)
-            await bot.call_action('set_group_leave', group_id=event.group_id)
+            await bot.call_action("set_group_leave", group_id=event.group_id)
 
 
-qq_host = Config("qq_host", default=qq_host_default, table_name='bot_aiocqhttp')
-if qq_host and Config("enable", False, table_name='bot_aiocqhttp'):
+qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
+if qq_host and Config("enable", False, table_name="bot_aiocqhttp"):
     argv = sys.argv
     Info.client_name = client_name
     HyperConfig.startup_timeout = 120
-    if 'subprocess' in sys.argv:
+    if "subprocess" in sys.argv:
         Info.subprocess = True
-    host, port = qq_host.split(':')
+    host, port = qq_host.split(":")
     bot.run(host=host, port=port, debug=False)

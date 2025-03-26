@@ -25,7 +25,7 @@ from core.types import Session, MsgInfo
 
 class FinishedSession(FinS):
     async def delete(self):
-        print("(Tried to delete message, but I'm a console so I cannot do it :< )")
+        print("(Tried to delete message, but I\'m a console so I cannot do it :< )")
 
 
 class MessageSession(MessageSessionT):
@@ -193,7 +193,7 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         print(
-            f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )"
+            f"(Tried to delete {self.session.message}, but I\'m a console so I cannot do it :< )"
         )
         return True
 

@@ -21,12 +21,12 @@ Switch's operating system, Horizon. Its breaks down like so:
 09-21 | Description
 Module: A value indicating who raised the error or returned the result.
 Description: A value indicating exactly what happened.
-Unlike the 3DS, the Nintendo Switch does not provide a 'summary' or 'level'
+Unlike the 3DS, the Nintendo Switch does not provide a "summary" or "level"
 field in result codes, so some artistic license was taken here to repurpose those
 fields in our ResultInfo class to add additional information from sources
 such as Atmosphere's libvapours and the Switchbrew wiki.
 To add a module so the code understands it, simply add a new module number
-to the 'modules' dictionary, with a Module variable as the value. If the module
+to the "modules" dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
@@ -36,8 +36,8 @@ as the key, and a ResultInfo variable with a text description of the error or re
 You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all results or errors have support webpages.
 Simple example of adding a module with a sample result code:
-test = Module('test', {
-    5: ResultInfo('test', 'https://example.com')
+test = Module("test", {
+    5: ResultInfo("test", "https://example.com")
 })
 modules = {
     9999: test
@@ -129,11 +129,11 @@ fs = Module(
             "Attempted a read that spanned both the normal and secure Game Card partitions."
         ),
         2544: ResultInfo(
-            "Game Card initial data hash doesn't match the initial data hash in the card header."
+            "Game Card initial data hash doesn\'t match the initial data hash in the card header."
         ),
         2545: ResultInfo("Game Card initial data reserved area is not all zeroes."),
         2546: ResultInfo(
-            "Game Card certificate kek index doesn't match card header kek index."
+            "Game Card certificate kek index doesn\'t match card header kek index."
         ),
         2551: ResultInfo("Unable to read card header on Game Card initialization."),
         2565: ResultInfo("Encountered SDMMC error in write operation."),
@@ -419,7 +419,7 @@ fs = Module(
         6033: ResultInfo("The path is incompatible."),
         6034: ResultInfo(
             "Rename to other filesystem."
-        ),  # 'Attempted to rename to other filesystem.'?
+        ),  # "Attempted to rename to other filesystem."?
         6061: ResultInfo("Invalid offset."),
         6062: ResultInfo("Invalid size."),
         6063: ResultInfo("Argument is nullptr."),
@@ -700,7 +700,7 @@ fs = Module(
         (2500, 2999): "Failed to access Game Card.",
         (3200, 3499): "Allocation failed.",
         (3500, 3999): "Failed to access eMMC.",
-        # (4001, 4200): 'ROM is corrupted.',
+        # (4001, 4200): "ROM is corrupted.",
         (4001, 4010): "ROM is corrupted.",
         (4011, 4019): "AES-CTR CounterExtendedStorage is corrupted.",
         (4021, 4029): "Indirect storage is corrupted.",
@@ -914,7 +914,7 @@ hipc = Module(
         102: ResultInfo("Out of session memory."),
         (131, 139): ResultInfo("Out of sessions."),
         141: ResultInfo("Pointer buffer is too small."),
-        200: ResultInfo("Out of domains (session doesn't support domains)."),
+        200: ResultInfo("Out of domains (session doesn\'t support domains)."),
         301: ResultInfo("Session closed."),
         402: ResultInfo("Invalid request size."),
         403: ResultInfo("Unknown command type."),
@@ -1448,7 +1448,7 @@ mii = Module(
     {
         1: ResultInfo("Invalid argument."),
         4: ResultInfo("Entry not found."),
-        67: ResultInfo('Invalid database signature value (should be "NFDB").'),
+        67: ResultInfo("Invalid database signature value (should be \"NFDB\")."),
         69: ResultInfo("Invalid database entry count."),
         204: ResultInfo("Development/debug-only behavior."),
     },
@@ -1486,9 +1486,9 @@ prepo = Module(
     {
         102: ResultInfo("Transmission not agreed."),
         105: ResultInfo("Network unavailable."),
-        1005: ResultInfo("Couldn't resolve proxy."),
-        1006: ResultInfo("Couldn't resolve host."),
-        1007: ResultInfo("Couldn't connect."),
+        1005: ResultInfo("Couldn\'t resolve proxy."),
+        1006: ResultInfo("Couldn\'t resolve host."),
+        1007: ResultInfo("Couldn\'t connect."),
         1023: ResultInfo("Write error."),
         1026: ResultInfo("Read error."),
         1027: ResultInfo("Out of memory."),
@@ -1529,7 +1529,7 @@ nim = Module(
         70: ResultInfo("HTTP connection canceled."),
         330: ResultInfo("ContentMetaType does not match SystemUpdate."),
         5001: ResultInfo(
-            "A socket error occurred (ENETDOWN, ECONNRESET, EHOSTDOWN, EHOSTUNREACH, or EPIPE). Also occurs when the received size doesn't match the expected size (recvfrom() ret with meta_size data receiving)."
+            "A socket error occurred (ENETDOWN, ECONNRESET, EHOSTDOWN, EHOSTUNREACH, or EPIPE). Also occurs when the received size doesn\'t match the expected size (recvfrom() ret with meta_size data receiving)."
         ),
         5010: ResultInfo(
             "Socket was shutdown due to the async operation being cancelled."
@@ -1544,7 +1544,7 @@ nim = Module(
         ),
         5430: ResultInfo("Invalid data_size."),
         5440: ResultInfo(
-            "The input ContentMetaKey doesn't match the ContentMetaKey in state."
+            "The input ContentMetaKey doesn\'t match the ContentMetaKey in state."
         ),
         5450: ResultInfo("Invalid meta_size."),
         7001: ResultInfo("Invalid HTTP response code (>=600)."),
@@ -1798,7 +1798,7 @@ capsrv = Module(
         (10, 19): "Album: invalid file ID.",
         (90, 99): "Album: filesystem error.",
         (800, 899): "Control error.",
-        # (1024, 2047): 'Internal error.',
+        # (1024, 2047): "Internal error.",
         (1200, 1299): "Internal JPEG encoder error.",
         (1300, 1399): "Internal file data verification error.",
         (1400, 1499): "Internal album limitation error.",
@@ -1839,7 +1839,7 @@ web_applet = Module(
 )
 
 youtube_app = Module("youtube", {0: ResultInfo(
-    "This error typically occurs when your system clock isn't set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop.")}, )
+    "This error typically occurs when your system clock isn\'t set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop.")}, )
 
 arms_game = Module(
     "ARMS",
@@ -1990,7 +1990,7 @@ lnx_nvidia = Module(
         15: ResultInfo("Resource error."),
         16: ResultInfo("Count mismatch."),
         4096: ResultInfo("Shared memory too small."),
-        # 0x30003: ResultInfo('File operation failed.') # This actually belongs to OS.
+        # 0x30003: ResultInfo("File operation failed.") # This actually belongs to OS.
     },
 )
 
@@ -2011,9 +2011,9 @@ lnx_binder = Module(
         75: ResultInfo("Bad index."),
         110: ResultInfo("Timed out."),
         # TODO: How do I express INT32_MIN in pythonic terms?
-        # -(INT32_MIN + 7): ResultInfo('Fds not allowed.'),
-        # -(INT32_MIN + 2): ResultInfo('Failed transaction.'),
-        # -(INT32_MIN + 1): ResultInfo('Bad type.'),
+        # -(INT32_MIN + 7): ResultInfo("Fds not allowed."),
+        # -(INT32_MIN + 2): ResultInfo("Failed transaction."),
+        # -(INT32_MIN + 1): ResultInfo("Bad type."),
     },
 )
 

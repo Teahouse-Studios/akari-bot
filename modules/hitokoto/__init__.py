@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
     tp = msg.locale.t("hitokoto.message.type") + msg.locale.t(
         "hitokoto.message.type." + data["type"]
     )
-    link = f"https://hitokoto.cn?id={data['id']}"
+    link = f"https://hitokoto.cn?id={data["id"]}"
     await msg.finish(
-        [Plain(f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}"), Url(link)]
+        [Plain(f"{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{tp}"), Url(link)]
     )

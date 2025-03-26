@@ -5,7 +5,7 @@ from .dbutils import OsuBindInfoManager
 from .profile import osu_profile
 from .utils import get_profile_name
 
-api_key = Config('osu_api_key', cfg_type=str, secret=True, table_name="module_osu")
+api_key = Config("osu_api_key", cfg_type=str, secret=True, table_name="module_osu")
 
 osu = module("osu", developers=["DoroWolf"], desc="{osu.help.desc}", doc=True)
 
@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, username: str):
         bind = OsuBindInfoManager(msg).set_bind_info(username=getcode[0])
         if bind:
             if getcode[1]:
-                m = f"{getcode[1]}{msg.locale.t('message.brackets', msg=getcode[0])}"
+                m = f"{getcode[1]}{msg.locale.t("message.brackets", msg=getcode[0])}"
             else:
                 m = getcode[0]
         await msg.finish(msg.locale.t("osu.message.bind.success") + m)

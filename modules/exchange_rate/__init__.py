@@ -57,7 +57,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
             await msg.finish(
-                f"{msg.locale.t('exchange_rate.message.invalid.unit')}{' '.join(unsupported_currencies)}"
+                f"{msg.locale.t("exchange_rate.message.invalid.unit")}{" ".join(unsupported_currencies)}"
             )
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"

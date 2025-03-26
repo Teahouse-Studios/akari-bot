@@ -25,7 +25,7 @@ isn't enough to justify creating a different class with the same logic, so we'll
 refer to them as "modules" from now on.
 
 To add a module/category so the code understands it, simply add a new module number
-to the 'modules' dictionary, with a Module variable as the value. If the module
+to the "modules" dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
@@ -37,8 +37,8 @@ You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all support codes have known error pages.
 
 Simple example of adding a module with a sample support code:
-test = Module('test', {
-    5: ResultInfo('test', 'https://example.com')
+test = Module("test", {
+    5: ResultInfo("test", "https://example.com")
 })
 
 modules = {
@@ -239,8 +239,8 @@ eshop_mint = Module(
 eshop_app = Module(
     "eshop (app?)",
     {
-        # 1001: ResultInfo('The eShop is down for maintenance.',
-        # 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399'),
+        # 1001: ResultInfo("The eShop is down for maintenance.",
+        # "https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399"),
         1000: ResultInfo("需要系统更新（好友模块？）。"),
         1001: eshop_mint.data[3049],
         2705: ResultInfo(

@@ -61,17 +61,17 @@ last_file_line_count = {}
 logs_history = []
 
 if not os.path.exists(CSRF_TOKEN_PATH):
-    with open(CSRF_TOKEN_PATH, 'wb') as f:
+    with open(CSRF_TOKEN_PATH, "wb") as f:
         f.write(json.dumps([]))
 
 
 def load_csrf_tokens():
-    with open(CSRF_TOKEN_PATH, 'r') as f:
+    with open(CSRF_TOKEN_PATH, "r") as f:
         return json.loads(f.read())
 
 
 def save_csrf_tokens(tokens):
-    with open(CSRF_TOKEN_PATH, 'wb') as f:
+    with open(CSRF_TOKEN_PATH, "wb") as f:
         f.write(json.dumps(tokens))
 
 
@@ -102,7 +102,7 @@ def verify_jwt(request: Request):
         raise HTTPException(status_code=401, detail="Invalid request")
 
     try:
-        payload = jwt.decode(auth_token, JWT_SECRET, algorithms=['HS256'])
+        payload = jwt.decode(auth_token, JWT_SECRET, algorithms=["HS256"])
         if payload.get("iat") > datetime.now(UTC).timestamp():
             raise HTTPException(status_code=400, detail="Invalid token")
         return {"message": "Success", "payload": payload}
@@ -189,7 +189,7 @@ async def auth(request: Request, response: Response):
             "iat": datetime.now(UTC),  # 签发时间
             "iss": "auth-api"  # 签发者
         }
-        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
         if not os.path.exists(PASSWORD_PATH):
             response.set_cookie(
@@ -220,7 +220,7 @@ async def auth(request: Request, response: Response):
             "iat": datetime.now(UTC),
             "iss": "auth-api"
         }
-        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
         response.set_cookie(
             key="deviceToken",
@@ -309,9 +309,9 @@ async def server_info(request: Request):
             "percent": psutil.virtual_memory().percent,  # 内存使用百分比
         },
         "disk": {
-            "total": psutil.disk_usage('/').total / (1024 * 1024 * 1024),  # 磁盘总容量
-            "used": psutil.disk_usage('/').used / (1024 * 1024 * 1024),  # 磁盘已使用容量
-            "percent": psutil.disk_usage('/').percent,  # 磁盘使用百分比
+            "total": psutil.disk_usage("/").total / (1024 * 1024 * 1024),  # 磁盘总容量
+            "used": psutil.disk_usage("/").used / (1024 * 1024 * 1024),  # 磁盘已使用容量
+            "percent": psutil.disk_usage("/").percent,  # 磁盘使用百分比
         }
     }
 
@@ -349,7 +349,7 @@ async def get_config_file(request: Request, cfg_filename: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
     try:
-        with open(cfg_file_path, 'r', encoding='UTF-8') as f:
+        with open(cfg_file_path, "r", encoding="UTF-8") as f:
             content = f.read()
         return {"message": "Success", "content": content}
     except FileNotFoundError:
@@ -374,7 +374,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
     try:
         body = await request.json()
         content = body["content"]
-        with open(cfg_file_path, 'w', encoding='UTF-8') as f:
+        with open(cfg_file_path, "w", encoding="UTF-8") as f:
             f.write(content)
         return {"message": "Success"}
 
@@ -544,8 +544,8 @@ async def websocket_logs(websocket: WebSocket):
         await websocket.send_text("\n".join(expanded_history))
 
     while True:
-        today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime('%Y-%m-%d')}.log")
-        today_logs = [log for log in today_logs if 'console' not in os.path.basename(log)]
+        today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime("%Y-%m-%d")}.log")
+        today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
 
         if today_logs:
             for log_file in today_logs:
@@ -553,7 +553,7 @@ async def websocket_logs(websocket: WebSocket):
                     current_line_count = 0
                     new_lines = []
 
-                    with open(log_file, 'r', encoding='utf-8') as f:
+                    with open(log_file, "r", encoding="utf-8") as f:
                         for i, line in enumerate(f):
                             if i >= last_file_line_count.get(log_file, 0):
                                 if line:
@@ -605,12 +605,12 @@ async def websocket_logs(websocket: WebSocket):
 
 
 def is_log_line_valid(line: str) -> bool:
-    log_pattern = r'^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:'
+    log_pattern = r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"
     return bool(re.match(log_pattern, line))
 
 
 def extract_timestamp(log_line: str):
-    log_time_pattern = r'\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]'
+    log_time_pattern = r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]"
     match = re.search(log_time_pattern, log_line)
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")

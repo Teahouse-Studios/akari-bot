@@ -17,7 +17,7 @@ async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int,
     )
     try:
         stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
-        return process.returncode, stdout.decode('utf-8').strip(), stderr.decode('utf-8').strip()
+        return process.returncode, stdout.decode("utf-8").strip(), stderr.decode("utf-8").strip()
     except asyncio.TimeoutError:
         process.kill()
         await process.wait()

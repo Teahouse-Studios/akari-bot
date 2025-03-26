@@ -111,7 +111,7 @@ class MessageChain:
         """
 
         def unsafeprompt(name, secret, text):
-            return f'{name} contains unsafe text "{secret}": {text}'
+            return f"{name} contains unsafe text \"{secret}\": {text}"
 
         for v in self.value:
             if isinstance(v, PlainElement):
@@ -266,7 +266,7 @@ class MessageChain:
         return MessageChain(self.value.copy())
 
     def __str__(self):
-        return f'[{", ".join([x.__repr__() for x in self.value])}]'
+        return f"[{", ".join([x.__repr__() for x in self.value])}]"
 
     def __repr__(self):
         return self.__str__()
@@ -280,7 +280,7 @@ class MessageChain:
         if isinstance(other, list):
             return MessageChain(self.value + other)
         raise TypeError(
-            f"Unsupported operand type(s) for +: 'MessageChain' and '{type(other).__name__}'"
+            f"Unsupported operand type(s) for +: \"MessageChain\" and \"{type(other).__name__}\""
         )
 
     def __radd__(self, other):
@@ -289,7 +289,7 @@ class MessageChain:
         if isinstance(other, list):
             return MessageChain(other + self.value)
         raise TypeError(
-            f"Unsupported operand type(s) for +: '{type(other).__name__}' and 'MessageChain'"
+            f"Unsupported operand type(s) for +: \"{type(other).__name__}\" and \"MessageChain\""
         )
 
     def __iadd__(self, other):
@@ -299,7 +299,7 @@ class MessageChain:
             self.value += other
         else:
             raise TypeError(
-                f"Unsupported operand type(s) for +=: 'MessageChain' and '{type(other).__name__}'"
+                f"Unsupported operand type(s) for +=: \"MessageChain\" and \"{type(other).__name__}\""
             )
         return self
 
@@ -311,7 +311,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
     params = []
 
     for e in split_all:
-        match = re.match(r'\[Ke:([^\s,\]]+)(?:,([^\]]+))?\]', e)
+        match = re.match(r"\[Ke:([^\s,\]]+)(?:,([^\]]+))?\]", e)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e))
@@ -319,7 +319,7 @@ def match_kecode(text: str) -> List[Union[PlainElement, ImageElement, VoiceEleme
             element_type = match.group(1).lower()
 
             if match.group(2):
-                params = match.group(2).split(',')
+                params = match.group(2).split(",")
                 params = [x for x in params if x]
 
             if element_type == "plain":
@@ -404,14 +404,14 @@ def match_i18ncode(msg: MessageSession, text: str) -> str:
     kwargs = {}
 
     for e in split_all:
-        match = re.match(r'\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]', e)
+        match = re.match(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", e)
         if not match:
             msgs.append(e)
         else:
             i18nkey = html.unescape(match.group(1))
 
             if match.group(2):
-                params = match.group(2).split(',')
+                params = match.group(2).split(",")
                 params = [x for x in params if x]
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)

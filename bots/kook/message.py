@@ -28,7 +28,7 @@ from core.logger import Logger
 
 enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"
-kook_token = Config('kook_token', cfg_type=str, secret=True, table_name='bot_kook')
+kook_token = Config("kook_token", cfg_type=str, secret=True, table_name="bot_kook")
 kook_headers = {
     "Authorization": f"Bot {kook_token}"
 }
@@ -194,7 +194,7 @@ class MessageSession(MessageSessionT):
         elif self.session.message.type == MessageTypes.AUDIO:
             lst.append(Voice(self.session.message.content))
         elif self.session.message.type == MessageTypes.KMD:
-            match = re.match(r'\(met\)(.*?)\(met\)', self.session.message.content)
+            match = re.match(r"\(met\)(.*?)\(met\)", self.session.message.content)
             if match.group(1):
                 lst.append(Mention(f"{target_person_prefix}|{str(match.group(1))}"))
         return MessageChain(lst)
@@ -221,7 +221,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            # await bot.answer_chat_action(self.msg.session.target, 'typing')
+            # await bot.answer_chat_action(self.msg.session.target, "typing")
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):

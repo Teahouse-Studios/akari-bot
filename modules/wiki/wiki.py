@@ -149,7 +149,7 @@ async def query_pages(
                         }
                     }
                 else:
-                    raise ValueError(f'iw_prefix "{iw}" not found.')
+                    raise ValueError(f"iw_prefix \"{iw}\" not found.")
     else:
         raise ValueError("Title or pageid must be specified.")
     Logger.debug(query_task)
