@@ -280,7 +280,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     output_lines = []
     if int(input_id) >= 100000:
         if len(level_scores.items()) > 1:
-            await msg.finish(msg.locale.t("maimai.message.info.utage"))
+            await msg.finish(msg.locale.t("maimai.message.score.utage"))
         else:
             for level, scores in level_scores.items():  # 使用循环输出格式化文本
                 if scores:
@@ -297,7 +297,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                         output_lines.append(entry_output)
                 else:
                     output_lines.append(
-                        f"U·TA·GE {music["level"][level]}\n{msg.locale.t("maimai.message.info.no_record")}")
+                        f"U·TA·GE {music["level"][level]}\n{msg.locale.t("maimai.message.score.no_record")}")
     else:
         for level, scores in level_scores.items():  # 使用循环输出格式化文本
             if scores:
@@ -314,7 +314,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     output_lines.append(entry_output)
             else:
                 output_lines.append(
-                    f"{diffs[level]} {music["level"][level]}\n{msg.locale.t("maimai.message.info.no_record")}")
+                    f"{diffs[level]} {music["level"][level]}\n{msg.locale.t("maimai.message.score.no_record")}")
 
     return "\n".join(output_lines)
 
