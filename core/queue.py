@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import orjson as json
 
-from core.builtins import Bot, MessageChain
+from core.builtins import Bot, MessageChain, Plain
 from core.config import Config
 from core.constants import Info
 from core.database import BotDBUtil
@@ -129,7 +129,8 @@ async def check_job_queue():
             try:
                 for target in report_targets:
                     if ft := await Bot.FetchTarget.fetch_target(target):
-                        await ft.send_direct_message(f"[I18N:error.message.report,module={tsk.action}]\n{f}".strip(),
+                        await ft.send_direct_message([Plain(f"[I18N:error.message.report,module={tsk.action}]"),
+                                                      Plain(f.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)
             except Exception:
                 Logger.error(traceback.format_exc())

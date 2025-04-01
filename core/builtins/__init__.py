@@ -35,8 +35,6 @@ class Bot:
     ):
         if isinstance(target, str):
             target = await Bot.FetchTarget.fetch_target(target)
-            if not target:
-                raise ValueError("Target not found")
         if isinstance(msg, list):
             msg = MessageChain(msg)
         Logger.info(target.__dict__)

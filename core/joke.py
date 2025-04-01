@@ -17,7 +17,7 @@ def shuffle_joke(text: str) -> str:
     shuffle_rate = Config("shuffle_rate", 0.1)
 
     if check_apr_fools():
-        Logger.info(text)
+        Logger.info(f"Raw: {text}")
 
         if url_pattern.fullmatch(text):
             return text

@@ -290,8 +290,10 @@ async def _(msg: Bot.MessageSession):
         if Info.version:
             pull_repo_result = await pull_repo()
             if pull_repo_result:
-                await msg.send_message(pull_repo_result)
-        await msg.finish(await update_dependencies())
+                await msg.send_message(Plain(pull_repo_result, disable_joke=True))
+
+        update_dependencies_result = await update_dependencies()
+        await msg.finish(Plain(update_dependencies_result, disable_joke=True))
     else:
         await msg.finish(msg.locale.t("core.message.update.binary_mode"))
 
@@ -356,8 +358,9 @@ async def _(msg: Bot.MessageSession):
             if Info.version:
                 pull_repo_result = await pull_repo()
                 if pull_repo_result:
-                    await msg.send_message(pull_repo_result)
-            await msg.send_message(await update_dependencies())
+                    await msg.send_message(Plain(pull_repo_result, disable_joke=True))
+            update_dependencies_result = await update_dependencies()
+            await msg.send_message(Plain(update_dependencies_result, disable_joke=True))
             restart()
         else:
             await msg.finish()
@@ -384,9 +387,9 @@ async def _(msg: Bot.MessageSession, command: str):
     cmd_lst = ["git"] + command.split()
     returncode, output, error = await run_sys_command(cmd_lst)
     if returncode == 0:
-        await msg.finish(output)
+        await msg.finish(Plain(output, disable_joke=True))
     else:
-        await msg.finish(error)
+        await msg.finish(Plain(error, disable_joke=True))
 
 
 resume = module("resume", required_base_superuser=True, base=True, doc=True, available_for="QQ")

@@ -4,7 +4,7 @@ from datetime import datetime
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.builtins import Bot, I18NContext, Url
+from core.builtins import Bot, Plain, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants import locale_url_default
@@ -20,7 +20,7 @@ ver = module("version", base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
-        send_msgs = [I18NContext("core.message.version", commit=commit)]
+        send_msgs = [I18NContext("core.message.version", disable_joke=True, commit=commit)]
         if Config("enable_commit_url", True):
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:
@@ -29,7 +29,7 @@ async def _(msg: Bot.MessageSession):
                 send_msgs.append(Url(commit_url))
         await msg.finish(send_msgs)
     else:
-        await msg.finish(msg.locale.t("core.message.version.unknown"))
+        await msg.finish(I18NContext("core.message.version.unknown"))
 
 
 ping = module("ping", base=True, doc=True)
@@ -213,7 +213,7 @@ async def _(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("message.success"))
     else:
-        await msg.finish(f"{msg.locale.t("core.message.locale.reload.failed")}\n{"\n".join(err)}")
+        await msg.finish([I18NContext("core.message.locale.reload.failed"), Plain("\n".join(err), disable_joke=True)])
 
 
 whoami = module("whoami", base=True, doc=True)
@@ -221,21 +221,14 @@ whoami = module("whoami", base=True, doc=True)
 
 @whoami.command("{{core.help.whoami}}")
 async def _(msg: Bot.MessageSession):
-    perm = ""
+    perm = []
     if await msg.check_native_permission():
-        perm += "\n" + msg.locale.t("core.message.whoami.admin")
+        perm.append(I18NContext("core.message.whoami.admin"))
     elif await msg.check_permission():
-        perm += "\n" + msg.locale.t("core.message.whoami.botadmin")
+        perm.append(I18NContext("core.message.whoami.botadmin"))
     if msg.check_super_user():
-        perm += "\n" + msg.locale.t("core.message.whoami.superuser")
-    await msg.finish(
-        msg.locale.t(
-            "core.message.whoami",
-            sender=msg.target.sender_id,
-            target=msg.target.target_id,
-        )
-        + perm
-    )
+        perm.append(I18NContext("core.message.whoami.superuser"))
+    await msg.finish([I18NContext("core.message.whoami", disable_joke=True, sender=msg.target.sender_id, target=msg.target.target_id)] + perm)
 
 
 setup = module(

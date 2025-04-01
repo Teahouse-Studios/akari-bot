@@ -5,7 +5,7 @@ import random
 import re
 import traceback
 from pathlib import Path
-from typing import List, Union, Optional, Dict
+from typing import List, Union, Optional
 
 import aiocqhttp.exceptions
 import orjson as json
@@ -90,8 +90,10 @@ async def resending_group_message():
             fetch_base_superuser = await FetchTarget.fetch_target(bu)
             if fetch_base_superuser:
                 await fetch_base_superuser.send_direct_message(
-                    fetch_base_superuser.parent.locale.t(
-                        "error.message.paused", prefix=command_prefix[0]
+                    PlainElement.assign(
+                        fetch_base_superuser.parent.locale.t(
+                            "error.message.paused", prefix=command_prefix[0]
+                        ), disable_joke=True
                     )
                 )
 

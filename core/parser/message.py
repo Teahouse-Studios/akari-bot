@@ -9,7 +9,7 @@ from typing import Optional
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
-    base_superuser_list, Temp
+    base_superuser_list, Temp, Plain
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
@@ -504,7 +504,9 @@ async def parser(msg: Bot.MessageSession,
                     if not timeout and report_targets:
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
-                                await f.send_direct_message(f"[I18N:error.message.report,module={msg.trigger_msg}]\n{tb}".strip(), enable_parse_message=False, disable_secret_check=True)
+                                await f.send_direct_message([Plain(f"[I18N:error.message.report,module={msg.trigger_msg}]"),
+                                                            Plain(tb.strip(), disable_joke=True)],
+                                                            enable_parse_message=False, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(
                     msg.locale.t("parser.module.unloaded", module=command_first_word))
@@ -647,7 +649,9 @@ async def parser(msg: Bot.MessageSession,
                             if not timeout and report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
-                                        await f.send_direct_message(f"[I18N:error.message.report,module={msg.trigger_msg}]\n{tb}".strip(), enable_parse_message=False, disable_secret_check=True)
+                                        await f.send_direct_message([Plain(f"[I18N:error.message.report,module={msg.trigger_msg}]"),
+                                                                    Plain(tb.strip(), disable_joke=True)],
+                                                                    enable_parse_message=False, disable_secret_check=True)
                         finally:
                             ExecutionLockList.remove(msg)
 

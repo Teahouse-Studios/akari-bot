@@ -4,6 +4,7 @@ import os
 
 import orjson as json
 
+from core.builtins import Plain
 from core.background_tasks import init_background_task
 from core.config import CFGManager
 from core.constants import PrivateAssets, Secret
@@ -66,11 +67,9 @@ async def load_prompt(bot) -> None:
                 m = await bot.fetch_target(author)
                 if m:
                     if (read := open_loader_cache.read()) != "":
-                        await m.send_direct_message(f"{m.parent.locale.t("loader.load.failed")}\n{read}".strip())
+                        await m.send_direct_message([Plain(m.parent.locale.t("loader.load.failed")), Plain(read.strip(), disable_joke=True)])
                     else:
-                        await m.send_direct_message(
-                            m.parent.locale.t("loader.load.success")
-                        )
+                        await m.send_direct_message(m.parent.locale.t("loader.load.success"))
         os.remove(author_cache)
 
 
