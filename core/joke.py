@@ -18,6 +18,10 @@ def shuffle_joke(text: str) -> str:
 
     if check_apr_fools():
         Logger.info(text)
+
+        if url_pattern.fullmatch(text):
+            return text
+
         urls = url_pattern.finditer(text)
         url_positions = [(url.start(), url.end()) for url in urls]
 
