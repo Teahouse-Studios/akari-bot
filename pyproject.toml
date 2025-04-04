@@ -52,8 +52,9 @@ tenacity = "^9.0.0"
 tomlkit = "^0.13.2"
 
 # core.database
-SQLAlchemy = "^2.0.20"
 PyMySQL = "^1.0.2"
+SQLAlchemy = "^2.0.20"
+tortoise-orm = {extras = ["asyncmy"], version = "^0.23.0"}
 
 # core.http
 aiofile = "^3.8.1"

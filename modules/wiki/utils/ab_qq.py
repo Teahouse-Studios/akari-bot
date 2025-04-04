@@ -11,7 +11,7 @@ async def ab_qq(msg: MessageSession, wiki_url):
         list="abuselog",
         aflprop="user|title|action|result|filter|timestamp",
         afllimit=99,
-        _no_login=not msg.options.get("use_bot_account", False),
+        _no_login=not msg.target_data.get("use_bot_account", False),
     )
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
     msgchain_lst = [MessageChain([Plain(msg.locale.t("wiki.message.ab.qq.title")), Url(pageurl)])]

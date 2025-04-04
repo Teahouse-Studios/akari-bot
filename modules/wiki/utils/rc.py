@@ -15,9 +15,9 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     query = await wiki.get_json(action="query", list="recentchanges",
                                 rcprop="title|user|timestamp|loginfo|comment|sizes",
                                 rclimit=RC_LIMIT,
-                                rctype="edit|new|log",
-                                _no_login=not msg.options.get("use_bot_account", False))
-    pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
+                                rctype='edit|new|log',
+                                _no_login=not msg.target_data.get("use_bot_account", False))
+    pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
     d = []
     for x in query["query"]["recentchanges"]:
         title = x.get("title", "Unknown")

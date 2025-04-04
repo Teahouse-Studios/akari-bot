@@ -17,7 +17,7 @@ ali = module("alias", required_admin=True, base=True, doc=True)
     options_desc={"--legacy": "{help.option.legacy}"},
 )
 async def _(msg: Bot.MessageSession):
-    aliases = msg.options.get("command_alias")
+    aliases = msg.target_data.get("command_alias")
     alias = msg.parsed_msg.get("<alias>", False)
     command = msg.parsed_msg.get("<command>", False)
     if not aliases:
@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
             if not has_prefix:
                 await msg.finish(msg.locale.t("core.message.alias.add.invalid_prefix"))
             aliases[alias] = command[1:]
-            msg.data.edit_option("command_alias", aliases)
+            await msg.target_info.edit_target_data("command_alias", aliases)
             await msg.finish(
                 msg.locale.t(
                     "core.message.alias.add.success", alias=alias, command=command
@@ -64,14 +64,14 @@ async def _(msg: Bot.MessageSession):
         )
         if alias in aliases:
             del aliases[alias]
-            msg.data.edit_option("command_alias", aliases)
+            await msg.target_info.edit_target_data("command_alias", aliases)
             await msg.finish(
                 msg.locale.t("core.message.alias.remove.success", alias=alias)
             )
         else:
             await msg.finish(msg.locale.t("core.message.alias.not_found", alias=alias))
     elif "reset" in msg.parsed_msg:
-        msg.data.edit_option("command_alias", {})
+        await msg.target_info.edit_target_data("command_alias", {})
         await msg.finish(msg.locale.t("core.message.alias.reset.success"))
     elif "raise" in msg.parsed_msg:
         alias = alias.replace("_", " ")
@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession):
         if new_index is not None:
             aliases_list.pop(index)
             aliases_list.insert(new_index, alias)
-            msg.data.edit_option("command_alias", {k: aliases[k] for k in aliases_list})
+            await msg.target_info.edit_target_data("command_alias", {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
             await msg.finish(
                 msg.locale.t(
@@ -114,7 +114,7 @@ async def _(msg: Bot.MessageSession):
         if new_index:
             aliases_list.pop(index)
             aliases_list.insert(new_index, alias)
-            msg.data.edit_option("command_alias", {k: aliases[k] for k in aliases_list})
+            await msg.target_info.edit_target_data("command_alias", {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
             await msg.finish(
                 msg.locale.t(

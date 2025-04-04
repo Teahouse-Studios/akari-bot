@@ -1,10 +1,10 @@
 from core.builtins import Bot
 from core.component import module
-from core.database import BotDBUtil
 from core.logger import Logger
 from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 from modules.wiki.utils.wikilib import WikiLib
+
 
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
 
@@ -47,13 +47,12 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @wb.command("toggle")
 async def _(msg: Bot.MessageSession):
-    target_data = BotDBUtil.TargetInfo(msg)
-    use_bot_account = target_data.options.get("use_bot_account")
+    use_bot_account = msg.target_info.target_data.get("use_bot_account")
     if use_bot_account:
-        target_data.edit_option("use_bot_account", False)
+        await msg.target_info.edit_target_data("use_bot_account", False)
         await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.disable"))
     else:
-        target_data.edit_option("use_bot_account", True)
+        await msg.target_info.edit_target_data("use_bot_account", True)
         await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.enable"))
 
 

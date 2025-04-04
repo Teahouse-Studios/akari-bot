@@ -221,11 +221,11 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("redlink {{wiki.help.redlink}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    redlink_state = msg.data.options.get("wiki_redlink")
+    redlink_state = msg.target_data.get("wiki_redlink")
 
     if redlink_state:
-        msg.data.edit_option("wiki_redlink", False)
+        await msg.target_info.edit_target_data("wiki_redlink", False)
         await msg.finish(msg.locale.t("wiki.message.redlink.disable"))
     else:
-        msg.data.edit_option("wiki_redlink", True)
+        await msg.target_info.edit_target_data("wiki_redlink", True)
         await msg.finish(msg.locale.t("wiki.message.redlink.enable"))

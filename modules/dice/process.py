@@ -104,9 +104,9 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
         if (
             dice_expr_list[item][-1].upper() == "D"
             and dice_expr_list[item] not in math_funcs
-            and msg.data.options.get("dice_default_sides")
+            and msg.target_data.get("dice_default_sides")
         ):
-            dice_expr_list[item] += str(msg.data.options.get("dice_default_sides"))
+            dice_expr_list[item] += str(msg.target_data.get("dice_default_sides"))
 
     for i, item in enumerate(dice_expr_list):  # 将所有骰子项切片转为大写
         for pattern in dice_patterns:
@@ -262,7 +262,7 @@ def generate_dice_message(
         try:
             if dc:
                 output_line += f"/{dc}  "
-                if msg.data.options.get("dice_dc_reversed"):
+                if msg.target_data.get("dice_dc_reversed"):
                     if int(result) <= int(dc):
                         output_line += msg.locale.t("dice.message.dc.success")
                         success_num += 1

@@ -4,7 +4,7 @@ import traceback
 
 from core.builtins import Embed, EmbedField, MessageChain
 from core.config import Config
-from core.database.local import CrowdinActivityRecords
+from core.database_v2.models import CrowdinActivityRecords
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
@@ -44,10 +44,10 @@ async def check_crowdin():
                     continue
                 if "deleted" in m:
                     continue
-                if act["count"] == 1:
-                    identify = f"{act["user_id"]}{str(act["timestamp"])}{m}"
-                    if not first and not CrowdinActivityRecords.check(identify):
-                        await JobQueue.trigger_hook_all("mc_crowdin", message=MessageChain([Embed(title="New Crowdin Updates", description=m)]))
+                if act['count'] == 1:
+                    identify = f'{act["user_id"]}{str(act['timestamp'])}{m}'
+                    if not first and not await CrowdinActivityRecords.check(identify):
+                        await JobQueue.trigger_hook_all('mc_crowdin', message=MessageChain([Embed(title='New Crowdin Updates', description=m)]))
                 else:
                     detail_url = f"https://crowdin.com/backend/project_actions/activity_stream_details?request_type=project&type={
                         act["type"]}&timestamp={
@@ -77,8 +77,8 @@ async def check_crowdin():
                             identify = f"{act["user_id"]}{str(act["timestamp"])}{m}{
                                 "\n".join(f"{i}: {identify_[i]}" for i in identify_)}"
 
-                            if not first and not CrowdinActivityRecords.check(identify):
-                                await JobQueue.trigger_hook_all("mc_crowdin", message=MessageChain([Embed(title="New Crowdin Updates", description=m, color=0x00ff00, fields=[EmbedField(name=k, value=v, inline=True) for k, v in identify_.items()])]))
+                            if not first and not await CrowdinActivityRecords.check(identify):
+                                await JobQueue.trigger_hook_all('mc_crowdin', message=MessageChain([Embed(title='New Crowdin Updates', description=m, color=0x00ff00, fields=[EmbedField(name=k, value=v, inline=True) for k, v in identify_.items()])]))
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())

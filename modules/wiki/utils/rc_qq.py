@@ -12,7 +12,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
         rcprop="title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids",
         rclimit=99,
         rctype="edit|new|log",
-        _no_login=not msg.options.get("use_bot_account", False),
+        _no_login=not msg.target_data.get("use_bot_account", False),
     )
     wiki_info = wiki.wiki_info
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
