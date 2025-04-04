@@ -45,7 +45,7 @@ def compress_json(input_data):
             right = latest_entry["rightEmojiCodepoint"]
             date = latest_entry["date"]
 
-            key = f'({left}, {right})'
+            key = f"({left}, {right})"
             compressed_data["data"][key] = date_index_map[date]
 
     compressed_data["date"] = sorted_dates
@@ -58,5 +58,5 @@ if __name__ == "__main__":
     input_data = get_data_from_api(api_url)
     compressed_data = compress_json(input_data)
 
-    with open('output.json', "w", encoding="utf-8") as f:
+    with open("output.json", "w", encoding="utf-8") as f:
         json.dump(compressed_data, f, ensure_ascii=False, indent=2)

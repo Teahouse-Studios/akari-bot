@@ -106,13 +106,13 @@ async def mcbv(msg: Bot.MessageSession):
     return (
         (
             f"""{msg.locale.t("mcv.message.mcbv.play_store")}
-{play_store_version if play_store_version else msg.locale.t('mcv.message.mcbv.get_failed')}
+{play_store_version if play_store_version else msg.locale.t("mcv.message.mcbv.get_failed")}
 """
             if Secret.ip_country != "China"
             else ""
         )
         + f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
-{ms_store_version if ms_store_version else msg.locale.t('mcv.message.mcbv.get_failed')}
+{ms_store_version if ms_store_version else msg.locale.t("mcv.message.mcbv.get_failed")}
 """
         + msg.locale.t("mcv.message.mcbv", jira_ver=msg2)
     )

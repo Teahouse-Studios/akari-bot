@@ -41,11 +41,11 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     Logger.info(
         f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}"
     )
-    # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == 'invite'
+    # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == "invite"
     # if not is_direct:
-    #     resp = await bot.room_get_state_event(room.room_id, 'm.room.member', client.user)
-    #     if 'prev_content' in resp.__dict__ and 'is_direct' in resp.__dict__[
-    #             'prev_content'] and resp.__dict__['prev_content']['is_direct']:
+    #     resp = await bot.room_get_state_event(room.room_id, "m.room.member", client.user)
+    #     if "prev_content" in resp.__dict__ and "is_direct" in resp.__dict__[
+    #             "prev_content"] and resp.__dict__["prev_content"]["is_direct"]:
     #         is_direct = True
     if room.member_count == 1 and event.membership == "leave":
         resp = await bot.room_leave(room.room_id)
@@ -223,7 +223,7 @@ async def start():
 
     # sync joined room state
     Logger.info("Starting sync room full state...")
-    # bot.upload_filter(presence={'limit':1},room={'timeline':{'limit':1}})
+    # bot.upload_filter(presence={"limit":1},room={"timeline":{"limit":1}})
     resp = await bot.sync(
         timeout=10000, since=bot.next_batch, full_state=True, set_presence="unavailable"
     )

@@ -17,7 +17,6 @@ from tenacity import retry, stop_after_attempt
 from core.config import Config
 from core.constants import bug_report_url_default
 from core.constants.info import Info
-from core.joke import shuffle_joke as joke
 from core.utils.cache import random_cache_path
 from core.utils.i18n import Locale
 
@@ -43,6 +42,7 @@ class PlainElement(MessageElement):
     """
 
     text: str
+    disable_joke: bool
 
     @classmethod
     def assign(cls, *texts: Any, disable_joke: bool = False):
@@ -51,9 +51,8 @@ class PlainElement(MessageElement):
         :param disable_joke: 是否禁用玩笑功能。（默认为False）
         """
         text = "".join([str(x) for x in texts])
-        if not disable_joke:
-            text = joke(text)
-        return deepcopy(cls(text=text))
+        disable_joke = bool(disable_joke)
+        return deepcopy(cls(text=text, disable_joke=disable_joke))
 
 
 @define
@@ -170,15 +169,16 @@ class I18NContextElement(MessageElement):
     """
 
     key: str
+    disable_joke: bool
     kwargs: Dict[str, Any]
 
     @classmethod
-    def assign(cls, key: str, **kwargs: Any):
+    def assign(cls, key: str, disable_joke: bool = False, **kwargs: Any):
         """
         :param key: 多语言的键名。
         :param kwargs: 多语言中的变量。
         """
-        return deepcopy(cls(key=key, kwargs=kwargs))
+        return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))
 
 
 @define
@@ -206,17 +206,16 @@ class ErrorMessageElement(MessageElement):
         :param kwargs: 多语言中的变量。
         """
 
-        if locale:
-            locale = Locale(locale)
-            error_message = locale.t_str(error_message, **kwargs)
-            error_message = locale.t("message.error") + error_message
+        if locale and isinstance(locale, str):
+            error_message = Locale(locale).t_str(error_message, **kwargs)
+            error_message = Locale(locale).t("message.error") + error_message
             if enable_report and (
                 report_url := URLElement.assign(
                     Config("bug_report_url", bug_report_url_default, cfg_type=str),
                     use_mm=False,
                 )
             ):
-                error_message += "\n" + locale.t(
+                error_message += "\n" + Locale(locale).t(
                     "error.prompt.address", url=str(report_url.url)
                 )
 
@@ -334,7 +333,7 @@ class MentionElement(MessageElement):
         """
         :param _id: 用户id。
         """
-        return deepcopy(cls(client=user_id.split('|')[0], id=user_id.split('|')[-1]))
+        return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
 
 
 @define
@@ -429,16 +428,20 @@ class EmbedElement(MessageElement):
         if self.fields:
             for f in self.fields:
                 if msg:
-                    text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
+                    text_lst.append(f"{msg.locale.t_str(f.name)}{msg.locale.t(
+                        "message.colon")}{msg.locale.t_str(f.value)}")
                 else:
                     text_lst.append(f"{f.name}: {f.value}")
         if self.author:
             if msg:
-                text_lst.append(f"{msg.locale.t('message.embed.author')}{self.author}")
+                text_lst.append(f"{msg.locale.t("message.embed.author")}{msg.locale.t_str(self.author)}")
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:
-            text_lst.append(self.footer)
+            if msg:
+                text_lst.append(msg.locale.t_str(self.footer))
+            else:
+                text_lst.append(self.footer)
         message_chain = []
         if text_lst:
             message_chain.append(PlainElement.assign("\n".join(text_lst)))

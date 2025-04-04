@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
 @test.command("image")
 async def _(msg: Bot.MessageSession):
     #  >>> ~test image
-    #  <<< A picture: Image(url='https://http.cat/100.jpg')
+    #  <<< A picture: Image(url="https://http.cat/100.jpg")
     await msg.send_message([Plain("A picture:"), Image("https://http.cat/100.jpg")])
 
 

@@ -73,6 +73,6 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
         + f"CurrentLevel: {current_level}\n"
         + f"NextLevelExp: {next_level_exp}\n"
         + f"Rating: {rating}\n"
-        + f'Grade: {", ".join(grade_t)}'
+        + f"Grade: {", ".join(grade_t)}"
     )
     await msg.finish([Image(path=avatar), Plain(text)])

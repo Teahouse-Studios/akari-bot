@@ -106,7 +106,7 @@ class ModulesManager:
             cls.modules.update({module.bind_prefix: module})
             cls.modules_origin.update({module.bind_prefix: py_module_name})
         else:
-            raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
+            raise ValueError(f"Duplicate bind prefix \"{module.bind_prefix}\"")
 
     @classmethod
     def remove_modules(cls, modules):
@@ -116,7 +116,7 @@ class ModulesManager:
                 cls.modules.pop(module)
                 cls.modules_origin.pop(module)
             else:
-                raise ValueError(f'Module "{module}" is not exist.')
+                raise ValueError(f"Module \"{module}\" is not exist.")
 
     @classmethod
     def refresh_modules_aliases(cls):
@@ -155,7 +155,7 @@ class ModulesManager:
             if not include_self:
                 modules.remove(module)
             return modules
-        raise ValueError(f'Could not find "{module}" in modules_origin dict')
+        raise ValueError(f"Could not find \"{module}\" in modules_origin dict")
 
     @classmethod
     def return_py_module(cls, module):

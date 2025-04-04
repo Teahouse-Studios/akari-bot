@@ -43,7 +43,7 @@ class CQCodeHandler:
         """
         生成CQ码字符串。
 
-        :param data: 包含CQ类型和参数的字典，必须包含'type'和'data'字段。
+        :param data: 包含CQ类型和参数的字典，必须包含`type`和`data`字段。
         :return: 生成的CQ码字符串；如果输入数据无效，返回None。
         """
         if "type" in data and "data" in data:
@@ -56,7 +56,7 @@ class CQCodeHandler:
                 f"{key}={CQCodeHandler.escape_special_char(str(value))}"
                 for key, value in params.items()
             ]
-            return f"[CQ:{cq_type},{','.join(param_str)}]"
+            return f"[CQ:{cq_type},{", ".join(param_str)}]"
         else:
             return None
 
@@ -74,7 +74,7 @@ class CQCodeHandler:
             return None
         cq_type = match.group(1)
         if match.group(2):
-            params = match.group(2).split(',')
+            params = match.group(2).split(",")
             params = [x for x in params if x]
             for a in params:
                 ma = re.match(r"(.*?)=(.*)", a)

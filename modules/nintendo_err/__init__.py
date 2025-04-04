@@ -47,7 +47,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
             if switch.is_valid(error):
                 return switch.hex2err(error)
         if not suppress_error:
-            return "This isn't a hexadecimal value!"
+            return "This isn\'t a hexadecimal value!"
 
     @staticmethod
     def fixup_input(user_input):

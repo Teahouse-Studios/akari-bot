@@ -21,25 +21,26 @@ async def _(msg: Bot.MessageSession, term: str):
 
 
 async def nbnhhsh(msg: Bot.MessageSession, term: str):
-    req = json.dumps({'text': term})
-    data = await post_url('https://lab.magiconch.com/api/nbnhhsh/guess',
+    req = json.dumps({"text": term})
+    data = await post_url("https://lab.magiconch.com/api/nbnhhsh/guess",
                           data=req,
-                          headers={'Content-Type': 'application/json', 'Accept': '*/*',
-                                   'Content-Length': str(len(req))},
-                          fmt='json')
+                          headers={"Content-Type": "application/json",
+                                   "Accept": "*/*",
+                                   "Content-Length": str(len(req))},
+                          fmt="json")
     Logger.debug(data)
     try:
         result = data[0]
     except IndexError:
         await msg.finish(msg.locale.t("nbnhhsh.message.not_found"))
-    if 'trans' in result:
-        trans = result['trans']
+    if "trans" in result:
+        trans = result["trans"]
         if trans:
             chk = await check(trans)
-            return "、".join(i['content'] for i in chk)
-    if 'inputting' in result:
-        inputting = result['inputting']
+            return "、".join(i["content"] for i in chk)
+    if "inputting" in result:
+        inputting = result["inputting"]
         if inputting:
             chk = await check(inputting)
-            return f'{msg.locale.t("nbnhhsh.message.guess", term=term)}{"、".join(i['content'] for i in chk)}'
+            return f"{msg.locale.t("nbnhhsh.message.guess", term=term)}{"、".join(i["content"] for i in chk)}"
         await msg.finish(msg.locale.t("nbnhhsh.message.not_found"))

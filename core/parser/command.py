@@ -78,7 +78,7 @@ class CommandParser:
                 x = self.lang.t_str(x, fallback_failed_prompt=False)
                 options_desc_localed.append(x)
             options_desc_localed = list(set(options_desc_localed))  # 移除重复内容
-            args += f'\n{self.lang.t("core.help.options")}\n' + "\n".join(
+            args += f"\n{self.lang.t("core.help.options")}\n" + "\n".join(
                 options_desc_localed
             )
         return args
@@ -86,8 +86,7 @@ class CommandParser:
     def parse(self, command):
         if not self.args:
             return None
-        command = re.sub(r"[“”]", '"', command)
-        command = command.replace("'", "'").replace('"', '"')
+        command = re.sub(r"[“”]", "\"", command)
         try:
             split_command = shlex.split(command)
         except ValueError:

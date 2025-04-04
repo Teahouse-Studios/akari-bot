@@ -11,7 +11,7 @@ def decrypt_string(text):
     c = FF3Cipher.withCustomAlphabet(
         key,
         tweak,
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~",
     )
     d = []
     for i in range(0, len(text), 28):

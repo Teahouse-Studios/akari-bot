@@ -1,5 +1,5 @@
-request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
-    # re.compile(r'.*runescape\.wiki'),
+request_by_web_render_list = [  # re.compile(r".*minecraft\.wiki"),  # sigh
+    # re.compile(r".*runescape\.wiki"),
 ]
 
 infobox_elements = [

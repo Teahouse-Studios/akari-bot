@@ -62,7 +62,7 @@ async def update_alias() -> bool:
 
 async def get_info(music: Music, *details) -> MessageChain:
     info = [
-        Plain(f"{music.id} - {music.title}{' (DX)' if music['type'] == 'DX' else ''}")
+        Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}")
     ]
     cover_path = os.path.join(mai_cover_path, f"{music.id}.png")
     if os.path.exists(cover_path):
@@ -122,7 +122,7 @@ async def get_record(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_record.json"
+        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
@@ -172,7 +172,7 @@ async def get_song_record(
         mai_cache_path = os.path.join(cache_path, "maimai-record")
         os.makedirs(mai_cache_path, exist_ok=True)
         cache_dir = os.path.join(
-            mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_song_record.json"
+            mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_song_record.json"
         )
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
@@ -225,7 +225,7 @@ async def get_total_record(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_total_record.json"
+        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_total_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload["version"] = versions
@@ -283,7 +283,7 @@ async def get_plate(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace('|', '_')}_maimaidx_plate_{version}.json"
+        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:

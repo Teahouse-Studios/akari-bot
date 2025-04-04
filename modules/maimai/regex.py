@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    res += f"{s['id']} - {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                    res += f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
@@ -80,7 +80,7 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     title = (
-        f"{music['id']} - {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+        f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""}"
     )
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession):
                 music = music_data.random()
                 await msg.finish(
                     await get_info(
-                        music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")
+                        music, Plain(f"\n{"/".join(str(ds) for ds in music.ds)}")
                     )
                 )
         except ValueError:

@@ -5,7 +5,7 @@ from .models import OsuBindInfo
 from .profile import osu_profile
 from .utils import get_profile_name
 
-api_key = Config('osu_api_key', cfg_type=str, secret=True, table_name="module_osu")
+api_key = Config("osu_api_key", cfg_type=str, secret=True, table_name="module_osu")
 
 osu = module("osu", developers=["DoroWolf"], desc="{osu.help.desc}", doc=True)
 

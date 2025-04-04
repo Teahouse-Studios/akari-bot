@@ -43,18 +43,18 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 str(i),
                 song["name"]
                 + (
-                    f" ({' / '.join(song['transNames'])})"
+                    f" ({" / ".join(song["transNames"])})"
                     if "transNames" in song
                     else ""
                 ),
-                f"{' / '.join(artist['name'] for artist in song['artists'])}",
-                f"{song['album']['name']}"
+                f"{" / ".join(artist["name"] for artist in song["artists"])}",
+                f"{song["album"]["name"]}"
                 + (
-                    f" ({' / '.join(song['album']['transNames'])})"
+                    f" ({" / ".join(song["album"]["transNames"])})"
                     if "transNames" in song["album"]
                     else ""
                 ),
-                f"{song['id']}",
+                f"{song["id"]}",
             ]
             for i, song in enumerate(songs, start=1)
         ]
@@ -111,15 +111,15 @@ async def _(msg: Bot.MessageSession, keyword: str):
         send_msg = msg.locale.t("ncmusic.message.search.result") + "\n"
 
         for i, song in enumerate(songs, start=1):
-            send_msg += f"{i} - {song['name']}"
+            send_msg += f"{i} - {song["name"]}"
             if "transNames" in song:
-                send_msg += f"（{' / '.join(song['transNames'])}）"
-            send_msg += f"——{' / '.join(artist['name'] for artist in song['artists'])}"
+                send_msg += f"（{" / ".join(song["transNames"])}）"
+            send_msg += f"——{" / ".join(artist["name"] for artist in song["artists"])}"
             if song["album"]["name"]:
-                send_msg += f"《{song['album']['name']}》"
+                send_msg += f"《{song["album"]["name"]}》"
             if "transNames" in song["album"]:
-                send_msg += f"（{' / '.join(song['album']['transNames'])}）"
-            send_msg += f"（{song['id']}）\n"
+                send_msg += f"（{" / ".join(song["album"]["transNames"])}）"
+            send_msg += f"（{song["id"]}）\n"
 
         if song_count > SEARCH_LIMIT:
             song_count = SEARCH_LIMIT
@@ -178,7 +178,7 @@ async def info(msg: Bot.MessageSession, sid: int):
     if result["songs"]:
         info = result["songs"][0]
         artist = " / ".join([ar["name"] for ar in info["ar"]])
-        song_url = f"https://music.163.com/#/song?id={info['id']}"
+        song_url = f"https://music.163.com/#/song?id={info["id"]}"
 
         await msg.finish(
             [

@@ -224,7 +224,7 @@ class WikiLib:
                         ),
                     )
                 m = re.findall(
-                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/?\s*>',
+                    r"(?im)<\s*link\s*rel=\"EditURI\"\s*type=\"application/rsd\+xml\"\s*href=\"([^>]+?)\?action=rsd\"\s*/?\s*>",
                     get_page,
                 )
                 api_match = m[0]
@@ -692,7 +692,7 @@ class WikiLib:
                 if "editurl" in page_raw:
                     page_info.edit_link = page_raw["editurl"]
                 if "invalid" in page_raw:
-                    match = re.search(r'"(.)"', page_raw["invalidreason"])
+                    match = re.search(r"\"(.)\"", page_raw["invalidreason"])
                     if match:
                         rs = self.locale.t(
                             "wiki.message.utils.wikilib.invalid.invalid_character",

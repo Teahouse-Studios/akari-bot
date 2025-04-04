@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession, query: str):
     if result:
         for x in result[0:SEARCH_LIMIT]:
             v = x["value"].split("\n")[0]
-            plain_texts.append(f'{x["enumName"]}：{x["key"]} -> {v}')
+            plain_texts.append(f"{x["enumName"]}：{x["key"]} -> {v}")
         if resp["data"]["count"] > SEARCH_LIMIT:
             plain_texts.append(
                 msg.locale.t("message.collapse", amount=SEARCH_LIMIT)

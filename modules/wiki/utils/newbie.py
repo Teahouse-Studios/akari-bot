@@ -15,12 +15,12 @@ async def newbie(msg: Bot.MessageSession, wiki_url):
             d.append(x["title"])
     y = await check(*d)
     yy = "\n".join(z["content"] for z in y)
-    g = f'{pageurl}\n{yy}\n{msg.locale.t("message.collapse", amount=NEWBIE_LIMIT)}'
+    g = f"{pageurl}\n{yy}\n{msg.locale.t("message.collapse", amount=NEWBIE_LIMIT)}"
     st = True
     for z in y:
         if not z["status"]:
             st = False
             break
     if not st:
-        g += f'\n{msg.locale.t("wiki.message.utils.redacted")}'
+        g += f"\n{msg.locale.t("wiki.message.utils.redacted")}"
     return g

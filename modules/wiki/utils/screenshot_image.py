@@ -142,10 +142,10 @@ async def generate_screenshot_v1(
                 fl = []
                 for f in x.attrs:
                     if isinstance(x.attrs[f], str):
-                        fl.append(f'{f}="{x.attrs[f]}"')
+                        fl.append(f"{f}=\"{x.attrs[f]}\"")
                     elif isinstance(x.attrs[f], list):
-                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                open_file.write(f'<html {" ".join(fl)}>')
+                        fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                open_file.write(f"<html {" ".join(fl)}>")
 
             open_file.write("<head>\n")
             for x in soup.find_all(rel="stylesheet"):
@@ -171,7 +171,7 @@ async def generate_screenshot_v1(
                         for x in soup.find_all("body"):
                             if x.has_attr("class"):
                                 open_file.write(
-                                    f'<body class="{" ".join(x.get("class"))}">'
+                                    f"<body class=\"{" ".join(x.get("class"))}\">"
                                 )
 
                         for x in soup.find_all("div"):
@@ -179,20 +179,20 @@ async def generate_screenshot_v1(
                                 fl = []
                                 for f in x.attrs:
                                     if isinstance(x.attrs[f], str):
-                                        fl.append(f'{f}="{x.attrs[f]}"')
+                                        fl.append(f"{f}=\"{x.attrs[f]}\"")
                                     elif isinstance(x.attrs[f], list):
-                                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                                open_file.write(f'<div {" ".join(fl)}>')
-                        open_file.write('<div class="mw-parser-output">')
+                                        fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                                open_file.write(f"<div {" ".join(fl)}>")
+                        open_file.write("<div class=\"mw-parser-output\">")
 
                         for x in soup.find_all("main"):
                             fl = []
                             for f in x.attrs:
                                 if isinstance(x.attrs[f], str):
-                                    fl.append(f'{f}="{x.attrs[f]}"')
+                                    fl.append(f"{f}=\"{x.attrs[f]}\"")
                                 elif isinstance(x.attrs[f], list):
-                                    fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                            open_file.write(f'<main {" ".join(fl)}>')
+                                    fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                            open_file.write(f"<main {" ".join(fl)}>")
                         open_file.write(str(find_diff))
                         w = 2000
                 if not find_diff:
@@ -224,7 +224,7 @@ async def generate_screenshot_v1(
                             x.attrs["class"] = "image"
                             x.attrs["src"] = x.attrs["data-src"]
 
-                    open_file.write('<div class="mw-parser-output">')
+                    open_file.write("<div class=\"mw-parser-output\">")
 
                     open_file.write(str(find_infobox))
                     w = 500
@@ -232,28 +232,28 @@ async def generate_screenshot_v1(
             else:
                 for x in soup.find_all("body"):
                     if x.has_attr("class"):
-                        open_file.write(f'<body class="{" ".join(x.get("class"))}">')
+                        open_file.write(f"<body class=\"{" ".join(x.get("class"))}\">")
 
                 for x in soup.find_all("div"):
                     if x.get("id") in ["content", "mw-content-text"]:
                         fl = []
                         for f in x.attrs:
                             if isinstance(x.attrs[f], str):
-                                fl.append(f'{f}="{x.attrs[f]}"')
+                                fl.append(f"{f}=\"{x.attrs[f]}\"")
                             elif isinstance(x.attrs[f], list):
-                                fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                        open_file.write(f'<div {" ".join(fl)}>')
+                                fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                        open_file.write(f"<div {" ".join(fl)}>")
 
-                open_file.write('<div class="mw-parser-output">')
+                open_file.write("<div class=\"mw-parser-output\">")
 
                 for x in soup.find_all("main"):
                     fl = []
                     for f in x.attrs:
                         if isinstance(x.attrs[f], str):
-                            fl.append(f'{f}="{x.attrs[f]}"')
+                            fl.append(f"{f}=\"{x.attrs[f]}\"")
                         elif isinstance(x.attrs[f], list):
-                            fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                    open_file.write(f'<main {" ".join(fl)}>')
+                            fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                    open_file.write(f"<main {" ".join(fl)}>")
 
                 def is_comment(e):
                     return isinstance(e, Comment)

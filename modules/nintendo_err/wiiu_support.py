@@ -21,7 +21,7 @@ Note: the "modules" presented here are more like "categories". However, this dif
 isn't enough to justify creating a different class with the same logic, so we'll just
 refer to them as "modules" from now on.
 To add a module so the code understands it, simply add a new module number
-to the 'modules' dictionary, with a Module variable as the value. If the module
+to the "modules" dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
@@ -31,8 +31,8 @@ as the key, and a ResultInfo variable with a text description of the error or re
 You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all results or errors have support webpages.
 Simple example of adding a module with a sample result code:
-test = Module('test', {
-    5: ResultInfo('test', 'https://example.com')
+test = Module("test", {
+    5: ResultInfo("test", "https://example.com")
 })
 modules = {
     9999: test
@@ -292,14 +292,14 @@ act = Module(
         2802: ResultInfo("Account is banned from all services.", is_ban=True),
         2803: ResultInfo("Account is banned from a particular game.", is_ban=True),
         2804: ResultInfo(
-            "Account is banned from Nintendo's online service.", is_ban=True
+            "Account is banned from Nintendo\'s online service.", is_ban=True
         ),
         2805: ResultInfo("Account is banned from independent services.", is_ban=True),
         2811: ResultInfo("Console is banned.", is_ban=True),
         2812: ResultInfo("Console is banned from all services.", is_ban=True),
         2813: ResultInfo("Console is banned from a particular game.", is_ban=True),
         2814: ResultInfo(
-            "Console is banned from Nintendo's online service.", is_ban=True
+            "Console is banned from Nintendo\'s online service.", is_ban=True
         ),
         2815: ResultInfo("Console is banned from independent services.", is_ban=True),
         2816: ResultInfo(
@@ -314,7 +314,7 @@ act = Module(
             "Account is temporarily banned from a particular game.", is_ban=True
         ),
         2824: ResultInfo(
-            "Account is temporarily banned from Nintendo's online service.", is_ban=True
+            "Account is temporarily banned from Nintendo\'s online service.", is_ban=True
         ),
         2825: ResultInfo(
             "Acccount is temporarily banned from independent services.", is_ban=True
@@ -327,7 +327,7 @@ act = Module(
             "Console is temporarily banned from a particular game.", is_ban=True
         ),
         2834: ResultInfo(
-            "Console is temporarily banned from Nintendo's online service.", is_ban=True
+            "Console is temporarily banned from Nintendo\'s online service.", is_ban=True
         ),
         2835: ResultInfo(
             "Console is temporarily banned from independent services.", is_ban=True
@@ -414,11 +414,11 @@ nex = Module(
             "The provided user name already exists in the database. All usernames must be unique."
         ),
         306: ResultInfo(
-            "The Principal's account still exists in the database but the account has been disabled.",
+            "The Principal\'s account still exists in the database but the account has been disabled.",
             is_ban=True,
         ),
         307: ResultInfo(
-            "The Principal's account still exists in the database but the account has expired."
+            "The Principal\'s account still exists in the database but the account has expired."
         ),
         308: ResultInfo(
             "The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained."

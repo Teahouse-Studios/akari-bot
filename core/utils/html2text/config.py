@@ -103,10 +103,10 @@ RE_MD_BACKSLASH_MATCHER = re.compile(
 )
 
 UNIFIABLE = {
-    "rsquo": "'",
-    "lsquo": "'",
-    "rdquo": '"',
-    "ldquo": '"',
+    "rsquo": "\'",
+    "lsquo": "\'",
+    "rdquo": "\"",
+    "ldquo": "\"",
     "copy": "(C)",
     "mdash": "--",
     "nbsp": " ",
@@ -153,5 +153,5 @@ IGNORE_TABLES = False
 SINGLE_LINE_BREAK = False
 
 # Use double quotation marks when converting the <q> tag.
-OPEN_QUOTE = '"'
-CLOSE_QUOTE = '"'
+OPEN_QUOTE = "\""
+CLOSE_QUOTE = "\""

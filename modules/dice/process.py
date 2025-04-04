@@ -72,7 +72,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
 
 
 def parse_dice_expression(msg: Bot.MessageSession, dices: str):
-    '''解析骰子表达式'''
+    """解析骰子表达式"""
     dice_item_list = []
     math_func_pattern = (
         "(" + "|".join(re.escape(func) for func in math_funcs) + ")"
@@ -172,7 +172,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 
 
 def insert_multiply(msg: Bot.MessageSession, lst: list):
-    '''在各项之间加上乘号'''
+    """在各项之间加上乘号"""
     result = []
     asterisk = "\\*" if msg.Feature.markdown else "*"
     for i, item in enumerate(lst):
@@ -199,7 +199,7 @@ def generate_dice_message(
     times: int,
     dc: str,
 ):
-    '''开始投掷并生成消息'''
+    """开始投掷并生成消息"""
     success_num = 0
     fail_num = 0
     output = msg.locale.t("dice.message.output")

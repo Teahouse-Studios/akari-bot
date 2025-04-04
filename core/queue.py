@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import orjson as json
 
-from core.builtins import Bot, MessageChain
+from core.builtins import Bot, MessageChain, Plain
 from core.config import Config
 from core.constants import Info, default_locale
 from core.database_v2.models import JobQueuesTable
@@ -16,7 +16,7 @@ from core.utils.web_render import check_web_render
 
 _queue_tasks = {}
 queue_actions = {}
-report_targets = Config('report_targets', [])
+report_targets = Config("report_targets", [])
 
 
 class QueueFinished(Exception):
@@ -32,32 +32,32 @@ def action(action_name: str):
 
 
 class JobQueue:
-    name = 'Internal|' + str(uuid4())
+    name = "Internal|" + str(uuid4())
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
         task_id = await JobQueuesTable.add_task(target_client, action, args)
         if wait:
             flag = asyncio.Event()
-            _queue_tasks[task_id] = {'flag': flag}
+            _queue_tasks[taskid] = {"flag": flag}
             await flag.wait()
-            result = _queue_tasks[task_id]['result']
-            del _queue_tasks[task_id]
+            result = _queue_tasks[taskid]["result"]
+            del _queue_tasks[taskid]
             return result
         return task_id
 
     @classmethod
     async def validate_permission(cls, target_client: str, target_id: str, sender_id: str):
-        return (await cls.add_job(target_client, 'validate_permission',
-                                  {'target_id': target_id, 'sender_id': sender_id}))['value']
+        return (await cls.add_job(target_client, "validate_permission",
+                                  {"target_id": target_id, "sender_id": sender_id}))["value"]
 
     @classmethod
     async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
         for k in kwargs:
             if isinstance(kwargs[k], MessageChain):
                 kwargs[k] = kwargs[k].to_list()
-        return await cls.add_job(target_client, 'trigger_hook',
-                                 {'module_or_hook_name': module_or_hook_name, 'args': kwargs}, wait=False)
+        return await cls.add_job(target_client, "trigger_hook",
+                                 {"module_or_hook_name": module_or_hook_name, "args": kwargs}, wait=False)
 
     @classmethod
     async def trigger_hook_all(cls, module_or_hook_name: str, **kwargs):
@@ -68,18 +68,18 @@ class JobQueue:
     async def secret_append_ip(cls):
         ip_info = await fetch_ip_info()
         for target in get_all_clients_name():
-            await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
+            await cls.add_job(target, "secret_append_ip", ip_info, wait=False)
 
     @classmethod
     async def web_render_status(cls):
         web_render_status, web_render_local_status = await check_web_render()
         for target in get_all_clients_name():
-            await cls.add_job(target, 'web_render_status', {'web_render_status': web_render_status,
-                                                            'web_render_local_status': web_render_local_status}, wait=False)
+            await cls.add_job(target, "web_render_status", {"web_render_status": web_render_status,
+                                                            "web_render_local_status": web_render_local_status}, wait=False)
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):
-        await cls.add_job(target_client, 'send_message', {'target_id': target_id, 'message': message})
+        await cls.add_job(target_client, "send_message", {"target_id": target_id, "message": message})
 
 
 async def return_val(tsk: JobQueuesTable, value: dict, status=True):
@@ -101,11 +101,10 @@ async def check_job_queue():
 
     get_internal = await JobQueuesTable.get_all(target_client=JobQueue.name)
     get_all = await JobQueuesTable.get_all(target_client=Bot.FetchTarget.name)
-
     for tsk in get_internal + get_all:
-        Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
+        Logger.debug(f"Received job queue task {tsk.taskid}, action: {tsk.action}")
         args = json.loads(tsk.args)
-        Logger.debug(f'Args: {args}')
+        Logger.debug(f"Args: {args}")
         try:
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
@@ -127,7 +126,8 @@ async def check_job_queue():
             try:
                 for target in report_targets:
                     if ft := await Bot.FetchTarget.fetch_target(target):
-                        await ft.send_direct_message(f"[I18N:error.message.report,module={tsk.action}]\n{f}".strip(),
+                        await ft.send_direct_message([Plain(f"[I18N:error.message.report,module={tsk.action}]"),
+                                                      Plain(f.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)
             except Exception:
                 Logger.error(traceback.format_exc())

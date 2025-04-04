@@ -231,7 +231,7 @@ class MkeyGenerator:
 
         if not self._data_path:
             raise ValueError(
-                "v1/v2 attempted, but data directory doesn't exist or was not specified."
+                "v1/v2 attempted, but data directory doesn\'t exist or was not specified."
             )
 
         #
@@ -355,7 +355,7 @@ class MkeyGenerator:
 
         if not self._data_path:
             raise ValueError(
-                "v3/v4 attempted, but data directory doesn't exist or was not specified."
+                "v3/v4 attempted, but data directory doesn\'t exist or was not specified."
             )
 
         if algorithm == "v4" and not aux:
