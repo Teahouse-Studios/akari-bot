@@ -29,4 +29,4 @@ async def init_db():
         }
     )
 
-    await Tortoise.generate_schemas()
+    await Tortoise.generate_schemas(safe=True)
