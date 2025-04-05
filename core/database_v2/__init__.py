@@ -17,7 +17,8 @@ async def init_db():
                                "modules.cytoid.models",
                                "modules.maimai.models",
                                "modules.osu.models",
-                               "modules.phigros.models"],
+                               "modules.phigros.models",
+                               "modules.wiki.models"],
                     "default_connection": "default",
                 },
                 "local_models": {

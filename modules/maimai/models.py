@@ -9,7 +9,7 @@ class DivingProberBindInfo(Model):
     username = fields.CharField(max_length=512)
 
     class Meta:
-        table = table_prefix + "diving_prober_bind_info"
+        table = f"{table_prefix}diving_prober_bind_info"
 
     @classmethod
     async def set_bind_info(cls, sender_id: str, username: str):
