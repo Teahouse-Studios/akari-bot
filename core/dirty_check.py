@@ -16,7 +16,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.builtins import Bot
 from core.config import Config
-from core.database_v2.models import DirtyWordCache
+from core.database_v2.local import DirtyWordCache
 from core.logger import Logger
 
 

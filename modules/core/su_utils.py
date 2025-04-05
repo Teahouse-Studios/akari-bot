@@ -469,11 +469,11 @@ forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True
 
 @forward_msg.command()
 async def _(msg: Bot.MessageSession):
-    alist = get_stored_list(Bot.FetchTarget, "forward_msg")
+    alist = await get_stored_list(Bot.FetchTarget, "forward_msg")
     if not alist:
         alist = {"status": True}
     alist["status"] = not alist["status"]
-    update_stored_list(Bot.FetchTarget, "forward_msg", alist)
+    await update_stored_list(Bot.FetchTarget, "forward_msg", alist)
     if alist["status"]:
         await msg.finish(msg.locale.t("core.message.forward_msg.disable"))
     else:

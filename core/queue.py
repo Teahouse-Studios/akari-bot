@@ -80,13 +80,8 @@ class JobQueue:
         await cls.add_job(target_client, "send_message", {"target_id": target_id, "message": message})
 
 
-async def return_val(tsk: JobQueuesTable, value: dict, status=True):
-    status = {"status": status}
-    if value:
-        value.update(status)
-    else:
-        value = status
-    await tsk.return_val(value)
+async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
+    await tsk.return_val(value, status)
     raise QueueFinished
 
 
@@ -107,6 +102,7 @@ async def check_job_queue():
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
+                await tsk.return_val({}, status="timeout")
             elif tsk.action in queue_actions:
                 await queue_actions[tsk.action](tsk, tsk.args)
             else:

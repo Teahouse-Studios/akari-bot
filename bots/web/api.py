@@ -41,7 +41,6 @@ from core.logger import Logger  # noqa: E402
 from core.queue import JobQueue  # noqa: E402
 from core.scheduler import Scheduler  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
-from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 
 started_time = datetime.now()
 
@@ -400,23 +399,13 @@ async def get_target(request: Request, target_id: str):
     except DoesNotExist:
         raise HTTPException(status_code=404, detail="not found")
 
-    wiki_target = WikiTargetInfo(target_id)
-    wiki_headers = wiki_target.get_headers()
-    wiki_start_wiki = wiki_target.get_start_wiki()
-    wiki_interwikis = wiki_target.get_interwikis()
-
     return {
         "targetId": target_id,
         "modules": target_info.modules,
         "muted": target_info.muted,
         "customAdmins": target_info.custom_admins,
         "locale": target_info.locale,
-        "targetData": target_info.target_data,
-        "wiki": {
-            "headers": wiki_headers,
-            "startWiki": wiki_start_wiki,
-            "interwikis": wiki_interwikis,
-        },
+        "targetData": target_info.target_data
     }
 
 

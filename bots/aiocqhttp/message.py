@@ -345,7 +345,7 @@ class MessageSession(MessageSessionT):
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == target_group_prefix:
-            get_ = get_stored_list(Bot.FetchTarget, "forward_msg")
+            get_ = await get_stored_list(Bot.FetchTarget, "forward_msg")
             if isinstance(get_, dict) and get_.get("status"):
                 await self.send_message(
                     self.locale.t("core.message.forward_msg.disabled")
