@@ -3,7 +3,7 @@ from datetime import timezone
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
 from core.constants import Info
-from core.database.tables import is_mysql
+from core.database_v2.link import db_type
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
@@ -126,7 +126,7 @@ async def _(msg: Bot.MessageSession):
     legacy = True
     if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
         send_msgs = []
-        if is_mysql:
+        if db_type == "mysql":
             allow_columns = [
                 [x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)]
                 for x in allow_list
@@ -160,7 +160,7 @@ async def _(msg: Bot.MessageSession):
                     )
                     for im in allow_image:
                         send_msgs.append(Image(im))
-        if is_mysql:
+        if db_type == "mysql":
             block_columns = [
                 [x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)]
                 for x in block_list

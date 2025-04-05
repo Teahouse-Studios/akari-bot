@@ -56,7 +56,7 @@ async def start_check_news():
             logging_err_resp=False,
         )
         if getpage:
-            alist = get_stored_list("scheduler", "mcnews")
+            alist = await get_stored_list("scheduler", "mcnews")
             o_json = json.loads(getpage)
             o_nws = o_json["article_grid"]
             for o_article in o_nws:
@@ -79,7 +79,7 @@ async def start_check_news():
                         ),
                     )
                     alist.append(title)
-                    update_stored_list("scheduler", "mcnews", alist)
+                    await update_stored_list("scheduler", "mcnews", alist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
@@ -96,7 +96,7 @@ async def feedback_news():
                 ]
     for section in sections:
         try:
-            alist = get_stored_list("scheduler", "mcfeedbacknews")
+            alist = await get_stored_list("scheduler", "mcfeedbacknews")
             get = await get_url(
                 section["url"],
                 200,
@@ -126,7 +126,7 @@ async def feedback_news():
                         ),
                     )
                     alist.append(name)
-                    update_stored_list("scheduler", "mcfeedbacknews", alist)
+                    await update_stored_list("scheduler", "mcfeedbacknews", alist)
         except Exception:
             if Config("debug", False):
                 Logger.error(traceback.format_exc())

@@ -4,7 +4,7 @@ import traceback
 
 from core.builtins import Embed, EmbedField, MessageChain
 from core.config import Config
-from core.database_v2.models import CrowdinActivityRecords
+from core.database_v2.local import CrowdinActivityRecords
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger

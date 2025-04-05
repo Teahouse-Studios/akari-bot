@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import hashlib
 import uuid
 from collections import Counter
 from datetime import datetime, UTC
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from typing import Any, List, Optional, Union
 
 from tortoise.models import Model
@@ -12,7 +11,6 @@ from tortoise import fields
 
 from core.constants import default_locale
 from core.utils.list import convert2lst
-from core.utils.text import isint
 
 
 class SenderInfo(Model):
@@ -60,11 +58,7 @@ class SenderInfo(Model):
 
         :param amount: 要添加或减少的花瓣数量。
         """
-        petal = self.petal
-        if not isint(amount):
-            amount = Decimal(amount).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-        petal = petal + int(amount)
-        petal = 0 if petal < 0 else petal
+        petal = self.petal + int(amount)
         self.petal = petal
         await self.save()
         return True
@@ -330,9 +324,9 @@ class JobQueuesTable(Model):
         await tsk.save()
         return task_id
 
-    async def return_val(self, value) -> bool:
+    async def return_val(self, value, status) -> bool:
         self.result = value
-        self.status = "done"
+        self.status = status
         await self.save()
         return True
 
@@ -360,42 +354,6 @@ class JobQueuesTable(Model):
         ).all()
 
 
-class DirtyWordCache(Model):
-    desc = fields.TextField(pk=True)
-    result = fields.JSONField(default={})
-    timestamp = fields.DatetimeField(auto_now=True)
-
-    class Meta:
-        table = "dirty_word_cache"
-
-    @classmethod
-    async def check(cls, query_word):
-        query = await cls.filter(desc=query_word).first()
-
-        if query and datetime.now().timestamp() - query.timestamp.timestamp() > 86400:
-            await query.delete()
-
-        return query
-
-
-class CrowdinActivityRecords(Model):
-    hash_id = fields.TextField(pk=True)
-
-    class Meta:
-        table = "crowdin_activity_records"
-
-    @classmethod
-    async def check(cls, txt: str):
-        query_hash = hashlib.md5(txt.encode(encoding="UTF-8"), usedforsecurity=False).hexdigest()
-
-        query = await cls.filter(hash_id=query_hash).first()
-        if not query:
-            query = await cls.create(hash_id=query_hash)
-            await query.save()
-            return False
-        return True
-
-
 __all__ = [
     "SenderInfo",
     "TargetInfo",
@@ -403,7 +361,5 @@ __all__ = [
     "AnalyticsData",
     "DBVersion",
     "UnfriendlyActionRecords",
-    "JobQueuesTable",
-    "DirtyWordCache",
-    "CrowdinActivityRecords",
+    "JobQueuesTable"
 ]
