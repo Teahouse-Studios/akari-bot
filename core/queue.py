@@ -3,11 +3,9 @@ import datetime
 import traceback
 from uuid import uuid4
 
-import orjson as json
-
 from core.builtins import Bot, MessageChain, Plain
 from core.config import Config
-from core.constants import Info, default_locale
+from core.constants import Info
 from core.database_v2.models import JobQueuesTable
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
@@ -103,15 +101,14 @@ async def check_job_queue():
     get_all = await JobQueuesTable.get_all(target_client=Bot.FetchTarget.name)
 
     for tsk in get_internal + get_all:
-        Logger.debug(f"Received job queue task {tsk.taskid}, action: {tsk.action}")
-        args = json.loads(tsk.args)
-        Logger.debug(f"Args: {args}")
+        Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
+        Logger.debug(f"Args: {tsk.args}")
         try:
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
             elif tsk.action in queue_actions:
-                await queue_actions[tsk.action](tsk, args)
+                await queue_actions[tsk.action](tsk, tsk.args)
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
                 await tsk.return_val({}, status="failed")
