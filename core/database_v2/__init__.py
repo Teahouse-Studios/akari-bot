@@ -43,7 +43,6 @@ async def init_db():
                         Logger.info(f'Found {file_name} database models...')
                         database_list.append('modules.' + file_name + '.database.models')
 
-
     Logger.debug(f"Database list: {database_list}")
     await Tortoise.init(
         config={
