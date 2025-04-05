@@ -3,7 +3,7 @@ import shutil
 
 from core.builtins import MessageTaskManager
 from core.constants.path import cache_path
-from core.queue import check_job_queue, JobQueue
+from core.queue import check_job_queue
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list
@@ -32,5 +32,5 @@ async def clear_list():
     clear_ps_list()
 
 
-async def init_background_task():
-    await JobQueue.add_job(JobQueue.name, "verify_timezone", {}, wait=False)
+def init_background_task():  # make IDE happy :)
+    pass
