@@ -28,12 +28,12 @@ class SenderInfo(Model):
         table = "sender_info"
 
     async def switch_identity(self, trust: bool, enable: bool = True) -> bool:
-        '''
+        """
         修改用户身份。
 
         :param trust: 是否为白名单模式，若 False 则为黑名单模式。
         :param enable: 是否要加入身份，若 False 则取消身份。
-        '''
+        """
         if enable:
             self.trusted = trust
             self.blocked = not trust
@@ -45,21 +45,21 @@ class SenderInfo(Model):
         return True
 
     async def warn_user(self, amount: int = 1) -> bool:
-        '''
+        """
         警告用户。
 
         :param amount: 警告用户次数。
-        '''
+        """
         self.warns = self.warns + amount
         await self.save()
         return True
 
     async def modify_petal(self, amount: Union[str, int, Decimal]) -> bool:
-        '''
+        """
         修改用户花瓣数量。
 
         :param amount: 要添加或减少的花瓣数量。
-        '''
+        """
         petal = self.petal
         if not isint(amount):
             amount = Decimal(amount).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
@@ -70,12 +70,12 @@ class SenderInfo(Model):
         return True
 
     async def edit_sender_data(self, key: str, value: Optional[Any]) -> bool:
-        '''
+        """
         设置用户数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
-        '''
+        """
         if not value:
             if key in self.sender_data:
                 del self.sender_data[key]
@@ -104,12 +104,12 @@ class TargetInfo(Model):
         table = "target_info"
 
     async def config_module(self, module_name: Union[str, list, tuple[str]], enable: bool = True) -> bool:
-        '''
+        """
         设置会话内可用模块。
 
         :param module_name: 指定的模块名称。
         :param enable: 是否要开启模块，若 False 则关闭模块。
-        '''
+        """
         module_names = convert2lst(module_name)
         for module_name in module_names:
             if enable:
@@ -123,22 +123,22 @@ class TargetInfo(Model):
         return True
 
     async def switch_mute(self) -> bool:
-        '''
+        """
         切换是否在会话中禁用机器人。
 
         :return: 机器人是否被禁用。
-        '''
+        """
         self.muted = not self.muted
         await self.save()
         return self.muted
 
     async def edit_target_data(self, key: str, value: Optional[Any]) -> bool:
-        '''
+        """
         设置会话数据。
 
         :param key: 键名。
         :param value: 值，若留空则删除该键值对。
-        '''
+        """
         if not value:
             if key in self.target_data:
                 del self.target_data[key]
@@ -149,12 +149,12 @@ class TargetInfo(Model):
         return True
 
     async def config_custom_admin(self, sender_id: str, enable: bool = True) -> bool:
-        '''
+        """
         设置会话内管理员。
 
         :param sender_id: 指定的用户 ID。
         :param enable: 是否要设置用户为会话内管理员，若 False 则移除管理员。
-        '''
+        """
         custom_admins = self.custom_admins
         if enable:
             if sender_id not in custom_admins:
@@ -167,13 +167,13 @@ class TargetInfo(Model):
 
     @classmethod
     async def get_target_list_by_module(cls, module_name: Union[str, list[str], tuple[str]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
-        '''
+        """
         获取开启此模块的所有会话列表。
 
         :param module_name: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
-        '''
+        """
         return [x for x in await cls.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or "")]
 
     async def edit_attr(self, key: str, value: Any) -> bool:
@@ -183,12 +183,12 @@ class TargetInfo(Model):
 
 
 class StoredData(Model):
-    '''
+    """
     数据存储。
 
     :param stored_key: 存储键。
     :param value: 值。
-    '''
+    """
     stored_key = fields.CharField(max_length=512, pk=True)
     value = fields.JSONField(default={})
 
@@ -236,8 +236,8 @@ class AnalyticsData(Model):
 
     @classmethod
     async def get_modules_count(cls):
-        analytics = await cls.all().values('module_name')
-        module_counter = Counter([entry['module_name'] for entry in analytics])
+        analytics = await cls.all().values("module_name")
+        module_counter = Counter([entry["module_name"] for entry in analytics])
         return dict(module_counter)
 
 
@@ -261,7 +261,7 @@ class UnfriendlyActionRecords(Model):
 
     @classmethod
     async def check_mute(cls, target_id) -> bool:
-        '''检查会话的禁言行为记录。
+        """检查会话的禁言行为记录。
 
         :return: 如果：
         - 会话在过去 5 天内有超过 5 条记录
@@ -269,8 +269,8 @@ class UnfriendlyActionRecords(Model):
         - 会话内的不同用户的记录（在过去 1 天内）有 3 个以上
 
         则返回 True。
-        '''
-        records = await cls.filter(target_id=target_id, action='mute').all()
+        """
+        records = await cls.filter(target_id=target_id, action="mute").all()
         unfriendly_list = [
             record for record in records
             if (datetime.now(UTC) - record.timestamp).total_seconds() < 432000  # 5 days
@@ -291,11 +291,11 @@ class UnfriendlyActionRecords(Model):
 
     @classmethod
     async def add_record(cls, target_id, sender_id, action: str = "default", detail: str = ""):
-        '''添加会话的不友好行为记录。
+        """添加会话的不友好行为记录。
 
         :param action: 不友好行为类型。
         :param detail: 不友好行为详情。
-        '''
+        """
         rec = await cls.create(
             target_id=target_id,
             sender_id=sender_id,
@@ -332,7 +332,7 @@ class JobQueuesTable(Model):
 
     async def return_val(self, value) -> bool:
         self.result = value
-        self.status = 'done'
+        self.status = "done"
         await self.save()
         return True
 
@@ -350,13 +350,13 @@ class JobQueuesTable(Model):
     @classmethod
     async def get_first(cls, target_client: str):
         return await cls.filter(
-            target_client=target_client, status='pending'
+            target_client=target_client, status="pending"
         ).first()
 
     @classmethod
     async def get_all(cls, target_client: str):
         return await cls.filter(
-            target_client=target_client, status='pending'
+            target_client=target_client, status="pending"
         ).all()
 
 

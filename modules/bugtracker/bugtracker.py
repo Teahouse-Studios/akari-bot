@@ -55,15 +55,15 @@ async def bugtracker_get(msg, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
     try:
-        json_url = 'https://bugs.mojang.com/api/jql-search-post'
+        json_url = "https://bugs.mojang.com/api/jql-search-post"
         get_json = (await post_url(
             json_url,
-            f'''{{
+            f"""{{
                 "advanced": true,
                 "project": "{id_.split("-", 1)[0]}",
                 "search": "key = {id_}",
                 "maxResults": 1
-            }}''',
+            }}""",
             201,
             headers={"Content-Type": "application/json"},
         ))
@@ -87,7 +87,7 @@ async def bugtracker_get(msg, mojira_id: str):
                 errmsg += "\n" + msgs
         else:
             if "key" in load_json:
-                data["title"] = f'[{load_json["key"]}] '
+                data["title"] = f"[{load_json["key"]}] "
             if "fields" in load_json:
                 fields = load_json["fields"]
                 if "summary" in fields:
@@ -95,7 +95,7 @@ async def bugtracker_get(msg, mojira_id: str):
                         data["title"]
                         + fields["summary"]
                         + (
-                            f' (spx: {data["translation"]})'
+                            f" (spx: {data["translation"]})"
                             if data.get("translation", False)
                             else ""
                         )

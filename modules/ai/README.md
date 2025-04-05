@@ -53,11 +53,11 @@ This JSON file should contain an `llm_api_list` array, where each element repres
     - `false` or `null`: No permissions required.
 - `price_in`：1 个输入 token 所需的花瓣数量。
   - The number of petals required per input token.
-  - 若留空，默认为 `0`。
+  - 如果留空，默认为 `0`。
     - Defaults to `0` if left empty.
 - `price_out`：1 个输出 token 所需的花瓣数量。
   - The number of petals required per output token.
-  - 若留空，默认为 `0`。
+  - 如果留空，默认为 `0`。
     - Defaults to `0` if left empty.
 
 ---

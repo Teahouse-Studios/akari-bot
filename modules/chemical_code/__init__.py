@@ -175,8 +175,8 @@ async def search_pubchem(id: Optional[int] = None):
     Logger.info(f"PubChem CID: {answer_id}")
     get = await get_url(f"{pubchem_link}/compound/cid/{answer_id}/property/IsomericSMILES,Title/JSON", 200, fmt="json")
     if get:
-        compound_info = get['PropertyTable']['Properties'][0]
-        smiles = compound_info['IsomericSMILES']
+        compound_info = get["PropertyTable"]["Properties"][0]
+        smiles = compound_info["IsomericSMILES"]
         mol = Chem.MolFromSmiles(smiles)
         formula = rdMolDescriptors.CalcMolFormula(mol)
         elements = parse_elements(formula)
@@ -253,7 +253,7 @@ async def chemical_code(
         play_state.disable()
         await msg.finish(msg.locale.t("chemical_code.message.error"))
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
-    Logger.info(f'Answer: {play_state.get("answer")}')
+    Logger.info(f"Answer: {play_state.get("answer")}")
 
     mol = Chem.MolFromSmiles(play_state.get("smiles"))
     if not mol:
@@ -351,7 +351,7 @@ async def chemical_code(
                     except ValueError:
                         Logger.error(traceback.format_exc())
 
-                Logger.info(f'{wait_text} != {play_state.get("answer")}')
+                Logger.info(f"{wait_text} != {play_state.get("answer")}")
                 return await ans(wait, random_mode)
             send_ = wait.locale.t("chemical_code.message.correct")
             if random_mode:

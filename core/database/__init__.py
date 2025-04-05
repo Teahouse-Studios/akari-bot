@@ -204,7 +204,7 @@ class BotDBUtil:
             filter_ = []
             if module_name:
                 filter_.append(
-                    TargetInfoTable.enabledModules.like(f'%"{module_name}"%')
+                    TargetInfoTable.enabledModules.like(f"%\"{module_name}\"%")
                 )
             if id_prefix:
                 filter_.append(TargetInfoTable.targetId.like(f"{id_prefix}%"))

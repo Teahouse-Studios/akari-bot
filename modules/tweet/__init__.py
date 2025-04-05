@@ -118,7 +118,7 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
         img_lst.append(Image(bimg))
     img_lst.append(
         Url(
-            f"https://x.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"
+            f"https://x.com/{res_json["data"]["user"]["screen_name"]}/status/{tweet_id}"
         )
     )
     await msg.finish(img_lst)

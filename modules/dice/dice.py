@@ -484,7 +484,7 @@ class WODDice(DiceItemBase):
                     output_buffer += ", "
             output_buffer += "}, "
             dice_count = exceed_result
-        output_buffer = output_buffer[:-2]  # 去除最后的', '
+        output_buffer = output_buffer[:-2]  # 去除最后的", "
         output_buffer += "]"
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = (
@@ -596,7 +596,7 @@ class DXDice(DiceItemBase):
                     output_buffer += ", "
             output_buffer += "}, "
             dice_count = exceed_result
-        output_buffer = output_buffer[:-2]  # 去除最后的', '
+        output_buffer = output_buffer[:-2]  # 去除最后的", "
         output_buffer += "]"
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = (

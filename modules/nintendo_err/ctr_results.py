@@ -2,11 +2,11 @@ from .types import Module, ResultInfo, ConsoleErrorInfo, ConsoleErrorField
 
 """
 This file contains all currently known 2DS/3DS result and error codes (hexadecimal).
-There may be inaccuracies here; we'll do our best to correct them
+There may be inaccuracies here; we\'ll do our best to correct them
 when we find out more about them.
 
 A result code is a 32-bit integer returned when calling various commands in the
-3DS's operating system, Horizon. Its breaks down like so:
+3DS\'s operating system, Horizon. Its breaks down like so:
 
  Bits | Description
 -------------------
@@ -25,20 +25,20 @@ consoles, such as the Wii U and Switch do not provide summaries or levels, so
 those fields in the ResultInfo class are re-used for other similar purposes.
 
 To add a module so the code understands it, simply add a new module number
-to the 'modules' dictionary, with a Module variable as the value. If the module
+to the "modules" dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
 
-Once you've added a module, or you want to add a new result code to an existing
-module, add a new description value (for 3DS it's the 4 digit number after the dash)
+Once you\'ve added a module, or you want to add a new result code to an existing
+module, add a new description value (for 3DS it"s the 4 digit number after the dash)
 as the key, and a ResultInfo variable with a text description of the error or result.
 You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all results or errors have support webpages.
 
 Simple example of adding a module with a sample result code:
-test = Module('test', {
-    5: ResultInfo('test', 'https://example.com')
+test = Module("test", {
+    5: ResultInfo("test", "https://example.com")
 })
 
 modules = {
@@ -47,7 +47,7 @@ modules = {
 
 Sources used to compile these results and information:
 https://www.3dbrew.org/wiki/Error_codes
-Kurisu's previous err.py module
+Kurisu\'s previous err.py module
 
 TODO: Add a number of result codes that were in the previous result code Kurisu
 used. They were left out for the sake of getting this initial code done faster.
@@ -191,7 +191,7 @@ mvd = Module("mvd", {271: ResultInfo("无效的配置。")})
 qtm = Module("qtm", {8: ResultInfo("相机正在工作或忙碌。")})
 
 # This is largely a dummy module, but FBI errors often get passed through the bot
-# which return incorrect error strings. Since there's not really a feasible way to figure out the
+# which return incorrect error strings. Since there\'s not really a feasible way to figure out the
 # application which is throwing the error, this is the best compromise without giving the user
 # false information.
 application = Module(
@@ -203,7 +203,7 @@ application = Module(
     },
 )
 
-# We have some modules partially documented, those that aren't have dummy Modules.
+# We have some modules partially documented, those that aren\'t have dummy Modules.
 modules = {
     0: common,
     1: kernel,
@@ -334,7 +334,7 @@ summaries = {
 
 CONSOLE_NAME = "Nintendo 2DS/3DS"
 
-# Suggested color to use if displaying information through a Discord bot's embed
+# Suggested color to use if displaying information through a Discord bot\'s embed
 COLOR = 0xCE181E
 
 

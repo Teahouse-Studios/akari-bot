@@ -6,7 +6,7 @@ from core.builtins import Bot
 from core.component import module
 
 # ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
-#                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
+#                     "/default_bi_zh-cn_en.txt", non_int_type=Decimal)
 ureg = UnitRegistry(non_int_type=Decimal)
 i = module(
     "convert",

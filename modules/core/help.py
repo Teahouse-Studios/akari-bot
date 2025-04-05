@@ -22,14 +22,14 @@ from core.utils.http import download
 from core.utils.web_render import webrender
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
-help_url = Config('help_url', help_url_default)
-donate_url = Config('donate_url', donate_url_default)
+help_url = Config("help_url", help_url_default)
+donate_url = Config("donate_url", donate_url_default)
 
-hlp = module('help', base=True, doc=True)
+hlp = module("help", base=True, doc=True)
 
 
-@hlp.command('<module> [--legacy] {{core.help.help.detail}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
+@hlp.command("<module> [--legacy] {{core.help.help.detail}}",
+             options_desc={"--legacy": "{help.option.legacy}"})
 async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
@@ -64,8 +64,8 @@ async def _(msg: Bot.MessageSession, module: str):
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser)
 
-            doc = ''
-            devs_msg = ''
+            doc = ""
+            devs_msg = ""
             if (module_.required_superuser and not is_superuser) or \
                (module_.required_base_superuser and not is_base_superuser):
                 pass
@@ -84,34 +84,34 @@ async def _(msg: Bot.MessageSession, module: str):
                             rdesc = regex.desc
                             if rdesc:
                                 rdesc = msg.locale.t_str(rdesc)
-                                mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.detail",
-                                                                       msg=rdesc)}')
+                                mdocs.append(f"{pattern} {msg.locale.t("core.message.help.regex.detail",
+                                                                       msg=rdesc)}")
                             else:
-                                mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.no_information")}')
-                doc = '\n'.join(mdocs)
+                                mdocs.append(f"{pattern} {msg.locale.t("core.message.help.regex.no_information")}")
+                doc = "\n".join(mdocs)
 
                 if module_.alias:
                     for a in module_.alias:
-                        malias.append(f'{a} -> {module_.alias[a]}')
+                        malias.append(f"{a} -> {module_.alias[a]}")
                 if module_.developers and not module_.base:
-                    devs = msg.locale.t('message.delimiter').join(module_.developers)
-                    devs_msg = '\n' + msg.locale.t("core.help.author") + devs
+                    devs = msg.locale.t("message.delimiter").join(module_.developers)
+                    devs_msg = "\n" + msg.locale.t("core.help.author") + devs
                 else:
-                    devs_msg = ''
+                    devs_msg = ""
 
             if module_.doc:
-                if help_page_url := Config('help_page_url', help_page_url_default, cfg_type=str):
-                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=help_page_url.replace('${module}', help_name))
+                if help_page_url := Config("help_page_url", help_page_url_default, cfg_type=str):
+                    wiki_msg = "\n" + msg.locale.t("core.message.help.helpdoc.address",
+                                                   url=help_page_url.replace("${module}", help_name))
                 elif help_url:
-                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                    wiki_msg = "\n" + msg.locale.t("core.message.help.helpdoc.address",
                                                    url=help_url + help_name)
                 else:
-                    wiki_msg = ''
+                    wiki_msg = ""
             else:
-                wiki_msg = ''
+                wiki_msg = ""
 
-            if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and Info.web_render_status:
+            if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image and Info.web_render_status:
                 use_local = bool(Info.web_render_local_status)
 
                 if (module_.required_superuser and not is_superuser) or \
@@ -121,7 +121,7 @@ async def _(msg: Bot.MessageSession, module: str):
                     pass
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
-                        html_content = env.get_template('help_doc.html').render(msg=msg,
+                        html_content = env.get_template("help_doc.html").render(msg=msg,
                                                                                 module=module_,
                                                                                 help=help_,
                                                                                 help_name=help_name,
@@ -131,17 +131,17 @@ async def _(msg: Bot.MessageSession, module: str):
                                                                                 str=str,
                                                                                 repattern=re.Pattern)
 
-                        fname = f'{random_cache_path()}.html'
-                        with open(fname, 'w', encoding='utf-8') as fi:
+                        fname = f"{random_cache_path()}.html"
+                        with open(fname, "w", encoding="utf-8") as fi:
                             fi.write(html_content)
 
-                        d = {'content': html_content, 'element': '.botbox'}
+                        d = {"content": html_content, "element": ".botbox"}
                         html_ = json.dumps(d)
                         Logger.info("[WebRender] Generating help document...")
                         try:
-                            pic = await download(webrender('element_screenshot', use_local=use_local),
+                            pic = await download(webrender("element_screenshot", use_local=use_local),
                                                  status_code=200,
-                                                 headers={'Content-Type': 'application/json'},
+                                                 headers={"Content-Type": "application/json"},
                                                  method="POST",
                                                  post_data=html_,
                                                  attempt=1,
@@ -151,18 +151,18 @@ async def _(msg: Bot.MessageSession, module: str):
                         except Exception as e:
                             if use_local:
                                 try:
-                                    pic = await download(webrender('element_screenshot', use_local=False),
+                                    pic = await download(webrender("element_screenshot", use_local=False),
                                                          status_code=200,
-                                                         method='POST',
-                                                         headers={'Content-Type': 'application/json'},
+                                                         method="POST",
+                                                         headers={"Content-Type": "application/json"},
                                                          post_data=html_,
                                                          request_private_ip=True
                                                          )
                                 except Exception as e:
-                                    Logger.error('[WebRender] Generation Failed.')
+                                    Logger.error("[WebRender] Generation Failed.")
                                     raise e
                             else:
-                                Logger.error('[WebRender] Generation Failed.')
+                                Logger.error("[WebRender] Generation Failed.")
                                 raise e
                         with open(pic, "rb") as read:
                             load_img = json.loads(read.read())
@@ -191,8 +191,8 @@ async def _(msg: Bot.MessageSession, module: str):
 
 
 @hlp.command()
-@hlp.command('[--legacy] {{core.help.help}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
+@hlp.command("[--legacy] {{core.help.help}}",
+             options_desc={"--legacy": "{help.option.legacy}"})
 async def _(msg: Bot.MessageSession):
     legacy_help = True
     if not msg.parsed_msg and msg.Feature.image:
@@ -223,7 +223,7 @@ async def _(msg: Bot.MessageSession):
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(essential))
+        help_msg.append(" | ".join(essential))
         module_ = []
         for x in module_list:
             if x in target_enabled_list and not module_list[x].hidden or \
@@ -232,7 +232,7 @@ async def _(msg: Bot.MessageSession):
                 module_.append(x)
         if module_:
             help_msg.append(msg.locale.t("core.message.help.legacy.external"))
-            help_msg.append(' | '.join(module_))
+            help_msg.append(" | ".join(module_))
         help_msg.append(msg.locale.t("core.message.help.detail", prefix=msg.prefixes[0]))
         help_msg.append(msg.locale.t("core.message.help.all_modules", prefix=msg.prefixes[0]))
         if help_url:
@@ -262,14 +262,14 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             target_from=msg.target.target_from)
         module_ = []
         for x in module_list:
-            if x[0] == '_':
+            if x[0] == "_":
                 continue
             if module_list[x].base or module_list[x].hidden or \
                     module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
         if module_:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables"), ' | '.join(module_)]
+            help_msg = [msg.locale.t("core.message.help.legacy.availables"), " | ".join(module_)]
         else:
             help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
         help_msg.append(
@@ -329,7 +329,7 @@ async def help_generator(msg: Bot.MessageSession,
     if not show_dev_modules:
         module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
 
-    html_content = env.get_template('module_list.html').render(
+    html_content = env.get_template("module_list.html").render(
         CommandParser=CommandParser,
         is_base_superuser=is_base_superuser,
         is_superuser=is_superuser,
@@ -338,17 +338,17 @@ async def help_generator(msg: Bot.MessageSession,
         msg=msg,
         show_disabled_modules=show_disabled_modules,
         target_enabled_list=target_enabled_list)
-    fname = f'{random_cache_path()}.html'
-    with open(fname, 'w', encoding='utf-8') as fi:
+    fname = f"{random_cache_path()}.html"
+    with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    d = {'content': html_content, 'element': '.botbox'}
+    d = {"content": html_content, "element": ".botbox"}
     html_ = json.dumps(d)
     Logger.info("[WebRender] Generating module list...")
     try:
-        pic = await download(webrender('element_screenshot', use_local=use_local),
+        pic = await download(webrender("element_screenshot", use_local=use_local),
                              status_code=200,
-                             headers={'Content-Type': 'application/json'},
+                             headers={"Content-Type": "application/json"},
                              method="POST",
                              post_data=html_,
                              attempt=1,
@@ -358,18 +358,18 @@ async def help_generator(msg: Bot.MessageSession,
     except Exception:
         if use_local:
             try:
-                pic = await download(webrender('element_screenshot', use_local=False),
+                pic = await download(webrender("element_screenshot", use_local=False),
                                      status_code=200,
-                                     method='POST',
-                                     headers={'Content-Type': 'application/json'},
+                                     method="POST",
+                                     headers={"Content-Type": "application/json"},
                                      post_data=html_,
                                      request_private_ip=True
                                      )
             except Exception:
-                Logger.error('[WebRender] Generation Failed.')
+                Logger.error("[WebRender] Generation Failed.")
                 return False
         else:
-            Logger.error('[WebRender] Generation Failed.')
+            Logger.error("[WebRender] Generation Failed.")
             return False
     with open(pic, "rb") as read:
         load_img = json.loads(read.read())

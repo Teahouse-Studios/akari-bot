@@ -1,6 +1,6 @@
 import re
 
-from core.builtins import Bot
+from core.builtins import Bot, Plain
 from core.config import Config
 from core.constants.default import issue_url_default
 from core.database_v2.models import SenderInfo
@@ -62,6 +62,4 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
 
         for target_ in report_targets:
             if f := await Bot.FetchTarget.fetch_target(target_):
-                await f.send_direct_message(
-                    "\n".join(warn_template), disable_secret_check=True
-                )
+                await f.send_direct_message([Plain("\n".join(warn_template), disable_joke=True)], disable_secret_check=True)

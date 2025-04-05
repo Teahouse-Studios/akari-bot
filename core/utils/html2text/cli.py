@@ -36,7 +36,7 @@ def main() -> None:
         dest="wrap_links",
         action="store_false",
         default=config.WRAP_LINKS,
-        help="don't wrap links during conversion",
+        help="don\'t wrap links during conversion",
     )
     p.add_argument(
         "--wrap-list-items",
@@ -50,7 +50,7 @@ def main() -> None:
         dest="ignore_emphasis",
         action="store_true",
         default=config.IGNORE_EMPHASIS,
-        help="don't include any formatting for emphasis",
+        help="don\'t include any formatting for emphasis",
     )
     p.add_argument(
         "--reference-links",
@@ -64,7 +64,7 @@ def main() -> None:
         dest="ignore_links",
         action="store_true",
         default=config.IGNORE_ANCHORS,
-        help="don't include any formatting for links",
+        help="don\'t include any formatting for links",
     )
     p.add_argument(
         "--protect-links",
@@ -78,7 +78,7 @@ def main() -> None:
         dest="ignore_images",
         action="store_true",
         default=config.IGNORE_IMAGES,
-        help="don't include any formatting for images",
+        help="don\'t include any formatting for images",
     )
     p.add_argument(
         "--images-as-html",
@@ -229,7 +229,7 @@ def main() -> None:
         dest="decode_errors",
         default=config.DECODE_ERRORS,
         help=(
-            "What to do in case of decode errors.'ignore', 'strict' and 'replace' are "
+            "What to do in case of decode errors.\"ignore\", \"strict\" and \"replace\" are "
             "acceptable values"
         ),
     )

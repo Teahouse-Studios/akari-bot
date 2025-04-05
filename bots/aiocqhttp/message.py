@@ -5,7 +5,7 @@ import random
 import re
 import traceback
 from pathlib import Path
-from typing import List, Union, Optional, Dict
+from typing import List, Union, Optional
 
 import aiocqhttp.exceptions
 from aiocqhttp import MessageSegment
@@ -89,8 +89,10 @@ async def resending_group_message():
             fetch_base_superuser = await FetchTarget.fetch_target(bu)
             if fetch_base_superuser:
                 await fetch_base_superuser.send_direct_message(
-                    fetch_base_superuser.parent.locale.t(
-                        "error.message.paused", prefix=command_prefix[0]
+                    PlainElement.assign(
+                        fetch_base_superuser.parent.locale.t(
+                            "error.message.paused", prefix=command_prefix[0]
+                        ), disable_joke=True
                     )
                 )
 
@@ -329,7 +331,7 @@ class MessageSession(MessageSessionT):
                     m.append(item["data"]["text"])
             else:
                 if item["type"] == "at":
-                    m.append(rf'{sender_prefix}|{item["data"]["qq"]}')
+                    m.append(rf"{sender_prefix}|{item["data"]["qq"]}")
                 elif item["type"] == "json":
                     m.append(
                         html.unescape(str(item["data"]["data"])).replace("\\/", "/")
@@ -356,8 +358,8 @@ class MessageSession(MessageSessionT):
             )
         elif self.target.target_from == target_private_prefix:
             await bot.call_action(
-                'send_private_forward_msg',
-                user_id=int(self.target.sender_id.split('|')[1]),
+                "send_private_forward_msg",
+                user_id=int(self.target.sender_id.split("|")[1]),
                 messages=nodelist
             )
 
@@ -368,11 +370,11 @@ class MessageSession(MessageSessionT):
     ) -> List[dict]:
         node_list = []
         for message in msg_chain_list:
-            content = ''
+            content = ""
             msgchain = message.as_sendable()
             for x in msgchain:
                 if isinstance(x, PlainElement):
-                    content += x.text + '\n'
+                    content += x.text + "\n"
                 elif isinstance(x, ImageElement):
                     content += f"[CQ:image,file=base64://{x.get_base64()}]\n"
 
@@ -410,7 +412,7 @@ class MessageSession(MessageSessionT):
         lst = []
         for m in get_channels_info:
             if m["channel_type"] == 1:
-                lst.append(f'{m["owner_guild_id"]}|{m["channel_id"]}')
+                lst.append(f"{m["owner_guild_id"]}|{m["channel_id"]}")
         return lst
 
     async def to_message_chain(self):
@@ -438,7 +440,7 @@ class MessageSession(MessageSessionT):
                         elif cq_data["type"] == "record":
                             lst.append(Voice(cq_data["data"].get("file")))
                         elif cq_data["type"] == "at":
-                            lst.append(Mention(f"{sender_prefix}|{cq_data['data'].get('qq')}"))
+                            lst.append(Mention(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
                         else:
                             lst.append(Plain(s))
                     else:
@@ -458,7 +460,7 @@ class MessageSession(MessageSessionT):
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
                 elif item["type"] == "at":
-                    lst.append(Mention(f"{sender_prefix}|{item["data"].get('qq')}"))
+                    lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
@@ -552,7 +554,7 @@ class FetchTarget(FetchTargetT):
             for channel in get_channel_list:
                 if channel["channel_type"] == 1:
                     guild_list.append(
-                        f"{str(g['guild_id'])}|{str(channel['channel_id'])}"
+                        f"{str(g["guild_id"])}|{str(channel["channel_id"])}"
                     )
         for f in friend_list_raw:
             friend_list.append(f)
@@ -683,7 +685,7 @@ class FetchTarget(FetchTargetT):
                         for channel in get_channel_list:
                             if channel["channel_type"] == 1:
                                 guild_list.append(
-                                    f"{str(g['guild_id'])}|{str(channel['channel_id'])}"
+                                    f"{str(g["guild_id"])}|{str(channel["channel_id"])}"
                                 )
                     except Exception:
                         traceback.print_exc()

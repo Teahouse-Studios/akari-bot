@@ -297,8 +297,8 @@ dx_plate_mapping = {
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping
 
-plate_version_ts_mapping = {'霸': '覇', '晓': '暁', '樱': '櫻', '堇': '菫', '辉': '輝', '华': '華', '雙': '双'}
-plate_goal_ts_mapping = {'將': '将', '极': '極'}
+plate_version_ts_mapping = {"霸": "覇", "晓": "暁", "樱": "櫻", "堇": "菫", "辉": "輝", "华": "華", "雙": "双"}
+plate_goal_ts_mapping = {"將": "将", "极": "極"}
 
 grade_mapping = {
     "初段": "grade1",
@@ -349,33 +349,33 @@ grade_mapping = {
 
 def mai_plate_song_expect(version):
     match version:
-        case '真':
+        case "真":
             song_expect = [70, 146]
-        case '超':
+        case "超":
             song_expect = [185, 189, 190]
-        case '檄':
+        case "檄":
             song_expect = [341]
-        case '暁':
+        case "暁":
             song_expect = [419]
-        case '桃':
+        case "桃":
             song_expect = [451, 455, 460]
-        case '櫻':
+        case "櫻":
             song_expect = [524]
-        case '菫':
+        case "菫":
             song_expect = [853]
-        case '白':
+        case "白":
             song_expect = [687, 688, 712]
-        case '雪':
+        case "雪":
             song_expect = [731]
-        case '輝':
+        case "輝":
             song_expect = [792]
-        case '覇' | '舞':
+        case "覇" | "舞":
             song_expect = [146, 185, 189, 190, 341, 419, 451, 455, 460, 524, 687, 688, 712, 731, 792, 853]
-        case '熊' | '華':
+        case "熊" | "華":
             song_expect = [10146]
-        case '爽' | '煌':
+        case "爽" | "煌":
             song_expect = [11213]
-        case '宙' | '星':
+        case "宙" | "星":
             song_expect = [11253, 11267]
         case _:
             song_expect = []

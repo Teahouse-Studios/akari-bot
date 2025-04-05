@@ -133,7 +133,7 @@ class MessageSession(MessageSessionT):
                         f"{client_name}|Group", f"{client_name}|Supergroup"]:
                     send_ = await bot.send_message(
                         self.session.target,
-                        f'<a href="tg://user?id={x.id}">@{x.id}</a>',
+                        f"<a href=\"tg://user?id={x.id}\">@{x.id}</a>",
                         reply_to_message_id=(
                             self.session.message.message_id
                             if quote and count == 0 and self.session.message
@@ -214,7 +214,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            # await bot.answer_chat_action(self.msg.session.target, 'typing')
+            # await bot.answer_chat_action(self.msg.session.target, "typing")
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):

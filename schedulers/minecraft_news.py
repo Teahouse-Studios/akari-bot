@@ -13,10 +13,10 @@ from core.utils.web_render import webrender
 
 """class Article:
     count = 10
-    tags = ['minecraft:article/news', 'minecraft:article/insider', 'minecraft:article/culture',
-            'minecraft:article/merch', 'minecraft:stockholm/news', 'minecraft:stockholm/guides',
-            'minecraft:stockholm/deep-dives', 'minecraft:stockholm/merch', 'minecraft:stockholm/events',
-            'minecraft:stockholm/minecraft-builds', 'minecraft:stockholm/marketplace']
+    tags = ["minecraft:article/news", "minecraft:article/insider", "minecraft:article/culture",
+            "minecraft:article/merch", "minecraft:stockholm/news", "minecraft:stockholm/guides",
+            "minecraft:stockholm/deep-dives", "minecraft:stockholm/merch", "minecraft:stockholm/events",
+            "minecraft:stockholm/minecraft-builds", "minecraft:stockholm/marketplace"]
 
     @staticmethod
     def random_tags():

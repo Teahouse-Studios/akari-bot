@@ -64,7 +64,7 @@ def element_style(
     :type style_def: dict
     :type style_def: dict
 
-    :returns: A hash of the 'final' style attributes of the element
+    :returns: A hash of the \"final\" style attributes of the element
     :rtype: dict
     """
     style = parent_style.copy()
@@ -97,7 +97,7 @@ def google_list_style(style: Dict[str, str]) -> str:
 
 def google_has_height(style: Dict[str, str]) -> bool:
     """
-    Check if the style of the element has the 'height' attribute
+    Check if the style of the element has the \"height\" attribute
     explicitly defined
 
     :type style: dict

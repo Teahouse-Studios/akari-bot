@@ -19,30 +19,26 @@ ai = module("ai",
             exclude_from="QQBot")
 
 
-@ai.command("<question> [--llm <llm>] {{ai.help}}",
-            options_desc={"--llm": "{ai.help.option.llm}"})
+@ai.command("<question> {{ai.help}}")
 async def _(msg: Bot.MessageSession, question: str):
-    get_llm = msg.parsed_msg.get("--llm", False)
-    llm = get_llm["<llm>"].lower() if get_llm else None
     target_llm = msg.data.options.get("ai_default_llm")
     is_superuser = msg.check_super_user()
 
     avaliable_llms = llm_list + (llm_su_list if is_superuser else [])
 
-    if not llm:
-        llm = target_llm if target_llm else default_llm
-
+    llm = target_llm if target_llm else default_llm
     llm_info = None
+
     if llm in avaliable_llms:
         llm_info = next((l for l in llm_api_list if l["name"] == llm), None)
 
     if llm_info:
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
             await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
-            
+
         if await check_bool(question):
             await msg.finish(rickroll())
-                        
+
         qc = CoolDown("call_ai", msg, 60)
         c = qc.check()
         if c == 0 or msg.target.client_name == "TEST" or is_superuser:
@@ -78,6 +74,6 @@ async def _(msg: Bot.MessageSession):
     avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 
     if avaliable_llms:
-        await msg.finish(f"{msg.locale.t('ai.message.list.prompt')}\n{'\n'.join(sorted(avaliable_llms))}")
+        await msg.finish(f"{msg.locale.t("ai.message.list")}\n{"\n".join(sorted(avaliable_llms))}\n{msg.locale.t("ai.message.list.prompt", prefix=msg.prefixes[0])}")
     else:
         await msg.finish(msg.locale.t("ai.message.list.none"))

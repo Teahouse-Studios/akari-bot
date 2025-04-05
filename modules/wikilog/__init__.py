@@ -336,9 +336,9 @@ async def _(msg: Bot.MessageSession):
         )
         text += (
             msg.locale.t("wikilog.message.filters")
-            + '\n"'
-            + '" "'.join(infos[apilink]["AbuseLog"]["filters"])
-            + '"'
+            + "\n\""
+            + "\" \"".join(infos[apilink]["AbuseLog"]["filters"])
+            + "\""
             + "\n"
         )
         text += (
@@ -352,16 +352,16 @@ async def _(msg: Bot.MessageSession):
         )
         text += (
             msg.locale.t("wikilog.message.filters")
-            + '\n"'
-            + '" "'.join(infos[apilink]["RecentChanges"]["filters"])
-            + '"'
+            + "\n\""
+            + "\" \"".join(infos[apilink]["RecentChanges"]["filters"])
+            + "\""
             + "\n"
         )
         text += (
             msg.locale.t("wikilog.message.rcshow")
-            + '\n"'
-            + '" "'.join(infos[apilink]["RecentChanges"]["rcshow"])
-            + '"'
+            + "\n\""
+            + "\" \"".join(infos[apilink]["RecentChanges"]["rcshow"])
+            + "\""
             + "\n"
         )
         text += (

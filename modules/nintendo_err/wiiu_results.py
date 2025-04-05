@@ -26,20 +26,20 @@ Alternatively, legacy results break down to:
 29-31 | Unused
 Signature: A check to see if its legacy
 Summary: A value indicating a shorter description of what happened.
-Unlike the 3DS, the Wii U does not provide a 'summary' field in non legacy result codes.
+Unlike the 3DS, the Wii U does not provide a "summary" field in non legacy result codes.
 To add a module so the code understands it, simply add a new module number
-to the 'modules' dictionary, with a Module variable as the value. If the module
+to the "modules" dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
 Once you've added a module, or you want to add a new result code to an existing
-module, add a new description value (for Switch it's the final set of 4 digits after any dashes)
+module, add a new description value (for Switch it"s the final set of 4 digits after any dashes)
 as the key, and a ResultInfo variable with a text description of the error or result.
 You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all results or errors have support webpages.
 Simple example of adding a module with a sample result code:
-test = Module('test', {
-    5: ResultInfo('test', 'https://example.com')
+test = Module("test", {
+    5: ResultInfo("test", "https://example.com")
 })
 modules = {
     9999: test

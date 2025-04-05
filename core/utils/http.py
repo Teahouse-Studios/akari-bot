@@ -25,7 +25,7 @@ debug = Config("debug", False)
 proxy = Config("proxy", cfg_type=str, secret=True)
 
 url_pattern = re.compile(
-    r"\b(?:http[s]?://)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b"
+    r"\b(?:http[s]?:\/\/)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:\/[a-zA-Z0-9-._~:\/?#[\]@!$&\'()*+,;=%]*)?\b"
 )
 
 _matcher_private_ips = re.compile(
