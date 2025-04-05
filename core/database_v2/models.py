@@ -204,14 +204,13 @@ class AnalyticsData(Model):
 
     @classmethod
     async def add_analytics(cls, target_id, sender_id, command, module_name, module_type):
-        ana = await cls.create(
+        await cls.create(
             target_id=target_id,
             sender_id=sender_id,
             command="*".join(command[::2]),
             module_name=module_name,
             module_type=module_type,
         )
-        await ana.save()
         return True
 
     @classmethod
@@ -290,13 +289,12 @@ class UnfriendlyActionRecords(Model):
         :param action: 不友好行为类型。
         :param detail: 不友好行为详情。
         """
-        rec = await cls.create(
+        await cls.create(
             target_id=target_id,
             sender_id=sender_id,
             action=action,
             detail=detail,
         )
-        await rec.save()
         return True
 
 
@@ -315,13 +313,12 @@ class JobQueuesTable(Model):
     @classmethod
     async def add_task(cls, target_client: str, action: str, args: dict) -> str:
         task_id = str(uuid.uuid4())
-        tsk = await cls.create(
+        await cls.create(
             task_id=task_id,
             target_client=target_client,
             action=action,
             args=args
         )
-        await tsk.save()
         return task_id
 
     async def return_val(self, value, status) -> bool:

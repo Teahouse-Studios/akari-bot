@@ -5,8 +5,8 @@ from core.component import module
 from core.constants import Info
 from core.database_v2.link import db_type
 from core.utils.image_table import image_table_render, ImageTable
-from modules.wiki.utils.dbutils import Audit
-from modules.wiki.utils.wikilib import WikiLib
+from .models import WikiAllowList, WikiBlockList
+from .utils.wikilib import WikiLib
 
 aud = module(
     "wiki_audit",
@@ -23,10 +23,10 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if check.available:
         apilink = check.value.api
         if msg.parsed_msg.get("trust", False):
-            res = Audit(apilink).add_to_AllowList()
+            res = await WikiAllowList.add(apilink)
             list_name = msg.locale.t("wiki.message.wiki_audit.list_name.allowlist")
         else:
-            res = Audit(apilink).add_to_BlockList()
+            res = await WikiBlockList.add(apilink)
             list_name = msg.locale.t("wiki.message.wiki_audit.list_name.blocklist")
         if not res:
             await msg.finish(
@@ -59,7 +59,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if check.available:
         apilink = check.value.api
     if msg.parsed_msg.get("distrust", False):
-        res = Audit(apilink).remove_from_AllowList()  # 已关闭的站点无法验证有效性
+        res = await WikiAllowList.remove(apilink)  # 已关闭的站点无法验证有效性
         if not res:
             await msg.finish(
                 msg.locale.t(
@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             )
         list_name = msg.locale.t("wiki.message.wiki_audit.list_name.allowlist")
     else:
-        res = Audit(apilink).remove_from_BlockList()
+        res = WikiBlockList.remove(apilink)
         list_name = msg.locale.t("wiki.message.wiki_audit.list_name.blocklist")
     if not res:
         await msg.finish(
@@ -93,13 +93,12 @@ async def _(msg: Bot.MessageSession, apilink: str):
     check = await WikiLib(apilink).check_wiki_available()
     if check.available:
         apilink = check.value.api
-        audit = Audit(apilink)
         msg_list = []
-        if audit.inAllowList:
+        if WikiAllowList.check(apilink):
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.allowlist", api=apilink)
             )
-        if audit.inBlockList:
+        if WikiBlockList.check(apilink):
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.blocklist", api=apilink)
             )
@@ -121,8 +120,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @aud.command("list [--legacy]")
 async def _(msg: Bot.MessageSession):
-    allow_list = Audit.get_allow_list()
-    block_list = Audit.get_block_list()
+    allow_list = await WikiAllowList.all().values("api_link", "timestamp")
+    block_list = await WikiBlockList.all().values("api_link", "timestamp")
     legacy = True
     if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
         send_msgs = []
