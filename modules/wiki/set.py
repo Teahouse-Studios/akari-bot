@@ -4,7 +4,7 @@ from core.builtins import Bot, Plain, Image, Url
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable
-from modules.wiki.models import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki
 

@@ -5,7 +5,7 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser, ctx_to_session
 from modules.wiki import WikiLib
-from modules.wiki.models import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 
 
 @client.slash_command(description="Get recent abuse logs for the default wiki.")

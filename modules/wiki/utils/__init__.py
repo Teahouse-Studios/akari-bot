@@ -4,7 +4,7 @@ import traceback
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from ..models import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from .ab import ab
 from .ab_qq import ab_qq
 from .newbie import newbie

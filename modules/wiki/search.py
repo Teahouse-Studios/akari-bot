@@ -5,7 +5,7 @@ from typing import Union
 from core.builtins import Bot, Plain
 from core.logger import Logger
 from core.utils.text import isint
-from modules.wiki.models import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 

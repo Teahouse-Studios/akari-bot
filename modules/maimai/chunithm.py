@@ -2,7 +2,7 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from core.utils.text import isint
-from .models import DivingProberBindInfo
+from modules.maimai.database.models import DivingProberBindInfo
 from .libraries.chunithm_apidata import get_info, get_record
 from .libraries.chunithm_mapping import diff_list
 from .libraries.chunithm_music import TotalList

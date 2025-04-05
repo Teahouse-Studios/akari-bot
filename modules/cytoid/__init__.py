@@ -1,7 +1,7 @@
 from core.builtins import Bot, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
-from .models import CytoidBindInfo
+from modules.cytoid.database.models import CytoidBindInfo
 from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name

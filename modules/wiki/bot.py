@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from .models import WikiBotAccountList
+from modules.wiki.database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
 from .utils.wikilib import WikiLib
 

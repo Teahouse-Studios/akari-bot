@@ -5,7 +5,7 @@ from core.component import module
 from core.constants import Info
 from core.database_v2.link import db_type
 from core.utils.image_table import image_table_render, ImageTable
-from .models import WikiAllowList, WikiBlockList
+from modules.wiki.database.models import WikiAllowList, WikiBlockList
 from .utils.wikilib import WikiLib
 
 aud = module(

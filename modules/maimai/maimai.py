@@ -1,7 +1,7 @@
-from core.builtins import Plain, Image as BImage
+from core.builtins import Image as BImage
 from core.component import module
 from core.utils.text import isint
-from .models import DivingProberBindInfo
+from modules.maimai.database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate

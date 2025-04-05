@@ -14,7 +14,7 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from .models import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo

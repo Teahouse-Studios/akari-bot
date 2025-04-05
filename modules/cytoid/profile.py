@@ -2,7 +2,7 @@ import orjson as json
 
 from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
-from .models import CytoidBindInfo
+from modules.cytoid.database.models import CytoidBindInfo
 
 
 async def cytoid_profile(msg: Bot.MessageSession, username):

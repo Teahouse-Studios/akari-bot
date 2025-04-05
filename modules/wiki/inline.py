@@ -13,7 +13,7 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from modules.wiki.models import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import (
     generate_screenshot_v1,
     generate_screenshot_v2,

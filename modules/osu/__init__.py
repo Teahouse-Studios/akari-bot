@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.component import module
 from core.config import Config
-from .models import OsuBindInfo
+from modules.osu.database.models import OsuBindInfo
 from .profile import osu_profile
 from .utils import get_profile_name
 

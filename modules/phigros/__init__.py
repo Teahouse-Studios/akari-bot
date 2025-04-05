@@ -6,7 +6,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
-from .models import PhigrosBindInfo
+from modules.phigros.database.models import PhigrosBindInfo
 from .game_record import parse_game_record
 from .genb19 import drawb19
 from .update import update_assets, p_headers

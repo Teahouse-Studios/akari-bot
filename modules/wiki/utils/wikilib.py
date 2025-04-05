@@ -20,7 +20,7 @@ from core.utils.http import get_url
 from core.utils.i18n import Locale
 from core.utils.web_render import webrender
 from .bot import BotAccount
-from ..models import WikiSiteInfo, WikiAllowList, WikiBlockList
+from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
 from .mapping import *
 
 
