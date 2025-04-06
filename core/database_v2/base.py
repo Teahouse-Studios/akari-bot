@@ -15,11 +15,10 @@ class DBModel(Model):
     class Meta:
         abstract = True
 
-
     @classmethod
     async def get_by_target_id(cls,
-        target_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
-    ) -> Self:
+                               target_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
+                               ) -> Self:
         """
         Get a model by target_id.
         """
@@ -28,12 +27,10 @@ class DBModel(Model):
             t = t.target.target_id
         return (await cls.get_or_create(target_id=t))[0]
 
-
-
     @classmethod
     async def get_by_sender_id(cls,
-        sender_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
-    ) -> Self:
+                               sender_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
+                               ) -> Self:
         """
         Get a model by sender_id.
         """
@@ -41,7 +38,3 @@ class DBModel(Model):
         if isinstance(sender_id, (exports['Bot'].MessageSession, exports['Bot'].FetchedSession)):
             t = t.target.sender_id
         return (await cls.get_or_create(sender_id=t))[0]
-
-
-
-
