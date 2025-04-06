@@ -17,7 +17,7 @@ async def get_stored_list(bot: Union["FetchTarget", str], name: str) -> list:
         stored_data = await StoredData.filter(stored_key=f"{bot}|{name}").first()
         if not stored_data:
             return []
-        return json.loads(stored_data.value)
+        return stored_data.value
     except DoesNotExist:
         return []
 

@@ -180,6 +180,7 @@ async def mcbv_rss():
         if Config("debug", False):
             Logger.error(traceback.format_exc())
 
+"""
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcv_jira_rss():
@@ -316,3 +317,4 @@ async def mclgv_rss():
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
+"""

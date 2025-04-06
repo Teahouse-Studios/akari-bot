@@ -18,7 +18,7 @@ class WikiTargetInfo(Model):
     prefix = fields.CharField(max_length=512, null=True)
 
     class Meta:
-        table = f"{table_prefix}target_set_info"
+        table = f"{table_prefix}target_set_info_v2"
 
     async def add_start_wiki(self, url: str):
         self.api_link = url

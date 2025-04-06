@@ -54,7 +54,7 @@ tomlkit = "^0.13.2"
 # core.database
 PyMySQL = "^1.0.2"
 SQLAlchemy = "^2.0.20"
-tortoise-orm = {extras = ["asyncmy"], version = "^0.23.0"}
+tortoise-orm = {extras = ["asyncmy"], version = "^0.24.2"}
 
 # core.http
 aiofile = "^3.8.1"
