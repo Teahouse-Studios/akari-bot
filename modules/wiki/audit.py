@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import UTC
 
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession):
                 [
                     x[0],
                     msg.ts2strftime(
-                        x[1].replace(tzinfo=timezone.utc).timestamp(),
+                        x[1].replace(tzinfo=UTC).timestamp(),
                         iso=True,
                         timezone=False,
                     ),
@@ -169,7 +169,7 @@ async def _(msg: Bot.MessageSession):
                 [
                     x[0],
                     msg.ts2strftime(
-                        x[1].replace(tzinfo=timezone.utc).timestamp(),
+                        x[1].replace(tzinfo=UTC).timestamp(),
                         iso=True,
                         timezone=False,
                     ),

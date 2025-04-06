@@ -179,7 +179,7 @@ class MessageChain:
             elif isinstance(x, PlainElement):
                 if x.text != "":
                     if msg:
-                        x.text = match_i18ncode(msg, x.text)
+                        x.text = msg.locale.t_str(x.text)
                 else:
                     x = PlainElement.assign(
                         str(
@@ -402,32 +402,6 @@ def match_kecode(text: str,
                         elements.append(MentionElement.assign(a))
 
     return elements
-
-
-def match_i18ncode(msg: MessageSession, text: str) -> str:
-    split_all = re.split(r"(\[I18N:.*?])", text)
-    split_all = [x for x in split_all if x]
-    msgs = []
-    kwargs = {}
-
-    for e in split_all:
-        match = re.match(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", e)
-        if not match:
-            msgs.append(e)
-        else:
-            i18nkey = html.unescape(match.group(1))
-
-            if match.group(2):
-                params = match.group(2).split(",")
-                params = [x for x in params if x]
-                for a in params:
-                    ma = re.match(r"(.*?)=(.*)", a)
-                    if ma:
-                        kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
-            t_value = msg.locale.t(i18nkey, **kwargs)
-            msgs.append(t_value if isinstance(t_value, str) else match.group(0))
-
-    return "".join(msgs)
 
 
 __all__ = ["MessageChain"]

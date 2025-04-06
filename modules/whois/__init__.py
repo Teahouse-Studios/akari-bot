@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import UTC
 
 from whois import whois
 
@@ -54,17 +54,17 @@ async def get_whois(msg, domain):
         if updated_date:  # 此时间为UTC时间
             if isinstance(updated_date, list):
                 updated_date = updated_date[0]
-            updated_date = updated_date.replace(tzinfo=timezone.utc)
+            updated_date = updated_date.replace(tzinfo=UTC)
 
         if creation_date:  # 此时间为UTC时间
             if isinstance(creation_date, list):
                 creation_date = creation_date[0]
-            creation_date = creation_date.replace(tzinfo=timezone.utc)
+            creation_date = creation_date.replace(tzinfo=UTC)
 
         if expiration_date:  # 此时间为UTC时间
             if isinstance(expiration_date, list):
                 expiration_date = expiration_date[0]
-                expiration_date = expiration_date.replace(tzinfo=timezone.utc)
+            expiration_date = expiration_date.replace(tzinfo=UTC)
 
         res = [f"{msg.locale.t("whois.message.domain_name")}{format_lst(domain_name).lower()}",
                f"{msg.locale.t("whois.message.registrar")}{registrar}" if registrar else "",
