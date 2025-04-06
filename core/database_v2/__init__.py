@@ -15,6 +15,8 @@ async def init_db():
     unloaded_modules = Config("unloaded_modules", [])
     Logger.info("Initializing database...")
     # Todo: pre-built database list
+    dir_list = []
+    database_list = []
     if Info.binary_mode:
         try:
             Logger.warning(
@@ -25,11 +27,10 @@ async def init_db():
                 database_list = json.loads(f.read())
         except Exception:
             Logger.error("Failed to load pre-built modules list, using default list.")
-            database_list = os.listdir(modules_path)
+            dir_list = os.listdir(modules_path)
     else:
         dir_list = fetch_modules_list()
-        database_list = []
-
+    if dir_list:
         for file_name in dir_list:
             if os.path.isdir(os.path.join(modules_path, file_name)):
                 if os.path.exists(
