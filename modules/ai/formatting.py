@@ -121,5 +121,4 @@ async def generate_md_table(table: str):
         for img in imgs:
             img_lst.append(img)
         return img_lst
-    else:
-        raise RuntimeError("Generation failed.")
+    raise RuntimeError("Generation failed.")

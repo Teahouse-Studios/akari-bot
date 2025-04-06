@@ -8,7 +8,7 @@ from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Bot, \
     base_superuser_list, Temp, Plain
 from core.config import Config
 from core.constants.default import bug_report_url_default

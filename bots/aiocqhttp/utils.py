@@ -57,8 +57,7 @@ class CQCodeHandler:
                 for key, value in params.items()
             ]
             return f"[CQ:{cq_type},{", ".join(param_str)}]"
-        else:
-            return None
+        return None
 
     @staticmethod
     def parse_cq(cq_code: str) -> Optional[Dict[str, Union[str, Dict[str, Any]]]]:
