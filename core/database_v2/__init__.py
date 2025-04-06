@@ -18,7 +18,7 @@ from ..config import Config
 async def init_db():
     unloaded_modules = Config("unloaded_modules", [])
     Logger.info("Initializing database...")
-
+    # Todo: pre-built database list
     if Info.binary_mode:
         try:
             Logger.warning(

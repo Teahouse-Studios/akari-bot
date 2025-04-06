@@ -13,7 +13,7 @@ from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
 
 from core.database_v2.models import SenderInfo, TargetInfo
-from core.exports import exports
+from core.exports import exports, add_export
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
 from core.utils.i18n import Locale
@@ -753,6 +753,14 @@ class FetchTarget:
 
     postMessage = post_message
     postGlobalMessage = post_global_message
+
+
+add_export(MessageSession)
+add_export(ExecutionLockList)
+add_export(MessageTaskManager)
+add_export(FetchTarget)
+add_export(FetchedSession)
+add_export(FinishedSession)
 
 
 __all__ = [
