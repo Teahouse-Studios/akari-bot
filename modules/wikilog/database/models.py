@@ -1,10 +1,11 @@
 from tortoise import fields
-from tortoise.models import Model
+
+from core.database_v2.base import DBModel
 
 table_prefix = "module_wikilog_"
 
 
-class WikiLogTargetSetInfo(Model):
+class WikiLogTargetSetInfo(DBModel):
     target_id = fields.CharField(max_length=512, pk=True)
     infos = fields.JSONField(default={})
 

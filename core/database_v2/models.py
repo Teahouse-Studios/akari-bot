@@ -6,14 +6,14 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from typing import Any, List, Optional, Union
 
-from tortoise.models import Model
+from .base import DBModel
 from tortoise import fields
 
 from core.constants import default_locale
 from core.utils.list import convert2lst
 
 
-class SenderInfo(Model):
+class SenderInfo(DBModel):
     sender_id = fields.CharField(max_length=512, pk=True)
     blocked = fields.BooleanField(default=False)
     trusted = fields.BooleanField(default=False)
@@ -85,7 +85,7 @@ class SenderInfo(Model):
         return True
 
 
-class TargetInfo(Model):
+class TargetInfo(DBModel):
     target_id = fields.CharField(max_length=512, pk=True)
     blocked = fields.BooleanField(default=False)
     muted = fields.BooleanField(default=False)
@@ -176,7 +176,7 @@ class TargetInfo(Model):
         return True
 
 
-class StoredData(Model):
+class StoredData(DBModel):
     """
     数据存储。
 
@@ -190,7 +190,7 @@ class StoredData(Model):
         table = "stored_data"
 
 
-class AnalyticsData(Model):
+class AnalyticsData(DBModel):
     id = fields.IntField(pk=True)
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
@@ -234,14 +234,14 @@ class AnalyticsData(Model):
         return dict(module_counter)
 
 
-class DBVersion(Model):
+class DBVersion(DBModel):
     value = fields.CharField(max_length=32, pk=True)
 
     class Meta:
         table = "database_version"
 
 
-class UnfriendlyActionRecords(Model):
+class UnfriendlyActionRecords(DBModel):
     id = fields.IntField(pk=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
@@ -298,7 +298,7 @@ class UnfriendlyActionRecords(Model):
         return True
 
 
-class JobQueuesTable(Model):
+class JobQueuesTable(DBModel):
     task_id = fields.UUIDField(pk=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)
