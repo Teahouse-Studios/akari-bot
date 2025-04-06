@@ -1,4 +1,5 @@
 import glob
+import html
 import os
 import re
 import traceback
@@ -192,13 +193,41 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
+        text = self._match_i18ncode(text)
+
         if locale_str := re.findall(r"\{(.*)}", text):
             for lc in locale_str:
                 text = text.replace(
                     f"{{{lc}}}",
                     self.t(lc, fallback_failed_prompt=fallback_failed_prompt, **kwargs),
                 )
+
         return text
+
+    def _match_i18ncode(self, text: str) -> str:
+        split_all = re.split(r"(\[I18N:.*?])", text)
+        split_all = [x for x in split_all if x]
+        msgs = []
+        kwargs = {}
+
+        for e in split_all:
+            match = re.match(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", e)
+            if not match:
+                msgs.append(e)
+            else:
+                i18nkey = html.unescape(match.group(1))
+
+                if match.group(2):
+                    params = match.group(2).split(",")
+                    params = [x for x in params if x]
+                    for a in params:
+                        ma = re.match(r"(.*?)=(.*)", a)
+                        if ma:
+                            kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
+                t_value = self.t(i18nkey, **kwargs)
+                msgs.append(t_value if isinstance(t_value, str) else match.group(0))
+
+        return "".join(msgs)
 
     def num(
         self,

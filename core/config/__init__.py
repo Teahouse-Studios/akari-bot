@@ -194,20 +194,19 @@ class CFGManager:
                 if isinstance(cfg_type, tuple) and not all(issubclass(t, ALLOWED_TYPES) for t in cfg_type):
                     logger.error(f"[Config] Config {q} has an unsupported cfg_type {cfg_type}.")
                     return None
-                elif isinstance(cfg_type, type) and not issubclass(cfg_type, ALLOWED_TYPES):
+                if isinstance(cfg_type, type) and not issubclass(cfg_type, ALLOWED_TYPES):
                     logger.error(f"[Config] Config {q} has an unsupported cfg_type {cfg_type.__name__}.")
                     return None
-                else:
-                    # check that value matches cfg_type type
-                    if value is not None and not isinstance(value, cfg_type):
-                        if (float in (cfg_type if isinstance(cfg_type, tuple)
-                                      else [cfg_type])) and isinstance(value, int):
-                            pass  # allow int as float
-                        else:
-                            expected_type = ", ".join(map(lambda t: t.__name__, cfg_type)) if isinstance(
-                                cfg_type, tuple) else cfg_type.__name__
-                            logger.warning(f"[Config] Config {q} has a wrong type, expected {
-                                expected_type}, got {type(value).__name__}.")
+                # check that value matches cfg_type type
+                if value is not None and not isinstance(value, cfg_type):
+                    if (float in (cfg_type if isinstance(cfg_type, tuple)
+                                  else [cfg_type])) and isinstance(value, int):
+                        pass  # allow int as float
+                    else:
+                        expected_type = ", ".join(map(lambda t: t.__name__, cfg_type)) if isinstance(
+                            cfg_type, tuple) else cfg_type.__name__
+                        logger.warning(f"[Config] Config {q} has a wrong type, expected {
+                            expected_type}, got {type(value).__name__}.")
         elif default is not None and not isinstance(value, type(default)):
             # if cfg_type is not provided but default is given, check that value is consistent with default type
             if not (isinstance(default, float) and isinstance(value, int)):  # allow int as float
