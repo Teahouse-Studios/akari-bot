@@ -203,7 +203,7 @@ class AnalyticsData(Model):
         table = "analytics_data"
 
     @classmethod
-    async def add_analytics(cls, target_id, sender_id, command, module_name, module_type):
+    async def add(cls, target_id, sender_id, command, module_name, module_type):
         await cls.create(
             target_id=target_id,
             sender_id=sender_id,
@@ -283,7 +283,7 @@ class UnfriendlyActionRecords(Model):
         return False
 
     @classmethod
-    async def add_record(cls, target_id, sender_id, action: str = "default", detail: str = ""):
+    async def add(cls, target_id, sender_id, action: str = "default", detail: str = ""):
         """添加会话的不友好行为记录。
 
         :param action: 不友好行为类型。

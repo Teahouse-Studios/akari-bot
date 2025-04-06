@@ -205,7 +205,7 @@ async def _(event: Event):
         sender_info = await SenderInfo.get(sender_id=sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
         target_info = await TargetInfo.get(target_id=target_id)
-        await UnfriendlyActionRecords.add_record(target_id=event.group_id, sender_id=event.operator_id, action="mute", detail=str(event.duration))
+        await UnfriendlyActionRecords.add(target_id=event.group_id, sender_id=event.operator_id, action="mute", detail=str(event.duration))
         result = await UnfriendlyActionRecords.check_mute(target_id=event.group_id)
         if event.duration >= 259200:  # 3 days
             result = True
@@ -225,7 +225,7 @@ async def _(event: Event):
         sender_info = await SenderInfo.get(sender_id=sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
         target_info = await TargetInfo.get(target_id=target_id)
-        await UnfriendlyActionRecords.add_record(target_id=event.group_id, sender_id=event.operator_id, action="kick")
+        await UnfriendlyActionRecords.add(target_id=event.group_id, sender_id=event.operator_id, action="kick")
         if not sender_info.superuser:
             reason = Locale(default_locale).t("tos.message.reason.kick")
             await tos_report(sender_id, target_id, reason, banned=True)

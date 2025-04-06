@@ -1,18 +1,14 @@
 import os
 
+import orjson as json
 from tortoise import Tortoise
 
+from core.config import Config
+from core.constants import Info, modules_path
+from core.logger import Logger
+from core.utils.loader import fetch_modules_list
 from .link import get_db_link
 from .local import DB_LINK
-
-from core.logger import Logger
-from core.constants import Info, modules_path
-from core.utils.loader import fetch_modules_list
-
-
-import orjson as json
-
-from ..config import Config
 
 
 async def init_db():
@@ -40,8 +36,8 @@ async def init_db():
                     os.path.join(modules_path, file_name, "database/models.py")
                 ):
                     if file_name not in unloaded_modules:
-                        Logger.info(f'Found {file_name} database models...')
-                        database_list.append('modules.' + file_name + '.database.models')
+                        Logger.debug(f"Found {file_name} database models...")
+                        database_list.append(f"modules.{file_name}.database.models")
 
     Logger.debug(f"Database list: {database_list}")
     await Tortoise.init(

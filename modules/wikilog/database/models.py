@@ -105,8 +105,8 @@ class WikiLogTargetSetInfo(Model):
             return infos[api_link].get("keep_alive")
         return False
 
-    @staticmethod
-    async def return_all_data():
-        all_data = await WikiLogTargetSetInfo.all()
+    @classmethod
+    async def return_all_data(cls):
+        all_data = await cls.all()
         data_d = {x.target_id: x.infos for x in all_data}
         return data_d
