@@ -18,7 +18,7 @@ class WikiTargetInfo(Model):
     prefix = fields.CharField(max_length=512, null=True)
 
     class Meta:
-        table = f"{table_prefix}target_set_info_v2"
+        table = f"{table_prefix}target_set_info"
 
     async def add_start_wiki(self, url: str):
         self.api_link = url
@@ -65,7 +65,7 @@ class WikiSiteInfo(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = f"{table_prefix}wiki_info"
+        table = f"{table_prefix}site_info"
 
     async def update(self, info: dict):
         try:
@@ -88,7 +88,7 @@ class WikiAllowList(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = f"{table_prefix}wiki_allow_list"
+        table = f"{table_prefix}allow_list"
 
     @classmethod
     async def check(cls, api_link) -> bool:
@@ -115,7 +115,7 @@ class WikiBlockList(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = f"{table_prefix}wiki_block_list"
+        table = f"{table_prefix}block_list"
 
     @classmethod
     async def check(cls, api_link: str) -> bool:
@@ -143,7 +143,7 @@ class WikiBotAccountList(Model):
     bot_password = fields.CharField(max_length=512)
 
     class Meta:
-        table = f"{table_prefix}wiki_bot_account"
+        table = f"{table_prefix}bot_account_list"
 
     @classmethod
     async def add(cls, api_link: str, bot_account: str, bot_password: str):

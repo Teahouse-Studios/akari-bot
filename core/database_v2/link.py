@@ -8,7 +8,7 @@ db_path = database_path
 
 db_type = db_link.split("://")[0].split("+")[0]
 if db_type == "sqlite":
-    db_path = os.path.dirname(db_link.replace("sqlite:///", ""))
+    db_path = os.path.dirname(db_link.replace("sqlite://", ""))
 os.makedirs(db_path, exist_ok=True)
 
 

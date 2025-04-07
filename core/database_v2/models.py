@@ -184,7 +184,7 @@ class StoredData(DBModel):
     :param value: 值。
     """
     stored_key = fields.CharField(max_length=512, pk=True)
-    value = fields.JSONField(default={})
+    value = fields.JSONField(default=[])
 
     class Meta:
         table = "stored_data"
@@ -235,7 +235,7 @@ class AnalyticsData(DBModel):
 
 
 class DBVersion(DBModel):
-    value = fields.CharField(max_length=32, pk=True)
+    version = fields.IntField(pk=True)
 
     class Meta:
         table = "database_version"
@@ -245,9 +245,9 @@ class UnfriendlyActionRecords(DBModel):
     id = fields.IntField(pk=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
-    timestamp = fields.DatetimeField(auto_now_add=True)
     action = fields.CharField(max_length=512)
     detail = fields.CharField(max_length=512)
+    timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "unfriendly_actions"

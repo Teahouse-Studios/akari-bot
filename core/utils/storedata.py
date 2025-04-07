@@ -26,7 +26,7 @@ async def update_stored_list(bot: Union["FetchTarget", str], name: str, value: l
     if isinstance(bot, exports['Bot'].FetchTarget):
         bot = bot.name
     await StoredData.update_or_create(
-        defaults={"value": json.dumps(value)}, stored_key=f"{bot}|{name}"
+        defaults={"value": value}, stored_key=f"{bot}|{name}"
     )
 
 __all__ = ["get_stored_list", "update_stored_list"]

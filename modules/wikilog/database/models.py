@@ -10,7 +10,7 @@ class WikiLogTargetSetInfo(DBModel):
     infos = fields.JSONField(default={})
 
     class Meta:
-        table = f"{table_prefix}target_set_info_v2"
+        table = f"{table_prefix}target_set_info"
 
     async def conf_wiki(self, api_link: dict, add=False, reset=False):
         infos = self.infos

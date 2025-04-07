@@ -11,7 +11,7 @@ from .link import get_db_link
 from .local import DB_LINK
 
 
-async def init_db():
+def fetch_module_db():
     unloaded_modules = Config("unloaded_modules", [])
     Logger.info("Initializing database...")
     # Todo: pre-built database list
@@ -41,6 +41,11 @@ async def init_db():
                         database_list.append(f"modules.{file_name}.database.models")
 
     Logger.debug(f"Database list: {database_list}")
+    return database_list
+
+
+async def init_db():
+    database_list = fetch_module_db()
     await Tortoise.init(
         config={
             "connections": {
