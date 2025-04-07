@@ -80,7 +80,7 @@ class WikiSiteInfo(Model):
 
     @classmethod
     def get_like_this(cls, t: str):
-        return cls.filter(cls.api_link.like(f"%{t}%")).first()
+        return cls.filter(api_link__contains=t).first()
 
 
 class WikiAllowList(Model):
