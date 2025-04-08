@@ -34,7 +34,7 @@ class SenderInfoL(Model):
     petal = fields.IntField(default=0)
 
     class Meta:
-        table = "SenderInfo"
+        table = "_old_SenderInfo"
 
 
 class TargetInfoL(Model):
@@ -46,14 +46,14 @@ class TargetInfoL(Model):
     locale = fields.CharField(max_length=512)
 
     class Meta:
-        table = "TargetInfo"
+        table = "_old_TargetInfo"
 
 
 class GroupBlockList(Model):
     targetId = fields.CharField(max_length=512, pk=True)
 
     class Meta:
-        table = "GroupBlockList"
+        table = "_old_GroupBlockList"
 
 
 class StoredDataL(Model):
@@ -61,7 +61,7 @@ class StoredDataL(Model):
     value = fields.CharField(max_length=512)
 
     class Meta:
-        table = "StoredData"
+        table = "_old_StoredData"
 
 
 class Analytics(Model):
@@ -74,7 +74,7 @@ class Analytics(Model):
     timestamp = fields.DatetimeField()
 
     class Meta:
-        table = "Analytics"
+        table = "_old_Analytics"
 
 
 class UnfriendlyActionsTable(Model):
@@ -86,7 +86,7 @@ class UnfriendlyActionsTable(Model):
     timestamp = fields.DatetimeField()
 
     class Meta:
-        table = "unfriendly_action"
+        table = "_old_unfriendly_action"
 
 
 class CytoidBindInfoL(Model):
@@ -94,7 +94,7 @@ class CytoidBindInfoL(Model):
     username = fields.CharField(max_length=512)
 
     class Meta:
-        table = "module_cytoid_CytoidBindInfo"
+        table = "_old_module_cytoid_CytoidBindInfo"
 
 
 class DivingProberBindInfoL(Model):
@@ -102,7 +102,7 @@ class DivingProberBindInfoL(Model):
     username = fields.CharField(max_length=512)
 
     class Meta:
-        table = "module_maimai_DivingProberBindInfo"
+        table = "_old_module_maimai_DivingProberBindInfo"
 
 
 class OsuBindInfoL(Model):
@@ -110,7 +110,7 @@ class OsuBindInfoL(Model):
     username = fields.CharField(max_length=512)
 
     class Meta:
-        table = "module_osu_OsuBindInfo"
+        table = "_old_module_osu_OsuBindInfo"
 
 
 class PhigrosBindInfoL(Model):
@@ -119,7 +119,7 @@ class PhigrosBindInfoL(Model):
     username = fields.CharField(max_length=512)
 
     class Meta:
-        table = "module_phigros_PgrBindInfo"
+        table = "_old_module_phigros_PgrBindInfo"
 
 
 class WikiTargetInfoL(Model):
@@ -130,7 +130,7 @@ class WikiTargetInfoL(Model):
     prefix = fields.CharField(max_length=512, null=True)
 
     class Meta:
-        table = "module_wiki_TargetSetInfo"
+        table = "_old_module_wiki_TargetSetInfo"
 
 
 class WikiSiteInfoL(Model):
@@ -139,7 +139,7 @@ class WikiSiteInfoL(Model):
     timestamp = fields.DatetimeField()
 
     class Meta:
-        table = "module_wiki_WikiInfo"
+        table = "_old_module_wiki_WikiInfo"
 
 
 class WikiAllowListL(Model):
@@ -147,7 +147,7 @@ class WikiAllowListL(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = "module_wiki_WikiAllowList"
+        table = "_old_module_wiki_WikiAllowList"
 
 
 class WikiBlockListL(Model):
@@ -155,7 +155,7 @@ class WikiBlockListL(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = "module_wiki_WikiBlockList"
+        table = "_old_module_wiki_WikiBlockList"
 
 
 class WikiBotAccountListL(Model):
@@ -164,7 +164,7 @@ class WikiBotAccountListL(Model):
     botPassword = fields.CharField(max_length=512)
 
     class Meta:
-        table = "module_wiki_WikiBotAccountList"
+        table = "_old_module_wiki_WikiBotAccountList"
 
 
 class WikiLogTargetSetInfoL(Model):
@@ -172,22 +172,58 @@ class WikiLogTargetSetInfoL(Model):
     infos = fields.TextField()
 
     class Meta:
-        table = "module_wikilog_WikiLogTargetSetInfo"
+        table = "_old_module_wikilog_WikiLogTargetSetInfo"
 
 
 async def convert_database():
+    Logger.warning("Start converting old database...")
     database_list = fetch_module_db()
 
     await Tortoise.init(
         db_url=get_db_link("tortoise"),
         modules={'models': ['__main__', "core.database_v2.models"] + database_list}
     )
-    await Tortoise.generate_schemas()
 
     conn = Tortoise.get_connection("default")
 
+    Logger.warning("Renaming old tables...")
+
+    # Renaming old tables to avoid conflicts
+    # Start with "_old" to order them at the end of the list
+
+    await conn.execute_script("ALTER TABLE SenderInfo RENAME TO _old_SenderInfo;")
+    await conn.execute_script("ALTER TABLE TargetInfo RENAME TO _old_TargetInfo;")
+    await conn.execute_script("ALTER TABLE GroupBlockList RENAME TO _old_GroupBlockList;")
+    await conn.execute_script("ALTER TABLE StoredData RENAME TO _old_StoredData;")
+    await conn.execute_script("ALTER TABLE Analytics RENAME TO _old_Analytics;")
+    await conn.execute_script("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
+    await conn.execute_script("ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
+    await conn.execute_script("ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
+    await conn.execute_script("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
+    await conn.execute_script("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
+    await conn.execute_script("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
+    await conn.execute_script("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
+    await conn.execute_script("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
+    await conn.execute_script("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
+    await conn.execute_script("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
+    await conn.execute_script("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _oldmodule_wikilog_WikiLogTargetSetInfo;")
+    await conn.execute_script("ALTER TABLE job_queues RENAME TO _old_job_queues;")
+    await conn.execute_script("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
+
+
+    await Tortoise.generate_schemas()
+
+
+    Logger.warning("Converting old database data...")
+
+
+    Logger.info("Converting SenderInfo...")
     sender_info_records = await SenderInfoL.all()
+    i = 0
     for r in sender_info_records:
+        i += 1
+        if i % 1000 == 0:
+            Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
         try:
             await SenderInfo.create(
                 sender_id=r.id,
@@ -198,15 +234,20 @@ async def convert_database():
                 petal=r.petal,
                 sender_data={"disable_typing": r.disableTyping}
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS SenderInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert SenderInfo: {r.id}, error: {e}")
+            Logger.error(f"SenderInfo record: {r}")
+
+    Logger.info("Converting TargetInfo...")
 
     target_info_records = await TargetInfoL.all()
     group_block_records = await GroupBlockList.all()
     blocked_target_ids = {record.targetId for record in group_block_records}
-
+    i = 0
     for r in target_info_records:
+        i += 1
+        if i % 1000 == 0:
+            Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
         try:
             await TargetInfo.create(
                 target_id=r.targetId,
@@ -217,8 +258,9 @@ async def convert_database():
                 custom_admins=r.customAdmins,
                 target_data=r.options
             )
-        except Exception:
-            continue
+        except Exception as e:
+            Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
+            Logger.error(f"TargetInfo record: {r}")
 
         if r.targetId in blocked_target_ids:
             target_info_record = await TargetInfo.get_or_none(target_id=r.targetId)
@@ -230,8 +272,8 @@ async def convert_database():
                     target_id=r.targetId,
                     blocked=True
                 )
-    await conn.execute_script("DROP TABLE IF EXISTS TargetInfo;")
-    await conn.execute_script("DROP TABLE IF EXISTS GroupBlockList;")
+
+    Logger.info('Converting StoredData...')
 
     stored_data_records = await StoredDataL.all()
     for r in stored_data_records:
@@ -246,12 +288,18 @@ async def convert_database():
                 stored_key=r.name,
                 value=v
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS StoredData;")
+        except Exception as e:
+            Logger.error(f"Failed to convert StoredData: {r.name}, error: {e}")
+            Logger.error(f"StoredData record: {r}")
+
+    Logger.info('Converting Analytics...')
 
     analytics_records = await Analytics.all()
+    i = 0
     for r in analytics_records:
+        i += 1
+        if i % 1000 == 0:
+            Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
         try:
             await AnalyticsData.create(
                 id=r.id,
@@ -262,9 +310,11 @@ async def convert_database():
                 command=r.command,
                 timestamp=r.timestamp
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS Analytics;")
+        except Exception as e:
+            Logger.error(f"Failed to convert Analytics: {r.id}, error: {e}")
+            Logger.error(f"Analytics record: {r}")
+
+    Logger.info('Converting UnfriendlyActions...')
 
     unfriendly_action_record = await UnfriendlyActionsTable.all()
     for r in unfriendly_action_record:
@@ -277,9 +327,11 @@ async def convert_database():
                 action=r.action,
                 detail=r.detail,
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS unfriendly_action;")
+        except Exception as e:
+            Logger.error(f"Failed to convert UnfriendlyActionRecords: {r.id}, error: {e}")
+            Logger.error(f"UnfriendlyActionRecords record: {r}")
+
+    Logger.info('Converting CytoidBindInfo...')
 
     cytoid_bind_record = await CytoidBindInfoL.all()
     for r in cytoid_bind_record:
@@ -288,9 +340,11 @@ async def convert_database():
                 sender_id=r.targetId,
                 username=r.username,
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_cytoid_CytoidBindInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert CytoidBindInfo: {r.targetId}, error: {e}")
+            Logger.error(f"CytoidBindInfo record: {r}")
+
+    Logger.info('Converting DivingProberBindInfo...')
 
     maimai_bind_record = await DivingProberBindInfoL.all()
     for r in maimai_bind_record:
@@ -299,9 +353,11 @@ async def convert_database():
                 sender_id=r.targetId,
                 username=r.username,
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_maimai_DivingProberBindInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert DivingProberBindInfo: {r.targetId}, error: {e}")
+            Logger.error(f"DivingProberBindInfo record: {r}")
+
+    Logger.info('Converting OsuBindInfo...')
 
     osu_bind_record = await OsuBindInfoL.all()
     for r in osu_bind_record:
@@ -310,9 +366,11 @@ async def convert_database():
                 sender_id=r.targetId,
                 username=r.username,
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_osu_OsuBindInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
+            Logger.error(f"OsuBindInfo record: {r}")
+
+    Logger.info('Converting PhigrosBindInfo...')
 
     phigros_bind_record = await PhigrosBindInfoL.all()
     for r in phigros_bind_record:
@@ -322,9 +380,11 @@ async def convert_database():
                 session_token=r.sessiontoken,
                 username=r.username,
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_phigros_PgrBindInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert PhigrosBindInfo: {r.targetId}, error: {e}")
+            Logger.error(f"PhigrosBindInfo record: {r}")
+
+    Logger.info('Converting WikiTargetInfo...')
 
     wiki_target_info_record = await WikiTargetInfoL.all()
     for r in wiki_target_info_record:
@@ -336,9 +396,11 @@ async def convert_database():
                 headers=r.headers,
                 prefix=r.prefix,
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_wiki_TargetSetInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert WikiTargetInfo: {r.targetId}, error: {e}")
+            Logger.error(f"WikiTargetInfo record: {r}")
+
+    Logger.info('Converting WikiSiteInfo...')
 
     wiki_site_info_record = await WikiSiteInfoL.all()
     for r in wiki_site_info_record:
@@ -348,9 +410,11 @@ async def convert_database():
                 site_info=r.siteInfo,
                 timestamp=r.timestamp
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_wiki_WikiInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert WikiSiteInfo: {r.apiLink}, error: {e}")
+            Logger.error(f"WikiSiteInfo record: {r}")
+
+    Logger.info('Converting WikiAllowList...')
 
     wiki_allow_list_record = await WikiAllowListL.all()
     for r in wiki_allow_list_record:
@@ -359,9 +423,11 @@ async def convert_database():
                 api_link=r.apiLink,
                 timestamp=r.timestamp
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_wiki_WikiAllowList;")
+        except Exception as e:
+            Logger.error(f"Failed to convert WikiAllowList: {r.apiLink}, error: {e}")
+            Logger.error(f"WikiAllowList record: {r}")
+
+    Logger.info('Converting WikiBlockList...')
 
     wiki_block_list_record = await WikiBlockListL.all()
     for r in wiki_block_list_record:
@@ -370,9 +436,11 @@ async def convert_database():
                 api_link=r.apiLink,
                 timestamp=r.timestamp
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_wiki_WikiBlockList;")
+        except Exception as e:
+            Logger.error(f"Failed to convert WikiBlockList: {r.apiLink}, error: {e}")
+            Logger.error(f"WikiBlockList record: {r}")
+
+    Logger.info('Converting WikiBotAccountList...')
 
     wiki_account_list_record = await WikiBotAccountListL.all()
     for r in wiki_account_list_record:
@@ -382,9 +450,11 @@ async def convert_database():
                 bot_account=r.botAccount,
                 bot_password=r.botPassword
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_wiki_WikiBotAccountList;")
+        except Exception as e:
+            Logger.error(f"Failed to convert WikiBotAccountList: {r.apiLink}, error: {e}")
+            Logger.error(f"WikiBotAccountList record: {r}")
+
+    Logger.info('Converting WikiLogTargetSetInfo...')
 
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
@@ -393,12 +463,11 @@ async def convert_database():
                 target_id=r.targetId,
                 infos=json.loads(r.infos)
             )
-        except Exception:
-            continue
-    await conn.execute_script("DROP TABLE IF EXISTS module_wikilog_WikiLogTargetSetInfo;")
+        except Exception as e:
+            Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
+            Logger.error(f"WikiLogTargetSetInfo record: {r}")
 
-    await conn.execute_script("DROP TABLE IF EXISTS job_queues;")
-    await conn.execute_script("DROP TABLE IF EXISTS DBVersion;")
+    Logger.info('Converting DBVersion...')
 
     db_v = await DBVersion.first()
     if db_v:
@@ -406,7 +475,8 @@ async def convert_database():
     await DBVersion.create(version=database_version)
 
     await Tortoise.close_connections()
+    Logger.info("Database converted successfully!")
 
 if __name__ == "__main__":
     run_async(convert_database())
-    Logger.info("Database converted successfully!")
+
