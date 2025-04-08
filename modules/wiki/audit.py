@@ -1,9 +1,6 @@
-from datetime import UTC
-
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
-from core.constants import Info
-from core.database_v2.link import db_type
+
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.database.models import WikiAllowList, WikiBlockList
 from .utils.wikilib import WikiLib
@@ -125,23 +122,23 @@ async def _(msg: Bot.MessageSession):
     legacy = True
     if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
         send_msgs = []
-        if db_type == "mysql":
-            allow_columns = [
-                [x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)]
-                for x in allow_list
-            ]
-        else:
-            allow_columns = [
-                [
-                    x[0],
-                    msg.ts2strftime(
-                        x[1].replace(tzinfo=UTC).timestamp(),
-                        iso=True,
-                        timezone=False,
-                    ),
-                ]
-                for x in allow_list
-            ]
+        # if db_type == "mysql": # dunno what this means, just comment it out
+        allow_columns = [
+            [x['api_link'], msg.ts2strftime(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            for x in allow_list
+        ]
+        # else:
+        #     allow_columns = [
+        #         [
+        #             x[0],
+        #             msg.ts2strftime(
+        #                 x[1].replace(tzinfo=UTC).timestamp(),
+        #                 iso=True,
+        #                 timezone=False,
+        #             ),
+        #         ]
+        #         for x in allow_list
+        #     ]
 
         if allow_columns:
             allow_table = ImageTable(
@@ -159,23 +156,23 @@ async def _(msg: Bot.MessageSession):
                     )
                     for im in allow_image:
                         send_msgs.append(Image(im))
-        if db_type == "mysql":
-            block_columns = [
-                [x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)]
-                for x in block_list
-            ]
-        else:
-            block_columns = [
-                [
-                    x[0],
-                    msg.ts2strftime(
-                        x[1].replace(tzinfo=UTC).timestamp(),
-                        iso=True,
-                        timezone=False,
-                    ),
-                ]
-                for x in block_list
-            ]
+        # if db_type == "mysql":
+        block_columns = [
+            [x['api_link'], msg.ts2strftime(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            for x in block_list
+         ]
+        # else:
+        #     block_columns = [
+        #         [
+        #             x[0],
+        #             msg.ts2strftime(
+        #                 x[1].replace(tzinfo=UTC).timestamp(),
+        #                 iso=True,
+        #                 timezone=False,
+        #             ),
+        #         ]
+        #         for x in block_list
+        #     ]
         if block_columns:
             block_table = ImageTable(
                 data=block_columns,
