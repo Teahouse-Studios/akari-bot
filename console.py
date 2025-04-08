@@ -38,7 +38,7 @@ async def update_db():
     await init_db()
     query_dbver = await DBVersion.all().first()
     if not query_dbver:
-        await DBVersion.create(value=str(database_version))
+        await DBVersion.create(version=str(database_version))
         query_dbver = await DBVersion.all().first()
 #        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
 #            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
