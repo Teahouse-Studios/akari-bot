@@ -210,12 +210,9 @@ async def convert_database():
     await conn.execute_script("ALTER TABLE job_queues RENAME TO _old_job_queues;")
     await conn.execute_script("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
 
-
     await Tortoise.generate_schemas()
 
-
     Logger.warning("Converting old database data...")
-
 
     Logger.info("Converting SenderInfo...")
     sender_info_records = await SenderInfoL.all()
@@ -247,7 +244,7 @@ async def convert_database():
     for r in target_info_records:
         i += 1
         if i % 1000 == 0:
-            Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
+            Logger.info(f"Converting TargetInfo {i}/{len(target_info_records)}...")
         try:
             await TargetInfo.create(
                 target_id=r.targetId,
@@ -299,7 +296,7 @@ async def convert_database():
     for r in analytics_records:
         i += 1
         if i % 1000 == 0:
-            Logger.info(f"Converting SenderInfo {i}/{len(sender_info_records)}...")
+            Logger.info(f"Converting Analytics {i}/{len(analytics_records)}...")
         try:
             await AnalyticsData.create(
                 id=r.id,
@@ -479,4 +476,3 @@ async def convert_database():
 
 if __name__ == "__main__":
     run_async(convert_database())
-
