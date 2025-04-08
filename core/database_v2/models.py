@@ -308,7 +308,7 @@ class JobQueuesTable(DBModel):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = "job_queues_v2"
+        table = "job_queues"
 
     @classmethod
     async def add_task(cls, target_client: str, action: str, args: dict) -> str:

@@ -206,7 +206,7 @@ async def convert_database():
     await conn.execute_script("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
     await conn.execute_script("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
     await conn.execute_script("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
-    await conn.execute_script("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _oldmodule_wikilog_WikiLogTargetSetInfo;")
+    await conn.execute_script("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
     await conn.execute_script("ALTER TABLE job_queues RENAME TO _old_job_queues;")
     await conn.execute_script("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
 
