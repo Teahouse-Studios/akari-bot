@@ -160,7 +160,7 @@ async def _(msg: Bot.MessageSession):
         block_columns = [
             [x['api_link'], msg.ts2strftime(x['timestamp'].timestamp(), iso=True, timezone=False)]
             for x in block_list
-         ]
+        ]
         # else:
         #     block_columns = [
         #         [
