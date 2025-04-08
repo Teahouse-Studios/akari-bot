@@ -63,6 +63,14 @@ class SenderInfo(DBModel):
         await self.save()
         return True
 
+    async def clear_petal(self) -> bool:
+        """
+        清空用户花瓣数量。
+        """
+        self.petal = 0
+        await self.save()
+        return True
+
     async def edit_sender_data(self, key: str, value: Optional[Any]) -> bool:
         """
         设置用户数据。

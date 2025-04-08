@@ -630,10 +630,10 @@ async def _(msg: Bot.MessageSession, sender: str = None):
         if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
             await msg.finish(msg.locale.t("message.id.invalid.sender", sender=msg.target.sender_from))
         sender_info = await SenderInfo.get(sender_id=sender)
-        sender_info.clear_petal()
+        await sender_info.clear_petal()
         await msg.finish(msg.locale.t("core.message.petal.clear", sender=sender))
     else:
-        msg.info.clear_petal()
+        await msg.sender_info.clear_petal()
         await msg.finish(msg.locale.t("core.message.petal.clear.self"))
 
 

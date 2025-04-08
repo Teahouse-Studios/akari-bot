@@ -331,7 +331,7 @@ class MentionElement(MessageElement):
     @classmethod
     def assign(cls, user_id: str):
         """
-        :param _id: 用户id。
+        :param user_id: 用户id。
         """
         return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
 
