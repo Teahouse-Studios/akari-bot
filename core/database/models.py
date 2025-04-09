@@ -211,17 +211,6 @@ class AnalyticsData(DBModel):
         table = "analytics_data"
 
     @classmethod
-    async def add(cls, target_id, sender_id, command, module_name, module_type):
-        await cls.create(
-            target_id=target_id,
-            sender_id=sender_id,
-            command="*".join(command[::2]),
-            module_name=module_name,
-            module_type=module_type,
-        )
-        return True
-
-    @classmethod
     async def get_data_by_times(cls, new, old, module_name=None):
         query = cls.filter(timestamp__gte=old, timestamp__lte=new)
         if module_name is not None:
@@ -289,21 +278,6 @@ class UnfriendlyActionRecords(DBModel):
             return True
 
         return False
-
-    @classmethod
-    async def add(cls, target_id, sender_id, action: str = "default", detail: str = ""):
-        """添加会话的不友好行为记录。
-
-        :param action: 不友好行为类型。
-        :param detail: 不友好行为详情。
-        """
-        await cls.create(
-            target_id=target_id,
-            sender_id=sender_id,
-            action=action,
-            detail=detail,
-        )
-        return True
 
 
 class JobQueuesTable(DBModel):

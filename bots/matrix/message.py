@@ -416,11 +416,11 @@ class FetchTarget(FetchedTargetT):
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        await AnalyticsData.add(target_id=x.target.target_id,
-                                                sender_id=x.target.sender_id,
-                                                command="",
-                                                module_name=module_name,
-                                                module_type="schedule")
+                        await AnalyticsData.create(target_id=x.target.target_id,
+                                                   sender_id=x.target.sender_id,
+                                                   command="",
+                                                   module_name=module_name,
+                                                   module_type="schedule")
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
@@ -440,11 +440,11 @@ class FetchTarget(FetchedTargetT):
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            await AnalyticsData.add(target_id=fetch.target.target_id,
-                                                    sender_id=fetch.target.sender_id,
-                                                    command="",
-                                                    module_name=module_name,
-                                                    module_type="schedule")
+                            await AnalyticsData.create(target_id=fetch.target.target_id,
+                                                       sender_id=fetch.target.sender_id,
+                                                       command="",
+                                                       module_name=module_name,
+                                                       module_type="schedule")
                     except Exception:
                         Logger.error(traceback.format_exc())
 
