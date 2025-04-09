@@ -147,6 +147,7 @@ def run_bot():
             target=go,
             args=(bot_name, True, bool(not sys.argv[0].endswith(".py"))),
             name=bot_name,
+            daemon=True
         )
         p.start()
         processes.append(p)
