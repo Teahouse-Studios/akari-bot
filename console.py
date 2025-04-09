@@ -33,26 +33,6 @@ from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 
-
-async def update_db():
-    await init_db()
-    query_dbver = await DBVersion.all().first()
-    if not query_dbver:
-        from core.scripts.convert_database import convert_database
-
-        await Tortoise.close_connections()
-        await convert_database()
-        Logger.success("Database converted successfully! Please restart the program.")
-        sys.exit()
-    if (current_ver := query_dbver.version) < (target_ver := database_version):
-        Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-        from core.database.update import update_database
-
-        await update_database()
-        Logger.success("Database updated successfully! Please restart the program.")
-        sys.exit()
-run_async(update_db())
-
 Info.dirty_word_check = True
 PrivateAssets.set(os.path.join(assets_path, "private", "console"))
 console_history_path = os.path.join(PrivateAssets.path, ".console_history")
