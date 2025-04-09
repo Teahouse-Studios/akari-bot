@@ -175,42 +175,55 @@ class WikiLogTargetSetInfoL(Model):
         table = "_old_module_wikilog_WikiLogTargetSetInfo"
 
 
-async def convert_database():
-    Logger.warning("Start converting old database...")
-    database_list = fetch_module_db()
+database_list = fetch_module_db()
 
+
+async def rename_old_tables():
+    Logger.warning("Renaming old tables...")
     await Tortoise.init(
         db_url=get_db_link("tortoise"),
-        modules={'models': ['__main__', "core.database_v2.models"] + database_list}
+        modules={"models": ["core.scripts.convert_database"]}
     )
-
     conn = Tortoise.get_connection("default")
-
-    Logger.warning("Renaming old tables...")
 
     # Renaming old tables to avoid conflicts
     # Start with "_old" to order them at the end of the list
+    try:
+        await conn.execute_script("ALTER TABLE SenderInfo RENAME TO _old_SenderInfo;")
+        await conn.execute_script("ALTER TABLE TargetInfo RENAME TO _old_TargetInfo;")
+        await conn.execute_script("ALTER TABLE GroupBlockList RENAME TO _old_GroupBlockList;")
+        await conn.execute_script("ALTER TABLE StoredData RENAME TO _old_StoredData;")
+        await conn.execute_script("ALTER TABLE Analytics RENAME TO _old_Analytics;")
+        await conn.execute_script("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
+        await conn.execute_script("ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
+        await conn.execute_script("ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
+        await conn.execute_script("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
+        await conn.execute_script("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
+        await conn.execute_script("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
+        await conn.execute_script("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
+        await conn.execute_script("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
+        await conn.execute_script("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
+        await conn.execute_script("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
+        await conn.execute_script("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
+        await conn.execute_script("ALTER TABLE job_queues RENAME TO _old_job_queues;")
+        await conn.execute_script("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
+    except Exception:
+        pass
 
-    await conn.execute_script("ALTER TABLE SenderInfo RENAME TO _old_SenderInfo;")
-    await conn.execute_script("ALTER TABLE TargetInfo RENAME TO _old_TargetInfo;")
-    await conn.execute_script("ALTER TABLE GroupBlockList RENAME TO _old_GroupBlockList;")
-    await conn.execute_script("ALTER TABLE StoredData RENAME TO _old_StoredData;")
-    await conn.execute_script("ALTER TABLE Analytics RENAME TO _old_Analytics;")
-    await conn.execute_script("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
-    await conn.execute_script("ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
-    await conn.execute_script("ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
-    await conn.execute_script("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
-    await conn.execute_script("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
-    await conn.execute_script("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
-    await conn.execute_script("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
-    await conn.execute_script("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
-    await conn.execute_script("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
-    await conn.execute_script("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
-    await conn.execute_script("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
-    await conn.execute_script("ALTER TABLE job_queues RENAME TO _old_job_queues;")
-    await conn.execute_script("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
+    await Tortoise.close_connections()
 
-    await Tortoise.generate_schemas()
+
+async def convert_database():
+    Logger.warning("Start converting old database...")
+
+    await rename_old_tables()
+
+    await Tortoise.init(
+        db_url=get_db_link("tortoise"),
+        modules={"models": ["core.scripts.convert_database", "core.database_v2.models"] + database_list}
+    )
+
+    await Tortoise.generate_schemas(safe=True)
 
     Logger.warning("Converting old database data...")
 
@@ -472,7 +485,6 @@ async def convert_database():
     await DBVersion.create(version=database_version)
 
     await Tortoise.close_connections()
-    Logger.info("Database converted successfully!")
 
 if __name__ == "__main__":
     run_async(convert_database())

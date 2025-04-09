@@ -26,7 +26,6 @@ from core.bot_init import init_async
 from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
-from core.constants import database_version
 from core.database_v2 import init_db
 from core.database_v2.models import DBVersion
 from core.extra.scheduler import load_extra_schedulers
@@ -38,13 +37,16 @@ async def update_db():
     await init_db()
     query_dbver = await DBVersion.all().first()
     if not query_dbver:
-        await DBVersion.create(version=str(database_version))
-        query_dbver = await DBVersion.all().first()
-#        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
+        from core.scripts.convert_database import convert_database
+        await Tortoise.close_connections()
+        await convert_database()
+        Logger.info("Database converted successfully! Please restart the program.")
+        sys.exit()
+#        if (current_ver := query_dbver.version) < (target_ver := database_version):
 #            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
 #            from core.database.update import update_database
 
-#            update_database()
+#            await update_database()
 
 #            print("Database updated successfully! Please restart the program.")
 #            sys.exit()

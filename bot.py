@@ -43,7 +43,6 @@ processes = []
 
 def init_bot():
     from core.config import Config  # noqa
-    from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
     from core.database_v2 import init_db
     from core.database_v2.models import SenderInfo, DBVersion  # noqa
@@ -55,13 +54,16 @@ def init_bot():
         await init_db()
         query_dbver = await DBVersion.all().first()
         if not query_dbver:
-            await DBVersion.create(value=str(database_version))
-            query_dbver = await DBVersion.all().first()
-#        if (current_ver := int(query_dbver.value)) < (target_ver := database_version):
+            from tortoise import Tortoise
+            from core.scripts.convert_database import convert_database
+            await Tortoise.close_connections()
+            await convert_database()
+            Logger.info("Database converted successfully!")
+#        if (current_ver := query_dbver.version) < (target_ver := database_version):
 #            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
 #            from core.database.update import update_database
 
-#            update_database()
+#            await update_database()
 #            Logger.success("Database updated successfully!")
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
