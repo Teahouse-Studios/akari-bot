@@ -184,19 +184,18 @@ class WikiLib:
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki["prefix"]] = interwiki["url"]
-        api_url = wiki_api_link
         return WikiInfo(
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
             name=info["query"]["general"]["sitename"],
             realurl=real_url,
-            api=api_url,
+            api=wiki_api_link,
             namespaces=namespaces,
             namespaces_local=namespaces_local,
             namespacealiases=namespacealiases,
             interwiki=interwiki_dict,
-            in_allowlist=await WikiAllowList.check(api_url),
-            in_blocklist=await WikiBlockList.check(api_url),
+            in_allowlist=await WikiAllowList.check(wiki_api_link),
+            in_blocklist=await WikiBlockList.check(wiki_api_link),
             script=real_url + info["query"]["general"]["script"],
             logo_url=info["query"]["general"].get("logo"),
         )

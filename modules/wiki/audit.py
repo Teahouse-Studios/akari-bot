@@ -92,11 +92,11 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if check.available:
         apilink = check.value.api
         msg_list = []
-        if WikiAllowList.check(apilink):
+        if await WikiAllowList.check(apilink):
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.allowlist", api=apilink)
             )
-        if WikiBlockList.check(apilink):
+        if await WikiBlockList.check(apilink):
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.blocklist", api=apilink)
             )

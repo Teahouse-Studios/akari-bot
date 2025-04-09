@@ -125,7 +125,11 @@ async def _(msg: Bot.MessageSession, target: str):
         target_info = await TargetInfo.create(target=target)
     if "get" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>", None)
-        await msg.finish(str(target_info.target_data.get(k)))
+        if k:
+            res = target_info.target_data.get(k)
+        else:
+            res = target_info.target_data
+        await msg.finish(str(res))
     elif "edit" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>")
         v = msg.parsed_msg.get("<v>")
