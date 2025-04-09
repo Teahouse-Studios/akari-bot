@@ -1,57 +1,23 @@
 import asyncio
 import os
 import shutil
-import sys
 import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from tortoise import Tortoise, run_async
-
-from core.config import Config
-from core.constants.info import Info
-from core.constants.path import assets_path, cache_path
-from core.logger import Logger
-
-if not Config("db_path", secret=True):
-    raise AttributeError("""
-Wait! You need to fill a valid database address into the config.toml \"db_path\" field.
-Example:
-db_path = \"sqlite://database/save.db\"
-(Also you can fill in the above example directly, bot will automatically create a SQLite database in the \"./database/save.db\")"
-""")
+from tortoise import Tortoise
 
 from bot import init_bot
 from core.bot_init import init_async
 from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
-from core.constants import database_version
-from core.database import init_db
-from core.database.models import DBVersion
+from core.constants.info import Info
+from core.constants.path import assets_path, cache_path
 from core.extra.scheduler import load_extra_schedulers
+from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-
-
-async def update_db():
-    await init_db()
-    query_dbver = await DBVersion.all().first()
-    if not query_dbver:
-        from core.scripts.convert_database import convert_database
-
-        await Tortoise.close_connections()
-        await convert_database()
-        Logger.success("Database converted successfully! Please restart the program.")
-        sys.exit()
-    if (current_ver := query_dbver.version) < (target_ver := database_version):
-        Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-        from core.database.update import update_database
-
-        await update_database()
-        Logger.success("Database updated successfully! Please restart the program.")
-        sys.exit()
-run_async(update_db())
 
 Info.dirty_word_check = True
 PrivateAssets.set(os.path.join(assets_path, "private", "console"))

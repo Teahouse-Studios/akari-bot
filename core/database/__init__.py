@@ -54,11 +54,11 @@ async def init_db():
             },
             "apps": {
                 "models": {
-                    "models": ["core.database_v2.models"] + database_list,
+                    "models": ["core.database.models"] + database_list,
                     "default_connection": "default",
                 },
                 "local_models": {
-                    "models": ["core.database_v2.local"],
+                    "models": ["core.database.local"],
                     "default_connection": "local",
                 }
             }

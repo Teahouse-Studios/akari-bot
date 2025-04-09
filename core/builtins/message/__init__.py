@@ -11,9 +11,8 @@ from core.builtins.message.internal import *
 from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
-
 from core.database.models import SenderInfo, TargetInfo
-from core.exports import exports, add_export
+from core.exports import add_export
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
 from core.utils.i18n import Locale

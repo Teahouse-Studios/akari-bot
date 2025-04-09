@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime
 import hashlib
 import os
 
@@ -39,7 +39,7 @@ class CrowdinActivityRecords(Model):
 
     @classmethod
     async def check(cls, txt: str):
-        query_hash = hashlib.md5(txt.encode(encoding="UTF-8"), usedforsecurity=False).hexdigest()
+        query_hash = hashlib.sha256(txt.encode(encoding="UTF-8")).hexdigest()
 
         query = await cls.filter(hash_id=query_hash).first()
         if not query:
