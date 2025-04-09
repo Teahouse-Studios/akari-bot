@@ -5,8 +5,6 @@ import sys
 import traceback
 from typing import Dict, Optional, Union, Callable
 
-import orjson as json
-
 from core.config import Config
 from core.constants.path import modules_path, PrivateAssets
 from core.logger import Logger

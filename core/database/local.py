@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime
 import hashlib
 import os
 

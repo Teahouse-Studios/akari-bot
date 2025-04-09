@@ -1,7 +1,7 @@
+import ast
 import os
 import sys
 
-import ast
 import orjson as json
 
 from tortoise.models import Model
@@ -13,9 +13,8 @@ if __name__ == "__main__":
 from core.constants.version import database_version
 from core.database import fetch_module_db
 from core.database.link import get_db_link
-from core.logger import Logger
-
 from core.database.models import *
+from core.logger import Logger
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
 from modules.osu.database.models import *

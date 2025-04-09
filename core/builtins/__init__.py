@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from core.config import Config
 from core.constants.info import Info
-from core.exports import exports, add_export
+from core.exports import add_export
 from core.loader import ModulesManager
 from core.types.message import MsgInfo, Session, ModuleHookContext
 from .message import *

@@ -6,11 +6,11 @@ from datetime import datetime, UTC
 from decimal import Decimal
 from typing import Any, List, Optional, Union
 
-from .base import DBModel
 from tortoise import fields
 
 from core.constants import default_locale
 from core.utils.list import convert2lst
+from .base import DBModel
 
 
 class SenderInfo(DBModel):
@@ -113,12 +113,12 @@ class TargetInfo(DBModel):
         :param enable: 是否要开启模块，若 False 则关闭模块。
         """
         module_names = convert2lst(module_name)
-        for module_name in module_names:
+        for mname in module_names:
             if enable:
-                if module_name not in self.modules:
+                if mname not in self.modules:
                     self.modules.append(module_name)
             else:
-                if module_name in self.modules:
+                if mname in self.modules:
                     self.modules.remove(module_name)
         self.modules = list(set(self.modules))
         await self.save()
@@ -176,7 +176,7 @@ class TargetInfo(DBModel):
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         """
-        return [x for x in await cls.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or "")]
+        return list(await cls.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or ""))
 
     async def edit_attr(self, key: str, value: Any) -> bool:
         setattr(self, key, value)

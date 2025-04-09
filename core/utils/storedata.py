@@ -1,6 +1,5 @@
 from typing import Union, TYPE_CHECKING
 
-import orjson as json
 from tortoise.exceptions import DoesNotExist
 
 from core.database.models import StoredData
