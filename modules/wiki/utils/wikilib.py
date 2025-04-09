@@ -873,7 +873,7 @@ class WikiLib:
                         query_langlinks = False
                         if lang:
                             langlinks_ = {}
-                            for x in page_raw["langlinks"]:
+                            for x in page_raw.get("langlinks", []):
                                 langlinks_[x["lang"]] = x["url"]
                             if lang in langlinks_:
                                 query_wiki = WikiLib(
