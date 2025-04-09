@@ -92,21 +92,23 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if check.available:
         apilink = check.value.api
         msg_list = []
-        if await WikiAllowList.check(apilink):
+        allow = await WikiAllowList.check(apilink)
+        block = await WikiBlockList.check(apilink)
+        if allow:
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.allowlist", api=apilink)
             )
-        if await WikiBlockList.check(apilink):
+        if block:
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.blocklist", api=apilink)
             )
-        if msg_list:
+        if allow and block:
             msg_list.append(msg.locale.t("wiki.message.wiki_audit.query.conflict"))
-            await msg.finish(msg_list)
-        else:
-            await msg.finish(
+        if not msg_list:
+            msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.none", api=apilink)
             )
+        await msg.finish(msg_list)
     else:
         result = msg.locale.t("wiki.message.error.query") + (
             "\n" + msg.locale.t("wiki.message.error.info") + check.message
