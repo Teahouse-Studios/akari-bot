@@ -283,7 +283,7 @@ async def convert_database():
                     blocked=True
                 )
 
-    Logger.info('Converting StoredData...')
+    Logger.info("Converting StoredData...")
 
     stored_data_records = await StoredDataL.all()
     for r in stored_data_records:
@@ -302,7 +302,7 @@ async def convert_database():
             Logger.error(f"Failed to convert StoredData: {r.name}, error: {e}")
             Logger.error(f"StoredData record: {r}")
 
-    Logger.info('Converting Analytics...')
+    Logger.info("Converting Analytics...")
 
     analytics_records = await Analytics.all()
     i = 0
@@ -324,7 +324,7 @@ async def convert_database():
             Logger.error(f"Failed to convert Analytics: {r.id}, error: {e}")
             Logger.error(f"Analytics record: {r}")
 
-    Logger.info('Converting UnfriendlyActions...')
+    Logger.info("Converting UnfriendlyActions...")
 
     unfriendly_action_record = await UnfriendlyActionsTable.all()
     for r in unfriendly_action_record:
@@ -341,7 +341,7 @@ async def convert_database():
             Logger.error(f"Failed to convert UnfriendlyActionRecords: {r.id}, error: {e}")
             Logger.error(f"UnfriendlyActionRecords record: {r}")
 
-    Logger.info('Converting CytoidBindInfo...')
+    Logger.info("Converting CytoidBindInfo...")
 
     cytoid_bind_record = await CytoidBindInfoL.all()
     for r in cytoid_bind_record:
@@ -354,7 +354,7 @@ async def convert_database():
             Logger.error(f"Failed to convert CytoidBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"CytoidBindInfo record: {r}")
 
-    Logger.info('Converting DivingProberBindInfo...')
+    Logger.info("Converting DivingProberBindInfo...")
 
     maimai_bind_record = await DivingProberBindInfoL.all()
     for r in maimai_bind_record:
@@ -367,7 +367,7 @@ async def convert_database():
             Logger.error(f"Failed to convert DivingProberBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"DivingProberBindInfo record: {r}")
 
-    Logger.info('Converting OsuBindInfo...')
+    Logger.info("Converting OsuBindInfo...")
 
     osu_bind_record = await OsuBindInfoL.all()
     for r in osu_bind_record:
@@ -380,7 +380,7 @@ async def convert_database():
             Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"OsuBindInfo record: {r}")
 
-    Logger.info('Converting PhigrosBindInfo...')
+    Logger.info("Converting PhigrosBindInfo...")
 
     phigros_bind_record = await PhigrosBindInfoL.all()
     for r in phigros_bind_record:
@@ -394,7 +394,7 @@ async def convert_database():
             Logger.error(f"Failed to convert PhigrosBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"PhigrosBindInfo record: {r}")
 
-    Logger.info('Converting WikiTargetInfo...')
+    Logger.info("Converting WikiTargetInfo...")
 
     wiki_target_info_record = await WikiTargetInfoL.all()
     for r in wiki_target_info_record:
@@ -410,7 +410,7 @@ async def convert_database():
             Logger.error(f"Failed to convert WikiTargetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiTargetInfo record: {r}")
 
-    Logger.info('Converting WikiSiteInfo...')
+    Logger.info("Converting WikiSiteInfo...")
 
     wiki_site_info_record = await WikiSiteInfoL.all()
     for r in wiki_site_info_record:
@@ -424,7 +424,7 @@ async def convert_database():
             Logger.error(f"Failed to convert WikiSiteInfo: {r.apiLink}, error: {e}")
             Logger.error(f"WikiSiteInfo record: {r}")
 
-    Logger.info('Converting WikiAllowList...')
+    Logger.info("Converting WikiAllowList...")
 
     wiki_allow_list_record = await WikiAllowListL.all()
     for r in wiki_allow_list_record:
@@ -437,7 +437,7 @@ async def convert_database():
             Logger.error(f"Failed to convert WikiAllowList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiAllowList record: {r}")
 
-    Logger.info('Converting WikiBlockList...')
+    Logger.info("Converting WikiBlockList...")
 
     wiki_block_list_record = await WikiBlockListL.all()
     for r in wiki_block_list_record:
@@ -450,7 +450,7 @@ async def convert_database():
             Logger.error(f"Failed to convert WikiBlockList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiBlockList record: {r}")
 
-    Logger.info('Converting WikiBotAccountList...')
+    Logger.info("Converting WikiBotAccountList...")
 
     wiki_account_list_record = await WikiBotAccountListL.all()
     for r in wiki_account_list_record:
@@ -464,7 +464,7 @@ async def convert_database():
             Logger.error(f"Failed to convert WikiBotAccountList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiBotAccountList record: {r}")
 
-    Logger.info('Converting WikiLogTargetSetInfo...')
+    Logger.info("Converting WikiLogTargetSetInfo...")
 
     wikilog_target_set_info_record = await WikiLogTargetSetInfoL.all()
     for r in wikilog_target_set_info_record:
@@ -477,7 +477,7 @@ async def convert_database():
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiLogTargetSetInfo record: {r}")
 
-    Logger.info('Converting DBVersion...')
+    Logger.info("Converting DBVersion...")
 
     db_v = await DBVersion.first()
     if db_v:
