@@ -389,6 +389,7 @@ class FetchTarget(FetchedTargetT):
             else:
                 sender_id = target_id
             session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
             await session._resolve_matrix_room_()
             return session
 

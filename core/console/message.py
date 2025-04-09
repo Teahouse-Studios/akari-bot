@@ -240,7 +240,7 @@ class MessageSession(MessageSessionT):
 
 class FetchedSession(FetchedSessionT):
 
-    async def send_message(self, message_chain, disable_secret_check=False):
+    async def send_direct_message(self, message_chain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
 

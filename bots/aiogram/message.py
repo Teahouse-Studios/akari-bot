@@ -242,8 +242,9 @@ class FetchTarget(FetchTargetT):
                     sender_id = match_sender.group(2)
             else:
                 sender_id = target_id
-
-            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
+            return session
 
     @staticmethod
     async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
