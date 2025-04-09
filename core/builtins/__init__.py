@@ -118,8 +118,6 @@ class FetchedSession(FetchedSession):
 #            )
 
 
-
-
 Bot.FetchedSession = FetchedSession
 
 
