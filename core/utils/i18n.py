@@ -202,6 +202,8 @@ class Locale:
                     self.t(lc, fallback_failed_prompt=fallback_failed_prompt, **kwargs),
                 )
 
+        text = self._match_i18ncode(text)
+
         return text
 
     def _match_i18ncode(self, text: str) -> str:
