@@ -219,7 +219,7 @@ async def convert_database():
 
     await Tortoise.init(
         db_url=get_db_link(),
-        modules={"models": ["core.scripts.convert_database", "core.database_v2.models"] + database_list}
+        modules={"models": ["core.scripts.convert_database", "core.database.models"] + database_list}
     )
 
     await Tortoise.generate_schemas(safe=True)
