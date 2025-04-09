@@ -54,6 +54,7 @@ async def warn_user(user: str, count: int = 1):
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
     if report_targets:
         warn_template = [f"[I18N:tos.message.report,sender={sender},target={target}]"]
+        reason = re.sub(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", lambda match: f"{{{match.group(1)}}}", reason)
         warn_template.append(f"[I18N:tos.message.reason,reason={reason}]")
         if banned:
             action = "{tos.message.action.blocked}"
