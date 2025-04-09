@@ -5,7 +5,7 @@ import traceback
 import orjson as json
 
 from core.constants.path import schedulars_path
-from core.database_v2.models import JobQueuesTable
+from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.info import Info

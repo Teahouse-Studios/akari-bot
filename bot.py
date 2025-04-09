@@ -45,8 +45,8 @@ def init_bot():
     from core.config import Config  # noqa
     from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
-    from core.database_v2 import init_db
-    from core.database_v2.models import SenderInfo, DBVersion  # noqa
+    from core.database import init_db
+    from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)

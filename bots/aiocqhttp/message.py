@@ -33,7 +33,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
-from core.database_v2.models import AnalyticsData, TargetInfo
+from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list

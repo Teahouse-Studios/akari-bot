@@ -3,7 +3,7 @@ import re
 from core.builtins import Bot, Plain, I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
-from core.database_v2.models import SenderInfo
+from core.database.models import SenderInfo
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)

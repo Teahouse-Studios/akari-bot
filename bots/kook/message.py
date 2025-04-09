@@ -23,7 +23,7 @@ from core.builtins import (
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
-from core.database_v2.models import AnalyticsData, TargetInfo
+from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"

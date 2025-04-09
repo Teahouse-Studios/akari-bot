@@ -4,7 +4,7 @@ from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
-from core.database_v2.models import TargetInfo
+from core.database.models import TargetInfo
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from core.utils.i18n import load_locale_file

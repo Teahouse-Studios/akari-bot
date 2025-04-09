@@ -18,7 +18,7 @@ from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
 from core.constants.path import assets_path
-from core.database_v2.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
+from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session

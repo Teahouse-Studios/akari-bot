@@ -1,6 +1,6 @@
 from tortoise import fields
 
-from core.database_v2.base import DBModel
+from core.database.base import DBModel
 
 table_prefix = "module_wikilog_"
 

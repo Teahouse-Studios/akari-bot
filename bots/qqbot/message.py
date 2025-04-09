@@ -22,7 +22,7 @@ from core.builtins import (
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
 from core.config import Config
-from core.database_v2.models import AnalyticsData, TargetInfo
+from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download, url_pattern
 from core.utils.image import msgchain2image

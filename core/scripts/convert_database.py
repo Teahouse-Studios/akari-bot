@@ -11,11 +11,11 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
 from core.constants.version import database_version
-from core.database_v2 import fetch_module_db
-from core.database_v2.link import get_db_link
+from core.database import fetch_module_db
+from core.database.link import get_db_link
 from core.logger import Logger
 
-from core.database_v2.models import *
+from core.database.models import *
 from modules.cytoid.database.models import *
 from modules.maimai.database.models import *
 from modules.osu.database.models import *
@@ -181,7 +181,7 @@ database_list = fetch_module_db()
 async def rename_old_tables():
     Logger.warning("Renaming old tables...")
     await Tortoise.init(
-        db_url=get_db_link("tortoise"),
+        db_url=get_db_link(),
         modules={"models": ["core.scripts.convert_database"]}
     )
     conn = Tortoise.get_connection("default")
@@ -219,7 +219,7 @@ async def convert_database():
     await rename_old_tables()
 
     await Tortoise.init(
-        db_url=get_db_link("tortoise"),
+        db_url=get_db_link(),
         modules={"models": ["core.scripts.convert_database", "core.database_v2.models"] + database_list}
     )
 

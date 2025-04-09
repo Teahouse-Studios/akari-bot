@@ -33,7 +33,7 @@ from core.builtins import PrivateAssets  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename, config_path, logs_path  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
-from core.database_v2.models import SenderInfo, TargetInfo  # noqa: E402
+from core.database.models import SenderInfo, TargetInfo  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402

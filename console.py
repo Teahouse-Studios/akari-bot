@@ -17,7 +17,7 @@ if not Config("db_path", secret=True):
     raise AttributeError("""
 Wait! You need to fill a valid database address into the config.toml \"db_path\" field.
 Example:
-db_path = \"sqlite:///database/save.db\"
+db_path = \"sqlite://database/save.db\"
 (Also you can fill in the above example directly, bot will automatically create a SQLite database in the \"./database/save.db\")"
 """)
 
@@ -27,8 +27,8 @@ from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
 from core.constants import database_version
-from core.database_v2 import init_db
-from core.database_v2.models import DBVersion
+from core.database import init_db
+from core.database.models import DBVersion
 from core.extra.scheduler import load_extra_schedulers
 from core.parser.message import parser
 from core.types import MsgInfo, Session

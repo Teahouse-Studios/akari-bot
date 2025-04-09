@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.config import Config
-from core.database_v2.models import AnalyticsData
+from core.database.models import AnalyticsData
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 

@@ -12,7 +12,7 @@ from .message.internal import *
 from .temp import *
 from .utils import *
 from ..constants import base_superuser_default
-from ..database_v2.models import TargetInfo
+from ..database.models import TargetInfo
 from ..logger import Logger
 
 

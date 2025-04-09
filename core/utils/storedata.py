@@ -3,7 +3,7 @@ from typing import Union, TYPE_CHECKING
 import orjson as json
 from tortoise.exceptions import DoesNotExist
 
-from core.database_v2.models import StoredData
+from core.database.models import StoredData
 if TYPE_CHECKING:
     from core.builtins.message import FetchTarget
 

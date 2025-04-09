@@ -8,7 +8,7 @@ qq_host_default = "127.0.0.1:8080"
 matrix_homeserver_default = "https://matrix.org"
 matrix_user_default = "@akaribot:matrix.org"
 
-db_path_default = "sqlite:///database/save.db"
+db_path_default = "sqlite://database/save.db"
 help_url_default = "https://bot.teahouse.team"
 help_page_url_default = "https://bot.teahouse.team/wiki/${module}"
 donate_url_default = "http://afdian.com/a/teahouse"

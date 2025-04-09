@@ -15,7 +15,7 @@ from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from core.utils.info import Info
-from core.database_v2 import init_db
+from core.database import init_db
 
 
 async def init_async(start_scheduler=True) -> None:

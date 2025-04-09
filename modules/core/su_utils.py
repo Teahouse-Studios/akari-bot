@@ -11,7 +11,7 @@ from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
-from core.database_v2.models import SenderInfo, TargetInfo, JobQueuesTable
+from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban

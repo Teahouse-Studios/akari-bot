@@ -13,7 +13,7 @@ from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSes
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.config import Config
-from core.database_v2.models import AnalyticsData, TargetInfo
+from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import image_split
 
