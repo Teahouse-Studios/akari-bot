@@ -5,6 +5,7 @@ import sys
 from datetime import datetime
 
 import orjson as json
+from tortoise import Tortoise
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
@@ -331,7 +332,8 @@ async def _(msg: Bot.MessageSession):
 rst = module("restart", required_superuser=True, base=True, doc=True, load=Info.subprocess)
 
 
-def restart():
+async def restart():
+    await Tortoise.close_connections()
     sys.exit(233)
 
 
@@ -370,7 +372,7 @@ async def _(msg: Bot.MessageSession):
         restart_time.append(datetime.now().timestamp())
         await wait_for_restart(msg)
         write_version_cache(msg)
-        restart()
+        await restart()
     else:
         await msg.finish()
 
@@ -391,7 +393,7 @@ async def _(msg: Bot.MessageSession):
                     await msg.send_message(Plain(pull_repo_result, disable_joke=True))
             update_dependencies_result = await update_dependencies()
             await msg.send_message(Plain(update_dependencies_result, disable_joke=True))
-            restart()
+            await restart()
         else:
             await msg.finish()
     else:

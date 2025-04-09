@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, UTC as datetimeUTC
+from datetime import datetime, UTC as datetimeUTC, timedelta
 from re import Match
 from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
 
@@ -200,18 +200,18 @@ class MessageSession:
         self.matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
         self.parsed_msg: Optional[dict] = None
         self.prefixes: List[str] = []
-        self.target_info: TargetInfo = None
-        self.sender_info: SenderInfo = None
-        self.muted: bool = None
-        self.sender_data: dict = None
-        self.target_data: dict = None
-        self.custom_admins: list = None
-        self.enabled_modules: dict = None
-        self.locale: Locale = None
-        self.name: str = None
+        self.target_info: Optional[TargetInfo] = None
+        self.sender_info: Optional[SenderInfo] = None
+        self.muted: Optional[bool] = None
+        self.sender_data: Optional[dict] = None
+        self.target_data: Optional[dict] = None
+        self.custom_admins: Optional[list] = None
+        self.enabled_modules: Optional[dict] = None
+        self.locale: Optional[Locale] = None
+        self.name: Optional[str] = None
         self._tz_offset = None
-        self.timezone_offset: float = None
-        self.petal: int = None
+        self.timezone_offset: Optional[timedelta] = None
+        self.petal: Optional[int] = None
 
         self.tmp = {}
         asyncio.create_task(self.data_init())
