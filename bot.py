@@ -89,6 +89,7 @@ def init_bot():
 def multiprocess_run_until_complete(func):
     p = multiprocessing.Process(
         target=func,
+        daemon=True
     )
     p.start()
 
@@ -183,7 +184,7 @@ def run_bot():
             if abort:
                 continue
         p = multiprocessing.Process(
-            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl
+            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
         )
         p.start()
         processes.append(p)
