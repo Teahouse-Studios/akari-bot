@@ -93,7 +93,7 @@ class WikiAllowList(Model):
     @classmethod
     async def check(cls, api_link) -> bool:
         api_link = urlparse(api_link).netloc
-        return bool(await cls.filter(api_link=api_link).first())
+        return bool(await cls.filter(api_link__icontains=api_link).first())
 
     @classmethod
     async def add(cls, api_link) -> bool:
@@ -119,7 +119,6 @@ class WikiBlockList(Model):
 
     @classmethod
     async def check(cls, api_link: str) -> bool:
-        api_link = urlparse(api_link).netloc
         return await cls.filter(api_link=api_link).exists()
 
     @classmethod
