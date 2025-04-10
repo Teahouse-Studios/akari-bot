@@ -14,7 +14,6 @@ from .local import DB_LINK
 def fetch_module_db():
     unloaded_modules = Config("unloaded_modules", [])
     Logger.info("Initializing database...")
-    # Todo: pre-built database list
     dir_list = []
     database_list = []
     if Info.binary_mode:
