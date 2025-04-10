@@ -14,6 +14,18 @@ from .base import DBModel
 
 
 class SenderInfo(DBModel):
+    """
+    用户信息。
+
+    :param sender_id: 用户 ID。
+    :param blocked: 是否为黑名单用户。
+    :param trusted: 是否为白名单用户。
+    :param superuser: 是否为超级用户。
+    :param warns: 用户警告次数。
+    :param petal: 用户花瓣数量。
+    :param sender_data: 用户数据。
+    """
+
     sender_id = fields.CharField(max_length=512, pk=True)
     blocked = fields.BooleanField(default=False)
     trusted = fields.BooleanField(default=False)
@@ -94,6 +106,17 @@ class SenderInfo(DBModel):
 
 
 class TargetInfo(DBModel):
+    """
+    会话信息。
+
+    :param target_id: 会话 ID。
+    :param blocked: 是否为黑名单会话。
+    :param muted: 是否禁用机器人。
+    :param locale: 会话语言。
+    :param modules: 会话内可用模块。
+    :param custom_admins: 会话内自定义管理员列表。
+    :param target_data: 会话数据。
+    """
     target_id = fields.CharField(max_length=512, pk=True)
     blocked = fields.BooleanField(default=False)
     muted = fields.BooleanField(default=False)
@@ -199,6 +222,16 @@ class StoredData(DBModel):
 
 
 class AnalyticsData(DBModel):
+    """
+    统计数据。
+
+    :param module_name: 模块名称。
+    :param module_type: 模块类型。
+    :param target_id: 会话 ID。
+    :param sender_id: 用户 ID。
+    :param command: 命令。
+    :param timestamp: 时间戳。
+    """
     id = fields.IntField(pk=True)
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
@@ -232,6 +265,12 @@ class AnalyticsData(DBModel):
 
 
 class DBVersion(DBModel):
+    """
+    数据库版本。
+
+    :param version: 数据库版本号。
+    """
+
     version = fields.IntField(pk=True)
 
     class Meta:
@@ -239,6 +278,15 @@ class DBVersion(DBModel):
 
 
 class UnfriendlyActionRecords(DBModel):
+    """
+    不友好行为记录。
+
+    :param target_id: 会话 ID。
+    :param sender_id: 用户 ID。
+    :param action: 行为类型。
+    :param detail: 行为详情。
+    :param timestamp: 时间戳。
+    """
     id = fields.IntField(pk=True)
     target_id = fields.CharField(max_length=512)
     sender_id = fields.CharField(max_length=512)
@@ -281,6 +329,17 @@ class UnfriendlyActionRecords(DBModel):
 
 
 class JobQueuesTable(DBModel):
+    """
+    任务队列表。
+
+    :param task_id: 任务 ID。
+    :param target_client: 目标客户端。
+    :param action: 动作。
+    :param args: 参数。
+    :param status: 任务状态。
+    :param result: 任务结果。
+    :param timestamp: 时间戳。
+    """
     task_id = fields.UUIDField(pk=True)
     target_client = fields.CharField(max_length=512)
     action = fields.CharField(max_length=512)

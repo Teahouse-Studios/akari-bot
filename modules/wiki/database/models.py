@@ -11,6 +11,16 @@ table_prefix = "module_wiki_"
 
 
 class WikiTargetInfo(Model):
+    """
+    会话内 Wiki 绑定信息表。
+
+    :param target_id: 会话 ID
+    :param api_link: API 链接
+    :param interwikis: 自定义 iw 信息
+    :param headers: 自定义请求头
+    :param prefix: 自定义请求前缀
+    """
+
     target_id = fields.CharField(max_length=512, pk=True)
     api_link = fields.CharField(max_length=512, null=True)
     interwikis = fields.JSONField(default={})
@@ -60,6 +70,13 @@ class WikiTargetInfo(Model):
 
 
 class WikiSiteInfo(Model):
+    """
+    Wiki 站点信息表。
+
+    :param api_link: API 链接
+    :param site_info: 站点信息
+    :param timestamp: 更新时间
+    """
     api_link = fields.CharField(max_length=512, pk=True)
     site_info = fields.JSONField(default={})
     timestamp = fields.DatetimeField(auto_now_add=True)
@@ -84,6 +101,12 @@ class WikiSiteInfo(Model):
 
 
 class WikiAllowList(Model):
+    """
+    Wiki 白名单列表。
+
+    :param api_link: API 链接
+    :param timestamp: 更新时间
+    """
     api_link = fields.CharField(max_length=512, pk=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -111,6 +134,12 @@ class WikiAllowList(Model):
 
 
 class WikiBlockList(Model):
+    """
+    Wiki 黑名单列表。
+
+    :param api_link: API 链接
+    :param timestamp: 更新时间
+    """
     api_link = fields.CharField(max_length=512, pk=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -137,6 +166,13 @@ class WikiBlockList(Model):
 
 
 class WikiBotAccountList(Model):
+    """
+    Wiki Bot 账号列表。
+
+    :param api_link: API 链接
+    :param bot_account: Bot 账号
+    :param bot_password: Bot 密码
+    """
     api_link = fields.CharField(max_length=512, pk=True)
     bot_account = fields.CharField(max_length=512)
     bot_password = fields.CharField(max_length=512)

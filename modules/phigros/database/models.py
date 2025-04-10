@@ -5,6 +5,12 @@ table_prefix = "module_phigros_"
 
 
 class PhigrosBindInfo(Model):
+    """
+    Phigros 用户绑定信息表
+
+    :param sender_id: 用户 ID
+    :param session_token: 会话令牌
+    """
     sender_id = fields.CharField(max_length=512, pk=True)
     session_token = fields.CharField(max_length=512)
     username = fields.CharField(max_length=512)

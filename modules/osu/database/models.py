@@ -5,6 +5,13 @@ table_prefix = "module_osu_"
 
 
 class OsuBindInfo(Model):
+    """
+    Osu 用户绑定信息表
+
+    :param sender_id: 用户 ID
+    :param username: osu 用户名
+    """
+
     sender_id = fields.CharField(max_length=512, pk=True)
     username = fields.CharField(max_length=512)
 

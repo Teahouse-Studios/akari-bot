@@ -5,6 +5,12 @@ table_prefix = "module_maimai_"
 
 
 class DivingProberBindInfo(Model):
+    """
+    maimai 水鱼绑定信息表。
+
+    :param sender_id: 发送者 ID
+    :param username: 用户名
+    """
     sender_id = fields.CharField(max_length=512, pk=True)
     username = fields.CharField(max_length=512)
 
