@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 
@@ -14,6 +15,7 @@ from core.constants.info import Info
 from core.constants.path import assets_path
 from core.parser.message import parser
 from core.types import MsgInfo, Session
+from core.utils.close import shutdown
 
 PrivateAssets.set(os.path.join(assets_path, "private", "kook"))
 Info.dirty_word_check = Config("enable_dirty_check", False)
@@ -61,8 +63,12 @@ async def _(b: bot):
 
 
 if Config("enable", False, table_name="bot_kook"):
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
+    loop = asyncio.get_event_loop()
+    try:
+        Info.client_name = client_name
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
 
-    bot.run()
+        loop.run_until_complete(bot.start())
+    except KeyboardInterrupt:
+        loop.run_until_complete(shutdown())

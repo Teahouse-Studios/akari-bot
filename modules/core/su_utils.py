@@ -6,7 +6,6 @@ from datetime import datetime
 
 import orjson as json
 
-from bot import restart
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.config import Config, CFGManager
@@ -23,6 +22,7 @@ from core.utils.decrypt import decrypt_string
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.text import isfloat, isint
+from core.utils.close import restart
 
 target_list = get_all_target_prefix()
 sender_list = get_all_sender_prefix()

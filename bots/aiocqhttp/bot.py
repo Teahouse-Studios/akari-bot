@@ -1,3 +1,4 @@
+import asyncio
 import html
 import logging
 import os
@@ -22,6 +23,7 @@ from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
+from core.utils.close import shutdown
 from core.utils.i18n import Locale
 
 from hypercorn import Config as HyperConfig
@@ -254,10 +256,13 @@ async def _(event: Event):
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
 if qq_host and Config("enable", False, table_name="bot_aiocqhttp"):
-    argv = sys.argv
-    Info.client_name = client_name
-    HyperConfig.startup_timeout = 120
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
-    host, port = qq_host.split(":")
-    bot.run(host=host, port=port, debug=False)
+    try:
+        argv = sys.argv
+        Info.client_name = client_name
+        HyperConfig.startup_timeout = 120
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
+        host, port = qq_host.split(":")
+        bot.run(host=host, port=port, debug=False)
+    except KeyboardInterrupt:
+        asyncio.run(shutdown())

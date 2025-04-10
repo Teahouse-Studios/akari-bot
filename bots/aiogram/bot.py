@@ -14,6 +14,7 @@ from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
 from core.parser.message import parser
 from core.types import MsgInfo, Session
+from core.utils.close import shutdown
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.join(assets_path, "private", "aiogram"))
@@ -54,10 +55,13 @@ async def on_startup():
 
 
 if Config("enable", False, table_name="bot_aiogram"):
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
+    try:
+        Info.client_name = client_name
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
 
-    dp.startup.register(on_startup)
+        dp.startup.register(on_startup)
 
-    asyncio.run(dp.start_polling(bot))
+        asyncio.run(dp.start_polling(bot))
+    except KeyboardInterrupt:
+        asyncio.run(shutdown())
