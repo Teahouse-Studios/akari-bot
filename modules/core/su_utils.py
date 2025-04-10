@@ -6,9 +6,9 @@ from datetime import datetime
 
 import orjson as json
 
-from bot import restart
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
+from core.close import restart
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path

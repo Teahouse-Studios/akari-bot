@@ -14,6 +14,7 @@ from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
+from core.close import shutdown
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
@@ -250,6 +251,11 @@ async def _(event: Event):
                 res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)
             await bot.send(event=event, message=res)
             await bot.call_action("set_group_leave", group_id=event.group_id)
+
+
+@bot.server_app.after_serving
+async def _():
+    await shutdown()
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")

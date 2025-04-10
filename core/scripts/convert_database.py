@@ -244,7 +244,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert SenderInfo: {r.id}, error: {e}")
-            Logger.error(f"SenderInfo record: {r}")
+            Logger.error(f"SenderInfo record: {r.__dict__}")
 
     Logger.info("Converting TargetInfo...")
 
@@ -268,7 +268,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
-            Logger.error(f"TargetInfo record: {r}")
+            Logger.error(f"TargetInfo record: {r.__dict__}")
 
         if r.targetId in blocked_target_ids:
             target_info_record = await TargetInfo.get_or_none(target_id=r.targetId)
@@ -298,7 +298,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert StoredData: {r.name}, error: {e}")
-            Logger.error(f"StoredData record: {r}")
+            Logger.error(f"StoredData record: {r.__dict__}")
 
     Logger.info("Converting Analytics...")
 
@@ -320,7 +320,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert Analytics: {r.id}, error: {e}")
-            Logger.error(f"Analytics record: {r}")
+            Logger.error(f"Analytics record: {r.__dict__}")
 
     Logger.info("Converting UnfriendlyActions...")
 
@@ -337,7 +337,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert UnfriendlyActionRecords: {r.id}, error: {e}")
-            Logger.error(f"UnfriendlyActionRecords record: {r}")
+            Logger.error(f"UnfriendlyActionRecords record: {r.__dict__}")
 
     Logger.info("Converting CytoidBindInfo...")
 
@@ -350,7 +350,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert CytoidBindInfo: {r.targetId}, error: {e}")
-            Logger.error(f"CytoidBindInfo record: {r}")
+            Logger.error(f"CytoidBindInfo record: {r.__dict__}")
 
     Logger.info("Converting DivingProberBindInfo...")
 
@@ -363,7 +363,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert DivingProberBindInfo: {r.targetId}, error: {e}")
-            Logger.error(f"DivingProberBindInfo record: {r}")
+            Logger.error(f"DivingProberBindInfo record: {r.__dict__}")
 
     Logger.info("Converting OsuBindInfo...")
 
@@ -376,7 +376,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
-            Logger.error(f"OsuBindInfo record: {r}")
+            Logger.error(f"OsuBindInfo record: {r.__dict__}")
 
     Logger.info("Converting PhigrosBindInfo...")
 
@@ -390,7 +390,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert PhigrosBindInfo: {r.targetId}, error: {e}")
-            Logger.error(f"PhigrosBindInfo record: {r}")
+            Logger.error(f"PhigrosBindInfo record: {r.__dict__}")
 
     Logger.info("Converting WikiTargetInfo...")
 
@@ -406,7 +406,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiTargetInfo: {r.targetId}, error: {e}")
-            Logger.error(f"WikiTargetInfo record: {r}")
+            Logger.error(f"WikiTargetInfo record: {r.__dict__}")
 
     Logger.info("Converting WikiSiteInfo...")
 
@@ -420,7 +420,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiSiteInfo: {r.apiLink}, error: {e}")
-            Logger.error(f"WikiSiteInfo record: {r}")
+            Logger.error(f"WikiSiteInfo record: {r.__dict__}")
 
     Logger.info("Converting WikiAllowList...")
 
@@ -433,7 +433,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiAllowList: {r.apiLink}, error: {e}")
-            Logger.error(f"WikiAllowList record: {r}")
+            Logger.error(f"WikiAllowList record: {r.__dict__}")
 
     Logger.info("Converting WikiBlockList...")
 
@@ -446,7 +446,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiBlockList: {r.apiLink}, error: {e}")
-            Logger.error(f"WikiBlockList record: {r}")
+            Logger.error(f"WikiBlockList record: {r.__dict__}")
 
     Logger.info("Converting WikiBotAccountList...")
 
@@ -460,7 +460,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiBotAccountList: {r.apiLink}, error: {e}")
-            Logger.error(f"WikiBotAccountList record: {r}")
+            Logger.error(f"WikiBotAccountList record: {r.__dict__}")
 
     Logger.info("Converting WikiLogTargetSetInfo...")
 
@@ -473,7 +473,7 @@ async def convert_database():
             )
         except Exception as e:
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
-            Logger.error(f"WikiLogTargetSetInfo record: {r}")
+            Logger.error(f"WikiLogTargetSetInfo record: {r.__dict__}")
 
     Logger.info("Converting DBVersion...")
 

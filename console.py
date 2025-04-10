@@ -68,10 +68,11 @@ async def send_command(msg):
 
 if __name__ == "__main__":
     import core.scripts.config_generate  # noqa
+
+    loop = asyncio.new_event_loop()
     try:
         init_bot()
         Info.client_name = client_name
-        loop = asyncio.new_event_loop()
         loop.run_until_complete(console_scheduler())
         loop.run_until_complete(console_command())
     except (KeyboardInterrupt, SystemExit):

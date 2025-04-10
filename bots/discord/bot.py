@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import os
 import re
@@ -13,6 +14,7 @@ from bots.discord.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
+from core.close import shutdown
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -133,8 +135,11 @@ async def on_message(message):
 
 
 if Config("enable", False, table_name="bot_discord"):
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
-
-    client.run(dc_token)
+    loop = asyncio.new_event_loop()
+    try:
+        Info.client_name = client_name
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
+        loop.run_until_complete(client.start(dc_token))
+    except KeyboardInterrupt:
+        loop.run_until_complete(shutdown())
