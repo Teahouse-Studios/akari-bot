@@ -7,7 +7,6 @@ async def restart():
     await Tortoise.close_connections()
     sys.exit(233)
 
+
 async def shutdown():
     await Tortoise.close_connections()
-    sys.exit(0)
-

@@ -51,4 +51,3 @@ if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, table_
         loop.run_until_complete(main())
     except KeyboardInterrupt:
         loop.run_until_complete(shutdown())
-

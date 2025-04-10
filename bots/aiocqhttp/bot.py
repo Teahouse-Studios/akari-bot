@@ -254,15 +254,17 @@ async def _(event: Event):
             await bot.call_action("set_group_leave", group_id=event.group_id)
 
 
+@bot.server_app.after_serving
+async def _():
+    await shutdown()
+
+
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
 if qq_host and Config("enable", False, table_name="bot_aiocqhttp"):
-    try:
-        argv = sys.argv
-        Info.client_name = client_name
-        HyperConfig.startup_timeout = 120
-        if "subprocess" in sys.argv:
-            Info.subprocess = True
-        host, port = qq_host.split(":")
-        bot.run(host=host, port=port, debug=False)
-    except KeyboardInterrupt:
-        asyncio.run(shutdown())
+    argv = sys.argv
+    Info.client_name = client_name
+    HyperConfig.startup_timeout = 120
+    if "subprocess" in sys.argv:
+        Info.subprocess = True
+    host, port = qq_host.split(":")
+    bot.run(host=host, port=port, debug=False)

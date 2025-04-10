@@ -270,4 +270,3 @@ if bot and Config("enable", False, table_name="bot_matrix"):
         loop.run_until_complete(start())
     except KeyboardInterrupt:
         loop.run_until_complete(shutdown())
-

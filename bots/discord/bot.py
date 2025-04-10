@@ -143,4 +143,3 @@ if Config("enable", False, table_name="bot_discord"):
         loop.run_until_complete(client.start(dc_token))
     except KeyboardInterrupt:
         loop.run_until_complete(shutdown())
-
