@@ -367,7 +367,7 @@ async def _(msg: Bot.MessageSession):
         restart_time.append(datetime.now().timestamp())
         await wait_for_restart(msg)
         write_version_cache(msg)
-        restart()
+        await restart()
     else:
         await msg.finish()
 
@@ -388,7 +388,7 @@ async def _(msg: Bot.MessageSession):
                     await msg.send_message(Plain(pull_repo_result, disable_joke=True))
             update_dependencies_result = await update_dependencies()
             await msg.send_message(Plain(update_dependencies_result, disable_joke=True))
-            restart()
+            await restart()
         else:
             await msg.finish()
     else:

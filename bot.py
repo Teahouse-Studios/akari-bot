@@ -217,8 +217,8 @@ def run_bot():
     Logger.critical("All bots exited unexpectedly, please check the output.")
 
 
-def restart():
-    run_async(Tortoise.close_connections())
+async def restart():
+    await Tortoise.close_connections()
     sys.exit(233)
 
 
