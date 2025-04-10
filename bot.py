@@ -217,6 +217,11 @@ def run_bot():
     Logger.critical("All bots exited unexpectedly, please check the output.")
 
 
+def restart():
+    run_async(Tortoise.close_connections())
+    sys.exit(233)
+
+
 if __name__ == "__main__":
     import core.scripts.config_generate  # noqa
     try:
