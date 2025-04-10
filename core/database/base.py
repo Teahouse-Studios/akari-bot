@@ -25,13 +25,19 @@ class DBModel(Model):
         Get a model by target_id.
 
         :param target_id: The target_id to search for.
-        :param create: Whether to create a new model if it doesn\'t exist.
-        :return: The model instance. If create is True and the model doesn"t exist, a new instance will be created, otherwise None.
+        :param create: Whether to create a new model if it doesn't exist.
+        :return: The model instance. If create is True and the model doesn't exist, a new instance will be created, otherwise None.
 
         """
-        t = target_id
-        if isinstance(target_id, (exports["Bot"].MessageSession, exports["Bot"].FetchedSession)):
-            t = t.target.target_id
+        t = None
+        if isinstance(target_id, str):
+            t = target_id
+        else:
+            if ex := exports.get("Bot"):
+                if isinstance(target_id, (ex.MessageSession, ex.FetchedSession)):
+                    t = target_id.target.target_id
+        if not t:
+            raise ValueError("target_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
         if create:
             return (await cls.get_or_create(target_id=t))[0]
         return await cls.get_or_none(target_id=t)
@@ -45,12 +51,18 @@ class DBModel(Model):
         Get a model by sender_id.
 
         :param sender_id: The sender_id to search for.
-        :param create: Whether to create a new model if it doesn\'t exist.
-        :return: The model instance. If create is True and the model doesn"t exist, a new instance will be created, otherwise None.
+        :param create: Whether to create a new model if it doesn't exist.
+        :return: The model instance. If create is True and the model doesn't exist, a new instance will be created, otherwise None.
         """
-        t = sender_id
-        if isinstance(sender_id, (exports["Bot"].MessageSession, exports["Bot"].FetchedSession)):
-            t = t.target.sender_id
+        t = None
+        if isinstance(sender_id, str):
+            t = sender_id
+        else:
+            if ex := exports.get("Bot"):
+                if isinstance(sender_id, (ex.MessageSession, ex.FetchedSession)):
+                    t = sender_id.target.sender_id
+        if not t:
+            raise ValueError("sender_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
         if create:
             return (await cls.get_or_create(sender_id=t))[0]
         return await cls.get_or_none(sender_id=t)
