@@ -8,7 +8,7 @@ from datetime import datetime
 from time import sleep
 
 from loguru import logger as loggerFallback
-from tortoise import run_async
+from tortoise import Tortoise, run_async
 
 
 ascii_art = r"""
@@ -45,29 +45,19 @@ def init_bot():
     from core.config import Config  # noqa
     from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
-    from core.database import init_db
+    from core.database.link import get_db_link  # noqa
     from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)
 
     async def update_db():
-        await init_db()
-        query_dbver = await DBVersion.all().first()
-        if not query_dbver:
-            from tortoise import Tortoise
-            from core.scripts.convert_database import convert_database
+        await Tortoise.init(
+            db_url=get_db_link(),
+            modules={"models": ["core.database.models"]}
+        )
+        await Tortoise.generate_schemas(safe=True)
 
-            await Tortoise.close_connections()
-            await convert_database()
-            Logger.success("Database converted successfully!")
-        elif (current_ver := query_dbver.version) < (target_ver := database_version):
-            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-            from tortoise import Tortoise
-            from core.database.update import update_database
-
-            await update_database()
-            Logger.success("Database updated successfully!")
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
         )
@@ -75,14 +65,28 @@ def init_bot():
             if isinstance(base_superuser, str):
                 base_superuser = [base_superuser]
             for bu in base_superuser:
-                sender_info = await SenderInfo.get_or_create(sender_id=bu)
-                sender_info = await SenderInfo.get(sender_id=bu)
-                sender_info.superuser = True
-                await sender_info.save()
+                await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
         else:
             Logger.warning(
                 "The base superuser is not found, please setup it in the config file."
             )
+
+        query_dbver = await DBVersion.all().first()
+        if not query_dbver:
+            from core.scripts.convert_database import convert_database
+
+            await Tortoise.close_connections()
+            await convert_database()
+            Logger.success("Database converted successfully!")
+        elif (current_ver := query_dbver.version) < (target_ver := database_version):
+            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+            from core.database.update import update_database
+
+            await Tortoise.close_connections()
+            await update_database()
+            Logger.success("Database updated successfully!")
+        else:
+            await Tortoise.close_connections()
     run_async(update_db())
 
 
