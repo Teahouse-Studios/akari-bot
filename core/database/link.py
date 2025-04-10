@@ -8,13 +8,6 @@ db_type = db_link.split("://")[0].split("+")[0]
 db_path = database_path
 
 if db_type == "sqlite":
-    # 兼容 SQLAlchemy 格式 SQLite 连接串
-    if db_link.startswith("sqlite:////"):
-        db_link = db_link.replace("sqlite:////", "sqlite:///")
-    elif db_link.startswith("sqlite:///"):
-        # 无法分辨三斜杠为过时语法或刻意为之，故全部转换
-        db_link = db_link.replace("sqlite:///", "sqlite://")
-
     db_path = os.path.dirname(db_link.replace("sqlite://", ""))
 os.makedirs(db_path, exist_ok=True)
 
