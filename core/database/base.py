@@ -37,7 +37,8 @@ class DBModel(Model):
                 if isinstance(target_id, (ex.MessageSession, ex.FetchedSession)):
                     t = target_id.target.target_id
         if not t:
-            raise ValueError("target_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
+            raise ValueError(
+                "target_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
         if create:
             return (await cls.get_or_create(target_id=t))[0]
         return await cls.get_or_none(target_id=t)
@@ -62,7 +63,8 @@ class DBModel(Model):
                 if isinstance(sender_id, (ex.MessageSession, ex.FetchedSession)):
                     t = sender_id.target.sender_id
         if not t:
-            raise ValueError("sender_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
+            raise ValueError(
+                "sender_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
         if create:
             return (await cls.get_or_create(sender_id=t))[0]
         return await cls.get_or_none(sender_id=t)
