@@ -288,11 +288,11 @@ async def convert_database():
     for r in stored_data_records:
         v = r.value.strip()
         try:
-            v = ast.literal_eval(v)
-        except (SyntaxError, ValueError):
-            continue
+            try:
+                v = json.loads(v)
+            except json.JSONDecodeError:
+                continue
 
-        try:
             await StoredData.create(
                 stored_key=r.name,
                 value=v
