@@ -20,5 +20,3 @@ async def cleanup_sessions():
 async def restart():
     await cleanup_sessions()
     sys.exit(233)
-
-
