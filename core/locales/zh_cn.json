@@ -13,7 +13,7 @@
     "config.comments.command_prefix": "命令前缀，此处填写的值将会被识别为命令前缀。",
     "config.comments.config_version": "配置版本号，将会随功能更新自增，一般情况请勿修改。",
     "config.comments.confirm_command": "确认命令的关键词，此处填写的值将会被识别为确认命令。",
-    "config.comments.db_path": "数据库连接字符串，请使用 SQLAlchemy 支持的数据库连接字符串格式。",
+    "config.comments.db_path": "数据库连接字符串，请使用 Tortoise ORM 支持的数据库连接字符串格式。",
     "config.comments.debug": "是否启用调试模式，启用后会输出更多的日志信息。",
     "config.comments.default_locale": "默认的会话语言环境。",
     "config.comments.discord_token": "Discord 机器人令牌。",
