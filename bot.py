@@ -58,19 +58,6 @@ def init_bot():
         )
         await Tortoise.generate_schemas(safe=True)
 
-        base_superuser = Config(
-            "base_superuser", base_superuser_default, cfg_type=(str, list)
-        )
-        if base_superuser:
-            if isinstance(base_superuser, str):
-                base_superuser = [base_superuser]
-            for bu in base_superuser:
-                await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
-        else:
-            Logger.warning(
-                "The base superuser is not found, please setup it in the config file."
-            )
-
         query_dbver = await DBVersion.all().first()
         if not query_dbver:
             from core.scripts.convert_database import convert_database
@@ -87,6 +74,20 @@ def init_bot():
             Logger.success("Database updated successfully!")
         else:
             await Tortoise.close_connections()
+
+        base_superuser = Config(
+            "base_superuser", base_superuser_default, cfg_type=(str, list)
+        )
+        if base_superuser:
+            if isinstance(base_superuser, str):
+                base_superuser = [base_superuser]
+            for bu in base_superuser:
+                await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
+        else:
+            Logger.warning(
+                "The base superuser is not found, please setup it in the config file."
+            )
+
     run_async(update_db())
 
 

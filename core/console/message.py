@@ -271,9 +271,9 @@ class FetchTarget(FetchTargetT):
     async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
         fetch = await FetchTarget.fetch_target("TEST|Console|0")
         if i18n:
-            await fetch.send_message(fetch.parent.locale.t(message, **kwargs))
+            await fetch.send_direct_message(fetch.parent.locale.t(message, **kwargs))
         else:
-            await fetch.send_message(message)
+            await fetch.send_direct_message(message)
 
 
 Bot.MessageSession = MessageSession
