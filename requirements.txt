@@ -94,7 +94,7 @@ more-itertools==10.6.0 ; python_version >= "3.12" and python_full_version < "4.0
 msgpack==1.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 multidict==6.3.2 ; python_version >= "3.12" and python_full_version < "4.0.0"
 nodeenv==1.9.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
-numpy==1.26.4 ; python_version >= "3.12" and python_full_version < "4.0.0"
+numpy==2.2.4 ; python_version >= "3.12" and python_full_version < "4.0.0"
 openai==1.70.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 orjson==3.10.16 ; python_version >= "3.12" and python_full_version < "4.0.0"
 packaging==24.2 ; python_version >= "3.12" and python_full_version < "4.0.0"
