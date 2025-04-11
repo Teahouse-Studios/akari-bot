@@ -13,7 +13,7 @@
     "config.comments.command_prefix": "指令前綴，此處填入的值將會被辨識為指令前綴。",
     "config.comments.config_version": "設定檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。",
     "config.comments.confirm_command": "確認指令的關鍵字，此處填入的值將會被辨識為確認指令。",
-    "config.comments.db_path": "資料庫連結字串，請使用 SQLAlchemy 支援的連結字串格式。",
+    "config.comments.db_path": "資料庫連結字串，請使用 Tortoise ORM 支援的連結字串格式。",
     "config.comments.debug": "是否啟用調試模式，啟用後會輸出更多的日誌訊息。",
     "config.comments.default_locale": "預設的會話語言環境。",
     "config.comments.discord_token": "Discord 機器人令牌。",
