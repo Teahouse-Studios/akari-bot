@@ -228,6 +228,7 @@ if __name__ == "__main__":
                 break
             except RestartBot:
                 for ps in processes:
+                    loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
                     ps.terminate()
                     ps.join()
                     ps.close()
