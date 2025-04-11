@@ -23,8 +23,8 @@ def catch_sigterm(signal, frame):
     Logger.warning('Caught SIGTERM. Exiting...')
     asyncio.get_running_loop().run_until_complete(cleanup_sessions())
 
-signal.signal(signal.SIGTERM, catch_sigterm)
 
+signal.signal(signal.SIGTERM, catch_sigterm)
 
 
 async def restart():
