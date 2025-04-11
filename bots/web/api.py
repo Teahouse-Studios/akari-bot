@@ -48,6 +48,7 @@ from core.utils.i18n import Locale  # noqa: E402
 
 started_time = datetime.now()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_async(start_scheduler=False)
@@ -136,6 +137,7 @@ app.add_middleware(
 )
 
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
 
 @app.get("/")
 async def redirect_root():
