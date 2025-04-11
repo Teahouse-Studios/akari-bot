@@ -45,7 +45,7 @@ async def main():
     await asyncio.gather(run_flask(), run_fastapi())
 
 if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, table_name="bot_web"):
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(main())
     except KeyboardInterrupt:

@@ -1,5 +1,7 @@
 import glob
 import os
+from contextlib import asynccontextmanager
+
 import psutil
 import platform
 import re
@@ -24,6 +26,8 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from tortoise.exceptions import DoesNotExist
 
+from core.close import shutdown
+
 sys.path.append(os.getcwd())
 
 from bots.web.bot import API_PORT, WEBUI_HOST, WEBUI_PORT  # noqa: E402
@@ -44,7 +48,17 @@ from core.utils.i18n import Locale  # noqa: E402
 
 started_time = datetime.now()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_async(start_scheduler=False)
+    load_extra_schedulers()
+    Scheduler.start()
+    await JobQueue.secret_append_ip()
+    await JobQueue.web_render_status()
+    yield
+    await shutdown()
+
+app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
@@ -122,16 +136,6 @@ app.add_middleware(
 )
 
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
-
-
-@app.on_event("startup")
-async def startup_event():
-    await init_async(start_scheduler=False)
-    load_extra_schedulers()
-    Scheduler.start()
-    await JobQueue.secret_append_ip()
-    await JobQueue.web_render_status()
-
 
 @app.get("/")
 async def redirect_root():
