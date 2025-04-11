@@ -64,6 +64,6 @@ if Config("enable", False, table_name="bot_aiogram"):
         Info.subprocess = True
 
     dp.startup.register(on_startup)
-    dp.cleanup_sessions.register(on_shutdown)
+    dp.shutdown.register(on_shutdown)
 
     asyncio.run(dp.start_polling(bot))
