@@ -38,7 +38,7 @@ class RestartBot(Exception):
 
 failed_to_start_attempts = {}
 disabled_bots = []
-processes = []
+processes: list[multiprocessing.Process] = []
 
 
 def init_bot():

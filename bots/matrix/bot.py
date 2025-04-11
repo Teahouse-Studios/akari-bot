@@ -268,5 +268,5 @@ if bot and Config("enable", False, table_name="bot_matrix"):
         if "subprocess" in sys.argv:
             Info.subprocess = True
         loop.run_until_complete(start())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         loop.run_until_complete(cleanup_sessions())

@@ -141,5 +141,5 @@ if Config("enable", False, table_name="bot_discord"):
         if "subprocess" in sys.argv:
             Info.subprocess = True
         loop.run_until_complete(client.start(dc_token))
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         loop.run_until_complete(cleanup_sessions())

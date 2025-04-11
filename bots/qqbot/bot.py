@@ -194,5 +194,5 @@ if Config("enable", False, table_name="bot_qqbot"):
             Info.subprocess = True
 
         loop.run_until_complete(client.start(appid=qqbot_appid, secret=qqbot_secret))
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         loop.run_until_complete(cleanup_sessions())

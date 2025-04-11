@@ -70,5 +70,5 @@ if Config("enable", False, table_name="bot_kook"):
             Info.subprocess = True
 
         loop.run_until_complete(bot.start())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         loop.run_until_complete(cleanup_sessions())

@@ -1,4 +1,6 @@
+import asyncio
 import sys
+import signal
 
 from tortoise import Tortoise
 
@@ -15,6 +17,14 @@ async def cleanup_sessions():
                 if get_wait_list[x][y][z]["active"]:
                     await z.send_message(z.locale.t("core.message.restart.prompt"))
     await Tortoise.close_connections()
+
+
+def catch_sigterm(signal, frame):
+    Logger.warning('Caught SIGTERM. Exiting...')
+    asyncio.get_running_loop().run_until_complete(cleanup_sessions())
+
+signal.signal(signal.SIGTERM, catch_sigterm)
+
 
 
 async def restart():

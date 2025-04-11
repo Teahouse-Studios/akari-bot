@@ -48,5 +48,5 @@ if (__name__ == "__main__" or Info.subprocess) and Config("enable", True, table_
     loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(main())
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SystemExit):
         loop.run_until_complete(cleanup_sessions())
