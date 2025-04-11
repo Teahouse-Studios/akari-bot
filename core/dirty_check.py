@@ -141,7 +141,7 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
                     content = item["content"]
                     for n in call_api_list[content]:
                         query_list[n][content] = parse_data(item, additional_text=additional_text)
-                    await DirtyWordCache(desc=content).create(item)
+                    await DirtyWordCache.create(desc=content, result=item)
             else:
                 raise ValueError(resp.text)
 
