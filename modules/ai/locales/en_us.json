@@ -2,6 +2,7 @@
     "ai.help": "Answer your question via LLMs.",
     "ai.help.desc": "Ask AkariBot anything!",
     "ai.help.list": "See the list of supported LLMs.",
+    "ai.help.option.llm": "Specify the LLM to use.",
     "ai.help.set": "Set the default LLM in session.",
     "ai.message.list.none": "Cannot find any available LLMs. Please contact the bot owner to add one.",
     "ai.message.list": "The following are the available LLM(s):",
