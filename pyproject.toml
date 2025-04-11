@@ -84,7 +84,7 @@ google-play-scraper = "^1.2.2"
 gql = "^3.4.0"
 langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
 mcstatus = "^11.1.1"
-numpy = "<2.0.0"
+numpy = "<2.2.5"
 openai = "^1.6.1"
 pandas = "^2.2.0"
 pint = "^0.24.0"
