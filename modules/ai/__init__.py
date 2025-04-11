@@ -19,16 +19,20 @@ ai = module("ai",
             exclude_from="QQBot")
 
 
-@ai.command("<question> {{ai.help}}")
+@ai.command("<question> [--llm <llm>] {{ai.help}}",
+            options_desc={"--llm": "{ai.help.option.llm}"})
 async def _(msg: Bot.MessageSession, question: str):
-    target_llm = msg.data.options.get("ai_default_llm")
+    get_llm = msg.parsed_msg.get("--llm", False)
+    llm = get_llm["<llm>"].lower() if get_llm else None
+    target_llm = msg.target_data.get("ai_default_llm")
     is_superuser = msg.check_super_user()
 
     avaliable_llms = llm_list + (llm_su_list if is_superuser else [])
 
-    llm = target_llm if target_llm else default_llm
-    llm_info = None
+    if not llm:
+        llm = target_llm if target_llm else default_llm
 
+    llm_info = None
     if llm in avaliable_llms:
         llm_info = next((l for l in llm_api_list if l["name"] == llm), None)
 
@@ -63,7 +67,7 @@ async def _(msg: Bot.MessageSession, question: str):
 async def _(msg: Bot.MessageSession, llm: str):
     llm = llm.lower()
     if llm in llm_list:
-        msg.data.edit_option("ai_default_llm", llm)
+        await msg.target_info.edit_target_datan("ai_default_llm", llm)
         await msg.finish(msg.locale.t("message.success"))
     else:
         await msg.finish(msg.locale.t("ai.message.llm.invalid"))

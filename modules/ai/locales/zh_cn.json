@@ -2,6 +2,7 @@
     "ai.help": "通过大语言模型回答问题。",
     "ai.help.desc": "有事为什么不问问小可呢？",
     "ai.help.list": "查看支持的大语言模型列表。",
+    "ai.help.option.llm": "指定使用的大语言模型。",
     "ai.help.set": "设置会话内默认大语言模型。",
     "ai.message.list.none": "找不到可用的大语言模型，请联系机器人拥有者添加。",
     "ai.message.list": "以下为可用的大语言模型：",
