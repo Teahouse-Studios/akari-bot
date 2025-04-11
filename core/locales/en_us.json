@@ -13,7 +13,7 @@
     "config.comments.command_prefix": "Command prefix. The value filled in here will be recognized as the command prefix.",
     "config.comments.config_version": "Config version number, which will be automatically updated with the features and generally does not need to be modified.",
     "config.comments.confirm_command": "The keyword of the confirmation command. The value filled in here will be recognized as the confirmation command.",
-    "config.comments.db_path": "Database connection string, use the connection string format supported by SQLAlchemy.",
+    "config.comments.db_path": "Database connection string, use the connection string format supported by Tortoise ORM.",
     "config.comments.debug": "Whether to enable debug mode, more log information will be output when enabled.",
     "config.comments.default_locale": "Default session language environment.",
     "config.comments.discord_token": "Discord bot token.",
