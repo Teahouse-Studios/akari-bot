@@ -5,11 +5,11 @@ import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-from tortoise import Tortoise
 
 from bot import init_bot
 from core.bot_init import init_async
 from core.builtins import PrivateAssets
+from core.close import cleanup_sessions
 from core.console.info import *
 from core.console.message import MessageSession
 from core.constants.info import Info
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     except (KeyboardInterrupt, SystemExit):
         print("Exited.")
     finally:
-        loop.run_until_complete(Tortoise.close_connections())
+        loop.run_until_complete(cleanup_sessions())
         loop.close()

@@ -26,7 +26,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from tortoise.exceptions import DoesNotExist
 
-from core.close import shutdown
+from core.close import cleanup_sessions
 
 sys.path.append(os.getcwd())
 
@@ -57,7 +57,7 @@ async def lifespan(app: FastAPI):
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
     yield
-    await shutdown()
+    await cleanup_sessions()
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)

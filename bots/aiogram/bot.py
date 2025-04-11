@@ -9,7 +9,7 @@ from bots.aiogram.info import *
 from bots.aiogram.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
-from core.close import shutdown
+from core.close import cleanup_sessions
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -55,7 +55,7 @@ async def on_startup():
 
 
 async def on_shutdown():
-    await shutdown()
+    await cleanup_sessions()
 
 
 if Config("enable", False, table_name="bot_aiogram"):
@@ -64,6 +64,6 @@ if Config("enable", False, table_name="bot_aiogram"):
         Info.subprocess = True
 
     dp.startup.register(on_startup)
-    dp.shutdown.register(on_shutdown)
+    dp.cleanup_sessions.register(on_shutdown)
 
     asyncio.run(dp.start_polling(bot))

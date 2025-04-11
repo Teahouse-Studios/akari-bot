@@ -10,7 +10,7 @@ from bots.qqbot.info import *
 from bots.qqbot.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
-from core.close import shutdown
+from core.close import cleanup_sessions
 from core.config import Config
 from core.constants.info import Info
 from core.constants.path import assets_path
@@ -195,4 +195,4 @@ if Config("enable", False, table_name="bot_qqbot"):
 
         loop.run_until_complete(client.start(appid=qqbot_appid, secret=qqbot_secret))
     except KeyboardInterrupt:
-        loop.run_until_complete(shutdown())
+        loop.run_until_complete(cleanup_sessions())

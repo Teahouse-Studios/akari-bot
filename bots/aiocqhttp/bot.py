@@ -14,7 +14,7 @@ from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
-from core.close import shutdown
+from core.close import cleanup_sessions
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
@@ -255,7 +255,7 @@ async def _(event: Event):
 
 @bot.server_app.after_serving
 async def _():
-    await shutdown()
+    await cleanup_sessions()
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")

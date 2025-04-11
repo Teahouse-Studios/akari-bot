@@ -6,7 +6,7 @@ from datetime import datetime
 
 import orjson as json
 
-from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp
 from core.component import module
 from core.close import restart
 from core.config import Config, CFGManager
@@ -349,13 +349,6 @@ async def wait_for_restart(msg: Bot.MessageSession):
             await msg.sleep(10)
             return await wait_for_restart(msg)
         await msg.send_message(msg.locale.t("core.message.restart.restarting"))
-        get_wait_list = MessageTaskManager.get()
-        for x in get_wait_list:
-            for y in get_wait_list[x]:
-                for z in get_wait_list[x][y]:
-                    if get_wait_list[x][y][z]["active"]:
-                        await z.send_message(z.locale.t("core.message.restart.prompt"))
-
     else:
         await msg.send_message(msg.locale.t("core.message.restart.timeout"))
 
