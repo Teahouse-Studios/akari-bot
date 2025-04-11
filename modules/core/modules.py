@@ -1,8 +1,10 @@
+from copy import deepcopy
+
 from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
-from core.database import BotDBUtil
+from core.database.models import TargetInfo
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from core.utils.i18n import load_locale_file
@@ -66,7 +68,7 @@ async def config_modules(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     alias = ModulesManager.modules_aliases
     modules_ = ModulesManager.return_modules_list(target_from=msg.target.target_from)
-    enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
+    enabled_modules_list = deepcopy(msg.target_info.modules)
     wait_config = [msg.parsed_msg.get("<module>")] + msg.parsed_msg.get("...", [])
     wait_config_list = []
     for module_ in wait_config:
@@ -131,8 +133,8 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.TargetInfo(f"{msg.target.target_from}|{x}")
-                query.enable(enable_list)
+                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                await target_info.config_module(enable_list, True)
             for x in enable_list:
                 msglist.append(
                     I18NContext(
@@ -140,7 +142,7 @@ async def config_modules(msg: Bot.MessageSession):
                     )
                 )
         else:
-            if msg.data.enable(enable_list):
+            if await msg.target_info.config_module(enable_list, True):
                 for x in enable_list:
                     if x in enabled_modules_list:
                         msglist.append(
@@ -217,8 +219,8 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.TargetInfo(f"{msg.target.target_from}|{x}")
-                query.disable(disable_list)
+                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                await target_info.config_module(disable_list, False)
             for x in disable_list:
                 msglist.append(
                     I18NContext(
@@ -226,7 +228,7 @@ async def config_modules(msg: Bot.MessageSession):
                     )
                 )
         else:
-            if msg.data.disable(disable_list):
+            if await msg.target_info.config_module(disable_list, False):
                 for x in disable_list:
                     if x not in enabled_modules_list:
                         msglist.append(
@@ -381,7 +383,7 @@ async def config_modules(msg: Bot.MessageSession):
         confirm = await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)),
                                           Plain("\n\n")] + recommend_modules_help_doc_list)
         if confirm:
-            if msg.data.enable(recommend_modules_list):
+            if await msg.target_info.config_module(recommend_modules_list, True):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(I18NContext("core.message.module.enable.success", module=x)

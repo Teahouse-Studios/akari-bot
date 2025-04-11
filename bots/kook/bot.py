@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 
@@ -8,6 +9,7 @@ from bots.kook.info import *
 from bots.kook.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
+from core.close import shutdown
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.info import Info
@@ -61,8 +63,12 @@ async def _(b: bot):
 
 
 if Config("enable", False, table_name="bot_kook"):
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
+    loop = asyncio.get_event_loop()
+    try:
+        Info.client_name = client_name
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
 
-    bot.run()
+        loop.run_until_complete(bot.start())
+    except KeyboardInterrupt:
+        loop.run_until_complete(shutdown())

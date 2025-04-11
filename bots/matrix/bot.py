@@ -12,6 +12,7 @@ from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
+from core.close import shutdown
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -261,7 +262,11 @@ async def start():
 
 
 if bot and Config("enable", False, table_name="bot_matrix"):
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
-    asyncio.run(start())
+    loop = asyncio.new_event_loop()
+    try:
+        Info.client_name = client_name
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
+        loop.run_until_complete(start())
+    except KeyboardInterrupt:
+        loop.run_until_complete(shutdown())

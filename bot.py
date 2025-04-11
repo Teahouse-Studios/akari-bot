@@ -8,6 +8,7 @@ from datetime import datetime
 from time import sleep
 
 from loguru import logger as loggerFallback
+from tortoise import Tortoise, run_async
 
 
 ascii_art = r"""
@@ -42,36 +43,58 @@ processes = []
 
 def init_bot():
     from core.config import Config  # noqa
+    from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
-    from core.database import BotDBUtil, session, DBVersion  # noqa
+    from core.database.link import get_db_link  # noqa
+    from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
-    query_dbver = session.query(DBVersion).first()
-    if not query_dbver:
-        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
-        session.commit()
-        query_dbver = session.query(DBVersion).first()
-    if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
-        Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-        from core.database.update import update_database
-
-        update_database()
-        Logger.success("Database updated successfully!")
     Logger.info(ascii_art)
-    base_superuser = Config("base_superuser", base_superuser_default, cfg_type=(str, list))
-    if base_superuser:
-        if isinstance(base_superuser, str):
-            base_superuser = [base_superuser]
-        for bu in base_superuser:
-            BotDBUtil.SenderInfo(bu).init()
-            BotDBUtil.SenderInfo(bu).edit("isSuperUser", True)
-    else:
-        Logger.warning("The base superuser is not found, please setup it in the config file.")
+
+    async def update_db():
+        await Tortoise.init(
+            db_url=get_db_link(),
+            modules={"models": ["core.database.models"]}
+        )
+        await Tortoise.generate_schemas(safe=True)
+
+        query_dbver = await DBVersion.all().first()
+        if not query_dbver:
+            from core.scripts.convert_database import convert_database
+
+            await Tortoise.close_connections()
+            await convert_database()
+            Logger.success("Database converted successfully!")
+        elif (current_ver := query_dbver.version) < (target_ver := database_version):
+            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+            from core.database.update import update_database
+
+            await Tortoise.close_connections()
+            await update_database()
+            Logger.success("Database updated successfully!")
+        else:
+            await Tortoise.close_connections()
+
+        base_superuser = Config(
+            "base_superuser", base_superuser_default, cfg_type=(str, list)
+        )
+        if base_superuser:
+            if isinstance(base_superuser, str):
+                base_superuser = [base_superuser]
+            for bu in base_superuser:
+                await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
+        else:
+            Logger.warning(
+                "The base superuser is not found, please setup it in the config file."
+            )
+
+    run_async(update_db())
 
 
 def multiprocess_run_until_complete(func):
     p = multiprocessing.Process(
         target=func,
+        daemon=True
     )
     p.start()
 
@@ -130,6 +153,7 @@ def run_bot():
             target=go,
             args=(bot_name, True, bool(not sys.argv[0].endswith(".py"))),
             name=bot_name,
+            daemon=True
         )
         p.start()
         processes.append(p)
@@ -165,7 +189,7 @@ def run_bot():
             if abort:
                 continue
         p = multiprocessing.Process(
-            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl
+            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
         )
         p.start()
         processes.append(p)

@@ -8,10 +8,10 @@ from core.builtins import Bot, Plain, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants import locale_url_default
-from core.database import BotDBUtil
 from core.utils.bash import run_sys_command
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
+
 
 ver = module("version", base=True, doc=True)
 
@@ -110,7 +110,7 @@ async def _(msg: Bot.MessageSession):
         )
     if "add" in msg.parsed_msg:
         if user and user not in msg.custom_admins:
-            if msg.data.add_custom_admin(user):
+            if await msg.target_info.config_custom_admin(user):
                 await msg.finish(
                     msg.locale.t("core.message.admin.add.success", user=user)
                 )
@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
             )
             if not confirm:
                 await msg.finish()
-        elif user and msg.data.remove_custom_admin(user):
+        elif user and msg.target_info.config_custom_admin(user, enable=False):
             await msg.finish(
                 msg.locale.t("core.message.admin.remove.success", user=user)
             )
@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession):
     "ban list {{core.help.admin.ban.list}}",
 )
 async def _(msg: Bot.MessageSession):
-    admin_ban_list = msg.options.get("ban", [])
+    admin_ban_list = msg.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
         if admin_ban_list:
             await msg.finish(f"{msg.locale.t("core.message.admin.ban.list")}\n{"\n".join(admin_ban_list)}")
@@ -154,14 +154,14 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.admin.ban.self"))
     if "ban" in msg.parsed_msg:
         if user not in admin_ban_list:
-            msg.data.edit_option("ban", admin_ban_list + [user])
+            await msg.target_info.edit_target_data("ban", admin_ban_list + [user])
             await msg.finish(msg.locale.t("core.message.admin.ban.success"))
         else:
             await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if "unban" in msg.parsed_msg:
         if user in (banlist := admin_ban_list):
             banlist.remove(user)
-            msg.data.edit_option("ban", banlist)
+            await msg.target_info.edit_target_data("ban", banlist)
             await msg.finish(msg.locale.t("core.message.admin.unban.success"))
         else:
             await msg.finish(msg.locale.t("core.message.admin.unban.none"))
@@ -193,9 +193,7 @@ async def _(msg: Bot.MessageSession):
 
 @locale.command("[<lang>] {{core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
-    if lang in get_available_locales() and BotDBUtil.TargetInfo(
-        msg.target.target_id
-    ).edit("locale", lang):
+    if lang in get_available_locales() and await msg.target_info.edit_attr("locale", lang):
         await msg.finish(Locale(lang).t("message.success"))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
@@ -238,23 +236,23 @@ setup = module(
 
 @setup.command("typing {{core.help.setup.typing}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.info.disable_typing:
-        msg.info.edit("disableTyping", True)
+    if not msg.sender_data.get("disable_typing", False):
+        await msg.sender_info.edit_sender_data("disable_typing", True)
         await msg.finish(msg.locale.t("core.message.setup.typing.disable"))
     else:
-        msg.info.edit("disableTyping", False)
+        await msg.sender_info.edit_sender_data("disable_typing", False)
         await msg.finish(msg.locale.t("core.message.setup.typing.enable"))
 
 
 """
 @setup.command("check {{core.help.setup.check}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    state = msg.info.typo_check
+    state = msg.sender_info.typo_check
     if state:
-        msg.data.edit_option("typoCheck", False)
+        await msg.target_info.edit_target_data("typoCheck", False)
         await msg.finish(msg.locale.t("core.message.setup.check.enable"))
     else:
-        msg.data.edit_option("typoCheck", True)
+        await msg.target_info.edit_target_data("typoCheck", True)
         await msg.finish(msg.locale.t("core.message.setup.check.disable"))
 """
 
@@ -272,7 +270,7 @@ async def _(msg: Bot.MessageSession, offset: str):
         offset = f"{hour:+}" if minute == 0 else f"{hour:+}:{abs(minute):02d}"
     except ValueError:
         await msg.finish(msg.locale.t("core.message.setup.timeoffset.invalid"))
-    msg.data.edit_option("timezone_offset", offset)
+    await msg.target_info.edit_target_data("timezone_offset", offset)
     await msg.finish(
         msg.locale.t(
             "core.message.setup.timeoffset.success",
@@ -284,7 +282,7 @@ async def _(msg: Bot.MessageSession, offset: str):
 @setup.command("cooldown <second> {{core.help.setup.cooldown}}", required_admin=True)
 async def _(msg: Bot.MessageSession, second: int):
     second = 0 if second < 0 else second
-    msg.data.edit_option("cooldown_time", second)
+    await msg.target_info.edit_target_data("cooldown_time", second)
     await msg.finish(msg.locale.t("core.message.setup.cooldown.success", time=second))
 
 
@@ -295,7 +293,7 @@ mute = module(
 
 @mute.command("{{core.help.mute}}")
 async def _(msg: Bot.MessageSession):
-    state = msg.data.switch_mute()
+    state = await msg.target_info.switch_mute()
     if state:
         await msg.finish(msg.locale.t("core.message.mute.enable"))
     else:

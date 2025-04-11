@@ -240,7 +240,7 @@ class MessageSession(MessageSessionT):
 
 class FetchedSession(FetchedSessionT):
 
-    async def send_message(self, message_chain, disable_secret_check=False):
+    async def send_direct_message(self, message_chain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
 
@@ -248,6 +248,7 @@ class FetchedSession(FetchedSessionT):
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
         """
+        await self.parent.data_init()
         return await self.parent.send_message(
             message_chain, disable_secret_check=disable_secret_check, quote=False
         )
@@ -257,7 +258,7 @@ class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
+    async def fetch_target(target_id, sender_id=None):
         if target_id == "TEST|Console|0":
             return FetchedSession(
                 target_from=target_prefix,
@@ -268,11 +269,11 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target("0")
+        fetch = await FetchTarget.fetch_target("TEST|Console|0")
         if i18n:
-            await fetch.send_message(fetch.parent.locale.t(message, **kwargs))
+            await fetch.send_direct_message(fetch.parent.locale.t(message, **kwargs))
         else:
-            await fetch.send_message(message)
+            await fetch.send_direct_message(message)
 
 
 Bot.MessageSession = MessageSession

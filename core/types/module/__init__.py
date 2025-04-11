@@ -7,7 +7,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from .component_matches import *
 
-from .utils import convert2lst
+from core.utils.list import convert2lst
 
 from attrs import define, field, Converter
 

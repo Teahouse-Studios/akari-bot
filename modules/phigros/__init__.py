@@ -6,7 +6,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
-from .dbutils import PgrBindInfoManager
+from modules.phigros.database.models import PhigrosBindInfo
 from .game_record import parse_game_record
 from .genb19 import drawb19
 from .update import update_assets, p_headers
@@ -46,37 +46,31 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         headers=headers,
         fmt="json",
     )
-    if "nickname" in get_user_info:
-        bind = PgrBindInfoManager(msg).set_bind_info(
-            sessiontoken=sessiontoken, username=get_user_info["nickname"]
-        )
-        if bind:
-            await msg.send_message(
-                msg.locale.t(
-                    "phigros.message.bind.success", username=get_user_info["nickname"]
-                ),
-                quote=False,
-            )
-        else:
-            await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
+    if get_user_info:
+        username = get_user_info.get("nickname", "Guest")
+        await PhigrosBindInfo.set_bind_info(sender_id=msg.target.sender_id, session_token=sessiontoken, username=username)
+        await msg.send_message(msg.locale.t("phigros.message.bind.success", username=username), quote=False)
+    else:
+        await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
 
 
 @phi.command("unbind {{phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    if PgrBindInfoManager(msg).remove_bind_info():
-        await msg.finish(msg.locale.t("phigros.message.unbind.success"))
+    await PhigrosBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
+    await msg.finish(msg.locale.t("phigros.message.unbind.success"))
 
 
 @phi.command("b19 {{phigros.help.b19}}")
 async def _(msg: Bot.MessageSession):
-    if not (bind := PgrBindInfoManager(msg).get_bind_info()):
+    bind_info = await PhigrosBindInfo.get_or_none(sender_id=msg.target.sender_id)
+    if not bind_info:
         await msg.finish(
             msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0])
         )
     else:
         try:
             headers = p_headers.copy()
-            headers["X-LC-Session"] = bind[0]
+            headers["X-LC-Session"] = bind_info.session_token
             get_save_url = await get_url(
                 "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave",
                 headers=headers,
@@ -105,7 +99,7 @@ async def _(msg: Bot.MessageSession):
             if len(rks_acc := [i[1]["rks"] for i in b19_data]) < 20:
                 rks_acc += [0] * (20 - len(rks_acc))
             await msg.finish(
-                Image(drawb19(bind[1], round(sum(rks_acc) / len(rks_acc), 2), b19_data))
+                Image(drawb19(bind_info.username, round(sum(rks_acc) / len(rks_acc), 2), b19_data))
             )
         except Exception as e:
             Logger.error(traceback.format_exc())

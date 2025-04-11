@@ -5,8 +5,6 @@ import sys
 import traceback
 from typing import Dict, Optional, Union, Callable
 
-import orjson as json
-
 from core.config import Config
 from core.constants.path import modules_path, PrivateAssets
 from core.logger import Logger
@@ -19,6 +17,7 @@ from core.types.module.component_meta import (
 )
 from core.utils.i18n import locale_loaded_err
 from core.utils.info import Info
+from core.utils.loader import fetch_modules_list
 
 all_modules = []
 current_unloaded_modules = []
@@ -32,19 +31,7 @@ def load_modules():
         err_prompt.append("i18n:")
         err_prompt.append("\n".join(locale_loaded_err))
     fun_file = None
-    if not Info.binary_mode:
-        dir_list = os.listdir(modules_path)
-    else:
-        try:
-            Logger.warning(
-                "Binary mode detected, trying to load pre-built modules list..."
-            )
-            js = "assets/modules_list.json"
-            with open(js, "r", encoding="utf-8") as f:
-                dir_list = json.loads(f.read())
-        except Exception:
-            Logger.error("Failed to load pre-built modules list, using default list.")
-            dir_list = os.listdir(modules_path)
+    dir_list = fetch_modules_list()
 
     Logger.info("Attempting to load modules...")
 

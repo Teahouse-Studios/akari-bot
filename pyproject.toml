@@ -18,6 +18,7 @@ python = "^3.12.0"
 
 # lib
 cryptography = "^44.0.0"
+poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
 pywin32 = { version = "^308", platform = "win32" }
@@ -52,8 +53,7 @@ tenacity = "^9.0.0"
 tomlkit = "^0.13.2"
 
 # core.database
-SQLAlchemy = "^2.0.20"
-PyMySQL = "^1.0.2"
+tortoise-orm = {extras = ["asyncmy"], version = "^0.24.2"}
 
 # core.http
 aiofile = "^3.8.1"
@@ -84,7 +84,7 @@ google-play-scraper = "^1.2.2"
 gql = "^3.4.0"
 langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
 mcstatus = "^11.1.1"
-numpy = "^2.0.0"
+numpy = "<2.0.0"
 openai = "^1.6.1"
 pandas = "^2.2.0"
 pint = "^0.24.0"

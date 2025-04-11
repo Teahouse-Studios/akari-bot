@@ -193,6 +193,8 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
+        text = self._match_i18ncode(text)
+
         if locale_str := re.findall(r"\{(.*)}", text):
             for lc in locale_str:
                 text = text.replace(

@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import List, Union, Optional
 
 import aiocqhttp.exceptions
-import orjson as json
 from aiocqhttp import MessageSegment
 from tenacity import retry, wait_fixed, stop_after_attempt
 
@@ -34,7 +33,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
-from core.database import BotDBUtil
+from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
@@ -346,8 +345,8 @@ class MessageSession(MessageSessionT):
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == target_group_prefix:
-            get_ = get_stored_list(Bot.FetchTarget, "forward_msg")
-            if isinstance(get_, dict) and get_.get("status"):
+            get_ = await get_stored_list(Bot.FetchTarget, "forward_msg")
+            if isinstance(get_[0], dict) and get_[0].get("status"):
                 await self.send_message(
                     self.locale.t("core.message.forward_msg.disabled")
                 )
@@ -461,7 +460,7 @@ class MessageSession(MessageSessionT):
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
                 elif item["type"] == "at":
-                    lst.append(Mention(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
+                    lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
@@ -534,8 +533,9 @@ class FetchTarget(FetchTargetT):
                     sender_id = match_sender.group(2)
             else:
                 sender_id = target_id
-
-            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
+            return session
 
     @staticmethod
     async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
@@ -616,7 +616,11 @@ class FetchTarget(FetchTargetT):
                     if _tsk:
                         _tsk = []
                 if enable_analytics and module_name:
-                    BotDBUtil.Analytics(fetch_).add("", module_name, "schedule")
+                    await AnalyticsData.create(target_id=fetch_.target.target_id,
+                                               sender_id=fetch_.target.sender_id,
+                                               command="",
+                                               module_name=module_name,
+                                               module_type="schedule")
                 await asyncio.sleep(0.5)
             except SendMessageFailed as e:
                 if str(e).startswith("send group message failed: blocked by server"):
@@ -660,7 +664,7 @@ class FetchTarget(FetchTargetT):
             for x in user_list:
                 await post_(x)
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(
+            get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
             )
             group_list_raw = await bot.call_action("get_group_list")
@@ -691,7 +695,7 @@ class FetchTarget(FetchTargetT):
             in_whitelist = []
             else_ = []
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
+                fetch = await FetchTarget.fetch_target(x.target_id)
                 Logger.debug(fetch)
                 if fetch:
                     if fetch.target.target_from == target_group_prefix:
@@ -703,7 +707,7 @@ class FetchTarget(FetchTargetT):
                     if fetch.target.target_from == target_guild_prefix:
                         if fetch.session.target not in guild_list:
                             continue
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
+                    if x.muted:
                         continue
 
                     if fetch.target.target_from in [
@@ -712,7 +716,7 @@ class FetchTarget(FetchTargetT):
                     ]:
                         in_whitelist.append(post_(fetch))
                     else:
-                        load_options: dict = json.loads(x.options)
+                        load_options: dict = x.target_data
                         if load_options.get("in_post_whitelist", False):
                             in_whitelist.append(post_(fetch))
                         else:

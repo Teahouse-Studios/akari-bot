@@ -4,7 +4,8 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser, ctx_to_session
-from modules.wiki import WikiLib, WikiTargetInfo
+from modules.wiki import WikiLib
+from modules.wiki.database.models import WikiTargetInfo
 
 
 @client.slash_command(description="Get recent abuse logs for the default wiki.")
@@ -28,9 +29,9 @@ wiki = client.create_group("wiki", "Query information from Mediawiki-based websi
 async def auto_search(ctx: discord.AutocompleteContext):
     title = ctx.options["pagename"]
     iw = ""
-    target = WikiTargetInfo(ctx_to_session(ctx))
-    iws = target.get_interwikis()
-    query_wiki = target.get_start_wiki()
+    target = (await WikiTargetInfo.get_or_create(target_id=ctx_to_session(ctx).target.target_id))[0]
+    iws = target.interwikis
+    query_wiki = target.api_link
     if match_iw := re.match(r"(.*?):(.*)", title):
         if match_iw.group(1) in iws:
             query_wiki = iws[match_iw.group(1)]
@@ -50,10 +51,11 @@ async def auto_search(ctx: discord.AutocompleteContext):
 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
-    target = WikiTargetInfo(ctx_to_session(ctx)).get_interwikis()
-    if not target:
+    target = (await WikiTargetInfo.get_or_create(target_id=ctx_to_session(ctx).target.target_id))[0]
+    iws = target.interwikis
+    if not iws:
         return []
-    return list(target.keys())
+    return list(iws.keys())
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):

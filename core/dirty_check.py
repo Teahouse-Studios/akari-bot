@@ -87,9 +87,9 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
     for q in query_list:
         for pq in query_list[q]:
             if not query_list[q][pq]:
-                cache = DirtyWordCache(pq)
-                if not cache.need_insert:
-                    query_list[q][pq] = parse_data(cache.get(), additional_text=additional_text)
+                cache = await DirtyWordCache.check(pq)
+                if cache:
+                    query_list[q][pq] = parse_data(cache.result, additional_text=additional_text)
 
     call_api_list = {}
     for q in query_list:
@@ -141,7 +141,7 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
                     content = item["content"]
                     for n in call_api_list[content]:
                         query_list[n][content] = parse_data(item, additional_text=additional_text)
-                    DirtyWordCache(content).update(item)
+                    await DirtyWordCache(desc=content).create(item)
             else:
                 raise ValueError(resp.text)
 

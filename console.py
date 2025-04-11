@@ -1,49 +1,23 @@
 import asyncio
 import os
 import shutil
-import sys
 import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
-
-from core.config import Config
-from core.constants.info import Info
-from core.constants.path import assets_path, cache_path
-from core.logger import Logger
-
-if not Config("db_path", secret=True):
-    raise AttributeError("""
-Wait! You need to fill a valid database address into the config.toml \"db_path\" field.
-Example:
-db_path = \"sqlite:///database/save.db\"
-(Also you can fill in the above example directly, bot will automatically create a SQLite database in the \"./database/save.db\")"
-""")
+from tortoise import Tortoise
 
 from bot import init_bot
 from core.bot_init import init_async
 from core.builtins import PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
-from core.database import BotDBUtil, session
-from core.database.tables import DBVersion
+from core.constants.info import Info
+from core.constants.path import assets_path, cache_path
 from core.extra.scheduler import load_extra_schedulers
+from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-
-query_dbver = session.query(DBVersion).first()
-if not query_dbver:
-    session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
-    session.commit()
-    query_dbver = session.query(DBVersion).first()
-
-if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
-    print(f"Updating database from {current_ver} to {target_ver}...")
-    from core.database.update import update_database
-
-    update_database()
-    print("Database updated successfully! Please restart the program.")
-    sys.exit()
 
 Info.dirty_word_check = True
 PrivateAssets.set(os.path.join(assets_path, "private", "console"))
@@ -92,16 +66,17 @@ async def send_command(msg):
     Logger.info("----Process end----")
     return returns
 
-
 if __name__ == "__main__":
     import core.scripts.config_generate  # noqa
-    init_bot()
-    Info.client_name = client_name
+
     loop = asyncio.new_event_loop()
-    loop.run_until_complete(console_scheduler())
     try:
+        init_bot()
+        Info.client_name = client_name
+        loop.run_until_complete(console_scheduler())
         loop.run_until_complete(console_command())
     except (KeyboardInterrupt, SystemExit):
         print("Exited.")
     finally:
+        loop.run_until_complete(Tortoise.close_connections())
         loop.close()

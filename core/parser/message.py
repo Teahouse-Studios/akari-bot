@@ -15,7 +15,7 @@ from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
     InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
-from core.database import BotDBUtil
+from core.database.models import AnalyticsData
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
@@ -104,8 +104,8 @@ async def temp_ban_check(msg: Bot.MessageSession):
 
 
 async def check_target_cooldown(msg: Bot.MessageSession):
-    cooldown_time = int(msg.options.get("cooldown_time", 0))
-    neutralized = bool(await msg.check_permission() or msg.check_super_user())
+    cooldown_time = int(msg.target_data.get("cooldown_time", 0))
+    neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
     if cooldown_time and not neutralized:
         if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id):
@@ -120,7 +120,7 @@ async def check_target_cooldown(msg: Bot.MessageSession):
 
 
 def transform_alias(msg, command: str):
-    aliases = dict(msg.options.get("command_alias", {}).items())
+    aliases = dict(msg.target_data.get("command_alias", {}).items())
     command_split = msg.trigger_msg.split(" ")  # 切割消息
     for pattern, replacement in aliases.items():
         if re.search(r"\${[^}]*}", pattern):
@@ -171,6 +171,7 @@ async def parser(msg: Bot.MessageSession,
     identify_str = f"[{msg.target.sender_id}{
         f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
+    await msg.data_init()
     try:
         asyncio.create_task(MessageTaskManager.check(msg))
         modules = ModulesManager.return_modules_list(msg.target.target_from)
@@ -178,17 +179,17 @@ async def parser(msg: Bot.MessageSession,
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        if (msg.info.is_in_block_list and not msg.info.is_in_allow_list and not msg.info.is_super_user) or \
-           (msg.target.sender_id in msg.options.get("ban", []) and not msg.info.is_super_user):
+        if (msg.sender_info.blocked and not msg.sender_info.trusted and not msg.sender_info.superuser) or (
+                msg.target.sender_id in msg.target_data.get("ban", []) and not msg.sender_info.superuser):
             return
 
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
-        get_custom_prefix = msg.options.get("command_prefix")  # 获取自定义命令前缀
+        get_custom_prefix = msg.target_data.get("command_prefix")  # 获取自定义命令前缀
         if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
         msg.prefixes = [i for i in set(msg.prefixes) if i.strip()]  # 过滤重复与空白前缀
 
-        if msg.options.get("command_alias"):
+        if msg.target_data.get("command_alias"):
             msg.trigger_msg = transform_alias(msg, msg.trigger_msg)  # 将自定义别名替换为命令
 
         disable_prefix = False
@@ -302,7 +303,7 @@ async def parser(msg: Bot.MessageSession,
                                              prefix=msg.prefixes[0]))
                             if await msg.check_permission():
                                 if await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable")):
-                                    msg.data.enable(command_first_word)
+                                    await msg.target_info.config_module(command_first_word)
                                     await msg.send_message(msg.locale.t("core.message.module.enable.success", module=command_first_word))
                                 else:
                                     return
@@ -408,7 +409,7 @@ async def parser(msg: Bot.MessageSession,
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-                                    if not msg.info.disable_typing:
+                                    if not msg.target_info.target_data.get("disable_typing", False):
                                         async with msg.Typing(msg):
                                             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:
@@ -418,7 +419,7 @@ async def parser(msg: Bot.MessageSession,
                                     await msg.send_message(msg.locale.t("parser.command.format.invalid",
                                                                         module=command_first_word,
                                                                         prefix=msg.prefixes[0]))
-                                    """if msg.options.get("typo_check", True):  # 判断是否开启错字检查
+                                    """if msg.target_data.get("typo_check", True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,
                                                                                                    modules,
@@ -440,7 +441,7 @@ async def parser(msg: Bot.MessageSession,
                         msg.parsed_msg = None
                         for func in module.command_list.set:
                             if not func.help_doc:
-                                if not msg.info.disable_typing:
+                                if not msg.sender_data.get("disable_typing", False):
                                     async with msg.Typing(msg):
                                         await func.function(msg)  # 将msg传入下游模块
                                 else:
@@ -477,7 +478,11 @@ async def parser(msg: Bot.MessageSession,
                                    f"Times take up: {str(time_used)}")
                     Info.command_parsed += 1
                     if enable_analytics:
-                        BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, "normal")
+                        await AnalyticsData.create(target_id=msg.target.target_id,
+                                                   sender_id=msg.target.sender_id,
+                                                   command=msg.trigger_msg,
+                                                   module_name=command_first_word,
+                                                   module_type="normal")
 
                 except AbuseWarning as e:
                     await tos_abuse_warning(msg, str(e))
@@ -577,7 +582,7 @@ async def parser(msg: Bot.MessageSession,
                                     match_hash_cache[msg.target.target_id] = {}
                                 if matched_hash in match_hash_cache[msg.target.target_id]:
                                     if datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
-                                            matched_hash] < int((msg.options.get("cooldown_time", 0)) or 3):
+                                            matched_hash] < int((msg.target_data.get("cooldown_time", 0)) or 3):
                                         Logger.warning("Match loop detected, skipping...")
                                         continue
                                 match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
@@ -605,7 +610,7 @@ async def parser(msg: Bot.MessageSession,
                                 else:
                                     return await msg.send_message(msg.locale.t("parser.command.running.prompt"))
 
-                                if rfunc.show_typing and not msg.info.disable_typing:
+                                if rfunc.show_typing and not msg.sender_data.get("disable_typing", False):
                                     async with msg.Typing(msg):
                                         await rfunc.function(msg)  # 将msg传入下游模块
                                 else:
@@ -620,8 +625,11 @@ async def parser(msg: Bot.MessageSession,
 
                             Info.command_parsed += 1
                             if enable_analytics and rfunc.show_typing:
-                                BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, "regex")
-
+                                await AnalyticsData.create(target_id=msg.target.target_id,
+                                                           sender_id=msg.target.sender_id,
+                                                           command=msg.trigger_msg,
+                                                           module_name=m,
+                                                           module_type="regex")
                             continue
 
                         except NoReportException as e:

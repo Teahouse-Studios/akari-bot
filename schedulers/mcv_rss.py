@@ -76,7 +76,7 @@ trigger_times = 60 if not Config("slower_schedule", False) else 180
 async def mcv_rss():
     url = "https://piston-meta.mojang.com/mc/game/version_manifest.json"
     try:
-        verlist = get_stored_list("scheduler", "mcv_rss")
+        verlist = await get_stored_list("scheduler", "mcv_rss")
         file = json.loads(await get_url(url, attempt=1, logging_err_resp=False))
         release = file["latest"]["release"]
         snapshot = file["latest"]["snapshot"]
@@ -101,10 +101,10 @@ async def mcv_rss():
                 ),
             )
             verlist.append(release)
-            update_stored_list("scheduler", "mcv_rss", verlist)
+            await update_stored_list("scheduler", "mcv_rss", verlist)
             article = await get_article(release)
             if article[0] != "":
-                get_stored_news_title = get_stored_list("scheduler", "mcnews")
+                get_stored_news_title = await get_stored_list("scheduler", "mcnews")
                 if article[1] not in get_stored_news_title:
                     await JobQueue.trigger_hook_all(
                         "minecraft_news",
@@ -119,7 +119,7 @@ async def mcv_rss():
                         ),
                     )
                     get_stored_news_title.append(article[1])
-                    update_stored_list("scheduler", "mcnews", get_stored_news_title)
+                    await update_stored_list("scheduler", "mcnews", get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f"Huh, we find {snapshot}.")
             await JobQueue.trigger_hook_all(
@@ -135,10 +135,10 @@ async def mcv_rss():
                 ),
             )
             verlist.append(snapshot)
-            update_stored_list("scheduler", "mcv_rss", verlist)
+            await update_stored_list("scheduler", "mcv_rss", verlist)
             article = await get_article(snapshot)
             if article[0] != "":
-                get_stored_news_title = get_stored_list("scheduler", "mcnews")
+                get_stored_news_title = await get_stored_list("scheduler", "mcnews")
                 if article[1] not in get_stored_news_title:
                     await JobQueue.trigger_hook_all(
                         "minecraft_news",
@@ -153,7 +153,7 @@ async def mcv_rss():
                         ),
                     )
                     get_stored_news_title.append(article[1])
-                    update_stored_list("scheduler", "mcnews", get_stored_news_title)
+                    await update_stored_list("scheduler", "mcnews", get_stored_news_title)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
@@ -164,7 +164,7 @@ async def mcbv_rss():
     if Secret.ip_country == "China" or not Secret.ip_country:
         return  # 中国大陆无法访问Google Play商店
     try:
-        verlist = get_stored_list("scheduler", "mcbv_rss")
+        verlist = await get_stored_list("scheduler", "mcbv_rss")
         version = google_play_scraper("com.mojang.minecraftpe")["version"]
         if version not in verlist:
             Logger.info(f"Huh, we find Bedrock {version}.")
@@ -175,17 +175,18 @@ async def mcbv_rss():
                 ),
             )
             verlist.append(version)
-            update_stored_list("scheduler", "mcbv_rss", verlist)
+            await update_stored_list("scheduler", "mcbv_rss", verlist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
 
+"""
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcv_jira_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/10400/versions"
-        verlist = get_stored_list("scheduler", "mcv_jira_rss")
+        verlist = await get_stored_list("scheduler", "mcv_jira_rss")
         file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
@@ -221,7 +222,7 @@ async def mcv_jira_rss():
                         ),
                     )
                 verlist.append(release)
-                update_stored_list("scheduler", "mcv_jira_rss", verlist)
+                await update_stored_list("scheduler", "mcv_jira_rss", verlist)
 
     except Exception:
         if Config("debug", False):
@@ -232,7 +233,7 @@ async def mcv_jira_rss():
 async def mcbv_jira_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/10200/versions"
-        verlist = get_stored_list("scheduler", "mcbv_jira_rss")
+        verlist = await get_stored_list("scheduler", "mcbv_jira_rss")
         file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
@@ -252,7 +253,7 @@ async def mcbv_jira_rss():
                     ),
                 )
                 verlist.append(release)
-                update_stored_list("scheduler", "mcbv_jira_rss", verlist)
+                await update_stored_list("scheduler", "mcbv_jira_rss", verlist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
@@ -262,7 +263,7 @@ async def mcbv_jira_rss():
 async def mcdv_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/11901/versions"
-        verlist = get_stored_list("scheduler", "mcdv_rss")
+        verlist = await get_stored_list("scheduler", "mcdv_rss")
         file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
@@ -282,7 +283,7 @@ async def mcdv_rss():
                     ),
                 )
                 verlist.append(release)
-                update_stored_list("scheduler", "mcdv_rss", verlist)
+                await update_stored_list("scheduler", "mcdv_rss", verlist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
@@ -292,7 +293,7 @@ async def mcdv_rss():
 async def mclgv_rss():
     try:
         url = "https://bugs.mojang.com/rest/api/2/project/12200/versions"
-        verlist = get_stored_list("scheduler", "mclgv_rss")
+        verlist = await get_stored_list("scheduler", "mclgv_rss")
         file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
@@ -312,7 +313,8 @@ async def mclgv_rss():
                     ),
                 )
                 verlist.append(release)
-                update_stored_list("scheduler", "mclgv_rss", verlist)
+                await update_stored_list("scheduler", "mclgv_rss", verlist)
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
+"""

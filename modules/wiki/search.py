@@ -5,7 +5,7 @@ from typing import Union
 from core.builtins import Bot, Plain
 from core.logger import Logger
 from core.utils.text import isint
-from modules.wiki.utils.dbutils import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 
@@ -18,11 +18,11 @@ async def _(msg: Bot.MessageSession, pagename: str):
 async def search_pages(
     msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix: bool = True
 ):
-    target = WikiTargetInfo(msg)
-    start_wiki = target.get_start_wiki()
-    interwiki_list = target.get_interwikis()
-    headers = target.get_headers()
-    prefix = target.get_prefix()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    start_wiki = target.api_link
+    interwiki_list = target.interwikis
+    headers = target.headers
+    prefix = target.prefix
     if not start_wiki:
         await msg.finish(
             msg.locale.t("wiki.message.set.not_set", prefix=msg.prefixes[0])

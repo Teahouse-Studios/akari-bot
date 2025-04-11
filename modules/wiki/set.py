@@ -4,7 +4,7 @@ from core.builtins import Bot, Plain, Image, Url
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable
-from modules.wiki.utils.dbutils import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki
 
@@ -14,8 +14,8 @@ wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, ta
 
 @wiki.command("set <wikiurl> {{wiki.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, wikiurl: str):
-    target = WikiTargetInfo(msg)
-    check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
         in_allowlist = True
         if Info.use_url_manager:
@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
                 await msg.finish(
                     msg.locale.t("wiki.message.invalid.blocked", name=check.value.name)
                 )
-        result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
+        result = await target.add_start_wiki(check.value.api)
         if result and enable_urlmanager and not in_allowlist:
             prompt = "\n" + msg.locale.t("wiki.message.wiki_audit.untrust")
             if wiki_whitelist_url:
@@ -45,8 +45,8 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
 
 @wiki.command("iw add <interwiki> <wikiurl> {{wiki.help.iw.add}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
-    target = WikiTargetInfo(msg)
-    check = await WikiLib(wikiurl, headers=target.get_headers()).check_wiki_available()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
         if (
             Info.use_url_manager
@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
             await msg.finish(
                 msg.locale.t("wiki.message.invalid.blocked", name=check.value.name)
             )
-        result = target.config_interwikis(interwiki, check.value.api, let_it=True)
+        result = await target.config_interwikis(interwiki, check.value.api)
         if result and enable_urlmanager and not check.value.in_allowlist:
             prompt = "\n" + msg.locale.t("wiki.message.wiki_audit.untrust")
             if wiki_whitelist_url:
@@ -81,8 +81,8 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
 
 @wiki.command("iw remove <interwiki> {{wiki.help.iw.remove}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str):
-    target = WikiTargetInfo(msg)
-    result = target.config_interwikis(interwiki, let_it=False)
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    result = await target.config_interwikis(interwiki)
     if result:
         await msg.finish(msg.locale.t("wiki.message.iw.remove.success", iw=interwiki))
 
@@ -92,13 +92,13 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     options_desc={"--legacy": "{help.option.legacy}"},
 )
 async def _(msg: Bot.MessageSession):
-    target = WikiTargetInfo(msg)
-    query = target.get_interwikis()
-    start_wiki = target.get_start_wiki()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    query = target.interwikis
+    start_wiki = target.api_link
     base_interwiki_link = None
     if start_wiki:
         base_interwiki_link_ = await WikiLib(
-            start_wiki, target.get_headers()
+            start_wiki, target.headers
         ).parse_page_info("Special:Interwiki")
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
@@ -134,8 +134,8 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("iw get <interwiki> {{wiki.help.iw.get}}")
 async def _(msg: Bot.MessageSession, interwiki: str):
-    target = WikiTargetInfo(msg)
-    query = target.get_interwikis()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    query = target.interwikis
     if query != {}:
         if interwiki in query:
             await msg.finish(Url(query[interwiki]))
@@ -151,8 +151,8 @@ async def _(msg: Bot.MessageSession, interwiki: str):
 
 @wiki.command("headers show {{wiki.help.headers.show}}")
 async def _(msg: Bot.MessageSession):
-    target = WikiTargetInfo(msg)
-    headers = target.get_headers()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    headers = target.headers
     prompt = msg.locale.t(
         "wiki.message.headers.show",
         headers=json.dumps(headers).decode(),
@@ -162,14 +162,14 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki.command("headers add <headers> {{wiki.help.headers.add}}", required_admin=True)
-async def _(msg: Bot.MessageSession):
-    target = WikiTargetInfo(msg)
-    add = target.config_headers(" ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
+async def _(msg: Bot.MessageSession, headers: str):
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    add = await target.config_headers(headers)
     if add:
         await msg.finish(
             msg.locale.t(
                 "wiki.message.headers.add.success",
-                headers=json.dumps(target.get_headers()).decode(),
+                headers=json.dumps(target.headers).decode(),
             )
         )
     else:
@@ -179,32 +179,30 @@ async def _(msg: Bot.MessageSession):
 @wiki.command(
     "headers remove <headerkey> {{wiki.help.headers.remove}}", required_admin=True
 )
-async def _(msg: Bot.MessageSession):
-    target = WikiTargetInfo(msg)
-    delete = target.config_headers(
-        " ".join(msg.trigger_msg.split(" ")[3:]), let_it=False
-    )
+async def _(msg: Bot.MessageSession, headerkey: str):
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    delete = await target.config_headers(headerkey, add=False)
     if delete:
         await msg.finish(
             msg.locale.t(
                 "wiki.message.headers.add.success",
-                headers=json.dumps(target.get_headers()).decode(),
+                headers=json.dumps(target.headers).decode(),
             )
         )
 
 
 @wiki.command("headers reset {{wiki.help.headers.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    target = WikiTargetInfo(msg)
-    reset = target.config_headers("{}", let_it=None)
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    reset = await target.config_headers()
     if reset:
         await msg.finish(msg.locale.t("wiki.message.headers.reset.success"))
 
 
 @wiki.command("prefix set <prefix> {{wiki.help.prefix.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, prefix: str):
-    target = WikiTargetInfo(msg)
-    set_prefix = target.set_prefix(prefix)
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    set_prefix = await target.config_prefix(prefix)
     if set_prefix:
         await msg.finish(
             msg.locale.t("wiki.message.prefix.set.success", wiki_prefix=prefix)
@@ -213,19 +211,19 @@ async def _(msg: Bot.MessageSession, prefix: str):
 
 @wiki.command("prefix reset {{wiki.help.prefix.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    target = WikiTargetInfo(msg)
-    set_prefix = target.del_prefix()
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    set_prefix = await target.config_prefix()
     if set_prefix:
         await msg.finish(msg.locale.t("wiki.message.prefix.reset.success"))
 
 
 @wiki.command("redlink {{wiki.help.redlink}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    redlink_state = msg.data.options.get("wiki_redlink")
+    redlink_state = msg.target_data.get("wiki_redlink")
 
     if redlink_state:
-        msg.data.edit_option("wiki_redlink", False)
+        await msg.target_info.edit_target_data("wiki_redlink", False)
         await msg.finish(msg.locale.t("wiki.message.redlink.disable"))
     else:
-        msg.data.edit_option("wiki_redlink", True)
+        await msg.target_info.edit_target_data("wiki_redlink", True)
         await msg.finish(msg.locale.t("wiki.message.redlink.enable"))

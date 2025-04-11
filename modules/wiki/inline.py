@@ -13,7 +13,7 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from modules.wiki.utils.dbutils import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import (
     generate_screenshot_v1,
     generate_screenshot_v2,
@@ -85,8 +85,8 @@ async def _(msg: Bot.MessageSession):
 
     async def bgtask():
         query_list = []
-        target = WikiTargetInfo(msg)
-        headers = target.get_headers()
+        target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+        headers = target.headers
         for x in match_msg:
             wiki_ = WikiLib(x)
             if check_from_database := await wiki_.check_wiki_info_from_database_cache():

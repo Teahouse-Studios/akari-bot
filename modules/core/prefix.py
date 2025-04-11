@@ -12,7 +12,7 @@ p = module("prefix", required_admin=True, base=True, doc=True)
     "list {{core.help.prefix.list}}",
 )
 async def _(msg: Bot.MessageSession):
-    prefixes = msg.options.get("command_prefix")
+    prefixes = msg.target_data.get("command_prefix")
     prefix = msg.parsed_msg.get("<prefix>", False)
     if not prefixes:
         prefixes = []
@@ -20,7 +20,7 @@ async def _(msg: Bot.MessageSession):
         if prefix:
             if prefix not in prefixes:
                 prefixes.append(prefix)
-                msg.data.edit_option("command_prefix", prefixes)
+                await msg.target_info.edit_target_data("command_prefix", prefixes)
                 await msg.finish(
                     msg.locale.t("core.message.prefix.add.success", prefix=prefix)
                 )
@@ -30,14 +30,14 @@ async def _(msg: Bot.MessageSession):
         if prefix:
             if prefix in prefixes:
                 prefixes.remove(prefix)
-                msg.data.edit_option("command_prefix", prefixes)
+                await msg.target_info.edit_target_data("command_prefix", prefixes)
                 await msg.finish(
                     msg.locale.t("core.message.prefix.remove.success", prefix=prefix)
                 )
             else:
                 await msg.finish(msg.locale.t("core.message.prefix.remove.not_found"))
     elif "reset" in msg.parsed_msg:
-        msg.data.edit_option("command_prefix", [])
+        await msg.target_info.edit_target_data("command_prefix", [])
         await msg.finish(msg.locale.t("core.message.prefix.reset"))
     elif "list" in msg.parsed_msg:
         default_msg = msg.locale.t(

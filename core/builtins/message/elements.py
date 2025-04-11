@@ -4,7 +4,7 @@ import base64
 import os
 import random
 import re
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
@@ -123,7 +123,7 @@ class FormattedTimeElement(MessageElement):
                     ftime_template.append(f"(UTC{msg._tz_offset})")
 
             return (
-                datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
+                datetime.fromtimestamp(self.timestamp, tz=UTC)
                 + msg.timezone_offset
             ).strftime(" ".join(ftime_template))
         ftime_template.append("%Y-%m-%d %H:%M:%S")
@@ -331,7 +331,7 @@ class MentionElement(MessageElement):
     @classmethod
     def assign(cls, user_id: str):
         """
-        :param _id: 用户id。
+        :param user_id: 用户id。
         """
         return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
 

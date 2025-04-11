@@ -14,7 +14,7 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from .utils.dbutils import WikiTargetInfo
+from modules.wiki.database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
@@ -79,13 +79,13 @@ async def query_pages(
     inline_mode: bool = False,
 ):
     if isinstance(session, MessageSession):
-        target = WikiTargetInfo(session)
-        start_wiki = target.get_start_wiki()
+        target = (await WikiTargetInfo.get_or_create(target_id=session.target.target_id))[0]
+        start_wiki = target.api_link
         if start_wiki_api:
             start_wiki = start_wiki_api
-        interwiki_list = target.get_interwikis()
-        headers = target.get_headers()
-        prefix = target.get_prefix()
+        interwiki_list = target.interwikis
+        headers = target.headers
+        prefix = target.prefix
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
@@ -423,7 +423,7 @@ async def query_pages(
                             isinstance(session, Bot.MessageSession)
                             and session.Feature.wait
                         ):
-                            if not session.options.get("wiki_redlink", False):
+                            if not session.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
                                         session.locale.t(

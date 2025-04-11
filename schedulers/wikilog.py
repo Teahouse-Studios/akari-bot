@@ -6,7 +6,7 @@ from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.templist import TempList
 from modules.wiki import WikiLib
-from modules.wikilog.dbutils import WikiLogUtil
+from modules.wikilog.database.models import WikiLogTargetSetInfo
 from modules.wikilog.utils import convert_data_to_text
 
 fetch_cache = {}
@@ -14,7 +14,7 @@ fetch_cache = {}
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
 async def wiki_log():
-    fetches = WikiLogUtil.return_all_data()
+    fetches = await WikiLogTargetSetInfo.return_all_data()
     matched_logs = {}
     Logger.debug(fetches)
     for id_ in fetches:

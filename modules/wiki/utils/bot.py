@@ -1,7 +1,7 @@
 import httpx
 
 from core.logger import Logger
-from .dbutils import BotAccount as BotAccountDB
+from modules.wiki.database.models import WikiBotAccountList
 
 
 class LoginFailed(Exception):
@@ -35,11 +35,11 @@ class BotAccount:
 
     @classmethod
     async def login(cls):
-        accounts = BotAccountDB.get_all()
+        accounts = await WikiBotAccountList.all()
         for account in accounts:
             try:
-                cls.cookies[account.apiLink] = await BotAccount._login(
-                    account.apiLink, account.botAccount, account.botPassword
+                cls.cookies[account.api_link] = await BotAccount._login(
+                    account.api_link, account.bot_account, account.bot_password
                 )
 
             except LoginFailed as e:

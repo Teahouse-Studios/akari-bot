@@ -1,7 +1,7 @@
-from core.builtins import Plain, Image as BImage
+from core.builtins import Image as BImage
 from core.component import module
 from core.utils.text import isint
-from .dbutils import DivingProberBindInfoManager
+from modules.maimai.database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
@@ -255,16 +255,14 @@ async def _(msg: Bot.MessageSession, grade: str):
 @mai.command("bind <username> {{maimai.help.bind}}", exclude_from=["QQ|Private", "QQ|Group"])
 async def _(msg: Bot.MessageSession, username: str):
     await get_record(msg, {"username": username}, use_cache=False)
-    bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
-    if bind:
-        await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
+    await DivingProberBindInfo.set_bind_info(sender_id=msg.target.sender_id, username=username)
+    await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
 
 
 @mai.command("unbind {{maimai.help.unbind}}", exclude_from=["QQ|Private", "QQ|Group"])
 async def _(msg: Bot.MessageSession):
-    unbind = DivingProberBindInfoManager(msg).remove_bind_info()
-    if unbind:
-        await msg.finish(msg.locale.t("maimai.message.unbind.success"))
+    await DivingProberBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
+    await msg.finish(msg.locale.t("maimai.message.unbind.success"))
 
 
 @mai.command("b50 [<username>] {{maimai.help.b50}}")
@@ -273,11 +271,12 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender, "b50": True}
         else:
-            username = DivingProberBindInfoManager(msg).get_bind_username()
-            if not username:
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
                 )
+            username = bind_info.username
             payload = {"username": username, "b50": True}
         use_cache = True
     else:
@@ -486,11 +485,12 @@ async def query_song_score(msg, query, username):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            username = DivingProberBindInfoManager(msg).get_bind_username()
-            if not username:
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
                 )
+            username = bind_info.username
             payload = {"username": username}
         use_cache = True
     else:
@@ -513,11 +513,12 @@ async def query_plate(msg, plate, username, get_list=False):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            username = DivingProberBindInfoManager(msg).get_bind_username()
-            if not username:
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
                 )
+            username = bind_info.username
             payload = {"username": username}
         use_cache = True
     else:
@@ -556,11 +557,12 @@ async def query_process(msg, level, goal, username):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            username = DivingProberBindInfoManager(msg).get_bind_username()
-            if not username:
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
                 )
+            username = bind_info.username
             payload = {"username": username}
         use_cache = True
     else:
@@ -593,11 +595,12 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            username = DivingProberBindInfoManager(msg).get_bind_username()
-            if not username:
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
                 )
+            username = bind_info.username
             payload = {"username": username}
         use_cache = True
     else:
@@ -620,11 +623,12 @@ async def _(msg: Bot.MessageSession, level: str):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            username = DivingProberBindInfoManager(msg).get_bind_username()
-            if not username:
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
                 )
+            username = bind_info.username
             payload = {"username": username}
         use_cache = True
     else:

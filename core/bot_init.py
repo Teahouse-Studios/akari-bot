@@ -15,9 +15,11 @@ from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from core.utils.info import Info
+from core.database import init_db
 
 
 async def init_async(start_scheduler=True) -> None:
+    await init_db()
     returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
     if returncode == 0:
         Info.version = commit_hash
@@ -37,7 +39,7 @@ async def init_async(start_scheduler=True) -> None:
                     max_instance=1,
                 )
     await asyncio.gather(*gather_list)
-    await init_background_task()
+    init_background_task()
     if start_scheduler:
         if not Info.subprocess:
             load_extra_schedulers()
