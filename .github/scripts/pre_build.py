@@ -1,5 +1,6 @@
 import json
 import os
+
 from core.constants import modules_path, schedulers_path, bots_path
 
 if __name__ == "__main__":

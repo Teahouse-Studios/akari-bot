@@ -1,4 +1,3 @@
-import asyncio
 import html
 import logging
 import os
@@ -15,6 +14,7 @@ from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
+from core.close import shutdown
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
@@ -23,7 +23,6 @@ from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
-from core.utils.close import shutdown
 from core.utils.i18n import Locale
 
 from hypercorn import Config as HyperConfig

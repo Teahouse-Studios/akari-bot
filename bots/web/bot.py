@@ -5,12 +5,11 @@ import uvicorn
 from hypercorn.asyncio import serve
 from hypercorn.config import Config as Uconfig
 
-from core.utils.close import shutdown
-
 sys.path.append(os.getcwd())
 
 from bots.web.info import client_name  # noqa: E402
 from core.builtins import PrivateAssets  # noqa: E402
+from core.close import shutdown  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants.path import assets_path, webui_path  # noqa: E402
 from core.logger import Logger  # noqa: E402
