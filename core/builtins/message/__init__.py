@@ -13,9 +13,9 @@ from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
 from core.database.models import SenderInfo, TargetInfo
 from core.exports import add_export
+from core.i18n import Locale
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
-from core.utils.i18n import Locale
 from core.utils.text import parse_time_string
 
 

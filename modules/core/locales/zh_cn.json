@@ -174,7 +174,7 @@
     "core.message.purge.empty": "当前缓存目录为空。",
     "core.message.purge.success": "成功清除缓存。",
     "core.message.raise": "异常测试",
-    "core.message.restart.prompt": "由于机器人正在重启/停机维护，此次执行命令的后续操作已被强制取消。\n请稍后重新执行命令，对此带来的不便，我们深感抱歉。",
+    "core.message.restart.prompt": "由于机器人正在重启或关闭，此次执行命令的后续操作已被强制取消。\n请稍后重新执行命令，对此带来的不便，我们深感抱歉。",
     "core.message.restart.restarting": "重启中……",
     "core.message.restart.timeout": "等待已超时，强制重启中……",
     "core.message.restart.wait": "有 ${count} 个命令正在执行中，将于执行完毕后重启。",

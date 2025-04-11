@@ -8,7 +8,7 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
 from core.constants import *
-from core.utils.i18n import Locale
+from core.i18n import Locale
 from core.utils.text import isint
 
 

@@ -8,8 +8,8 @@ from core.builtins import Bot, Plain, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants import locale_url_default
+from core.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.bash import run_sys_command
-from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
 
 

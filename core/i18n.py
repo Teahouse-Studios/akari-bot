@@ -12,7 +12,7 @@ import orjson as json
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
-from .text import isint
+from .utils.text import isint
 
 # Load all locale files into memory
 

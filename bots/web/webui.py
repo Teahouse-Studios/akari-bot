@@ -1,8 +1,8 @@
 import os
 import sys
-from flask import Flask, redirect, send_from_directory, url_for
 
 import orjson as json
+from flask import Flask, redirect, send_from_directory, url_for
 
 sys.path.append(os.getcwd())
 

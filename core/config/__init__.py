@@ -16,7 +16,7 @@ from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
 from core.exports import add_export
-from core.utils.i18n import Locale
+from core.i18n import Locale
 
 
 ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)

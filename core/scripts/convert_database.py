@@ -286,6 +286,8 @@ async def convert_database():
     stored_data_records = await StoredDataL.all()
     for r in stored_data_records:
         v = r.value.strip()
+        if not (v.startswith("[") and v.endswith("]")):
+            v = f"[{v}]"
         try:
             try:
                 v = json.loads(v)

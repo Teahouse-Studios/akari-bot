@@ -6,8 +6,8 @@ from bs4 import BeautifulSoup
 
 from core.builtins import Bot, Plain, Image, Url
 from core.component import module
+from core.i18n import Locale
 from core.utils.http import get_url
-from core.utils.i18n import Locale
 from core.utils.image import msgchain2image
 from modules.wiki.utils.screenshot_image import generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib

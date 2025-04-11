@@ -15,9 +15,9 @@ from core.builtins import Url
 from core.config import Config
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
+from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.i18n import Locale
 from core.utils.web_render import webrender
 from .bot import BotAccount
 from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList

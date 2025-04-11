@@ -8,7 +8,7 @@ async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int,
 
     :param command: 需要执行的命令（List），禁止直接使用用户输入。
     :param timeout: 命令的最大执行时间（默认为 10）。
-    :returns: 一个包含返回码、标准输出和标准错误的 Tuple (returncode, stdout, stderr)。
+    :returns: 包含返回码、标准输出和标准错误的 Tuple (returncode, stdout, stderr)。
     """
     process = await asyncio.create_subprocess_exec(
         *command,

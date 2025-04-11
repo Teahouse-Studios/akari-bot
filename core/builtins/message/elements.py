@@ -17,8 +17,8 @@ from tenacity import retry, stop_after_attempt
 from core.config import Config
 from core.constants import bug_report_url_default
 from core.constants.info import Info
+from core.i18n import Locale
 from core.utils.cache import random_cache_path
-from core.utils.i18n import Locale
 
 from copy import deepcopy
 

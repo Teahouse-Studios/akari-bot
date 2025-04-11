@@ -6,6 +6,7 @@ import sys
 
 import orjson as json
 from aiocqhttp import Event
+from hypercorn import Config as HyperConfig
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
@@ -20,12 +21,11 @@ from core.constants.default import issue_url_default, ignored_sender_default, qq
 from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
+from core.i18n import Locale
 from core.parser.message import parser
 from core.tos import tos_report
 from core.types import MsgInfo, Session
-from core.utils.i18n import Locale
 
-from hypercorn import Config as HyperConfig
 
 PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
 Info.dirty_word_check = Config("enable_dirty_check", False)

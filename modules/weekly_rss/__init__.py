@@ -1,7 +1,7 @@
 from core.builtins import Bot, Image, Plain, command_prefix, I18NContext, MessageChain
 from core.component import module
+from core.i18n import Locale
 from core.logger import Logger
-from core.utils.i18n import Locale
 from core.utils.image import msgchain2image
 
 weekly_rss = module(
