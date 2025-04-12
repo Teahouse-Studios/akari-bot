@@ -1,6 +1,6 @@
 import orjson as json
 
-from core.builtins import Bot, Plain, Image, Url
+from core.builtins import Bot, I18NContext, Image, Plain, Url
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable
@@ -21,9 +21,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
         if Info.use_url_manager:
             in_allowlist = check.value.in_allowlist
             if check.value.in_blocklist and not in_allowlist:
-                await msg.finish(
-                    msg.locale.t("wiki.message.invalid.blocked", name=check.value.name)
-                )
+                await msg.finish(I18NContext("wiki.message.invalid.blocked", name=check.value.name))
         result = await target.add_start_wiki(check.value.api)
         if result and enable_urlmanager and not in_allowlist:
             prompt = "\n" + msg.locale.t("wiki.message.wiki_audit.untrust")

@@ -3,7 +3,7 @@ from typing import Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.constants.path import noto_sans_demilight_path
 from .maimaidx_apidata import get_plate
 from .maimaidx_mapping import *
@@ -263,7 +263,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     elif version in plate_mapping and version != "初":  # “初”不是版本名称
         payload["version"] = [plate_mapping[version]]
     else:
-        await msg.finish(msg.locale.t("maimai.message.plate.plate_not_found"))
+        await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
 
     res = await get_plate(msg, payload, version, use_cache)
     verlist = res["verlist"]
@@ -321,7 +321,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                song["level_index"] == 4 and song["fc"] in ["ap", "app"]:
                 song_complete_remaster.append((song["id"], song["level_index"]))
     else:
-        await msg.finish(msg.locale.t("maimai.message.plate.plate_not_found"))
+        await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
 
     song_expect = mai_plate_song_expect(version)
     song_list = {
