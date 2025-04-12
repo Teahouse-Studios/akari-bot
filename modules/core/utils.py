@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
         perm.append(I18NContext("core.message.whoami.botadmin"))
     if msg.check_super_user():
         perm.append(I18NContext("core.message.whoami.superuser"))
-    await msg.finish([I18NContext("core.message.whoami", disable_joke=True, sender=msg.target.sender_id, target=msg.target.target_id)] + perm)
+    await msg.finish([I18NContext("core.message.whoami", sender=msg.target.sender_id, target=msg.target.target_id, disable_joke=True)] + perm)
 
 
 setup = module(

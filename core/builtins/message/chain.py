@@ -191,6 +191,7 @@ class MessageChain:
                 else:
                     value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
+                x.kwargs = {k: msg.locale.t_str(v) for k, v in x.kwargs.items()}
                 t_value = msg.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
