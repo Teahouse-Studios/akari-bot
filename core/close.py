@@ -21,7 +21,7 @@ async def cleanup_sessions():
 
 def catch_sigterm(signal, frame):
     Logger.warning("Caught SIGTERM. Exiting...")
-    asyncio.get_running_loop().run_until_complete(cleanup_sessions())
+    asyncio.create_task(cleanup_sessions())
 
 
 signal.signal(signal.SIGTERM, catch_sigterm)
