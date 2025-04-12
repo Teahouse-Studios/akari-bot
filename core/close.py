@@ -1,6 +1,6 @@
-import asyncio
+# import asyncio
 import sys
-import signal
+# import signal
 
 from tortoise import Tortoise
 
@@ -19,12 +19,12 @@ async def cleanup_sessions():
     await Tortoise.close_connections()
 
 
-def catch_sigterm(signal, frame):
-    Logger.warning("Caught SIGTERM. Exiting...")
-    asyncio.create_task(cleanup_sessions())
-
-
-signal.signal(signal.SIGTERM, catch_sigterm)
+# def catch_sigterm(signal, frame):
+#     Logger.warning("Caught SIGTERM. Exiting...")
+#     asyncio.create_task(cleanup_sessions())
+#
+#
+# signal.signal(signal.SIGTERM, catch_sigterm)
 
 
 async def restart():
