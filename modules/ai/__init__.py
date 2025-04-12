@@ -1,4 +1,4 @@
-from core.builtins import Bot, I18NContext
+from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from core.config import Config
 from core.dirty_check import check_bool, rickroll
@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession, question: str):
 
     if llm_info:
         if not is_superuser and not precount_petal(msg, llm_info["price_in"], llm_info["price_out"]):
-            await msg.finish(msg.locale.t("petal.message.cost.not_enough"))
+            await msg.finish(I18NContext("petal.message.cost.not_enough"))
 
         if await check_bool(question):
             await msg.finish(rickroll())
@@ -58,19 +58,19 @@ async def _(msg: Bot.MessageSession, question: str):
                 qc.reset()
             await msg.finish(chain)
         else:
-            await msg.finish(msg.locale.t("message.cooldown", time=int(c)))
+            await msg.finish(I18NContext("message.cooldown", time=int(c)))
     else:
-        await msg.finish(msg.locale.t("ai.message.llm.invalid"))
+        await msg.finish(I18NContext("ai.message.llm.invalid"))
 
 
 @ai.command("set <llm> {{ai.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, llm: str):
     llm = llm.lower()
     if llm in llm_list:
-        await msg.target_info.edit_target_datan("ai_default_llm", llm)
-        await msg.finish(msg.locale.t("message.success"))
+        await msg.target_info.edit_target_data("ai_default_llm", llm)
+        await msg.finish(I18NContext("message.success"))
     else:
-        await msg.finish(msg.locale.t("ai.message.llm.invalid"))
+        await msg.finish(I18NContext("ai.message.llm.invalid"))
 
 
 @ai.command("list {{ai.help.list}}")
@@ -78,6 +78,6 @@ async def _(msg: Bot.MessageSession):
     avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 
     if avaliable_llms:
-        await msg.finish(f"{msg.locale.t("ai.message.list")}\n{"\n".join(sorted(avaliable_llms))}\n{msg.locale.t("ai.message.list.prompt", prefix=msg.prefixes[0])}")
+        await msg.finish([I18NContext("ai.message.list"), Plain("\n".join(sorted(avaliable_llms))), I18NContext("ai.message.list.prompt", prefix=msg.prefixes[0])])
     else:
-        await msg.finish(msg.locale.t("ai.message.list.none"))
+        await msg.finish(I18NContext("ai.message.list.none"))

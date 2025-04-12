@@ -2,7 +2,7 @@ import re
 
 import httpx
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from .bili_api import get_video_info
 
@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     elif bid[:2].upper() == "AV":
         query = f"?aid={bid[2:]}"
     else:
-        return await msg.finish(msg.locale.t("bilibili.message.invalid"))
+        return await msg.finish(I18NContext("bilibili.message.invalid"))
     output = await get_video_info(msg, query, get_detail)
     await msg.finish(output)
 

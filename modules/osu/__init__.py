@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
 from modules.osu.database.models import OsuBindInfo
@@ -20,9 +20,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     else:
         bind_info = await OsuBindInfo.get_or_none(sender_id=msg.target.sender_id)
         if not bind_info:
-            await msg.finish(
-                msg.locale.t("osu.message.user_unbound", prefix=msg.prefixes[0])
-            )
+            await msg.finish(I18NContext("osu.message.user_unbound", prefix=msg.prefixes[0]))
         query_id = bind_info.username
     get_mode = msg.parsed_msg.get("-t", False)
     mode = get_mode["<mode>"] if get_mode else "0"
@@ -41,10 +39,10 @@ async def _(msg: Bot.MessageSession, username: str):
             m = getcode[0]
         await msg.finish(msg.locale.t("osu.message.bind.success") + m)
     else:
-        await msg.finish(msg.locale.t("osu.message.bind.failed"))
+        await msg.finish(I18NContext("osu.message.bind.failed"))
 
 
 @osu.command("unbind {{osu.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await OsuBindInfo.remove_bind_info(msg.target.sender_id)
-    await msg.finish(msg.locale.t("osu.message.unbind.success"))
+    await msg.finish(I18NContext("osu.message.unbind.success"))

@@ -1,11 +1,10 @@
 import traceback
 from datetime import datetime, timedelta, UTC
-from typing import Tuple
 
 import matplotlib.pyplot as plt
 from dateutil.relativedelta import relativedelta
 
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, Plain, Image, I18NContext
 from core.component import module
 from core.config import Config
 from core.database.models import AnalyticsData
@@ -33,21 +32,18 @@ async def _(msg: Bot.MessageSession):
             old = datetime.now().replace(hour=0, minute=0, second=0)
             get_counts_today = await AnalyticsData.get_count_by_times(new, old)
 
-            await msg.finish(
-                msg.locale.t(
-                    "core.message.analytics.counts",
-                    first_record=first_record,
-                    counts=get_counts,
-                    counts_today=get_counts_today,
-                )
-            )
+            await msg.finish(I18NContext(
+                "core.message.analytics.counts",
+                first_record=first_record,
+                counts=get_counts,
+                counts_today=get_counts_today))
         except AttributeError as e:
             if str(e).find("NoneType") != -1:
-                await msg.finish(msg.locale.t("core.message.analytics.none"))
+                await msg.finish(I18NContext("core.message.analytics.none"))
             else:
                 Logger.error(traceback.format_exc())
     else:
-        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+        await msg.finish(I18NContext("core.message.analytics.disabled"))
 
 
 @ana.command("days [<module>]")
@@ -57,11 +53,11 @@ async def _(msg: Bot.MessageSession):
             first_record = await get_first_record(msg)
             module_ = msg.parsed_msg.get("<module>")
             if not module_:
-                result = msg.locale.t(
+                result = I18NContext(
                     "core.message.analytics.days.total", first_record=first_record
                 )
             else:
-                result = msg.locale.t(
+                result = I18NContext(
                     "core.message.analytics.days",
                     module=module_,
                     first_record=first_record,
@@ -103,14 +99,14 @@ async def _(msg: Bot.MessageSession):
             path = f"{random_cache_path()}.png"
             plt.savefig(path)
             plt.close()
-            await msg.finish([Plain(result), Image(path)])
+            await msg.finish([result, Image(path)])
         except AttributeError as e:
             if str(e).find("NoneType") != -1:
-                await msg.finish(msg.locale.t("core.message.analytics.none"))
+                await msg.finish(I18NContext("core.message.analytics.none"))
             else:
                 Logger.error(traceback.format_exc())
     else:
-        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+        await msg.finish(I18NContext("core.message.analytics.disabled"))
 
 
 @ana.command("year [<module>]")
@@ -120,11 +116,11 @@ async def _(msg: Bot.MessageSession):
             first_record = await get_first_record(msg)
             module_ = msg.parsed_msg.get("<module>")
             if not module_:
-                result = msg.locale.t(
+                result = I18NContext(
                     "core.message.analytics.year.total", first_record=first_record
                 )
             else:
-                result = msg.locale.t(
+                result = I18NContext(
                     "core.message.analytics.year",
                     module=module_,
                     first_record=first_record,
@@ -166,14 +162,14 @@ async def _(msg: Bot.MessageSession):
             path = f"{random_cache_path()}.png"
             plt.savefig(path)
             plt.close()
-            await msg.finish([Plain(result), Image(path)])
+            await msg.finish([result, Image(path)])
         except AttributeError as e:
             if str(e).find("NoneType") != -1:
-                await msg.finish(msg.locale.t("core.message.analytics.none"))
+                await msg.finish(I18NContext("core.message.analytics.none"))
             else:
                 Logger.error(traceback.format_exc())
     else:
-        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+        await msg.finish(I18NContext("core.message.analytics.disabled"))
 
 
 @ana.command("modules [<rank>]")
@@ -204,8 +200,8 @@ async def _(msg: Bot.MessageSession, rank: int = None):
             await msg.finish([Image(path)])
         except AttributeError as e:
             if str(e).find("NoneType") != -1:
-                await msg.finish(msg.locale.t("core.message.analytics.none"))
+                await msg.finish(I18NContext("core.message.analytics.none"))
             else:
                 Logger.error(traceback.format_exc())
     else:
-        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
+        await msg.finish(I18NContext("core.message.analytics.disabled"))

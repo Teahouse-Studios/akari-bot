@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.logger import Logger
 from modules.wiki.database.models import WikiBotAccountList
@@ -17,14 +17,12 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
             login = await BotAccount._login(check.value.api, account, password)
             if await WikiBotAccountList.add(check.value.api, account, password):
                 BotAccount.cookies[check.value.api] = login
-                await msg.finish(msg.locale.t("wiki.message.wiki_bot.login.success"))
+                await msg.finish(I18NContext("wiki.message.wiki_bot.login.success"))
             else:
-                await msg.finish(msg.locale.t("wiki.message.wiki_bot.login.already"))
+                await msg.finish(I18NContext("wiki.message.wiki_bot.login.already"))
         except LoginFailed as e:
             Logger.error(f"Login failed: {e}")
-            await msg.finish(
-                msg.locale.t("wiki.message.wiki_bot.login.failed", detail=e)
-            )
+            await msg.finish(I18NContext("wiki.message.wiki_bot.login.failed", detail=e))
     else:
         result = msg.locale.t("wiki.message.error.query") + (
             "\n" + msg.locale.t("wiki.message.error.info") + check.message
@@ -40,9 +38,9 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if check.available:
         apilink = check.value.api
     if await WikiBotAccountList.remove(apilink):
-        await msg.finish(msg.locale.t("message.success"))
+        await msg.finish(I18NContext("message.success"))
     else:
-        await msg.finish(msg.locale.t("message.failed"))
+        await msg.finish(I18NContext("message.failed"))
 
 
 @wb.command("toggle")
@@ -50,10 +48,10 @@ async def _(msg: Bot.MessageSession):
     use_bot_account = msg.target_info.target_data.get("use_bot_account")
     if use_bot_account:
         await msg.target_info.edit_target_data("use_bot_account", False)
-        await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.disable"))
+        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.disable"))
     else:
         await msg.target_info.edit_target_data("use_bot_account", True)
-        await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.enable"))
+        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.enable"))
 
 
 @wb.hook("login_wiki_bots")

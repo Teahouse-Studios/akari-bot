@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.builtins import Bot, Plain
+from core.builtins import Bot, I18NContext, Plain
 from core.utils.image import msgchain2image
 from .chunithm_apidata import get_record
 from .chunithm_mapping import *
@@ -90,4 +90,4 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
     img = await msgchain2image([Plain(html)])
     if img:
         return img
-    await msg.finish(msg.locale.t("error.config.webrender.invalid"))
+    await msg.finish(I18NContext("error.config.webrender.invalid"))

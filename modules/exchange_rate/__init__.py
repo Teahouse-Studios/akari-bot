@@ -1,7 +1,7 @@
 import datetime
 import re
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
@@ -33,9 +33,9 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
     try:
         amount = amount if amount else 1
         if float(amount) <= 0:
-            await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_positive"))
+            await msg.finish(I18NContext("exchange_rate.message.invalid.non_positive"))
     except ValueError:
-        await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_digital"))
+        await msg.finish(I18NContext("exchange_rate.message.invalid.non_digital"))
     await exchange(msg, base_currency, target, amount)
 
 
@@ -56,9 +56,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
         else:
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
-            await msg.finish(
-                f"{msg.locale.t("exchange_rate.message.invalid.unit")}{" ".join(unsupported_currencies)}"
-            )
+            await msg.finish(I18NContext("exchange_rate.message.invalid.unit", unit=", ".join(unsupported_currencies)))
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
@@ -67,15 +65,14 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
     )
     if data and data["result"] == "success":
         exchange_rate = data["conversion_result"]
-        await msg.finish(
-            msg.locale.t(
-                "exchange_rate.message",
-                amount=float(amount),
-                base=base_currency,
-                exchange_rate=exchange_rate,
-                target=target_currency,
-                time=time,
-            )
+        await msg.finish(I18NContext(
+            "exchange_rate.message",
+            amount=float(amount),
+            base=base_currency,
+            exchange_rate=exchange_rate,
+            target=target_currency,
+            time=time,
+        )
         )
 
 

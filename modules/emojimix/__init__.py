@@ -130,27 +130,26 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         emoji1 = emojis[0]
         emoji2 = emojis[1]
     if not check_valid_emoji(emoji1):
-        await msg.finish(msg.locale.t("emojimix.message.invalid"))
+        await msg.finish(I18NContext("emojimix.message.invalid"))
     if emoji2:
         if not check_valid_emoji(emoji2):
-            await msg.finish(msg.locale.t("emojimix.message.invalid"))
+            await msg.finish(I18NContext("emojimix.message.invalid"))
         combo = mixer.make_emoji_tuple(emoji1, emoji2)
         Logger.debug(str(combo))
         unsupported_emojis = mixer.check_supported(combo)
         if unsupported_emojis:
-            await msg.finish(f"{msg.locale.t("emojimix.message.unsupported")}{
-                msg.locale.t("message.delimiter").join(unsupported_emojis)}")
+            await msg.finish(I18NContext("emojimix.message.unsupported", emoji="[I18N:message.delimiter]".join(unsupported_emojis)))
     else:
         emoji_code1 = "-".join(f"{ord(char):x}" for char in emoji1)
         if emoji_code1 not in mixer.known_supported_emoji:
-            await msg.finish(msg.locale.t("emojimix.message.unsupported") + emoji1)
+            await msg.finish(I18NContext("emojimix.message.unsupported", emoji=emoji1))
         combo = mixer.random_choice_emoji(emoji1)
         Logger.debug(str(combo))
     result = mixer.mix_emoji(combo)
     if result:
         await msg.finish([Plain(f"{mixer.str2emoji(combo[0])}+{mixer.str2emoji(combo[1])}"), Image(result)])
     else:
-        await msg.finish(msg.locale.t("emojimix.message.not_found"))
+        await msg.finish(I18NContext("emojimix.message.not_found"))
 
 
 def check_valid_emoji(emoji_str):
@@ -170,7 +169,7 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
                 send_msgs.append(Plain("".join(supported_emojis)))
             await msg.finish(send_msgs)
         else:
-            await msg.finish(msg.locale.t("emojimix.message.unsupported") + emoji)
+            await msg.finish(I18NContext("emojimix.message.unsupported", emoji=emoji))
     else:
         send_msgs = [I18NContext("emojimix.message.all_supported")]
         if Bot.FetchTarget.name == "Discord":

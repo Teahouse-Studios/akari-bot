@@ -3,7 +3,7 @@ import urllib.parse
 
 from PIL import Image as PILImage
 
-from core.builtins import Bot, Image as BImage
+from core.builtins import Bot, I18NContext, Image as BImage
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession, query: str):
             await msg.finish([BImage(output)])
     except ValueError as e:
         if str(e).startswith("501"):
-            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
+            await msg.finish(I18NContext("wolframalpha.message.incomprehensible"))
         else:
             raise e
 
@@ -60,6 +60,6 @@ async def _(msg: Bot.MessageSession, question: str):
         await msg.finish(data)
     except ValueError as e:
         if str(e).startswith("501"):
-            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
+            await msg.finish(I18NContext("wolframalpha.message.incomprehensible"))
         else:
             raise e

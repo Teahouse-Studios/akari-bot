@@ -4,6 +4,7 @@ from io import BytesIO
 import orjson as json
 from PIL import Image as PILImage
 
+from core.builtins import I18NContext, Plain
 from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import download, post_url, get_url
@@ -70,7 +71,7 @@ async def bugtracker_get(msg, mojira_id: str):
         load_json = json.loads(get_json).get("issues")[0]
     except ValueError as e:
         if str(e).startswith("401"):
-            return msg.locale.t("bugtracker.message.get_failed"), None
+            return I18NContext("bugtracker.message.get_failed"), None
         raise e
     if mojira_id not in spx_cache:
         get_spx = await get_url(
@@ -167,4 +168,4 @@ async def bugtracker_get(msg, mojira_id: str):
             msglist.append(version)
         if link := data.get("link", False):
             issue_link = link
-    return "\n".join(msglist), issue_link
+    return Plain("\n".join(msglist)), issue_link

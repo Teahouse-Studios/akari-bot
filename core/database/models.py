@@ -139,11 +139,10 @@ class TargetInfo(DBModel):
         for mname in module_names:
             if enable:
                 if mname not in self.modules:
-                    self.modules.append(module_name)
+                    self.modules += module_names
             else:
                 if mname in self.modules:
-                    self.modules.remove(module_name)
-        self.modules = list(set(self.modules))
+                    self.modules += module_names
         await self.save()
         return True
 

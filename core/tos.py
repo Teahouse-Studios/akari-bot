@@ -16,9 +16,7 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
         current_warns = msg.sender_info.warns
         warn_template = [
             I18NContext("tos.message.warning"),
-            I18NContext(
-                "tos.message.reason",
-                reason=msg.locale.t_str(reason))]
+            I18NContext("tos.message.reason", reason=reason)]
         if current_warns < WARNING_COUNTS or msg.sender_info.trusted:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))
@@ -53,15 +51,14 @@ async def warn_user(user: str, count: int = 1):
 
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
     if report_targets:
-        warn_template = [f"[I18N:tos.message.report,sender={sender},target={target}]"]
-        reason = re.sub(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", lambda match: f"{{{match.group(1)}}}", reason)
-        warn_template.append(f"[I18N:tos.message.reason,reason={reason}]")
+        warn_template = [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+        warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
         if banned:
             action = "{tos.message.action.blocked}"
         else:
             action = "{tos.message.action.warning}"
-        warn_template.append(f"[I18N:tos.message.action,action={action}]")
+        warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
 
         for target_ in report_targets:
             if f := await Bot.FetchTarget.fetch_target(target_):
-                await f.send_direct_message([Plain("\n".join(warn_template), disable_joke=True)], disable_secret_check=True)
+                await f.send_direct_message(warn_template)

@@ -14,7 +14,6 @@ from core.builtins.message.elements import (
     MessageElement,
     PlainElement,
     EmbedElement,
-    ErrorMessageElement,
     FormattedTimeElement,
     I18NContextElement,
     URLElement,
@@ -177,17 +176,11 @@ class MessageChain:
             if isinstance(x, EmbedElement) and not embed:
                 value += x.to_message_chain(msg)
             elif isinstance(x, PlainElement):
-                if x.text != "":
-                    if msg:
+                if msg:
+                    if x.text != "":
                         x.text = msg.locale.t_str(x.text)
-                else:
-                    x = PlainElement.assign(
-                        str(
-                            ErrorMessageElement.assign(
-                                "{error.message.chain.plain.empty}", locale=locale
-                            )
-                        )
-                    )
+                    else:
+                        x = PlainElement.assign(msg.locale.t("error.message.chain.plain.empty"))
                 value.append(x)
             elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(msg=msg)
@@ -198,6 +191,9 @@ class MessageChain:
                 else:
                     value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
+                for k, v in x.kwargs.items():
+                    if isinstance(v, str):
+                        x.kwargs[k] = msg.locale.t_str(v)
                 t_value = msg.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
@@ -205,20 +201,11 @@ class MessageChain:
                     value += MessageChain(t_value).as_sendable(msg)
             elif isinstance(x, URLElement):
                 value.append(PlainElement.assign(x.url, disable_joke=True))
-            elif isinstance(x, ErrorMessageElement):
-                value.append(PlainElement.assign(str(x)))
             else:
                 value.append(x)
         if not value:
-            value.append(
-                PlainElement.assign(
-                    str(
-                        ErrorMessageElement.assign(
-                            "{error.message.chain.plain.empty}", locale=locale
-                        )
-                    )
-                )
-            )
+            if msg:
+                value.append(PlainElement.assign(msg.locale.t("error.message.chain.plain.empty")))
         for x in value:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)

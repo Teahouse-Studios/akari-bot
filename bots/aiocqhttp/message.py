@@ -69,9 +69,7 @@ async def resending_group_message():
             for x in targets:
                 try:
                     if x["i18n"]:
-                        await x["fetch"].send_direct_message(
-                            x["fetch"].parent.locale.t(x["message"], **x["kwargs"])
-                        )
+                        await x["fetch"].send_direct_message(I18NContext(x["message"], **x["kwargs"]))
                     else:
                         await x["fetch"].send_direct_message(x["message"])
                     Temp.data["waiting_for_send_group_message"].remove(x)
@@ -89,11 +87,7 @@ async def resending_group_message():
             fetch_base_superuser = await FetchTarget.fetch_target(bu)
             if fetch_base_superuser:
                 await fetch_base_superuser.send_direct_message(
-                    PlainElement.assign(
-                        fetch_base_superuser.parent.locale.t(
-                            "error.message.paused", prefix=command_prefix[0]
-                        ), disable_joke=True
-                    )
+                    I18NContext("error.message.paused", disable_joke=True, prefix=command_prefix[0])
                 )
 
 
@@ -347,9 +341,7 @@ class MessageSession(MessageSessionT):
         if self.target.target_from == target_group_prefix:
             get_ = await get_stored_list(Bot.FetchTarget, "forward_msg")
             if isinstance(get_[0], dict) and get_[0].get("status"):
-                await self.send_message(
-                    self.locale.t("core.message.forward_msg.disabled")
-                )
+                await self.send_message(I18NContext("core.message.forward_msg.disabled"))
                 raise ValueError
             await bot.call_action(
                 "send_group_forward_msg",
@@ -600,9 +592,7 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain(
-                                [Plain(fetch_.parent.locale.t(message, **kwargs))]
-                            )
+                            msgchain = MessageChain([I18NContext(message, **kwargs)])
                         else:
                             msgchain = MessageChain([Plain(message)])
                     msgchain = MessageChain(msgchain)
@@ -653,9 +643,7 @@ class FetchTarget(FetchTargetT):
                             fetch_base_superuser = await FetchTarget.fetch_target(bu)
                             if fetch_base_superuser:
                                 await fetch_base_superuser.send_direct_message(
-                                    fetch_base_superuser.parent.locale.t(
-                                        "error.message.paused", prefix=command_prefix[0]
-                                    )
+                                    I18NContext("error.message.paused", disable_joke=True, prefix=command_prefix[0])
                                 )
             except Exception:
                 Logger.error(traceback.format_exc())

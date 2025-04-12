@@ -3,7 +3,7 @@ from math import isnan
 
 import pandas as pd
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.constants.path import assets_path
 
@@ -29,32 +29,31 @@ async def _(
     if row.empty:
         row = cpi[cpi["Country Code"] == country_or_region_name_or_alpha_3_code.upper()]
     if row.empty:
-        await msg.finish(msg.locale.t("inflation.message.country_not_found"))
+        await msg.finish(I18NContext("inflation.message.country_not_found"))
 
     try:
         from_cpi = row[f"{from_year}"].values[0]
     except KeyError:
-        await msg.finish(msg.locale.t("inflation.message.from_year_not_found"))
+        await msg.finish(I18NContext("inflation.message.from_year_not_found"))
     if isnan(from_cpi):
-        await msg.finish(msg.locale.t("inflation.message.from_year_no_data"))
+        await msg.finish(I18NContext("inflation.message.from_year_no_data"))
 
     try:
         to_cpi = row[f"{to_year}"].values[0]
     except KeyError:
-        await msg.finish(msg.locale.t("inflation.message.to_year_not_found"))
+        await msg.finish(I18NContext("inflation.message.to_year_not_found"))
     if isnan(to_cpi):
-        await msg.finish(msg.locale.t("inflation.message.to_year_no_data"))
+        await msg.finish(I18NContext("inflation.message.to_year_no_data"))
 
     res = price / from_cpi * to_cpi
     country_or_region_name = row["Country Name"].values[0]
 
-    await msg.finish(
-        msg.locale.t(
-            "inflation.message.result",
-            result=f"{res:.4f}",
-            country_or_region_name=country_or_region_name,
-            from_year=from_year,
-            to_year=to_year,
-            price=f"{price:.4f}",
-        )
+    await msg.finish(I18NContext(
+        "inflation.message.result",
+        result=f"{res:.4f}",
+        country_or_region_name=country_or_region_name,
+        from_year=from_year,
+        to_year=to_year,
+        price=f"{price:.4f}",
+    )
     )

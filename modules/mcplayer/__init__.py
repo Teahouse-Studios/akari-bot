@@ -1,4 +1,4 @@
-from core.builtins import Bot, Plain, Image, Url
+from core.builtins import Bot, I18NContext, Image, Plain, Url
 from core.component import module
 from .mojang_api import *
 
@@ -36,4 +36,4 @@ async def _(msg: Bot.MessageSession, username_or_uuid: str):
         else:
             await msg.finish([Plain(f"{name} ({uuid})"), Url(namemc)])
     except ValueError:
-        await msg.finish(msg.locale.t("mcplayer.message.not_found", player=arg))
+        await msg.finish(I18NContext("mcplayer.message.not_found", player=arg))

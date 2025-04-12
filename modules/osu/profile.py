@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 
 import orjson as json
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
 from core.utils.http import get_url
@@ -66,7 +66,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode, api_key):
         raise e
     except Exception:
         Logger.error(traceback.format_exc())
-        await msg.finish(msg.locale.t("osu.message.not_found"))
+        await msg.finish(I18NContext("osu.message.not_found"))
 
     text = f"UID: {userid}\n" + \
         f"Username: {username}\n" + \

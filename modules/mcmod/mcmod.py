@@ -2,7 +2,7 @@ from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 
-from core.builtins import Url, Plain
+from core.builtins import I18NContext, Url, Plain
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.web_render import webrender
@@ -27,4 +27,4 @@ async def mcmod(msg, keyword: str, detail: bool = False):
         url = a["href"]
         desc = res.find("div", class_="body").text
         return [Plain(name), Url(url), Plain(desc)]
-    return msg.locale.t("mcmod.message.not_found")
+    return I18NContext("mcmod.message.not_found")

@@ -8,8 +8,8 @@ from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Bot, \
-    base_superuser_list, Temp, Plain
+from core.builtins import command_prefix, ExecutionLockList, MessageTaskManager, Bot, \
+    base_superuser_list, Temp, Plain, I18NContext
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
@@ -62,7 +62,7 @@ async def tos_abuse_warning(msg: Bot.MessageSession, e):
                                                   "ts": datetime.now().timestamp()}
     else:
         reason = msg.locale.t_str(str(e))
-        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=reason))
+        await msg.send_message(I18NContext("error.prompt.noreport", detail=reason))
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
@@ -95,10 +95,10 @@ async def temp_ban_check(msg: Bot.MessageSession):
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned["count"] < 2:
                 is_temp_banned["count"] += 1
-                await msg.finish(msg.locale.t("tos.message.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
+                await msg.finish(I18NContext("tos.message.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             elif is_temp_banned["count"] <= 5:
                 is_temp_banned["count"] += 1
-                await msg.finish(msg.locale.t("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
+                await msg.finish(I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
                 raise AbuseWarning("{tos.message.reason.ignore}")
 
@@ -114,7 +114,7 @@ async def check_target_cooldown(msg: Bot.MessageSession):
                 cooldown_counter[msg.target.target_id].update(
                     {msg.target.sender_id: {"ts": datetime.now().timestamp()}})
             else:
-                await msg.finish(msg.locale.t("message.cooldown.manual", time=int(cooldown_time - time)))
+                await msg.finish(I18NContext("message.cooldown.manual", time=int(cooldown_time - time)))
         else:
             cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {"ts": datetime.now().timestamp()}}
 
@@ -225,7 +225,7 @@ async def parser(msg: Bot.MessageSession,
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)
             else:
-                await msg.send_message(msg.locale.t("parser.command.running.prompt"))
+                await msg.send_message(I18NContext("parser.command.running.prompt"))
 
             not_alias = False
             cm = ""
@@ -278,41 +278,40 @@ async def parser(msg: Bot.MessageSession,
                     module: Module = modules[command_first_word]
                     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
                         if module.desc:
-                            desc = msg.locale.t("parser.module.desc", desc=msg.locale.t_str(module.desc))
-
+                            desc = [I18NContext("parser.module.desc", desc=msg.locale.t_str(module.desc))]
                             if command_first_word not in msg.enabled_modules:
-                                desc += "\n" + msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
-                                                            prefix=msg.prefixes[0])
+                                desc.append(
+                                    I18NContext(
+                                        "parser.module.disabled.prompt",
+                                        module=command_first_word,
+                                        prefix=msg.prefixes[0]))
                             await msg.send_message(desc)
                         else:
-                            await msg.send_message(ErrorMessage("{error.module.unbound}", module=command_first_word, locale=msg.locale.locale))
+                            await msg.send_message(I18NContext("error.module.unbound", module=command_first_word))
                         return
 
                     if module.required_base_superuser:
                         if msg.target.sender_id not in base_superuser_list:
-                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                            await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                             return
                     elif module.required_superuser:
                         if not msg.check_super_user():
-                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                            await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                             return
                     elif not module.base:
                         if command_first_word not in msg.enabled_modules and require_enable_modules:  # 若未开启
-                            await msg.send_message(
-                                msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
-                                             prefix=msg.prefixes[0]))
+                            await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word, prefix=msg.prefixes[0]))
                             if await msg.check_permission():
-                                if await msg.wait_confirm(msg.locale.t("parser.module.disabled.to_enable")):
+                                if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable")):
                                     await msg.target_info.config_module(command_first_word)
-                                    await msg.send_message(msg.locale.t("core.message.module.enable.success", module=command_first_word))
+                                    await msg.send_message(I18NContext("core.message.module.enable.success", module=command_first_word))
                                 else:
                                     return
                             else:
                                 return
                     elif module.required_admin:
                         if not await msg.check_permission():
-                            await msg.send_message(msg.locale.t("parser.admin.module.permission.denied",
-                                                                module=command_first_word))
+                            await msg.send_message(I18NContext("parser.admin.module.permission.denied", module=command_first_word))
                             return
 
                     if not (msg.target.target_from == qq_guild_prefix or module.base):
@@ -338,16 +337,15 @@ async def parser(msg: Bot.MessageSession,
 
                                     if submodule.required_base_superuser:
                                         if msg.target.sender_id not in base_superuser_list:
-                                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                                            await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                                             return
                                     elif submodule.required_superuser:
                                         if not msg.check_super_user():
-                                            await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
+                                            await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                                             return
                                     elif submodule.required_admin:
                                         if not await msg.check_permission():
-                                            await msg.send_message(
-                                                msg.locale.t("parser.admin.submodule.permission.denied"))
+                                            await msg.send_message(I18NContext("parser.admin.submodule.permission.denied"))
                                             return
 
                                     if not submodule.load or \
@@ -416,9 +414,9 @@ async def parser(msg: Bot.MessageSession,
                                         await parsed_msg[0].function(**kwargs)
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
-                                    await msg.send_message(msg.locale.t("parser.command.format.invalid",
-                                                                        module=command_first_word,
-                                                                        prefix=msg.prefixes[0]))
+                                    await msg.send_message(I18NContext("parser.command.format.invalid",
+                                                                       module=command_first_word,
+                                                                       prefix=msg.prefixes[0]))
                                     """if msg.target_data.get("typo_check", True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,
@@ -432,8 +430,7 @@ async def parser(msg: Bot.MessageSession,
                                     return
                             except InvalidHelpDocTypeError:
                                 Logger.error(traceback.format_exc())
-                                await msg.send_message(
-                                    ErrorMessage("{error.module.helpdoc.invalid}", module=command_first_word, locale=msg.locale.locale))
+                                await msg.send_message(I18NContext("error.module.helpdoc.invalid", module=command_first_word))
                                 return
 
                         await execute_submodule(msg, command_first_word)
@@ -470,7 +467,7 @@ async def parser(msg: Bot.MessageSession,
                                                message=f"[CQ:poke,qq={qq_account}]")
                         else:
                             pass
-                    await msg.send_message(msg.locale.t("error.message.limited"))
+                    await msg.send_message(I18NContext("error.message.limited"))
 
                 except FinishedException as e:
                     time_used = datetime.now() - time_start
@@ -490,33 +487,33 @@ async def parser(msg: Bot.MessageSession,
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
                     err_msg = msg.locale.t_str(str(e))
-                    await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
+                    await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
 
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
+                    err_msg = msg.locale.t_str(str(e))
                     if "timeout" in str(e).lower().replace(" ", ""):
                         timeout = True
-                        errmsg = msg.locale.t("error.prompt.timeout", detail=str(e))
+                        errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]
                     else:
                         timeout = False
-                        errmsg = msg.locale.t("error.prompt.report", detail=str(e))
+                        errmsgchain = [I18NContext("error.prompt.report", detail=err_msg)]
 
                     if bug_report_url:
-                        errmsg += "\n" + msg.locale.t("error.prompt.address", url=bug_report_url)
-                    await msg.send_message(errmsg)
+                        errmsgchain.append(I18NContext("error.prompt.address", url=bug_report_url))
+                    await msg.send_message(errmsgchain)
 
                     if not timeout and report_targets:
                         for target in report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
-                                await f.send_direct_message([Plain(f"[I18N:error.message.report,module={msg.trigger_msg}]"),
+                                await f.send_direct_message([I18NContext("error.message.report", module=msg.trigger_msg),
                                                             Plain(tb.strip(), disable_joke=True)],
                                                             enable_parse_message=False, disable_secret_check=True)
             if command_first_word in current_unloaded_modules:
-                await msg.send_message(
-                    msg.locale.t("parser.module.unloaded", module=command_first_word))
+                await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
             elif command_first_word in err_modules:
-                await msg.send_message(msg.locale.t("error.module.unloaded", module=command_first_word))
+                await msg.send_message(I18NContext("error.module.unloaded", module=command_first_word))
 
             return msg
         if msg.muted:
@@ -524,7 +521,7 @@ async def parser(msg: Bot.MessageSession,
         if running_mention:
             if msg.trigger_msg.lower().find(msg.name.lower()) != -1:
                 if ExecutionLockList.check(msg):
-                    return await msg.send_message(msg.locale.t("parser.command.running.prompt2"))
+                    return await msg.send_message(I18NContext("parser.command.running.prompt2"))
 
         for m in modules:  # 遍历模块
             try:
@@ -608,7 +605,7 @@ async def parser(msg: Bot.MessageSession,
                                 if not ExecutionLockList.check(msg):
                                     ExecutionLockList.add(msg)
                                 else:
-                                    return await msg.send_message(msg.locale.t("parser.command.running.prompt"))
+                                    return await msg.send_message(I18NContext("parser.command.running.prompt"))
 
                                 if rfunc.show_typing and not msg.sender_data.get("disable_typing", False):
                                     async with msg.Typing(msg):
@@ -635,7 +632,7 @@ async def parser(msg: Bot.MessageSession,
                         except NoReportException as e:
                             Logger.error(traceback.format_exc())
                             err_msg = msg.locale.t_str(str(e))
-                            await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
+                            await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:
                             await tos_abuse_warning(msg, str(e))
@@ -643,21 +640,22 @@ async def parser(msg: Bot.MessageSession,
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
+                            err_msg = msg.locale.t_str(str(e))
                             if "timeout" in str(e).lower().replace(" ", ""):
                                 timeout = True
-                                errmsg = msg.locale.t("error.prompt.timeout", detail=str(e))
+                                errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]
                             else:
                                 timeout = False
-                                errmsg = msg.locale.t("error.prompt.report", detail=str(e))
+                                errmsgchain = [I18NContext("error.prompt.report", detail=err_msg)]
 
                             if bug_report_url:
-                                errmsg += "\n" + msg.locale.t("error.prompt.address", url=bug_report_url)
-                            await msg.send_message(errmsg)
+                                errmsgchain.append(I18NContext("error.prompt.address", url=bug_report_url))
+                            await msg.send_message(errmsgchain)
 
                             if not timeout and report_targets:
                                 for target in report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
-                                        await f.send_direct_message([Plain(f"[I18N:error.message.report,module={msg.trigger_msg}]"),
+                                        await f.send_direct_message([I18NContext("error.message.report", module=msg.trigger_msg),
                                                                     Plain(tb.strip(), disable_joke=True)],
                                                                     enable_parse_message=False, disable_secret_check=True)
                         finally:
@@ -677,7 +675,7 @@ async def parser(msg: Bot.MessageSession,
                         await msg.call_api("send_group_msg", group_id=msg.session.target, message=f"[CQ:poke,qq={qq_account}]")
                     else:
                         pass
-                await msg.send_message((msg.locale.t("error.message.limited")))
+                await msg.send_message(I18NContext("error.message.limited"))
                 continue
         return msg
 

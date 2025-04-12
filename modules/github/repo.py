@@ -1,6 +1,6 @@
 import uuid
 
-from core.builtins import Bot, Image, Plain, Url
+from core.builtins import Bot, I18NContext, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from modules.github.utils import time_diff, dirty_check, dark_check
@@ -67,6 +67,6 @@ Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updat
 
     except ValueError as e:
         if str(e).startswith("404"):
-            await msg.finish(msg.locale.t("github.message.repo.not_found"))
+            await msg.finish(I18NContext("github.message.repo.not_found"))
         else:
             raise e

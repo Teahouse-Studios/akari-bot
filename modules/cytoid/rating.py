@@ -9,7 +9,7 @@ from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from gql import Client, gql
 from gql.transport.httpx import HTTPXAsyncTransport
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext, Plain
 from core.config import Config
 from core.constants.path import (
     assets_path,
@@ -38,7 +38,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             if profile_json["statusCode"] == 404:
                 return {
                     "status": False,
-                    "text": msg.locale.t("cytoid.message.user_not_found"),
+                    "text": I18NContext("cytoid.message.user_not_found"),
                 }
         profile_id = profile_json["user"]["id"]
         profile_rating = profile_json["rating"]
@@ -256,9 +256,9 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             return {"status": True, "path": savefilename}
     except Exception as e:
         if str(e).startswith("404"):
-            await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
+            await msg.finish(I18NContext("cytoid.message.user_not_found"))
         Logger.error(traceback.format_exc())
-        return {"status": False, "text": msg.locale.t("message.error") + str(e)}
+        return {"status": False, "text": Plain("[I18N:message.error]" + str(e))}
 
 
 async def download_cover_thumb(uid):
