@@ -8,7 +8,7 @@
     "cytoid.message.b30.cooldown": "(According to official sources, this API call is very expensive, and thus make this restriction manually. Hope you can understand.)",
     "cytoid.message.b30.level": "Level",
     "cytoid.message.bind.failed": "Binding failed. Please check input.",
-    "cytoid.message.bind.success": "Binding successful: ",
+    "cytoid.message.bind.success": "Binding successful: ${username}",
     "cytoid.message.unbind.success": "Unbinding successful.",
     "cytoid.message.user_not_found": "User not found.",
     "cytoid.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}cytoid bind\"."
