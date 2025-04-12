@@ -322,12 +322,13 @@ class EmbedElement(MessageElement):
     Embed消息。
     :param title: 标题。
     :param description: 描述。
+    :param url: 跳转 URL。
     :param color: 颜色。
-    :param fields: 字段。
     :param image: 图片。
     :param thumbnail: 缩略图。
     :param author: 作者。
     :param footer: 页脚。
+    :param fields: 字段。
     """
 
     title: Optional[str] = None
