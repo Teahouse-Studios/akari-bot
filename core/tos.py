@@ -16,7 +16,7 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
         current_warns = msg.sender_info.warns
         warn_template = [
             I18NContext("tos.message.warning"),
-            I18NContext("tos.message.reason", reason=msg.locale.t_str(reason))]
+            I18NContext("tos.message.reason", reason=reason)]
         if current_warns < WARNING_COUNTS or msg.sender_info.trusted:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))

@@ -5,5 +5,5 @@
     "emojimix.message.combine_supported": "Emoji combinations that support “${emoji}”: ",
     "emojimix.message.invalid": "Invalid Emoji.",
     "emojimix.message.not_found": "This Emoji combination is not supported.",
-    "emojimix.message.unsupported": "Unsupported Emoji(s): "
+    "emojimix.message.unsupported": "Unsupported Emoji(s): ${emoji}"
 }

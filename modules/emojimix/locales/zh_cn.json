@@ -5,5 +5,5 @@
     "emojimix.message.combine_supported": "支持“${emoji}”的 Emoji 组合：",
     "emojimix.message.invalid": "无效的 Emoji。",
     "emojimix.message.not_found": "不支持该 Emoji 组合。",
-    "emojimix.message.unsupported": "不支持的 Emoji："
+    "emojimix.message.unsupported": "不支持的 Emoji：${emoji}"
 }

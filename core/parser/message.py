@@ -492,16 +492,17 @@ async def parser(msg: Bot.MessageSession,
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
+                    err_msg = msg.locale.t_str(str(e))
                     if "timeout" in str(e).lower().replace(" ", ""):
                         timeout = True
-                        errmsg = [I18NContext("error.prompt.timeout", detail=str(e))]
+                        errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]
                     else:
                         timeout = False
-                        errmsg = [I18NContext("error.prompt.report", detail=str(e))]
+                        errmsgchain = [I18NContext("error.prompt.report", detail=err_msg)]
 
                     if bug_report_url:
-                        errmsg.append(I18NContext("error.prompt.address", url=bug_report_url))
-                    await msg.send_message(errmsg)
+                        errmsgchain.append(I18NContext("error.prompt.address", url=bug_report_url))
+                    await msg.send_message(errmsgchain)
 
                     if not timeout and report_targets:
                         for target in report_targets:
@@ -639,16 +640,17 @@ async def parser(msg: Bot.MessageSession,
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
+                            err_msg = msg.locale.t_str(str(e))
                             if "timeout" in str(e).lower().replace(" ", ""):
                                 timeout = True
-                                errmsg = [I18NContext("error.prompt.timeout", detail=str(e))]
+                                errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]
                             else:
                                 timeout = False
-                                errmsg = [I18NContext("error.prompt.report", detail=str(e))]
+                                errmsgchain = [I18NContext("error.prompt.report", detail=err_msg)]
 
                             if bug_report_url:
-                                errmsg.append(I18NContext("error.prompt.address", url=bug_report_url))
-                            await msg.send_message(errmsg)
+                                errmsgchain.append(I18NContext("error.prompt.address", url=bug_report_url))
+                            await msg.send_message(errmsgchain)
 
                             if not timeout and report_targets:
                                 for target in report_targets:
