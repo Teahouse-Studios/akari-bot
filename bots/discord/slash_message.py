@@ -80,7 +80,7 @@ class MessageSession(MessageSessionT):
                     f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
                 )
             elif isinstance(x, EmbedElement):
-                embeds, _ = await convert_embed(x)
+                embeds, _ = await convert_embed(x, self)
                 if first_send:
                     send_ = await self.session.message.respond(embed=embeds)
                 else:

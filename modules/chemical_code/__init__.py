@@ -220,18 +220,17 @@ async def _(msg: Bot.MessageSession):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
         play_state.disable()
-        await msg.finish(
-            msg.locale.t("chemical_code.stop.message", answer=play_state.get("answer")),
-            quote=False,
-        )
+        await msg.finish(I18NContext("chemical_code.stop.message", answer=play_state.get("answer")),
+                         quote=False,
+                         )
     else:
-        await msg.finish(msg.locale.t("game.message.stop.none"))
+        await msg.finish(I18NContext("game.message.stop.none"))
 
 
 @ccode.command("<pcid> {{chemical_code.help.pcid}}")
 async def _(msg: Bot.MessageSession, pcid: int):
     if int(pcid) < 0:
-        await msg.finish(msg.locale.t("chemical_code.message.pcid.invalid"))
+        await msg.finish(I18NContext("chemical_code.message.pcid.invalid"))
     elif int(pcid) == 0:  # 若 id 为 0，则随机
         await chemical_code(msg)
     else:
@@ -243,7 +242,7 @@ async def chemical_code(
 ):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
-        await msg.finish(msg.locale.t("game.message.running"))
+        await msg.finish(I18NContext("game.message.running"))
     else:
         play_state.enable()
     try:
@@ -251,14 +250,14 @@ async def chemical_code(
     except Exception:
         Logger.error(traceback.format_exc())
         play_state.disable()
-        await msg.finish(msg.locale.t("chemical_code.message.error"))
+        await msg.finish(I18NContext("chemical_code.message.error"))
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
     Logger.info(f"Answer: {play_state.get("answer")}")
 
     mol = Chem.MolFromSmiles(play_state.get("smiles"))
     if not mol:
         play_state.disable()
-        await msg.finish(msg.locale.t("chemical_code.message.error"))
+        await msg.finish(I18NContext("chemical_code.message.error"))
 
     AllChem.Compute2DCoords(mol)
 
@@ -296,33 +295,19 @@ async def chemical_code(
                         if v_ < 0:
                             v_ = -v_
                         if v_ > 6:
-                            await wait.send_message(
-                                wait.locale.t("chemical_code.message.incorrect.remind1")
-                            )
+                            await wait.send_message(I18NContext("chemical_code.message.incorrect.remind1"))
                         else:
                             if play_state.get("elements") == parse_:
-                                await wait.send_message(
-                                    wait.locale.t(
-                                        "chemical_code.message.incorrect.remind5"
-                                    )
-                                )
+                                await wait.send_message(I18NContext("chemical_code.message.incorrect.remind5"))
                             elif v_ <= 2:
                                 missing_something = False
                                 for i in play_state.get("elements"):
                                     if i not in parse_:
-                                        await wait.send_message(
-                                            wait.locale.t(
-                                                "chemical_code.message.incorrect.remind4"
-                                            )
-                                        )
+                                        await wait.send_message(I18NContext("chemical_code.message.incorrect.remind4"))
                                         missing_something = True
                                         break
                                 if not missing_something:
-                                    await wait.send_message(
-                                        wait.locale.t(
-                                            "chemical_code.message.incorrect.remind3"
-                                        )
-                                    )
+                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind3"))
                             else:
                                 incorrect_list = []
                                 for i in play_state.get("elements"):
@@ -330,33 +315,22 @@ async def chemical_code(
                                         if parse_[i] != play_state.get("elements")[i]:
                                             incorrect_list.append(i)
                                     else:
-                                        await wait.send_message(
-                                            wait.locale.t(
-                                                "chemical_code.message.incorrect.remind4"
-                                            )
-                                        )
+                                        await wait.send_message(I18NContext("chemical_code.message.incorrect.remind4"))
                                         incorrect_list = []
                                         break
 
                                 if incorrect_list:
-                                    incorrect_elements = wait.locale.t(
-                                        "message.delimiter"
-                                    ).join(incorrect_list)
-                                    await wait.send_message(
-                                        wait.locale.t(
-                                            "chemical_code.message.incorrect.remind2",
-                                            elements=incorrect_elements,
-                                        )
-                                    )
+                                    incorrect_elements = "[I18N:message.delimiter]".join(incorrect_list)
+                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2", elements=incorrect_elements))
                     except ValueError:
                         Logger.error(traceback.format_exc())
 
                 Logger.info(f"{wait_text} != {play_state.get("answer")}")
                 return await ans(wait, random_mode)
-            send_ = wait.locale.t("chemical_code.message.correct")
+            send_ = [I18NContext("chemical_code.message.correct")]
             if random_mode:
                 if g_msg := await gained_petal(wait, 1):
-                    send_ += "\n" + g_msg
+                    send_.append(g_msg)
             play_state.disable()
             await wait.finish(send_)
 
@@ -364,12 +338,7 @@ async def chemical_code(
         if play_state.check():
             if datetime.now().timestamp() - start > 60 * set_timeout:
                 play_state.disable()
-                await msg.finish(
-                    msg.locale.t(
-                        "chemical_code.message.timeup", answer=play_state.get("answer")
-                    )
-                )
-
+                await msg.finish(I18NContext("chemical_code.message.timeup", answer=play_state.get("answer")))
             else:
                 await msg.sleep(1)  # 防冲突
                 await timer(start)
@@ -398,14 +367,9 @@ async def chemical_code(
         if play_state.check():
             play_state.disable()
             if result.as_display(text_only=True) == play_state.get("answer"):
-                send_ = msg.locale.t("chemical_code.message.correct")
+                send_ = [I18NContext("chemical_code.message.correct")]
                 if g_msg := await gained_petal(msg, 2):
-                    send_ += "\n" + g_msg
+                    send_.append(g_msg)
                 await result.finish(send_)
             else:
-                await result.finish(
-                    msg.locale.t(
-                        "chemical_code.message.incorrect",
-                        answer=play_state.get("answer"),
-                    )
-                )
+                await result.finish(I18NContext("chemical_code.message.incorrect", answer=play_state.get("answer")))

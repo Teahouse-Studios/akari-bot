@@ -182,50 +182,6 @@ class I18NContextElement(MessageElement):
 
 
 @define
-class ErrorMessageElement(MessageElement):
-    """
-    错误消息。
-
-    :param error_message: 错误信息文本。
-    """
-
-    error_message: str
-
-    @classmethod
-    def assign(
-        cls,
-        error_message: str,
-        locale: Optional[str] = None,
-        enable_report: bool = True,
-        **kwargs: Dict[str, Any],
-    ):
-        """
-        :param error_message: 错误信息文本。
-        :param locale: 多语言。
-        :param enable_report: 是否添加错误汇报部分。（默认为True）
-        :param kwargs: 多语言中的变量。
-        """
-
-        if locale and isinstance(locale, str):
-            error_message = Locale(locale).t_str(error_message, **kwargs)
-            error_message = Locale(locale).t("message.error") + error_message
-            if enable_report and (
-                report_url := URLElement.assign(
-                    Config("bug_report_url", bug_report_url_default, cfg_type=str),
-                    use_mm=False,
-                )
-            ):
-                error_message += "\n" + Locale(locale).t(
-                    "error.prompt.address", url=str(report_url.url)
-                )
-
-        return deepcopy(cls(error_message))
-
-    def __str__(self):
-        return self.error_message
-
-
-@define
 class ImageElement(MessageElement):
     """
     图片消息。
@@ -460,7 +416,6 @@ elements_map = {
         URLElement,
         FormattedTimeElement,
         I18NContextElement,
-        ErrorMessageElement,
         ImageElement,
         VoiceElement,
         EmbedFieldElement,
@@ -474,7 +429,6 @@ __all__ = [
     "URLElement",
     "FormattedTimeElement",
     "I18NContextElement",
-    "ErrorMessageElement",
     "ImageElement",
     "VoiceElement",
     "EmbedFieldElement",

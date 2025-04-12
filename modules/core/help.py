@@ -43,9 +43,9 @@ async def _(msg: Bot.MessageSession, module: str):
 
         help_name = alias[module].split()[0] if module in alias else module.split()[0]
         if help_name in current_unloaded_modules:
-            await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
+            await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
-            await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
+            await msg.finish(I18NContext("error.module.unloaded", module=help_name))
         elif help_name in module_list:
             module_ = module_list[help_name]
 
@@ -64,7 +64,6 @@ async def _(msg: Bot.MessageSession, module: str):
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser)
 
-            doc = ""
             devs_msg = ""
             if (module_.required_superuser and not is_superuser) or \
                (module_.required_base_superuser and not is_base_superuser):
@@ -73,7 +72,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 pass
             else:
                 if regex_list:
-                    mdocs.append(msg.locale.t("core.help.regex.note"))
+                    mdocs.append("[I18N:core.help.regex.note]")
                     for regex in regex_list:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -84,28 +83,24 @@ async def _(msg: Bot.MessageSession, module: str):
                             rdesc = regex.desc
                             if rdesc:
                                 rdesc = msg.locale.t_str(rdesc)
-                                mdocs.append(f"{pattern} {msg.locale.t("core.message.help.regex.detail",
-                                                                       msg=rdesc)}")
+                                mdocs.append(f"{pattern} {f"[I18N:core.message.help.regex.detail,msg={rdesc}]"}")
                             else:
-                                mdocs.append(f"{pattern} {msg.locale.t("core.message.help.regex.no_information")}")
-                doc = "\n".join(mdocs)
+                                mdocs.append(f"{pattern} {"[I18N:core.message.help.regex.no_information]"}")
 
                 if module_.alias:
                     for a in module_.alias:
                         malias.append(f"{a} -> {module_.alias[a]}")
                 if module_.developers and not module_.base:
-                    devs = msg.locale.t("message.delimiter").join(module_.developers)
-                    devs_msg = "\n" + msg.locale.t("core.help.author") + devs
+                    devs_msg = "[I18N:core.help.author]" + "[I18N:message.delimiter]".join(module_.developers)
                 else:
                     devs_msg = ""
 
             if module_.doc:
                 if help_page_url := Config("help_page_url", help_page_url_default, cfg_type=str):
-                    wiki_msg = "\n" + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=help_page_url.replace("${module}", help_name))
+                    wiki_msg = f"[I18N:core.message.help.helpdoc.address,url={
+                        help_page_url.replace("${module}", help_name)}]"
                 elif help_url:
-                    wiki_msg = "\n" + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=help_url + help_name)
+                    wiki_msg = f"[I18N:core.message.help.helpdoc.address,url={help_url + help_name}]"
                 else:
                     wiki_msg = ""
             else:
@@ -179,15 +174,15 @@ async def _(msg: Bot.MessageSession, module: str):
                 if wiki_msg:
                     await msg.finish(wiki_msg.strip())
                 else:
-                    await msg.finish(msg.locale.t("core.help.info.none"))
+                    await msg.finish(I18NContext("core.help.info.none"))
 
-            doc_msg = (doc + devs_msg + wiki_msg).strip()
+            doc_msg = mdocs + [devs_msg, wiki_msg]
             if doc_msg:
                 await msg.finish(doc_msg)
             else:
-                await msg.finish(msg.locale.t("core.help.info.none"))
+                await msg.finish(I18NContext("core.help.info.none"))
         else:
-            await msg.finish(msg.locale.t("core.message.help.not_found"))
+            await msg.finish(I18NContext("core.message.help.not_found"))
 
 
 @hlp.command()
@@ -216,14 +211,14 @@ async def _(msg: Bot.MessageSession):
         module_list = ModulesManager.return_modules_list(
             target_from=msg.target.target_from)
         target_enabled_list = msg.enabled_modules
-        help_msg = [msg.locale.t("core.message.help.legacy.base")]
+        help_msg = [I18NContext("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
             if module_list[x].base and not module_list[x].hidden or \
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(" | ".join(essential))
+        help_msg.append(Plain(" | ".join(essential)))
         module_ = []
         for x in module_list:
             if x in target_enabled_list and not module_list[x].hidden or \
@@ -231,14 +226,14 @@ async def _(msg: Bot.MessageSession):
                     not is_base_superuser and module_list[x].required_base_superuser:
                 module_.append(x)
         if module_:
-            help_msg.append(msg.locale.t("core.message.help.legacy.external"))
-            help_msg.append(" | ".join(module_))
-        help_msg.append(msg.locale.t("core.message.help.detail", prefix=msg.prefixes[0]))
-        help_msg.append(msg.locale.t("core.message.help.all_modules", prefix=msg.prefixes[0]))
+            help_msg.append(I18NContext("core.message.help.legacy.external"))
+            help_msg.append(Plain(" | ".join(module_)))
+        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.prefixes[0]))
+        help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.prefixes[0]))
         if help_url:
-            help_msg.append(msg.locale.t("core.message.help.document", url=help_url))
+            help_msg.append(I18NContext("core.message.help.document", url=help_url))
         if donate_url:
-            help_msg.append(msg.locale.t("core.message.help.donate", url=donate_url))
+            help_msg.append(I18NContext("core.message.help.donate", url=donate_url))
         await msg.finish(help_msg)
 
 
@@ -269,15 +264,12 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
                 continue
             module_.append(module_list[x].bind_prefix)
         if module_:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables"), " | ".join(module_)]
+            help_msg = [I18NContext("core.message.help.legacy.availables"), Plain(" | ".join(module_))]
         else:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.detail",
-                prefix=msg.prefixes[0]))
+            help_msg = [I18NContext("core.message.help.legacy.availables.none")]
+        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.prefixes[0]))
         if help_url:
-            help_msg.append(msg.locale.t("core.message.help.document", url=help_url))
+            help_msg.append(I18NContext("core.message.help.document", url=help_url))
         await msg.finish(help_msg)
 
 

@@ -1,6 +1,6 @@
 import os
 
-from core.builtins import Bot, Image as BImage, Plain
+from core.builtins import Bot, Image as BImage, Plain, I18NContext
 from core.component import module
 from core.constants.path import assets_path
 from core.utils.http import get_url
@@ -27,13 +27,9 @@ async def _(msg: Bot.MessageSession):
     if resp:
         url = resp.get("value", {}).get("url")
     if url:
-        await msg.finish(
-            msg.locale.t(
-                "arcaea.message.download", version=resp["value"]["version"], url=url
-            )
-        )
+        await msg.finish(I18NContext("arcaea.message.download", version=resp["value"]["version"], url=url))
     else:
-        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(I18NContext("arcaea.message.get_failed"))
 
 
 @arc.command("random {{arcaea.help.random}}")
@@ -50,7 +46,7 @@ async def _(msg: Bot.MessageSession):
             result.append(BImage(path=image))
         await msg.finish(result)
     else:
-        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(I18NContext("arcaea.message.get_failed"))
 
 
 @arc.command(
@@ -75,7 +71,7 @@ async def _(msg: Bot.MessageSession):
             r.append(f"{rank}. {x["title"]["en"]} ({x["status"]})")
         await msg.finish(r)
     else:
-        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(I18NContext("arcaea.message.get_failed"))
 
 
 @arc.command("calc <score> <rating> {{arcaea.help.calc}}")
@@ -86,4 +82,4 @@ async def _(msg: Bot.MessageSession, score: int, rating: float):
         ptt = rating + 1 + (score - 9800000) / 200000
     else:
         ptt = rating + (score - 9500000) / 300000
-    await msg.finish([Plain(round(max(0, ptt), 2))])
+    await msg.finish(Plain(round(max(0, ptt), 2)))

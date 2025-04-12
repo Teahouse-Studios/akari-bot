@@ -34,19 +34,15 @@ from core.utils.http import download
 enable_analytics = Config("enable_analytics", False)
 
 
-async def convert_embed(embed: EmbedElement):
+async def convert_embed(embed: EmbedElement, msg: MessageSessionT):
     if isinstance(embed, EmbedElement):
         files = []
         embeds = discord.Embed(
-            title=embed.title if embed.title else None,
-            description=embed.description if embed.description else None,
+            title=msg.locale.t_str(embed.title) if embed.title else None,
+            description=msg.locale.t_str(embed.description) if embed.description else None,
             color=embed.color if embed.color else None,
             url=embed.url if embed.url else None,
-            timestamp=(
-                datetime.datetime.fromtimestamp(embed.timestamp)
-                if embed.timestamp
-                else None
-            ),
+            timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
         )
         if embed.image:
             upload = discord.File(await embed.image.get(), filename="image.png")
@@ -57,13 +53,15 @@ async def convert_embed(embed: EmbedElement):
             files.append(upload)
             embeds.set_thumbnail(url="attachment://thumbnail.png")
         if embed.author:
-            embeds.set_author(name=embed.author)
+            embeds.set_author(name=msg.locale.t_str(embed.author))
         if embed.footer:
-            embeds.set_footer(text=embed.footer)
+            embeds.set_footer(text=msg.locale.t_str(embed.footer))
         if embed.fields:
             for field in embed.fields:
                 embeds.add_field(
-                    name=field.name, value=field.value, inline=field.inline
+                    name=msg.locale.t_str(field.name),
+                    value=msg.locale.t_str(field.value),
+                    inline=field.inline
                 )
         return embeds, files
 
@@ -155,7 +153,7 @@ class MessageSession(MessageSessionT):
                         f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
                     )
             elif isinstance(x, EmbedElement):
-                embeds, files = await convert_embed(x)
+                embeds, files = await convert_embed(x, self)
                 send_ = await self.session.target.send(
                     embed=embeds,
                     reference=(
@@ -305,9 +303,7 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain(
-                                [Plain(x.parent.locale.t(message, **kwargs))]
-                            )
+                            msgchain = MessageChain([I18NContext(message, **kwargs)])
                         else:
                             msgchain = MessageChain([Plain(message)])
                     msgchain = MessageChain(msgchain)
@@ -333,9 +329,7 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain(
-                                    [Plain(fetch.parent.locale.t(message, **kwargs))]
-                                )
+                                msgchain = MessageChain([I18NContext(message, **kwargs)])
                             else:
                                 msgchain = MessageChain([Plain(message)])
                         msgchain = MessageChain(msgchain)

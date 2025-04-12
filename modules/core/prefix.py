@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.builtins.utils import command_prefix
 from core.component import module
 
@@ -21,32 +21,24 @@ async def _(msg: Bot.MessageSession):
             if prefix not in prefixes:
                 prefixes.append(prefix)
                 await msg.target_info.edit_target_data("command_prefix", prefixes)
-                await msg.finish(
-                    msg.locale.t("core.message.prefix.add.success", prefix=prefix)
-                )
+                await msg.finish(I18NContext("core.message.prefix.add.success", prefix=prefix))
             else:
-                await msg.finish(msg.locale.t("core.message.prefix.add.already"))
+                await msg.finish(I18NContext("core.message.prefix.add.already"))
     elif "remove" in msg.parsed_msg:
         if prefix:
             if prefix in prefixes:
                 prefixes.remove(prefix)
                 await msg.target_info.edit_target_data("command_prefix", prefixes)
-                await msg.finish(
-                    msg.locale.t("core.message.prefix.remove.success", prefix=prefix)
-                )
+                await msg.finish(I18NContext("core.message.prefix.remove.success", prefix=prefix))
             else:
-                await msg.finish(msg.locale.t("core.message.prefix.remove.not_found"))
+                await msg.finish(I18NContext("core.message.prefix.remove.not_found"))
     elif "reset" in msg.parsed_msg:
         await msg.target_info.edit_target_data("command_prefix", [])
-        await msg.finish(msg.locale.t("core.message.prefix.reset"))
+        await msg.finish(I18NContext("core.message.prefix.reset"))
     elif "list" in msg.parsed_msg:
-        default_msg = msg.locale.t(
-            "core.message.prefix.list.default", prefixes=", ".join(command_prefix)
-        )
+        default_msg = I18NContext("core.message.prefix.list.default", prefixes=", ".join(command_prefix))
         if len(prefixes) == 0:
-            custom_msg = msg.locale.t("core.message.prefix.list.custom.none")
+            custom_msg = I18NContext("core.message.prefix.list.custom.none")
         else:
-            custom_msg = msg.locale.t(
-                "core.message.prefix.list.custom", prefixes=", ".join(prefixes)
-            )
-        await msg.finish(f"{default_msg}\n{custom_msg}")
+            custom_msg = I18NContext("core.message.prefix.list.custom", prefixes=", ".join(prefixes))
+        await msg.finish([default_msg, custom_msg])

@@ -1,6 +1,6 @@
 import re
 
-from core.builtins import Bot, Image, Plain, Url
+from core.builtins import Bot, Image, Url, I18NContext
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
@@ -9,7 +9,7 @@ bug = module("bugtracker", alias="bug", developers=["OasisAkari"], doc=True)
 
 async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
     result = await bugtracker_get(msg, mojiraid)
-    msg_list = [Plain(result[0])]
+    msg_list = [result[0]]
     if result[1]:
         msg_list.append(Url(result[1]))
     await msg.send_message(msg_list)
@@ -29,7 +29,7 @@ async def _(msg: Bot.MessageSession, mojiraid: str):
         if q:
             await query_bugtracker(msg, mojiraid)
         else:
-            await msg.finish(msg.locale.t("bugtracker.message.invalid_mojira_id"))
+            await msg.finish(I18NContext("bugtracker.message.invalid_mojira_id"))
 
 
 @bug.regex(

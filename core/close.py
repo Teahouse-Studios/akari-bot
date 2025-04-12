@@ -4,7 +4,7 @@ import signal
 
 from tortoise import Tortoise
 
-from core.builtins import MessageTaskManager
+from core.builtins import MessageTaskManager, I18NContext
 from core.logger import Logger
 
 
@@ -15,7 +15,7 @@ async def cleanup_sessions():
         for y in get_wait_list[x]:
             for z in get_wait_list[x][y]:
                 if get_wait_list[x][y][z]["active"]:
-                    await z.send_message(z.locale.t("core.message.restart.prompt"))
+                    await z.send_message(I18NContext("core.message.restart.prompt"))
     await Tortoise.close_connections()
 
 

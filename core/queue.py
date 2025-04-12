@@ -3,7 +3,7 @@ import datetime
 import traceback
 from uuid import uuid4
 
-from core.builtins import Bot, MessageChain, Plain
+from core.builtins import Bot, MessageChain, I18NContext, Plain
 from core.config import Config
 from core.constants import Info
 from core.database.models import JobQueuesTable
@@ -120,7 +120,7 @@ async def check_job_queue():
             try:
                 for target in report_targets:
                     if ft := await Bot.FetchTarget.fetch_target(target):
-                        await ft.send_direct_message([Plain(f"[I18N:error.message.report,module={tsk.action}]"),
+                        await ft.send_direct_message([I18NContext("error.message.report", module=tsk.action),
                                                       Plain(f.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)
             except Exception:

@@ -1,4 +1,4 @@
-from core.builtins import Bot, Embed, EmbedField, ErrorMessage, Image, Plain, Url
+from core.builtins import Bot, Embed, EmbedField, Image, Plain, Url, I18NContext
 from core.utils.http import get_url
 from core.utils.web_render import webrender
 
@@ -17,11 +17,11 @@ async def get_video_info(
         )
         if res["code"] != 0:
             if res["code"] == -400:
-                return msg.locale.t("bilibili.message.invalid")
-            return msg.locale.t("bilibili.message.not_found")
+                return I18NContext("bilibili.message.invalid")
+            return I18NContext("bilibili.message.not_found")
     except ValueError as e:
         if str(e).startswith("412"):
-            return ErrorMessage("{bilibili.message.error.rejected}", locale=msg.locale.locale)
+            return I18NContext("bilibili.message.error.rejected")
         raise e
 
     view = res["data"]["View"]
@@ -36,7 +36,7 @@ async def get_video_info(
     time = msg.ts2strftime(view["ctime"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
-        pages = msg.locale.t("message.brackets", msg=f"{len(view["pages"])}P")
+        pages = f"[I18N:message.brackets,msg={len(view["pages"])}P]"
     else:
         pages = ""
 
@@ -57,57 +57,50 @@ async def get_video_info(
             title=f"{title}{pages}",
             description=desc,
             url=video_url,
-            author=f"{owner}{msg.locale.t("message.brackets", msg=fans)}",
+            author=f"{owner}{f"[I18N:message.brackets,msg={fans}]"}",
             footer="Bilibili",
             image=Image(pic),
             thumbnail=Image(avatar),
             fields=[
-                EmbedField(msg.locale.t("bilibili.message.embed.type"), tname),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.view"),
-                    stat_view,
-                    inline=True,
-                ),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.danmaku"),
-                    stat_danmaku,
-                    inline=True,
-                ),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.reply"),
-                    stat_reply,
-                    inline=True,
-                ),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.like"),
-                    stat_like,
-                    inline=True,
-                ),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.coin"),
-                    stat_coin,
-                    inline=True,
-                ),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.favorite"),
-                    stat_favorite,
-                    inline=True,
-                ),
-                EmbedField(
-                    msg.locale.t("bilibili.message.embed.share"),
-                    stat_share,
-                    inline=True,
-                ),
-                EmbedField(msg.locale.t("bilibili.message.embed.time"), time),
+                EmbedField("[I18N:bilibili.message.embed.type]", tname),
+                EmbedField("[I18N:bilibili.message.embed.view]",
+                           stat_view,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.danmaku]",
+                           stat_danmaku,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.reply]",
+                           stat_reply,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.like]",
+                           stat_like,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.coin]",
+                           stat_coin,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.favorite]",
+                           stat_favorite,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.share]",
+                           stat_share,
+                           inline=True,
+                           ),
+                EmbedField("[I18N:bilibili.message.embed.time]", time),
             ],
         )
 
     if not get_detail:
-        output = msg.locale.t(
+        output = I18NContext(
             "bilibili.message", title=title, tname=tname, owner=owner, time=time
         )
     else:
-        output = msg.locale.t(
+        output = I18NContext(
             "bilibili.message.detail",
             title=title,
             pages=pages,
@@ -124,4 +117,4 @@ async def get_video_info(
             desc=desc,
             time=time,
         )
-    return [Image(pic), Url(video_url), Plain(output)]
+    return [Image(pic), Url(video_url), output]

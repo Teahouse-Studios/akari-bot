@@ -8,7 +8,7 @@ import orjson as json
 import webcolors
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot, Embed, EmbedField, Image as BImage
+from core.builtins import Bot, Embed, EmbedField, Image as BImage, I18NContext
 from core.component import module
 from core.constants.path import assets_path, noto_sans_demilight_path
 
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession, color: str = None):
         )
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     else:
-        await msg.finish(msg.locale.t("color.message.invalid"))
+        await msg.finish(I18NContext("color.message.invalid"))
 
     color_hex = f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}"
     color_rgb = f"rgb({color[0]}, {color[1]}, {color[2]})"
@@ -96,20 +96,20 @@ async def _(msg: Bot.MessageSession, color: str = None):
     css_color_name = ""
     css_color_name_short = ""
     if css_color_name_raw[1]:
-        css_color_name = msg.locale.t("color.message.embed.css")
+        css_color_name = "[I18N:color.message.embed.css]"
         if css_color_name_raw[0] != "black" and css_color_name_raw[0] != "white":
             css_color_name_short = f"{css_color_name_raw[0]}\n"
     elif css_color_name_raw[0]:
-        css_color_name = msg.locale.t("color.message.embed.css.approximate")
+        css_color_name = "[I18N:color.message.embed.css.approximate]"
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ""
     material_color_name_short = ""
     if material_color_name_raw[1]:
-        material_color_name = msg.locale.t("color.message.embed.md")
+        material_color_name = "[I18N:color.message.embed.md]"
         material_color_name_short = f"{material_color_name_raw[0]}\n"
     elif material_color_name_raw[0]:
-        material_color_name = msg.locale.t("color.message.embed.md.approximate")
+        material_color_name = "[I18N:color.message.embed.md.approximate]"
 
     draw.multiline_text(
         (250, 250),
