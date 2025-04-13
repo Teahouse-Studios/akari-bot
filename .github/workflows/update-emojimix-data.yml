@@ -31,7 +31,7 @@ jobs:
         run: |
           if cmp --silent output.json ./assets/modules/emojimix/emoji_data.json; then
             echo "Files are identical. Skipping commit."
-            exit 1
+            exit 0
           fi
 
       - name: Move file to assets directory
