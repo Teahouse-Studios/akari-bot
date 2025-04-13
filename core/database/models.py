@@ -248,6 +248,13 @@ class AnalyticsData(DBModel):
         if module_name is not None:
             query = query.filter(module_name=module_name)
         return await query.all()
+    
+    @classmethod
+    async def get_values_by_times(cls, new, old, module_name=None):
+        query = cls.filter(timestamp__gte=old, timestamp__lte=new)
+        if module_name is not None:
+            query = query.filter(module_name=module_name)
+        return await query.values()
 
     @classmethod
     async def get_count_by_times(cls, new, old, module_name=None):
