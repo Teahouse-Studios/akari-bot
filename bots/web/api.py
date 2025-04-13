@@ -16,7 +16,7 @@ import psutil
 import uvicorn
 from argon2 import PasswordHasher
 from cpuinfo import get_cpu_info
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, Query, WebSocket
 from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
@@ -35,7 +35,7 @@ from core.close import cleanup_sessions  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename, config_path, logs_path  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
-from core.database.models import SenderInfo, TargetInfo  # noqa: E402
+from core.database.models import AnalyticsData, SenderInfo, TargetInfo  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.i18n import Locale  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
@@ -150,7 +150,7 @@ async def _(request: Request):
     return FileResponse(favicon_path)
 
 
-@app.get("/api/")
+@app.get("/api")
 @limiter.limit("2/second")
 async def favicon(request: Request):
     return {"message": "Hello, AkariBot!"}
@@ -320,6 +320,49 @@ async def server_info(request: Request):
         }
     }
 
+@app.get("/api/analytics")
+@limiter.limit("2/second")
+async def get_analytics(request: Request, days: int = Query(1)):
+    verify_jwt(request)
+    try:
+        now = datetime.now()
+        past = now - timedelta(days=days)
+        data = await AnalyticsData.get_values_by_times(now, past)
+        count = await AnalyticsData.get_count_by_times(now, past)
+        past_past = now - timedelta(days=2 * days)
+        past_count = await AnalyticsData.get_count_by_times(past, past_past)
+        try:
+            change_rate = round((count - past_count) / past_count, 2)
+        except ZeroDivisionError:
+            change_rate = 0.00
+        
+        return {"count": count, "change_rate": change_rate, "data": data}
+    
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="Bad request")
+
+@app.get("/api/analytics/{module}")
+@limiter.limit("2/second")
+async def get_module_analytics(request: Request, module: str, days: int = Query(1)):
+    verify_jwt(request)
+    try:
+        now = datetime.now()
+        past = now - timedelta(days=days)
+        data = await AnalyticsData.get_values_by_times(now, past, module)
+        count = await AnalyticsData.get_count_by_times(now, past, module)
+        past_past = now - timedelta(days=2 * days)
+        past_count = await AnalyticsData.get_count_by_times(past, past_past, module)
+        try:
+            change_rate = round((count - past_count) / past_count, 2)
+        except ZeroDivisionError:
+            change_rate = 0.00
+        
+        return {"count": count, "change_rate": change_rate, "data": data}
+    
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="Bad request")
 
 @app.get("/api/config")
 @limiter.limit("2/second")
