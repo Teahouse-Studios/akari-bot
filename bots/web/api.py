@@ -56,6 +56,7 @@ async def lifespan(app: FastAPI):
     await JobQueue.web_render_status()
     yield
     await cleanup_sessions()
+    sys.exit()
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
