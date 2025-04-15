@@ -13,7 +13,7 @@ os.makedirs(database_path, exist_ok=True)
 DB_LINK = "sqlite://database/local.db"
 
 
-class CSRFTokenRecords(models.Model):
+class CSRFTokenRecords(Model):
     csrf_token = fields.CharField(pk=True, max_length=128, unique=True)
     device_token = fields.CharField(max_length=512)
     timestamp = fields.DatetimeField(auto_now_add=True)
