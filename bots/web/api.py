@@ -159,7 +159,7 @@ async def favicon(request: Request):
 @app.get("/api/verify-token")
 @limiter.limit("2/second")
 async def verify_token(request: Request):
-    verify_jwt(request)
+    return verify_jwt(request)
 
 
 @app.get("/api/get-csrf-token")
@@ -205,7 +205,7 @@ async def auth(request: Request, response: Response):
                 samesite="none",
                 expires=datetime.now(UTC) + timedelta(hours=24)
             )
-            return {"message": "Success"}
+            return {"message": "Success", "no_password": True}
 
         body = await request.json()
         password = body.get("password", "")
@@ -236,7 +236,7 @@ async def auth(request: Request, response: Response):
             expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
 
-        return {"message": "Success"}
+        return {"message": "Success", "no_password": False}
 
     except HTTPException as e:
         raise e
@@ -247,7 +247,7 @@ async def auth(request: Request, response: Response):
 
 @app.post("/api/change-password")
 @limiter.limit("10/minute")
-async def change_password(request: Request):
+async def change_password(request: Request, response: Response):
     try:
         verify_jwt(request)
         verify_csrf_token(request)
@@ -262,6 +262,7 @@ async def change_password(request: Request):
             new_password_hashed = ph.hash(new_password)
             with open(PASSWORD_PATH, "w") as file:
                 file.write(new_password_hashed)
+            response.delete_cookie("deviceToken")
             return {"message": "Success"}
 
         with open(PASSWORD_PATH, "r") as file:
@@ -276,7 +277,37 @@ async def change_password(request: Request):
         new_password_hashed = ph.hash(new_password)
         with open(PASSWORD_PATH, "w") as file:
             file.write(new_password_hashed)
+        response.delete_cookie("deviceToken")
+        return {"message": "Success"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        Logger.error(str(e))
+        raise HTTPException(status_code=400, detail="Bad request")
+    
 
+@app.post("/api/clear-password")
+@limiter.limit("10/minute")
+async def clear_password(request: Request, response: Response):
+    try:
+        verify_jwt(request)
+        verify_csrf_token(request)
+        body = await request.json()
+        password = body.get("password", "")
+
+        if not os.path.exists(PASSWORD_PATH):
+            raise HTTPException(status_code=404, detail="Password not set")
+
+        with open(PASSWORD_PATH, "r") as file:
+            stored_password = file.read().strip()
+
+        try:
+            ph.verify(stored_password, password)
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid password")
+
+        os.remove(PASSWORD_PATH)
+        response.delete_cookie("deviceToken")
         return {"message": "Success"}
     except HTTPException as e:
         raise e
