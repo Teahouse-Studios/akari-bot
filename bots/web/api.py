@@ -81,7 +81,7 @@ async def verify_csrf_token(request: Request):
     if not token_entry:
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
-    if (datetime.now(UTC) - token_entry.token_timestamp).total_seconds() > CSRF_TOKEN_EXPIRY:
+    if (datetime.now(UTC) - token_entry.timestamp).total_seconds() > CSRF_TOKEN_EXPIRY:
         await token_entry.delete()
         raise HTTPException(status_code=403, detail="CSRF token expired")
 
