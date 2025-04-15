@@ -4,13 +4,11 @@ import os
 import platform
 import re
 import sys
-import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
 
 import jwt
-import orjson as json
 import psutil
 import uvicorn
 from argon2 import PasswordHasher
@@ -79,7 +77,7 @@ async def verify_csrf_token(request: Request):
     if not csrf_token:
         raise HTTPException(status_code=403, detail="Missing CSRF token")
 
-    token_entry = await CsrfToken.get_or_none(csrf_token=csrf_token, device_token=auth_token)
+    token_entry = await CSRFTokenRecords.get_or_none(csrf_token=csrf_token, device_token=auth_token)
     if not token_entry:
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
@@ -88,7 +86,7 @@ async def verify_csrf_token(request: Request):
         raise HTTPException(status_code=403, detail="CSRF token expired")
 
     return {"message": "Success"}
-    
+
 
 def verify_jwt(request: Request):
     auth_token = request.cookies.get("deviceToken")
@@ -148,7 +146,7 @@ async def set_csrf_token(request: Request):
     verify_jwt(request)
     device_token = request.cookies.get("deviceToken")
     csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token)
-        
+
     return {"message": "Success", "csrf_token": csrf_token}
 
 
