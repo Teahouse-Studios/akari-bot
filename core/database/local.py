@@ -1,6 +1,7 @@
 from datetime import datetime
 import hashlib
 import os
+import secrets
 
 from tortoise.models import Model
 from tortoise import fields
@@ -22,13 +23,14 @@ class CSRFTokenRecords(Model):
     class Meta:
         table = "csrf_token_records"
 
-async def generate_csrf_token(device_token: str) -> str:
+@classmethod
+async def generate_csrf_token(cls, device_token: str) -> str:
     csrf_token = secrets.token_hex(32)
 
     expiry_time = datetime.now(UTC) - timedelta(seconds=CSRF_TOKEN_EXPIRY)
-    await CsrfToken.filter(token_timestamp__lt=expiry_time).delete()
+    await cls.filter(token_timestamp__lt=expiry_time).delete()
 
-    await CsrfToken.create(
+    await cls.create(
         csrf_token=csrf_token,
         device_token=device_token,
     )
