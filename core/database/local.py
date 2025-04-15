@@ -28,7 +28,7 @@ class CSRFTokenRecords(Model):
         csrf_token = secrets.token_hex(32)
 
         expiry_time = datetime.now(UTC) - timedelta(seconds=CSRF_TOKEN_EXPIRY)
-        await cls.filter(token_timestamp__lt=expiry_time).delete()
+        await cls.filter(timestamp__lt=expiry_time).delete()
 
         await cls.create(
             csrf_token=csrf_token,
