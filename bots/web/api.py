@@ -3,15 +3,12 @@ import glob
 import os
 import platform
 import re
-import secrets
 import sys
-import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
 
 import jwt
-import orjson as json
 import psutil
 import uvicorn
 from argon2 import PasswordHasher
@@ -36,6 +33,7 @@ from core.config import Config  # noqa: E402
 from core.constants import config_filename, config_path, logs_path  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo  # noqa: E402
+from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.i18n import Locale  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
@@ -64,9 +62,7 @@ ph = PasswordHasher()
 
 ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
-CSRF_TOKEN_PATH = os.path.join(PrivateAssets.path, ".CSRF_token")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
-CSRF_TOKEN_EXPIRY = 3600
 MAX_LOG_HISTORY = 1000
 
 ALLOW_ORIGINS.append(f"http://{WEBUI_HOST}:{WEBUI_PORT}")
@@ -74,40 +70,22 @@ ALLOW_ORIGINS.append(f"http://{WEBUI_HOST}:{WEBUI_PORT}")
 last_file_line_count = {}
 logs_history = []
 
-if not os.path.exists(CSRF_TOKEN_PATH):
-    with open(CSRF_TOKEN_PATH, "wb") as f:
-        f.write(json.dumps([]))
 
-
-def load_csrf_tokens():
-    with open(CSRF_TOKEN_PATH, "r") as f:
-        return json.loads(f.read())
-
-
-def save_csrf_tokens(tokens):
-    with open(CSRF_TOKEN_PATH, "wb") as f:
-        f.write(json.dumps(tokens))
-
-
-def verify_csrf_token(request: Request):
+async def verify_csrf_token(request: Request):
     csrf_token = request.headers.get("X-XSRF-TOKEN")
-    device_token = request.cookies.get("deviceToken")
+    auth_token = request.cookies.get("deviceToken")
     if not csrf_token:
         raise HTTPException(status_code=403, detail="Missing CSRF token")
 
-    token_entries = load_csrf_tokens()
+    token_entry = await CSRFTokenRecords.get_or_none(csrf_token=csrf_token, device_token=auth_token)
+    if not token_entry:
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
-    for token_entry in token_entries:
-        stored_token = token_entry.get("csrf_token")
-        stored_device_token = token_entry.get("device_token")
-        stored_timestamp = token_entry.get("token_timestamp")
+    if (datetime.now(UTC) - token_entry.token_timestamp).total_seconds() > CSRF_TOKEN_EXPIRY:
+        await token_entry.delete()
+        raise HTTPException(status_code=403, detail="CSRF token expired")
 
-        if stored_token == csrf_token and stored_device_token == device_token:
-            if time.time() - stored_timestamp > CSRF_TOKEN_EXPIRY:
-                raise HTTPException(status_code=403, detail="CSRF token expired")
-            return {"message": "Success"}
-
-    raise HTTPException(status_code=403, detail="Invalid CSRF token")
+    return {"message": "Success"}
 
 
 def verify_jwt(request: Request):
@@ -166,20 +144,8 @@ async def verify_token(request: Request):
 @limiter.limit("2/second")
 async def set_csrf_token(request: Request):
     verify_jwt(request)
-    csrf_token = secrets.token_hex(32)
     device_token = request.cookies.get("deviceToken")
-    current_time = time.time()
-
-    token_entries = load_csrf_tokens()
-    token_entries = [
-        token for token in token_entries if current_time - token["token_timestamp"] < CSRF_TOKEN_EXPIRY
-    ]
-    token_entries.append({
-        "csrf_token": csrf_token,
-        "device_token": device_token,
-        "token_timestamp": current_time
-    })
-    save_csrf_tokens(token_entries)
+    csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token)
 
     return {"message": "Success", "csrf_token": csrf_token}
 
@@ -250,7 +216,7 @@ async def auth(request: Request, response: Response):
 async def change_password(request: Request, response: Response):
     try:
         verify_jwt(request)
-        verify_csrf_token(request)
+        await verify_csrf_token(request)
         body = await request.json()
         new_password = body.get("new_password", "")
         password = body.get("password", "")
@@ -291,7 +257,7 @@ async def change_password(request: Request, response: Response):
 async def clear_password(request: Request, response: Response):
     try:
         verify_jwt(request)
-        verify_csrf_token(request)
+        await verify_csrf_token(request)
         body = await request.json()
         password = body.get("password", "")
 
@@ -442,7 +408,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 @limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
     verify_jwt(request)
-    verify_csrf_token(request)
+    await verify_csrf_token(request)
     if not os.path.exists(config_path):
         raise HTTPException(status_code=404, detail="Not found")
     cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
@@ -537,7 +503,7 @@ async def get_target_modules(request: Request, target_id: str):
 @limiter.limit("10/minute")
 async def enable_modules(request: Request, target_id: str):
     try:
-        verify_csrf_token(request)
+        await verify_csrf_token(request)
         target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
         target_from = "|".join(target_id.split("|")[:-2])
 
@@ -562,7 +528,7 @@ async def enable_modules(request: Request, target_id: str):
 @limiter.limit("10/minute")
 async def disable_modules(request: Request, target_id: str):
     try:
-        verify_csrf_token(request)
+        await verify_csrf_token(request)
         target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
         target_from = "|".join(target_id.split("|")[:-2])
 

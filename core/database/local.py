@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta, UTC
 import hashlib
 import os
+import secrets
 
 from tortoise.models import Model
 from tortoise import fields
@@ -10,7 +11,30 @@ from core.constants.path import database_path
 
 os.makedirs(database_path, exist_ok=True)
 
+CSRF_TOKEN_EXPIRY = 3600
 DB_LINK = "sqlite://database/local.db"
+
+
+class CSRFTokenRecords(Model):
+    csrf_token = fields.CharField(pk=True, max_length=128, unique=True)
+    device_token = fields.CharField(max_length=512)
+    timestamp = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "csrf_token_records"
+
+    @classmethod
+    async def generate_csrf_token(cls, device_token: str) -> str:
+        csrf_token = secrets.token_hex(32)
+
+        expiry_time = datetime.now(UTC) - timedelta(seconds=CSRF_TOKEN_EXPIRY)
+        await cls.filter(timestamp__lt=expiry_time).delete()
+
+        await cls.create(
+            csrf_token=csrf_token,
+            device_token=device_token,
+        )
+        return csrf_token
 
 
 class DirtyWordCache(Model):
