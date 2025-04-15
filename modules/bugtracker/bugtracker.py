@@ -10,7 +10,7 @@ from core.logger import Logger
 from core.utils.http import download, post_url, get_url
 from core.utils.web_render import webrender
 
-elements = [".MuiBox-root.css-1jpkv3d"]
+elements = ["div[class^='MuiContainer-root']"]
 
 spx_cache = {}
 
