@@ -5,6 +5,7 @@ import platform
 import re
 import sys
 import uuid
+from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
 
@@ -32,7 +33,7 @@ from core.close import cleanup_sessions  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename, config_path, logs_path  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
-from core.database.models import AnalyticsData, SenderInfo, TargetInfo  # noqa: E402
+from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords  # noqa: E402
 from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords  # noqa: E402
 from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.i18n import Locale  # noqa: E402
@@ -63,10 +64,13 @@ ph = PasswordHasher()
 ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_BLOCK_DURATION = 3600
 MAX_LOG_HISTORY = 1000
 
 ALLOW_ORIGINS.append(f"http://{WEBUI_HOST}:{WEBUI_PORT}")
 
+login_failed_attempts = defaultdict(list)
 last_file_line_count = {}
 logs_history = []
 
@@ -153,16 +157,20 @@ async def set_csrf_token(request: Request):
 @app.post("/api/auth")
 @limiter.limit("10/minute")
 async def auth(request: Request, response: Response):
-    try:
-        payload = {
-            "device_id": str(uuid.uuid4()),
-            "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
-            "iat": datetime.now(UTC),  # 签发时间
-            "iss": "auth-api"  # 签发者
-        }
-        jwt_token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    ip = request.client.host
+    if await MaliciousLoginRecords.check_blocked(ip):
+        raise HTTPException(status_code=403, detail="This IP has been blocked")
 
+    try:
         if not os.path.exists(PASSWORD_PATH):
+            payload = {
+                "device_id": str(uuid.uuid4()),
+                "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
+                "iat": datetime.now(UTC),  # 签发时间
+                "iss": "auth-api"  # 签发者
+            }
+            jwt_token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
             response.set_cookie(
                 key="deviceToken",
                 value=jwt_token,
@@ -183,7 +191,18 @@ async def auth(request: Request, response: Response):
         try:
             ph.verify(stored_password, password)
         except Exception:
+            now = datetime.now(UTC)
+            login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
+            login_failed_attempts[ip].append(now)
+
+            if len(login_failed_attempts[ip]) >= MAX_LOGIN_ATTEMPTS:
+                await MaliciousLoginRecords.create(ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
+                login_failed_attempts[ip].clear()
+                raise HTTPException(status_code=403, detail="This IP has been blocked")
+            
             raise HTTPException(status_code=401, detail="Invalid password")
+        
+        login_failed_attempts.pop(ip, None)
 
         payload = {
             "device_id": str(uuid.uuid4()),

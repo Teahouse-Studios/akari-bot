@@ -396,7 +396,31 @@ class JobQueuesTable(DBModel):
         return await cls.filter(
             target_client=target_client, status="pending"
         ).all()
+    
 
+class MaliciousLoginRecords(DBModel):
+    """
+    恶意登录行为记录。
+
+    :param target_id: 会话 ID。
+    :param sender_id: 用户 ID。
+    :param action: 行为类型。
+    :param detail: 行为详情。
+    :param timestamp: 时间戳。
+    """
+    id = fields.IntField(pk=True)
+    ip_address = fields.CharField(max_length=45)
+    blocked_until = fields.DatetimeField()
+    created_date = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "malicious_login"
+
+    @classmethod
+    async def check_blocked(cls, ip_address: str) -> bool:
+        return await cls.filter(
+            ip_address=ip_address, blocked_until__gt=datetime.now(UTC)
+        ).exists()
 
 __all__ = [
     "SenderInfo",
@@ -405,5 +429,6 @@ __all__ = [
     "AnalyticsData",
     "DBVersion",
     "UnfriendlyActionRecords",
-    "JobQueuesTable"
+    "JobQueuesTable",
+    "MaliciousLoginRecords"
 ]
