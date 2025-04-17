@@ -4,6 +4,7 @@ import os
 import platform
 import re
 import sys
+import traceback
 import uuid
 from collections import defaultdict
 from contextlib import asynccontextmanager
@@ -26,9 +27,10 @@ from tortoise.exceptions import DoesNotExist
 sys.path.append(os.getcwd())
 
 from bots.web.bot import API_PORT, WEBUI_HOST, WEBUI_PORT  # noqa: E402
-from bots.web.info import client_name  # noqa: E402
+from bots.web.info import *  # noqa: E402
+from bots.web.message import MessageSession  # noqa: E402
 from core.bot_init import init_async  # noqa: E402
-from core.builtins import PrivateAssets  # noqa: E402
+from core.builtins import PrivateAssets, Temp  # noqa: E402
 from core.close import cleanup_sessions  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename, config_path, logs_path  # noqa: E402
@@ -39,8 +41,10 @@ from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.i18n import Locale  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.logger import Logger  # noqa: E402
+from core.parser.message import parser  # noqa: E402
 from core.queue import JobQueue  # noqa: E402
 from core.scheduler import Scheduler  # noqa: E402
+from core.types import MsgInfo, Session  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 
 started_time = datetime.now()
@@ -240,7 +244,6 @@ async def change_password(request: Request, response: Response):
         new_password = body.get("new_password", "")
         password = body.get("password", "")
 
-        # 读取旧密码
         if not os.path.exists(PASSWORD_PATH):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="New password required")
@@ -258,7 +261,6 @@ async def change_password(request: Request, response: Response):
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        # 设置新密码
         new_password_hashed = ph.hash(new_password)
         with open(PASSWORD_PATH, "w") as file:
             file.write(new_password_hashed)
@@ -445,6 +447,41 @@ async def edit_config_file(request: Request, cfg_filename: str):
     except Exception as e:
         Logger.error(str(e))
         raise HTTPException(status_code=400, detail="Bad request")
+    
+@app.websocket("/ws/chat")
+async def websocket_chat(websocket: WebSocket):
+    await websocket.accept()
+    Temp.data['web_chat_websocket'] = websocket
+    try:
+        while True:
+            message = await websocket.receive_text()
+            await send_command(message)
+    except Exception:
+        Logger.error(traceback.format_exc())
+    finally:
+        if 'websocket' in Temp.data:
+            del Temp.data['web_chat_websocket']
+        await websocket.close()
+
+
+async def send_command(message):
+    returns = await parser(
+        MessageSession(
+            target=MsgInfo(
+                target_id=f"{target_prefix}|0",
+                sender_id=f"{sender_prefix}|0",
+                sender_name="Console",
+                target_from=target_prefix,
+                sender_from=sender_prefix,
+                client_name=client_name,
+                message_id=0,
+            ),
+            session=Session(
+                message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
+            )
+        )
+    )
+    return returns
 
 
 @app.get("/api/target")
