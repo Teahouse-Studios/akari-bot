@@ -329,7 +329,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 
 
-rst = module("restart", required_superuser=True, base=True, doc=True, load=Info.subprocess)
+rst = module("restart", required_superuser=True, base=True, doc=True, exclude_from="Web", load=Info.subprocess)
 
 
 def write_version_cache(msg: Bot.MessageSession):
@@ -364,7 +364,7 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish()
 
-upds = module("update&restart", required_superuser=True, alias="u&r", base=True, doc=True, load=Info.subprocess)
+upds = module("update&restart", required_superuser=True, alias="u&r", base=True, doc=True, exclude_from="Web", load=Info.subprocess)
 
 
 @upds.command()
@@ -517,7 +517,7 @@ async def _(msg: Bot.MessageSession, display_msg: str):
         raise NoReportException(e)
 
 
-post_ = module("post", required_superuser=True, base=True, doc=True)
+post_ = module("post", required_superuser=True, base=True, doc=True, exclude_from=["Web", "TEST|Console"])
 
 
 @post_.command("<target> <post_msg>")

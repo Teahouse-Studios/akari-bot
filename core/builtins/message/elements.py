@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import mimetypes
 import os
 import random
 import re
@@ -14,10 +15,7 @@ from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
-from core.config import Config
-from core.constants import bug_report_url_default
 from core.constants.info import Info
-from core.i18n import Locale
 from core.utils.cache import random_cache_path
 
 from copy import deepcopy
@@ -233,10 +231,18 @@ class ImageElement(MessageElement):
                 image_cache.write(raw)
             return img_path
 
-    async def get_base64(self):
+    async def get_base64(self, mime: bool = False):
         file = await self.get()
+
         with open(file, "rb") as f:
-            return str(base64.b64encode(f.read()), "UTF-8")
+            img_b64 = base64.b64encode(f.read()).decode("UTF-8")
+        
+        if mime:
+            mime_type, _ = mimetypes.guess_type(file)
+            if not mime_type:
+                mime_type = 'application/octet-stream'
+            return f"data:{mime_type};base64,{img_b64}"
+        return img_b64
 
     async def add_random_noise(self) -> "ImageElement":
         image = PILImage.open(await self.get())

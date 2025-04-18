@@ -15,7 +15,7 @@ import psutil
 import uvicorn
 from argon2 import PasswordHasher
 from cpuinfo import get_cpu_info
-from fastapi import FastAPI, Query, WebSocket
+from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
@@ -456,6 +456,8 @@ async def websocket_chat(websocket: WebSocket):
         while True:
             message = await websocket.receive_text()
             await send_command(message)
+    except WebSocketDisconnect:
+        pass
     except Exception:
         Logger.error(traceback.format_exc())
     finally:
@@ -622,17 +624,17 @@ async def get_locale(request: Request, locale: str, string: str):
 async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
-    if logs_history:
-        expanded_history = ["\n".join(item) if isinstance(item, list) else item for item in logs_history]
-        await websocket.send_text("\n".join(expanded_history))
+    try:
+        if logs_history:
+            expanded_history = ["\n".join(item) if isinstance(item, list) else item for item in logs_history]
+            await websocket.send_text("\n".join(expanded_history))
 
-    while True:
-        today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime("%Y-%m-%d")}.log")
-        today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
-
-        if today_logs:
-            for log_file in today_logs:
-                try:
+        while True:
+            today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime("%Y-%m-%d")}.log")
+            today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
+            today_logs.sort(key=lambda line: (extract_timestamp(line[0]) if isinstance(line, list) else extract_timestamp(line)) or datetime.min)
+            if today_logs:
+                for log_file in today_logs:
                     current_line_count = 0
                     new_lines = []
 
@@ -640,24 +642,22 @@ async def websocket_logs(websocket: WebSocket):
                         for i, line in enumerate(f):
                             if i >= last_file_line_count.get(log_file, 0):
                                 if line:
-                                    new_lines.append(line.rstrip())  # 移除行尾换行符
-                            current_line_count = i + 1  # 记录当前文件行数
+                                    new_lines.append(line.rstrip())
+                            current_line_count = i + 1
 
                     if new_lines:
                         processed_lines = []
                         for line in new_lines:
                             if is_log_line_valid(line):
-                                # 新的日志行，结束之前的日志组
                                 logs_history.append(line)
                             else:
-                                # 非日志行，追加到最后一个日志行的列表
                                 if logs_history and isinstance(
                                         logs_history[-1], str) and is_log_line_valid(logs_history[-1]):
                                     logs_history.append([logs_history.pop(), line])
                                 elif logs_history and isinstance(logs_history[-1], list):
                                     logs_history[-1].append(line)
                                 else:
-                                    logs_history.append(line)  # 兜底处理
+                                    logs_history.append(line)
                             processed_lines.append(line)
 
                         logs_history.sort(
@@ -666,26 +666,23 @@ async def websocket_logs(websocket: WebSocket):
                                     line[0]) if isinstance(
                                     line,
                                     list) else extract_timestamp(line)) or datetime.min)
-                        # 发送日志数据，展开 logs_history 里的列表
                         expanded_logs = [
                             "\n".join(item) if isinstance(
                                 item, list) else item for item in processed_lines]
                         await websocket.send_text("\n".join(expanded_logs))
 
-                        # 维护 logs_history 长度
                         while len(logs_history) > MAX_LOG_HISTORY:
                             logs_history.pop(0)
 
-                        # 清理无效日志行（直接移除整个列表）
-                        while logs_history and not is_log_line_valid(logs_history[0]):
-                            logs_history.pop(0)
-
                     last_file_line_count[log_file] = current_line_count
-                except Exception:
-                    continue
 
-        await asyncio.sleep(0.1)
-
+            await asyncio.sleep(0.1)
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        Logger.error(traceback.format_exc())
+    finally:
+        await websocket.close()
 
 def is_log_line_valid(line: str) -> bool:
     log_pattern = r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"

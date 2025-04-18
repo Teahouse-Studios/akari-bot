@@ -58,8 +58,9 @@ class MessageSession(MessageSessionT):
                     send_msg_chain.append({"type": "text", "content": x.text})
                     Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 elif isinstance(x, ImageElement):
-                    send_msg_chain.append({"type": "image", "content": await x.get_base64()})
-                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Image")
+                    img_b64 = await x.get_base64(mime=True)
+                    send_msg_chain.append({"type": "image", "content": img_b64})
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:100]}...")
             
             await websocket.send_text(json.dumps(send_msg_chain).decode())
 

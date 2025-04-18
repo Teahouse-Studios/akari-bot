@@ -159,12 +159,3 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     await Bot.send_message(args["target_id"], MessageChain(args["message"]))
     await return_val(tsk, {"send": True})
-
-
-@action("verify_timezone")
-async def _(tsk: JobQueuesTable, args: dict):
-    timestamp = tsk.timestamp
-    tz_ = datetime.datetime.now().timestamp() - timestamp.timestamp()
-    Logger.debug(f"Timezone offset: {tz_}")
-    tsk.timestamp = tz_
-    await return_val(tsk, {})
