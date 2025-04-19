@@ -1,6 +1,4 @@
-# import asyncio
 import sys
-# import signal
 
 from tortoise import Tortoise
 
@@ -19,14 +17,6 @@ async def cleanup_sessions():
                     await z.send_message(I18NContext("core.message.restart.prompt"))
     await Tortoise.close_connections()
     Scheduler.shutdown()
-
-
-# def catch_sigterm(signal, frame):
-#     Logger.warning("Caught SIGTERM. Exiting...")
-#     asyncio.create_task(cleanup_sessions())
-#
-#
-# signal.signal(signal.SIGTERM, catch_sigterm)
 
 
 async def restart():

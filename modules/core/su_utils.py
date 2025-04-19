@@ -8,7 +8,6 @@ import orjson as json
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp
 from core.component import module
-from core.close import restart
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
@@ -16,6 +15,7 @@ from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import check_temp_ban, remove_temp_ban
+from core.terminate import restart
 from core.tos import pardon_user, warn_user
 from core.types import Param
 from core.utils.bash import run_sys_command

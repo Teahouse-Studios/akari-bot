@@ -218,6 +218,15 @@ def run_bot():
     Logger.critical("All bots exited unexpectedly, please check the output.")
 
 
+def terminate_process(process: multiprocessing.Process, timeout=5):
+    process.terminate()
+    process.join(timeout=timeout)
+    if process.is_alive():
+        process.kill()
+    process.join()
+    process.close()
+
+
 if __name__ == "__main__":
     import core.scripts.config_generate  # noqa
     try:
@@ -229,9 +238,7 @@ if __name__ == "__main__":
             except RestartBot:
                 for ps in processes:
                     loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
-                    ps.terminate()
-                    ps.join()
-                    ps.close()
+                    terminate_process(ps)
                 processes.clear()
                 continue
             except Exception:
@@ -240,7 +247,5 @@ if __name__ == "__main__":
                 break
     except (KeyboardInterrupt, SystemExit):
         for ps in processes:
-            ps.terminate()
-            ps.join()
-            ps.close()
+            terminate_process(ps)
         processes.clear()

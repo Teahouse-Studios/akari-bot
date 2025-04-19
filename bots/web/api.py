@@ -22,7 +22,6 @@ from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from tortoise.exceptions import DoesNotExist
 
 sys.path.append(os.getcwd())
 
@@ -31,7 +30,6 @@ from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
 from core.bot_init import init_async  # noqa: E402
 from core.builtins import PrivateAssets, Temp  # noqa: E402
-from core.close import cleanup_sessions  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename, config_path, logs_path  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
@@ -44,6 +42,7 @@ from core.logger import Logger  # noqa: E402
 from core.parser.message import parser  # noqa: E402
 from core.queue import JobQueue  # noqa: E402
 from core.scheduler import Scheduler  # noqa: E402
+from core.terminate import cleanup_sessions  # noqa: E402
 from core.types import MsgInfo, Session  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 

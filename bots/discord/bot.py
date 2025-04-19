@@ -14,12 +14,12 @@ from bots.discord.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
-from core.close import cleanup_sessions
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.parser.message import parser
+from core.terminate import cleanup_sessions
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 

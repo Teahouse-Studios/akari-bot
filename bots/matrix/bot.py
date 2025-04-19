@@ -12,12 +12,12 @@ from bots.matrix.info import *
 from bots.matrix.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
-from core.close import cleanup_sessions
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.parser.message import parser
+from core.terminate import cleanup_sessions
 from core.types import MsgInfo, Session
 from core.utils.info import Info
 

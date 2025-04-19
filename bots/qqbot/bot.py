@@ -10,11 +10,11 @@ from bots.qqbot.info import *
 from bots.qqbot.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
-from core.close import cleanup_sessions
 from core.config import Config
 from core.constants.info import Info
 from core.constants.path import assets_path
 from core.parser.message import parser
+from core.terminate import cleanup_sessions
 from core.types import MsgInfo, Session
 
 PrivateAssets.set(os.path.join(assets_path, "private", "qqbot"))
