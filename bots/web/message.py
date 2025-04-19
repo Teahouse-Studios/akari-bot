@@ -63,7 +63,7 @@ class MessageSession(MessageSessionT):
             elif isinstance(x, ImageElement):
                 img_b64 = await x.get_base64(mime=True)
                 sends.append({"type": "image", "content": img_b64, "id": str(uuid.uuid4())})
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:100]}...")
+                Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
         
         await websocket.send_text(json.dumps(sends).decode())
 
@@ -105,6 +105,25 @@ class MessageSession(MessageSessionT):
 
 class FetchTarget(FetchTargetT):
     name = client_name
+
+    @staticmethod
+    async def fetch_target(target_id, sender_id=None):
+        if target_id == f"{target_prefix}|0":
+            return FetchedSession(
+                target_from=target_prefix,
+                target_id="0",
+                sender_from=sender_prefix,
+                sender_id="0",
+            )
+
+    @staticmethod
+    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
+        fetch = await FetchTarget.fetch_target(f"{target_prefix}|0")
+        if i18n:
+            await fetch.send_direct_message(I18NContext(message, **kwargs))
+        else:
+            await fetch.send_direct_message(message)
+
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
