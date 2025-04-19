@@ -3,6 +3,7 @@
     "phigros.help.bind": "Use the SessionToken of the Cloud Save to bind user data. Usage via private chat is recommended.",
     "phigros.help.desc": "Query about Phigros.",
     "phigros.help.unbind": "Unbind user.",
+    "phigros.message.b19.get_failed": "获取失败，请尝试重新绑定 SessionToken 或报告开发者：\n${err}",
     "phigros.message.bind.success": "Bound successfully: ${username}",
     "phigros.message.bind.delete_failed": "Failed to delete message automatically; please delete the message manually.",
     "phigros.message.bind.warning": "Warning: you are binding user data in PUBLIC SESSIONS, which may lead to DATA CORRUPTION of your Cloud Save since your token is LEAKED here. Please bind user data in private chats to avoid this.\nYou can reset your SessionToken by logging out and then logging back in again.",
