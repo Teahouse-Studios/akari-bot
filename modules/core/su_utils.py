@@ -332,7 +332,7 @@ async def _(msg: Bot.MessageSession):
 rst = module("restart", required_superuser=True, base=True, doc=True, exclude_from="Web", load=Info.subprocess)
 
 
-def write_version_cache(msg: Bot.MessageSession):
+def write_restart_cache(msg: Bot.MessageSession):
     update = os.path.join(PrivateAssets.path, ".cache_restart_author")
     with open(update, "wb") as write_version:
         write_version.write(json.dumps({"From": msg.target.target_from, "ID": msg.target.target_id}))
@@ -359,7 +359,7 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         restart_time.append(datetime.now().timestamp())
         await wait_for_restart(msg)
-        write_version_cache(msg)
+        write_restart_cache(msg)
         await restart()
     else:
         await msg.finish()
@@ -374,7 +374,7 @@ async def _(msg: Bot.MessageSession):
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
-            write_version_cache(msg)
+            write_restart_cache(msg)
             if Info.version:
                 pull_repo_result = await pull_repo()
                 if pull_repo_result:

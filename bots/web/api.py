@@ -313,28 +313,28 @@ async def server_info(request: Request):
             "system": platform.system(),
             "version": platform.version(),
             "machine": platform.machine(),
-            "boot_time": psutil.boot_time(),
+            "boot_time": psutil.boot_time()
         },
         "bot": {
             "running_time": (datetime.now() - started_time).total_seconds(),
             "python_version": platform.python_version(),
             "version": Info.version,
             "web_render_local_status": Info.web_render_local_status,
-            "web_render_status": Info.web_render_status,
+            "web_render_status": Info.web_render_status
         },
         "cpu": {
             "cpu_brand": get_cpu_info()["brand_raw"],
-            "cpu_percent": psutil.cpu_percent(interval=1),  # 获取 CPU 使用率
+            "cpu_percent": psutil.cpu_percent(interval=1)
         },
         "memory": {
-            "total": psutil.virtual_memory().total / (1024 * 1024),  # 总内存
-            "used": psutil.virtual_memory().used / (1024 * 1024),  # 已用内存
-            "percent": psutil.virtual_memory().percent,  # 内存使用百分比
+            "total": psutil.virtual_memory().total / (1024 * 1024),
+            "used": psutil.virtual_memory().used / (1024 * 1024),
+            "percent": psutil.virtual_memory().percent
         },
         "disk": {
-            "total": psutil.disk_usage("/").total / (1024 * 1024 * 1024),  # 磁盘总容量
-            "used": psutil.disk_usage("/").used / (1024 * 1024 * 1024),  # 磁盘已使用容量
-            "percent": psutil.disk_usage("/").percent,  # 磁盘使用百分比
+            "total": psutil.disk_usage("/").total / (1024 * 1024 * 1024),
+            "used": psutil.disk_usage("/").used / (1024 * 1024 * 1024),
+            "percent": psutil.disk_usage("/").percent
         }
     }
 
@@ -349,28 +349,6 @@ async def get_analytics(request: Request, days: int = Query(1)):
         count = await AnalyticsData.get_count_by_times(now, past)
         past_past = now - timedelta(days=2 * days)
         past_count = await AnalyticsData.get_count_by_times(past, past_past)
-        try:
-            change_rate = round((count - past_count) / past_count, 2)
-        except ZeroDivisionError:
-            change_rate = 0.00
-        
-        return {"count": count, "change_rate": change_rate, "data": data}
-    
-    except Exception as e:
-        Logger.error(str(e))
-        raise HTTPException(status_code=400, detail="Bad request")
-
-@app.get("/api/analytics/{module}")
-@limiter.limit("2/second")
-async def get_module_analytics(request: Request, module: str, days: int = Query(1)):
-    verify_jwt(request)
-    try:
-        now = datetime.now()
-        past = now - timedelta(days=days)
-        data = await AnalyticsData.get_values_by_times(now, past, module)
-        count = await AnalyticsData.get_count_by_times(now, past, module)
-        past_past = now - timedelta(days=2 * days)
-        past_count = await AnalyticsData.get_count_by_times(past, past_past, module)
         try:
             change_rate = round((count - past_count) / past_count, 2)
         except ZeroDivisionError:
@@ -492,49 +470,12 @@ async def get_target_list(request: Request):
     return {"message": "Success", "targetList": target_list}
 
 
-@app.get("/api/target/{target_id}")
-@limiter.limit("2/second")
-async def get_target(request: Request, target_id: str):
-    try:
-        target_info = await TargetInfo.get(target_id=target_id)
-    except DoesNotExist:
-        raise HTTPException(status_code=404, detail="not found")
-
-    return {
-        "targetId": target_id,
-        "modules": target_info.modules,
-        "muted": target_info.muted,
-        "customAdmins": target_info.custom_admins,
-        "locale": target_info.locale,
-        "targetData": target_info.target_data
-    }
-
-
 @app.get("/api/sender")
 @limiter.limit("2/second")
 async def get_sender_list(request: Request):
     sender_list = await SenderInfo.all()
     sender_list = [s for s in sender_list if not s.sender_id.startswith("TEST|")]
     return {"message": "Success", "targetList": sender_list}
-
-
-@app.get("/api/sender/{sender_id}")
-@limiter.limit("2/second")
-async def get_sender(request: Request, sender_id: str):
-    try:
-        sender_info = await SenderInfo.get(sender_id=sender_id)
-    except DoesNotExist:
-        raise HTTPException(status_code=404, detail="not found")
-
-    return {
-        "senderId": sender_id,
-        "blocked": sender_info.blocked,
-        "trusted": sender_info.trusted,
-        "superUser": sender_info.superuser,
-        "warns": sender_info.warns,
-        "petal": sender_info.petal,
-        "senderData": sender_info.sender_data,
-    }
 
 
 @app.get("/api/modules")
@@ -692,6 +633,21 @@ def extract_timestamp(log_line: str):
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
+
+
+@app.post("/api/restart")
+async def restart_bot(request: Request):
+    verify_jwt(request)
+    await verify_csrf_token(request)
+    
+    asyncio.create_task(restart())
+    return {"message": "Success"}
+
+
+async def restart():
+    await asyncio.sleep(1)
+    await cleanup_sessions()
+    os._exit(233)
 
 
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
