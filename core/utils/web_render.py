@@ -48,7 +48,7 @@ async def check_web_render() -> Tuple[bool, bool]:
     else:
         web_render_status = True
         web_render_local_status = True
-    ping_url = "http://cn.bing.com"
+    ping_url = "http://www.bing.com"
     if web_render_status:
         try:
             Logger.info("[WebRender] Checking WebRender status...")

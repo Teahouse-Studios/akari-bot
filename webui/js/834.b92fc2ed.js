@@ -1,2 +1,0 @@
-"use strict";(self["webpackChunkwebui"]=self["webpackChunkwebui"]||[]).push([[834],{6834:function(u,e,n){n.r(e),n.d(e,{default:function(){return f}});var r=n(4055);function t(u,e){return(0,r.uX)(),(0,r.CE)("div")}var c=n(5932);const i={},a=(0,c.A)(i,[["render",t]]);var f=a}}]);
-//# sourceMappingURL=834.b92fc2ed.js.map

@@ -6,6 +6,7 @@ from tortoise import Tortoise
 
 from core.builtins import MessageTaskManager, I18NContext
 from core.logger import Logger
+from core.scheduler import Scheduler
 
 
 async def cleanup_sessions():
@@ -17,6 +18,7 @@ async def cleanup_sessions():
                 if get_wait_list[x][y][z]["active"]:
                     await z.send_message(I18NContext("core.message.restart.prompt"))
     await Tortoise.close_connections()
+    Scheduler.shutdown()
 
 
 # def catch_sigterm(signal, frame):

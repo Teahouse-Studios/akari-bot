@@ -455,20 +455,19 @@ async def websocket_chat(websocket: WebSocket):
     try:
         while True:
             message = await websocket.receive_text()
-            await send_command(message)
+            asyncio.create_task(send_command(message))
     except WebSocketDisconnect:
         pass
     except Exception:
         Logger.error(traceback.format_exc())
-    finally:
-        if 'websocket' in Temp.data:
-            del Temp.data['web_chat_websocket']
         await websocket.close()
+    finally:
+        if 'web_chat_websocket' in Temp.data:
+            del Temp.data['web_chat_websocket']
 
 
 async def send_command(message):
-    returns = await parser(
-        MessageSession(
+    msg = MessageSession(
             target=MsgInfo(
                 target_id=f"{target_prefix}|0",
                 sender_id=f"{sender_prefix}|0",
@@ -476,13 +475,12 @@ async def send_command(message):
                 target_from=target_prefix,
                 sender_from=sender_prefix,
                 client_name=client_name,
-                message_id=0,
+                message_id=str(uuid.uuid4()),
             ),
             session=Session(
                 message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
-            )
-        )
-    )
+            ))
+    returns = await parser(msg)
     return returns
 
 
@@ -681,7 +679,6 @@ async def websocket_logs(websocket: WebSocket):
         pass
     except Exception:
         Logger.error(traceback.format_exc())
-    finally:
         await websocket.close()
 
 def is_log_line_valid(line: str) -> bool:
