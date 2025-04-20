@@ -436,7 +436,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
 async def get_target_list(
     request: Request,
     prefix: str = Query(None),
-    status: str = Query(None, regex="^(muted|unmuted|blocked)?$"),
+    status: str = Query(None, regex="^(muted|blocked)?$"),
     id: str = Query(None),
     page: int = Query(1, gt=0),
     size: int = Query(20, gt=0, le=100)
@@ -450,8 +450,6 @@ async def get_target_list(
             filters &= Q(target_id__startswith=prefix)
         if status == "muted":
             filters &= Q(muted=True)
-        elif status == "unmuted":
-            filters &= Q(muted=False)
         if status == "blocked":
             filters &= Q(blocked=True)
         if id:
