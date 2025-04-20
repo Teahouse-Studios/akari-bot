@@ -1,0 +1,52 @@
+name: Sync WebUI
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  sync-webui:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout bot repo
+        uses: actions/checkout@v4
+        with:
+          path: akari-bot
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout webui repo
+        uses: actions/checkout@v4
+        with:
+          repository: Teahouse-Studios/akari-bot-webui
+          path: akari-bot-webui
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies and build webui
+        run: |
+          cd akari-bot-webui
+          npm ci
+          npm run build
+
+      - name: Clear webui directory
+        run: |
+          rm -rf akari-bot/webui/*
+      
+      - name: Copy built files to webui
+        run: |
+          cp -r akari-bot-webui/dist/* akari-bot/webui/
+
+      - name: Commit and push changes
+        run: |
+          cd akari-bot
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add webui
+          git commit -m "Sync WebUI [skip ci]" || echo "No changes to commit"
+          git push
