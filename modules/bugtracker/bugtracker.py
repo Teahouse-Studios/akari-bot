@@ -70,7 +70,7 @@ async def bugtracker_get(msg, mojira_id: str):
         ))
         load_json = json.loads(get_json).get("issues")[0]
     except ValueError as e:
-        if str(e).startswith("401"):
+        if str(e).startswith("500"):
             return I18NContext("bugtracker.message.get_failed"), None
         raise e
     if mojira_id not in spx_cache:
