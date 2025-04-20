@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from tortoise.expressions import Q
 
 sys.path.append(os.getcwd())
 
@@ -64,6 +65,7 @@ app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
+default_locale = Config("default_locale", cfg_type=str)
 ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
@@ -228,8 +230,8 @@ async def auth(request: Request, response: Response):
 
     except HTTPException as e:
         raise e
-    except Exception as e:
-        Logger.error(str(e))
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -267,8 +269,8 @@ async def change_password(request: Request, response: Response):
         return {"message": "Success"}
     except HTTPException as e:
         raise e
-    except Exception as e:
-        Logger.error(str(e))
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
     
 
@@ -297,8 +299,8 @@ async def clear_password(request: Request, response: Response):
         return {"message": "Success"}
     except HTTPException as e:
         raise e
-    except Exception as e:
-        Logger.error(str(e))
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -355,8 +357,8 @@ async def get_analytics(request: Request, days: int = Query(1)):
         
         return {"count": count, "change_rate": change_rate, "data": data}
     
-    except Exception as e:
-        Logger.error(str(e))
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
 
 @app.get("/api/config")
@@ -374,8 +376,8 @@ async def get_config_list(request: Request):
         return {"message": "Success", "cfg_files": cfg_files}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
-    except Exception as e:
-        Logger.error(str(e))
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -397,32 +399,35 @@ async def get_config_file(request: Request, cfg_filename: str):
         return {"message": "Success", "content": content}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
-    except Exception as e:
-        Logger.error(str(e))
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.post("/api/config/{cfg_filename}")
 @limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
-    verify_jwt(request)
-    await verify_csrf_token(request)
-    if not os.path.exists(config_path):
-        raise HTTPException(status_code=404, detail="Not found")
-    cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
-    if not cfg_filename.endswith(".toml"):
-        raise HTTPException(status_code=400, detail="Bad request")
-    if not cfg_file_path.startswith(config_path):
-        raise HTTPException(status_code=400, detail="Bad request")
     try:
+        verify_jwt(request)
+        await verify_csrf_token(request)
+        if not os.path.exists(config_path):
+            raise HTTPException(status_code=404, detail="Not found")
+        cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
+        if not cfg_filename.endswith(".toml"):
+            raise HTTPException(status_code=400, detail="Bad request")
+        if not cfg_file_path.startswith(config_path):
+            raise HTTPException(status_code=400, detail="Bad request")
+        
         body = await request.json()
         content = body["content"]
         with open(cfg_file_path, "w", encoding="UTF-8") as f:
             f.write(content)
         return {"message": "Success"}
 
-    except Exception as e:
-        Logger.error(str(e))
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
     
 @app.websocket("/ws/chat")
@@ -463,99 +468,300 @@ async def send_command(message):
 
 @app.get("/api/target")
 @limiter.limit("2/second")
-async def get_target_list(request: Request):
-    target_list = await TargetInfo.all()
-    target_list = [t for t in target_list if not t.target_id.startswith("TEST|")]
-    return {"message": "Success", "targetList": target_list}
+async def get_target_list(
+    request: Request,
+    prefix: str = Query(None),
+    status: str = Query(None, regex="^(muted|unmuted|blocked)?$"),
+    id: str = Query(None),
+    page: int = Query(1, gt=0),
+    size: int = Query(20, gt=0, le=100)
+):
+    try:
+        verify_jwt(request)
+
+        query = TargetInfo.all()
+        filters = Q()
+        if prefix:
+            filters &= Q(target_id__startswith=prefix)
+        if status == "muted":
+            filters &= Q(muted=True)
+        elif status == "unmuted":
+            filters &= Q(muted=False)
+        if status == "blocked":
+            filters &= Q(blocked=True)
+        if id:
+            filters &= Q(target_id__icontains=id)
+
+        query = query.filter(filters)
+        total = await query.count()
+        results = await query.offset((page - 1) * size).limit(size)
+
+        return {
+            "message": "Success",
+            "target_list": results,
+            "total": total
+        }
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/target/{target_id}")
+@limiter.limit("2/second")
+async def get_target_info(request: Request, target_id: str):
+    try:
+        verify_jwt(request)
+        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        if not target_info:
+            raise HTTPException(status_code=404, detail="Not found")
+        return {"message": "Success", "target_info": target_info}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/target/{target_id}/edit")
+@limiter.limit("10/minute")
+async def edit_target_info(request: Request, target_id: str):
+    try:
+        verify_jwt(request)
+        await verify_csrf_token(request)
+
+        target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+        body = await request.json()
+        blocked = body.get("blocked")
+        muted = body.get("muted")
+        locale = body.get("locale")
+        blocked = body.get("blocked")
+        modules = body.get("modules")
+        custom_admins = body.get("custom_admins")
+        target_data = body.get("target_data")
+
+        if blocked is not None and not isinstance(blocked, bool):
+            raise HTTPException(status_code=400, detail="'blocked' must be bool")
+        if muted is not None and not isinstance(muted, bool):
+            raise HTTPException(status_code=400, detail="'muted' must be bool")
+        if locale is not None and not isinstance(locale, str):
+            raise HTTPException(status_code=400, detail="'locale' must be str")
+        if modules is not None and not isinstance(modules, list):
+            raise HTTPException(status_code=400, detail="'modules' must be list")
+        if custom_admins is not None and not isinstance(custom_admins, list):
+            raise HTTPException(status_code=400, detail="'custom_admins' must be list")
+        if target_data is not None and not isinstance(target_data, dict):
+            raise HTTPException(status_code=400, detail="'target_data' must be dict")
+
+        if blocked is not None:
+            target_info.blocked = blocked
+        if muted is not None:
+            target_info.muted = muted
+        if locale is not None:
+            target_info.locale = locale
+        if modules is not None:
+            target_info.modules = modules
+        if custom_admins is not None:
+            target_info.custom_admins = custom_admins
+        if target_data is not None:
+            target_info.target_data = target_data
+        await target_info.save()
+
+        return {"message": "Success"}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/target/{target_id}/delete")
+@limiter.limit("10/minute")
+async def delete_target_info(request: Request, target_id: str):
+    try:
+        verify_jwt(request)
+        await verify_csrf_token(request)
+        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        if target_info:
+            await target_info.delete()
+        return {"message": "Success"}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/api/sender")
 @limiter.limit("2/second")
-async def get_sender_list(request: Request):
-    sender_list = await SenderInfo.all()
-    sender_list = [s for s in sender_list if not s.sender_id.startswith("TEST|")]
-    return {"message": "Success", "targetList": sender_list}
+async def get_sender_list(request: Request,
+    prefix: str = Query(None),
+    status: str = Query(None, regex="^(superuser|trusted|blocked)?$"),
+    id: str = Query(None),
+    page: int = Query(1, gt=0),
+    size: int = Query(20, gt=0, le=100)
+):
+    try:
+        verify_jwt(request)
+
+        query = SenderInfo.all()
+        filters = Q()
+        if prefix:
+            filters &= Q(sender_id__startswith=prefix)
+        if status == "superuser":
+            filters &= Q(superuser=True)
+        elif status == "trusted":
+            filters &= Q(trusted=True)
+        elif status == "blocked":
+            filters &= Q(blocked=True)
+        if id:
+            filters &= Q(sender_id__icontains=id)
+
+        query = query.filter(filters)
+        total = await query.count()
+        results = await query.offset((page - 1) * size).limit(size)
+
+        return {
+            "message": "Success",
+            "sender_list": results,
+            "total": total
+        }
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/sender/{sender_id}")
+@limiter.limit("2/second")
+async def get_sender_info(request: Request, sender_id: str):
+    try:
+        verify_jwt(request)
+        sender_info = await SenderInfo.get_or_none(sender_id=sender_id)
+        if not sender_info:
+            raise HTTPException(status_code=404, detail="Not found")
+        return {"message": "Success", "sender_info": sender_info}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/sender/{sender_id}/edit")
+@limiter.limit("10/minute")
+async def edit_sender_info(request: Request, sender_id: str):
+    try:
+        verify_jwt(request)
+        await verify_csrf_token(request)
+
+        sender_info = (await SenderInfo.get_or_create(sender_id=sender_id))[0]
+        body = await request.json()
+        superuser = body.get("superuser")
+        trusted = body.get("trusted")
+        blocked = body.get("blocked")
+        warns = body.get("warns")
+        petal = body.get("petal")
+        sender_data = body.get("sender_data")
+
+        if superuser is not None and not isinstance(superuser, bool):
+            raise HTTPException(status_code=400, detail="'superuser' must be bool")
+        if trusted is not None and not isinstance(trusted, bool):
+            raise HTTPException(status_code=400, detail="'trusted' must be bool")
+        if blocked is not None and not isinstance(blocked, bool):
+            raise HTTPException(status_code=400, detail="'blocked' must be bool")
+        if warns is not None and not isinstance(warns, int):
+            raise HTTPException(status_code=400, detail="'warns' must be int")
+        if petal is not None and not isinstance(petal, int):
+            raise HTTPException(status_code=400, detail="'petal' must be int")
+        if sender_data is not None and not isinstance(sender_data, dict):
+            raise HTTPException(status_code=400, detail="'sender_data' must be dict")
+
+        if superuser is not None:
+            sender_info.superuser = superuser
+        if trusted is not None:
+            sender_info.trusted = trusted
+        if blocked is not None:
+            sender_info.blocked = blocked
+        if warns is not None:
+            sender_info.warns = warns
+        if petal is not None:
+            sender_info.petal = petal
+        if sender_data is not None:
+            sender_info.sender_data = sender_data
+        await sender_info.save()
+
+        return {"message": "Success"}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/sender/{sender_id}/delete")
+@limiter.limit("10/minute")
+async def delete_sender_info(request: Request, sender_id: str):
+    try:
+        verify_jwt(request)
+        await verify_csrf_token(request)
+        sender_info = await SenderInfo.get_or_none(sender_id=sender_id)
+        if sender_info:
+            await sender_info.delete()
+        return {"message": "Success"}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/api/modules")
 @limiter.limit("2/second")
-async def get_module_list(request: Request):
-    return {"modules": ModulesManager.return_modules_list()}
+async def get_modules_info(request: Request, locale: str = Query(default_locale)):
+    try:
+        verify_jwt(request)
+        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+
+        for module in modules.values():
+            if 'desc' in module and module.get('desc'):
+                module['desc'] = Locale(locale).t_str(module['desc'])
+        return {"message": "Success", "modules": modules}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.get("/api/modules/{target_id}")
 @limiter.limit("2/second")
-async def get_target_modules(request: Request, target_id: str):
-    target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
-    target_from = "|".join(target_id.split("|")[:-2])
-    modules = ModulesManager.return_modules_list(target_from=target_from)
-    return {
-        "targetId": target_id,
-        "modules": {k: v for k, v in modules.items() if k in target_info.modules},
-    }
-
-
-@app.post("/api/modules/{target_id}/enable")
-@limiter.limit("10/minute")
-async def enable_modules(request: Request, target_id: str):
+async def get_target_modules(request: Request, target_id: str, locale: str = Query(default_locale)):
     try:
-        await verify_csrf_token(request)
-        target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+        verify_jwt(request)
+        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        if not target_info:
+            raise HTTPException(status_code=404, detail="Not found")
         target_from = "|".join(target_id.split("|")[:-2])
-
-        body = await request.json()
-        modules = body["modules"]
-        modules = modules if isinstance(modules, list) else [modules]
-        modules = [
-            m
-            for m in modules
-            if m in ModulesManager.return_modules_list(target_from=target_from)
-        ]
-        await target_info.config_module(modules, True)
-        return {"message": "success"}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        Logger.error(str(e))
-        return HTTPException(status_code=400, detail="Bad request")
-
-
-@app.post("/api/modules/{target_id}/disable")
-@limiter.limit("10/minute")
-async def disable_modules(request: Request, target_id: str):
-    try:
-        await verify_csrf_token(request)
-        target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
-        target_from = "|".join(target_id.split("|")[:-2])
-
-        body = await request.json()
-        modules = body["modules"]
-        modules = modules if isinstance(modules, list) else [modules]
-        modules = [
-            m
-            for m in modules
-            if m in ModulesManager.return_modules_list(target_from=target_from)
-        ]
-        await target_info.config_module(modules, False)
-        return {"message": "success"}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        Logger.error(str(e))
-        return HTTPException(status_code=400, detail="Bad request")
-
-
-@app.get("/api/locale/{locale}/{string}")
-@limiter.limit("2/second")
-async def get_locale(request: Request, locale: str, string: str):
-    try:
+        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(target_from=target_from).items() if k in target_info.modules}
+        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        
+        for module in modules.values():
+            if 'desc' in module and module.get('desc'):
+                module['desc'] = Locale(locale).t_str(module['desc'])
         return {
-            "locale": locale,
-            "string": string,
-            "translation": Locale(locale).t(string, False),
+            "message": "Success",
+            "target_id": target_id,
+            "modules": modules,
         }
-    except TypeError:
-        return HTTPException(status_code=404, detail="Not found")
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.websocket("/ws/logs")

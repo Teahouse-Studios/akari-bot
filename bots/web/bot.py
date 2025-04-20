@@ -32,13 +32,14 @@ async def run_fastapi():
 
 
 async def run_flask():
-    from bots.web.webui import generate_config, app as flask_app  # noqa: E402
-    ucfg = Uconfig()
-    ucfg.bind = [f"{WEBUI_HOST}:{WEBUI_PORT}"]
     if os.path.exists(os.path.join(webui_path, "index.html")):
-        generate_config()
-        Logger.info(f"Visit AkariBot WebUI: http://{WEBUI_HOST}:{WEBUI_PORT}")
-        await serve(flask_app, ucfg)
+        from bots.web.webui import generate_config, app as flask_app  # noqa: E402
+        ucfg = Uconfig()
+        ucfg.bind = [f"{WEBUI_HOST}:{WEBUI_PORT}"]
+        if os.path.exists(os.path.join(webui_path, "index.html")):
+            generate_config()
+            Logger.info(f"Visit AkariBot WebUI: http://{WEBUI_HOST}:{WEBUI_PORT}")
+            await serve(flask_app, ucfg)
 
 
 async def main():

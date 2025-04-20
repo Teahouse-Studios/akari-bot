@@ -48,6 +48,26 @@ class Module:
     @classmethod
     def assign(cls, **kwargs):
         return deepcopy(cls(**kwargs))
+    
+    def to_dict(self):
+        return {
+            "bind_prefix": self.bind_prefix,
+            "alias": self.alias,
+            "recommend_modules": self.recommend_modules,
+            "developers": self.developers,
+            "available_for": self.available_for,
+            "exclude_from": self.exclude_from,
+            "support_languages": self.support_languages,
+            "desc": self.desc,
+            "required_admin": self.required_admin,
+            "base": self.base,
+            "doc": self.doc,
+            "hidden": self.hidden,
+            "load": self.load,
+            "rss": self.rss,
+            "required_superuser": self.required_superuser,
+            "required_base_superuser": self.required_base_superuser
+        }
 
 
 __all__ = [
