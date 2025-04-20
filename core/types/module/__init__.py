@@ -66,7 +66,9 @@ class Module:
             "load": self.load,
             "rss": self.rss,
             "required_superuser": self.required_superuser,
-            "required_base_superuser": self.required_base_superuser
+            "required_base_superuser": self.required_base_superuser,
+            "commands": len(self.command_list.set),
+            "regexp": len(self.regex_list.set),
         }
 
 

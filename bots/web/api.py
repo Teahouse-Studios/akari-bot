@@ -430,41 +430,6 @@ async def edit_config_file(request: Request, cfg_filename: str):
         Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
     
-@app.websocket("/ws/chat")
-async def websocket_chat(websocket: WebSocket):
-    await websocket.accept()
-    Temp.data['web_chat_websocket'] = websocket
-    try:
-        while True:
-            message = await websocket.receive_text()
-            asyncio.create_task(send_command(message))
-    except WebSocketDisconnect:
-        pass
-    except Exception:
-        Logger.error(traceback.format_exc())
-        await websocket.close()
-    finally:
-        if 'web_chat_websocket' in Temp.data:
-            del Temp.data['web_chat_websocket']
-
-
-async def send_command(message):
-    msg = MessageSession(
-            target=MsgInfo(
-                target_id=f"{target_prefix}|0",
-                sender_id=f"{sender_prefix}|0",
-                sender_name="Console",
-                target_from=target_prefix,
-                sender_from=sender_prefix,
-                client_name=client_name,
-                message_id=str(uuid.uuid4()),
-            ),
-            session=Session(
-                message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
-            ))
-    returns = await parser(msg)
-    return returns
-
 
 @app.get("/api/target")
 @limiter.limit("2/second")
@@ -718,6 +683,25 @@ async def delete_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
+@app.get("/api/modules_list")
+@limiter.limit("2/second")
+async def get_modules_list(request: Request):
+    try:
+        verify_jwt(request)
+        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+
+        modules_list = []
+        for module in modules.values():
+            modules_list.append(module["bind_prefix"])
+        return {"message": "Success", "modules": modules}
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.error(traceback.format_exc())
+        raise HTTPException(status_code=400, detail="Bad request")
+    
+
 @app.get("/api/modules")
 @limiter.limit("2/second")
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
@@ -737,31 +721,59 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/modules/{target_id}")
+@app.get("/api/modules/{module}")
 @limiter.limit("2/second")
-async def get_target_modules(request: Request, target_id: str, locale: str = Query(default_locale)):
+async def get_module_info(request: Request, module: str, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        target_info = await TargetInfo.get_or_none(target_id=target_id)
-        if not target_info:
-            raise HTTPException(status_code=404, detail="Not found")
-        target_from = "|".join(target_id.split("|")[:-2])
-        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list(target_from=target_from).items() if k in target_info.modules}
+        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
         modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
-        
-        for module in modules.values():
-            if 'desc' in module and module.get('desc'):
-                module['desc'] = Locale(locale).t_str(module['desc'])
-        return {
-            "message": "Success",
-            "target_id": target_id,
-            "modules": modules,
-        }
+
+        for m in modules.values():
+            if module == m["bind_prefix"]:
+                return {"message": "Success", "modules": m}
+        raise HTTPException(status_code=404, detail="Not found")
     except HTTPException as e:
         raise e
     except Exception:
         Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.websocket("/ws/chat")
+async def websocket_chat(websocket: WebSocket):
+    await websocket.accept()
+    Temp.data['web_chat_websocket'] = websocket
+    try:
+        while True:
+            message = await websocket.receive_text()
+            asyncio.create_task(send_command(message))
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        Logger.error(traceback.format_exc())
+        await websocket.close()
+    finally:
+        if 'web_chat_websocket' in Temp.data:
+            del Temp.data['web_chat_websocket']
+
+
+async def send_command(message):
+    msg = MessageSession(
+            target=MsgInfo(
+                target_id=f"{target_prefix}|0",
+                sender_id=f"{sender_prefix}|0",
+                sender_name="Console",
+                target_from=target_prefix,
+                sender_from=sender_prefix,
+                client_name=client_name,
+                message_id=str(uuid.uuid4()),
+            ),
+            session=Session(
+                message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
+            ))
+    returns = await parser(msg)
+    return returns
 
 
 @app.websocket("/ws/logs")
