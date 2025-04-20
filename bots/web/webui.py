@@ -11,6 +11,7 @@ from core.config import Config  # noqa: E402
 from core.constants.path import webui_path  # noqa: E402
 from core.logger import Logger  # noqa: E402
 
+default_locale = Config("default_locale", cfg_type=str)
 
 if os.path.exists(os.path.join(webui_path, "index.html")):
 
@@ -18,7 +19,10 @@ if os.path.exists(os.path.join(webui_path, "index.html")):
         webui_config_path = os.path.join(webui_path, "config.json")
         if os.path.exists(webui_path):
             with open(webui_config_path, "wb") as f:
-                f.write(json.dumps({"api_url": f"http://127.0.0.1:{API_PORT}"}))
+                f.write(json.dumps(
+                    {"api_url": f"http://127.0.0.1:{API_PORT}",
+                     "locale": default_locale}
+                ))
 
     app = Flask(__name__)
 
