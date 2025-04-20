@@ -124,7 +124,7 @@ async def bugtracker_get(msg, mojira_id: str):
                         data["version"] = (
                             "Versions: " + verlist[0] + " ~ " + verlist[-1]
                         )
-                data["link"] = "https://bugs.mojang.com/browse/" + id_
+                data["link"] = f"https://bugs.mojang.com/browse/{id_.split("-", 1)[0]}/issues/" + id_
                 if "customfield_12200" in fields:
                     if fields["customfield_12200"]:
                         data["priority"] = (
