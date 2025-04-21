@@ -309,31 +309,24 @@ class MessageSession(MessageSessionT):
         if isinstance(self.session.message.message, str):
 
             m = html.unescape(self.session.message.message)
-            if text_only:
-                m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
-                m = CQCodeHandler.pattern.sub("", m)
-            else:
+            if not text_only:
                 m = CQCodeHandler.filter_cq(m)
                 m = re.sub(r"\[CQ:at,qq=(.*?)]", rf"{sender_prefix}|\1", m)
                 m = re.sub(r"\[CQ:json,data=(.*?)]", r"\1", m).replace("\\/", "/")
-                m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
+            m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
+            m = CQCodeHandler.pattern.sub("", m)
             return m.strip()
         m = []
         for item in self.session.message.message:
-            if text_only:
-                if item["type"] == "text":
-                    m.append(item["data"]["text"])
-            else:
+            if not text_only:
                 if item["type"] == "at":
                     m.append(rf"{sender_prefix}|{item["data"]["qq"]}")
                 elif item["type"] == "json":
                     m.append(
                         html.unescape(str(item["data"]["data"])).replace("\\/", "/")
                     )
-                elif item["type"] == "text":
-                    m.append(item["data"]["text"])
-                elif item["type"] in CQCodeHandler.get_supported:
-                    m.append(CQCodeHandler.generate_cq(item))
+            if item["type"] == "text":
+                m.append(item["data"]["text"])
 
         return "".join(m).strip()
 

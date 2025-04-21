@@ -447,7 +447,7 @@ async def get_target_list(
         query = TargetInfo.all()
         filters = Q()
         if prefix:
-            filters &= Q(target_id__startswith=prefix)
+            filters &= Q(target_id__startswith=f"{prefix}|")
         if status == "muted":
             filters &= Q(muted=True)
         if status == "blocked":
@@ -571,7 +571,7 @@ async def get_sender_list(request: Request,
         query = SenderInfo.all()
         filters = Q()
         if prefix:
-            filters &= Q(sender_id__startswith=prefix)
+            filters &= Q(sender_id__startswith=f"{prefix}|")
         if status == "superuser":
             filters &= Q(superuser=True)
         elif status == "trusted":

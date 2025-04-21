@@ -81,13 +81,13 @@ set_ = module("set", required_superuser=True, base=True, doc=True, exclude_from=
 async def _(msg: Bot.MessageSession, target: str):
     if not any(target.startswith(f"{target_from}|") for target_from in target_list):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.target.target_from))
-    target_info = await TargetInfo.get_or_none(target=target)
+    target_info = await TargetInfo.get_or_none(target_id=target)
 
     if not target_info:
         confirm = await msg.wait_confirm(I18NContext("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-        target_info = await TargetInfo.create(target=target)
+        target_info = await TargetInfo.create(target_id=target)
     if "enable" in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg["<modules>"]] + msg.parsed_msg.get("...", [])
                    if m in ModulesManager.return_modules_list(msg.target.target_from)]
@@ -98,7 +98,7 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish(I18NContext("core.message.set.module.enable.failed"))
     elif "disable" in msg.parsed_msg:
         modules = [m for m in [msg.parsed_msg["<modules>"]] + msg.parsed_msg.get("...", [])
-                   if m in (await target_info.get()).modules]
+                   if m in target_info.modules]
         await target_info.config_module(modules, False)
         if modules:
             await msg.finish(I18NContext("core.message.set.module.disable.success", modules=", ".join(modules)))
@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession, target: str):
         confirm = await msg.wait_confirm(I18NContext("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-        target_info = await TargetInfo.create(target=target)
+        target_info = await TargetInfo.create(target_id=target)
     if "get" in msg.parsed_msg:
         k = msg.parsed_msg.get("<k>", None)
         if k:
