@@ -1,5 +1,3 @@
-import re
-
 from core.builtins import Bot, I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default

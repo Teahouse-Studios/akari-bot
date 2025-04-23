@@ -2,7 +2,7 @@ import asyncio
 import re
 from typing import Union
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins import Bot, I18NContext
 from core.logger import Logger
 from core.utils.text import isint
 from modules.wiki.database.models import WikiTargetInfo
