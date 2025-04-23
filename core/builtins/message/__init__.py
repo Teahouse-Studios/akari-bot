@@ -219,8 +219,8 @@ class MessageSession:
     async def data_init(self):
         get_sender_info = await SenderInfo.get_by_sender_id(self.target.sender_id)
         get_target_info = await TargetInfo.get_by_target_id(self.target.target_id)
-        self.target_info = get_target_info
         self.sender_info = get_sender_info
+        self.target_info = get_target_info
         self.muted = self.target_info.muted
         self.sender_data = self.sender_info.sender_data
         self.target_data = self.target_info.target_data

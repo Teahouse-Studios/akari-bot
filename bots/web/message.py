@@ -8,9 +8,11 @@ from fastapi import WebSocket
 from core.builtins import (
     Bot,
     Plain,
+    I18NContext,
     MessageTaskManager,
     FinishedSession as FinS,
-    FetchTarget as FetchTargetT
+    FetchTarget as FetchTargetT,
+    FetchedSession
 )
 from bots.web.info import *
 from core.builtins.message import MessageSession as MessageSessionT
