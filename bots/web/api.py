@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, UTC
 import jwt
 import psutil
 import uvicorn
+import orjson as json
 from argon2 import PasswordHasher
 from cpuinfo import get_cpu_info
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
@@ -744,8 +745,23 @@ async def websocket_chat(websocket: WebSocket):
     Temp.data['web_chat_websocket'] = websocket
     try:
         while True:
-            message = await websocket.receive_text()
-            asyncio.create_task(send_command(message))
+            rmessage = await websocket.receive_text()
+            if rmessage:
+                message = json.loads(rmessage)
+                msg = MessageSession(
+                        target=MsgInfo(
+                            target_id=f"{target_prefix}|0",
+                            sender_id=f"{sender_prefix}|0",
+                            sender_name="Console",
+                            target_from=target_prefix,
+                            sender_from=sender_prefix,
+                            client_name=client_name,
+                            message_id=message["id"],
+                        ),
+                        session=Session(
+                            message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
+                        ))
+                asyncio.create_task(parser(msg))
     except WebSocketDisconnect:
         pass
     except Exception:
@@ -754,24 +770,6 @@ async def websocket_chat(websocket: WebSocket):
     finally:
         if 'web_chat_websocket' in Temp.data:
             del Temp.data['web_chat_websocket']
-
-
-async def send_command(message):
-    msg = MessageSession(
-            target=MsgInfo(
-                target_id=f"{target_prefix}|0",
-                sender_id=f"{sender_prefix}|0",
-                sender_name="Console",
-                target_from=target_prefix,
-                sender_from=sender_prefix,
-                client_name=client_name,
-                message_id=str(uuid.uuid4()),
-            ),
-            session=Session(
-                message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
-            ))
-    returns = await parser(msg)
-    return returns
 
 
 @app.websocket("/ws/logs")

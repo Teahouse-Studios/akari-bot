@@ -411,6 +411,7 @@ class MessageSession:
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -453,6 +454,7 @@ class MessageSession:
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -495,6 +497,7 @@ class MessageSession:
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(
             self, flag, reply=send.message_id, all_=all_, timeout=timeout
@@ -533,6 +536,7 @@ class MessageSession:
         if message_chain:
             message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:

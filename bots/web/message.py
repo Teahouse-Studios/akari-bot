@@ -1,5 +1,6 @@
 import asyncio
 import re
+import traceback
 import uuid
 from typing import Union
 
@@ -9,6 +10,7 @@ from fastapi import WebSocket
 from core.builtins import (
     Bot,
     Plain,
+    Image,
     I18NContext,
     MessageTaskManager,
     FinishedSession as FinS,
@@ -25,7 +27,13 @@ from core.types import Session
 
 class FinishedSession(FinS):
     async def delete(self):
-        pass
+        try:
+            websocket: WebSocket = Temp.data["web_chat_websocket"]
+            
+            resp = {"action": "delete", "id": self.message_id}
+            await websocket.send_text(json.dumps(resp).decode())
+        except Exception:
+            Logger.error(traceback.format_exc())
 
 
 class MessageSession(MessageSessionT):
@@ -38,7 +46,7 @@ class MessageSession(MessageSessionT):
         mention = False
         embed = False
         forward = False
-        delete = False
+        delete = True
         markdown = True
         quote = False
         rss = False
@@ -60,30 +68,48 @@ class MessageSession(MessageSessionT):
         sends = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
-                sends.append({"type": "text", "content": x.text, "id": str(uuid.uuid4())})
+                sends.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 img_b64 = await x.get_base64(mime=True)
-                sends.append({"type": "image", "content": img_b64, "id": str(uuid.uuid4())})
+                sends.append({"type": "image", "content": img_b64})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
         
-        await websocket.send_text(json.dumps(sends).decode())
+        resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
+        await websocket.send_text(json.dumps(resp).decode())
 
-        msg_ids = []
-        for x in sends:
-            msg_ids.append(x["id"])
-            if callback:
-                MessageTaskManager.add_callback(x["id"], callback)
-        return FinishedSession(self, msg_ids, sends)
+        if callback:
+            MessageTaskManager.add_callback(resp["id"], callback)
+        return FinishedSession(self, resp["id"], sends)
+
 
     def as_display(self, text_only=False):
-        return self.session.message
+        msgs = []
+        for msg in self.session.message["message"]:
+            if msg["type"] == "text":
+                msgs.append(msg["content"])
+        return "\n".join(msgs)
+
 
     async def to_message_chain(self):
-        return MessageChain(Plain(self.session.message))
+        msg_chain = MessageChain()
+        for msg in self.session.message["message"]:
+            if msg["type"] == "text":
+                msg_chain.append(Plain(msg["content"]))
+            elif msg["type"] == "image":
+                msg_chain.append(Image(msg["content"]))
+        return msg_chain
+    
 
     async def delete(self):
-        return True
+        try:
+            websocket: WebSocket = Temp.data["web_chat_websocket"]
+            resp = {"action": "delete", "id": [self.session.message["id"]]}
+            await websocket.send_text(json.dumps(resp).decode())
+            return True
+        except Exception:
+            Logger.error(traceback.format_exc())
+            return False
 
     async def check_permission(self):
         return True

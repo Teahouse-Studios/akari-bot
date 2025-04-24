@@ -206,6 +206,14 @@ class ImageElement(MessageElement):
             path = save
         elif re.match("^https?://.*", path):
             need_get = True
+        elif "base64" in path:
+            _, encoded_img = path.split(",", 1)
+            img_data = base64.b64decode(encoded_img)
+            
+            save = f"{random_cache_path()}.png"
+            with open(save, "wb") as img_file:
+                img_file.write(img_data)
+            path = save
         return deepcopy(cls(path, need_get, headers))
 
     async def get(self):
