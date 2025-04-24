@@ -39,7 +39,7 @@ async def _(msg: Bot.MessageSession):
     #  <<< OK!
     s = await msg.wait_confirm("Are you sure?")
     if s:
-        await s.send_message("OK!")
+        await msg.send_message("OK!")
 
 
 @test.command("image")

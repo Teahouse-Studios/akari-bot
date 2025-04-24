@@ -309,31 +309,24 @@ class MessageSession(MessageSessionT):
         if isinstance(self.session.message.message, str):
 
             m = html.unescape(self.session.message.message)
-            if text_only:
-                m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
-                m = CQCodeHandler.pattern.sub("", m)
-            else:
+            if not text_only:
                 m = CQCodeHandler.filter_cq(m)
                 m = re.sub(r"\[CQ:at,qq=(.*?)]", rf"{sender_prefix}|\1", m)
                 m = re.sub(r"\[CQ:json,data=(.*?)]", r"\1", m).replace("\\/", "/")
-                m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
+            m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
+            m = CQCodeHandler.pattern.sub("", m)
             return m.strip()
         m = []
         for item in self.session.message.message:
-            if text_only:
-                if item["type"] == "text":
-                    m.append(item["data"]["text"])
-            else:
+            if not text_only:
                 if item["type"] == "at":
                     m.append(rf"{sender_prefix}|{item["data"]["qq"]}")
                 elif item["type"] == "json":
                     m.append(
                         html.unescape(str(item["data"]["data"])).replace("\\/", "/")
                     )
-                elif item["type"] == "text":
-                    m.append(item["data"]["text"])
-                elif item["type"] in CQCodeHandler.get_supported:
-                    m.append(CQCodeHandler.generate_cq(item))
+            if item["type"] == "text":
+                m.append(item["data"]["text"])
 
         return "".join(m).strip()
 
@@ -513,8 +506,9 @@ class FetchTarget(FetchTargetT):
         target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(rf"({target_pattern})\|(.*)", target_id)
         if match_target:
-            target_from = sender_from = match_target.group(1)
+            target_from = match_target.group(1)
             target_id = match_target.group(2)
+            sender_from = None
             if sender_id:
                 sender_pattern = r"|".join(
                     re.escape(item) for item in sender_prefix_list
@@ -523,8 +517,6 @@ class FetchTarget(FetchTargetT):
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
-            else:
-                sender_id = target_id
             session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
             await session.parent.data_init()
             return session

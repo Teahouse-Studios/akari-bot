@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union, Self
+from typing import TYPE_CHECKING, Optional, Union, Self
 
 from tortoise.models import Model
 
@@ -20,7 +20,7 @@ class DBModel(Model):
     async def get_by_target_id(cls,
                                target_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
                                create: bool = True
-                               ) -> Self:
+                               ) -> Optional[Self]:
         """
         Get a model by target_id.
 
@@ -47,7 +47,7 @@ class DBModel(Model):
     async def get_by_sender_id(cls,
                                sender_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
                                create: bool = True
-                               ) -> Self:
+                               ) -> Optional[Self]:
         """
         Get a model by sender_id.
 

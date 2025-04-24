@@ -93,16 +93,16 @@ class FetchedSession(FetchedSession):
         self,
         target_from: str,
         target_id: Union[int, str],
-        sender_from: Optional[str] = None,
-        sender_id: Optional[Union[int, str]] = None,
+        sender_from: Optional[str],
+        sender_id: Optional[Union[str, int]],
     ):
-        if not sender_from:
-            sender_from = target_from
-        if not sender_id:
-            sender_id = target_id
+        target_id_ = f"{target_from}|{target_id}"
+        sender_id_ = None
+        if sender_from and sender_id:
+            sender_id_ = f"{sender_from}|{sender_id}"
         self.target = MsgInfo(
-            target_id=f"{target_from}|{target_id}",
-            sender_id=f"{sender_from}|{sender_id}",
+            target_id=target_id_,
+            sender_id=sender_id_,
             target_from=target_from,
             sender_from=sender_from,
             sender_name="",

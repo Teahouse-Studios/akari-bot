@@ -1,4 +1,4 @@
-from core.builtins import Bot, Embed, EmbedField, Image, Plain, Url, I18NContext
+from core.builtins import Bot, Embed, EmbedField, Image, Url, I18NContext
 from core.utils.http import get_url
 from core.utils.web_render import webrender
 

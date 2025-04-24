@@ -1,6 +1,4 @@
-import re
-
-from core.builtins import Bot, Plain, I18NContext
+from core.builtins import Bot, I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
 from core.database.models import SenderInfo

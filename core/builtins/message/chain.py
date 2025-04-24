@@ -168,9 +168,6 @@ class MessageChain:
         """
         将消息链转换为可发送的格式。
         """
-        locale = None
-        if msg:
-            locale = msg.locale.locale
         value = []
         for x in self.value:
             if isinstance(x, EmbedElement) and not embed:

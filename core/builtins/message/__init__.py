@@ -217,14 +217,10 @@ class MessageSession:
         asyncio.create_task(self.data_init())
 
     async def data_init(self):
-        get_sender_info = await SenderInfo.get_by_sender_id(self.target.sender_id)
-        get_target_info = await TargetInfo.get_by_target_id(self.target.target_id)
+        get_target_info: TargetInfo = await TargetInfo.get_by_target_id(self.target.target_id)
         self.target_info = get_target_info
-        self.sender_info = get_sender_info
         self.muted = self.target_info.muted
-        self.sender_data = self.sender_info.sender_data
         self.target_data = self.target_info.target_data
-        self.petal = self.sender_info.petal
         self.custom_admins = self.target_info.custom_admins
         self.enabled_modules = self.target_info.modules
         self.locale = Locale(self.target_info.locale)
@@ -233,6 +229,11 @@ class MessageSession:
             "timezone_offset", Config("timezone_offset", "+8")
         )
         self.timezone_offset = parse_time_string(self._tz_offset)
+        if self.target.sender_id:
+            get_sender_info: SenderInfo = await SenderInfo.get_by_sender_id(self.target.sender_id)
+            self.sender_info = get_sender_info
+            self.petal = self.sender_info.petal
+            self.sender_data = self.sender_info.sender_data
 
     async def send_message(
         self,
@@ -410,6 +411,7 @@ class MessageSession:
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -452,6 +454,7 @@ class MessageSession:
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -494,6 +497,7 @@ class MessageSession:
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(
             self, flag, reply=send.message_id, all_=all_, timeout=timeout
@@ -532,6 +536,7 @@ class MessageSession:
         if message_chain:
             message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:
@@ -646,16 +651,16 @@ class FetchedSession:
         self,
         target_from: str,
         target_id: Union[str, int],
-        sender_from: Optional[str] = None,
-        sender_id: Optional[Union[str, int]] = None,
+        sender_from: Optional[str],
+        sender_id: Optional[Union[str, int]],
     ):
-        if not sender_from:
-            sender_from = target_from
-        if not sender_id:
-            sender_id = target_id
+        target_id_ = f"{target_from}|{target_id}"
+        sender_id_ = None
+        if sender_from and sender_id:
+            sender_id_ = f"{sender_from}|{sender_id}"
         self.target = MsgInfo(
-            target_id=f"{target_from}|{target_id}",
-            sender_id=f"{sender_from}|{sender_id}",
+            target_id=target_id_,
+            sender_id=sender_id_,
             target_from=target_from,
             sender_from=sender_from,
             sender_name="",

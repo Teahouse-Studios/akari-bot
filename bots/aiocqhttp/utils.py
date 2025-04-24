@@ -24,7 +24,7 @@ async def get_onebot_implementation() -> Optional[str]:
 
 class CQCodeHandler:
     get_supported = ["at", "face", "forward", "image", "json", "record", "text"]
-    pattern = re.compile(r"\[CQ:(\w+),[^\]]*\]")
+    pattern = re.compile(r"\[CQ:(\w+),?[^\]]*\]")
 
     @staticmethod
     def filter_cq(s: str) -> str:
