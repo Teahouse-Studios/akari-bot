@@ -30,6 +30,7 @@ sys.path.append(os.getcwd())
 from bots.web.bot import API_PORT, WEBUI_HOST, WEBUI_PORT  # noqa: E402
 from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
+from bots.web.utils import find_available_port  # noqa: E402
 from core.bot_init import init_async  # noqa: E402
 from core.builtins import PrivateAssets, Temp  # noqa: E402
 from core.config import Config  # noqa: E402
@@ -865,4 +866,9 @@ async def restart():
 
 if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
     Info.client_name = client_name
+    api_port = find_available_port(API_PORT)
+    if api_port == 0:
+        Logger.warning(f"API port is disabled, abort to run.")
+        sys.exit(0)
+        
     uvicorn.run(app, port=API_PORT, log_level="info")

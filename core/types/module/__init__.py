@@ -31,7 +31,7 @@ class Module:
     available_for: list = field(default=["*"], converter=convert2lst)
     exclude_from: list = field(default=[], converter=convert2lst)
     support_languages: list = field(default=None, converter=convert2lst)
-    desc: Union[str] = ""
+    desc: str = ""
     required_admin: bool = False
     base: bool = False
     doc: bool = False
