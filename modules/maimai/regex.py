@@ -47,17 +47,21 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if int(sid) > 100000:
+        res = []
         with open(mai_utage_info_path, "r", encoding="utf-8") as file:
             utage_data = json.loads(file.read())
+        if utage_data:
+            res.append(f"「{utage_data[sid]["comment"]}」")
 
-        res = msg.locale.t(
-            "maimai.message.song.utage",
-            comment=utage_data[sid]["comment"],
-            artist=utage_data[sid]["artist"],
-            bpm=utage_data[sid]["bpm"],
+        res.append(msg.locale.t(
+            "maimai.message.song",
+            artist=music[sid]["artist"],
+            genre="宴會場",
+            bpm=music["basic_info"]["bpm"],
             version=music["basic_info"]["from"],
-            level=utage_data[sid]["level"][0],
-        )
+            level=music["basic_info"]["level"][0]
+        ))
+        res = "\n".join(res)
     else:
         res = msg.locale.t(
             "maimai.message.song",
