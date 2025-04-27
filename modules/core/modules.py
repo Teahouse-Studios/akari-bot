@@ -33,25 +33,25 @@ m = module(
     required_superuser=True,
 )
 @m.command(
-    ["enable <module>... {{core.help.module.enable}}",
-     "enable all {{core.help.module.enable_all}}",
-     "disable <module>... {{core.help.module.disable}}",
-     "disable all {{core.help.module.disable_all}}",
-     "list [--legacy] {{core.help.module.list}}",
+    ["enable <module>... {[I18N:core.help.module.enable]}",
+     "enable all {[I18N:core.help.module.enable_all]}",
+     "disable <module>... {[I18N:core.help.module.disable]}",
+     "disable all {[I18N:core.help.module.disable_all]}",
+     "list [--legacy] {[I18N:core.help.module.list]}",
      ],
-    options_desc={"--legacy": "{help.option.legacy}"},
+    options_desc={"--legacy": "[I18N:help.option.legacy]"},
     exclude_from=["QQ|Guild"],
 )
 @m.command(
-    ["enable [-g] <module> ... {{core.help.module.enable}}",
-     "enable all [-g] {{core.help.module.enable_all}}",
-     "disable [-g] <module> ... {{core.help.module.disable}}",
-     "disable all [-g] {{core.help.module.disable_all}}",
-     "list [--legacy] {{core.help.module.list}}",
+    ["enable [-g] <module> ... {[I18N:core.help.module.enable]}",
+     "enable all [-g] {[I18N:core.help.module.enable_all]}",
+     "disable [-g] <module> ... {[I18N:core.help.module.disable]}",
+     "disable all [-g] {[I18N:core.help.module.disable_all]}",
+     "list [--legacy] {[I18N:core.help.module.list]}",
      ],
     options_desc={
-        "-g": "{core.help.option.module.g}",
-        "--legacy": "{help.option.legacy}",
+        "-g": "[I18N:core.help.option.module.g]",
+        "--legacy": "[I18N:help.option.legacy]",
     },
     available_for=["QQ|Guild"],
 )

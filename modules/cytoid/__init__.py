@@ -8,21 +8,21 @@ from .utils import get_profile_name
 
 ctd = module(
     "cytoid",
-    desc="{cytoid.help.desc}",
+    desc="[I18N:cytoid.help.desc]",
     doc=True,
     developers=["OasisAkari"],
     alias="ctd",
 )
 
 
-@ctd.command("profile [<username>] {{cytoid.help.profile}}")
+@ctd.command("profile [<username>] {[I18N:cytoid.help.profile]}")
 async def _(msg: Bot.MessageSession, username: str = None):
     await cytoid_profile(msg, username)
 
 
 @ctd.command(
-    "b30 [<username>] {{cytoid.help.b30}}",
-    "r30 [<username>] {{cytoid.help.r30}}"
+    "b30 [<username>] {[I18N:cytoid.help.b30]}",
+    "r30 [<username>] {[I18N:cytoid.help.r30]}"
 )
 async def _(msg: Bot.MessageSession, username: str = None):
     if "b30" in msg.parsed_msg:
@@ -57,7 +57,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
                               I18NContext("cytoid.message.b30.cooldown")])
 
 
-@ctd.command("bind <username> {{cytoid.help.bind}}")
+@ctd.command("bind <username> {[I18N:cytoid.help.bind]}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(code)
@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(I18NContext("cytoid.message.bind.failed"))
 
 
-@ctd.command("unbind {{cytoid.help.unbind}}")
+@ctd.command("unbind {[I18N:cytoid.help.unbind]}")
 async def _(msg: Bot.MessageSession):
     await CytoidBindInfo.remove_bind_info(msg.target.sender_id)
     await msg.finish(I18NContext("cytoid.message.unbind.success"))

@@ -10,7 +10,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 
 
-@wiki.command("search <pagename> {{wiki.help.search}}")
+@wiki.command("search <pagename> {[I18N:wiki.help.search]}")
 async def _(msg: Bot.MessageSession, pagename: str):
     await search_pages(msg, pagename)
 
@@ -27,7 +27,7 @@ async def search_pages(
         await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.prefixes[0]))
     if isinstance(title, str):
         title = [title]
-    query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
+    query_task = {start_wiki: {"query": [], "iw_prefix": ""]}
     for t in title:
         if prefix and use_prefix:
             t = prefix + t

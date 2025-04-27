@@ -12,14 +12,14 @@ api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True, table_name=
 
 excr = module(
     "exchange_rate",
-    desc="{exchange_rate.help.desc}",
+    desc="[I18N:exchange_rate.help.desc]",
     doc=True,
     alias=["exchangerate", "exchange", "excr"],
     developers=["DoroWolf"],
 )
 
 
-@excr.command("<base> <target> {{exchange_rate.help}}")
+@excr.command("<base> <target> {[I18N:exchange_rate.help]}")
 async def _(msg: Bot.MessageSession, base: str, target: str):
     base = base.upper()
     target = target.upper()
@@ -80,7 +80,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
     r"(\d+(?:\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})",
     mode="M",
     flags=re.I,
-    desc="{exchange_rate.help.regex.desc}",
+    desc="[I18N:exchange_rate.help.regex.desc]",
 )
 async def _(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg

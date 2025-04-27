@@ -588,7 +588,7 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
 petal_ = module("petal", alias="petals", base=True, doc=True, load=Config("enable_petal", False))
 
 
-@petal_.command("{{core.help.petal}}")
+@petal_.command("{[I18N:core.help.petal]}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
 

@@ -35,7 +35,8 @@ wiki = module(
 
 
 @wiki.command(
-    "<pagename> [-l <lang>] {{wiki.help}}", options_desc={"-l": "{wiki.help.option.l}"}
+    "<pagename> [-l <lang>] {[I18N:wiki.help]}",
+    options_desc={"-l": "[I18N:wiki.help.option.l]"}
 )
 async def _(msg: Bot.MessageSession, pagename: str):
     get_lang = msg.parsed_msg.get("-l", False)
@@ -47,8 +48,8 @@ async def _(msg: Bot.MessageSession, pagename: str):
 
 
 @wiki.command(
-    "id <pageid> [-l <lang>] {{wiki.help.id}}",
-    options_desc={"-l": "{wiki.help.option.l}"},
+    "id <pageid> [-l <lang>] {[I18N:wiki.help.id]}",
+    options_desc={"-l": "[I18N:wiki.help.option.l]"},
 )
 async def _(msg: Bot.MessageSession, pageid: str):
     iw = None
@@ -107,7 +108,7 @@ async def query_pages(
             title = [title]
         if len(title) > 15:
             raise AbuseWarning("{tos.message.reason.wiki_abuse}")
-        query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
+        query_task = {start_wiki: {"query": [], "iw_prefix": ""]}
         for t in title:
             if prefix and use_prefix:
                 t = prefix + t
@@ -132,7 +133,7 @@ async def query_pages(
                     query_task[start_wiki]["query"].append(t)
     elif pageid:
         if not iw:
-            query_task = {start_wiki: {"queryid": [pageid], "iw_prefix": ""}}
+            query_task = {start_wiki: {"queryid": [pageid], "iw_prefix": ""]}
         else:
             if iw in interwiki_list:
                 query_task = {

@@ -16,7 +16,7 @@ c = module(
     "color",
     alias="colour",
     developers=["Dianliang233"],
-    desc="{color.help.desc}",
+    desc="[I18N:color.help.desc]",
     doc=True,
 )
 
@@ -39,7 +39,7 @@ css_hex_to_names = {
 
 
 @c.command()
-@c.command("[<color>] {{color.help}}")
+@c.command("[<color>] {[I18N:color.help]}")
 async def _(msg: Bot.MessageSession, color: str = None):
     if not color:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))

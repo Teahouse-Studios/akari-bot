@@ -7,12 +7,12 @@ from .utils import get_profile_name
 
 api_key = Config("osu_api_key", cfg_type=str, secret=True, table_name="module_osu")
 
-osu = module("osu", developers=["DoroWolf"], desc="{osu.help.desc}", doc=True)
+osu = module("osu", developers=["DoroWolf"], desc="[I18N:osu.help.desc]", doc=True)
 
 
 @osu.command(
-    "profile [<username>] [-t <mode>] {{osu.help.profile}}",
-    options_desc={"-t": "{osu.help.option.t}"},
+    "profile [<username>] [-t <mode>] {[I18N:osu.help.profile]}",
+    options_desc={"-t": "[I18N:osu.help.option.t]"},
 )
 async def _(msg: Bot.MessageSession, username: str = None):
     if username:
@@ -27,7 +27,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await osu_profile(msg, query_id, mode, api_key)
 
 
-@osu.command("bind <username> {{osu.help.bind}}")
+@osu.command("bind <username> {[I18N:osu.help.bind]}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(msg, code, api_key)
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(I18NContext("osu.message.bind.failed"))
 
 
-@osu.command("unbind {{osu.help.unbind}}")
+@osu.command("unbind {[I18N:osu.help.unbind]}")
 async def _(msg: Bot.MessageSession):
     await OsuBindInfo.remove_bind_info(msg.target.sender_id)
     await msg.finish(I18NContext("osu.message.unbind.success"))

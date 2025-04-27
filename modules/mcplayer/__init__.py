@@ -4,13 +4,13 @@ from .mojang_api import *
 
 mcplayer = module(
     bind_prefix="mcplayer",
-    desc="{mcplayer.help.desc}",
+    desc="[I18N:mcplayer.help.desc]",
     doc=True,
     developers=["Dianliang233"],
 )
 
 
-@mcplayer.command("<username_or_uuid> {{mcplayer.help}}")
+@mcplayer.command("<username_or_uuid> {[I18N:mcplayer.help]}")
 async def _(msg: Bot.MessageSession, username_or_uuid: str):
     arg = username_or_uuid
     try:
