@@ -108,7 +108,7 @@ async def query_pages(
             title = [title]
         if len(title) > 15:
             raise AbuseWarning("{tos.message.reason.wiki_abuse}")
-        query_task = {start_wiki: {"query": [], "iw_prefix": ""]}
+        query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
         for t in title:
             if prefix and use_prefix:
                 t = prefix + t
@@ -133,7 +133,7 @@ async def query_pages(
                     query_task[start_wiki]["query"].append(t)
     elif pageid:
         if not iw:
-            query_task = {start_wiki: {"queryid": [pageid], "iw_prefix": ""]}
+            query_task = {start_wiki: {"queryid": [pageid], "iw_prefix": ""}}
         else:
             if iw in interwiki_list:
                 query_task = {
