@@ -26,6 +26,7 @@ webui_port = find_available_port(WEBUI_PORT, host=WEBUI_HOST)
 Info.client_name = client_name
 PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
+
 async def run_fastapi():
     from bots.web.api import app as fastapi_app  # noqa: E402
     Info.client_name = client_name
@@ -33,7 +34,7 @@ async def run_fastapi():
     if api_port == 0:
         Logger.warning(f"API port is disabled, abort to run.")
         return
-    
+
     ucfg = uvicorn.Config(fastapi_app, port=api_port, log_level="info")
     userver = uvicorn.Server(ucfg)
     await userver.serve()
@@ -42,11 +43,11 @@ async def run_fastapi():
 async def run_flask():
     if os.path.exists(os.path.join(webui_path, "index.html")):
         from bots.web.webui import generate_config, app as flask_app  # noqa: E402
-        
+
         if webui_port == 0:
             Logger.warning(f"WebUI port is disabled, abort to run.")
             return
-        
+
         ucfg = Uconfig()
         ucfg.bind = [f"{WEBUI_HOST}:{webui_port}"]
         if os.path.exists(os.path.join(webui_path, "index.html")):

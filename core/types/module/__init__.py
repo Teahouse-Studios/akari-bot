@@ -48,7 +48,7 @@ class Module:
     @classmethod
     def assign(cls, **kwargs):
         return deepcopy(cls(**kwargs))
-    
+
     def to_dict(self):
         return {
             "bind_prefix": self.bind_prefix,

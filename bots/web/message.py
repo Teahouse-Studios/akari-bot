@@ -29,7 +29,7 @@ class FinishedSession(FinS):
     async def delete(self):
         try:
             websocket: WebSocket = Temp.data["web_chat_websocket"]
-            
+
             resp = {"action": "delete", "id": self.message_id}
             await websocket.send_text(json.dumps(resp).decode())
         except Exception:
@@ -74,7 +74,7 @@ class MessageSession(MessageSessionT):
                 img_b64 = await x.get_base64(mime=True)
                 sends.append({"type": "image", "content": img_b64})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
-        
+
         resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
         await websocket.send_text(json.dumps(resp).decode())
 
@@ -82,14 +82,12 @@ class MessageSession(MessageSessionT):
             MessageTaskManager.add_callback(resp["id"], callback)
         return FinishedSession(self, resp["id"], sends)
 
-
     def as_display(self, text_only=False):
         msgs = []
         for msg in self.session.message["message"]:
             if msg["type"] == "text":
                 msgs.append(msg["content"])
         return "\n".join(msgs)
-
 
     async def to_message_chain(self):
         msg_chain = MessageChain()
@@ -99,7 +97,6 @@ class MessageSession(MessageSessionT):
             elif msg["type"] == "image":
                 msg_chain.append(Image(msg["content"]))
         return msg_chain
-    
 
     async def delete(self):
         try:

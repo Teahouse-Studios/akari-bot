@@ -397,7 +397,7 @@ class JobQueuesTable(DBModel):
         return await cls.filter(
             target_client=target_client, status="pending"
         ).all()
-    
+
 
 class MaliciousLoginRecords(DBModel):
     """
@@ -422,6 +422,7 @@ class MaliciousLoginRecords(DBModel):
         return await cls.filter(
             ip_address=ip_address, blocked_until__gt=datetime.now(UTC)
         ).exists()
+
 
 __all__ = [
     "SenderInfo",

@@ -364,7 +364,14 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish()
 
-upds = module("update&restart", required_superuser=True, alias="u&r", base=True, doc=True, exclude_from="Web", load=Info.subprocess)
+upds = module(
+    "update&restart",
+    required_superuser=True,
+    alias="u&r",
+    base=True,
+    doc=True,
+    exclude_from="Web",
+    load=Info.subprocess)
 
 
 @upds.command()
