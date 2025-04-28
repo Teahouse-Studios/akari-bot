@@ -440,7 +440,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
 async def get_target_list(
     request: Request,
     prefix: str = Query(None),
-    status: str = Query(None, regex="^(muted|blocked)?$"),
+    status: str = Query(None, pattern=r"^(muted|blocked)?$"),
     id: str = Query(None),
     page: int = Query(1, gt=0),
     size: int = Query(20, gt=0, le=100)
@@ -564,7 +564,7 @@ async def delete_target_info(request: Request, target_id: str):
 @limiter.limit("2/second")
 async def get_sender_list(request: Request,
                           prefix: str = Query(None),
-                          status: str = Query(None, regex="^(superuser|trusted|blocked)?$"),
+                          status: str = Query(None, pattern=r"^(superuser|trusted|blocked)?$"),
                           id: str = Query(None),
                           page: int = Query(1, gt=0),
                           size: int = Query(20, gt=0, le=100)
