@@ -9,7 +9,8 @@ jwt_secret = "<Replace me with str value>" # The authentication key for the buil
 
 [bot_web]
 # The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+login_max_attempts = 5 # Maximum number of login requests limit.
 enable = true # Whether to enable this platform.
-api_port = 5000 # The port number of the API service.
-webui_host = "127.0.0.1" # The host address of the WebUI service.
-webui_port = 8081 # The port number of the WebUI service.
+api_port = 5000 # The port number of the API service. Setting to 0 will disable the API service.
+webui_host = "127.0.0.1" # The host address of the WebUI service. Setting to 0.0.0.0 will listen to all addresses.
+webui_port = 8081 # The port number of the WebUI service. Setting to 0 will disable the WebUI service.

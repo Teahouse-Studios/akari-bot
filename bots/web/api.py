@@ -70,8 +70,8 @@ ph = PasswordHasher()
 default_locale = Config("default_locale", cfg_type=str)
 ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
+LOGIN_MAX_ATTEMPTS = Config("login_max_attempts", default=5, table_name="bot_web")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
-MAX_LOGIN_ATTEMPTS = 5
 LOGIN_BLOCK_DURATION = 3600
 MAX_LOG_HISTORY = 1000
 
@@ -202,13 +202,13 @@ async def auth(request: Request, response: Response):
             login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
             login_failed_attempts[ip].append(now)
 
-            if len(login_failed_attempts[ip]) >= MAX_LOGIN_ATTEMPTS:
+            if len(login_failed_attempts[ip]) >= LOGIN_MAX_ATTEMPTS:
                 await MaliciousLoginRecords.create(ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
                 login_failed_attempts[ip].clear()
                 raise HTTPException(status_code=403, detail="This IP has been blocked")
-            
+
             raise HTTPException(status_code=401, detail="Invalid password")
-        
+
         login_failed_attempts.pop(ip, None)
 
         payload = {
@@ -274,7 +274,7 @@ async def change_password(request: Request, response: Response):
     except Exception:
         Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
-    
+
 
 @app.post("/api/clear-password")
 @limiter.limit("10/minute")
@@ -341,6 +341,7 @@ async def server_info(request: Request):
         }
     }
 
+
 @app.get("/api/analytics")
 @limiter.limit("2/second")
 async def get_analytics(request: Request, days: int = Query(1)):
@@ -356,12 +357,13 @@ async def get_analytics(request: Request, days: int = Query(1)):
             change_rate = round((count - past_count) / past_count, 2)
         except ZeroDivisionError:
             change_rate = 0.00
-        
+
         return {"count": count, "change_rate": change_rate, "data": data}
-    
+
     except Exception:
         Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
+
 
 @app.get("/api/config")
 @limiter.limit("2/second")
@@ -419,7 +421,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
             raise HTTPException(status_code=400, detail="Bad request")
         if not cfg_file_path.startswith(config_path):
             raise HTTPException(status_code=400, detail="Bad request")
-        
+
         body = await request.json()
         content = body["content"]
         with open(cfg_file_path, "w", encoding="UTF-8") as f:
@@ -431,7 +433,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
     except Exception:
         Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
-    
+
 
 @app.get("/api/target")
 @limiter.limit("2/second")
@@ -561,12 +563,12 @@ async def delete_target_info(request: Request, target_id: str):
 @app.get("/api/sender")
 @limiter.limit("2/second")
 async def get_sender_list(request: Request,
-    prefix: str = Query(None),
-    status: str = Query(None, regex="^(superuser|trusted|blocked)?$"),
-    id: str = Query(None),
-    page: int = Query(1, gt=0),
-    size: int = Query(20, gt=0, le=100)
-):
+                          prefix: str = Query(None),
+                          status: str = Query(None, regex="^(superuser|trusted|blocked)?$"),
+                          id: str = Query(None),
+                          page: int = Query(1, gt=0),
+                          size: int = Query(20, gt=0, le=100)
+                          ):
     try:
         verify_jwt(request)
 
@@ -700,7 +702,7 @@ async def get_modules_list(request: Request):
     except Exception:
         Logger.error(traceback.format_exc())
         raise HTTPException(status_code=400, detail="Bad request")
-    
+
 
 @app.get("/api/modules")
 @limiter.limit("2/second")
@@ -750,18 +752,18 @@ async def websocket_chat(websocket: WebSocket):
             if rmessage:
                 message = json.loads(rmessage)
                 msg = MessageSession(
-                        target=MsgInfo(
-                            target_id=f"{target_prefix}|0",
-                            sender_id=f"{sender_prefix}|0",
-                            sender_name="Console",
-                            target_from=target_prefix,
-                            sender_from=sender_prefix,
-                            client_name=client_name,
-                            message_id=message["id"],
-                        ),
-                        session=Session(
-                            message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
-                        ))
+                    target=MsgInfo(
+                        target_id=f"{target_prefix}|0",
+                        sender_id=f"{sender_prefix}|0",
+                        sender_name="Console",
+                        target_from=target_prefix,
+                        sender_from=sender_prefix,
+                        client_name=client_name,
+                        message_id=message["id"],
+                    ),
+                    session=Session(
+                        message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
+                    ))
                 asyncio.create_task(parser(msg))
     except WebSocketDisconnect:
         pass
@@ -785,7 +787,12 @@ async def websocket_logs(websocket: WebSocket):
         while True:
             today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime("%Y-%m-%d")}.log")
             today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
-            today_logs.sort(key=lambda line: (extract_timestamp(line[0]) if isinstance(line, list) else extract_timestamp(line)) or datetime.min)
+            today_logs.sort(
+                key=lambda line: (
+                    extract_timestamp(
+                        line[0]) if isinstance(
+                        line,
+                        list) else extract_timestamp(line)) or datetime.min)
             if today_logs:
                 for log_file in today_logs:
                     current_line_count = 0
@@ -836,6 +843,7 @@ async def websocket_logs(websocket: WebSocket):
         Logger.error(traceback.format_exc())
         await websocket.close()
 
+
 def is_log_line_valid(line: str) -> bool:
     log_pattern = r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"
     return bool(re.match(log_pattern, line))
@@ -853,7 +861,7 @@ def extract_timestamp(log_line: str):
 async def restart_bot(request: Request):
     verify_jwt(request)
     await verify_csrf_token(request)
-    
+
     asyncio.create_task(restart())
     return {"message": "Success"}
 
@@ -870,5 +878,5 @@ if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
     if api_port == 0:
         Logger.warning(f"API port is disabled, abort to run.")
         sys.exit(0)
-        
+
     uvicorn.run(app, port=API_PORT, log_level="info")

@@ -9,7 +9,8 @@ jwt_secret = "<Replace me with str value>" # 內建 API 的身份認證金鑰，
 
 [bot_web]
 # 平台端的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+login_max_attempts = 5 # 登入請求最大次數限制。
 enable = true # 是否啟用此平台。
-api_port = 5000 # API 服務的連接埠號。
-webui_host = "127.0.0.1" # WebUI 服務的主機位址。
-webui_port = 8081 # WebUI 服務的連接埠號。
+api_port = 5000 # API 服務的連接埠號，設為 0 則停用 API 服務。
+webui_host = "127.0.0.1" # WebUI 服務的主機位址，設為 0.0.0.0 則監聽所有位址。
+webui_port = 8081 # WebUI 服務的連接埠號，設為 0 則停用 WebUI 服務。
