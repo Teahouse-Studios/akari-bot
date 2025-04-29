@@ -236,7 +236,7 @@ class AnalyticsData(DBModel):
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
     target_id = fields.CharField(max_length=512)
-    sender_id = fields.CharField(max_length=512)
+    sender_id = fields.CharField(max_length=512, null=True, default=None)
     command = fields.TextField()
     timestamp = fields.DatetimeField(auto_now_add=True)
 
