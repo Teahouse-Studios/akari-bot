@@ -5,6 +5,7 @@
     "config.comments.allow_reload_base": "是否允許重載基礎模組。",
     "config.comments.allow_request_private_ip": "是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）",
     "config.comments.api_allow_origins": "API 服務允许 CORS 的來源列表。",
+    "config.comments.api_host": "API 服務的主機位址，設為 0.0.0.0 則監聽所有位址。",
     "config.comments.api_port": "API 服務的連接埠號，設為 0 則停用 API 服務。",
     "config.comments.base_superuser": "機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。",
     "config.comments.bug_report_url": "回報錯誤網址。",
