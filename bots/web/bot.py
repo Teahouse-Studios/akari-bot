@@ -16,11 +16,14 @@ from core.logger import Logger  # noqa: E402
 from core.terminate import cleanup_sessions  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 
+enable_https = not Config("api_disable_https", default=False, table_name="bot_web")
+
+API_HOST = Config("api_host", "127.0.0.1", table_name="bot_web")
 API_PORT = Config("api_port", 5000, table_name="bot_web")
 WEBUI_HOST = Config("webui_host", "127.0.0.1", table_name="bot_web")
 WEBUI_PORT = Config("webui_port", 8081, table_name="bot_web")
 
-api_port = find_available_port(API_PORT)
+api_port = find_available_port(API_PORT, host=API_HOST)
 webui_port = find_available_port(WEBUI_PORT, host=WEBUI_HOST)
 
 Info.client_name = client_name
@@ -34,8 +37,10 @@ async def run_fastapi():
     if api_port == 0:
         Logger.warning(f"API port is disabled, abort to run.")
         return
+    if not enable_https:
+        Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    ucfg = uvicorn.Config(fastapi_app, port=api_port, log_level="info")
+    ucfg = uvicorn.Config(fastapi_app, host=API_HOST, port=api_port, log_level="info")
     userver = uvicorn.Server(ucfg)
     await userver.serve()
 

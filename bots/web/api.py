@@ -27,7 +27,7 @@ from tortoise.expressions import Q
 
 sys.path.append(os.getcwd())
 
-from bots.web.bot import API_PORT, WEBUI_HOST, WEBUI_PORT  # noqa: E402
+from bots.web.bot import API_HOST, API_PORT, WEBUI_HOST, WEBUI_PORT  # noqa: E402
 from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
 from bots.web.utils import find_available_port  # noqa: E402
@@ -68,6 +68,7 @@ limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
 default_locale = Config("default_locale", cfg_type=str)
+enable_https = not Config("api_disable_https", default=False, table_name="bot_web")
 ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 LOGIN_MAX_ATTEMPTS = Config("login_max_attempts", default=5, table_name="bot_web")
@@ -182,8 +183,8 @@ async def auth(request: Request, response: Response):
                 key="deviceToken",
                 value=jwt_token,
                 httponly=True,
-                secure=True,
-                samesite="none",
+                secure=enable_https,
+                samesite="none" if enable_https else "lax",
                 expires=datetime.now(UTC) + timedelta(hours=24)
             )
             return {"message": "Success", "no_password": True}
@@ -223,8 +224,8 @@ async def auth(request: Request, response: Response):
             key="deviceToken",
             value=jwt_token,
             httponly=True,
-            secure=True,
-            samesite="none",
+            secure=enable_https,
+            samesite="none" if enable_https else "lax",
             expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
 
@@ -878,5 +879,7 @@ if __name__ == "__main__" and Config("enable", True, table_name="bot_web"):
     if api_port == 0:
         Logger.warning(f"API port is disabled, abort to run.")
         sys.exit(0)
+    if not enable_https:
+        Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    uvicorn.run(app, port=API_PORT, log_level="info")
+    uvicorn.run(app, host=API_HOST, port=api_port, log_level="info")
