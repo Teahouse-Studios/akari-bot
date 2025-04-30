@@ -137,14 +137,14 @@ async def _(msg: Bot.MessageSession):
     if "ban" in msg.parsed_msg:
         if user not in admin_ban_list:
             await msg.target_info.edit_target_data("ban", admin_ban_list + [user])
-            await msg.finish(I18NContext("core.message.admin.ban.success"))
+            await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
         else:
             await msg.finish(I18NContext("core.message.admin.ban.already"))
     if "unban" in msg.parsed_msg:
         if user in (banlist := admin_ban_list):
             banlist.remove(user)
             await msg.target_info.edit_target_data("ban", banlist)
-            await msg.finish(I18NContext("core.message.admin.unban.success"))
+            await msg.finish(I18NContext("core.message.admin.unban.success", user=user))
         else:
             await msg.finish(I18NContext("core.message.admin.unban.none"))
 
