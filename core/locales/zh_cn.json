@@ -5,6 +5,7 @@
     "config.comments.allow_reload_base": "是否允许重载基础模块。",
     "config.comments.allow_request_private_ip": "是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）",
     "config.comments.api_allow_origins": "API 服务允许 CORS 的源列表。",
+    "config.comments.api_disable_https": "API 服务禁用 HTTPS 安全措施，仅作为 HTTP 兼容。",
     "config.comments.api_host": "API 服务的主机地址，设为 0.0.0.0 则监听所有地址。",
     "config.comments.api_port": "API 服务的端口号，设为 0 则禁用 API 服务。",
     "config.comments.base_superuser": "机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。",
