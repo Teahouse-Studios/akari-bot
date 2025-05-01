@@ -4,7 +4,7 @@
 
 [bot_web]
 # The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
-api_disable_https = false # The API service disables HTTPS security measures. Only compatible as HTTP.
+enable_https = false # Whether to enable HTTPS protocol security measures.
 login_max_attempts = 5 # Maximum number of login requests limit.
 enable = true # Whether to enable this platform.
 api_host = "127.0.0.1" # The host address of the API service. Setting to 0.0.0.0 will listen to all addresses.

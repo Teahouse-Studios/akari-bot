@@ -16,7 +16,7 @@ from core.logger import Logger  # noqa: E402
 from core.terminate import cleanup_sessions  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 
-enable_https = not Config("api_disable_https", default=False, table_name="bot_web")
+enable_https = Config("enable_https", default=False, table_name="bot_web")
 
 API_HOST = Config("api_host", "127.0.0.1", table_name="bot_web")
 API_PORT = Config("api_port", 5000, table_name="bot_web")

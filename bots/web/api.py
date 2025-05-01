@@ -68,7 +68,7 @@ limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
 default_locale = Config("default_locale", cfg_type=str)
-enable_https = not Config("api_disable_https", default=False, table_name="bot_web")
+enable_https = Config("enable_https", default=False, table_name="bot_web")
 ALLOW_ORIGINS = Config("api_allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 LOGIN_MAX_ATTEMPTS = Config("login_max_attempts", default=5, table_name="bot_web")
@@ -76,7 +76,8 @@ PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 LOGIN_BLOCK_DURATION = 3600
 MAX_LOG_HISTORY = 1000
 
-ALLOW_ORIGINS.append(f"http://{WEBUI_HOST}:{WEBUI_PORT}")
+protocol = "https" if enable_https else "http"
+ALLOW_ORIGINS.append(f"{protocol}://{WEBUI_HOST}:{WEBUI_PORT}")
 
 login_failed_attempts = defaultdict(list)
 last_file_line_count = {}
@@ -84,8 +85,13 @@ logs_history = []
 
 
 async def verify_csrf_token(request: Request):
+    if enable_https:
+        auth_token = request.cookies.get("deviceToken")
+    else:
+        auth_token = request.headers.get("Authorization")
+        if auth_token:
+            auth_token = auth_token.split("Bearer ")[-1]
     csrf_token = request.headers.get("X-XSRF-TOKEN")
-    auth_token = request.cookies.get("deviceToken")
     if not csrf_token:
         raise HTTPException(status_code=403, detail="Missing CSRF token")
 
@@ -101,7 +107,12 @@ async def verify_csrf_token(request: Request):
 
 
 def verify_jwt(request: Request):
-    auth_token = request.cookies.get("deviceToken")
+    if enable_https:
+        auth_token = request.cookies.get("deviceToken")
+    else:
+        auth_token = request.headers.get("Authorization")
+        if auth_token:
+            auth_token = auth_token.split("Bearer ")[-1]
     if not auth_token:
         raise HTTPException(status_code=401, detail="Invalid request")
 
@@ -156,8 +167,13 @@ async def verify_token(request: Request):
 @limiter.limit("2/second")
 async def set_csrf_token(request: Request):
     verify_jwt(request)
-    device_token = request.cookies.get("deviceToken")
-    csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token)
+    if enable_https:
+        auth_token = request.cookies.get("deviceToken")
+    else:
+        auth_token = request.headers.get("Authorization")
+        if auth_token:
+            auth_token = auth_token.split("Bearer ")[-1]
+    csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token=auth_token)
 
     return {"message": "Success", "csrf_token": csrf_token}
 
@@ -179,15 +195,18 @@ async def auth(request: Request, response: Response):
             }
             jwt_token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
-            response.set_cookie(
-                key="deviceToken",
-                value=jwt_token,
-                httponly=True,
-                secure=enable_https,
-                samesite="none" if enable_https else "lax",
-                expires=datetime.now(UTC) + timedelta(hours=24)
-            )
-            return {"message": "Success", "no_password": True}
+            if enable_https:
+                response.set_cookie(
+                    key="deviceToken",
+                    value=jwt_token,
+                    httponly=True,
+                    secure=True,
+                    samesite="none",
+                    expires=datetime.now(UTC) + timedelta(hours=24)
+                )
+                return {"message": "Success", "no_password": True}
+
+            return {"message": "Success", "no_password": True, "device_token": jwt_token, "expires": 1}
 
         body = await request.json()
         password = body.get("password", "")
@@ -220,16 +239,18 @@ async def auth(request: Request, response: Response):
         }
         jwt_token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
-        response.set_cookie(
-            key="deviceToken",
-            value=jwt_token,
-            httponly=True,
-            secure=enable_https,
-            samesite="none" if enable_https else "lax",
-            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
-        )
+        if enable_https:
+            response.set_cookie(
+                key="deviceToken",
+                value=jwt_token,
+                httponly=True,
+                secure=True,
+                samesite="none",
+                expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
+            )
+            return {"message": "Success", "no_password": True}
 
-        return {"message": "Success", "no_password": False}
+        return {"message": "Success", "no_password": True, "device_token": jwt_token, "expires": 365 if remember else 1}
 
     except HTTPException as e:
         raise e
@@ -268,7 +289,8 @@ async def change_password(request: Request, response: Response):
         new_password_hashed = ph.hash(new_password)
         with open(PASSWORD_PATH, "w") as file:
             file.write(new_password_hashed)
-        response.delete_cookie("deviceToken")
+        if enable_https:
+            response.delete_cookie("deviceToken")
         return {"message": "Success"}
     except HTTPException as e:
         raise e
@@ -298,7 +320,8 @@ async def clear_password(request: Request, response: Response):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         os.remove(PASSWORD_PATH)
-        response.delete_cookie("deviceToken")
+        if enable_https:
+            response.delete_cookie("deviceToken")
         return {"message": "Success"}
     except HTTPException as e:
         raise e
