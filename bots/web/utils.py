@@ -11,7 +11,7 @@ def generate_webui_config(port: int,
                           enable_https: bool = False,
                           default_locale: str = "zh_cn"):
     webui_config_path = os.path.join(webui_path, "config.json")
-    if os.path.exists(webui_config_path):
+    if not os.path.exists(webui_config_path):
         protocol = "https" if enable_https else "http"
         with open(webui_config_path, "wb") as f:
             f.write(json.dumps(
