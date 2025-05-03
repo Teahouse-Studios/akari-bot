@@ -1,4 +1,24 @@
+import os
 import socket
+
+import orjson as json
+
+from core.constants.path import webui_path
+
+
+def generate_webui_config(port: int,
+                          host: str = "127.0.0.1",
+                          enable_https: bool = False,
+                          default_locale: str = "zh_cn"):
+    webui_config_path = os.path.join(webui_path, "config.json")
+    if os.path.exists(webui_config_path):
+        protocol = "https" if enable_https else "http"
+        with open(webui_config_path, "wb") as f:
+            f.write(json.dumps(
+                {"api_url": f"{protocol}://{host}:{port}",
+                    "enable_https": enable_https,
+                    "locale": default_locale}
+            ))
 
 
 def check_port_available(port: int, host: str = "0.0.0.0") -> bool:

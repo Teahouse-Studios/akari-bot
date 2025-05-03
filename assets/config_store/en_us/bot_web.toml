@@ -5,14 +5,12 @@
 [bot_web]
 # The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
 enable_https = false # Whether to enable HTTPS protocol security measures.
+web_host = "127.0.0.1" # The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.
+web_port = 8081 # The port number of the Web service. Setting to 0 will disable the service.
 login_max_attempts = 5 # Maximum number of login requests limit.
 enable = true # Whether to enable this platform.
-api_host = "127.0.0.1" # The host address of the API service. Setting to 0.0.0.0 will listen to all addresses.
-api_port = 5000 # The port number of the API service. Setting to 0 will disable the API service.
-webui_host = "127.0.0.1" # The host address of the WebUI service. Setting to 0.0.0.0 will listen to all addresses.
-webui_port = 8081 # The port number of the WebUI service. Setting to 0 will disable the WebUI service.
 
 [bot_web_secret]
 # The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
-api_allow_origins = [] # The API service allows CORS sources list.
+allow_origins = [] # The API service allows CORS sources list.
 jwt_secret = "<Replace me with str value>" # The authentication key for the built-in API, for signing and verifying validity.
