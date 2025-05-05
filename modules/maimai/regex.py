@@ -51,7 +51,10 @@ async def _(msg: Bot.MessageSession):
         with open(mai_utage_info_path, "r", encoding="utf-8") as file:
             utage_data = json.loads(file.read())
         if utage_data:
-            res.append(f"「{utage_data[sid]["comment"]}」")
+            try:
+                res.append(f"「{utage_data[sid]["comment"]}」")
+            except KeyError:
+                res.append(f"「Let's party!」")
 
         res.append(msg.locale.t(
             "maimai.message.song",
