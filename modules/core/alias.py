@@ -8,13 +8,13 @@ ali = module("alias", required_admin=True, base=True, doc=True)
 
 
 @ali.command(
-    "add <alias> <command> {{core.help.alias.add}}",
-    "remove <alias> {{core.help.alias.remove}}",
-    "reset {{core.help.alias.reset}}",
-    "raise <alias> {{core.help.alias.raise}}",
-    "lower <alias> {{core.help.alias.lower}}",
-    "list [--legacy] {{core.help.alias.list}}",
-    options_desc={"--legacy": "{help.option.legacy}"},
+    "add <alias> <command> {[I18N:core.help.alias.add]}",
+    "remove <alias> {[I18N:core.help.alias.remove]}",
+    "reset {[I18N:core.help.alias.reset]}",
+    "raise <alias> {[I18N:core.help.alias.raise]}",
+    "lower <alias> {[I18N:core.help.alias.lower]}",
+    "list [--legacy] {[I18N:core.help.alias.list]}",
+    options_desc={"--legacy": "[I18N:help.option.legacy]"},
 )
 async def _(msg: Bot.MessageSession):
     aliases = msg.target_data.get("command_alias")

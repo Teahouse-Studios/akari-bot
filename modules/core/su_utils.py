@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if user:
         sender_info = await SenderInfo.get(sender_id=user)
         if await sender_info.edit_attr("isSuperUser", True):
-            await msg.finish(I18NContext("core.message.superuser.add.success"))
+            await msg.finish(I18NContext("core.message.superuser.add.success", user=user))
 
 
 @su.command("remove <user>")
@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if user:
         sender_info = await SenderInfo.get(sender_id=user)
         if await sender_info.edit_attr("isSuperUser", False):
-            await msg.finish(I18NContext("core.message.superuser.remove.success"))
+            await msg.finish(I18NContext("core.message.superuser.remove.success", user=user))
 
 
 purge = module("purge", required_superuser=True, base=True, doc=True)
@@ -364,7 +364,14 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish()
 
-upds = module("update&restart", required_superuser=True, alias="u&r", base=True, doc=True, exclude_from="Web", load=Info.subprocess)
+upds = module(
+    "update&restart",
+    required_superuser=True,
+    alias="u&r",
+    base=True,
+    doc=True,
+    exclude_from="Web",
+    load=Info.subprocess)
 
 
 @upds.command()
@@ -588,7 +595,7 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
 petal_ = module("petal", alias="petals", base=True, doc=True, load=Config("enable_petal", False))
 
 
-@petal_.command("{{core.help.petal}}")
+@petal_.command("{[I18N:core.help.petal]}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
 

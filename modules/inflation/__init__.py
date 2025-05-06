@@ -11,11 +11,11 @@ csv_file = os.path.join(assets_path, "modules", "inflaction", "consumer_price_in
 cpi = pd.read_csv(csv_file)
 
 
-i = module("inflation", developers=["Dianliang233"], desc="{inflation.help.desc}")
+i = module("inflation", developers=["Dianliang233"], desc="[I18N:inflation.help.desc]")
 
 
 @i.command(
-    "<price> <country_or_region_name_or_alpha_3_code> <from_year> [<to_year>] {{inflation.help.adjust}}",
+    "<price> <country_or_region_name_or_alpha_3_code> <from_year> [<to_year>] {[I18N:inflation.help.adjust]}",
 )
 async def _(
     msg: Bot.MessageSession,

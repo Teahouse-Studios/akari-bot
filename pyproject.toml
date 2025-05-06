@@ -30,6 +30,7 @@ argon2-cffi = "^23.1.0"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 fastapi = "^0.115.0"
 ffmpy = "^0.5.0"
+flask = "^3.1.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
 py-cord = "^2.5.0"
@@ -111,4 +112,4 @@ recursive = true
 aggressive = 3
 
 [tool.pyright]
-reportUndefinedVariable = 'error'
+reportUndefinedVariable = "error"

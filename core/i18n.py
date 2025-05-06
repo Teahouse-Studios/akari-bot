@@ -193,20 +193,6 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
-        text = self._match_i18ncode(text)
-
-        if locale_str := re.findall(r"\{(.*)}", text):
-            for lc in locale_str:
-                text = text.replace(
-                    f"{{{lc}}}",
-                    self.t(lc, fallback_failed_prompt=fallback_failed_prompt, **kwargs),
-                )
-
-        text = self._match_i18ncode(text)
-
-        return text
-
-    def _match_i18ncode(self, text: str) -> str:
         split_all = re.split(r"(\[I18N:.*?])", text)
         split_all = [x for x in split_all if x]
         msgs = []

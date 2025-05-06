@@ -10,7 +10,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 
 
-@wiki.command("search <pagename> {{wiki.help.search}}")
+@wiki.command("search <pagename> {[I18N:wiki.help.search]}")
 async def _(msg: Bot.MessageSession, pagename: str):
     await search_pages(msg, pagename)
 

@@ -209,7 +209,7 @@ class ImageElement(MessageElement):
         elif "base64" in path:
             _, encoded_img = path.split(",", 1)
             img_data = base64.b64decode(encoded_img)
-            
+
             save = f"{random_cache_path()}.png"
             with open(save, "wb") as img_file:
                 img_file.write(img_data)
@@ -244,7 +244,7 @@ class ImageElement(MessageElement):
 
         with open(file, "rb") as f:
             img_b64 = base64.b64encode(f.read()).decode("UTF-8")
-        
+
         if mime:
             mime_type, _ = mimetypes.guess_type(file)
             if not mime_type:

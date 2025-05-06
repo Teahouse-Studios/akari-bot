@@ -3,7 +3,7 @@ from core.component import module
 from .generator import get_mkey
 
 mk = module(
-    "mkey", desc="{mkey.help.desc}", doc=True, developers=["OasisAkari", "Kurisu"]
+    "mkey", desc="[I18N:mkey.help.desc]", doc=True, developers=["OasisAkari", "Kurisu"]
 )
 
 

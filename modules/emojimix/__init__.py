@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish([Plain(f"{mixer.str2emoji(combo[0])}+{mixer.str2emoji(combo[1])}"), Image(result)])
 
 
-@emojimix.command("<emoji1> [<emoji2>] {{emojimix.help}}")
+@emojimix.command("<emoji1> [<emoji2>] {[I18N:emojimix.help]}")
 async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
     if "+" in emoji1:
         emojis = emoji1.split("+", 1)
@@ -156,7 +156,7 @@ def check_valid_emoji(emoji_str):
     return emoji.is_emoji(emoji_str)
 
 
-@emojimix.command("list [<emoji>] {{emojimix.help.list}}")
+@emojimix.command("list [<emoji>] {[I18N:emojimix.help.list]}")
 async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:

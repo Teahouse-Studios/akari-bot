@@ -35,7 +35,8 @@ wiki = module(
 
 
 @wiki.command(
-    "<pagename> [-l <lang>] {{wiki.help}}", options_desc={"-l": "{wiki.help.option.l}"}
+    "<pagename> [-l <lang>] {[I18N:wiki.help]}",
+    options_desc={"-l": "[I18N:wiki.help.option.l]"}
 )
 async def _(msg: Bot.MessageSession, pagename: str):
     get_lang = msg.parsed_msg.get("-l", False)
@@ -47,8 +48,8 @@ async def _(msg: Bot.MessageSession, pagename: str):
 
 
 @wiki.command(
-    "id <pageid> [-l <lang>] {{wiki.help.id}}",
-    options_desc={"-l": "{wiki.help.option.l}"},
+    "id <pageid> [-l <lang>] {[I18N:wiki.help.id]}",
+    options_desc={"-l": "[I18N:wiki.help.option.l]"},
 )
 async def _(msg: Bot.MessageSession, pageid: str):
     iw = None

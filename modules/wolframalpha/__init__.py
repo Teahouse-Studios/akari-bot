@@ -17,13 +17,13 @@ w = module(
     "wolframalpha",
     alias=["wolfram", "wa"],
     developers=["DoroWolf"],
-    desc="{wolframalpha.help.desc}",
+    desc="[I18N:wolframalpha.help.desc]",
     support_languages=["en_us"],
     doc=True,
 )
 
 
-@w.command("<query> {{wolframalpha.help}}")
+@w.command("<query> {[I18N:wolframalpha.help]}")
 async def _(msg: Bot.MessageSession, query: str):
     if await secret_check(query):
         await msg.finish(rickroll())
@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, query: str):
             raise e
 
 
-@w.command("ask <question> {{wolframalpha.help.ask}}")
+@w.command("ask <question> {[I18N:wolframalpha.help.ask]}")
 async def _(msg: Bot.MessageSession, question: str):
     if await secret_check(question):
         await msg.finish(rickroll())

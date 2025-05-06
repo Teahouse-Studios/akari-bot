@@ -11,16 +11,16 @@ text_mode = Config("wordle_disable_image", False, table_name="module_wordle")
 
 wordle = module(
     "wordle",
-    desc="{wordle.help.desc}",
+    desc="[I18N:wordle.help.desc]",
     doc=True,
     developers=["Dianliang233", "DoroWolf"],
 )
 
 
 @wordle.command()
-@wordle.command("[--hard] [--trial] {{wordle.help}}",
-                options_desc={"--hard": "{wordle.help.option.hard}",
-                              "--trial": "{wordle.help.option.trial}"})
+@wordle.command("[--hard] [--trial] {[I18N:wordle.help]}",
+                options_desc={"--hard": "[I18N:wordle.help.option.hard]",
+                              "--trial": "[I18N:wordle.help.option.trial]"})
 async def _(msg: Bot.MessageSession):
     hard_mode = bool(msg.parsed_msg and msg.parsed_msg.get("--hard", False))
     trial = bool(msg.parsed_msg and msg.parsed_msg.get("--trial", False))
@@ -99,7 +99,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(board_image.image)] + g_msg, quote=False)
 
 
-@wordle.command("stop {{game.help.stop}}")
+@wordle.command("stop {[I18N:game.help.stop]}")
 async def _(msg: Bot.MessageSession):
     play_state = PlayState("wordle", msg)
     if play_state.check():
@@ -110,7 +110,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("game.message.stop.none"))
 
 
-@wordle.command("theme {{wordle.help.theme}}", load=not text_mode)
+@wordle.command("theme {[I18N:wordle.help.theme]}", load=not text_mode)
 async def _(msg: Bot.MessageSession):
     dark_theme = msg.target_data.get("wordle_dark_theme")
 

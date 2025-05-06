@@ -28,8 +28,8 @@ donate_url = Config("donate_url", donate_url_default)
 hlp = module("help", base=True, doc=True)
 
 
-@hlp.command("<module> [--legacy] {{core.help.help.detail}}",
-             options_desc={"--legacy": "{help.option.legacy}"})
+@hlp.command("<module> [--legacy] {[I18N:core.help.help.detail]}",
+             options_desc={"--legacy": "[I18N:help.option.legacy]"})
 async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
@@ -186,8 +186,8 @@ async def _(msg: Bot.MessageSession, module: str):
 
 
 @hlp.command()
-@hlp.command("[--legacy] {{core.help.help}}",
-             options_desc={"--legacy": "{help.option.legacy}"})
+@hlp.command("[--legacy] {[I18N:core.help.help]}",
+             options_desc={"--legacy": "[I18N:help.option.legacy]"})
 async def _(msg: Bot.MessageSession):
     legacy_help = True
     if not msg.parsed_msg and msg.Feature.image:

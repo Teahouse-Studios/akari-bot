@@ -15,7 +15,7 @@ total_list = TotalList()
 
 mai_regex = module(
     "maimai_regex",
-    desc="{maimai.help.maimai_regex.desc}",
+    desc="[I18N:maimai.help.maimai_regex.desc]",
     doc=True,
     recommend_modules=["maimai"],
     alias="mai_regex",
@@ -24,7 +24,7 @@ mai_regex = module(
 )
 
 
-@mai_regex.regex(r"(.+)\s?是什[么麼]歌", desc="{maimai.help.maimai_regex.song}")
+@mai_regex.regex(r"(.+)\s?是什[么麼]歌", desc="[I18N:maimai.help.maimai_regex.song]")
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name[:2].lower() == "id":
@@ -47,17 +47,24 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if int(sid) > 100000:
+        res = []
         with open(mai_utage_info_path, "r", encoding="utf-8") as file:
             utage_data = json.loads(file.read())
+        if utage_data:
+            try:
+                res.append(f"「{utage_data[sid]["comment"]}」")
+            except KeyError:
+                res.append(f"「Let's party!」")
 
-        res = msg.locale.t(
-            "maimai.message.song.utage",
-            comment=utage_data[sid]["comment"],
-            artist=utage_data[sid]["artist"],
-            bpm=utage_data[sid]["bpm"],
+        res.append(msg.locale.t(
+            "maimai.message.song",
+            artist=music[sid]["artist"],
+            genre="宴會場",
+            bpm=music["basic_info"]["bpm"],
             version=music["basic_info"]["from"],
-            level=utage_data[sid]["level"][0],
-        )
+            level=music["basic_info"]["level"][0]
+        ))
+        res = "\n".join(res)
     else:
         res = msg.locale.t(
             "maimai.message.song",
@@ -73,7 +80,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(await get_info(music, Plain(res)))
 
 
-@mai_regex.regex(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I, desc="{maimai.help.maimai_regex.alias}")
+@mai_regex.regex(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I, desc="[I18N:maimai.help.maimai_regex.alias]")
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
@@ -91,14 +98,14 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result.strip())])
 
 
-@mai_regex.regex(r"(.+)\s?有什[么麼]分\s?(.+)?", desc="{maimai.help.maimai_regex.score}")
+@mai_regex.regex(r"(.+)\s?有什[么麼]分\s?(.+)?", desc="[I18N:maimai.help.maimai_regex.score]")
 async def _(msg: Bot.MessageSession):
     songname = msg.matched_msg.groups()[0]
     username = msg.matched_msg.groups()[1]
     await query_song_score(msg, songname, username)
 
 
-@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?[进進]度\s?(.+)?", desc="{maimai.help.maimai_regex.process}")
+@mai_regex.regex(r"(\d+\+?)\s?([a-zA-Z]+\+?)\s?[进進]度\s?(.+)?", desc="[I18N:maimai.help.maimai_regex.process]")
 async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
@@ -106,14 +113,14 @@ async def _(msg: Bot.MessageSession):
     await query_process(msg, level, goal, username)
 
 
-@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?", desc="{maimai.help.maimai_regex.plate}")
+@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?", desc="[I18N:maimai.help.maimai_regex.plate]")
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
     await query_plate(msg, plate, username, get_list=False)
 
 
-@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表\s?(.+)?", desc="{maimai.help.maimai_regex.plate.list}")
+@mai_regex.regex(r"(.?)([極极将將舞神者]舞?)完成表\s?(.+)?", desc="[I18N:maimai.help.maimai_regex.plate.list]")
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
@@ -121,7 +128,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai_regex.regex(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)",
-                 desc="{maimai.help.maimai_regex.random}")
+                 desc="[I18N:maimai.help.maimai_regex.random]")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -152,7 +159,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
-@mai_regex.regex(r"(.+)\s?段位(?:[认認]定)?列?表", desc="{maimai.help.maimai_regex.grade}")
+@mai_regex.regex(r"(.+)\s?段位(?:[认認]定)?列?表", desc="[I18N:maimai.help.maimai_regex.grade]")
 async def _(msg: Bot.MessageSession):
     grade = msg.matched_msg.groups()[0]
     await get_grade_info(msg, grade)

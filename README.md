@@ -1,5 +1,6 @@
 <div align="center">
-  <img width="512" src="./assets/character_marked.png" alt="logo">
+
+![AkariBot](https://socialify.git.ci/Teahouse-Studios/akari-bot/image?custom_description=A+multifunctional%2C+multilingual%2C+multiplatform+asynchronous+chatbot&description=1&font=Jost&forks=1&issues=1&logo=https%3A%2F%2Fp.sda1.dev%2F23%2F71aacf97af8f66276fcee14c065d20d8%2FImage_2392116191262997.jpg&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
 
 # 小可 · AkariBot
 
@@ -14,12 +15,6 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 ![OneBot v11](https://img.shields.io/badge/OneBot-v11-black)
 [![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/blob/master/LICENSE)
 </div>
-
-## 介绍
-
-**小可**是可扩展的多功能、多语言、多平台支持的异步聊天机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
-
-目前小可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
 
 ## 功能列表
 > 此处展示的功能非机器人可用全部功能，详情请查看机器人文档。

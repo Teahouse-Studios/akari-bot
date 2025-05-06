@@ -236,7 +236,7 @@ class AnalyticsData(DBModel):
     module_name = fields.CharField(max_length=512)
     module_type = fields.CharField(max_length=512)
     target_id = fields.CharField(max_length=512)
-    sender_id = fields.CharField(max_length=512)
+    sender_id = fields.CharField(max_length=512, null=True, default=None)
     command = fields.TextField()
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -397,7 +397,7 @@ class JobQueuesTable(DBModel):
         return await cls.filter(
             target_client=target_client, status="pending"
         ).all()
-    
+
 
 class MaliciousLoginRecords(DBModel):
     """
@@ -422,6 +422,7 @@ class MaliciousLoginRecords(DBModel):
         return await cls.filter(
             ip_address=ip_address, blocked_until__gt=datetime.now(UTC)
         ).exists()
+
 
 __all__ = [
     "SenderInfo",

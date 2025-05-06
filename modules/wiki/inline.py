@@ -23,7 +23,7 @@ from .wiki import query_pages, generate_screenshot_v2_blocklist
 
 wiki_inline = module(
     "wiki_inline",
-    desc="{wiki.help.wiki_inline.desc}",
+    desc="[I18N:wiki.help.wiki_inline.desc]",
     doc=True,
     recommend_modules=["wiki"],
     alias="wiki_regex",
@@ -31,7 +31,7 @@ wiki_inline = module(
 )
 
 
-@wiki_inline.regex(r"\[\[(.*?)\]\]", flags=re.I, mode="A", desc="{wiki.help.wiki_inline.page}")
+@wiki_inline.regex(r"\[\[(.*?)\]\]", flags=re.I, mode="A", desc="[I18N:wiki.help.wiki_inline.page]")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list[:5], inline_mode=True)
 
 
-@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="{wiki.help.wiki_inline.template}")
+@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="[I18N:wiki.help.wiki_inline.template]")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
                    flags=re.I,
                    mode="A",
                    show_typing=False,
-                   desc="{wiki.help.wiki_inline.mediawiki}")
+                   desc="[I18N:wiki.help.wiki_inline.mediawiki]")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -71,7 +71,7 @@ async def _(msg: Bot.MessageSession):
                    mode="A",
                    show_typing=False,
                    logging=False,
-                   desc="{wiki.help.wiki_inline.url}")
+                   desc="[I18N:wiki.help.wiki_inline.url]")
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 

@@ -184,7 +184,7 @@ def _get_prefixes(msg: Bot.MessageSession, prefix):
         if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
             msg.prefixes.remove(display_prefix)
             msg.prefixes.insert(0, display_prefix)
-    
+
     return disable_prefix, in_prefix_list, display_prefix
 
 
@@ -236,6 +236,7 @@ async def _process_command(msg: Bot.MessageSession, modules, disable_prefix, in_
     command_first_word = command_split[0].lower()
 
     return command_first_word
+
 
 async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modules, command_first_word, identify_str):
     time_start = datetime.now()
@@ -294,7 +295,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
             if func.help_doc:
                 none_doc = False
         if not none_doc:  # 如果有，送入命令解析
-            await _execute_submodule(msg, module,command_first_word)
+            await _execute_submodule(msg, module, command_first_word)
         else:  # 如果没有，直接传入下游模块
             msg.parsed_msg = None
             for func in module.command_list.set:
@@ -311,14 +312,14 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
     except FinishedException as e:
         time_used = datetime.now() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
-                        f"Times take up: {str(time_used)}")
+                       f"Times take up: {str(time_used)}")
         Info.command_parsed += 1
         if enable_analytics:
             await AnalyticsData.create(target_id=msg.target.target_id,
-                                        sender_id=msg.target.sender_id,
-                                        command=msg.trigger_msg,
-                                        module_name=command_first_word,
-                                        module_type="normal")
+                                       sender_id=msg.target.sender_id,
+                                       command=msg.trigger_msg,
+                                       module_name=command_first_word,
+                                       module_type="normal")
 
     except AbuseWarning as e:
         await _process_tos_abuse_warning(msg, str(e))
@@ -330,6 +331,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
 
     except Exception as e:
         await _process_exception(msg, e)
+
 
 async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
     for m in modules:  # 遍历模块
@@ -387,10 +389,10 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                             if msg.target.target_id not in match_hash_cache:
                                 match_hash_cache[msg.target.target_id] = {}
                             if rfunc.logging and matched_hash in match_hash_cache[msg.target.target_id] and \
-                                datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
-                                        matched_hash] < int((msg.target_data.get("cooldown_time", 0)) or 3):
-                                    Logger.warning("Match loop detected, skipping...")
-                                    continue
+                                    datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
+                                    matched_hash] < int((msg.target_data.get("cooldown_time", 0)) or 3):
+                                Logger.warning("Match loop detected, skipping...")
+                                continue
                             match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
 
                             if enable_tos and rfunc.show_typing:
@@ -432,10 +434,10 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                         Info.command_parsed += 1
                         if enable_analytics:
                             await AnalyticsData.create(target_id=msg.target.target_id,
-                                                        sender_id=msg.target.sender_id,
-                                                        command=msg.trigger_msg,
-                                                        module_name=m,
-                                                        module_type="regex")
+                                                       sender_id=msg.target.sender_id,
+                                                       command=msg.trigger_msg,
+                                                       module_name=m,
+                                                       module_type="regex")
                         continue
 
                     except NoReportException as e:
@@ -506,12 +508,12 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
         all_["count"] += 1
         if all_["count"] > 20:
             raise AbuseWarning("{tos.message.reason.abuse}")
-        
+
 
 async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word):
     try:
         command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
-                                        command_prefixes=msg.prefixes)
+                                       command_prefixes=msg.prefixes)
         try:
             parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
             submodule: Module = parsed_msg[0]
@@ -558,7 +560,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
                                 del parsed_msg_[param_obj.annotation.name]
                             else:
                                 Logger.warning(f"{param_obj.annotation.name} is not a {
-                                                param_obj.annotation.type}")
+                                    param_obj.annotation.type}")
                         else:
                             Logger.warning(f"{param_obj.annotation.name} is not in parsed_msg")
                     param_name_ = param_name
@@ -586,7 +588,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
                                 kwargs[param_name_] = None
                 if no_message_session:
                     Logger.warning(f"{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                                    "Remember: MessageSession IS NOT Bot.MessageSession")
+                                   "Remember: MessageSession IS NOT Bot.MessageSession")
             else:
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
@@ -598,8 +600,8 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
             raise FinishedException(msg.sent)  # if not using msg.finish
         except InvalidCommandFormatError:
             await msg.send_message(I18NContext("parser.command.format.invalid",
-                                                module=command_first_word,
-                                                prefix=msg.prefixes[0]))
+                                               module=command_first_word,
+                                               prefix=msg.prefixes[0]))
             """if msg.target_data.get("typo_check", True):  # 判断是否开启错字检查
                 nmsg, command_first_word, command_split = await _typo_check(msg,
                                                                             display_prefix,
@@ -632,22 +634,22 @@ async def _process_send_message_failed(msg: Bot.MessageSession):
         obi = await get_onebot_implementation()
         if obi in ["llonebot", "napcat"]:
             await msg.call_api("set_msg_emoji_like",
-                                message_id=msg.session.message.message_id,
-                                emoji_id=qq_limited_emoji)
+                               message_id=msg.session.message.message_id,
+                               emoji_id=qq_limited_emoji)
         elif obi == "lagrange":
             await msg.call_api("set_group_reaction",
-                                group_id=msg.session.target,
-                                message_id=msg.session.message.message_id,
-                                code=qq_limited_emoji,
-                                is_add=True)
+                               group_id=msg.session.target,
+                               message_id=msg.session.message.message_id,
+                               code=qq_limited_emoji,
+                               is_add=True)
         elif obi == "shamrock":
             await msg.call_api("send_group_msg",
-                                group_id=msg.session.target,
-                                message=f"[CQ:touch,id={qq_account}]")
+                               group_id=msg.session.target,
+                               message=f"[CQ:touch,id={qq_account}]")
         elif obi == "go-cqhttp":
             await msg.call_api("send_group_msg",
-                                group_id=msg.session.target,
-                                message=f"[CQ:poke,qq={qq_account}]")
+                               group_id=msg.session.target,
+                               message=f"[CQ:poke,qq={qq_account}]")
         else:
             pass
     await msg.send_message(I18NContext("error.message.limited"))
@@ -658,7 +660,7 @@ async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportExcept
     err_msg = msg.locale.t_str(str(e))
     await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
 
-    
+
 async def _process_exception(msg: Bot.MessageSession, e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
@@ -680,7 +682,7 @@ async def _process_exception(msg: Bot.MessageSession, e: Exception):
                 await f.send_direct_message([I18NContext("error.message.report", module=msg.trigger_msg),
                                             Plain(tb.strip(), disable_joke=True)],
                                             enable_parse_message=False, disable_secret_check=True)
-                
+
 
 """async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
     enabled_modules = []

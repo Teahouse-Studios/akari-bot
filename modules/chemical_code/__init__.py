@@ -191,7 +191,7 @@ async def search_pubchem(id: Optional[int] = None):
 ccode = module(
     "chemical_code",
     developers=["OasisAkari", "DoroWolf"],
-    desc="{chemical_code.help.desc}",
+    desc="[I18N:chemical_code.help.desc]",
     doc=True,
     alias={
         "cc": "chemical_code",
@@ -205,17 +205,17 @@ ccode = module(
 )
 
 
-@ccode.command("{{chemical_code.help}}")
+@ccode.command("{[I18N:chemical_code.help]}")
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg)
 
 
-@ccode.command("captcha {{chemical_code.help.captcha}}")
+@ccode.command("captcha {[I18N:chemical_code.help.captcha]}")
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@ccode.command("stop {{game.help.stop}}")
+@ccode.command("stop {[I18N:game.help.stop]}")
 async def _(msg: Bot.MessageSession):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
@@ -227,7 +227,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("game.message.stop.none"))
 
 
-@ccode.command("<pcid> {{chemical_code.help.pcid}}")
+@ccode.command("<pcid> {[I18N:chemical_code.help.pcid]}")
 async def _(msg: Bot.MessageSession, pcid: int):
     if int(pcid) < 0:
         await msg.finish(I18NContext("chemical_code.message.pcid.invalid"))
