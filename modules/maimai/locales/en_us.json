@@ -1,5 +1,5 @@
 {
-    "chunithm.help.b30": "查询 CHUNITHM 玩家的 B30 列表。（Beta 版）",
+    "chunithm.help.b30": "Query the Best 30 list of CHUNITHM player. (Beta)",
     "chunithm.help.desc": "Query about CHUNITHM.",
     "chunithm.message.b30.text_prompt": "Here is the Best 30 list of ${user} (Rating ${rating}):",
     "chunithm.message.chart": "${diff} ${level} (${ds})\nCombo: ${combo}\nCharter: ${charter}",
@@ -8,7 +8,7 @@
     "chunithm.message.user_unbound": "The user is not bound. Please bind user by \"${prefix}chunithm bind\".",
     "config.comments.diving_fish_developer_token": "Developer token for Diving Fish prober. (For maimai module)",
     "maimai.help.alias": "Query the alias of the song.",
-    "maimai.help.b50": "查询 Maimai 玩家的 B50 列表。",
+    "maimai.help.b50": "Query the Best 50 list of Maimai player.",
     "maimai.help.base": "Search for songs by chart constant or range of the constants.",
     "maimai.help.bind": "Bind Diving-Fish user data.",
     "maimai.help.calc": "Calculate Rating based on the chart constant.",
