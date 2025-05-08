@@ -6,8 +6,6 @@ if TYPE_CHECKING:
     from core.builtins.session import MessageSession
 
 
-
-
 class ExecutionLockList:
     """
     执行锁。

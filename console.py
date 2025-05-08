@@ -47,14 +47,14 @@ async def console_command():
 async def send_command(msg):
     Logger.info("-------Start-------")
     session_data = SessionInfo(
-                target_id=f"{target_prefix}|0",
-                sender_id=f"{sender_prefix}|0",
-                sender_name="Console",
-                target_from=target_prefix,
-                sender_from=sender_prefix,
-                client_name=client_name,
-                message_id=0,
-                messages=MessageChain([Plain(msg)]))
+        target_id=f"{target_prefix}|0",
+        sender_id=f"{sender_prefix}|0",
+        sender_name="Console",
+        target_from=target_prefix,
+        sender_from=sender_prefix,
+        client_name=client_name,
+        message_id=0,
+        messages=MessageChain([Plain(msg)]))
     await JobQueueClient.send_message_to_server(session_data)
     Logger.info("----Process end----")
     # return returns

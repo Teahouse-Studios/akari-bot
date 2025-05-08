@@ -114,6 +114,7 @@ class FetchedSession(FetchedSession):
             message_id=0,
         )
 
+
 Bot.FetchedSession = FetchedSession
 
 

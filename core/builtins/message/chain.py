@@ -44,7 +44,6 @@ class MessageChain:
 
     values: List[MessageElement]
 
-
     @classmethod
     def assign(
         cls,
@@ -270,7 +269,6 @@ class MessageChain:
 
     def __str__(self):
         return f"[{", ".join([x.__repr__() for x in self.values])}]"
-
 
     def __iter__(self):
         return iter(self.values)

@@ -33,7 +33,6 @@ class JobQueueBase:
             return result
         return task_id
 
-
     @classmethod
     async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
         for k in kwargs:

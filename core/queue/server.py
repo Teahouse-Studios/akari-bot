@@ -15,7 +15,7 @@ class JobQueueServer(JobQueueBase):
 
 
 @JobQueueServer.action("receive_message_from_client")
-async def receive_message_from_client(tsk: JobQueuesTable,  args: dict):
+async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
     await parser(exports["Bot"].MessageSession(structure(args['session_data'], SessionData)))
     await JobQueueServer.return_val(tsk, {})
 

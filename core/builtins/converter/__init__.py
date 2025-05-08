@@ -8,7 +8,7 @@ import core.builtins.message.elements as elements
 converter = Converter()
 
 converter.register_unstructure_hook(MessageElement,
-                                    lambda obj: {"_type": type(obj).__name__,  **converter.unstructure(obj)})
+                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
 
 converter.register_structure_hook(
     MessageElement,

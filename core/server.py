@@ -10,5 +10,3 @@ async def main():
     while True:
         await check_job_queue("Server")
         await asyncio.sleep(1)
-
-

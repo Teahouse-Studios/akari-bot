@@ -78,7 +78,6 @@ class MessageSession:
             petal=get_sender_info.petal if get_sender_info else None,
         ))
 
-
     async def send_message(
         self,
         message_chain: Union[MessageChain, str, list, MessageElement],
@@ -492,7 +491,6 @@ class MessageSession:
         wait = False
 
 
-
 class FinishedSession:
     """
     结束会话。
@@ -515,8 +513,6 @@ class FinishedSession:
 
     def __str__(self):
         return f"FinishedSession(message_id={self.message_id}, result={self.result})"
-
-
 
 
 class FetchedSession:
@@ -635,14 +631,12 @@ class FetchTarget:
     postGlobalMessage = post_global_message
 
 
-
 add_export(MessageSession)
 
 
 add_export(FetchTarget)
 add_export(FetchedSession)
 add_export(FinishedSession)
-
 
 
 __all__ = ["SessionInfo", MessageSession]
