@@ -27,7 +27,7 @@ def get_diff(diff: str) -> int:
     elif diff in diff_list_lower:
         level = diff_list_lower.index(diff)
     else:
-        level = None
+        level = 0
     return level
 
 
