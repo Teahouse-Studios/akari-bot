@@ -74,19 +74,18 @@ async def parser(msg: Bot.MessageSession,
     :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在空字符串的情况下则代表无需命令前缀。
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行。
     """
-    identify_str = f"[{msg.target.sender_id}{
-        f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]"
+    identify_str = f"[{msg.session_info.sender_id}{
+        f" ({msg.session_info.target_id})" if msg.session_info.target_from != msg.session_info.sender_from else ""}]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
-    await msg.data_init()
     try:
         asyncio.create_task(SessionTaskManager.check(msg))
-        modules = ModulesManager.return_modules_list(msg.target.target_from)
+        modules = ModulesManager.return_modules_list(msg.session_info.target_from)
 
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
         if (msg.sender_info.blocked and not msg.sender_info.trusted and not msg.sender_info.superuser) or (
-                msg.target.sender_id in msg.target_data.get("ban", []) and not msg.sender_info.superuser):
+                msg.session_info.sender_id in msg.target_data.get("ban", []) and not msg.sender_info.superuser):
             return
 
         disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg, prefix)
@@ -266,7 +265,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
             return
 
         if module.required_base_superuser:
-            if msg.target.sender_id not in base_superuser_list:
+            if msg.session_info.sender_id not in base_superuser_list:
                 await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                 return
         elif module.required_superuser:
@@ -289,14 +288,14 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
                 await msg.send_message(I18NContext("parser.admin.module.permission.denied", module=command_first_word))
                 return
 
-        if not (msg.target.target_from == qq_guild_prefix or module.base):
+        if not (msg.session_info.target_from == qq_guild_prefix or module.base):
             if enable_tos:
                 await _tos_msg_counter(msg, msg.trigger_msg)
             else:
                 Logger.debug("Tos is disabled, check the configuration if it is not work as expected.")
 
         none_doc = True  # 检查模块绑定的命令是否有文档
-        for func in module.command_list.get(msg.target.target_from):
+        for func in module.command_list.get(msg.session_info.target_from):
             if func.help_doc:
                 none_doc = False
         if not none_doc:  # 如果有，送入命令解析
@@ -320,8 +319,8 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
                        f"Times take up: {str(time_used)}")
         Info.command_parsed += 1
         if enable_analytics:
-            await AnalyticsData.create(target_id=msg.target.target_id,
-                                       sender_id=msg.target.sender_id,
+            await AnalyticsData.create(target_id=msg.session_info.target_id,
+                                       sender_id=msg.session_info.sender_id,
                                        command=msg.trigger_msg,
                                        module_name=command_first_word,
                                        module_type="normal")
@@ -345,7 +344,7 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                 regex_module: Module = modules[m]
 
                 if regex_module.required_base_superuser:
-                    if msg.target.sender_id not in base_superuser_list:
+                    if msg.session_info.sender_id not in base_superuser_list:
                         continue
                 elif regex_module.required_superuser:
                     if not msg.check_super_user():
@@ -355,11 +354,11 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                         continue
 
                 if not regex_module.load or \
-                    msg.target.target_from in regex_module.exclude_from or \
-                    msg.target.client_name in regex_module.exclude_from or \
+                    msg.session_info.target_from in regex_module.exclude_from or \
+                    msg.session_info.client_name in regex_module.exclude_from or \
                     ("*" not in regex_module.available_for and
-                        msg.target.target_from not in regex_module.available_for and
-                        msg.target.client_name not in regex_module.available_for):
+                        msg.session_info.target_from not in regex_module.available_for and
+                        msg.session_info.client_name not in regex_module.available_for):
                     continue
 
                 for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
@@ -381,24 +380,24 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                                 matched_hash = hash(msg.matched_msg)
 
                         if matched and regex_module.load and not (
-                            msg.target.target_from in regex_module.exclude_from or
-                            msg.target.client_name in regex_module.exclude_from or
+                            msg.session_info.target_from in regex_module.exclude_from or
+                            msg.session_info.client_name in regex_module.exclude_from or
                             ("*" not in regex_module.available_for and
-                                msg.target.target_from not in regex_module.available_for and
-                                msg.target.client_name not in regex_module.available_for)):  # 如果匹配成功
+                                msg.session_info.target_from not in regex_module.available_for and
+                                msg.session_info.client_name not in regex_module.available_for)):  # 如果匹配成功
 
                             if rfunc.logging:
                                 Logger.info(
                                     f"{identify_str} -> [Bot]: {msg.trigger_msg}")
                             Logger.debug("Matched hash:" + str(matched_hash))
-                            if msg.target.target_id not in match_hash_cache:
-                                match_hash_cache[msg.target.target_id] = {}
-                            if rfunc.logging and matched_hash in match_hash_cache[msg.target.target_id] and \
-                                    datetime.now().timestamp() - match_hash_cache[msg.target.target_id][
+                            if msg.session_info.target_id not in match_hash_cache:
+                                match_hash_cache[msg.session_info.target_id] = {}
+                            if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id] and \
+                                    datetime.now().timestamp() - match_hash_cache[msg.session_info.target_id][
                                     matched_hash] < int((msg.target_data.get("cooldown_time", 0)) or 3):
                                 Logger.warning("Match loop detected, skipping...")
                                 continue
-                            match_hash_cache[msg.target.target_id][matched_hash] = datetime.now().timestamp()
+                            match_hash_cache[msg.session_info.target_id][matched_hash] = datetime.now().timestamp()
 
                             if enable_tos and rfunc.show_typing:
                                 await _check_temp_ban(msg)
@@ -438,8 +437,8 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
 
                         Info.command_parsed += 1
                         if enable_analytics:
-                            await AnalyticsData.create(target_id=msg.target.target_id,
-                                                       sender_id=msg.target.sender_id,
+                            await AnalyticsData.create(target_id=msg.session_info.target_id,
+                                                       sender_id=msg.session_info.sender_id,
                                                        command=msg.trigger_msg,
                                                        module_name=m,
                                                        module_type="regex")
@@ -466,22 +465,22 @@ async def _check_target_cooldown(msg: Bot.MessageSession):
     neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
     if cooldown_time and not neutralized:
-        if cooldown_counter.get(msg.target.target_id, {}).get(msg.target.sender_id):
-            time = datetime.now().timestamp() - cooldown_counter[msg.target.target_id][msg.target.sender_id]["ts"]
+        if cooldown_counter.get(msg.session_info.target_id, {}).get(msg.session_info.sender_id):
+            time = datetime.now().timestamp() - cooldown_counter[msg.session_info.target_id][msg.session_info.sender_id]["ts"]
             if time > cooldown_time:
-                cooldown_counter[msg.target.target_id].update(
-                    {msg.target.sender_id: {"ts": datetime.now().timestamp()}})
+                cooldown_counter[msg.session_info.target_id].update(
+                    {msg.session_info.sender_id: {"ts": datetime.now().timestamp()}})
             else:
                 await msg.finish(I18NContext("message.cooldown.manual", time=int(cooldown_time - time)))
         else:
-            cooldown_counter[msg.target.target_id] = {msg.target.sender_id: {"ts": datetime.now().timestamp()}}
+            cooldown_counter[msg.session_info.target_id] = {msg.session_info.sender_id: {"ts": datetime.now().timestamp()}}
 
 
 async def _check_temp_ban(msg: Bot.MessageSession):
-    is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
+    is_temp_banned = temp_ban_counter.get(msg.session_info.sender_id)
     if is_temp_banned:
         if msg.check_super_user():
-            await remove_temp_ban(msg.target.sender_id)
+            await remove_temp_ban(msg.session_info.sender_id)
             return None
         ban_time = datetime.now().timestamp() - is_temp_banned["ts"]
         if ban_time < TOS_TEMPBAN_TIME:
@@ -496,18 +495,18 @@ async def _check_temp_ban(msg: Bot.MessageSession):
 
 
 async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
-    same = counter_same.get(msg.target.sender_id)
+    same = counter_same.get(msg.session_info.sender_id)
     if not same or datetime.now().timestamp() - same["ts"] > 300 or same["command"] != command:
         # 检查是否滥用（5分钟内重复使用同一命令10条）
-        counter_same[msg.target.sender_id] = {"command": command, "count": 1,
+        counter_same[msg.session_info.sender_id] = {"command": command, "count": 1,
                                               "ts": datetime.now().timestamp()}
     else:
         same["count"] += 1
         if same["count"] > 10:
             raise AbuseWarning("{tos.message.reason.cooldown}")
-    all_ = counter_all.get(msg.target.sender_id)
+    all_ = counter_all.get(msg.session_info.sender_id)
     if not all_ or datetime.now().timestamp() - all_["ts"] > 300:  # 检查是否滥用（5分钟内使用20条命令）
-        counter_all[msg.target.sender_id] = {"count": 1,
+        counter_all[msg.session_info.sender_id] = {"count": 1,
                                              "ts": datetime.now().timestamp()}
     else:
         all_["count"] += 1
@@ -526,7 +525,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
             Logger.debug(msg.parsed_msg)
 
             if submodule.required_base_superuser:
-                if msg.target.sender_id not in base_superuser_list:
+                if msg.session_info.sender_id not in base_superuser_list:
                     await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
             elif submodule.required_superuser:
@@ -539,11 +538,11 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
                     return
 
             if not submodule.load or \
-                msg.target.target_from in submodule.exclude_from or \
-                msg.target.client_name in submodule.exclude_from or \
+                msg.session_info.target_from in submodule.exclude_from or \
+                msg.session_info.client_name in submodule.exclude_from or \
                 ("*" not in submodule.available_for and
-                    msg.target.target_from not in submodule.available_for and
-                    msg.target.client_name not in submodule.available_for):
+                    msg.session_info.target_from not in submodule.available_for and
+                    msg.session_info.client_name not in submodule.available_for):
                 raise InvalidCommandFormatError
 
             kwargs = {}
@@ -627,7 +626,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
 async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
-        temp_ban_counter[msg.target.sender_id] = {"count": 1,
+        temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
                                                   "ts": datetime.now().timestamp()}
     else:
         reason = msg.locale.t_str(str(e))
@@ -635,7 +634,7 @@ async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
 
 
 async def _process_send_message_failed(msg: Bot.MessageSession):
-    if msg.target.target_from == qq_group_prefix:  # wtf onebot 11
+    if msg.session_info.target_from == qq_group_prefix:  # wtf onebot 11
         obi = await get_onebot_implementation()
         if obi in ["llonebot", "napcat"]:
             await msg.call_api("set_msg_emoji_like",
@@ -698,12 +697,12 @@ async def _process_exception(msg: Bot.MessageSession, e: Exception):
     if match_close_module:
         module = modules[match_close_module[0]]
         none_doc = True  # 检查模块绑定的命令是否有文档
-        for func in module.match_list.get(msg.target.targetFrom):
+        for func in module.match_list.get(msg.session_info.targetFrom):
             if func.help_doc is not None:
                 none_doc = False
         len_command_split = len(command_split)
         if not none_doc and len_command_split > 1:
-            get_submodules: List[CommandMeta] = module.match_list.get(msg.target.targetFrom)
+            get_submodules: List[CommandMeta] = module.match_list.get(msg.session_info.targetFrom)
             docs = {}  # 根据命令模板的空格数排序命令
             for func in get_submodules:
                 help_doc: List[Template] = copy.deepcopy(func.help_doc)

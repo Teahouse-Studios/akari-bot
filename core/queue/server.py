@@ -2,7 +2,8 @@ from cattr import structure
 from cattrs import unstructure
 
 from .base import JobQueueBase
-from ..builtins import SessionData
+from ..builtins.converter import converter
+from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
 from ..parser.message import parser
 from ..exports import exports, add_export
@@ -16,7 +17,7 @@ class JobQueueServer(JobQueueBase):
 
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
-    await parser(exports["Bot"].MessageSession(structure(args['session_data'], SessionData)))
+    await parser(await exports["Bot"].MessageSession.from_session_info(converter.structure(args['session_info'], SessionInfo)))
     await JobQueueServer.return_val(tsk, {})
 
 add_export(JobQueueServer)

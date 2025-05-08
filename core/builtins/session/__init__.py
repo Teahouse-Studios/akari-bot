@@ -30,8 +30,8 @@ class SessionInfo:
     target_from: str
     sender_from: Optional[str]
     client_name: str
-    message_id: Optional[Union[int, str]] = None
-    reply_id: Optional[Union[int, str]] = None
+    message_id: Optional[str] = None
+    reply_id: Optional[str] = None
     messages: Optional[MessageChain] = None
 
 
@@ -61,6 +61,7 @@ class MessageSession:
     async def from_session_info(cls, session: SessionInfo):
         get_target_info: TargetInfo = await TargetInfo.get_by_target_id(session.target_id)
         get_sender_info: SenderInfo = await SenderInfo.get_by_sender_id(session.sender_id) if session.sender_id else None
+        locale = Locale(get_target_info.locale)
         _tz_offset = get_target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
         return deepcopy(cls(
             session_info=session,
@@ -71,8 +72,8 @@ class MessageSession:
             sender_data=get_sender_info.sender_data if get_sender_info else None,
             custom_admins=get_target_info.custom_admins,
             enabled_modules=get_target_info.modules,
-            locale=get_target_info.locale,
-            bot_name=get_target_info.locale.t("bot_name"),
+            locale=locale,
+            bot_name=locale.t("bot_name"),
             tz_offset=_tz_offset,
             timezone_offset=parse_time_string(_tz_offset),
             petal=get_sender_info.petal if get_sender_info else None,
@@ -173,7 +174,7 @@ class MessageSession:
         :param text_only: 是否只保留纯文本。（默认为False）
         :return: 转换后的字符串。
         """
-        raise NotImplementedError
+        return self.session_info.messages.to_str(text_only)
 
     async def to_message_chain(self) -> MessageChain:
         """

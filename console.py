@@ -15,6 +15,7 @@ from core.console.info import *
 from core.constants.info import Info
 from core.constants.path import assets_path, cache_path
 from core.extra.scheduler import load_extra_schedulers
+from core.server import main
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from core.terminate import cleanup_sessions
@@ -37,6 +38,7 @@ async def console_scheduler():
 async def console_command():
     try:
         session = PromptSession(history=FileHistory(console_history_path))
+        asyncio.create_task(main())
         while True:
             m = await asyncio.to_thread(session.prompt)
             await send_command(m)
