@@ -1,9 +1,9 @@
 import os
 import shutil
 
-from core.builtins import MessageTaskManager
+from core.builtins.session import SessionTaskManager
 from core.constants.path import cache_path
-from core.queue import check_job_queue
+from core.queue_ import check_job_queue
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list
@@ -11,7 +11,7 @@ from core.utils.game import clear_ps_list
 
 @Scheduler.scheduled_job(IntervalTrigger(minutes=60))
 async def bg():
-    await MessageTaskManager.bg_check()
+    await SessionTaskManager.bg_check()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)

@@ -6,7 +6,7 @@ from core.builtins import Embed, EmbedField, MessageChain
 from core.config import Config
 from core.database.local import CrowdinActivityRecords
 from core.logger import Logger
-from core.queue import JobQueue
+from core.queue_ import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.html2text import html2text
 from core.utils.http import get_url

@@ -5,15 +5,19 @@ from core.config import Config
 from core.constants.info import Info
 from core.exports import add_export
 from core.loader import ModulesManager
-from core.types.message import MsgInfo, Session, ModuleHookContext
+from core.types.message import ModuleHookContext
 from .message import *
 from .message.chain import *
 from .message.internal import *
+from .session import SessionInfo
 from .temp import *
 from .utils import *
 from ..constants import base_superuser_default
 from ..database.models import TargetInfo
 from ..logger import Logger
+
+from core.builtins.session import MessageSession, FetchedSession, FetchTarget
+from core.builtins.session.lock import ExecutionLockList
 
 
 class Bot:
@@ -100,7 +104,7 @@ class FetchedSession(FetchedSession):
         sender_id_ = None
         if sender_from and sender_id:
             sender_id_ = f"{sender_from}|{sender_id}"
-        self.target = MsgInfo(
+        self.session_info = SessionInfo(
             target_id=target_id_,
             sender_id=sender_id_,
             target_from=target_from,
@@ -109,14 +113,6 @@ class FetchedSession(FetchedSession):
             client_name=Bot.client_name,
             message_id=0,
         )
-        self.session = Session(message=False, target=target_id, sender=sender_id)
-        self.parent = Bot.MessageSession(self.target, self.session)
-
-#        if sender_id:
-#            self.parent.target.sender_id = exports.get("BotDBUtil").SenderInfo(
-#                f"{sender_from}|{sender_id}"
-#            )
-
 
 Bot.FetchedSession = FetchedSession
 
@@ -145,3 +141,9 @@ if isinstance(base_superuser_list, str):
 
 
 add_export(Bot)
+
+
+__all__ = [
+    "Bot",
+    "FetchedSession",
+    "FetchTarget", 'base_superuser_list',]

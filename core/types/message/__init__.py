@@ -1,31 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Union
-
 from attrs import define
-
-
-@define
-class MsgInfo:
-    target_id: str
-    sender_id: Optional[str]
-    sender_name: Optional[str]
-    target_from: str
-    sender_from: Optional[str]
-    client_name: str
-    message_id: Union[int, str]
-    reply_id: Optional[Union[int, str]] = None
-
-
-@define
-class Session:
-    """
-    一个便于调用框架内部方法的插槽，根据不同的框架可能会有不同的实现。（由于没有类型提示，除非功能实现必须，不建议依赖它进行实现）
-    """
-
-    message: Any
-    target: Any
-    sender: Any
 
 
 @define
@@ -37,4 +12,4 @@ class ModuleHookContext:
     args: dict
 
 
-__all__ = ["MsgInfo", "Session", "ModuleHookContext"]
+__all__ = ["ModuleHookContext"]

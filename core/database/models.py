@@ -375,6 +375,11 @@ class JobQueuesTable(DBModel):
         await self.save()
         return True
 
+    async def set_status(self, status):
+        self.status = status
+        await self.save()
+        return True
+
     @classmethod
     async def clear_task(cls, time=43200) -> bool:
         now_timestamp = datetime.now().timestamp()

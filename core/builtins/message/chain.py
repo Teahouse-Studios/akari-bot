@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import html
 import re
+from copy import deepcopy
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -10,8 +11,7 @@ from urllib.parse import urlparse
 import orjson as json
 
 from core.builtins.message.elements import (
-    elements_map,
-    MessageElement,
+    BaseElement,
     PlainElement,
     EmbedElement,
     FormattedTimeElement,
@@ -21,25 +21,33 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
 )
+from core.exports import add_export
 
 if TYPE_CHECKING:
-    from core.builtins.message import MessageSession
+    from core.builtins.session import MessageSession
 
 from core.builtins.utils import Secret
+from core.builtins.types import MessageElement
+from core.builtins.converter import converter
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.http import url_pattern
 
-from cattrs import structure, unstructure
+from attrs import define
 
 
+@define
 class MessageChain:
     """
     消息链。
     """
 
-    def __init__(
-        self,
+    values: List[MessageElement]
+
+
+    @classmethod
+    def assign(
+        cls,
         elements: Optional[
             Union[
                 str,
@@ -53,13 +61,12 @@ class MessageChain:
         """
         :param elements: 消息链元素。
         """
-        self.value = []
+        values = []
         if isinstance(elements, MessageChain):
-            self.value = elements.value
-            return
+            return elements
         if isinstance(elements, str):
             elements = match_kecode(elements)
-        if isinstance(elements, MessageElement):
+        if isinstance(elements, BaseElement):
             if isinstance(elements, PlainElement):
                 if elements.text != "":
                     elements = match_kecode(elements.text, elements.disable_joke)
@@ -67,34 +74,28 @@ class MessageChain:
                 elements = [elements]
         if isinstance(elements, dict):
             for key in elements:
-                if key in elements_map:
-                    elements = [structure(elements[key], elements_map[key])]
-                else:
-                    Logger.error(f"Unexpected message type {key}: {elements}")
+                elements = converter.structure(elements[key], MessageElement)
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 if isinstance(e, str):
                     if e != "":
-                        self.value += match_kecode(e)
+                        values += match_kecode(e)
                 elif isinstance(e, dict):
                     for key in e:
-                        if key in elements_map:
-                            tmp_e = structure(e[key], elements_map[key])
-                            if isinstance(tmp_e, PlainElement):
-                                if tmp_e.text != "":
-                                    self.value += match_kecode(tmp_e.text, tmp_e.disable_joke)
-                            else:
-                                self.value.append(tmp_e)
+                        tmp_e = converter.structure(e[key], MessageElement)
+                        if isinstance(tmp_e, PlainElement):
+                            if tmp_e.text != "":
+                                values += match_kecode(tmp_e.text, tmp_e.disable_joke)
                         else:
-                            Logger.error(f"Unexpected message type {key}: {e}")
+                            values.append(tmp_e)
 
                 elif isinstance(e, PlainElement):
                     if isinstance(e, PlainElement):
                         if e.text != "":
-                            self.value += match_kecode(e.text, e.disable_joke)
+                            values += match_kecode(e.text, e.disable_joke)
 
-                elif isinstance(e, MessageElement):
-                    self.value.append(e)
+                elif isinstance(e, BaseElement):
+                    values.append(e)
                 else:
                     Logger.error(f"Unexpected message type: {e}")
         elif not elements:
@@ -103,6 +104,7 @@ class MessageChain:
             Logger.error(f"Unexpected message type: {elements}")
         # Logger.debug(f"MessageChain: {self.value}")
         # Logger.debug("Elements: " + str(elements))
+        return deepcopy(cls(values))
 
     @property
     def is_safe(self) -> bool:
@@ -113,7 +115,7 @@ class MessageChain:
         def unsafeprompt(name, secret, text):
             return f"{name} contains unsafe text \"{secret}\": {text}"
 
-        for v in self.value:
+        for v in self.values:
             if isinstance(v, PlainElement):
                 for secret in Secret.list:
                     if secret in ["", None, True, False]:
@@ -169,7 +171,7 @@ class MessageChain:
         将消息链转换为可发送的格式。
         """
         value = []
-        for x in self.value:
+        for x in self.values:
             if isinstance(x, EmbedElement) and not embed:
                 value += x.to_message_chain(msg)
             elif isinstance(x, PlainElement):
@@ -195,7 +197,7 @@ class MessageChain:
                 if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
-                    value += MessageChain(t_value).as_sendable(msg)
+                    value += MessageChain.assign(t_value).as_sendable(msg)
             elif isinstance(x, URLElement):
                 value.append(PlainElement.assign(x.url, disable_joke=True))
             else:
@@ -209,81 +211,93 @@ class MessageChain:
 
         return value
 
+    def to_str(self, safe=True) -> str:
+        """
+        将消息链转换为字符串。
+
+        :param safe: 是否安全模式，默认开启，开启后图片等路径将不会转换。
+        """
+        result = ""
+        for x in self.values:
+            if isinstance(x, PlainElement):
+                result += x.text
+            else:
+                if safe:
+                    result += str(x)
+
+        return result
+
     def to_list(self) -> list[dict[str, Any]]:
         """
         将消息链序列化为列表。
         """
-        return [{x.__name__(): unstructure(x)} for x in self.value]
+        return [converter.unstructure(x, MessageElement) for x in self.values]
 
-    def from_list(self, lst: list) -> None:
+    @classmethod
+    def from_list(cls, lst: list) -> MessageChain:
         """
-        从列表构造消息链，替换原有的消息链。
+        从列表构造消息链，返回新的消息链。
         """
         converted = []
         for x in lst:
             for elem in x:
-                if elem in elements_map:
-                    converted.append(structure(x[elem], elements_map[elem]))
-                else:
-                    Logger.error(f"Unexpected message type: {elem}")
-        self.value = converted
+                converted.append(converter.structure(elem, MessageElement))
+        return deepcopy(cls(converted))
 
     def append(self, element):
         """
         添加一个消息链元素到末尾。
         """
-        self.value.append(element)
+        self.values.append(element)
 
     def remove(self, element):
         """
         删除一个消息链元素。
         """
-        self.value.remove(element)
+        self.values.remove(element)
 
     def insert(self, index, element):
         """
         在指定位置插入一个消息链元素。
         """
-        self.value.insert(index, element)
+        self.values.insert(index, element)
 
     def copy(self):
         """
         复制一个消息链。
         """
-        return MessageChain(self.value.copy())
+        return MessageChain(self.values.copy())
 
     def __str__(self):
-        return f"[{", ".join([x.__repr__() for x in self.value])}]"
+        return f"[{", ".join([x.__repr__() for x in self.values])}]"
 
-    def __repr__(self):
-        return self.__str__()
 
     def __iter__(self):
-        return iter(self.value)
+        return iter(self.values)
 
     def __add__(self, other):
         if isinstance(other, MessageChain):
-            return MessageChain(self.value + other.value)
+            return MessageChain(self.values + other.values)
         if isinstance(other, list):
-            return MessageChain(self.value + other)
+            return MessageChain(self.values + other)
         raise TypeError(
             f"Unsupported operand type(s) for +: \"MessageChain\" and \"{type(other).__name__}\""
         )
 
     def __radd__(self, other):
         if isinstance(other, MessageChain):
-            return MessageChain(other.value + self.value)
+            return MessageChain(other.values + self.values)
         if isinstance(other, list):
-            return MessageChain(other + self.value)
+            return MessageChain(other + self.values)
         raise TypeError(
             f"Unsupported operand type(s) for +: \"{type(other).__name__}\" and \"MessageChain\""
         )
 
     def __iadd__(self, other):
         if isinstance(other, MessageChain):
-            self.value += other.value
+            self.values += other.values
         elif isinstance(other, list):
-            self.value += other
+            self.values += other
         else:
             raise TypeError(
                 f"Unsupported operand type(s) for +=: \"MessageChain\" and \"{type(other).__name__}\""
@@ -386,6 +400,9 @@ def match_kecode(text: str,
                         elements.append(MentionElement.assign(a))
 
     return elements
+
+
+add_export(MessageChain)
 
 
 __all__ = ["MessageChain"]

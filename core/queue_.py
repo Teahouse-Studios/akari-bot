@@ -4,6 +4,7 @@ import traceback
 from uuid import uuid4
 
 from core.builtins import Bot, MessageChain, I18NContext, Plain
+from core.builtins.session import SessionInfo
 from core.config import Config
 from core.constants import Info
 from core.database.models import JobQueuesTable
@@ -11,6 +12,8 @@ from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
 from core.utils.web_render import check_web_render
+from core.parser.message import parser
+from cattrs import structure, unstructure
 
 _queue_tasks = {}
 queue_actions = {}
@@ -79,13 +82,17 @@ class JobQueue:
     async def send_message(cls, target_client: str, target_id: str, message):
         await cls.add_job(target_client, "send_message", {"target_id": target_id, "message": message})
 
+    @classmethod
+    async def receive_message(cls, session_data: dict):
+        await cls.add_job("Server", "receive_message", {"session_data": unstructure(session_data)})
+
 
 async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
     await tsk.return_val(value, status)
     raise QueueFinished
 
 
-async def check_job_queue():
+async def check_job_queue(target_client: str = None):
     for task_id in _queue_tasks:
         tsk = await JobQueuesTable.get(task_id=task_id)
         if tsk.status == "done":
@@ -93,7 +100,7 @@ async def check_job_queue():
             _queue_tasks[task_id]["flag"].set()
 
     get_internal = await JobQueuesTable.get_all(target_client=JobQueue.name)
-    get_all = await JobQueuesTable.get_all(target_client=Bot.FetchTarget.name)
+    get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else Bot.FetchTarget.name)
 
     for tsk in get_internal + get_all:
         Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
@@ -141,21 +148,27 @@ async def _(tsk: JobQueuesTable, args: dict):
     await Bot.Hook.trigger(args["module_or_hook_name"], args["args"])
     await return_val(tsk, {})
 
-
-@action("secret_append_ip")
-async def _(tsk: JobQueuesTable, args: dict):
-    append_ip(args)
-    await return_val(tsk, {})
-
-
-@action("web_render_status")
-async def _(tsk: JobQueuesTable, args: dict):
-    Info.web_render_status = args["web_render_status"]
-    Info.web_render_local_status = args["web_render_local_status"]
-    await return_val(tsk, {})
+#
+# @action("secret_append_ip")
+# async def _(tsk: JobQueuesTable, args: dict):
+#     append_ip(args)
+#     await return_val(tsk, {})
+#
+#
+# @action("web_render_status")
+# async def _(tsk: JobQueuesTable, args: dict):
+#     Info.web_render_status = args["web_render_status"]
+#     Info.web_render_local_status = args["web_render_local_status"]
+#     await return_val(tsk, {})
 
 
 @action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
     await Bot.send_message(args["target_id"], MessageChain(args["message"]))
     await return_val(tsk, {"send": True})
+
+
+@action("receive_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    await parser(Bot.MessageSession(structure(args['session_data'], SessionInfo)))
+    await return_val(tsk, {})

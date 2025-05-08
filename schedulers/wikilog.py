@@ -2,7 +2,7 @@ import re
 import traceback
 
 from core.logger import Logger
-from core.queue import JobQueue
+from core.queue_ import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.templist import TempList
 from modules.wiki import WikiLib

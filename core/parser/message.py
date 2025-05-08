@@ -8,8 +8,13 @@ from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins import command_prefix, ExecutionLockList, MessageTaskManager, Bot, \
-    base_superuser_list, Temp, Plain, I18NContext
+from core.builtins import Bot, \
+    base_superuser_list
+from core.builtins.temp import Temp
+from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.utils import command_prefix
+from core.builtins.session.lock import ExecutionLockList
+from core.builtins.session.tasks import SessionTaskManager
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
@@ -74,7 +79,7 @@ async def parser(msg: Bot.MessageSession,
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
     await msg.data_init()
     try:
-        asyncio.create_task(MessageTaskManager.check(msg))
+        asyncio.create_task(SessionTaskManager.check(msg))
         modules = ModulesManager.return_modules_list(msg.target.target_from)
 
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式

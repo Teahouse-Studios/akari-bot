@@ -23,8 +23,10 @@ from copy import deepcopy
 if TYPE_CHECKING:
     from core.builtins import MessageSession
 
+from cattrs import converters
 
-class MessageElement:
+
+class BaseElement:
 
     @classmethod
     def __name__(cls):
@@ -32,7 +34,7 @@ class MessageElement:
 
 
 @define
-class PlainElement(MessageElement):
+class PlainElement(BaseElement):
     """
     文本元素。
 
@@ -52,9 +54,14 @@ class PlainElement(MessageElement):
         disable_joke = bool(disable_joke)
         return deepcopy(cls(text=text, disable_joke=disable_joke))
 
+    def __str__(self):
+        if self.disable_joke:
+            return self.text
+        return self.text.replace("\n", " ").replace(" ", "")
+
 
 @define
-class URLElement(MessageElement):
+class URLElement(BaseElement):
     """
     URL元素。
 
@@ -87,7 +94,7 @@ class URLElement(MessageElement):
 
 
 @define
-class FormattedTimeElement(MessageElement):
+class FormattedTimeElement(BaseElement):
     """
     格式化时间消息。
 
@@ -161,7 +168,7 @@ class FormattedTimeElement(MessageElement):
 
 
 @define
-class I18NContextElement(MessageElement):
+class I18NContextElement(BaseElement):
     """
     带有多语言的消息。
     """
@@ -178,9 +185,12 @@ class I18NContextElement(MessageElement):
         """
         return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))
 
+    def __str__(self):
+        return f'[I18N:{self.key},{", ".join([f"{k}={v}" for k, v in self.kwargs.items()])}]'
+
 
 @define
-class ImageElement(MessageElement):
+class ImageElement(BaseElement):
     """
     图片消息。
 
@@ -267,9 +277,12 @@ class ImageElement(MessageElement):
         image.save(save)
         return ImageElement.assign(save)
 
+    def __str__(self):
+        return f'[Image:{self.path}]'
+
 
 @define
-class VoiceElement(MessageElement):
+class VoiceElement(BaseElement):
     """
     语音消息。
 
@@ -285,9 +298,12 @@ class VoiceElement(MessageElement):
         """
         return deepcopy(cls(path))
 
+    def __str__(self):
+        return f'[Voice:{self.path}]'
+
 
 @define
-class MentionElement(MessageElement):
+class MentionElement(BaseElement):
     """
     提及元素。
 
@@ -305,9 +321,12 @@ class MentionElement(MessageElement):
         """
         return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
 
+    def __str__(self):
+        return f'[Mention:{self.client}|{self.id}]'
+
 
 @define
-class EmbedFieldElement(MessageElement):
+class EmbedFieldElement(BaseElement):
     """
     Embed字段。
 
@@ -329,9 +348,12 @@ class EmbedFieldElement(MessageElement):
         """
         return deepcopy(cls(name=name, value=value, inline=inline))
 
+    def __str__(self):
+        return f'[EmbedField:{self.name},{self.value},{self.inline}]'
+
 
 @define
-class EmbedElement(MessageElement):
+class EmbedElement(BaseElement):
     """
     Embed消息。
     :param title: 标题。
@@ -424,22 +446,8 @@ class EmbedElement(MessageElement):
         return str(self.to_message_chain())
 
 
-elements_map = {
-    x.__name__: x
-    for x in [
-        PlainElement,
-        URLElement,
-        FormattedTimeElement,
-        I18NContextElement,
-        ImageElement,
-        VoiceElement,
-        EmbedFieldElement,
-        EmbedElement,
-        MentionElement,
-    ]
-}
 __all__ = [
-    "MessageElement",
+    "BaseElement",
     "PlainElement",
     "URLElement",
     "FormattedTimeElement",
@@ -449,5 +457,4 @@ __all__ = [
     "EmbedFieldElement",
     "EmbedElement",
     "MentionElement",
-    "elements_map",
 ]

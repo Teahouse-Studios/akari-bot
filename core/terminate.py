@@ -2,13 +2,14 @@ import sys
 
 from tortoise import Tortoise
 
-from core.builtins import MessageTaskManager, I18NContext
+from core.builtins.session import SessionTaskManager
+from core.builtins.message.internal import I18NContext
 from core.logger import Logger
 from core.scheduler import Scheduler
 
 
 async def cleanup_sessions():
-    get_wait_list = MessageTaskManager.get()
+    get_wait_list = SessionTaskManager.get()
     Logger.warning("Cleaning up sessions...")
     for x in get_wait_list:
         for y in get_wait_list[x]:

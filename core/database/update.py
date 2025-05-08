@@ -50,8 +50,8 @@ async def update_database():
             await query_dbver.delete()
             await DBVersion.create(version=2)
         if db_version < 3:
+            ...
             # query_dbver = await DBVersion.first()
-            # ...
             # await query_dbver.delete()
             # await DBVersion.create(version=3)
     await Tortoise.close_connections()

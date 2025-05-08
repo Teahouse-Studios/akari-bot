@@ -1,239 +1,83 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, UTC as datetimeUTC, timedelta
-from re import Match
-from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
+from copy import deepcopy
+from datetime import timedelta, datetime, UTC as datetimeUTC
+from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine, Dict
 
-from core.builtins.message.chain import *
-from core.builtins.message.elements import MessageElement
-from core.builtins.message.internal import *
+from attrs import define
+
 from core.builtins.utils import confirm_command
+from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext
+from core.builtins.session.lock import ExecutionLockList
+from core.builtins.session.tasks import SessionTaskManager
+from core.builtins.types import MessageElement
 from core.config import Config
-from core.constants.exceptions import WaitCancelException, FinishedException
-from core.database.models import SenderInfo, TargetInfo
-from core.exports import add_export
+from core.constants import FinishedException, WaitCancelException
+from core.database.models import TargetInfo, SenderInfo
+from core.exports import add_export, exports
 from core.i18n import Locale
-from core.logger import Logger
-from core.types.message import MsgInfo, Session
 from core.utils.text import parse_time_string
 
 
-class ExecutionLockList:
-    """
-    执行锁。
-    """
-
-    _list = set()
-
-    @staticmethod
-    def add(msg: MessageSession):
-        target_id = msg.target.sender_id
-        ExecutionLockList._list.add(target_id)
-
-    @staticmethod
-    def remove(msg: MessageSession):
-        target_id = msg.target.sender_id
-        if target_id in ExecutionLockList._list:
-            ExecutionLockList._list.remove(target_id)
-
-    @staticmethod
-    def check(msg: MessageSession):
-        target_id = msg.target.sender_id
-        return target_id in ExecutionLockList._list
-
-    @staticmethod
-    def get():
-        return ExecutionLockList._list
+@define
+class SessionInfo:
+    target_id: str
+    sender_id: Optional[str]
+    sender_name: Optional[str]
+    target_from: str
+    sender_from: Optional[str]
+    client_name: str
+    message_id: Optional[Union[int, str]] = None
+    reply_id: Optional[Union[int, str]] = None
+    messages: Optional[MessageChain] = None
 
 
-class MessageTaskManager:
-    """
-    消息计划管理器。
-    """
-
-    _task_list = {}
-    _callback_list = {}
-
-    @classmethod
-    def add_task(
-        cls,
-        session: MessageSession,
-        flag: asyncio.Event,
-        all_: bool = False,
-        reply: Optional[Union[List[int], List[str], int, str]] = None,
-        timeout: Optional[float] = 120,
-    ):
-        sender = session.target.sender_id
-        task_type = "reply" if reply else "wait"
-        if all_:
-            sender = "all"
-
-        if session.target.target_id not in cls._task_list:
-            cls._task_list[session.target.target_id] = {}
-        if sender not in cls._task_list[session.target.target_id]:
-            cls._task_list[session.target.target_id][sender] = {}
-        cls._task_list[session.target.target_id][sender][session] = {
-            "flag": flag,
-            "active": True,
-            "type": task_type,
-            "reply": reply,
-            "ts": datetime.now().timestamp(),
-            "timeout": timeout,
-        }
-        Logger.debug(cls._task_list)
-
-    @classmethod
-    def add_callback(
-        cls,
-        message_id: Union[List[int], List[str], int, str],
-        callback: Optional[Coroutine],
-    ):
-        cls._callback_list[message_id] = {
-            "callback": callback,
-            "ts": datetime.now().timestamp(),
-        }
-
-    @classmethod
-    def get_result(cls, session: MessageSession):
-        if (
-            "result"
-            in cls._task_list[session.target.target_id][session.target.sender_id][
-                session
-            ]
-        ):
-            return cls._task_list[session.target.target_id][session.target.sender_id][
-                session
-            ]["result"]
-        return None
-
-    @classmethod
-    def get(cls):
-        return cls._task_list
-
-    @classmethod
-    async def bg_check(cls):
-        for target in cls._task_list:
-            for sender in cls._task_list[target]:
-                for session in cls._task_list[target][sender]:
-                    if cls._task_list[target][sender][session]["active"]:
-                        if datetime.now().timestamp() - cls._task_list[target][sender][
-                            session
-                        ]["ts"] > cls._task_list[target][sender][session].get(
-                            "timeout", 3600
-                        ):
-                            cls._task_list[target][sender][session]["active"] = False
-                            cls._task_list[target][sender][session][
-                                "flag"
-                            ].set()  # no result = cancel
-        for message_id in cls._callback_list.copy():
-            if datetime.now().timestamp() - cls._callback_list[message_id]["ts"] > 3600:
-                del cls._callback_list[message_id]
-
-    @classmethod
-    async def check(cls, session: MessageSession):
-        if session.target.target_id in cls._task_list:
-            senders = []
-            if session.target.sender_id in cls._task_list[session.target.target_id]:
-                senders.append(session.target.sender_id)
-            if "all" in cls._task_list[session.target.target_id]:
-                senders.append("all")
-            if senders:
-                for sender in senders:
-                    for s in cls._task_list[session.target.target_id][sender]:
-                        get_ = cls._task_list[session.target.target_id][sender][s]
-                        if get_["type"] == "wait":
-                            get_["result"] = session
-                            get_["active"] = False
-                            get_["flag"].set()
-                        elif get_["type"] == "reply":
-                            if isinstance(get_["reply"], list):
-                                for reply in get_["reply"]:
-                                    if reply == session.target.reply_id:
-                                        get_["result"] = session
-                                        get_["active"] = False
-                                        get_["flag"].set()
-                                        break
-                            else:
-                                if get_["reply"] == session.target.reply_id:
-                                    get_["result"] = session
-                                    get_["active"] = False
-                                    get_["flag"].set()
-        if session.target.reply_id in cls._callback_list:
-            await cls._callback_list[session.target.reply_id]["callback"](session)
-
-
-class FinishedSession:
-    """
-    结束会话。
-    """
-
-    def __init__(
-        self, session, message_id: Union[List[int], List[str], int, str], result
-    ):
-        self.session = session
-        if isinstance(message_id, (int, str)):
-            message_id = [message_id]
-        self.message_id = message_id
-        self.result = result
-
-    async def delete(self):
-        """
-        用于删除这条消息。
-        """
-        raise NotImplementedError
-
-    def __str__(self):
-        return f"FinishedSession(message_id={self.message_id}, result={self.result})"
-
-
+@define
 class MessageSession:
-    """
-    消息会话。
-    """
+    session_info: SessionInfo
+    sent: List[MessageChain] = []
+    trigger_msg: Optional[str] = ''
+    matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
+    parsed_msg: Optional[dict] = None
+    prefixes: List[str] = []
+    target_info: Optional[TargetInfo] = None
+    sender_info: Optional[SenderInfo] = None
+    muted: Optional[bool] = None
+    sender_data: Optional[dict] = None
+    target_data: Optional[dict] = None
+    custom_admins: Optional[list] = None
+    enabled_modules: Optional[dict] = None
+    locale: Optional[Locale] = None
+    bot_name: Optional[str] = None
+    _tz_offset: Optional[str] = None
+    timezone_offset: Optional[timedelta] = None
+    petal: Optional[int] = None
+    tmp = {}
 
-    def __init__(self, target: MsgInfo, session: Session):
-        self.target = target
-        self.session = session
-        self.sent: List[MessageChain] = []
-        self.trigger_msg: Optional[str] = None
-        self.matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
-        self.parsed_msg: Optional[dict] = None
-        self.prefixes: List[str] = []
-        self.target_info: Optional[TargetInfo] = None
-        self.sender_info: Optional[SenderInfo] = None
-        self.muted: Optional[bool] = None
-        self.sender_data: Optional[dict] = None
-        self.target_data: Optional[dict] = None
-        self.custom_admins: Optional[list] = None
-        self.enabled_modules: Optional[dict] = None
-        self.locale: Optional[Locale] = None
-        self.name: Optional[str] = None
-        self._tz_offset = None
-        self.timezone_offset: Optional[timedelta] = None
-        self.petal: Optional[int] = None
+    @classmethod
+    async def from_session_info(cls, session: SessionInfo):
+        get_target_info: TargetInfo = await TargetInfo.get_by_target_id(session.target_id)
+        get_sender_info: SenderInfo = await SenderInfo.get_by_sender_id(session.sender_id) if session.sender_id else None
+        _tz_offset = get_target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
+        return deepcopy(cls(
+            session_info=session,
+            target_info=get_target_info,
+            sender_info=get_sender_info,
+            muted=get_target_info.muted,
+            target_data=get_target_info.target_data,
+            sender_data=get_sender_info.sender_data if get_sender_info else None,
+            custom_admins=get_target_info.custom_admins,
+            enabled_modules=get_target_info.modules,
+            locale=get_target_info.locale,
+            bot_name=get_target_info.locale.t("bot_name"),
+            tz_offset=_tz_offset,
+            timezone_offset=parse_time_string(_tz_offset),
+            petal=get_sender_info.petal if get_sender_info else None,
+        ))
 
-        self.tmp = {}
-        asyncio.create_task(self.data_init())
-
-    async def data_init(self):
-        get_target_info: TargetInfo = await TargetInfo.get_by_target_id(self.target.target_id)
-        self.target_info = get_target_info
-        self.muted = self.target_info.muted
-        self.target_data = self.target_info.target_data
-        self.custom_admins = self.target_info.custom_admins
-        self.enabled_modules = self.target_info.modules
-        self.locale = Locale(self.target_info.locale)
-        self.name = self.locale.t("bot_name")
-        self._tz_offset = self.target_data.get(
-            "timezone_offset", Config("timezone_offset", "+8")
-        )
-        self.timezone_offset = parse_time_string(self._tz_offset)
-        if self.target.sender_id:
-            get_sender_info: SenderInfo = await SenderInfo.get_by_sender_id(self.target.sender_id)
-            self.sender_info = get_sender_info
-            self.petal = self.sender_info.petal
-            self.sender_data = self.sender_info.sender_data
 
     async def send_message(
         self,
@@ -255,7 +99,13 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
         """
-        raise NotImplementedError
+
+        message_chain = converter.unstructure(message_chain)
+        await exports["JobQueueServer"].send_message_to_client(self.session_info.client_name, self.session_info.target_id, message_chain)
+
+        if callback:
+            # todo: 此处临时引用了发送的指令的message_id，稍后更正
+            SessionTaskManager.add_callback(self.session_info.message_id, callback)
 
     async def finish(
         self,
@@ -413,14 +263,14 @@ class MessageSession:
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, timeout=timeout)
+        SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = MessageTaskManager.get_result(self)
+        result = SessionTaskManager.get_result(self)
         if result:
             if send and delete:
                 await send.delete()
@@ -456,14 +306,14 @@ class MessageSession:
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, timeout=timeout)
+        SessionTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = MessageTaskManager.get_result(self)
+        result = SessionTaskManager.get_result(self)
         if send and delete:
             await send.delete()
         if result:
@@ -499,7 +349,7 @@ class MessageSession:
         send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(
+        SessionTaskManager.add_task(
             self, flag, reply=send.message_id, all_=all_, timeout=timeout
         )
         try:
@@ -508,7 +358,7 @@ class MessageSession:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = MessageTaskManager.get_result(self)
+        result = SessionTaskManager.get_result(self)
         if send and delete:
             await send.delete()
         if result:
@@ -538,18 +388,18 @@ class MessageSession:
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, all_=True, timeout=timeout)
+        SessionTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if send and delete:
                 await send.delete()
             raise WaitCancelException
-        result = MessageTaskManager.get()[self.target.target_id]["all"][self]
+        result = SessionTaskManager.get()[self.session_info.target_id]["all"][self]
         if "result" in result:
             if send and delete:
                 await send.delete()
-            return MessageTaskManager.get()[self.target.target_id]["all"][self][
+            return SessionTaskManager.get()[self.session_info.target_id]["all"][self][
                 "result"
             ]
         raise WaitCancelException
@@ -568,7 +418,7 @@ class MessageSession:
         """
         用于检查消息发送者在对话内的权限。
         """
-        if self.target.sender_id in self.custom_admins or self.sender_info.superuser:
+        if self.session_info.sender_id in self.custom_admins or self.sender_info.superuser:
             return True
         return await self.check_native_permission()
 
@@ -642,6 +492,33 @@ class MessageSession:
         wait = False
 
 
+
+class FinishedSession:
+    """
+    结束会话。
+    """
+
+    def __init__(
+        self, session, message_id: Union[List[int], List[str], int, str], result
+    ):
+        self.session = session
+        if isinstance(message_id, (int, str)):
+            message_id = [message_id]
+        self.message_id = message_id
+        self.result = result
+
+    async def delete(self):
+        """
+        用于删除这条消息。
+        """
+        raise NotImplementedError
+
+    def __str__(self):
+        return f"FinishedSession(message_id={self.message_id}, result={self.result})"
+
+
+
+
 class FetchedSession:
     """
     获取消息会话。
@@ -658,7 +535,7 @@ class FetchedSession:
         sender_id_ = None
         if sender_from and sender_id:
             sender_id_ = f"{sender_from}|{sender_id}"
-        self.target = MsgInfo(
+        self.session_info = SessionInfo(
             target_id=target_id_,
             sender_id=sender_id_,
             target_from=target_from,
@@ -667,8 +544,7 @@ class FetchedSession:
             client_name="",
             message_id=0,
         )
-        self.session = Session(message=False, target=target_id, sender=sender_id)
-        self.parent = MessageSession(self.target, self.session)
+        self.parent = MessageSession(self.session_info)
 
     async def send_direct_message(
         self,
@@ -759,19 +635,14 @@ class FetchTarget:
     postGlobalMessage = post_global_message
 
 
+
 add_export(MessageSession)
-add_export(ExecutionLockList)
-add_export(MessageTaskManager)
+
+
 add_export(FetchTarget)
 add_export(FetchedSession)
 add_export(FinishedSession)
 
 
-__all__ = [
-    "MessageSession",
-    "ExecutionLockList",
-    "MessageTaskManager",
-    "FetchTarget",
-    "FetchedSession",
-    "FinishedSession",
-]
+
+__all__ = ["SessionInfo", MessageSession]

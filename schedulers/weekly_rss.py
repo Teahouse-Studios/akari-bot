@@ -1,6 +1,6 @@
 from core.builtins import Bot
 from core.logger import Logger
-from core.queue import JobQueue
+from core.queue_ import JobQueue
 from core.scheduler import CronTrigger, Scheduler
 from modules.weekly import get_weekly
 from modules.weekly.teahouse import get_rss as get_teahouse_rss

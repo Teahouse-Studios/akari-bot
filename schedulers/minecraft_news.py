@@ -5,7 +5,7 @@ import orjson as json
 from core.builtins import Url, I18NContext, MessageChain
 from core.config import Config
 from core.logger import Logger
-from core.queue import JobQueue
+from core.queue_ import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
