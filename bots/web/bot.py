@@ -888,8 +888,8 @@ async def redirect_root(path=None):
         return RedirectResponse(url="/webui")
     if path.startswith("/api") or path.startswith("/webui"):
         return RedirectResponse(url=path)
-    static_path = os.path.join(webui_path, path)
-    if not os.path.exists(static_path):
+    static_path = os.path.normpath(os.path.join(webui_path, path))
+    if not static_path.startswith(webui_path) or not os.path.exists(static_path):
         raise HTTPException(status_code=404, detail="Not found")
     return FileResponse(static_path)
 
