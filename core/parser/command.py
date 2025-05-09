@@ -35,13 +35,13 @@ class CommandParser:
         if is_superuser is None:
             is_superuser = self.msg.check_super_user() if self.msg else False
         is_base_superuser = (
-            (self.msg.target.sender_id in base_superuser_list) if self.msg else False
+            (self.msg.session_info.sender_id in base_superuser_list) if self.msg else False
         )
         for match in (
             args.command_list.set
             if not self.msg
             else args.command_list.get(
-                self.msg.target.target_from,
+                self.msg.session_info.target_from,
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser,
             )

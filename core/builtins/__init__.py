@@ -23,7 +23,7 @@ from core.builtins.session.lock import ExecutionLockList
 class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
-    client_name = FetchTarget.name
+    client_name = ''
     FetchedSession = FetchedSession
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
@@ -32,7 +32,7 @@ class Bot:
 
     @staticmethod
     async def send_message(
-        target: Union[FetchedSession, MessageSession, str],
+        target: SessionInfo,
         msg: Union[MessageChain, list],
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,

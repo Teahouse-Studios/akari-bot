@@ -60,7 +60,7 @@ class JobQueueBase:
                 _queue_tasks[task_id]["flag"].set()
 
         get_internal = await JobQueuesTable.get_all(target_client=cls.name)
-        get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else exports['Bot'].FetchTarget.name)
+        get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else exports['Bot'].client_name)
 
         for tsk in get_internal + get_all:
             Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")

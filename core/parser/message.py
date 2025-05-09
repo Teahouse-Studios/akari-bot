@@ -466,14 +466,16 @@ async def _check_target_cooldown(msg: Bot.MessageSession):
 
     if cooldown_time and not neutralized:
         if cooldown_counter.get(msg.session_info.target_id, {}).get(msg.session_info.sender_id):
-            time = datetime.now().timestamp() - cooldown_counter[msg.session_info.target_id][msg.session_info.sender_id]["ts"]
+            time = datetime.now().timestamp() - \
+                cooldown_counter[msg.session_info.target_id][msg.session_info.sender_id]["ts"]
             if time > cooldown_time:
                 cooldown_counter[msg.session_info.target_id].update(
                     {msg.session_info.sender_id: {"ts": datetime.now().timestamp()}})
             else:
                 await msg.finish(I18NContext("message.cooldown.manual", time=int(cooldown_time - time)))
         else:
-            cooldown_counter[msg.session_info.target_id] = {msg.session_info.sender_id: {"ts": datetime.now().timestamp()}}
+            cooldown_counter[msg.session_info.target_id] = {
+                msg.session_info.sender_id: {"ts": datetime.now().timestamp()}}
 
 
 async def _check_temp_ban(msg: Bot.MessageSession):
@@ -499,7 +501,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
     if not same or datetime.now().timestamp() - same["ts"] > 300 or same["command"] != command:
         # 检查是否滥用（5分钟内重复使用同一命令10条）
         counter_same[msg.session_info.sender_id] = {"command": command, "count": 1,
-                                              "ts": datetime.now().timestamp()}
+                                                    "ts": datetime.now().timestamp()}
     else:
         same["count"] += 1
         if same["count"] > 10:
@@ -507,7 +509,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
     all_ = counter_all.get(msg.session_info.sender_id)
     if not all_ or datetime.now().timestamp() - all_["ts"] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.session_info.sender_id] = {"count": 1,
-                                             "ts": datetime.now().timestamp()}
+                                                   "ts": datetime.now().timestamp()}
     else:
         all_["count"] += 1
         if all_["count"] > 20:
@@ -627,7 +629,7 @@ async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
         temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
-                                                  "ts": datetime.now().timestamp()}
+                                                        "ts": datetime.now().timestamp()}
     else:
         reason = msg.locale.t_str(str(e))
         await msg.send_message(I18NContext("error.prompt.noreport", detail=reason))

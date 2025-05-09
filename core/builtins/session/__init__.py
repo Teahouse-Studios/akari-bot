@@ -33,6 +33,19 @@ class SessionInfo:
     message_id: Optional[str] = None
     reply_id: Optional[str] = None
     messages: Optional[MessageChain] = None
+    admin: bool = False
+    superuser: bool = False
+    support_image: bool = False
+    support_voice: bool = False
+    support_mention: bool = False
+    support_embed: bool = False
+    support_forward: bool = False
+    support_delete: bool = False
+    support_markdown: bool = False
+    support_quote: bool = False
+    support_rss: bool = False
+    support_typing: bool = False
+    support_wait: bool = False
 
 
 @define
@@ -194,7 +207,7 @@ class MessageSession:
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
         """
-        raise NotImplementedError
+        return self.session_info.admin
 
     async def fake_forward_msg(self, nodelist: List[Dict[str, Union[str, Any]]]):
         """

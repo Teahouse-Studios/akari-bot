@@ -9,7 +9,7 @@ from prompt_toolkit.history import FileHistory
 
 from bot import init_bot
 from core.bot_init import init_async
-from core.builtins import PrivateAssets, MessageChain, Plain
+from core.builtins import PrivateAssets, MessageChain, Plain, Bot
 from core.builtins.session import SessionInfo
 from core.console.info import *
 from core.constants.info import Info
@@ -21,6 +21,7 @@ from core.queue.client import JobQueueClient
 from core.terminate import cleanup_sessions
 
 Info.dirty_word_check = True
+Bot.client_name = client_name
 PrivateAssets.set(os.path.join(assets_path, "private", "console"))
 console_history_path = os.path.join(PrivateAssets.path, ".console_history")
 if os.path.exists(console_history_path):

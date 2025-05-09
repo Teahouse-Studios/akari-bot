@@ -11,7 +11,7 @@ from core.constants import PrivateAssets, Secret
 from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
-from core.queue_ import JobQueue
+from core.queue.client import JobQueueClient
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from core.utils.info import Info
@@ -43,8 +43,8 @@ async def init_async(start_scheduler=True) -> None:
     if start_scheduler:
         if not Info.subprocess:
             load_extra_schedulers()
-        await JobQueue.secret_append_ip()
-        await JobQueue.web_render_status()
+        # await JobQueue.secret_append_ip()
+        # await JobQueue.web_render_status()
         Scheduler.start()
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
     await load_secret()

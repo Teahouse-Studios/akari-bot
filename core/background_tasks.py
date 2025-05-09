@@ -3,7 +3,7 @@ import shutil
 
 from core.builtins.session import SessionTaskManager
 from core.constants.path import cache_path
-from core.queue_ import check_job_queue
+from core.queue.client import JobQueueClient
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list
@@ -16,7 +16,7 @@ async def bg():
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)
 async def job():
-    await check_job_queue()
+    await JobQueueClient.check_job_queue()
 
 
 @Scheduler.scheduled_job(CronTrigger.from_crontab("0 0 * * *"))

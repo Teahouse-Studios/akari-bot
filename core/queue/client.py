@@ -2,6 +2,7 @@ from cattrs import unstructure
 
 from .base import JobQueueBase
 from ..builtins.converter import converter
+from ..builtins.message.chain import MessageChain
 from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
@@ -22,6 +23,12 @@ async def _(tsk: JobQueuesTable, args: dict):
         await JobQueueClient.return_val(tsk, {"value": await fetch.parent.check_permission()})
     else:
         await JobQueueClient.return_val(tsk, {"value": False})
+
+
+@JobQueueClient.action("send_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    await exports["Bot"].send_message(args["target_id"], MessageChain(args["message"]))
+    await JobQueueClient.return_val(tsk, {"send": True})
 
 
 add_export(JobQueueClient)

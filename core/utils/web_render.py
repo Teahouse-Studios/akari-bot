@@ -40,28 +40,28 @@ def webrender(
 async def check_web_render() -> Tuple[bool, bool]:
     web_render_status = False
     web_render_local_status = False
-    if not web_render_local:
-        if not web_render:
-            Logger.warning("[WebRender] WebRender is not configured.")
-        else:
-            web_render_status = True
-    else:
-        web_render_status = True
-        web_render_local_status = True
-    ping_url = "http://www.bing.com"
-    if web_render_status:
-        try:
-            Logger.info("[WebRender] Checking WebRender status...")
-            await get_url(
-                webrender("source", ping_url, _ignore_status=True),
-                200,
-                request_private_ip=True,
-            )
-            Logger.success("[WebRender] WebRender is working as expected.")
-        except Exception:
-            Logger.error("[WebRender] WebRender is not working as expected.")
-            Logger.error(traceback.format_exc())
-            web_render_status = False
+    # if not web_render_local:
+    #     if not web_render:
+    #         Logger.warning("[WebRender] WebRender is not configured.")
+    #     else:
+    #         web_render_status = True
+    # else:
+    #     web_render_status = True
+    #     web_render_local_status = True
+    # ping_url = "http://www.bing.com"
+    # if web_render_status:
+    #     try:
+    #         Logger.info("[WebRender] Checking WebRender status...")
+    #         await get_url(
+    #             webrender("source", ping_url, _ignore_status=True),
+    #             200,
+    #             request_private_ip=True,
+    #         )
+    #         Logger.success("[WebRender] WebRender is working as expected.")
+    #     except Exception:
+    #         Logger.error("[WebRender] WebRender is not working as expected.")
+    #         Logger.error(traceback.format_exc())
+    #         web_render_status = False
     return web_render_status, web_render_local_status
 
 
