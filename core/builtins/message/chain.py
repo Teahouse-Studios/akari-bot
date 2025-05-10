@@ -24,7 +24,7 @@ from core.builtins.message.elements import (
 from core.exports import add_export
 
 if TYPE_CHECKING:
-    from core.builtins.session import MessageSession
+    from core.builtins.session import MessageSession, SessionInfo
 
 from core.builtins.utils import Secret
 from core.builtins.types import MessageElement
@@ -165,20 +165,20 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, msg: MessageSession = None, embed: bool = True) -> list:
+    def as_sendable(self, session_info: SessionInfo = None, embed: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """
         value = []
         for x in self.values:
             if isinstance(x, EmbedElement) and not embed:
-                value += x.to_message_chain(msg)
+                value += x.to_message_chain()
             elif isinstance(x, PlainElement):
                 if msg:
                     if x.text != "":
-                        x.text = msg.locale.t_str(x.text)
+                        x.text = session_info.locale.t_str(x.text)
                     else:
-                        x = PlainElement.assign(msg.locale.t("error.message.chain.plain.empty"))
+                        x = PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty"))
                 value.append(x)
             elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(msg=msg)

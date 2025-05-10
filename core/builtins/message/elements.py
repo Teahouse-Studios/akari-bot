@@ -21,9 +21,7 @@ from core.utils.cache import random_cache_path
 from copy import deepcopy
 
 if TYPE_CHECKING:
-    from core.builtins import MessageSession
-
-from cattrs import converters
+    from core.builtins.session import SessionInfo
 
 
 class BaseElement:
@@ -108,28 +106,28 @@ class FormattedTimeElement(BaseElement):
     seconds: bool = True
     timezone: bool = True
 
-    def to_str(self, msg: Optional[MessageSession] = None):
+    def to_str(self, session_info: Optional[SessionInfo] = None):
         ftime_template = []
-        if msg:
+        if session_info:
             if self.date:
                 if self.iso:
-                    ftime_template.append(msg.locale.t("time.date.iso.format"))
+                    ftime_template.append(session_info.locale.t("time.date.iso.format"))
                 else:
-                    ftime_template.append(msg.locale.t("time.date.format"))
+                    ftime_template.append(session_info.locale.t("time.date.format"))
             if self.time:
                 if self.seconds:
-                    ftime_template.append(msg.locale.t("time.time.format"))
+                    ftime_template.append(session_info.locale.t("time.time.format"))
                 else:
-                    ftime_template.append(msg.locale.t("time.time.nosec.format"))
+                    ftime_template.append(session_info.locale.t("time.time.nosec.format"))
             if self.timezone:
-                if msg._tz_offset == "+0":
+                if session_info._tz_offset == "+0":
                     ftime_template.append("(UTC)")
                 else:
-                    ftime_template.append(f"(UTC{msg._tz_offset})")
+                    ftime_template.append(f"(UTC{session_info._tz_offset})")
 
             return (
                 datetime.fromtimestamp(self.timestamp, tz=UTC)
-                + msg.timezone_offset
+                + session_info.timezone_offset
             ).strftime(" ".join(ftime_template))
         ftime_template.append("%Y-%m-%d %H:%M:%S")
         return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
@@ -407,7 +405,7 @@ class EmbedElement(BaseElement):
             )
         )
 
-    def to_message_chain(self, msg: Optional[MessageSession] = None):
+    def to_message_chain(self, session_info: Optional[SessionInfo] = None):
         """
         将Embed转换为消息链。
         """
@@ -420,19 +418,20 @@ class EmbedElement(BaseElement):
             text_lst.append(self.url)
         if self.fields:
             for f in self.fields:
-                if msg:
-                    text_lst.append(f"{msg.locale.t_str(f.name)}{msg.locale.t(
-                        "message.colon")}{msg.locale.t_str(f.value)}")
+                if session_info:
+                    text_lst.append(f"{session_info.locale.t_str(f.name)}{session_info.locale.t(
+                        "message.colon")}{session_info.locale.t_str(f.value)}")
                 else:
                     text_lst.append(f"{f.name}: {f.value}")
         if self.author:
-            if msg:
-                text_lst.append(f"{msg.locale.t("message.embed.author")}{msg.locale.t_str(self.author)}")
+            if session_info:
+                text_lst.append(f"{session_info.locale.t("message.embed.author")}{
+                                session_info.locale.t_str(self.author)}")
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:
-            if msg:
-                text_lst.append(msg.locale.t_str(self.footer))
+            if session_info:
+                text_lst.append(session_info.locale.t_str(self.footer))
             else:
                 text_lst.append(self.footer)
         message_chain = []

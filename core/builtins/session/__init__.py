@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import uuid
 from copy import deepcopy
 from datetime import timedelta, datetime, UTC as datetimeUTC
 from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine, Dict
 
 from attrs import define
 
-from core.builtins.utils import confirm_command
+from core.builtins.utils import confirm_command, command_prefix
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
@@ -25,11 +26,11 @@ from core.utils.text import parse_time_string
 @define
 class SessionInfo:
     target_id: str
-    sender_id: Optional[str]
-    sender_name: Optional[str]
     target_from: str
-    sender_from: Optional[str]
     client_name: str
+    sender_id: Optional[str] = None
+    sender_from: Optional[str] = None
+    sender_name: Optional[str] = None
     message_id: Optional[str] = None
     reply_id: Optional[str] = None
     messages: Optional[MessageChain] = None
@@ -46,6 +47,95 @@ class SessionInfo:
     support_rss: bool = False
     support_typing: bool = False
     support_wait: bool = False
+    timestamp: Optional[float] = None
+    session_id: Optional[str] = None
+    target_info: Optional[TargetInfo] = None
+    sender_info: Optional[SenderInfo] = None
+    custom_admins: Optional[list] = None
+    locale: Optional[Locale] = None
+    _tz_offset: Optional[str] = None
+    timezone_offset: Optional[timedelta] = None
+    bot_name: Optional[str] = None
+    muted: Optional[bool] = None
+    enabled_modules: Optional[dict] = None
+    petal: Optional[int] = None
+    prefixes: List[str] = []
+    tmp = {}
+
+    @classmethod
+    async def assign(cls, target_id: str,
+                     target_from: str,
+                     client_name: str,
+                     sender_id: Optional[str] = None,
+                     sender_from: Optional[str] = None,
+                     sender_name: Optional[str] = None,
+                     message_id: Optional[str] = None,
+                     reply_id: Optional[str] = None,
+                     messages: Optional[MessageChain] = None,
+                     admin: bool = False,
+                     support_image: bool = False,
+                     support_voice: bool = False,
+                     support_mention: bool = False,
+                     support_embed: bool = False,
+                     support_forward: bool = False,
+                     support_delete: bool = False,
+                     support_markdown: bool = False,
+                     support_quote: bool = False,
+                     support_rss: bool = False,
+                     support_typing: bool = False,
+                     support_wait: bool = False,
+                     ) -> SessionInfo:
+
+        """
+        用于将参数传入SessionInfo对象中。
+
+        :return: SessionInfo对象。
+        """
+        target_info = await TargetInfo.get_by_target_id(target_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id) if sender_id else None
+        timestamp = datetime.now().timestamp()
+        session_id = str(uuid.uuid4())
+        locale = Locale(target_info.locale)
+        bot_name = locale.t("bot_name")
+        _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
+        prefixes = target_info.target_data.get("command_prefix") + command_prefix.copy()
+
+        return deepcopy(cls(
+            target_id=target_id,
+            target_from=target_from,
+            client_name=client_name,
+            sender_id=sender_id,
+            sender_from=sender_from,
+            sender_name=sender_name,
+            message_id=message_id,
+            reply_id=reply_id,
+            messages=messages,
+            admin=admin,
+            superuser=sender_info.superuser if sender_info else False,
+            support_image=support_image,
+            support_voice=support_voice,
+            support_mention=support_mention,
+            support_embed=support_embed,
+            support_forward=support_forward,
+            support_delete=support_delete,
+            support_markdown=support_markdown,
+            support_quote=support_quote,
+            support_rss=support_rss,
+            support_typing=support_typing,
+            support_wait=support_wait,
+            timestamp=timestamp,
+            session_id=session_id,
+            target_info=target_info,
+            sender_info=sender_info,
+            locale=locale,
+            muted=target_info.muted,
+            bot_name=bot_name,
+            tz_offset=_tz_offset,
+            enabled_modules=target_info.modules,
+            timezone_offset=parse_time_string(_tz_offset),
+            petal=sender_info.petal if sender_info else None,
+            prefixes=prefixes
+        ))
 
 
 @define
@@ -55,42 +145,12 @@ class MessageSession:
     trigger_msg: Optional[str] = ''
     matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
     parsed_msg: Optional[dict] = None
-    prefixes: List[str] = []
-    target_info: Optional[TargetInfo] = None
-    sender_info: Optional[SenderInfo] = None
-    muted: Optional[bool] = None
-    sender_data: Optional[dict] = None
-    target_data: Optional[dict] = None
-    custom_admins: Optional[list] = None
-    enabled_modules: Optional[dict] = None
-    locale: Optional[Locale] = None
-    bot_name: Optional[str] = None
-    _tz_offset: Optional[str] = None
-    timezone_offset: Optional[timedelta] = None
-    petal: Optional[int] = None
-    tmp = {}
 
     @classmethod
     async def from_session_info(cls, session: SessionInfo):
-        get_target_info: TargetInfo = await TargetInfo.get_by_target_id(session.target_id)
-        get_sender_info: SenderInfo = await SenderInfo.get_by_sender_id(session.sender_id) if session.sender_id else None
-        locale = Locale(get_target_info.locale)
-        _tz_offset = get_target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        return deepcopy(cls(
-            session_info=session,
-            target_info=get_target_info,
-            sender_info=get_sender_info,
-            muted=get_target_info.muted,
-            target_data=get_target_info.target_data,
-            sender_data=get_sender_info.sender_data if get_sender_info else None,
-            custom_admins=get_target_info.custom_admins,
-            enabled_modules=get_target_info.modules,
-            locale=locale,
-            bot_name=locale.t("bot_name"),
-            tz_offset=_tz_offset,
-            timezone_offset=parse_time_string(_tz_offset),
-            petal=get_sender_info.petal if get_sender_info else None,
-        ))
+        return cls(
+            session_info=session
+        )
 
     async def send_message(
         self,
