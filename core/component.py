@@ -11,6 +11,7 @@ from core.loader import ModulesManager
 from core.parser.args import parse_template
 from core.types import Module
 from core.types.module.component_meta import *
+from core.config.config_v2 import config
 
 
 class Bind:
@@ -181,6 +182,11 @@ class Bind:
             ):
                 return self.schedule(*args, **kwargs)
             return self.command(*args, **kwargs)
+
+        @staticmethod
+        def config(locale:bool = False):
+            return config(locale)
+
 
 
 def module(

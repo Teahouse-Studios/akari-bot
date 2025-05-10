@@ -7,8 +7,8 @@ from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import get_url
 
-web_render = Config("web_render", cfg_type=str, secret=True, get_url=True)
-web_render_local = Config("web_render_local", cfg_type=str, get_url=True)
+web_render = Config("web_render", cfg_type=str, secret=True, is_url=True)
+web_render_local = Config("web_render_local", cfg_type=str, is_url=True)
 
 
 def webrender(

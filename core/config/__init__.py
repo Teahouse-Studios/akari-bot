@@ -413,7 +413,7 @@ def Config(q: str,
                            None] = None,
            secret: bool = False,
            table_name: Optional[str] = None,
-           get_url: bool = False,
+           is_url: bool = False,
            _global: bool = False,
            _generate: bool = False) -> Any:
     """
@@ -424,11 +424,11 @@ def Config(q: str,
     :param cfg_type: 配置项类型。
     :param secret: 是否为密钥配置项。（默认为False）
     :param table_name: 配置项表名。
-    :param get_url: 是否为URL配置项。（默认为False）
+    :param is_url: 是否为URL配置项。（默认为False）
 
     :return: 配置文件中对应配置项的值。
     """
-    if get_url:
+    if is_url:
         v = CFGManager.get(q, default, str, secret, table_name, _global, _generate)
         if v:
             if not re.match(r"^[a-zA-Z][a-zA-Z\d+\-.]*://", v):
@@ -438,6 +438,7 @@ def Config(q: str,
     else:
         v = CFGManager.get(q, default, cfg_type, secret, table_name, _global, _generate)
     return v
+
 
 
 add_export(Config)
