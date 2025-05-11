@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from flask import Flask, send_from_directory
+from jwt.exceptions import ExpiredSignatureError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from tortoise.expressions import Q
@@ -115,11 +116,16 @@ def verify_jwt(request: Request):
 
     try:
         payload = jwt.decode(auth_token, JWT_SECRET, algorithms=["HS256"])
-        if payload.get("iat") > datetime.now(UTC).timestamp():
-            raise HTTPException(status_code=400, detail="Invalid token")
+        if os.path.exists(PASSWORD_PATH):
+            with open(PASSWORD_PATH, "rb") as f:
+                last_updated = json.loads(f.read()).get("last_updated")
+
+            if last_updated and payload["iat"] < last_updated:
+                raise ExpiredSignatureError
+
         return {"message": "Success", "payload": payload}
 
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid token")
@@ -166,7 +172,6 @@ async def auth(request: Request, response: Response):
     try:
         if not os.path.exists(PASSWORD_PATH):
             payload = {
-                "device_id": str(uuid.uuid4()),
                 "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
                 "iat": datetime.now(UTC),  # 签发时间
                 "iss": "auth-api"  # 签发者
@@ -207,7 +212,6 @@ async def auth(request: Request, response: Response):
         login_failed_attempts.pop(ip, None)
 
         payload = {
-            "device_id": str(uuid.uuid4()),
             "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),
             "iat": datetime.now(UTC),
             "iss": "auth-api"
@@ -244,23 +248,31 @@ async def change_password(request: Request, response: Response):
         if not os.path.exists(PASSWORD_PATH):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="New password required")
-            new_password_hashed = ph.hash(new_password)
-            with open(PASSWORD_PATH, "w") as file:
-                file.write(new_password_hashed)
+
+            password_data = {
+                "password": ph.hash(new_password),
+                "last_updated": datetime.now().timestamp()
+            }
+            with open(PASSWORD_PATH, "wb") as file:
+                file.write(json.dumps(password_data))
             response.delete_cookie("deviceToken")
             return {"message": "Success"}
 
-        with open(PASSWORD_PATH, "r") as file:
-            stored_password = file.read().strip()
+        with open(PASSWORD_PATH, "rb") as file:
+            password_data = json.loads(file.read())
 
         try:
-            ph.verify(stored_password, password)
+            if not ph.verify(password, password_data.get("password", "")):
+                raise HTTPException(status_code=401, detail="Invalid password")
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        new_password_hashed = ph.hash(new_password)
-        with open(PASSWORD_PATH, "w") as file:
-            file.write(new_password_hashed)
+        password_data["password"] = ph.hash(new_password)
+        password_data["last_updated"] = datetime.now().timestamp()
+
+        with open(PASSWORD_PATH, "wb") as file:
+            file.write(json.dumps(password_data))
+        
         response.delete_cookie("deviceToken")
         return {"message": "Success"}
     except HTTPException as e:
