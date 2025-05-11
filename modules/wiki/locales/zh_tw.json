@@ -41,7 +41,7 @@
     "wiki.message.headers.add.failed": "更新請求標頭失敗，请校對輸入。",
     "wiki.message.headers.add.success": "已更新請求時所使用的請求標頭：${headers}",
     "wiki.message.headers.reset.success": "已重設請求時所使用的請求標頭。",
-    "wiki.message.headers.show": "當前設定了以下請求標頭：\n${headers}\n如需自訂，請使用「${prefix}wiki headers add」。 \n示例：\n${prefix}wiki headers add {\"accept-language\": \"zh-TW,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
+    "wiki.message.headers.show": "當前設定了以下請求標頭：\n${headers}\n如需自訂，請使用「${prefix}wiki headers add」。 \n示例：\n${prefix}wiki headers add {\\\"accept-language\\\": \\\"zh-TW,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\\\"}",
     "wiki.message.id.invalid": "頁面 ID 必須為數字。",
     "wiki.message.id.not_found": "未找到頁面 ID 為 ${id} 的頁面。",
     "wiki.message.invalid_namespace": "此 Wiki 上沒有名為 ${namespace} 的命名空間，请校對輸入。",

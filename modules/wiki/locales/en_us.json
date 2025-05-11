@@ -41,7 +41,7 @@
     "wiki.message.headers.add.failed": "Fail to update the request headers. Please check your input.",
     "wiki.message.headers.add.success": "The request headers have been updated: ${headers}",
     "wiki.message.headers.reset.success": "The request headers have been reset.",
-    "wiki.message.headers.show": "The following request headers are currently set:\n${headers}\nTo customize, use \"${prefix}wiki headers add\".\nExample:\n${prefix}wiki headers add {\"accept-language\": \"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
+    "wiki.message.headers.show": "The following request headers are currently set:\n${headers}\nTo customize, use \"${prefix}wiki headers add\".\nExample:\n${prefix}wiki headers add {\\\"accept-language\\\": \\\"en;q=0.8,en-GB;q=0.7,en-US;q=0.6\\\"}",
     "wiki.message.id.invalid": "Page ID must be a number.",
     "wiki.message.id.not_found": "Page with page ID ${id} not found.",
     "wiki.message.invalid.blocked": "Failed: ${name} is in blacklist.",
