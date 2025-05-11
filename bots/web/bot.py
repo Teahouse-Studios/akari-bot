@@ -192,11 +192,11 @@ async def auth(request: Request, response: Response):
         password = body.get("password", "")
         remember = body.get("remember", False)
 
-        with open(PASSWORD_PATH, "r") as file:
-            stored_password = file.read().strip()
+        with open(PASSWORD_PATH, "rb") as file:
+            password_data = json.loads(file.read())
 
         try:
-            ph.verify(stored_password, password)
+            ph.verify(password_data.get("password", ""), password)
         except Exception:
             now = datetime.now(UTC)
             login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
@@ -262,8 +262,7 @@ async def change_password(request: Request, response: Response):
             password_data = json.loads(file.read())
 
         try:
-            if not ph.verify(password, password_data.get("password", "")):
-                raise HTTPException(status_code=401, detail="Invalid password")
+            ph.verify(password_data.get("password", ""), password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
@@ -294,11 +293,11 @@ async def clear_password(request: Request, response: Response):
         if not os.path.exists(PASSWORD_PATH):
             raise HTTPException(status_code=404, detail="Password not set")
 
-        with open(PASSWORD_PATH, "r") as file:
-            stored_password = file.read().strip()
+        with open(PASSWORD_PATH, "rb") as file:
+            password_data = json.loads(file.read())
 
         try:
-            ph.verify(stored_password, password)
+            ph.verify(password_data.get("password", ""), password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
@@ -910,7 +909,7 @@ if Config("enable", True, table_name="bot_web"):
     Info.client_name = client_name
     web_port = find_available_port(WEB_PORT)
     if web_port == 0:
-        Logger.warning(f"API port is disabled, abort to run.")
+        Logger.error(f"API port is disabled, abort to run.")
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
