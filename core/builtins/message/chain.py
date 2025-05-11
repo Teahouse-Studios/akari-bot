@@ -174,14 +174,14 @@ class MessageChain:
             if isinstance(x, EmbedElement) and not embed:
                 value += x.to_message_chain()
             elif isinstance(x, PlainElement):
-                if msg:
+                if session_info:
                     if x.text != "":
                         x.text = session_info.locale.t_str(x.text)
                     else:
                         x = PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty"))
                 value.append(x)
             elif isinstance(x, FormattedTimeElement):
-                x = x.to_str(msg=msg)
+                x = x.to_str(session_info)
                 if value and isinstance(value[-1], PlainElement):
                     if not value[-1].text.endswith("\n"):
                         value[-1].text += "\n"
@@ -191,19 +191,19 @@ class MessageChain:
             elif isinstance(x, I18NContextElement):
                 for k, v in x.kwargs.items():
                     if isinstance(v, str):
-                        x.kwargs[k] = msg.locale.t_str(v)
-                t_value = msg.locale.t(x.key, **x.kwargs)
+                        x.kwargs[k] = session_info.locale.t_str(v)
+                t_value = session_info.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
-                    value += MessageChain.assign(t_value).as_sendable(msg)
+                    value += MessageChain.assign(t_value).as_sendable(session_info)
             elif isinstance(x, URLElement):
                 value.append(PlainElement.assign(x.url, disable_joke=True))
             else:
                 value.append(x)
         if not value:
-            if msg:
-                value.append(PlainElement.assign(msg.locale.t("error.message.chain.plain.empty")))
+            if session_info:
+                value.append(PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty")))
         for x in value:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)

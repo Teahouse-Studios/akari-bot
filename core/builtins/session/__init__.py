@@ -57,7 +57,7 @@ class SessionInfo:
     timezone_offset: Optional[timedelta] = None
     bot_name: Optional[str] = None
     muted: Optional[bool] = None
-    enabled_modules: Optional[dict] = None
+    enabled_modules: Optional[list] = None
     petal: Optional[int] = None
     prefixes: List[str] = []
     tmp = {}
@@ -98,9 +98,9 @@ class SessionInfo:
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        prefixes = target_info.target_data.get("command_prefix") + command_prefix.copy()
+        prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy()
 
-        return deepcopy(cls(
+        return cls(
             target_id=target_id,
             target_from=target_from,
             client_name=client_name,
@@ -112,6 +112,7 @@ class SessionInfo:
             messages=messages,
             admin=admin,
             superuser=sender_info.superuser if sender_info else False,
+            custom_admins=target_info.custom_admins if target_info else [],
             support_image=support_image,
             support_voice=support_voice,
             support_mention=support_mention,
@@ -135,7 +136,11 @@ class SessionInfo:
             timezone_offset=parse_time_string(_tz_offset),
             petal=sender_info.petal if sender_info else None,
             prefixes=prefixes
-        ))
+        )
+
+    async def refresh_info(self):
+        self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id)
+        self.target_info = await TargetInfo.get_by_target_id(self.target_id)
 
 
 @define
@@ -172,9 +177,8 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
         """
-
-        message_chain = converter.unstructure(message_chain)
-        await exports["JobQueueServer"].send_message_to_client(self.session_info.client_name, self.session_info.target_id, message_chain)
+        await exports["JobQueueServer"].send_message_to_client(self.session_info.client_name, self.session_info,
+                                                               message_chain, quote=quote)
 
         if callback:
             # todo: 此处临时引用了发送的指令的message_id，稍后更正
@@ -413,7 +417,7 @@ class MessageSession:
         :param append_instruction: 是否在发送的消息中附加提示。
         :return: 回复消息的MessageChain对象。
         """
-        self.tmp["enforce_send_by_master_client"] = True
+        self.session_info.tmp["enforce_send_by_master_client"] = True
         send = None
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
@@ -485,13 +489,13 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
-        return bool(self.sender_info.superuser)
+        return bool(self.session_info.sender_info.superuser)
 
     async def check_permission(self) -> bool:
         """
         用于检查消息发送者在对话内的权限。
         """
-        if self.session_info.sender_id in self.custom_admins or self.sender_info.superuser:
+        if self.session_info.sender_id in self.session_info.custom_admins or self.session_info.sender_info.superuser:
             return True
         return await self.check_native_permission()
 
@@ -530,21 +534,21 @@ class MessageSession:
         ftime_template = []
         if date:
             if iso:
-                ftime_template.append(self.locale.t("time.date.iso.format"))
+                ftime_template.append(self.session_info.locale.t("time.date.iso.format"))
             else:
-                ftime_template.append(self.locale.t("time.date.format"))
+                ftime_template.append(self.session_info.locale.t("time.date.format"))
         if time:
             if seconds:
-                ftime_template.append(self.locale.t("time.time.format"))
+                ftime_template.append(self.session_info.locale.t("time.time.format"))
             else:
-                ftime_template.append(self.locale.t("time.time.nosec.format"))
+                ftime_template.append(self.session_info.locale.t("time.time.nosec.format"))
         if timezone:
-            if self._tz_offset == "+0":
+            if self.session_info._tz_offset == "+0":
                 ftime_template.append("(UTC)")
             else:
-                ftime_template.append(f"(UTC{self._tz_offset})")
+                ftime_template.append(f"(UTC{self.session_info._tz_offset})")
         return (
-            datetime.fromtimestamp(timestamp, datetimeUTC) + self.timezone_offset
+            datetime.fromtimestamp(timestamp, datetimeUTC) + self.session_info.timezone_offset
         ).strftime(" ".join(ftime_template))
 
     class Feature:

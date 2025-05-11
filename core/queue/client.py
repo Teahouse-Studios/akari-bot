@@ -6,6 +6,7 @@ from ..builtins.message.chain import MessageChain
 from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
+from ..builtins.session.context import ContextManager
 
 
 class JobQueueClient(JobQueueBase):
@@ -27,7 +28,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    await exports["Bot"].send_message(args["target_id"], MessageChain(args["message"]))
+    await exports["Bot"].ContextManager.send_message(converter.structure(args["session_info"], SessionInfo), converter.structure(args["message"], MessageChain), quote=args["quote"])
     await JobQueueClient.return_val(tsk, {"send": True})
 
 

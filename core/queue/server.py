@@ -1,8 +1,6 @@
-from cattr import structure
-from cattrs import unstructure
-
 from .base import JobQueueBase
 from ..builtins.converter import converter
+from ..builtins.message.chain import MessageChain
 from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
 from ..parser.message import parser
@@ -11,8 +9,11 @@ from ..exports import exports, add_export
 
 class JobQueueServer(JobQueueBase):
     @classmethod
-    async def send_message_to_client(cls, target_client: str, target_id: str, message):
-        await cls.add_job(target_client, "send_message", {"target_id": target_id, "message": message})
+    async def send_message_to_client(cls, target_client: str, session_info: SessionInfo, message: MessageChain, quote: bool = True):
+        message = MessageChain.assign(message)
+        await cls.add_job(target_client, "send_message", {"session_info": converter.unstructure(session_info),
+                                                          "message": converter.unstructure(message),
+                                                          'quote': quote})
 
 
 @JobQueueServer.action("receive_message_from_client")

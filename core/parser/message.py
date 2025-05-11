@@ -74,6 +74,7 @@ async def parser(msg: Bot.MessageSession,
     :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在空字符串的情况下则代表无需命令前缀。
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行。
     """
+    await msg.session_info.refresh_info()
     identify_str = f"[{msg.session_info.sender_id}{
         f" ({msg.session_info.target_id})" if msg.session_info.target_from != msg.session_info.sender_from else ""}]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
@@ -84,8 +85,8 @@ async def parser(msg: Bot.MessageSession,
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        if (msg.sender_info.blocked and not msg.sender_info.trusted and not msg.sender_info.superuser) or (
-                msg.session_info.sender_id in msg.target_data.get("ban", []) and not msg.sender_info.superuser):
+        if (msg.session_info.sender_info.blocked and not msg.session_info.sender_info.trusted and not msg.session_info.sender_info.superuser) or (
+                msg.session_info.sender_id in msg.session_info.target_info.target_data.get("ban", []) and not msg.session_info.superuser):
             return
 
         disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg, prefix)
@@ -95,7 +96,7 @@ async def parser(msg: Bot.MessageSession,
                 f"{identify_str} -> [Bot]: {msg.trigger_msg}")
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list, display_prefix)
 
-            if msg.muted and command_first_word != "mute":
+            if msg.session_info.muted and command_first_word != "mute":
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
@@ -160,24 +161,18 @@ def _transform_alias(msg, command: str):
 
 
 def _get_prefixes(msg: Bot.MessageSession, prefix):
-    msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
-    get_custom_prefix = msg.target_data.get("command_prefix")  # 获取自定义命令前缀
-    if get_custom_prefix:
-        msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
-    msg.prefixes = [i for i in set(msg.prefixes) if i.strip()]  # 过滤重复与空白前缀
-
-    if msg.target_data.get("command_alias"):
+    if msg.session_info.target_info.target_data.get("command_alias"):
         msg.trigger_msg = _transform_alias(msg, msg.trigger_msg)  # 将自定义别名替换为命令
 
     disable_prefix = False
     if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
         if "" in prefix:
             disable_prefix = True
-        msg.prefixes.clear()
-        msg.prefixes.extend(prefix)
+        msg.session_info.prefixes.clear()
+        msg.session_info.prefixes.extend(prefix)
     display_prefix = ""
     in_prefix_list = False
-    for cp in msg.prefixes:  # 判断是否在命令前缀列表中
+    for cp in msg.session_info.prefixes:  # 判断是否在命令前缀列表中
         if msg.trigger_msg.startswith(cp):
             display_prefix = cp
             in_prefix_list = True
@@ -186,8 +181,8 @@ def _get_prefixes(msg: Bot.MessageSession, prefix):
         if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == "~~":  # 排除 ~~xxx~~ 的情况
             return
         if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
-            msg.prefixes.remove(display_prefix)
-            msg.prefixes.insert(0, display_prefix)
+            msg.session_info.prefixes.remove(display_prefix)
+            msg.session_info.prefixes.insert(0, display_prefix)
 
     return disable_prefix, in_prefix_list, display_prefix
 
@@ -461,7 +456,7 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
 
 
 async def _check_target_cooldown(msg: Bot.MessageSession):
-    cooldown_time = int(msg.target_data.get("cooldown_time", 0))
+    cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
     neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
     if cooldown_time and not neutralized:
@@ -519,7 +514,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
 async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word):
     try:
         command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
-                                       command_prefixes=msg.prefixes)
+                                       command_prefixes=msg.session_info.prefixes)
         try:
             parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
             submodule: Module = parsed_msg[0]
@@ -598,7 +593,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
             else:
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-            if not msg.target_info.target_data.get("disable_typing", False):
+            if not msg.session_info.target_info.target_data.get("disable_typing", False):
                 async with msg.Typing(msg):
                     await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
             else:
@@ -670,7 +665,7 @@ async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportExcept
 async def _process_exception(msg: Bot.MessageSession, e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
-    err_msg = msg.locale.t_str(str(e))
+    err_msg = msg.session_info.locale.t_str(str(e))
     if "timeout" in str(e).lower().replace(" ", ""):
         timeout = True
         errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]

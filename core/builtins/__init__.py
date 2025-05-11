@@ -17,6 +17,7 @@ from ..database.models import TargetInfo
 from ..logger import Logger
 
 from core.builtins.session import MessageSession, FetchedSession, FetchTarget
+from core.builtins.session.context import ContextManager
 from core.builtins.session.lock import ExecutionLockList
 
 
@@ -29,6 +30,7 @@ class Bot:
     ExecutionLockList = ExecutionLockList
     Info = Info
     Temp = Temp
+    ContextManager = ContextManager
 
     @staticmethod
     async def send_message(

@@ -19,6 +19,7 @@ from core.server import main
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from core.terminate import cleanup_sessions
+from core.console.context import ConsoleContextManager
 
 Info.dirty_word_check = True
 Bot.client_name = client_name
@@ -49,15 +50,16 @@ async def console_command():
 
 async def send_command(msg):
     Logger.info("-------Start-------")
-    session_data = SessionInfo(
+    session_data = await SessionInfo.assign(
         target_id=f"{target_prefix}|0",
         sender_id=f"{sender_prefix}|0",
         sender_name="Console",
         target_from=target_prefix,
         sender_from=sender_prefix,
         client_name=client_name,
-        message_id=0,
+        message_id='0',
         messages=MessageChain([Plain(msg)]))
+    ConsoleContextManager.add_context(session_data, '')
     await JobQueueClient.send_message_to_server(session_data)
     Logger.info("----Process end----")
     # return returns

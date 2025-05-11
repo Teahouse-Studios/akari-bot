@@ -30,7 +30,7 @@ class CommandParser:
         self.origin_template = args
         self.msg: Union[MessageSession, None] = msg
         self.options_desc = []
-        self.lang = self.msg.locale if self.msg else Locale(default_locale)
+        self.lang = self.msg.session_info.locale if self.msg else Locale(default_locale)
         help_docs = {}
         if is_superuser is None:
             is_superuser = self.msg.check_super_user() if self.msg else False
