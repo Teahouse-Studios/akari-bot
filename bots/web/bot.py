@@ -78,7 +78,8 @@ async def lifespan(app: FastAPI):
     Scheduler.start()
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
-    Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
+    if os.path.exists(os.path.join(webui_path, "index.html")):
+        Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
     yield
     await cleanup_sessions()
     sys.exit()
@@ -271,7 +272,7 @@ async def change_password(request: Request, response: Response):
 
         with open(PASSWORD_PATH, "wb") as file:
             file.write(json.dumps(password_data))
-        
+
         response.delete_cookie("deviceToken")
         return {"message": "Success"}
     except HTTPException as e:
@@ -876,33 +877,41 @@ async def restart():
     await cleanup_sessions()
     os._exit(233)
 
-flask_app = Flask(__name__)
+if os.path.exists(os.path.join(webui_path, "index.html")):
+    flask_app = Flask(__name__)
 
+    @flask_app.route("/")
+    @flask_app.route("/<path:path>")
+    def static_files(path=None):
+        return send_from_directory(webui_path, "index.html")
 
-@flask_app.route("/")
-@flask_app.route("/<path:path>")
-def static_files(path=None):
-    return send_from_directory(webui_path, "index.html")
+    app.mount("/webui", WSGIMiddleware(flask_app))
 
+    @app.get("/webui")
+    async def redirect_webui():
+        return RedirectResponse(url="/webui/")
 
-app.mount("/webui", WSGIMiddleware(flask_app))
-
-
-@app.get("/webui")
-async def redirect_webui():
-    return RedirectResponse(url="/webui/")
-
-
-@app.get("/{path:path}")
-async def redirect_root(path=None):
-    if not path:
-        return RedirectResponse(url="/webui")
-    if path.startswith("/api") or path.startswith("/webui"):
-        return RedirectResponse(url=path)
-    static_path = os.path.normpath(os.path.join(webui_path, path))
-    if not static_path.startswith(webui_path) or not os.path.exists(static_path):
-        raise HTTPException(status_code=404, detail="Not found")
-    return FileResponse(static_path)
+    @app.get("/{path:path}")
+    async def redirect_root(path=None):
+        if not path:
+            return RedirectResponse(url="/webui")
+        if path.startswith("/api") or path.startswith("/webui"):
+            return RedirectResponse(url=path)
+        static_path = os.path.normpath(os.path.join(webui_path, path))
+        if not static_path.startswith(webui_path) or not os.path.exists(static_path):
+            raise HTTPException(status_code=404, detail="Not found")
+        return FileResponse(static_path)
+else:
+    @app.get("/{path:path}")
+    async def redirect_root(path=None):
+        if not path:
+            return RedirectResponse(url="/api")
+        if path.startswith("/api"):
+            return RedirectResponse(url=path)
+        static_path = os.path.normpath(os.path.join(webui_path, path))
+        if not static_path.startswith(webui_path) or not os.path.exists(static_path):
+            raise HTTPException(status_code=404, detail="Not found")
+        return FileResponse(static_path)
 
 
 if Config("enable", True, table_name="bot_web"):
@@ -913,6 +922,8 @@ if Config("enable", True, table_name="bot_web"):
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
-    generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
+
+    if os.path.exists(os.path.join(webui_path, "index.html")):
+        generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
 
     uvicorn.run(app, host=WEB_HOST, port=web_port, log_level="info")
