@@ -60,6 +60,7 @@ class SessionInfo:
     enabled_modules: Optional[list] = None
     petal: Optional[int] = None
     prefixes: List[str] = []
+    ctx_slot: Optional[int] = 0
     tmp = {}
 
     @classmethod
@@ -73,17 +74,7 @@ class SessionInfo:
                      reply_id: Optional[str] = None,
                      messages: Optional[MessageChain] = None,
                      admin: bool = False,
-                     support_image: bool = False,
-                     support_voice: bool = False,
-                     support_mention: bool = False,
-                     support_embed: bool = False,
-                     support_forward: bool = False,
-                     support_delete: bool = False,
-                     support_markdown: bool = False,
-                     support_quote: bool = False,
-                     support_rss: bool = False,
-                     support_typing: bool = False,
-                     support_wait: bool = False,
+                     ctx_slot: int = 0,
                      ) -> SessionInfo:
 
         """
@@ -113,17 +104,6 @@ class SessionInfo:
             admin=admin,
             superuser=sender_info.superuser if sender_info else False,
             custom_admins=target_info.custom_admins if target_info else [],
-            support_image=support_image,
-            support_voice=support_voice,
-            support_mention=support_mention,
-            support_embed=support_embed,
-            support_forward=support_forward,
-            support_delete=support_delete,
-            support_markdown=support_markdown,
-            support_quote=support_quote,
-            support_rss=support_rss,
-            support_typing=support_typing,
-            support_wait=support_wait,
             timestamp=timestamp,
             session_id=session_id,
             target_info=target_info,
@@ -135,7 +115,8 @@ class SessionInfo:
             enabled_modules=target_info.modules,
             timezone_offset=parse_time_string(_tz_offset),
             petal=sender_info.petal if sender_info else None,
-            prefixes=prefixes
+            prefixes=prefixes,
+            ctx_slot=ctx_slot
         )
 
     async def refresh_info(self):

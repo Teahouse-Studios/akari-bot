@@ -8,7 +8,7 @@ import orjson as json
 from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
 
-from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
@@ -16,7 +16,7 @@ from core.constants.info import Info
 from core.constants.path import templates_path
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
-from core.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser
 from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import webrender
@@ -31,7 +31,7 @@ hlp = module("help", base=True, doc=True)
 @hlp.command("<module> [--legacy] {[I18N:core.help.help.detail]}",
              options_desc={"--legacy": "[I18N:help.option.legacy]"})
 async def _(msg: Bot.MessageSession, module: str):
-    is_base_superuser = msg.target.sender_id in base_superuser_list
+    is_base_superuser = msg.target.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
@@ -206,7 +206,7 @@ async def _(msg: Bot.MessageSession):
                 help_msg_list.append(I18NContext("core.message.help.donate", url=donate_url))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
-        is_base_superuser = msg.target.sender_id in base_superuser_list
+        is_base_superuser = msg.target.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
         module_list = ModulesManager.return_modules_list(
             target_from=msg.target.target_from)
@@ -278,7 +278,7 @@ async def help_generator(msg: Bot.MessageSession,
                          show_disabled_modules: bool = False,
                          show_dev_modules: bool = True,
                          use_local: bool = True):
-    is_base_superuser = msg.target.sender_id in base_superuser_list
+    is_base_superuser = msg.target.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)

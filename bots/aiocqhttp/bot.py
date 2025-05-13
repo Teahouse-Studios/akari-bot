@@ -21,7 +21,7 @@ from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
-from core.parser.message import parser
+from core.builtins.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.tos import tos_report
 from core.types import MsgInfo, Session

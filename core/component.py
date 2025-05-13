@@ -8,7 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.loader import ModulesManager
-from core.parser.args import parse_template
+from core.builtins.parser.args import parse_template
 from core.types import Module
 from core.types.module.component_meta import *
 

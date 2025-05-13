@@ -1,5 +1,5 @@
 from core.builtins import command_prefix
-from core.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser
 
 c = CommandParser(
     (

@@ -42,7 +42,7 @@ from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.i18n import Locale  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.logger import Logger  # noqa: E402
-from core.parser.message import parser  # noqa: E402
+from core.builtins.parser.message import parser  # noqa: E402
 from core.queue_ import JobQueue  # noqa: E402
 from core.scheduler import Scheduler  # noqa: E402
 from core.terminate import cleanup_sessions  # noqa: E402

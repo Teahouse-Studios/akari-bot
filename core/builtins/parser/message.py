@@ -4,15 +4,12 @@ import re
 import traceback
 from datetime import datetime
 from string import Template
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins import Bot, \
-    base_superuser_list
 from core.builtins.temp import Temp
 from core.builtins.message.internal import Plain, I18NContext
-from core.builtins.utils import command_prefix
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.config import Config
@@ -21,13 +18,19 @@ from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCo
     InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.database.models import AnalyticsData
+from core.exports import exports
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
-from core.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module, Param
 from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
+
+
+if TYPE_CHECKING:
+    from core.builtins import Bot
+
 
 qq_account = Temp().data.get("qq_account")
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
@@ -62,7 +65,7 @@ async def remove_temp_ban(target):
         del temp_ban_counter[target]
 
 
-async def parser(msg: Bot.MessageSession,
+async def parser(msg: "Bot.MessageSession",
                  require_enable_modules: bool = True,
                  prefix: Optional[list] = None,
                  running_mention: bool = False):
@@ -160,7 +163,7 @@ def _transform_alias(msg, command: str):
     return command
 
 
-def _get_prefixes(msg: Bot.MessageSession, prefix):
+def _get_prefixes(msg: "Bot.MessageSession", prefix):
     if msg.session_info.target_info.target_data.get("command_alias"):
         msg.trigger_msg = _transform_alias(msg, msg.trigger_msg)  # 将自定义别名替换为命令
 
@@ -187,7 +190,7 @@ def _get_prefixes(msg: Bot.MessageSession, prefix):
     return disable_prefix, in_prefix_list, display_prefix
 
 
-async def _process_command(msg: Bot.MessageSession, modules, disable_prefix, in_prefix_list, display_prefix):
+async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, in_prefix_list, display_prefix):
     if disable_prefix and not in_prefix_list:
         command = msg.trigger_msg
     else:
@@ -237,7 +240,7 @@ async def _process_command(msg: Bot.MessageSession, modules, disable_prefix, in_
     return command_first_word
 
 
-async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modules, command_first_word, identify_str):
+async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, modules, command_first_word, identify_str):
     time_start = datetime.now()
     try:
         await _check_target_cooldown(msg)
@@ -260,7 +263,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
             return
 
         if module.required_base_superuser:
-            if msg.session_info.sender_id not in base_superuser_list:
+            if msg.session_info.sender_id not in exports["Bot"].base_superuser_list:
                 await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                 return
         elif module.required_superuser:
@@ -332,14 +335,14 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
         await _process_exception(msg, e)
 
 
-async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
+async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     for m in modules:  # 遍历模块
         try:
             if m in msg.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
                 regex_module: Module = modules[m]
 
                 if regex_module.required_base_superuser:
-                    if msg.session_info.sender_id not in base_superuser_list:
+                    if msg.session_info.sender_id not in exports["Bot"].base_superuser_list:
                         continue
                 elif regex_module.required_superuser:
                     if not msg.check_super_user():
@@ -455,7 +458,7 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
             continue
 
 
-async def _check_target_cooldown(msg: Bot.MessageSession):
+async def _check_target_cooldown(msg: "Bot.MessageSession"):
     cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
     neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
@@ -473,7 +476,7 @@ async def _check_target_cooldown(msg: Bot.MessageSession):
                 msg.session_info.sender_id: {"ts": datetime.now().timestamp()}}
 
 
-async def _check_temp_ban(msg: Bot.MessageSession):
+async def _check_temp_ban(msg: "Bot.MessageSession"):
     is_temp_banned = temp_ban_counter.get(msg.session_info.sender_id)
     if is_temp_banned:
         if msg.check_super_user():
@@ -491,7 +494,7 @@ async def _check_temp_ban(msg: Bot.MessageSession):
                 raise AbuseWarning("{tos.message.reason.ignore}")
 
 
-async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
+async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
     same = counter_same.get(msg.session_info.sender_id)
     if not same or datetime.now().timestamp() - same["ts"] > 300 or same["command"] != command:
         # 检查是否滥用（5分钟内重复使用同一命令10条）
@@ -511,7 +514,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
             raise AbuseWarning("{tos.message.reason.abuse}")
 
 
-async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word):
+async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_word):
     try:
         command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
                                        command_prefixes=msg.session_info.prefixes)
@@ -522,7 +525,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
             Logger.debug(msg.parsed_msg)
 
             if submodule.required_base_superuser:
-                if msg.session_info.sender_id not in base_superuser_list:
+                if msg.session_info.sender_id not in exports["Bot"].base_superuser_list:
                     await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
             elif submodule.required_superuser:
@@ -548,7 +551,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
                 parsed_msg_ = msg.parsed_msg.copy()
                 no_message_session = True
                 for param_name, param_obj in func_params.items():
-                    if param_obj.annotation == Bot.MessageSession:
+                    if param_obj.annotation == exports["Bot"].MessageSession:
                         kwargs[param_name] = msg
                         no_message_session = False
                     elif isinstance(param_obj.annotation, Param):
@@ -620,7 +623,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
         return
 
 
-async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
+async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
         temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
@@ -630,7 +633,7 @@ async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
         await msg.send_message(I18NContext("error.prompt.noreport", detail=reason))
 
 
-async def _process_send_message_failed(msg: Bot.MessageSession):
+async def _process_send_message_failed(msg: "Bot.MessageSession"):
     if msg.session_info.target_from == qq_group_prefix:  # wtf onebot 11
         obi = await get_onebot_implementation()
         if obi in ["llonebot", "napcat"]:
@@ -656,13 +659,13 @@ async def _process_send_message_failed(msg: Bot.MessageSession):
     await msg.send_message(I18NContext("error.message.limited"))
 
 
-async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportException):
+async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportException):
     Logger.error(traceback.format_exc())
     err_msg = msg.locale.t_str(str(e))
     await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
 
 
-async def _process_exception(msg: Bot.MessageSession, e: Exception):
+async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
     err_msg = msg.session_info.locale.t_str(str(e))

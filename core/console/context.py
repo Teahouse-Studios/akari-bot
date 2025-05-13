@@ -6,12 +6,14 @@ from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.session import SessionInfo
 from core.builtins.session.context import ContextManager
 from core.logger import Logger
+from .features import Features
 
 from PIL import Image as PILImage
 
 
 class ConsoleContextManager(ContextManager):
     context: dict[str, Any] = {}
+    features = Features
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: Any):

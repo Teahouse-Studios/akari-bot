@@ -2,9 +2,13 @@ import copy
 import re
 import shlex
 import traceback
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, TYPE_CHECKING
 
-from core.builtins import base_superuser_list, MessageSession
+from ...exports import exports
+
+if TYPE_CHECKING:
+    from core.builtins import Bot
+
 from core.config import Config
 from core.constants.exceptions import InvalidCommandFormatError
 from core.i18n import Locale
@@ -21,21 +25,21 @@ class CommandParser:
         args: Module,
         command_prefixes: list,
         bind_prefix=None,
-        msg: Optional[MessageSession] = None,
+        msg: Optional["Bot.MessageSession"] = None,
         is_superuser: Optional[bool] = None,
     ):
         args = copy.deepcopy(args)
         self.command_prefixes = command_prefixes
         self.bind_prefix = bind_prefix
         self.origin_template = args
-        self.msg: Union[MessageSession, None] = msg
+        self.msg: Union["Bot.MessageSession", None] = msg
         self.options_desc = []
         self.lang = self.msg.session_info.locale if self.msg else Locale(default_locale)
         help_docs = {}
         if is_superuser is None:
             is_superuser = self.msg.check_super_user() if self.msg else False
         is_base_superuser = (
-            (self.msg.session_info.sender_id in base_superuser_list) if self.msg else False
+            (self.msg.session_info.sender_id in exports["Bot"].base_superuser_list) if self.msg else False
         )
         for match in (
             args.command_list.set

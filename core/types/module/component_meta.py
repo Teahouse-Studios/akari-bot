@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.parser.args import Template
+from core.builtins.parser.args import Template
 
 from attrs import define, field
 from core.utils.list import convert2lst

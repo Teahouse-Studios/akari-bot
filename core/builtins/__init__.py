@@ -1,9 +1,11 @@
 import asyncio
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Sequence
+
+from attrs import define
 
 from core.config import Config
 from core.constants.info import Info
-from core.exports import add_export
+from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.types.message import ModuleHookContext
 from .message import *
@@ -20,6 +22,8 @@ from core.builtins.session import MessageSession, FetchedSession, FetchTarget
 from core.builtins.session.context import ContextManager
 from core.builtins.session.lock import ExecutionLockList
 
+from core.builtins.session.features import Features
+
 
 class Bot:
     MessageSession = MessageSession
@@ -30,10 +34,54 @@ class Bot:
     ExecutionLockList = ExecutionLockList
     Info = Info
     Temp = Temp
-    ContextManager = ContextManager
+    base_superuser_list = Config(
+        "base_superuser", base_superuser_default, cfg_type=(str, list)
+    )
+    ContextSlots: list[ContextManager] = []
+
+    if isinstance(base_superuser_list, str):
+        base_superuser_list = [base_superuser_list]
+
+    @classmethod
+    async def process_message(cls, session_info: SessionInfo, ctx: Any):
+        """
+        处理消息
+        :param session_info: SessionInfo
+        :param ctx: Context
+        :return: None
+        """
+        if not isinstance(session_info, SessionInfo):
+            raise TypeError("session_info must be a SessionInfo")
+        ctx_manager = cls.ContextSlots[session_info.ctx_slot]
+        features = ctx_manager.features
+        session_info.support_image = features.image
+        session_info.support_voice = features.voice
+        session_info.support_mention = features.mention
+        session_info.support_embed = features.embed
+        session_info.support_forward = features.forward
+        session_info.support_delete = features.delete
+        session_info.support_markdown = features.markdown
+        session_info.support_quote = features.quote
+        session_info.support_rss = features.rss
+        session_info.support_typing = features.typing
+        session_info.support_wait = features.wait
+
+        await ctx_manager.add_context(session_info, ctx)
+        async with ctx_manager.Typing(session_info) as typing:
+            await exports['JobQueueClient'].send_message_to_server(session_info)
+        await ctx_manager.del_context(session_info)
+
+    @classmethod
+    def register_context_manager(cls, ctx_manager: Any) -> int:
+        """
+        :param ctx: ContextManager
+        :return: Index of the ContextManager in ContextSlots
+        """
+        cls.ContextSlots.append(ctx_manager)
+        return len(cls.ContextSlots) - 1
 
     @staticmethod
-    async def send_message(
+    async def send_direct_message(
         target: SessionInfo,
         msg: Union[MessageChain, list],
         disable_secret_check: bool = False,
@@ -135,18 +183,10 @@ class FetchTarget(FetchTarget):
 
 Bot.FetchTarget = FetchTarget
 
-base_superuser_list = Config(
-    "base_superuser", base_superuser_default, cfg_type=(str, list)
-)
-
-if isinstance(base_superuser_list, str):
-    base_superuser_list = [base_superuser_list]
-
-
 add_export(Bot)
 
 
 __all__ = [
     "Bot",
     "FetchedSession",
-    "FetchTarget", 'base_superuser_list',]
+    "FetchTarget"]

@@ -3,7 +3,7 @@ from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain
 from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
-from ..parser.message import parser
+from core.builtins.parser.message import parser
 from ..exports import exports, add_export
 
 

@@ -32,19 +32,6 @@ class FinishedSession(FinS):
 class MessageSession(MessageSessionT):
     session: Union[Session]
 
-    class Feature:
-        image = True
-        voice = False
-        mention = False
-        embed = False
-        forward = False
-        delete = False
-        markdown = False
-        quote = False
-        rss = True
-        typing = True
-        wait = True
-
     async def send_message(
         self,
         message_chain,

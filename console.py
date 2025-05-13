@@ -3,18 +3,15 @@ import os
 import shutil
 import traceback
 
-from cattrs import unstructure
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from bot import init_bot
-from core.bot_init import init_async
 from core.builtins import PrivateAssets, MessageChain, Plain, Bot
 from core.builtins.session import SessionInfo
 from core.console.info import *
 from core.constants.info import Info
 from core.constants.path import assets_path, cache_path
-from core.extra.scheduler import load_extra_schedulers
 from core.server import main
 from core.logger import Logger
 from core.queue.client import JobQueueClient
@@ -31,6 +28,8 @@ if os.path.exists(console_history_path):
 if os.path.exists(cache_path):
     shutil.rmtree(cache_path)
 os.makedirs(cache_path, exist_ok=True)
+
+ctx_id = Bot.register_context_manager(ConsoleContextManager)
 
 
 async def console_scheduler():
@@ -58,7 +57,8 @@ async def send_command(msg):
         sender_from=sender_prefix,
         client_name=client_name,
         message_id='0',
-        messages=MessageChain([Plain(msg)]))
+        messages=MessageChain([Plain(msg),]),
+        ctx_slot=ctx_id)
     ConsoleContextManager.add_context(session_data, '')
     await JobQueueClient.send_message_to_server(session_data)
     Logger.info("----Process end----")

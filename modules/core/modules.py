@@ -7,7 +7,7 @@ from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
-from core.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser
 from .help import modules_list_help
 
 m = module(

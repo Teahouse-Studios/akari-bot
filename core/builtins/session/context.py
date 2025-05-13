@@ -1,11 +1,13 @@
-from typing import Any, Union
+from typing import Any, Union, Optional
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.session import SessionInfo
+from core.builtins.session.features import Features
 
 
 class ContextManager:
     context: dict[str, Any] = {}
+    features: Optional[Features] = Features
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: Any):
@@ -27,3 +29,13 @@ class ContextManager:
             raise ValueError("Session not found in context")
 
         raise NotImplementedError        # 请继承 class 后实现方法
+
+    class Typing:
+        def __init__(self, session_info: SessionInfo):
+            self.session_info = session_info
+
+        async def __aenter__(self):
+            pass
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            pass

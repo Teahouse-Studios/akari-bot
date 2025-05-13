@@ -5,7 +5,7 @@ import discord
 from bots.discord.info import *
 from bots.discord.slash_message import MessageSession
 from core.logger import Logger
-from core.parser.message import parser
+from core.builtins.parser.message import parser
 from core.types import MsgInfo, Session
 
 
