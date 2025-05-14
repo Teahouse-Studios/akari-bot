@@ -5,7 +5,6 @@ import platform
 import re
 import sys
 import traceback
-import uuid
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
@@ -51,6 +50,7 @@ from core.types import MsgInfo, Session  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 
 started_time = datetime.now()
+webui_index = os.path.join(webui_path, "index.html")
 PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 default_locale = Config("default_locale", cfg_type=str)
@@ -78,7 +78,7 @@ async def lifespan(app: FastAPI):
     Scheduler.start()
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
-    if os.path.exists(os.path.join(webui_path, "index.html")):
+    if os.path.exists(webui_index):
         Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
     yield
     await cleanup_sessions()
@@ -877,7 +877,7 @@ async def restart():
     await cleanup_sessions()
     os._exit(233)
 
-if os.path.exists(os.path.join(webui_path, "index.html")):
+if os.path.exists(webui_index):
     flask_app = Flask(__name__)
 
     @flask_app.route("/")
@@ -891,27 +891,23 @@ if os.path.exists(os.path.join(webui_path, "index.html")):
     async def redirect_webui():
         return RedirectResponse(url="/webui/")
 
-    @app.get("/{path:path}")
-    async def redirect_root(path=None):
+
+@app.get("/{path:path}")
+async def redirect_root(path: str = ""):
+    if os.path.exists(webui_index):
         if not path:
             return RedirectResponse(url="/webui")
         if path.startswith("/api") or path.startswith("/webui"):
             return RedirectResponse(url=path)
-        static_path = os.path.normpath(os.path.join(webui_path, path))
-        if not static_path.startswith(webui_path) or not os.path.exists(static_path):
-            raise HTTPException(status_code=404, detail="Not found")
-        return FileResponse(static_path)
-else:
-    @app.get("/{path:path}")
-    async def redirect_root(path=None):
+    else:
         if not path:
             return RedirectResponse(url="/api")
         if path.startswith("/api"):
             return RedirectResponse(url=path)
-        static_path = os.path.normpath(os.path.join(webui_path, path))
-        if not static_path.startswith(webui_path) or not os.path.exists(static_path):
-            raise HTTPException(status_code=404, detail="Not found")
-        return FileResponse(static_path)
+    static_path = os.path.normpath(os.path.join(webui_path, path))
+    if not static_path.startswith(webui_path) or not os.path.exists(static_path):
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(static_path)
 
 
 if Config("enable", True, table_name="bot_web"):
@@ -923,7 +919,7 @@ if Config("enable", True, table_name="bot_web"):
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    if os.path.exists(os.path.join(webui_path, "index.html")):
+    if os.path.exists(webui_index):
         generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
 
     uvicorn.run(app, host=WEB_HOST, port=web_port, log_level="info")
