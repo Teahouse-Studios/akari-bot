@@ -893,13 +893,25 @@ if os.path.exists(os.path.join(webui_path, "index.html")):
 
     @app.get("/{path:path}")
     async def redirect_root(path=None):
+        from urllib.parse import urlparse
+
         if not path:
             return RedirectResponse(url="/webui")
+
+        # Normalize and validate the path
+        path = path.replace("\\", "/")  # Replace backslashes with forward slashes
+        parsed_url = urlparse(path)
+        if parsed_url.netloc or parsed_url.scheme:
+            # If the path contains a host or scheme, redirect to a safe default
+            return RedirectResponse(url="/webui")
+
         if path.startswith("/api") or path.startswith("/webui"):
             return RedirectResponse(url=path)
+
         static_path = os.path.normpath(os.path.join(webui_path, path))
         if not static_path.startswith(webui_path) or not os.path.exists(static_path):
             raise HTTPException(status_code=404, detail="Not found")
+
         return FileResponse(static_path)
 else:
     @app.get("/{path:path}")
