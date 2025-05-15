@@ -81,7 +81,7 @@ async def parser(msg: Bot.MessageSession,
         if len(msg.trigger_msg) == 0:
             return
         if (msg.sender_info.blocked and not msg.sender_info.trusted and not msg.sender_info.superuser) or (
-                msg.target.sender_id in msg.target_data.get("ban", []) and not msg.sender_info.superuser):
+                msg.target.sender_id in msg.target_data.banned_users and not msg.sender_info.superuser):
             return
 
         disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg, prefix)
