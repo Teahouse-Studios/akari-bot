@@ -124,7 +124,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.banned_users:
-            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(admin_ban_list))])
+            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.custom_admins))])
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
