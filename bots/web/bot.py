@@ -512,6 +512,7 @@ async def edit_target_info(request: Request, target_id: str):
         blocked = body.get("blocked")
         modules = body.get("modules")
         custom_admins = body.get("custom_admins")
+        banned_users = body.get("banned_users")
         target_data = body.get("target_data")
 
         if blocked is not None and not isinstance(blocked, bool):
@@ -524,6 +525,8 @@ async def edit_target_info(request: Request, target_id: str):
             raise HTTPException(status_code=400, detail="'modules' must be list")
         if custom_admins is not None and not isinstance(custom_admins, list):
             raise HTTPException(status_code=400, detail="'custom_admins' must be list")
+        if banned_users is not None and not isinstance(banned_users, list):
+            raise HTTPException(status_code=400, detail="'banned_users' must be list")
         if target_data is not None and not isinstance(target_data, dict):
             raise HTTPException(status_code=400, detail="'target_data' must be dict")
 
@@ -537,6 +540,8 @@ async def edit_target_info(request: Request, target_id: str):
             target_info.modules = modules
         if custom_admins is not None:
             target_info.custom_admins = custom_admins
+        if banned_users is not None:
+            target_info.banned_users = banned_users
         if target_data is not None:
             target_info.target_data = target_data
         await target_info.save()
