@@ -115,6 +115,7 @@ class TargetInfo(DBModel):
     :param locale: 会话语言。
     :param modules: 会话内可用模块。
     :param custom_admins: 会话内自定义管理员列表。
+    :param ban_user: 会话内已限制用户。
     :param target_data: 会话数据。
     """
     target_id = fields.CharField(max_length=512, pk=True)
@@ -123,6 +124,7 @@ class TargetInfo(DBModel):
     locale = fields.CharField(max_length=32, default=default_locale)
     modules = fields.JSONField(default=[])
     custom_admins = fields.JSONField(default=[])
+    banned_users = fields.JSONField(default=[])
     target_data = fields.JSONField(default={})
 
     class Meta:
@@ -187,6 +189,23 @@ class TargetInfo(DBModel):
         else:
             if sender_id in custom_admins:
                 custom_admins.remove(sender_id)
+        await self.save()
+        return True
+
+    async def config_banned_user(self, sender_id: str, enable: bool = True) -> bool:
+        """
+        设置会话内被限制用户。
+
+        :param sender_id: 指定的用户 ID。
+        :param enable: 是否要设置会话内用户限制使用机器人，若 False 则取消限制。
+        """
+        banned_users = self.banned_users
+        if enable:
+            if sender_id not in banned_users:
+                banned_users.append(sender_id)
+        else:
+            if sender_id in banned_users:
+                banned_users.remove(sender_id)
         await self.save()
         return True
 
