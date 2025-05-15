@@ -110,8 +110,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.admin.already"))
     if "remove" in msg.parsed_msg:
         if user == msg.target.sender_id:
-            confirm = await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm"))
-            if not confirm:
+            if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
                 await msg.finish()
         elif user and msg.target_info.config_custom_admin(user, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", user=user))
@@ -278,8 +277,7 @@ leave = module(
 
 @leave.command("{[I18N:core.help.leave]}")
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(I18NContext("core.message.leave.confirm"))
-    if confirm:
+    if await msg.wait_confirm(I18NContext("core.message.leave.confirm")):
         await msg.send_message(I18NContext("core.message.leave.success"))
         await msg.call_api("set_group_leave", group_id=msg.session.target)
     else:

@@ -21,7 +21,7 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
              available_for=["QQ|Group"]
              )
 async def _(msg: Bot.MessageSession):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
 
 @rc_.command("{{wiki.help.rc}}", exclude_from=["QQ|Group"])
 async def _(msg: Bot.MessageSession):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -84,7 +84,7 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
              available_for=["QQ|Group"]
              )
 async def _(msg: Bot.MessageSession):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -126,7 +126,7 @@ async def _(msg: Bot.MessageSession):
 
 @ab_.command("{{wiki.help.ab}}", exclude_from=["QQ|Group"])
 async def _(msg: Bot.MessageSession):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -143,7 +143,7 @@ new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=
 
 @new.command("{{wiki.help.newbie}}")
 async def _(msg: Bot.MessageSession):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
@@ -160,7 +160,7 @@ usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=Tr
 
 @usr.command("<username> {{wiki.help.user}}")
 async def _(msg: Bot.MessageSession, username: str):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     if start_wiki:
         match_interwiki = re.match(r"(.*?):(.*)", username)

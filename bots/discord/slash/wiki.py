@@ -29,7 +29,7 @@ wiki = client.create_group("wiki", "Query information from Mediawiki-based websi
 async def auto_search(ctx: discord.AutocompleteContext):
     title = ctx.options["pagename"]
     iw = ""
-    target = (await WikiTargetInfo.get_or_create(target_id=ctx_to_session(ctx).target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(ctx_to_session(ctx).target.target_id)
     iws = target.interwikis
     query_wiki = target.api_link
     if match_iw := re.match(r"(.*?):(.*)", title):
@@ -51,7 +51,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
-    target = (await WikiTargetInfo.get_or_create(target_id=ctx_to_session(ctx).target.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(ctx_to_session(ctx).target.target_id)
     iws = target.interwikis
     if not iws:
         return []

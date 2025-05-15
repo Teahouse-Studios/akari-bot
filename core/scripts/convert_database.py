@@ -271,7 +271,7 @@ async def convert_database():
             Logger.error(f"TargetInfo record: {r.__dict__}")
 
         if r.targetId in blocked_target_ids:
-            target_info_record = await TargetInfo.get_or_none(target_id=r.targetId)
+            target_info_record = await TargetInfo.get_by_target_id(r.targetId, create=False)
             if target_info_record:
                 target_info_record.blocked = True
                 await target_info_record.save()

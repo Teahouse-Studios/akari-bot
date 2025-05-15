@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         await msg.finish(prompt)
         return
     if status.available:
-        records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+        records = await WikiLogTargetSetInfo.get_by_target_id(msg)
         await records.conf_wiki(
             status.value.api,
             add="add" in msg.parsed_msg,
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
         if status.available:
-            records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+            records = await WikiLogTargetSetInfo.get_by_target_id(msg)
             if records.conf_log(
                 status.value.api, logtype, enable="enable" in msg.parsed_msg
             ):
@@ -155,7 +155,7 @@ async def _(msg: Bot.MessageSession):
 
 @wikilog.command("api get <apilink> <logtype> {[I18N:wikilog.help.api.get]}")
 async def _(msg: Bot.MessageSession, apilink, logtype):
-    records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+    records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
@@ -205,7 +205,7 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     if filters:
         logtype = type_map.get(logtype)
         if logtype:
-            records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+            records = await WikiLogTargetSetInfo.get_by_target_id(msg)
             infos = records.infos
             wiki_info = WikiLib(apilink)
             status = await wiki_info.check_wiki_available()
@@ -255,7 +255,7 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     required_superuser=True,
 )
 async def _(msg: Bot.MessageSession, apilink: str):
-    records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+    records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
@@ -289,7 +289,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     else:
         rcshows_ = msg.parsed_msg.get("...")
     if rcshows:
-        records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+        records = await WikiLogTargetSetInfo.get_by_target_id(msg)
         infos = json.loads(records.infos)
         wiki_info = WikiLib(apilink)
         status = await wiki_info.check_wiki_available()
@@ -322,7 +322,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @wikilog.command("list {[I18N:wikilog.help.list]}")
 async def _(msg: Bot.MessageSession):
-    records = await WikiLogTargetSetInfo.get_by_target_id(target_id=msg)
+    records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
     text = ""
     for apilink in infos:

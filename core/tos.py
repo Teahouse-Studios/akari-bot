@@ -1,7 +1,6 @@
 from core.builtins import Bot, I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
-from core.database.models import SenderInfo
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
@@ -32,19 +31,6 @@ async def warn_target(msg: Bot.MessageSession, reason: str):
             if issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
         await msg.send_message(warn_template)
-
-
-async def pardon_user(user: str):
-    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
-    await sender_info.edit_attr("warns", 0)
-
-
-async def warn_user(user: str, count: int = 1):
-    sender_info = (await SenderInfo.get_or_create(sender_id=user))[0]
-    await sender_info.warn_user(count)
-    if sender_info.warns > WARNING_COUNTS >= 1 and not sender_info.trusted:
-        await sender_info.switch_identity(trust=False)
-    return sender_info.warns
 
 
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):

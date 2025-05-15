@@ -118,7 +118,7 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                target_info = await TargetInfo.get_by_target_id(f"{msg.target.target_from}|{x}")
                 await target_info.config_module(enable_list, True)
             for x in enable_list:
                 msglist.append(I18NContext("core.message.module.enable.qqchannel_global.success", module=x))
@@ -175,7 +175,7 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                target_info = await TargetInfo.get_by_target_id(f"{msg.target.target_from}|{x}")
                 await target_info.config_module(disable_list, False)
             for x in disable_list:
                 msglist.append(I18NContext("core.message.module.disable.qqchannel_global.success", module=x))
@@ -214,11 +214,10 @@ async def config_modules(msg: Bot.MessageSession):
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
                 if modules_[module_].base:
                     if Config("allow_reload_base", False):
-                        confirm = await msg.wait_confirm(
+                        if await msg.wait_confirm(
                             I18NContext("core.message.module.reload.base.confirm"),
                             append_instruction=False,
-                        )
-                        if confirm:
+                        ):
                             base_module = True
                         else:
                             await msg.finish()
@@ -226,11 +225,10 @@ async def config_modules(msg: Bot.MessageSession):
                         await msg.finish(I18NContext("core.message.module.reload.base.failed", module=module_))
 
                 elif extra_reload_modules:
-                    confirm = await msg.wait_confirm(
+                    if not await msg.wait_confirm(
                         I18NContext("core.message.module.reload.confirm", modules="\n".join(extra_reload_modules)),
                         append_instruction=False,
-                    )
-                    if not confirm:
+                    ):
                         await msg.finish()
                 unloaded_list = Config("unloaded_modules", [])
                 if unloaded_list and module_ in unloaded_list:
@@ -297,8 +295,7 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             await msg.send_message(msglist)
     if recommend_modules_help_doc_list and not ("-g" in msg.parsed_msg and msg.parsed_msg["-g"]):
-        confirm = await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")] + recommend_modules_help_doc_list)
-        if confirm:
+        if await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")] + recommend_modules_help_doc_list):
             if await msg.target_info.config_module(recommend_modules_list, True):
                 msglist = []
                 for x in recommend_modules_list:

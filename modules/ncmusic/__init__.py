@@ -81,8 +81,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
         if song_count == 1:
             send_msg.append(I18NContext("ncmusic.message.search.confirm"))
-            query = await msg.wait_confirm(send_msg, delete=False)
-            if query:
+            if await msg.wait_confirm(send_msg, delete=False):
                 sid = result["result"]["songs"][0]["id"]
             else:
                 await msg.finish()
@@ -127,8 +126,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
         if song_count == 1:
             send_msg += "\n" + msg.locale.t("ncmusic.message.search.confirm")
-            query = await msg.wait_confirm(send_msg, delete=False)
-            if query:
+            if await msg.wait_confirm(send_msg, delete=False):
                 sid = result["result"]["songs"][0]["id"]
             else:
                 await msg.finish()

@@ -37,8 +37,7 @@ async def _(msg: Bot.MessageSession):
     #  <<< Are you sure?
     #  >>> Yes
     #  <<< OK!
-    s = await msg.wait_confirm("Are you sure?")
-    if s:
+    if await msg.wait_confirm("Are you sure?"):
         await msg.send_message("OK!")
 
 

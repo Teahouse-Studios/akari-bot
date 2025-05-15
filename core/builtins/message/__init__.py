@@ -408,9 +408,11 @@ class MessageSession:
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.prompt.confirm"))
-            send = await self.send_message(message_chain, quote)
+        else:
+            message_chain = MessageChain(I18NContext("core.message.confirm"))
+        if append_instruction:
+            message_chain.append(I18NContext("message.wait.prompt.confirm"))
+        send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)

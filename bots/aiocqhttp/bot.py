@@ -175,7 +175,7 @@ async def _(event):
 @bot.on("request.friend")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
-    sender_info = await SenderInfo.get(sender_id=sender_id)
+    sender_info = await SenderInfo.get_by_sender_id(sender_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
     if Config("qq_allow_approve_friend", False, table_name="bot_aiocqhttp"):
@@ -187,9 +187,9 @@ async def _(event: Event):
 @bot.on("request.group.invite")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
-    sender_info = await SenderInfo.get(sender_id=sender_id)
+    sender_info = await SenderInfo.get_by_sender_id(sender_id)
     target_id = f"{target_group_prefix}|{event.group_id}"
-    target_info = await TargetInfo.get(target_id=target_id)
+    target_info = await TargetInfo.get_by_target_id(target_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
     if Config("qq_allow_approve_group_invite", False, table_name="bot_aiocqhttp"):
@@ -203,9 +203,9 @@ async def _(event: Event):
     qq_account = Temp().data.get("qq_account")
     if enable_tos and event.user_id == int(qq_account):
         sender_id = f"{sender_prefix}|{event.operator_id}"
-        sender_info = await SenderInfo.get(sender_id=sender_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(target_id=target_id,
                                              sender_id=sender_id,
                                              action="mute",
@@ -226,9 +226,9 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos and event.sub_type == "kick_me":
         sender_id = f"{sender_prefix}|{event.operator_id}"
-        sender_info = await SenderInfo.get(sender_id=sender_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(target_id=target_id,
                                              sender_id=sender_id,
                                              action="kick")
@@ -244,7 +244,7 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos:
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info and target_info.blocked:
             res = Locale(default_locale).t("tos.message.in_group_blocklist")
             if issue_url := Config("issue_url", issue_url_default):

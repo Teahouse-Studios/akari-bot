@@ -183,7 +183,6 @@
     "core.message.resume.nothing": "No messages to be resumed.",
     "core.message.resume.processing": "Resuming ${counts} message(s)...",
     "core.message.resume.skip": "Skip a message, resuming ${counts} message(s)...",
-    "core.message.set.confirm.init": "This session is not initialized. Are you sure you want to do it?",
     "core.message.set.module.disable.failed": "Nothing changed. The module(s) may not be disabled or does not exist.",
     "core.message.set.module.disable.success": "The following module(s) were successfully disabled for the session: ${modules}",
     "core.message.set.module.enable.failed": "Nothing changed. The module(s) may not exist.",

@@ -80,7 +80,7 @@ async def query_pages(
     inline_mode: bool = False,
 ):
     if isinstance(session, MessageSession):
-        target = (await WikiTargetInfo.get_or_create(target_id=session.target.target_id))[0]
+        target = await WikiTargetInfo.get_by_target_id(session.target.target_id)
         start_wiki = target.api_link
         if start_wiki_api:
             start_wiki = start_wiki_api

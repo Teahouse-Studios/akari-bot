@@ -80,9 +80,11 @@ class MessageSession(MessageSessionT):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.prompt.confirm"))
-            send = await self.send_message(message_chain)
+        else:
+            message_chain = MessageChain(I18NContext("core.message.confirm"))
+        if append_instruction:
+            message_chain.append(I18NContext("message.wait.prompt.confirm"))
+        send = await self.send_message(message_chain)
         try:
             if timeout:
                 c = inputimeout("Confirm: ", timeout=timeout)
