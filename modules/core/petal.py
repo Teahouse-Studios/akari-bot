@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("modify", False):
         petal = msg.parsed_msg.get("<petal>", False)
         if user:
-            if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
+            if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user)
             await sender_info.modify_petal(petal)
@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=sender_info.petal))
     elif msg.parsed_msg.get("clear", False):
         if user:
-            if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
+            if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user, create=False)
             if not sender_info:
@@ -86,7 +86,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.petal.clear.self"))
     else:
         if user:
-            if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
+            if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user, create=False)
             if not sender_info:
