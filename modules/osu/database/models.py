@@ -1,10 +1,11 @@
-from tortoise.models import Model
 from tortoise import fields
+
+from core.database.base import DBModel
 
 table_prefix = "module_osu_"
 
 
-class OsuBindInfo(Model):
+class OsuBindInfo(DBModel):
     """
     Osu 用户绑定信息表
 

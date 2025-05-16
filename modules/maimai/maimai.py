@@ -272,7 +272,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender, "b50": True}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
@@ -489,7 +489,7 @@ async def query_song_score(msg, query, username):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
@@ -517,7 +517,7 @@ async def query_plate(msg, plate, username, get_list=False):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
@@ -561,7 +561,7 @@ async def query_process(msg, level, goal, username):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
@@ -599,7 +599,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])
@@ -628,7 +628,7 @@ async def _(msg: Bot.MessageSession, level: str):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("maimai.message.user_unbound", prefix=msg.prefixes[0])

@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession):
 
 @phi.command("b19 {[I18N:phigros.help.b19]}")
 async def _(msg: Bot.MessageSession):
-    bind_info = await PhigrosBindInfo.get_or_none(sender_id=msg.target.sender_id)
+    bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         await msg.finish(
             msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0])

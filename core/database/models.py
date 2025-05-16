@@ -441,15 +441,3 @@ class MaliciousLoginRecords(DBModel):
         return await cls.filter(
             ip_address=ip_address, blocked_until__gt=datetime.now(UTC)
         ).exists()
-
-
-__all__ = [
-    "SenderInfo",
-    "TargetInfo",
-    "StoredData",
-    "AnalyticsData",
-    "DBVersion",
-    "UnfriendlyActionRecords",
-    "JobQueuesTable",
-    "MaliciousLoginRecords"
-]

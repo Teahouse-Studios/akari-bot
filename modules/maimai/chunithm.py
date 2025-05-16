@@ -184,7 +184,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if msg.target.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
                 await msg.finish(
                     msg.locale.t("chunithm.message.user_unbound", prefix=msg.prefixes[0])

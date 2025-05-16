@@ -5,12 +5,13 @@ from urllib.parse import urlparse
 import orjson as json
 from tortoise import fields
 from tortoise.exceptions import DoesNotExist
-from tortoise.models import Model
+
+from core.database.base import DBModel
 
 table_prefix = "module_wiki_"
 
 
-class WikiTargetInfo(Model):
+class WikiTargetInfo(DBModel):
     """
     会话内 Wiki 绑定信息表。
 
@@ -69,7 +70,7 @@ class WikiTargetInfo(Model):
         return True
 
 
-class WikiSiteInfo(Model):
+class WikiSiteInfo(DBModel):
     """
     Wiki 站点信息表。
 
@@ -100,7 +101,7 @@ class WikiSiteInfo(Model):
         return cls.filter(api_link__contains=t).first()
 
 
-class WikiAllowList(Model):
+class WikiAllowList(DBModel):
     """
     Wiki 白名单列表。
 
@@ -133,7 +134,7 @@ class WikiAllowList(Model):
         return True
 
 
-class WikiBlockList(Model):
+class WikiBlockList(DBModel):
     """
     Wiki 黑名单列表。
 
@@ -165,7 +166,7 @@ class WikiBlockList(Model):
         return True
 
 
-class WikiBotAccountList(Model):
+class WikiBotAccountList(DBModel):
     """
     Wiki Bot 账号列表。
 

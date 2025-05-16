@@ -1,10 +1,11 @@
-from tortoise.models import Model
 from tortoise import fields
+
+from core.database.base import DBModel
 
 table_prefix = "module_maimai_"
 
 
-class DivingProberBindInfo(Model):
+class DivingProberBindInfo(DBModel):
     """
     maimai 水鱼绑定信息表。
 

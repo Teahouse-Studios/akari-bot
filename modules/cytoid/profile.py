@@ -9,7 +9,7 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
     if username:
         query_id = username.lower()
     else:
-        bind_info = await CytoidBindInfo.get_or_none(sender_id=msg.target.sender_id)
+        bind_info = await CytoidBindInfo.get_by_sender_id(msg, create=False)
         if not bind_info:
             await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.prefixes[0]))
         query_id = bind_info.username

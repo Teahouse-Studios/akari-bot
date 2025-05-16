@@ -1,10 +1,11 @@
-from tortoise.models import Model
 from tortoise import fields
+
+from core.database.base import DBModel
 
 table_prefix = "module_cytoid_"
 
 
-class CytoidBindInfo(Model):
+class CytoidBindInfo(DBModel):
     """
     Cytoid 用户绑定信息。
 
