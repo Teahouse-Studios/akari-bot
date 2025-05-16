@@ -157,7 +157,7 @@
     "core.message.petal.clear": "已清除用户 ${sender} 的所有花瓣。",
     "core.message.petal.clear.self": "已清除所有花瓣。",
     "core.message.petal.give.confirm": "此操作将会将 ${give_petal} 花瓣给予用户 ${sender}，是否继续？",
-    "core.message.petal.give.self": "你不可以将花瓣给予你自己！",
+    "core.message.petal.give.self": "你不可以将花瓣给自己！",
     "core.message.petal.give.success": "已将 ${give_petal} 花瓣给予用户 ${sender}，当前花瓣数为：${petal}。",
     "core.message.petal.modify": "已为用户 ${sender} 修改了 ${add_petal} 花瓣，当前花瓣数为：${petal}。",
     "core.message.petal.modify.self": "已修改 ${add_petal} 花瓣，当前花瓣数为：${petal}。",
