@@ -4,4 +4,4 @@
 
 [module_github_secret]
 # The secret config section of the module. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
-github_pat = "<Replace me with str value>" # GitHub 的 Personal Access Token。（用于提高 API 请求速率限制）
+github_pat = "<Replace me with str value>" # Personal Access Token for GitHub. (To increase API request rate limit)

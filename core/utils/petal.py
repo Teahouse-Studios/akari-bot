@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 
 from core.builtins import Bot, I18NContext
 from core.builtins.message.elements import I18NContextElement
@@ -19,23 +19,19 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
         amount = limit if amount > limit > 0 else amount
         p = await get_stored_list(msg.target.client_name, "gainedpetal") or [{}]
         p = p[0]
-        now = datetime.now(UTC) + msg.timezone_offset
+        now = datetime.now()
         expired = datetime.combine(
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
-        if not (
-            msg.target.sender_id in p
-            and p[msg.target.sender_id].get("expired")
-            and now.timestamp() <= p[msg.target.sender_id]["expired"]
-        ):
+        if msg.target.sender_id not in p \
+                or now.timestamp() > p[msg.target.sender_id]["expired"]:
             p[msg.target.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
-            p = [p]
             await msg.sender_info.modify_petal(amount)
-            await update_stored_list(msg.target.client_name, "gainedpetal", p)
+            await update_stored_list(msg.target.client_name, "gainedpetal", [p])
             return I18NContext("petal.message.gained.success", amount=amount)
         if limit > 0:
             if p[msg.target.sender_id]["amount"] >= limit:
@@ -43,9 +39,8 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
             if p[msg.target.sender_id]["amount"] + amount > limit:
                 amount = limit - p[msg.target.sender_id]["amount"]
         p[msg.target.sender_id]["amount"] += amount
-        p = [p]
         await msg.sender_info.modify_petal(amount)
-        await update_stored_list(msg.target.client_name, "gainedpetal", p)
+        await update_stored_list(msg.target.client_name, "gainedpetal", [p])
         return I18NContext("petal.message.gained.success", amount=amount)
 
 
@@ -61,23 +56,19 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
         amount = limit if amount > limit > 0 else amount
         p = await get_stored_list(msg.target.client_name, "lostpetal") or [{}]
         p = p[0]
-        now = datetime.now(UTC) + msg.timezone_offset
+        now = datetime.now()
         expired = datetime.combine(
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
-        if not (
-            msg.target.sender_id in p
-            and p[msg.target.sender_id].get("expired")
-            and now.timestamp() <= p[msg.target.sender_id]["expired"]
-        ):
+        if msg.target.sender_id not in p \
+                or now.timestamp() > p[msg.target.sender_id]["expired"]:
             p[msg.target.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
-            p = [p]
             await msg.sender_info.modify_petal(-amount)
-            await update_stored_list(msg.target.client_name, "lostpetal", p)
+            await update_stored_list(msg.target.client_name, "lostpetal", [p])
             return I18NContext("petal.message.lost.success", amount=amount)
         if limit > 0:
             if p[msg.target.sender_id]["amount"] >= limit:
@@ -85,9 +76,8 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
             if p[msg.target.sender_id]["amount"] + amount > limit:
                 amount = limit - p[msg.target.sender_id]["amount"]
         p[msg.target.sender_id]["amount"] += amount
-        p = [p]
         await msg.sender_info.modify_petal(-amount)
-        await update_stored_list(msg.target.client_name, "lostpetal", p)
+        await update_stored_list(msg.target.client_name, "lostpetal", [p])
         return I18NContext("petal.message.lost.success", amount=amount)
 
 
@@ -125,23 +115,19 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int:
         amount = _draw_petals()
         p = await get_stored_list(msg.target.client_name, "signgetpetal") or [{}]
         p = p[0]
-        now = datetime.now(UTC) + msg.timezone_offset
+        now = datetime.now()
         expired = datetime.combine(
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
-        if not (
-            msg.target.sender_id in p
-            and p[msg.target.sender_id].get("expired")
-            and now.timestamp() <= p[msg.target.sender_id]["expired"]
-        ):
+        if msg.target.sender_id not in p \
+                or now.timestamp() > p[msg.target.sender_id]["expired"]:
             p[msg.target.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
-            p = [p]
             await msg.sender_info.modify_petal(amount)
-            await update_stored_list(msg.target.client_name, "signgetpetal", p)
+            await update_stored_list(msg.target.client_name, "signgetpetal", [p])
             return amount
 
         return 0

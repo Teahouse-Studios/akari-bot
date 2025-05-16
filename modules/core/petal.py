@@ -96,4 +96,3 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.petal", sender=user, petal=sender_info.petal))
         else:
             await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
-        
