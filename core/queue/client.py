@@ -28,8 +28,11 @@ async def _(tsk: JobQueuesTable, args: dict):
 
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    await exports["Bot"].ContextManager.send_message(converter.structure(args["session_info"], SessionInfo), converter.structure(args["message"], MessageChain), quote=args["quote"])
-    await JobQueueClient.return_val(tsk, {"send": True})
+    try:
+        send = await exports["Bot"].ContextManager.send_message(converter.structure(args["session_info"], SessionInfo), converter.structure(args["message"], MessageChain), quote=args["quote"])
+        await JobQueueClient.return_val(tsk, {"message_id": send, "success": True})
+    except Exception as e:
+        await JobQueueClient.return_val(tsk, {"message_id": None, "success": False, "error": str(e)})
 
 
 add_export(JobQueueClient)

@@ -44,5 +44,7 @@ class ConsoleContextManager(ContextManager):
                 img.show()
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {image_path}")
 
+        return ['0']
+
 
 Bot.ContextManager = ConsoleContextManager

@@ -1,3 +1,5 @@
+from typing import Union
+
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain
@@ -11,9 +13,18 @@ class JobQueueServer(JobQueueBase):
     @classmethod
     async def send_message_to_client(cls, target_client: str, session_info: SessionInfo, message: MessageChain, quote: bool = True):
         message = MessageChain.assign(message)
-        await cls.add_job(target_client, "send_message", {"session_info": converter.unstructure(session_info),
-                                                          "message": converter.unstructure(message),
-                                                          'quote': quote})
+        value = await cls.add_job(target_client, "send_message", {"session_info": converter.unstructure(session_info),
+                                                                  "message": converter.unstructure(message),
+                                                                  'quote': quote})
+        return value
+
+    @classmethod
+    async def delete_message_to_client(cls, target_client: str, session_info: SessionInfo, message_id: Union[str, list]):
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        value = await cls.add_job(target_client, "delete_message", {"session_info": converter.unstructure(session_info),
+                                                                    "message_id": message_id})
+        return value
 
 
 @JobQueueServer.action("receive_message_from_client")

@@ -1,4 +1,4 @@
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, List
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.session import SessionInfo
@@ -19,7 +19,14 @@ class ContextManager:
             del cls.context[session_info.session_id]
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: Union[MessageChain, str], quote: bool = True,):
+    async def send_message(cls, session_info: SessionInfo, message: Union[MessageChain, str], quote: bool = True,) -> List[str]:
+        """
+        发送消息到指定的会话。
+        :param session_info: 会话信息
+        :param message: 消息内容，可以是 MessageChain 或字符串
+        :param quote: 是否引用消息
+        :return: 消息 ID 列表
+        """
         if isinstance(message, str):
             message = MessageChain.assign(message)
         if not isinstance(message, MessageChain):

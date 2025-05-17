@@ -66,10 +66,13 @@ class Bot:
         session_info.support_typing = features.typing
         session_info.support_wait = features.wait
 
-        await ctx_manager.add_context(session_info, ctx)
-        async with ctx_manager.Typing(session_info) as typing:
-            await exports['JobQueueClient'].send_message_to_server(session_info)
-        await ctx_manager.del_context(session_info)
+        async def _process_msg():
+            await ctx_manager.add_context(session_info, ctx)
+            async with ctx_manager.Typing(session_info) as typing:
+                await exports['JobQueueClient'].send_message_to_server(session_info)
+            await ctx_manager.del_context(session_info)
+
+        asyncio.create_task(_process_msg())
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any) -> int:

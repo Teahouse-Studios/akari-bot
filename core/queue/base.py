@@ -51,6 +51,37 @@ class JobQueueBase:
         await tsk.return_val(value, status)
         raise QueueFinished
 
+    @staticmethod
+    async def _process_task(tsk):
+
+        try:
+            timestamp = tsk.timestamp
+            if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
+                Logger.warning(f"Task {tsk.task_id} timeout, skip.")
+                await tsk.return_val({}, status="timeout")
+            elif tsk.action in queue_actions:
+                await queue_actions[tsk.action](tsk, tsk.args)
+            else:
+                Logger.warning(f"Unknown action {tsk.action}, skip.")
+                await tsk.return_val({}, status="failed")
+        except QueueFinished:
+            Logger.debug(f"Task {tsk.action}({tsk.task_id}) finished.")
+        except Exception:
+            f = traceback.format_exc()
+            Logger.error(f)
+            try:
+                await tsk.return_val({"traceback": f}, status="failed")
+            except QueueFinished:
+                pass
+            try:
+                for target in report_targets:
+                    if ft := await exports['Bot'].FetchTarget.fetch_target(target):
+                        await ft.send_direct_message([exports["I18NContext"]("error.message.report", module=tsk.action),
+                                                      exports["Plain"](f.strip(), disable_joke=True)],
+                                                     enable_parse_message=False, disable_secret_check=True)
+            except Exception:
+                Logger.error(traceback.format_exc())
+
     @classmethod
     async def check_job_queue(cls, target_client: str = None):
         for task_id in _queue_tasks:
@@ -66,33 +97,7 @@ class JobQueueBase:
             Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
             Logger.debug(f"Args: {tsk.args}")
             await tsk.set_status('processing')
-            try:
-                timestamp = tsk.timestamp
-                if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
-                    Logger.warning(f"Task {tsk.task_id} timeout, skip.")
-                    await tsk.return_val({}, status="timeout")
-                elif tsk.action in queue_actions:
-                    await queue_actions[tsk.action](tsk, tsk.args)
-                else:
-                    Logger.warning(f"Unknown action {tsk.action}, skip.")
-                    await tsk.return_val({}, status="failed")
-            except QueueFinished:
-                Logger.debug(f"Task {tsk.action}({tsk.task_id}) finished.")
-            except Exception:
-                f = traceback.format_exc()
-                Logger.error(f)
-                try:
-                    await tsk.return_val({"traceback": f}, status="failed")
-                except QueueFinished:
-                    pass
-                try:
-                    for target in report_targets:
-                        if ft := await exports['Bot'].FetchTarget.fetch_target(target):
-                            await ft.send_direct_message([exports["I18NContext"]("error.message.report", module=tsk.action),
-                                                          exports["Plain"](f.strip(), disable_joke=True)],
-                                                         enable_parse_message=False, disable_secret_check=True)
-                except Exception:
-                    Logger.error(traceback.format_exc())
+            asyncio.create_task(cls._process_task(tsk))
 
     @staticmethod
     def action(action_name: str):

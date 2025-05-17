@@ -158,12 +158,13 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
         """
-        await exports["JobQueueServer"].send_message_to_client(self.session_info.client_name, self.session_info,
-                                                               message_chain, quote=quote)
+        return_val = await exports["JobQueueServer"].send_message_to_client(self.session_info.client_name, self.session_info,
+                                                                            message_chain, quote=quote)
 
         if callback:
-            # todo: 此处临时引用了发送的指令的message_id，稍后更正
-            SessionTaskManager.add_callback(self.session_info.message_id, callback)
+            SessionTaskManager.add_callback(return_val["message_id"], callback)
+
+        return FinishedSession(self, return_val["message_id"])
 
     async def finish(
         self,
@@ -234,19 +235,12 @@ class MessageSession:
         """
         return self.session_info.messages.to_str(text_only)
 
-    async def to_message_chain(self) -> MessageChain:
-        """
-        用于将session.message中的消息文本转换为MessageChain。
-
-        :return: MessageChain消息。
-        """
-        raise NotImplementedError
-
     async def delete(self):
         """
         用于删除这条消息。
         """
-        raise NotImplementedError
+        await exports["JobQueueServer"].delete_message_to_client(self.session_info.client_name, self.session_info,
+                                                                 self.session_info.message_id)
 
     async def check_native_permission(self) -> bool:
         """
@@ -489,7 +483,6 @@ class MessageSession:
     sendMessage = send_message
     sendDirectMessage = send_direct_message
     asDisplay = as_display
-    toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
     def ts2strftime(
@@ -556,22 +549,22 @@ class FinishedSession:
     """
 
     def __init__(
-        self, session, message_id: Union[List[int], List[str], int, str], result
+        self, session, message_id: Union[List[int], List[str], int, str]
     ):
         self.session = session
         if isinstance(message_id, (int, str)):
             message_id = [message_id]
         self.message_id = message_id
-        self.result = result
 
     async def delete(self):
         """
         用于删除这条消息。
         """
-        raise NotImplementedError
+        await exports["JobQueueServer"].delete_message_to_client(self.session.client_name, self.session,
+                                                                 self.message_id)
 
     def __str__(self):
-        return f"FinishedSession(message_id={self.message_id}, result={self.result})"
+        return f"FinishedSession(message_id={self.message_id})"
 
 
 class FetchedSession:
