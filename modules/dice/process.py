@@ -3,7 +3,7 @@ import re
 
 from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext, Plain
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.text import isint
@@ -49,7 +49,7 @@ se = SimpleEval()
 se.functions.update(math_funcs)
 
 
-async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
+async def process_expression(msg: Bot.MessageSession, expr: str, dc: Optional[int]):
     if not all(
         [
             MAX_DICE_COUNT > 0,
@@ -86,13 +86,13 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     else:
         times = "1"
     if not isint(times):
-        errmsg = msg.locale.t("dice.message.error.value.times.invalid")
+        errmsg = "[I18N:dice.message.error.value.times.invalid]"
         return (
             None,
             None,
             None,
             DiceValueError(
-                msg, msg.locale.t("dice.message.error") + "\n" + errmsg
+                "[I18N:dice.message.error]" + "\n" + errmsg
             ).message,
         )
 
@@ -122,12 +122,12 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 
     Logger.debug(dice_expr_list)
     if len(dice_item_list) > MAX_ITEM_COUNT:
-        errmsg = msg.locale.t("dice.message.error.value.too_long")
+        errmsg = "[I18N:dice.message.error.value.too_long]"
         return (
             None,
             None,
             None,
-            DiceValueError(msg, msg.locale.t("dice.message.error") + errmsg).message,
+            DiceValueError("[I18N:dice.message.error]" + errmsg).message,
         )
 
     dice_count = 0
@@ -138,26 +138,26 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
                 continue
             if "A" in item:
                 dice_count += 1
-                dice_expr_list[j] = WODDice(msg, item)
+                dice_expr_list[j] = WODDice(item)
             elif "C" in item:
                 dice_count += 1
-                dice_expr_list[j] = DXDice(msg, item)
+                dice_expr_list[j] = DXDice(item)
             elif "B" in item or "P" in item:
                 dice_count += 1
-                dice_expr_list[j] = BonusPunishDice(msg, item)
+                dice_expr_list[j] = BonusPunishDice(item)
             elif "F" in item:
                 dice_count += 1
-                dice_expr_list[j] = FudgeDice(msg, item)
+                dice_expr_list[j] = FudgeDice(item)
             elif "D" in item:
                 dice_count += 1
-                dice_expr_list[j] = Dice(msg, item)
+                dice_expr_list[j] = Dice(item)
             elif isint(item):
                 dice_count += 1
             else:
                 continue
         except (DiceSyntaxError, DiceValueError) as ex:
             errmsg = (
-                msg.locale.t("dice.message.error.prompt", i=dice_count) + ex.message
+                f"[I18N:dice.message.error.prompt,i={dice_count}]" + ex.message
             )
     if errmsg:
         return (
@@ -165,7 +165,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
             None,
             None,
             DiceValueError(
-                msg, msg.locale.t("dice.message.error") + "\n" + errmsg
+                f"[I18N:dice.message.error]" + "\n" + errmsg
             ).message,
         )
     return dice_expr_list, dice_count, int(times), None
@@ -197,20 +197,18 @@ def generate_dice_message(
     dice_expr_list: list,
     dice_count: int,
     times: int,
-    dc: str,
+    dc: Optional[int],
 ):
     """开始投掷并生成消息"""
     success_num = 0
     fail_num = 0
-    output = msg.locale.t("dice.message.output")
+    output = [I18NContext("dice.message.output")]
     if "#" in expr:
         expr = expr.partition("#")[2]
     if times < 1 or times > MAX_ROLL_TIMES:
-        errmsg = msg.locale.t(
-            "dice.message.error.value.times.out_of_range", max=MAX_ROLL_TIMES
-        )
+        errmsg = f"[I18N:dice.message.error.value.times.out_of_range,max={MAX_ROLL_TIMES}]"
         return DiceValueError(
-            msg, msg.locale.t("dice.message.error") + "\n" + errmsg
+            "[I18N:dice.message.error]" + "\n" + errmsg
         ).message
 
     for _ in range(times):
@@ -221,10 +219,10 @@ def generate_dice_message(
             if isinstance(
                 item, (WODDice, DXDice, BonusPunishDice, Dice, FudgeDice)
             ):  # 检查骰子类型并投掷
-                item.Roll(msg)
-                res = item.GetResult()
+                item.roll()
+                res = item.get_result()
                 if times * dice_count < MAX_DETAIL_CNT:
-                    dice_detail_list[i] = f"({item.GetDetail()})"
+                    dice_detail_list[i] = f"({item.get_detail()})"
                 else:
                     dice_detail_list[i] = f"({res})" if res < 0 else str(res)  # 负数加括号
                 dice_res_list[i] = f"({res})" if res < 0 else str(res)
@@ -242,45 +240,40 @@ def generate_dice_message(
             else:
                 raise SyntaxError
         except (FunctionNotDefined, NameNotDefined, SyntaxError, TypeError):
-            return DiceSyntaxError(
-                msg, msg.locale.t("dice.message.error.syntax")
-            ).message
+            return DiceSyntaxError("[I18N:dice.message.error.syntax]").message
         except Exception as e:
             return DiceValueError(
-                msg, msg.locale.t("dice.message.error") + "\n" + str(e)
+                "[I18N:dice.message.error]" + "\n" + str(e)
             ).message
         try:
             output_line += f"={fmt_num(result, sep=True)}"
         except Exception:
             return DiceValueError(
-                msg,
-                msg.locale.t("dice.message.error")
+                "[I18N:dice.message.error]"
                 + "\n"
-                + msg.locale.t("dice.message.too_long"),
+                + "[I18N:dice.message.too_long]"
             ).message
 
         try:
             if dc:
                 output_line += f"/{dc}  "
                 if msg.target_data.get("dice_dc_reversed"):
-                    if int(result) <= int(dc):
-                        output_line += msg.locale.t("dice.message.dc.success")
+                    if int(result) <= dc:
+                        output_line += "[I18N:dice.message.dc.success]"
                         success_num += 1
                     else:
-                        output_line += msg.locale.t("dice.message.dc.failed")
+                        output_line += "[I18N:dice.message.dc.fail]"
                         fail_num += 1
                 else:
-                    if int(result) >= int(dc):
-                        output_line += msg.locale.t("dice.message.dc.success")
+                    if int(result) >= dc:
+                        output_line += "[I18N:dice.message.dc.success]"
                         success_num += 1
                     else:
-                        output_line += msg.locale.t("dice.message.dc.failed")
+                        output_line += "[I18N:dice.message.dc.fail]"
                         fail_num += 1
-            output += f"\n{expr}={output_line}"
+            output.append(Plain(f"{expr}={output_line}"))
         except ValueError:
-            return msg.locale.t("dice.message.dc.invalid") + dc
+            return "[I18N:dice.message.dc.invalid]" + str(dc)
     if dc and times > 1:
-        output += "\n" + msg.locale.t(
-            "dice.message.dc.check", success=success_num, failed=fail_num
-        )
+        output.append(I18NContext("dice.message.dc.check", success=success_num, failed=fail_num))
     return output
