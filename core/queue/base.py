@@ -29,7 +29,6 @@ class JobQueueBase:
             _queue_tasks[task_id] = {"flag": flag}
             await flag.wait()
             result = _queue_tasks[task_id]["result"]
-            del _queue_tasks[task_id]
             return result
         return task_id
 

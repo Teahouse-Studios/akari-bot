@@ -1,4 +1,4 @@
-from cattrs import unstructure
+import traceback
 
 from .base import JobQueueBase
 from ..builtins.converter import converter
@@ -6,7 +6,7 @@ from ..builtins.message.chain import MessageChain
 from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
-from ..builtins.session.context import ContextManager
+from ..logger import Logger
 
 
 class JobQueueClient(JobQueueBase):
@@ -28,11 +28,34 @@ async def _(tsk: JobQueuesTable, args: dict):
 
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    try:
-        send = await exports["Bot"].ContextManager.send_message(converter.structure(args["session_info"], SessionInfo), converter.structure(args["message"], MessageChain), quote=args["quote"])
-        await JobQueueClient.return_val(tsk, {"message_id": send, "success": True})
-    except Exception as e:
-        await JobQueueClient.return_val(tsk, {"message_id": None, "success": False, "error": str(e)})
+    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
+    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    send = await ctx_manager.send_message(session_info, converter.structure(args["message"], MessageChain), quote=args["quote"])
+    await JobQueueClient.return_val(tsk, {"message_id": send, "success": True})
+
+
+@JobQueueClient.action("delete_message")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
+    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    await ctx_manager.delete_message(session_info, message_id=args["message_id"])
+    await JobQueueClient.return_val(tsk, {"success": True})
+
+
+@JobQueueClient.action("start_typing")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
+    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    await ctx_manager.start_typing(session_info)
+    await JobQueueClient.return_val(tsk, {"success": True})
+
+
+@JobQueueClient.action("end_typing")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
+    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    await ctx_manager.end_typing(session_info)
+    await JobQueueClient.return_val(tsk, {"success": True})
 
 
 add_export(JobQueueClient)

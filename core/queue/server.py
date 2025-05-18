@@ -23,7 +23,17 @@ class JobQueueServer(JobQueueBase):
         if isinstance(message_id, str):
             message_id = [message_id]
         value = await cls.add_job(target_client, "delete_message", {"session_info": converter.unstructure(session_info),
-                                                                    "message_id": message_id})
+                                                                    "message_id": message_id}, wait=False)
+        return value
+
+    @classmethod
+    async def start_typing_to_client(cls, target_client: str, session_info: SessionInfo):
+        value = await cls.add_job(target_client, "start_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
+        return value
+
+    @classmethod
+    async def end_typing_to_client(cls, target_client: str, session_info: SessionInfo):
+        value = await cls.add_job(target_client, "end_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
         return value
 
 

@@ -46,5 +46,24 @@ class ConsoleContextManager(ContextManager):
 
         return ['0']
 
+    @classmethod
+    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+        """
+        删除指定会话中的消息。
+        :param session_info: 会话信息
+        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
+        """
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
+        print(
+            f"(Tried to delete {str(message_id)}, but I\'m a console so I cannot do it :< )"
+        )
+
 
 Bot.ContextManager = ConsoleContextManager

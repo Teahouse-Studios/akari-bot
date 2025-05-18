@@ -68,11 +68,26 @@ class Bot:
 
         async def _process_msg():
             await ctx_manager.add_context(session_info, ctx)
-            async with ctx_manager.Typing(session_info) as typing:
-                await exports['JobQueueClient'].send_message_to_server(session_info)
+            await exports['JobQueueClient'].send_message_to_server(session_info)
             await ctx_manager.del_context(session_info)
 
         asyncio.create_task(_process_msg())
+
+    @staticmethod
+    async def start_typing(session_info: SessionInfo) -> None:
+        """
+        开始输入状态
+        :param session_info: 会话信息
+        """
+        if not isinstance(session_info, SessionInfo):
+            raise TypeError("session_info must be a SessionInfo")
+        await exports['JobQueueServer'].start_typing_to_client(session_info.client_name, session_info)
+
+    @staticmethod
+    async def end_typing(session_info: SessionInfo) -> None:
+        if not isinstance(session_info, SessionInfo):
+            raise TypeError("session_info must be a SessionInfo")
+        await exports['JobQueueServer'].end_typing_to_client(session_info.client_name, session_info)
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any) -> int:

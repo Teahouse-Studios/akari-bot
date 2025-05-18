@@ -20,6 +20,7 @@ from core.constants import FinishedException, WaitCancelException
 from core.database.models import TargetInfo, SenderInfo
 from core.exports import add_export, exports
 from core.i18n import Locale
+from core.logger import Logger
 from core.utils.text import parse_time_string
 
 
@@ -163,6 +164,7 @@ class MessageSession:
 
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
+        Logger.debug("return_val", return_val)
 
         return FinishedSession(self, return_val["message_id"])
 

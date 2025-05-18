@@ -110,10 +110,10 @@ async def parser(msg: "Bot.MessageSession",
                 await msg.send_message(I18NContext("error.module.unloaded", module=command_first_word))
 
             return msg
-        if msg.muted:
+        if msg.session_info.muted:
             return
         if running_mention:
-            if msg.trigger_msg.lower().find(msg.name.lower()) != -1:
+            if msg.trigger_msg.lower().find(msg.session_info.bot_name.lower()) != -1:
                 if ExecutionLockList.check(msg):
                     return await msg.send_message(I18NContext("parser.command.running.prompt2"))
 
@@ -303,8 +303,9 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
             for func in module.command_list.set:
                 if not func.help_doc:
                     if not msg.sender_data.get("disable_typing", False):
-                        async with msg.Typing(msg):
-                            await func.function(msg)  # 将msg传入下游模块
+                        await exports["Bot"].start_typing(msg.session_info)
+                        await func.function(msg)  # 将msg传入下游模块
+
                     else:
                         await func.function(msg)
                     raise FinishedException(msg.sent)  # if not using msg.finish
@@ -312,6 +313,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
         await _process_send_message_failed(msg)
 
     except FinishedException as e:
+        await exports["Bot"].end_typing(msg.session_info)
         time_used = datetime.now() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
                        f"Times take up: {str(time_used)}")
@@ -338,7 +340,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
     for m in modules:  # 遍历模块
         try:
-            if m in msg.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
+            if m in msg.session_info.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
                 regex_module: Module = modules[m]
 
                 if regex_module.required_base_superuser:
@@ -421,12 +423,14 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 return await msg.send_message(I18NContext("parser.command.running.prompt"))
 
                             if rfunc.show_typing and not msg.sender_data.get("disable_typing", False):
-                                async with msg.Typing(msg):
-                                    await rfunc.function(msg)  # 将msg传入下游模块
+                                await exports["Bot"].start_typing(msg.session_info)
+                                await rfunc.function(msg)  # 将msg传入下游模块
+
                             else:
                                 await rfunc.function(msg)  # 将msg传入下游模块
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
+                        await exports["Bot"].end_typing(msg.session_info)
                         time_used = datetime.now() - time_start
                         if rfunc.logging:
                             Logger.success(
@@ -597,8 +601,8 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
             if not msg.session_info.target_info.target_data.get("disable_typing", False):
-                async with msg.Typing(msg):
-                    await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
+                await exports["Bot"].start_typing(msg.session_info)
+                await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
             else:
                 await parsed_msg[0].function(**kwargs)
             raise FinishedException(msg.sent)  # if not using msg.finish
