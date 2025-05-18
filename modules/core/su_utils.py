@@ -214,7 +214,7 @@ async def _(msg: Bot.MessageSession, group_id: str):
             await msg.finish()
         target_info = await TargetInfo.create(target_id=group_id)
 
-    k = 'in_post_whitelist'
+    k = "in_post_whitelist"
     v = not target_info.target_data.get(k, False)
     await target_info.edit_target_data(k, v)
     await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
@@ -582,8 +582,10 @@ rse = module("raise", required_superuser=True, base=True, doc=True)
 
 
 @rse.command()
-async def _(msg: Bot.MessageSession):
-    raise TestException("{core.message.raise}")
+@rse.command("[<args>]")
+async def _(msg: Bot.MessageSession, args: str = None):
+    e = args or "[I18N:core.message.raise]"
+    raise TestException(e)
 
 
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=Config("enable_eval", False))
