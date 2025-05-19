@@ -434,7 +434,7 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                                 f"Times take up: {time_used}")
 
                         Info.command_parsed += 1
-                        if enable_analytics:
+                        if enable_analytics and rfunc.show_typing:
                             await AnalyticsData.create(target_id=msg.target.target_id,
                                                        sender_id=msg.target.sender_id,
                                                        command=msg.trigger_msg,
