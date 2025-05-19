@@ -3,7 +3,6 @@ from typing import Optional, Union
 
 import numpy as np
 
-from core.builtins import Bot
 from core.config import Config
 from core.utils.random import Random
 from core.utils.text import isint

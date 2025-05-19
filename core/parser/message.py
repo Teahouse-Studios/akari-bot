@@ -249,8 +249,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
         module: Module = modules[command_first_word]
         if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
             if module.desc:
-                desc = MessageChain()
-                desc.append(I18NContext("parser.module.desc", desc=msg.locale.t_str(module.desc)))
+                desc = [I18NContext("parser.module.desc", desc=msg.locale.t_str(module.desc))]
                 if command_first_word not in msg.enabled_modules:
                     desc.append(
                         I18NContext(
