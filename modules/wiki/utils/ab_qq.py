@@ -4,8 +4,8 @@ from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
 
 
-async def ab_qq(msg: MessageSession, wiki_url):
-    wiki = WikiLib(wiki_url)
+async def ab_qq(msg: MessageSession, wiki_url, headers=None):
+    wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(
         action="query",
         list="abuselog",
