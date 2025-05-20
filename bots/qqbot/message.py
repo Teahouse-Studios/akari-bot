@@ -478,9 +478,9 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
                             else:
-                                msgchain = MessageChain([Plain(message)])
+                                msgchain = MessageChain(Plain(message))
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:

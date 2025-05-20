@@ -24,7 +24,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
         if msg.target.sender_id not in p \
-            or now.timestamp() > p[msg.target.sender_id]["expired"]:
+                or now.timestamp() > p[msg.target.sender_id]["expired"]:
             p[msg.target.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
@@ -61,7 +61,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
         if msg.target.sender_id not in p \
-            or now.timestamp() > p[msg.target.sender_id]["expired"]:
+                or now.timestamp() > p[msg.target.sender_id]["expired"]:
             p[msg.target.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),
@@ -120,7 +120,7 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int:
             (now + timedelta(days=1)).date(), datetime.min.time()
         )
         if msg.target.sender_id not in p \
-            or now.timestamp() > p[msg.target.sender_id]["expired"]:
+                or now.timestamp() > p[msg.target.sender_id]["expired"]:
             p[msg.target.sender_id] = {
                 "time": now.timestamp(),
                 "expired": expired.timestamp(),

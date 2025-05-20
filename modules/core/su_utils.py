@@ -214,7 +214,7 @@ async def _(msg: Bot.MessageSession, group_id: str):
             await msg.finish()
         target_info = await TargetInfo.create(target_id=group_id)
 
-    k = 'in_post_whitelist'
+    k = "in_post_whitelist"
     v = not target_info.target_data.get(k, False)
     await target_info.edit_target_data(k, v)
     await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
@@ -385,10 +385,10 @@ async def pull_repo():
 
 
 async def update_dependencies():
-    returncode, poetry_install, _ = await run_sys_command(["poetry", "install"])
+    returncode, poetry_install, _ = await run_sys_command(["poetry", "install"], timeout=60)
     if returncode == 0 and poetry_install:
         return poetry_install
-    _, pip_install, _ = await run_sys_command(["pip", "install", "-r", "requirements.txt"])
+    _, pip_install, _ = await run_sys_command(["pip", "install", "-r", "requirements.txt"], timeout=60)
     return "..." + pip_install[-500:] if len(pip_install) > 500 else pip_install
 
 
@@ -582,8 +582,10 @@ rse = module("raise", required_superuser=True, base=True, doc=True)
 
 
 @rse.command()
-async def _(msg: Bot.MessageSession):
-    raise TestException("{core.message.raise}")
+@rse.command("[<args>]")
+async def _(msg: Bot.MessageSession, args: str = None):
+    e = args or "[I18N:core.message.raise]"
+    raise TestException(e)
 
 
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=Config("enable_eval", False))

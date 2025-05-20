@@ -10,6 +10,7 @@ from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_g
 from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins import command_prefix, ExecutionLockList, MessageTaskManager, Bot, \
     base_superuser_list, Temp, Plain, I18NContext
+from core.builtins.message.chain import match_kecode
 from core.config import Config
 from core.constants.default import bug_report_url_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
@@ -327,7 +328,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
     except NoReportException as e:
         Logger.error(traceback.format_exc())
         err_msg = msg.locale.t_str(str(e))
-        await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
+        await msg.send_message(I18NContext("error.message.prompt.noreport", detail=err_msg))
 
     except Exception as e:
         await _process_exception(msg, e)
@@ -432,7 +433,7 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                                 f"Times take up: {time_used}")
 
                         Info.command_parsed += 1
-                        if enable_analytics:
+                        if enable_analytics and rfunc.show_typing:
                             await AnalyticsData.create(target_id=msg.target.target_id,
                                                        sender_id=msg.target.sender_id,
                                                        command=msg.trigger_msg,
@@ -626,7 +627,7 @@ async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
                                                   "ts": datetime.now().timestamp()}
     else:
         reason = msg.locale.t_str(str(e))
-        await msg.send_message(I18NContext("error.prompt.noreport", detail=reason))
+        await msg.send_message(I18NContext("error.message.prompt.noreport", detail=reason))
 
 
 async def _process_send_message_failed(msg: Bot.MessageSession):
@@ -657,23 +658,28 @@ async def _process_send_message_failed(msg: Bot.MessageSession):
 
 async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportException):
     Logger.error(traceback.format_exc())
+    errmsgchain = [I18NContext("error.message.prompt")]
     err_msg = msg.locale.t_str(str(e))
-    await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
+    errmsgchain += match_kecode(err_msg)
+    errmsgchain.append(I18NContext("error.message.prompt.noreport"))
+    await msg.send_message(errmsgchain)
 
 
 async def _process_exception(msg: Bot.MessageSession, e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
+    errmsgchain = [I18NContext("error.message.prompt")]
     err_msg = msg.locale.t_str(str(e))
-    if "timeout" in str(e).lower().replace(" ", ""):
+    errmsgchain += match_kecode(err_msg)
+    if "timeout" in err_msg.lower().replace(" ", ""):
         timeout = True
-        errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]
+        errmsgchain.append(I18NContext("error.message.prompt.timeout"))
     else:
         timeout = False
-        errmsgchain = [I18NContext("error.prompt.report", detail=err_msg)]
+        errmsgchain.append(I18NContext("error.message.prompt.report"))
 
     if bug_report_url:
-        errmsgchain.append(I18NContext("error.prompt.address", url=bug_report_url))
+        errmsgchain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
     await msg.send_message(errmsgchain)
 
     if not timeout and report_targets:

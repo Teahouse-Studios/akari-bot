@@ -5,8 +5,8 @@ from modules.wiki.utils.wikilib import WikiLib
 NEWBIE_LIMIT = 10
 
 
-async def newbie(msg: Bot.MessageSession, wiki_url):
-    wiki = WikiLib(wiki_url)
+async def newbie(msg: Bot.MessageSession, wiki_url, headers=None):
+    wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(action="query", list="logevents", letype="newusers")
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:Log?type=newusers")
     d = []

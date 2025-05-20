@@ -6,8 +6,8 @@ from modules.wiki.utils.wikilib import WikiLib
 AB_LIMIT = 5
 
 
-async def ab(msg: Bot.MessageSession, wiki_url):
-    wiki = WikiLib(wiki_url)
+async def ab(msg: Bot.MessageSession, wiki_url, headers=None):
+    wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(action="query", list="abuselog", aflprop="user|title|action|result|filter|timestamp",
                                 _no_login=not msg.target_data.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")

@@ -246,7 +246,7 @@ class Locale:
 
         unit, scale = unit_info
         fmted_num = self._fmt_num(number / scale, precision)
-        return self.t_str(f"{fmted_num} {{i18n.unit.{unit}}}", fallback_failed_prompt)
+        return self.t_str(f"{fmted_num} [I18N:i18n.unit.{unit}]", fallback_failed_prompt)
 
     @staticmethod
     def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:

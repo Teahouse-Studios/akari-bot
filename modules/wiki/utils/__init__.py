@@ -23,6 +23,7 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
     legacy = True
@@ -35,7 +36,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.sending")
                 )
-                nodelist = await rc_qq(msg, start_wiki)
+                nodelist = await rc_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
             except ValueError:
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
@@ -43,10 +44,11 @@ async def _(msg: Bot.MessageSession):
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
                 )
-            legacy = False
+            finally:
+                legacy = False
         else:
             try:
-                nodelist = await rc_qq(msg, start_wiki)
+                nodelist = await rc_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
                 legacy = False
             except Exception:
@@ -54,7 +56,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
     if legacy:
         try:
-            res = await rc(msg, start_wiki)
+            res = await rc(msg, start_wiki, headers)
             await msg.finish(res)
         except Exception:
             Logger.error(traceback.format_exc())
@@ -65,10 +67,11 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
     try:
-        res = await rc(msg, start_wiki)
+        res = await rc(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
         Logger.error(traceback.format_exc())
@@ -86,6 +89,7 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
     legacy = True
@@ -98,7 +102,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.sending")
                 )
-                nodelist = await ab_qq(msg, start_wiki)
+                nodelist = await ab_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
             except ValueError:
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
@@ -106,10 +110,11 @@ async def _(msg: Bot.MessageSession):
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
                 )
-            legacy = False
+            finally:
+                legacy = False
         else:
             try:
-                nodelist = await ab_qq(msg, start_wiki)
+                nodelist = await ab_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
                 legacy = False
             except Exception:
@@ -117,7 +122,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
     if legacy:
         try:
-            res = await ab(msg, start_wiki)
+            res = await ab(msg, start_wiki, headers)
             await msg.finish(res)
         except Exception:
             Logger.error(traceback.format_exc())
@@ -128,10 +133,11 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
     try:
-        res = await ab(msg, start_wiki)
+        res = await ab(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
         Logger.error(traceback.format_exc())
@@ -145,10 +151,11 @@ new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
         await msg.finish(msg.locale.t("wiki.message.not_set"))
     try:
-        res = await newbie(msg, start_wiki)
+        res = await newbie(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
         Logger.error(traceback.format_exc())
@@ -162,14 +169,15 @@ usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=Tr
 async def _(msg: Bot.MessageSession, username: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
+    headers = target.headers
     if start_wiki:
         match_interwiki = re.match(r"(.*?):(.*)", username)
         if match_interwiki:
             interwikis = target.interwikis
             if match_interwiki.group(1) in interwikis:
                 await get_user_info(
-                    msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2)
+                    msg, match_interwiki.group(2), interwikis[match_interwiki.group(1)], headers
                 )
-        await get_user_info(msg, start_wiki, username)
+        await get_user_info(msg, username, start_wiki, headers)
     else:
         await msg.finish(msg.locale.t("wiki.message.not_set"))

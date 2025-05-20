@@ -48,8 +48,9 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         else:
             stand += 1
 
+    prompt = []
     if count == 1:
-        prompt = [I18NContext("coin.message.single.prompt")]
+        prompt.append(I18NContext("coin.message.single.prompt"))
         if face_up:
             prompt.append(I18NContext("coin.message.single.head"))
         elif face_down:
@@ -57,7 +58,7 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         else:
             prompt.append(I18NContext("coin.message.single.stand"))
     elif sum(bool(x) for x in [face_up, face_down, stand]) == 1:
-        prompt = [I18NContext("coin.message.all.prompt", count=count)]
+        prompt.append(I18NContext("coin.message.all.prompt", count=count))
         if not (stand or face_down):
             prompt.append(I18NContext("coin.message.all.head"))
         if not (stand or face_up):
@@ -65,7 +66,7 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         if not (face_up or face_down):
             prompt.append(I18NContext("coin.message.all.stand"))
     else:
-        prompt = [I18NContext("coin.message.mix.prompt", count=count)]
+        prompt.append(I18NContext("coin.message.mix.prompt", count=count))
         output = ""
         if face_up and face_down:
             output += f"[I18N:coin.message.mix.head_and_tail,head={face_up},tail={face_down}]"

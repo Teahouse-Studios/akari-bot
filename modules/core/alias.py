@@ -4,18 +4,20 @@ from core.builtins import Bot, Image, I18NContext, Plain
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 
-ali = module("alias", required_admin=True, base=True, doc=True)
+ali = module("alias", base=True, doc=True)
 
 
 @ali.command(
+    "list [--legacy] {[I18N:core.help.alias.list]}",
+    options_desc={"--legacy": "[I18N:help.option.legacy]"},
+)
+@ali.command([
     "add <alias> <command> {[I18N:core.help.alias.add]}",
     "remove <alias> {[I18N:core.help.alias.remove]}",
     "reset {[I18N:core.help.alias.reset]}",
     "raise <alias> {[I18N:core.help.alias.raise]}",
-    "lower <alias> {[I18N:core.help.alias.lower]}",
-    "list [--legacy] {[I18N:core.help.alias.list]}",
-    options_desc={"--legacy": "[I18N:help.option.legacy]"},
-)
+    "lower <alias> {[I18N:core.help.alias.lower]}"
+], required_admin=True)
 async def _(msg: Bot.MessageSession):
     aliases = msg.target_data.get("command_alias")
     alias = msg.parsed_msg.get("<alias>", False)

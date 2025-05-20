@@ -8,4 +8,4 @@ ncmusic_api = "<Replace me with str value>" # API address of NetEase Cloud Music
 
 [module_ncmusic]
 # The basic config section of the module. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
-ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ client)
+ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ)

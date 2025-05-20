@@ -27,7 +27,8 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     amount = await sign_get_petal(msg)
     if amount:
-        await msg.finish(I18NContext("core.message.petal.sign.success", amount=amount))
+        await msg.finish([I18NContext("core.message.petal.sign.success"),
+                          I18NContext("petal.message.gained.success", amount=amount)])
     else:
         await msg.finish(I18NContext("core.message.petal.sign.already"))
 
@@ -96,4 +97,3 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.petal", sender=user, petal=sender_info.petal))
         else:
             await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
-        

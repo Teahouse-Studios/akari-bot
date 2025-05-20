@@ -40,7 +40,7 @@ class PlainElement(MessageElement):
     """
 
     text: str
-    disable_joke: bool
+    disable_joke: bool = False
 
     @classmethod
     def assign(cls, *texts: Any, disable_joke: bool = False):

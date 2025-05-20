@@ -25,7 +25,7 @@ async def update_database():
             if db_type == "sqlite":
                 await conn.execute_script("""
                     PRAGMA foreign_keys=off;
-                    
+
                     CREATE TABLE _new_target_info (
                         target_id VARCHAR(512) PRIMARY KEY,
                         blocked BOOLEAN NOT NULL,
@@ -66,7 +66,7 @@ async def update_database():
                     ALTER TABLE target_info ADD COLUMN banned_users JSON DEFAULT NULL AFTER custom_admins;
 
                     UPDATE target_info
-                    SET banned_users = 
+                    SET banned_users =
                         IF(
                             JSON_CONTAINS_PATH(target_data, 'one', '$.ban'),
                             JSON_EXTRACT(target_data, '$.ban'),
