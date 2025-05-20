@@ -12,5 +12,5 @@ mcr = module(
 
 
 @mcr.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mc_crowdin", **ctx.args)

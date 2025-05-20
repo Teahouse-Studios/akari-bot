@@ -58,5 +58,5 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
         warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
 
         for target_ in report_targets:
-            if f := await Bot.FetchTarget.fetch_target(target_):
+            if f := await Bot.fetch_target(target_):
                 await f.send_direct_message(warn_template)

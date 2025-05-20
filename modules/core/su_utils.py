@@ -470,11 +470,11 @@ forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True
 
 @forward_msg.command()
 async def _(msg: Bot.MessageSession):
-    alist = await get_stored_list(Bot.FetchTarget, "forward_msg")
+    alist = await get_stored_list(Bot, "forward_msg")
     if not alist:
         alist = [{"status": True}]
     alist[0]["status"] = not alist[0]["status"]
-    await update_stored_list(Bot.FetchTarget, "forward_msg", alist)
+    await update_stored_list(Bot, "forward_msg", alist)
     if alist[0]["status"]:
         await msg.finish(I18NContext("core.message.forward_msg.disable"))
     else:
@@ -532,10 +532,10 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f"{msg.target.client_name}|"):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.target.target_from))
     post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
-    session = await Bot.FetchTarget.fetch_target(target)
+    session = await Bot.fetch_target(target)
     confirm = await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False)
     if confirm:
-        await Bot.FetchTarget.post_global_message(post_msg, [session])
+        await Bot.post_global_message(post_msg, [session])
         await msg.finish(I18NContext("core.message.post.success"))
     else:
         await msg.finish()
@@ -546,7 +546,7 @@ async def _(msg: Bot.MessageSession, post_msg: str):
     post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
     confirm = await msg.wait_confirm(I18NContext("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False)
     if confirm:
-        await Bot.FetchTarget.post_global_message(post_msg)
+        await Bot.post_global_message(post_msg)
         await msg.finish(I18NContext("core.message.post.success"))
     else:
         await msg.finish()

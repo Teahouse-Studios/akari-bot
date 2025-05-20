@@ -99,7 +99,7 @@ async def check_job_queue(target_client: str = None):
             _queue_tasks[task_id]["flag"].set()
 
     get_internal = await JobQueuesTable.get_all(target_client=JobQueue.name)
-    get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else Bot.FetchTarget.name)
+    get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else Bot.client_name)
 
     for tsk in get_internal + get_all:
         Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
@@ -125,7 +125,7 @@ async def check_job_queue(target_client: str = None):
                 pass
             try:
                 for target in report_targets:
-                    if ft := await Bot.FetchTarget.fetch_target(target):
+                    if ft := await Bot.fetch_target(target):
                         await ft.send_direct_message([I18NContext("error.message.report", module=tsk.action),
                                                       Plain(f.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)
@@ -135,7 +135,7 @@ async def check_job_queue(target_client: str = None):
 
 @action("validate_permission")
 async def _(tsk: JobQueuesTable, args: dict):
-    fetch = await Bot.FetchTarget.fetch_target(args["target_id"], args["sender_id"])
+    fetch = await Bot.fetch_target(args["target_id"], args["sender_id"])
     if fetch:
         await return_val(tsk, {"value": await fetch.parent.check_permission()})
     else:

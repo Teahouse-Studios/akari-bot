@@ -379,7 +379,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wikilog.hook("matched")
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     matched = ctx.args["matched_logs"]
     Logger.debug("Received matched_logs hook: " + str(matched))
     for id_ in matched:
@@ -407,7 +407,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 
 @wikilog.hook("keepalive")
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
     for target in data_:
         for wiki in data_[target]:

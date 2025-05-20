@@ -5,7 +5,7 @@ import orjson as json
 from PIL import Image as PILImage
 
 from core.builtins import Bot
-from core.builtins.message import I18NContext, Image, Url
+from core.builtins.message.internal import I18NContext, Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.utils.http import download, get_url

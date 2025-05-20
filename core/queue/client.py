@@ -19,7 +19,7 @@ class JobQueueClient(JobQueueBase):
 
 @JobQueueClient.action("validate_permission")
 async def _(tsk: JobQueuesTable, args: dict):
-    fetch = await exports["Bot"].FetchTarget.fetch_target(args["target_id"], args["sender_id"])
+    fetch = await exports["Bot"].fetch_target(args["target_id"], args["sender_id"])
     if fetch:
         await JobQueueClient.return_val(tsk, {"value": await fetch.parent.check_permission()})
     else:

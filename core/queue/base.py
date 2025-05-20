@@ -74,7 +74,7 @@ class JobQueueBase:
                 pass
             try:
                 for target in report_targets:
-                    if ft := await exports['Bot'].FetchTarget.fetch_target(target):
+                    if ft := await exports['Bot'].fetch_target(target):
                         await ft.send_direct_message([exports["I18NContext"]("error.message.report", module=tsk.action),
                                                       exports["Plain"](f.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)

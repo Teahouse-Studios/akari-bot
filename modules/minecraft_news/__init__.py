@@ -13,7 +13,7 @@ minecraft_news = module(
 
 
 @minecraft_news.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("minecraft_news", **ctx.args)
 
 
@@ -29,5 +29,5 @@ feedback_news = module(
 
 
 @feedback_news.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("feedback_news", **ctx.args)

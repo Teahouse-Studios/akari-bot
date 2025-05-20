@@ -4,15 +4,15 @@ from tortoise.exceptions import DoesNotExist
 
 from core.database.models import StoredData
 if TYPE_CHECKING:
-    from core.builtins.message import FetchTarget
+    from core.builtins import Bot
 
 from core.exports import exports
 
 
-async def get_stored_list(bot: Union["FetchTarget", str], name: str) -> list:
+async def get_stored_list(bot: Union["Bot", str], name: str) -> list:
     try:
-        if isinstance(bot, exports['Bot'].FetchTarget):
-            bot = bot.name
+        if isinstance(bot, exports['Bot']):
+            bot = bot.client_name
         stored_data = await StoredData.filter(stored_key=f"{bot}|{name}").first()
         if not stored_data:
             return []
@@ -21,9 +21,9 @@ async def get_stored_list(bot: Union["FetchTarget", str], name: str) -> list:
         return []
 
 
-async def update_stored_list(bot: Union["FetchTarget", str], name: str, value: list):
-    if isinstance(bot, exports['Bot'].FetchTarget):
-        bot = bot.name
+async def update_stored_list(bot: Union["Bot", str], name: str, value: list):
+    if isinstance(bot, exports['Bot']):
+        bot = bot.client_name
     await StoredData.update_or_create(
         defaults={"value": value}, stored_key=f"{bot}|{name}"
     )

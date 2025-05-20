@@ -42,6 +42,11 @@ processes: list[multiprocessing.Process] = []
 
 
 def init_bot():
+    from core.constants.path import cache_path  # noqa
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+    os.makedirs(cache_path, exist_ok=True)
+
     from core.config import Config  # noqa
     from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
@@ -126,7 +131,6 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
 
 
 def run_bot():
-    from core.constants.path import cache_path  # noqa
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
 
@@ -158,9 +162,6 @@ def run_bot():
         p.start()
         processes.append(p)
 
-    if os.path.exists(cache_path):
-        shutil.rmtree(cache_path)
-    os.makedirs(cache_path, exist_ok=True)
     envs = os.environ.copy()
     envs["PYTHONIOENCODING"] = "UTF-8"
     envs["PYTHONPATH"] = os.path.abspath(".")

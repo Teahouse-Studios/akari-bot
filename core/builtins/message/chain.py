@@ -24,7 +24,7 @@ from core.builtins.message.elements import (
 from core.exports import add_export
 
 if TYPE_CHECKING:
-    from core.builtins.session import MessageSession, SessionInfo
+    from core.builtins.session import SessionInfo
 
 from core.builtins.utils import Secret
 from core.builtins.types import MessageElement

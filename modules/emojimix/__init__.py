@@ -162,7 +162,7 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     if emoji:
         if supported_emojis:
             send_msgs = [I18NContext("emojimix.message.combine_supported", emoji=emoji)]
-            if Bot.FetchTarget.name == "Discord":
+            if Bot.client_name == "Discord":
                 send_msgs.extend([Plain("".join(supported_emojis[i:i + 200]))
                                  for i in range(0, len(supported_emojis), 200)])
             else:
@@ -172,7 +172,7 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
             await msg.finish(I18NContext("emojimix.message.unsupported", emoji=emoji))
     else:
         send_msgs = [I18NContext("emojimix.message.all_supported")]
-        if Bot.FetchTarget.name == "Discord":
+        if Bot.client_name == "Discord":
             send_msgs.extend([Plain("".join(supported_emojis[i:i + 200]))
                              for i in range(0, len(supported_emojis), 200)])
         else:

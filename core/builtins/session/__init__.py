@@ -164,7 +164,6 @@ class MessageSession:
 
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
-        Logger.debug("return_val", return_val)
 
         return FinishedSession(self, return_val["message_id"])
 
@@ -571,7 +570,7 @@ class FinishedSession:
 
 class FetchedSession:
     """
-    获取消息会话。
+    主动获取消息会话。
     """
 
     def __init__(
@@ -580,6 +579,7 @@ class FetchedSession:
         target_id: Union[str, int],
         sender_from: Optional[str],
         sender_id: Optional[Union[str, int]],
+        ctx_slot: Optional[int] = 0,
     ):
         target_id_ = f"{target_from}|{target_id}"
         sender_id_ = None
@@ -592,7 +592,8 @@ class FetchedSession:
             sender_from=sender_from,
             sender_name="",
             client_name="",
-            message_id=0,
+            message_id=None,
+            ctx_slot=ctx_slot,
         )
         self.parent = MessageSession(self.session_info)
 
@@ -622,73 +623,7 @@ class FetchedSession:
     sendDirectMessage = send_direct_message
 
 
-class FetchTarget:
-    """
-    获取消息会话对象。
-    """
-
-    name = ""
-
-    @staticmethod
-    async def fetch_target(
-        target_id: str, sender_id: Optional[Union[int, str]] = None
-    ) -> FetchedSession:
-        """
-        尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
-        """
-        raise NotImplementedError
-
-    @staticmethod
-    async def fetch_target_list(
-        target_list: List[Union[int, str]]
-    ) -> List[FetchedSession]:
-        """
-        尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
-        """
-        raise NotImplementedError
-
-    @staticmethod
-    async def post_message(
-        module_name: str,
-        message: str,
-        user_list: Optional[List[FetchedSession]] = None,
-        i18n: bool = False,
-        **kwargs: Dict[str, Any],
-    ):
-        """
-        尝试向开启此模块的对象发送一条消息。
-
-        :param module_name: 模块名称。
-        :param message: 消息文本。
-        :param user_list: 用户列表。
-        :param i18n: 是否使用i18n。若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
-        """
-        raise NotImplementedError
-
-    @staticmethod
-    async def post_global_message(
-        message: str,
-        user_list: Optional[List[FetchedSession]] = None,
-        i18n: bool = False,
-        **kwargs,
-    ):
-        """
-        尝试向客户端内的任意对象发送一条消息。
-
-        :param message: 消息文本。
-        :param user_list: 用户列表。
-        :param i18n: 是否使用i18n，若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
-        """
-        raise NotImplementedError
-
-    postMessage = post_message
-    postGlobalMessage = post_global_message
-
-
 add_export(MessageSession)
-
-
-add_export(FetchTarget)
 add_export(FetchedSession)
 add_export(FinishedSession)
 

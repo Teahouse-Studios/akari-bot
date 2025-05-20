@@ -13,7 +13,7 @@ mcv_rss = module(
 
 
 @mcv_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcv_rss", **ctx.args)
 
 
@@ -29,7 +29,7 @@ mcbv_rss = module(
 
 
 @mcbv_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcbv_rss", **ctx.args)
 
 
@@ -45,7 +45,7 @@ mcv_jira_rss = module(
 
 
 @mcv_jira_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcv_jira_rss", **ctx.args)
 
 
@@ -61,7 +61,7 @@ mcbv_jira_rss = module(
 
 
 @mcbv_jira_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcbv_rss", **ctx.args)
 
 
@@ -77,7 +77,7 @@ mcdv_rss = module(
 
 
 @mcdv_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mcdv_rss", **ctx.args)
 
 
@@ -93,5 +93,5 @@ mclgv_rss = module(
 
 
 @mclgv_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     await fetch.post_message("mclgv_rss", **ctx.args)
