@@ -1,7 +1,7 @@
-from core.builtins import Image as BImage
+from core.builtins import Image as BImage, I18NContext
 from core.component import module
 from core.utils.text import isint
-from modules.maimai.database.models import DivingProberBindInfo
+from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
 from .libraries.maimaidx_best50 import generate as generate_b50
 from .libraries.maimaidx_platelist import generate as generate_plate
@@ -243,9 +243,20 @@ async def _(msg: Bot.MessageSession, sid: str):
     if len(alias) == 0:
         await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
     else:
-        result = msg.locale.t("maimai.message.alias", title=title) + "\n"
-        result += "\n".join(alias)
-        await msg.finish([Plain(result.strip())])
+        res = [I18NContext("maimai.message.alias", title=title)]
+        res += [Plain(a) for a in alias]
+
+        if len(alias) >= 20:
+            imgs = await msgchain2image(res, msg)
+            if imgs:
+                imgchain = []
+                for img in imgs:
+                    imgchain.append(BImage(img))
+                await msg.finish(imgchain)
+            else:
+                await msg.finish(res)
+        else:
+            await msg.finish(res)
 
 
 @mai.command("grade <grade> {[I18N:maimai.help.grade]}")

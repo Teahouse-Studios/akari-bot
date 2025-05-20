@@ -7,11 +7,11 @@ from core.component import module
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.logger import Logger
-from modules.wiki.utils.wikilib import WikiLib
-from .utils import convert_data_to_text
-from ..wiki.utils.ab import convert_ab_to_detailed_format
-from ..wiki.utils.rc import convert_rc_to_detailed_format
 from .database.models import WikiLogTargetSetInfo
+from .utils import convert_data_to_text
+from modules.wiki.utils.wikilib import WikiLib
+from modules.wiki.utils.ab import convert_ab_to_detailed_format
+from modules.wiki.utils.rc import convert_rc_to_detailed_format
 
 wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")
 

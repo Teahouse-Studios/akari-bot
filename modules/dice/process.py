@@ -165,7 +165,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
             None,
             None,
             DiceValueError(
-                f"[I18N:dice.message.error]" + "\n" + errmsg
+                "[I18N:dice.message.error]" + "\n" + errmsg
             ).message,
         )
     return dice_expr_list, dice_count, int(times), None

@@ -4,7 +4,7 @@ import urllib.parse
 from core.builtins import Bot
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
-from modules.wiki.utils.time import strptime2ts
+from modules.wiki.utils.utils import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 
 

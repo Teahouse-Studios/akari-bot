@@ -5,9 +5,9 @@ from typing import Union
 from core.builtins import Bot, I18NContext
 from core.logger import Logger
 from core.utils.text import isint
-from modules.wiki.database.models import WikiTargetInfo
-from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
+from .database.models import WikiTargetInfo
+from .utils.wikilib import WikiLib
 
 
 @wiki.command("search <pagename> {[I18N:wiki.help.search]}")

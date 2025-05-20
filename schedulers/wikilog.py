@@ -5,7 +5,7 @@ from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.templist import TempList
-from modules.wiki import WikiLib
+from modules.wiki.utils.wikilib import WikiLib
 from modules.wikilog.database.models import WikiLogTargetSetInfo
 from modules.wikilog.utils import convert_data_to_text
 

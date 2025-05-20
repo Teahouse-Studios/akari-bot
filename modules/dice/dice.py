@@ -78,14 +78,14 @@ class Dice(DiceItemBase):
             )
         if self.sides < 1:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.sides.out_of_range]",
+                "[I18N:dice.message.error.value.sides.out_of_range]",
                 self.sides
             )
         if self.sides == 1:
-            raise DiceValueError(f"[I18N:dice.message.error.value.sides.d1]")
+            raise DiceValueError("[I18N:dice.message.error.value.sides.d1]")
         if self.adv > self.count:
             raise DiceValueError(
-                f"[dice.message.error.value.advantage.out_of_range]",
+                "[dice.message.error.value.advantage.out_of_range]",
                 self.adv
             )
 
@@ -96,7 +96,7 @@ class Dice(DiceItemBase):
         dice_adv = "0"  # 保留的骰子量
         positive = 0  # 是否保留骰子
         if re.search(r"[^0-9DKQ\%]", dice_code):
-            raise DiceSyntaxError(f"[I18N:dice.message.error.invalid]")
+            raise DiceSyntaxError("[I18N:dice.message.error.invalid]")
         temp = dice_code.split("D")
         if len(temp[0]):
             dice_count = temp[0]
@@ -116,17 +116,17 @@ class Dice(DiceItemBase):
         # 语法合法检定
         if not isint(dice_count):
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.count.invalid]",
+                "[I18N:dice.message.error.value.count.invalid]",
                 dice_count
             )
         if not isint(dice_sides):
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.sides.invalid]",
+                "[I18N:dice.message.error.value.sides.invalid]",
                 dice_sides
             )
         if not isint(dice_adv):
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.advantage.invalid]",
+                "[I18N:dice.message.error.value.advantage.invalid]",
                 dice_adv,
             )
         return (int(dice_count), int(dice_sides), int(dice_adv), positive)

@@ -4,8 +4,6 @@ from typing import List, Union
 
 from aiogram.types import FSInputFile
 
-from bots.aiogram.client import bot, token
-from bots.aiogram.info import *
 from core.builtins import (
     Bot,
     Plain,
@@ -24,6 +22,8 @@ from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import image_split
+from .client import bot, token
+from .info import *
 
 enable_analytics = Config("enable_analytics", False)
 

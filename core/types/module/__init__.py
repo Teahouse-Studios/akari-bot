@@ -1,17 +1,13 @@
-from typing import Union, Dict, List
+from attrs import define, field, Converter
+from copy import deepcopy
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from .component_matches import *
-
 from core.utils.list import convert2lst
-
-from attrs import define, field, Converter
-
-from copy import deepcopy
+from .component_matches import *
 
 
 def alias_converter(value, _self) -> dict:

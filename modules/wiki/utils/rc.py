@@ -4,7 +4,7 @@ import urllib.parse
 from core.builtins import Url, Bot
 from core.dirty_check import check
 from core.logger import Logger
-from modules.wiki.utils.time import strptime2ts
+from modules.wiki.utils.utils import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib, WikiInfo
 
 RC_LIMIT = 10

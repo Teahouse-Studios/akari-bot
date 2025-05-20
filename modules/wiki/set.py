@@ -4,9 +4,9 @@ from core.builtins import Bot, I18NContext, Image, Plain, Url
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable
-from modules.wiki.database.models import WikiTargetInfo
-from modules.wiki.utils.wikilib import WikiLib
-from .wiki import wiki
+from . import wiki
+from .database.models import WikiTargetInfo
+from .utils.wikilib import WikiLib
 
 enable_urlmanager = Config("enable_urlmanager", False)
 wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")

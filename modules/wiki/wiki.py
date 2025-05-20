@@ -14,9 +14,10 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from modules.wiki.database.models import WikiTargetInfo
+from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
+from .utils.utils import check_svg
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = module(
@@ -612,14 +613,6 @@ async def query_pages(
                     await session.send_message(section_msg_list, quote=False)
 
         async def image_and_voice():
-            def check_svg(file_path):
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        check = file.read(1024)
-                        return "<svg" in check
-                except Exception:
-                    return False
-
             if dl_list:
                 for f in dl_list:
                     dl = await download(f)

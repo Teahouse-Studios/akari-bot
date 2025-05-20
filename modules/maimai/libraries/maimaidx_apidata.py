@@ -49,21 +49,27 @@ async def update_cover() -> bool:
 
 async def update_alias() -> bool:
     try:
-        url = "https://download.xraybot.site/maimai/alias.json"
-        data = await get_url(url, 200, fmt="json")
+        data = await get_url("https://www.yuzuchan.moe/api/maimaidx/maimaidxalias", 200, fmt="json")
+        if data:
+            alias_data = []
+            for song in data["content"]:
+                fmt_data = {
+                    "song_id": song["SongID"],
+                    "name": song["Name"],
+                    "alias": [a for a in song["Alias"] if a != song["Name"]]
+                }
+                alias_data.append(fmt_data)
 
-        with open(mai_alias_path, "wb") as file:
-            file.write(json.dumps(data, option=json.OPT_INDENT_2))
+            with open(mai_alias_path, "wb") as file:
+                file.write(json.dumps(alias_data, option=json.OPT_INDENT_2))
+        return True
     except Exception:
         Logger.error(traceback.format_exc())
         return False
-    return True
 
 
 async def get_info(music: Music, *details) -> MessageChain:
-    info = [
-        Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}")
-    ]
+    info = MessageChain(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
     cover_path = os.path.join(mai_cover_path, f"{music.id}.png")
     if os.path.exists(cover_path):
         info.append(Image(cover_path))
@@ -72,7 +78,8 @@ async def get_info(music: Music, *details) -> MessageChain:
         if os.path.exists(cover_path):
             info.append(Image(cover_path))
     if details:
-        info.extend(details)
+        info += MessageChain(details)
+
     return info
 
 
@@ -85,18 +92,22 @@ async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
         data = json.loads(file.read())
 
     result = []
-    if sid in data:
-        result = data[sid]  # 此处的列表是歌曲别名列表
-        result = sorted(result)
+    for song in data:
+        if str(song["song_id"]) == sid:
+            result = sorted(song["alias"])  # 此处的列表是歌曲别名列表
+            break
+
     return result
 
 
 async def search_by_alias(input_: str) -> list:
     result = []
     convinput = LanguageConverter.from_language(zh_cn).convert(input_)
+
     res = (await total_list.get()).filter(title=input_)
     for s in res:
         result.append(s["id"])
+
     if isint(input_):
         music = (await total_list.get()).by_id(input_)
         if music:
@@ -108,10 +119,10 @@ async def search_by_alias(input_: str) -> list:
     with open(mai_alias_path, "r", encoding="utf-8") as file:
         data = json.loads(file.read())
 
-    for sid, aliases in data.items():
-        aliases = [alias.lower() for alias in aliases]
-        if input_ in aliases or convinput in aliases:
-            result.append(sid)  # 此处的列表是歌曲 ID 列表
+    for song in data:
+        aliases = [alias.lower() for alias in song["alias"]]
+        if input_.lower() in aliases or convinput.lower() in aliases:
+            result.append(str(song["song_id"]))  # 此处的列表是歌曲 ID 列表
 
     return list(set(result))
 

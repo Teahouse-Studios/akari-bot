@@ -16,13 +16,13 @@ from core.builtins import (
     FinishedSession as FinS,
     FetchTarget as FetchTargetT
 )
-from bots.web.info import *
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.temp import Temp
 from core.logger import Logger
 from core.types import Session
+from .info import *
 
 
 class FinishedSession(FinS):

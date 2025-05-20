@@ -6,8 +6,6 @@ import httpx
 import orjson as json
 from khl import MessageTypes, Message
 
-from bots.kook.client import bot
-from bots.kook.info import *
 from core.builtins import (
     Bot,
     Plain,
@@ -25,6 +23,9 @@ from core.builtins.message.elements import MentionElement, PlainElement, ImageEl
 from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
+from .client import bot
+from .info import *
+
 enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"
 kook_token = Config("kook_token", cfg_type=str, secret=True, table_name="bot_kook")

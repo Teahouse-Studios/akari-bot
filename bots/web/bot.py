@@ -919,7 +919,7 @@ if Config("enable", True, table_name="bot_web"):
     Info.client_name = client_name
     web_port = find_available_port(WEB_PORT)
     if web_port == 0:
-        Logger.error(f"API port is disabled, abort to run.")
+        Logger.error("API port is disabled, abort to run.")
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")

@@ -6,8 +6,6 @@ from typing import List, Union
 
 import nio
 
-from bots.matrix.client import bot, homeserver_host
-from bots.matrix.info import *
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
     FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain
@@ -16,6 +14,8 @@ from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import image_split
+from .client import bot, homeserver_host
+from .info import *
 
 enable_analytics = Config("enable_analytics", False)
 

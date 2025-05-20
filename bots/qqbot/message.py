@@ -7,7 +7,6 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.errors import ServerError
 from botpy.types.message import Reference
 
-from bots.qqbot.info import *
 from core.builtins import (
     Bot,
     Plain,
@@ -26,6 +25,7 @@ from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download, url_pattern
 from core.utils.image import msgchain2image
+from .info import *
 
 
 enable_analytics = Config("enable_analytics", False)

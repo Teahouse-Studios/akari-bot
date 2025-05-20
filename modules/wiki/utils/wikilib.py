@@ -19,7 +19,7 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.web_render import webrender
-from .bot import BotAccount
+from modules.wiki.utils.bot import BotAccount
 from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
 from .mapping import *
 

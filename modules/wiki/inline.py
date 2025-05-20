@@ -13,13 +13,15 @@ from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.text import isint
-from modules.wiki.database.models import WikiTargetInfo
-from modules.wiki.utils.screenshot_image import (
+from .wiki import query_pages
+from .database.models import WikiTargetInfo
+from .utils.screenshot_image import (
     generate_screenshot_v1,
     generate_screenshot_v2,
 )
-from modules.wiki.utils.wikilib import WikiLib
-from .wiki import query_pages, generate_screenshot_v2_blocklist
+from .utils.mapping import generate_screenshot_v2_blocklist
+from .utils.utils import check_svg
+from .utils.wikilib import WikiLib
 
 wiki_inline = module(
     "wiki_inline",
@@ -74,14 +76,6 @@ async def _(msg: Bot.MessageSession):
                    desc="[I18N:wiki.help.wiki_inline.url]")
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
-
-    def check_svg(file_path):
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                check = file.read(1024)
-                return "<svg" in check
-        except Exception:
-            return False
 
     async def bgtask():
         query_list = []

@@ -2,17 +2,17 @@ import traceback
 
 import discord
 
-from bots.discord.message import (
-    convert_embed,
-    MessageSession as MessageSessionT,
-    FinishedSession as FinS,
-)
 from core.builtins import MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
 from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.logger import Logger
+from .message import (
+    convert_embed,
+    MessageSession as MessageSessionT,
+    FinishedSession as FinS,
+)
 
 enable_analytics = Config("enable_analytics", False)
 

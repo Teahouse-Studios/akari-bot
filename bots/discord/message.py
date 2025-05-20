@@ -6,8 +6,6 @@ from typing import List, Union
 import discord
 import filetype
 
-from bots.discord.client import client
-from bots.discord.info import *
 from core.builtins import (
     Bot,
     Plain,
@@ -30,6 +28,8 @@ from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download
+from .client import client
+from .info import *
 
 enable_analytics = Config("enable_analytics", False)
 

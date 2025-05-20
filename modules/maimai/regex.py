@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
             try:
                 res.append(f"「{utage_data[sid]["comment"]}」")
             except KeyError:
-                res.append(f"「Let's party!」")
+                res.append("「Let's party!」")
 
         res.append(msg.locale.t(
             "maimai.message.song",

@@ -11,9 +11,6 @@ import aiocqhttp.exceptions
 from aiocqhttp import MessageSegment
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
 from core.builtins import (
     Bot,
     base_superuser_list,
@@ -37,6 +34,9 @@ from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
+from .client import bot
+from .info import *
+from .utils import CQCodeHandler, get_onebot_implementation
 
 enable_analytics = Config("enable_analytics", False)
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
