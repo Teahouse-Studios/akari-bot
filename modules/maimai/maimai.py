@@ -231,7 +231,9 @@ async def _(msg: Bot.MessageSession, sid: str):
             sid = sid[2:]
         else:
             await msg.finish(msg.locale.t("maimai.message.id_invalid"))
+    await query_alias(msg, sid)
 
+async def query_alias(msg, sid):
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
