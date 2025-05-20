@@ -8,7 +8,7 @@ from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info
-from .maimai import query_plate, query_song_score, query_process
+from .maimai import query_alias, query_plate, query_song_score, query_process
 
 total_list = TotalList()
 
@@ -83,19 +83,7 @@ async def _(msg: Bot.MessageSession):
 @mai_regex.regex(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I, desc="[I18N:maimai.help.maimai_regex.alias]")
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
-    music = (await total_list.get()).by_id(sid)
-    if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    title = (
-        f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""}"
-    )
-    alias = await get_alias(msg, sid)
-    if len(alias) == 0:
-        await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
-    else:
-        result = msg.locale.t("maimai.message.alias", title=title) + "\n"
-        result += "\n".join(alias)
-        await msg.finish([Plain(result.strip())])
+    await query_alias(msg, sid)
 
 
 @mai_regex.regex(r"(.+)\s?有什[么麼]分\s?(.+)?", desc="[I18N:maimai.help.maimai_regex.score]")
