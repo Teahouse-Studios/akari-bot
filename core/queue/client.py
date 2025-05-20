@@ -16,6 +16,10 @@ class JobQueueClient(JobQueueBase):
         await cls.add_job("Server", "receive_message_from_client",
                           {"session_info": converter.unstructure(session_info)})
 
+    @classmethod
+    async def send_keepalive_to_server(cls, client_name: str):
+        await cls.add_job("Server", "client_keepalive", {"client_name": client_name}, wait=False)
+
 
 @JobQueueClient.action("validate_permission")
 async def _(tsk: JobQueuesTable, args: dict):

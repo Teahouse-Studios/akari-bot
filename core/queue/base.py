@@ -8,10 +8,7 @@ from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.exports import exports
-
-_queue_tasks = {}
-queue_actions = {}
-report_targets = Config("report_targets", [])
+from core.utils.templist import TempList
 
 
 class QueueFinished(Exception):
@@ -20,15 +17,18 @@ class QueueFinished(Exception):
 
 class JobQueueBase:
     name = "Internal|" + str(uuid4())
+    _queue_tasks = {}
+    queue_actions = {}
+    report_targets = Config("report_targets", [])
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
         task_id = await JobQueuesTable.add_task(target_client, action, args)
         if wait:
             flag = asyncio.Event()
-            _queue_tasks[task_id] = {"flag": flag}
+            cls._queue_tasks[task_id] = {"flag": flag}
             await flag.wait()
-            result = _queue_tasks[task_id]["result"]
+            result = cls._queue_tasks[task_id]["result"]
             return result
         return task_id
 
@@ -50,16 +50,16 @@ class JobQueueBase:
         await tsk.return_val(value, status)
         raise QueueFinished
 
-    @staticmethod
-    async def _process_task(tsk):
+    @classmethod
+    async def _process_task(cls, tsk):
 
         try:
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
                 await tsk.return_val({}, status="timeout")
-            elif tsk.action in queue_actions:
-                await queue_actions[tsk.action](tsk, tsk.args)
+            elif tsk.action in cls.queue_actions:
+                await cls.queue_actions[tsk.action](tsk, tsk.args)
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
                 await tsk.return_val({}, status="failed")
@@ -73,7 +73,7 @@ class JobQueueBase:
             except QueueFinished:
                 pass
             try:
-                for target in report_targets:
+                for target in cls.report_targets:
                     if ft := await exports['Bot'].fetch_target(target):
                         await ft.send_direct_message([exports["I18NContext"]("error.message.report", module=tsk.action),
                                                       exports["Plain"](f.strip(), disable_joke=True)],
@@ -83,25 +83,24 @@ class JobQueueBase:
 
     @classmethod
     async def check_job_queue(cls, target_client: str = None):
-        for task_id in _queue_tasks:
+        for task_id in cls._queue_tasks:
             tsk = await JobQueuesTable.get(task_id=task_id)
             if tsk.status == "done":
-                _queue_tasks[task_id]["result"] = tsk.result
-                _queue_tasks[task_id]["flag"].set()
+                cls._queue_tasks[task_id]["result"] = tsk.result
+                cls._queue_tasks[task_id]["flag"].set()
 
-        get_internal = await JobQueuesTable.get_all(target_client=cls.name)
-        get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else exports['Bot'].client_name)
+        get_all = await JobQueuesTable.get_all([cls.name, target_client if target_client else exports['Bot'].client_name])
 
-        for tsk in get_internal + get_all:
+        for tsk in get_all:
             Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
             Logger.debug(f"Args: {tsk.args}")
             await tsk.set_status('processing')
             asyncio.create_task(cls._process_task(tsk))
 
-    @staticmethod
-    def action(action_name: str):
+    @classmethod
+    def action(cls, action_name: str):
         def decorator(func):
-            queue_actions[action_name] = func
+            cls.queue_actions[action_name] = func
             return func
 
         return decorator

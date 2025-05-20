@@ -10,6 +10,7 @@ from ..exports import exports, add_export
 
 
 class JobQueueServer(JobQueueBase):
+
     @classmethod
     async def send_message_to_client(cls, target_client: str, session_info: SessionInfo, message: MessageChain, quote: bool = True):
         message = MessageChain.assign(message)
@@ -40,6 +41,11 @@ class JobQueueServer(JobQueueBase):
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
     await parser(await exports["Bot"].MessageSession.from_session_info(converter.structure(args['session_info'], SessionInfo)))
+    await JobQueueServer.return_val(tsk, {})
+
+
+@JobQueueServer.action("client_keepalive")
+async def client_keepalive(tsk: JobQueuesTable, args: dict):
     await JobQueueServer.return_val(tsk, {})
 
 add_export(JobQueueServer)

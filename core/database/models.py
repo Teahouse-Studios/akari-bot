@@ -392,15 +392,19 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
-    async def get_first(cls, target_client: str):
+    async def get_first(cls, target_clients: Union[str, List[str]]):
+        if isinstance(target_clients, str):
+            target_clients = [target_clients]
         return await cls.filter(
-            target_client=target_client, status="pending"
+            target_client__in=target_clients, status="pending"
         ).first()
 
     @classmethod
-    async def get_all(cls, target_client: str):
+    async def get_all(cls, target_clients: Union[str, List[str]]):
+        if isinstance(target_clients, str):
+            target_clients = [target_clients]
         return await cls.filter(
-            target_client=target_client, status="pending"
+            target_client__in=target_clients, status="pending"
         ).all()
 
 
