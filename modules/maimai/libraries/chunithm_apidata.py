@@ -3,7 +3,7 @@ from typing import Optional
 
 import orjson as json
 
-from core.builtins import Bot, Image, MessageChain, Plain
+from core.builtins import Bot, MessageChain, I18NContext, Image, Plain
 from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import post_url
@@ -11,13 +11,16 @@ from .chunithm_mapping import *
 from .chunithm_music import Music
 
 
-async def get_info(music: Music, *details) -> MessageChain:
-    info = [Plain(f"{music.id} - {music.title}")]
+async def get_info(music: Music, details) -> MessageChain:
+    info = MessageChain(Plain(f"{music.id} - {music.title}"))
     cover_path = os.path.join(chu_cover_path, f"{music.id}.png")
     if os.path.exists(cover_path):
         info.append(Image(cover_path))
     if details:
-        info.extend(details)
+        if not isinstance(details, MessageChain):
+            details = MessageChain(details)
+        info += details
+
     return info
 
 
@@ -41,21 +44,21 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
     except Exception as e:
         if str(e).startswith("400"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+                await msg.finish(I18NContext("maimai.message.user_unbound.qq"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+                await msg.finish(I18NContext("maimai.message.user_not_found"))
         elif str(e).startswith("403"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+                await msg.finish(I18NContext("maimai.message.forbidden.eula"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.forbidden"))
+                await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
-                await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data
             except Exception:
                 raise e
