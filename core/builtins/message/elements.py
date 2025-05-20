@@ -22,6 +22,7 @@ from copy import deepcopy
 
 if TYPE_CHECKING:
     from core.builtins.session import SessionInfo
+    from core.builtins.message.chain import MessageChain
 
 
 class BaseElement:
@@ -443,6 +444,22 @@ class EmbedElement(BaseElement):
 
     def __str__(self):
         return str(self.to_message_chain())
+
+
+@define
+class NodeElement:
+    """
+    节点列表。
+
+    """
+    values: List["MessageChain"]
+
+    @classmethod
+    def assign(cls, values: List["MessageChain"]):
+        """
+        :param values: 节点列表。
+        """
+        return deepcopy(cls(values=values))
 
 
 __all__ = [

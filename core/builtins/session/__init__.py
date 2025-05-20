@@ -249,26 +249,12 @@ class MessageSession:
         """
         return self.session_info.admin
 
-    async def fake_forward_msg(self, nodelist: List[Dict[str, Union[str, Any]]]):
-        """
-        用于发送假转发消息（QQ）。
-
-        :param nodelist: 消息段列表，即`type`键名为`node`的字典列表，详情参考OneBot文档。
-        """
-        raise NotImplementedError
-
     async def msgchain2nodelist(self, msg_chain_list: List[MessageChain], sender_name: Optional[str] = None,
                                 ) -> list[Dict]:
         """
         用于将消息链列表转换为节点列表（QQ）。
         :param msg_chain_list: 消息链列表。
         :param sender_name: 用于指定发送者名称。
-        """
-        raise NotImplementedError
-
-    async def get_text_channel_list(self) -> List[str]:
-        """
-        用于获取子文字频道列表（QQ）。
         """
         raise NotImplementedError
 
@@ -568,63 +554,15 @@ class FinishedSession:
         return f"FinishedSession(message_id={self.message_id})"
 
 
-class FetchedSession:
+@define
+class FetchedSessionInfo(SessionInfo):
     """
-    主动获取消息会话。
+    主动获取的消息会话信息。
     """
-
-    def __init__(
-        self,
-        target_from: str,
-        target_id: Union[str, int],
-        sender_from: Optional[str],
-        sender_id: Optional[Union[str, int]],
-        ctx_slot: Optional[int] = 0,
-    ):
-        target_id_ = f"{target_from}|{target_id}"
-        sender_id_ = None
-        if sender_from and sender_id:
-            sender_id_ = f"{sender_from}|{sender_id}"
-        self.session_info = SessionInfo(
-            target_id=target_id_,
-            sender_id=sender_id_,
-            target_from=target_from,
-            sender_from=sender_from,
-            sender_name="",
-            client_name="",
-            message_id=None,
-            ctx_slot=ctx_slot,
-        )
-        self.parent = MessageSession(self.session_info)
-
-    async def send_direct_message(
-        self,
-        message_chain: Union[MessageChain, str, list, MessageElement],
-        disable_secret_check: bool = False,
-        enable_parse_message: bool = True,
-        enable_split_image: bool = True,
-    ):
-        """
-        用于向获取对象发送消息。
-
-        :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链。
-        :param disable_secret_check: 是否禁用消息检查。（默认为False）
-        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
-        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅Telegram平台使用，默认为True）
-        :return: 被发送的消息链。
-        """
-        return await self.parent.send_direct_message(
-            message_chain,
-            disable_secret_check,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
-        )
-
-    sendDirectMessage = send_direct_message
+    pass
 
 
 add_export(MessageSession)
-add_export(FetchedSession)
 add_export(FinishedSession)
 
 
