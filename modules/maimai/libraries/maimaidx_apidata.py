@@ -253,7 +253,7 @@ async def get_total_record(
                 f.write(json.dumps(data))
         if not utage:
             data = {
-                "verlist": [d for d in data["verlist"] if d.get("id", 0) < 100000]
+                "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
             }  # 过滤宴谱
         return data
     except Exception as e:
@@ -306,7 +306,7 @@ async def get_plate(
             fmt="json",
         )
         data = {
-            "verlist": [d for d in data["verlist"] if d.get("id", 0) < 100000]
+            "verlist": [d for d in data["verlist"] if int(d.get("id", 0)) < 100000]
         }  # 过滤宴谱
         if use_cache and data:
             with open(cache_dir, "wb") as f:
