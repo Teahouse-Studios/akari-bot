@@ -8,7 +8,7 @@ from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coro
 
 from attrs import define
 
-from core.builtins.utils import confirm_command, command_prefix
+from core.builtins.utils import confirm_command, command_prefix, determine_target_from, determine_sender_from
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
@@ -66,8 +66,9 @@ class SessionInfo:
 
     @classmethod
     async def assign(cls, target_id: str,
-                     target_from: str,
+
                      client_name: str,
+                     target_from: Optional[str] = None,
                      sender_id: Optional[str] = None,
                      sender_from: Optional[str] = None,
                      sender_name: Optional[str] = None,
@@ -76,6 +77,7 @@ class SessionInfo:
                      messages: Optional[MessageChain] = None,
                      admin: bool = False,
                      ctx_slot: int = 0,
+                     create: bool = True,
                      ) -> SessionInfo:
 
         """
@@ -83,8 +85,15 @@ class SessionInfo:
 
         :return: SessionInfo对象。
         """
-        target_info = await TargetInfo.get_by_target_id(target_id)
-        sender_info = await SenderInfo.get_by_sender_id(sender_id) if sender_id else None
+        if target_from is None:
+            target_from = determine_target_from(target_id)
+        if sender_from is None:
+            sender_from = determine_sender_from(sender_id)
+        target_info = await TargetInfo.get_by_target_id(target_id, create)
+        if target_info is None:
+            raise ValueError(f"TargetInfo not found for target_id: {target_id}")
+
+        sender_info = await SenderInfo.get_by_sender_id(sender_id, create) if sender_id else None
         timestamp = datetime.now().timestamp()
         session_id = str(uuid.uuid4())
         locale = Locale(target_info.locale)

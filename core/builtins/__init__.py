@@ -9,14 +9,15 @@ from core.types.message import ModuleHookContext
 from .message import *
 from .message.chain import *
 from .message.internal import *
-from .session import SessionInfo
+from .session import SessionInfo, FetchedSessionInfo
 from .temp import *
 from .utils import *
+from .utils import determine_target_from, determine_sender_from
 from ..constants import base_superuser_default
 from ..database.models import TargetInfo
 from ..logger import Logger
 
-from core.builtins.session import MessageSession, FetchedSession
+from core.builtins.session import MessageSession
 from core.builtins.session.context import ContextManager
 from core.builtins.session.lock import ExecutionLockList
 
@@ -25,19 +26,19 @@ from core.builtins.session.features import Features
 
 class Bot:
     MessageSession = MessageSession
-    client_name = ''
-    FetchedSession = FetchedSession
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
     Info = Info
     Temp = Temp
     PrivateAssets = PrivateAssets
+    ContextSlots: list[ContextManager] = []
+
+    client_name = ''
+    fetched_session_ctx_slot = 0
 
     base_superuser_list = Config(
         "base_superuser", base_superuser_default, cfg_type=(str, list)
     )
-    ContextSlots: list[ContextManager] = []
-
     if isinstance(base_superuser_list, str):
         base_superuser_list = [base_superuser_list]
 
@@ -74,41 +75,49 @@ class Bot:
     @staticmethod
     async def post_global_message(
         message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+        session_list: Optional[List[FetchedSessionInfo]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any],
     ):
-        # todo
-        # await Bot.FetchTarget.post_message(
-        #    "*", message=message, user_list=user_list, i18n=i18n, **kwargs
-        # )
+        await Bot.post_message(
+            "*", message=message, session_list=session_list, i18n=i18n, **kwargs
+        )
         ...
 
-    @staticmethod
-    async def fetch_target(
-        target_id: str, sender_id: Optional[Union[int, str]] = None
-    ) -> FetchedSession:
+    @classmethod
+    async def fetch_target(cls,
+                           target_id: str, sender_id: Optional[Union[int, str]] = None
+                           ) -> FetchedSessionInfo:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         # todo
-        raise NotImplementedError
+        session = await FetchedSessionInfo.assign(target_id=target_id,
+                                                  sender_id=sender_id,
+                                                  client_name=Bot.client_name,
+                                                  ctx_slot=cls.fetched_session_ctx_slot, create=False)
+        return session
 
-    @staticmethod
-    async def fetch_target_list(
-        target_list: List[Union[int, str]]
-    ) -> List[FetchedSession]:
+    @classmethod
+    async def fetch_target_list(cls,
+                                target_list: List[Union[int, str]]
+                                ) -> List[FetchedSessionInfo]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
-        raise NotImplementedError
+        fetched = []
+        for x in target_list:
+            if isinstance(x, str):
+                x = await cls.fetch_target(x)
+            if isinstance(x, FetchedSessionInfo):
+                fetched.append(x)
+        return fetched
 
     @staticmethod
     async def post_message(
         module_name: str,
-        message: str,
-        user_list: Optional[List[FetchedSession]] = None,
-        i18n: bool = False,
+        message: Union[str, MessageChain],
+        session_list: Optional[List[FetchedSessionInfo]] = None,
         **kwargs: Dict[str, Any],
     ):
         """
@@ -116,11 +125,14 @@ class Bot:
 
         :param module_name: 模块名称。
         :param message: 消息文本。
-        :param user_list: 用户列表。
-        :param i18n: 是否使用i18n。若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
+        :param session_list: 用户列表。
         """
-        # todo
-        raise NotImplementedError
+        if session_list is None:
+            session_list = await Bot.get_enabled_this_module(module_name)
+        if isinstance(message, str):
+            message = MessageChain.assign(message)
+        for session in session_list:
+            await exports['JobQueueServer'].send_message_to_client(session)
 
     postMessage = post_message
     postGlobalMessage = post_global_message
@@ -141,13 +153,18 @@ class Bot:
         await exports['JobQueueServer'].end_typing_to_client(session_info.client_name, session_info)
 
     @classmethod
-    def register_context_manager(cls, ctx_manager: Any) -> int:
+    def register_context_manager(cls, ctx_manager: Any, fetch_session: bool = False) -> int:
         """
         :param ctx_manager: ContextManager
+        :param fetch_session: If True, fetched session will be used
         :return: Index of the ContextManager in ContextSlots
         """
         cls.ContextSlots.append(ctx_manager)
-        return len(cls.ContextSlots) - 1
+        slot_num = len(cls.ContextSlots) - 1
+        if fetch_session:
+            cls.fetched_session_ctx_slot = slot_num
+
+        return slot_num
 
     @classmethod
     def register_bot(cls, client_name: str = None,
