@@ -24,10 +24,10 @@ async def _(msg: Bot.MessageSession, dices: str, dc: int = None):
 @dice.command("set <sides> {[I18N:dice.help.set]}", required_admin=True)
 async def _(msg: Bot.MessageSession, sides: int):
     if sides > 1:
-        await msg.target_info.edit_target_data("dice_default_sides", sides)
+        await msg.session_info.target_info.edit_target_data("dice_default_sides", sides)
         await msg.finish(I18NContext("dice.message.set.success", sides=sides))
     elif sides == 0:
-        await msg.target_info.edit_target_data("dice_default_sides", None)
+        await msg.session_info.target_info.edit_target_data("dice_default_sides", None)
         await msg.finish(I18NContext("dice.message.set.clear"))
     else:
         await msg.finish(I18NContext("dice.message.error.value.sides.invalid"))
@@ -38,8 +38,8 @@ async def _(msg: Bot.MessageSession):
     dc_rule = msg.target_data.get("dice_dc_reversed")
 
     if dc_rule:
-        await msg.target_info.edit_target_data("dice_dc_reversed", False)
+        await msg.session_info.target_info.edit_target_data("dice_dc_reversed", False)
         await msg.finish(I18NContext("dice.message.rule.disable"))
     else:
-        await msg.target_info.edit_target_data("dice_dc_reversed", True)
+        await msg.session_info.target_info.edit_target_data("dice_dc_reversed", True)
         await msg.finish(I18NContext("dice.message.rule.enable"))

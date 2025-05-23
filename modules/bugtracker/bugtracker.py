@@ -79,7 +79,7 @@ async def bugtracker_get(msg, mojira_id: str):
         )
         if get_spx:
             spx_cache.update(json.loads(get_spx))
-    if id_ in spx_cache and msg.locale.locale == "zh_cn":
+    if id_ in spx_cache and msg.session_info.locale.locale == "zh_cn":
         data["translation"] = spx_cache[id_]
     if get_json:
         errmsg = ""

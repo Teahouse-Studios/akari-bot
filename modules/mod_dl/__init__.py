@@ -108,62 +108,62 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
     cache_result = []
     if not result[0] and not result[1]:
-        await msg.finish(msg.locale.t("mod_dl.message.not_found"))
+        await msg.finish(msg.session_info.locale.t("mod_dl.message.not_found"))
     else:
         # 合并搜索结果
         reply_text, count = [], 0
 
         # 先显示 CurseForge 的结果
         if not result[1]:
-            reply_text.append(msg.locale.t("mod_dl.message.curseforge.not_found"))
+            reply_text.append(msg.session_info.locale.t("mod_dl.message.curseforge.not_found"))
         else:
-            reply_text.append(msg.locale.t("mod_dl.message.curseforge.result"))
+            reply_text.append(msg.session_info.locale.t("mod_dl.message.curseforge.result"))
             for mod in result[1]:
                 count += 1
                 reply_text.append(f"{count}. {mod[1]}")
                 cache_result.append(mod)
 
         if not result[0]:
-            reply_text.append(msg.locale.t("mod_dl.message.modrinth.not_found"))
-        reply_text.append(msg.locale.t("mod_dl.message.modrinth.result"))
+            reply_text.append(msg.session_info.locale.t("mod_dl.message.modrinth.not_found"))
+        reply_text.append(msg.session_info.locale.t("mod_dl.message.modrinth.result"))
         for mod in result[0]:
             count += 1
             reply_text.append(f"{count}. {mod[1]}")
             cache_result.append(mod)
 
-        reply = await msg.wait_reply("\n".join(reply_text) + "\n" + msg.locale.t("mod_dl.message.prompt"), delete=True)
+        reply = await msg.wait_reply("\n".join(reply_text) + "\n" + msg.session_info.locale.t("mod_dl.message.prompt"), delete=True)
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
         if isint(replied):
             replied = int(replied)
             if not replied or replied > len(cache_result):
-                await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
+                await msg.finish(msg.session_info.locale.t("mod_dl.message.invalid.out_of_range"))
             else:
                 mod_info = cache_result[replied - 1]
         else:
-            await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
+            await msg.finish(msg.session_info.locale.t("mod_dl.message.invalid.non_digital"))
 
         if mod_info[0] == "modrinth":  # modrinth mod
             if not ver:
-                reply2 = await msg.wait_reply(f"{msg.locale.t("mod_dl.message.version")}\n"
+                reply2 = await msg.wait_reply(f"{msg.session_info.locale.t("mod_dl.message.version")}\n"
                                               + "\n".join(mod_info[3])
-                                              + f"\n{msg.locale.t("mod_dl.message.version.prompt")}", delete=True)
+                                              + f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}", delete=True)
                 replied2 = reply2.as_display(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
                     if version_info:
                         await msg.finish(
-                            f"{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}")
+                            f"{" ".join(version_info["loaders"])}\n{msg.session_info.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.session_info.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}")
                 else:
                     await msg.finish()
             elif ver not in mod_info[3]:
-                await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
+                await msg.finish(msg.session_info.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
                 if version_info:
                     await msg.finish(
-                        f"{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}")
+                        f"{" ".join(version_info["loaders"])}\n{msg.session_info.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.session_info.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}")
         else:  # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
             for version_ in version_index:
@@ -171,18 +171,18 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
                     ver_list.append(version_["gameVersion"])
             if version_index:
                 if not ver:
-                    reply2 = await msg.wait_reply(f"{msg.locale.t("mod_dl.message.version")}\n" +
+                    reply2 = await msg.wait_reply(f"{msg.session_info.locale.t("mod_dl.message.version")}\n" +
                                                   "\n".join(ver_list) +
-                                                  f"\n{msg.locale.t("mod_dl.message.version.prompt")}", delete=True)
+                                                  f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}", delete=True)
                     ver = reply2.as_display(text_only=True)
                 elif ver not in ver_list:
-                    await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
+                    await msg.finish(msg.session_info.locale.t("mod_dl.message.version.not_found"))
 
                 if ver in ver_list:
                     file_info = await get_curseforge_mod_file(mod_info[2], ver)
                     if file_info:
                         await msg.finish(f"{" ".join(file_info["gameVersions"])} \
-                                         \n{msg.locale.t("mod_dl.message.download_url")}{file_info["downloadUrl"]} \
-                                         \n{msg.locale.t("mod_dl.message.filename")}{file_info["fileName"]}")
+                                         \n{msg.session_info.locale.t("mod_dl.message.download_url")}{file_info["downloadUrl"]} \
+                                         \n{msg.session_info.locale.t("mod_dl.message.filename")}{file_info["fileName"]}")
                 else:
-                    await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
+                    await msg.finish(msg.session_info.locale.t("mod_dl.message.version.not_found"))

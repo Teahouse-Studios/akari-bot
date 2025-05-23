@@ -35,6 +35,6 @@ async def count_token_petal(msg: Bot.MessageSession,
         petal = input_petal + output_petal
         petal = petal if petal > 0 else 0
         if petal != 0:
-            await msg.sender_info.modify_petal(-petal)
+            await msg.session_info.sender_info.modify_petal(-petal)
             return petal
     return 0

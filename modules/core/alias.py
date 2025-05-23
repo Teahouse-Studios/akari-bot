@@ -39,14 +39,14 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.alias.add.invalid_placeholder"))
         if alias not in aliases:
             has_prefix = False
-            for prefixes in msg.prefixes:
+            for prefixes in msg.session_info.prefixes:
                 if command.startswith(prefixes):
                     has_prefix = True
                     break
             if not has_prefix:
                 await msg.finish(I18NContext("core.message.alias.add.invalid_prefix"))
             aliases[alias] = command[1:]
-            await msg.target_info.edit_target_data("command_alias", aliases)
+            await msg.session_info.target_info.edit_target_data("command_alias", aliases)
             await msg.finish(I18NContext("core.message.alias.add.success", alias=alias, command=command))
         else:
             await msg.finish(I18NContext("core.message.alias.add.already", alias=alias))
@@ -58,12 +58,12 @@ async def _(msg: Bot.MessageSession):
         )
         if alias in aliases:
             del aliases[alias]
-            await msg.target_info.edit_target_data("command_alias", aliases)
+            await msg.session_info.target_info.edit_target_data("command_alias", aliases)
             await msg.finish(I18NContext("core.message.alias.remove.success", alias=alias))
         else:
             await msg.finish(I18NContext("core.message.alias.not_found", alias=alias))
     elif "reset" in msg.parsed_msg:
-        await msg.target_info.edit_target_data("command_alias", {})
+        await msg.session_info.target_info.edit_target_data("command_alias", {})
         await msg.finish(I18NContext("core.message.alias.reset.success"))
     elif "raise" in msg.parsed_msg:
         alias = alias.replace("_", " ")
@@ -80,7 +80,7 @@ async def _(msg: Bot.MessageSession):
         if new_index is not None:
             aliases_list.pop(index)
             aliases_list.insert(new_index, alias)
-            await msg.target_info.edit_target_data("command_alias", {k: aliases[k] for k in aliases_list})
+            await msg.session_info.target_info.edit_target_data("command_alias", {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
             await msg.finish(I18NContext("core.message.alias.raise.success", alias=alias, priority=priority))
         else:
@@ -100,7 +100,7 @@ async def _(msg: Bot.MessageSession):
         if new_index:
             aliases_list.pop(index)
             aliases_list.insert(new_index, alias)
-            await msg.target_info.edit_target_data("command_alias", {k: aliases[k] for k in aliases_list})
+            await msg.session_info.target_info.edit_target_data("command_alias", {k: aliases[k] for k in aliases_list})
             priority = len(aliases_list) - new_index
             await msg.finish(I18NContext("core.message.alias.lower.success", alias=alias, priority=priority))
         else:
@@ -113,13 +113,13 @@ async def _(msg: Bot.MessageSession):
         elif not msg.parsed_msg.get("--legacy", False):
             table = ImageTable(
                 [
-                    [str(aliases_count - i), k, msg.prefixes[0] + aliases[k]]
+                    [str(aliases_count - i), k, msg.session_info.prefixes[0] + aliases[k]]
                     for i, k in enumerate(aliases)
                 ],
                 [
-                    msg.locale.t("core.message.alias.list.table.header.priority"),
-                    msg.locale.t("core.message.alias.list.table.header.alias"),
-                    msg.locale.t("core.message.alias.list.table.header.command"),
+                    msg.session_info.locale.t("core.message.alias.list.table.header.priority"),
+                    msg.session_info.locale.t("core.message.alias.list.table.header.alias"),
+                    msg.session_info.locale.t("core.message.alias.list.table.header.command"),
                 ],
             )
             imgs = await image_table_render(table)
@@ -134,7 +134,7 @@ async def _(msg: Bot.MessageSession):
 
         if legacy:
             await msg.finish([I18NContext("core.message.alias.list"),
-                              Plain("\n".join([f"{aliases_count - i} - {k} -> {msg.prefixes[0]}{aliases[k]}" for i, k in enumerate(aliases)]))])
+                              Plain("\n".join([f"{aliases_count - i} - {k} -> {msg.session_info.prefixes[0]}{aliases[k]}" for i, k in enumerate(aliases)]))])
 
 
 def check_valid_placeholder(alias):

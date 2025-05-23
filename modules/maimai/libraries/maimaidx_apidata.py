@@ -79,7 +79,7 @@ async def get_info(music: Music, *details) -> MessageChain:
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not os.path.exists(mai_alias_path):
         await msg.finish(
-            msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0])
+            msg.session_info.locale.t("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0])
         )
     with open(mai_alias_path, "r", encoding="utf-8") as file:
         data = json.loads(file.read())
@@ -122,7 +122,7 @@ async def get_record(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_record.json"
+        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
@@ -140,21 +140,21 @@ async def get_record(
     except Exception as e:
         if str(e).startswith("400"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_unbound.qq"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith("403"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden.eula"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.forbidden"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
-                await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                await msg.send_message(msg.session_info.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:
                 raise e
@@ -172,7 +172,7 @@ async def get_song_record(
         mai_cache_path = os.path.join(cache_path, "maimai-record")
         os.makedirs(mai_cache_path, exist_ok=True)
         cache_dir = os.path.join(
-            mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_song_record.json"
+            mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_song_record.json"
         )
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
@@ -209,7 +209,7 @@ async def get_song_record(
                 try:
                     with open(cache_dir, "r", encoding="utf-8") as f:
                         data = json.loads(f.read())
-                    await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                    await msg.send_message(msg.session_info.locale.t("maimai.message.use_cache"))
                     return data
                 except Exception:
                     raise e
@@ -225,7 +225,7 @@ async def get_total_record(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_total_record.json"
+        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload["version"] = versions
@@ -248,21 +248,21 @@ async def get_total_record(
     except Exception as e:
         if str(e).startswith("400"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_unbound.qq"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith("403"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden.eula"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.forbidden"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
-                await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                await msg.send_message(msg.session_info.locale.t("maimai.message.use_cache"))
                 if not utage:
                     data = {
                         "verlist": [
@@ -283,7 +283,7 @@ async def get_plate(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
+        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:
@@ -304,21 +304,21 @@ async def get_plate(
     except Exception as e:
         if str(e).startswith("400"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_unbound.qq"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith("403"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden.eula"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.forbidden"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
-                await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                await msg.send_message(msg.session_info.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:
                 raise e

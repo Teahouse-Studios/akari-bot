@@ -22,7 +22,7 @@ phi = module(
 
 @phi.command("bind <sessiontoken> {[I18N:phigros.help.bind]}")
 async def _(msg: Bot.MessageSession, sessiontoken: str):
-    if msg.target.target_from in [
+    if msg.session_info.target_from in [
         "Discord|Channel",
         "KOOK|Group",
         "Matrix|Room",
@@ -32,12 +32,12 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         "Telegram|Supergroup",
     ]:
         await msg.send_message(
-            msg.locale.t("phigros.message.bind.warning"), quote=False
+            msg.session_info.locale.t("phigros.message.bind.warning"), quote=False
         )
         deleted = await msg.delete()
         if not deleted:
             await msg.send_message(
-                msg.locale.t("phigros.message.bind.delete_failed"), quote=False
+                msg.session_info.locale.t("phigros.message.bind.delete_failed"), quote=False
             )
     headers = p_headers.copy()
     headers["X-LC-Session"] = sessiontoken
@@ -48,24 +48,24 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
     )
     if get_user_info:
         username = get_user_info.get("nickname", "Guest")
-        await PhigrosBindInfo.set_bind_info(sender_id=msg.target.sender_id, session_token=sessiontoken, username=username)
-        await msg.send_message(msg.locale.t("phigros.message.bind.success", username=username), quote=False)
+        await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken, username=username)
+        await msg.send_message(msg.session_info.locale.t("phigros.message.bind.success", username=username), quote=False)
     else:
-        await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
+        await msg.send_message(msg.session_info.locale.t("phigros.message.bind.failed"))
 
 
 @phi.command("unbind {[I18N:phigros.help.unbind]}")
 async def _(msg: Bot.MessageSession):
-    await PhigrosBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
-    await msg.finish(msg.locale.t("phigros.message.unbind.success"))
+    await PhigrosBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await msg.finish(msg.session_info.locale.t("phigros.message.unbind.success"))
 
 
 @phi.command("b19 {[I18N:phigros.help.b19]}")
 async def _(msg: Bot.MessageSession):
-    bind_info = await PhigrosBindInfo.get_or_none(sender_id=msg.target.sender_id)
+    bind_info = await PhigrosBindInfo.get_or_none(sender_id=msg.session_info.sender_id)
     if not bind_info:
         await msg.finish(
-            msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0])
+            msg.session_info.locale.t("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0])
         )
     else:
         try:
@@ -103,12 +103,12 @@ async def _(msg: Bot.MessageSession):
             )
         except Exception as e:
             Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
+            await msg.finish(msg.session_info.locale.t("phigros.message.b19.get_failed", err=str(e)))
 
 
 @phi.command("update", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_assets():
-        await msg.finish(msg.locale.t("message.success"))
+        await msg.finish(msg.session_info.locale.t("message.success"))
     else:
-        await msg.finish(msg.locale.t("message.failed"))
+        await msg.finish(msg.session_info.locale.t("message.failed"))

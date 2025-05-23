@@ -24,10 +24,10 @@ async def _(msg: Bot.MessageSession, query: str):
             plain_texts.append(f"{x["enumName"]}：{x["key"]} -> {v}")
         if resp["data"]["count"] > SEARCH_LIMIT:
             plain_texts.append(
-                msg.locale.t("message.collapse", amount=SEARCH_LIMIT)
-                + msg.locale.t("idlist.message.collapse")
+                msg.session_info.locale.t("message.collapse", amount=SEARCH_LIMIT)
+                + msg.session_info.locale.t("idlist.message.collapse")
             )
             plain_texts.append(f"https://ca.projectxero.top/idlist/{resp["data"]["hash"]}")
         await msg.finish(plain_texts)
     else:
-        await msg.finish(msg.locale.t("idlist.message.none"))
+        await msg.finish(msg.session_info.locale.t("idlist.message.none"))

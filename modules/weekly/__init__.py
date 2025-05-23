@@ -84,15 +84,15 @@ wky = module("weekly", developers=["Dianliang233"], support_languages=["zh_cn", 
 
 @wky.command("{[I18N:weekly.help]}")
 async def _(msg: Bot.MessageSession):
-    weekly = await get_weekly(msg.target.client_name in ["QQ", "TEST"],
-                              zh_tw=msg.locale.locale == "zh_tw")
+    weekly = await get_weekly(msg.session_info.client_name in ["QQ", "TEST"],
+                              zh_tw=msg.session_info.locale.locale == "zh_tw")
     await msg.finish(weekly)
 
 
 @wky.command("image {[I18N:weekly.help.image]}")
 async def _(msg: Bot.MessageSession):
-    await msg.finish(await get_weekly_img(msg.target.client_name in ["QQ", "TEST"],
-                                          zh_tw=msg.locale.locale == "zh_tw"))
+    await msg.finish(await get_weekly_img(msg.session_info.client_name in ["QQ", "TEST"],
+                                          zh_tw=msg.session_info.locale.locale == "zh_tw"))
 
 
 @wky.command("teahouse {[I18N:weekly.help.teahouse]}")

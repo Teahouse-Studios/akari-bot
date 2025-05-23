@@ -59,12 +59,13 @@ async def _(msg: Bot.MessageSession, apilink: str):
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
             await msg.finish(
-                msg.locale.t("wiki.message.invalid.blocked", name=status.value.name)
+                msg.session_info.locale.t("wiki.message.invalid.blocked", name=status.value.name)
             )
     if not in_allowlist:
-        prompt = msg.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
+        prompt = msg.session_info.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
         if wiki_whitelist_url:
-            prompt += "\n" + msg.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+            prompt += "\n" + \
+                msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
         await msg.finish(prompt)
         return
     if status.available:
@@ -75,11 +76,11 @@ async def _(msg: Bot.MessageSession, apilink: str):
             reset="reset" in msg.parsed_msg,
         )
         await msg.finish(
-            msg.locale.t("wikilog.message.config.wiki.success", wiki=status.value.name)
+            msg.session_info.locale.t("wikilog.message.config.wiki.success", wiki=status.value.name)
         )
     else:
         await msg.finish(
-            msg.locale.t("wikilog.message.config.wiki.failed", message=status.message)
+            msg.session_info.locale.t("wikilog.message.config.wiki.failed", message=status.message)
         )
 
 
@@ -98,7 +99,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
                 status.value.api, logtype, enable="enable" in msg.parsed_msg
             ):
                 await msg.finish(
-                    msg.locale.t(
+                    msg.session_info.locale.t(
                         "wikilog.message.enable.log.success",
                         wiki=status.value.name,
                         logtype=logtype,
@@ -106,7 +107,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
                 )
             else:
                 await msg.finish(
-                    msg.locale.t(
+                    msg.session_info.locale.t(
                         "wikilog.message.enable.log.failed",
                         apilink=apilink,
                         logtype=logtype,
@@ -114,7 +115,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
                 )
         else:
             await msg.finish(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "wikilog.message.enable.log.failed",
                     apilink=apilink,
                     logtype=logtype,
@@ -122,7 +123,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
             )
     else:
         await msg.finish(
-            msg.locale.t("wikilog.message.enable.log.invalid_logtype", logtype=logtype)
+            msg.session_info.locale.t("wikilog.message.enable.log.invalid_logtype", logtype=logtype)
         )
 
 
@@ -131,7 +132,7 @@ async def _(msg: Bot.MessageSession, filters: str, example: str):
     f = re.compile(filters)
     if m := f.search(example):
         await msg.finish(
-            msg.locale.t(
+            msg.session_info.locale.t(
                 "wikilog.message.filter.test.success",
                 start=m.start(),
                 end=m.end(),
@@ -139,7 +140,7 @@ async def _(msg: Bot.MessageSession, filters: str, example: str):
             )
         )
     else:
-        await msg.finish(msg.locale.t("wikilog.message.filter.test.failed"))
+        await msg.finish(msg.session_info.locale.t("wikilog.message.filter.test.failed"))
 
 
 @wikilog.command("filter example <example> {[I18N:wikilog.help.filter.example]}")
@@ -150,7 +151,7 @@ async def _(msg: Bot.MessageSession):
         load = json.loads(example)
         await msg.send_message(convert_data_to_text(load))
     except Exception:
-        await msg.send_message(msg.locale.t("wikilog.message.filter.example.invalid"))
+        await msg.send_message(msg.session_info.locale.t("wikilog.message.filter.example.invalid"))
 
 
 @wikilog.command("api get <apilink> <logtype> {[I18N:wikilog.help.api.get]}")
@@ -186,10 +187,10 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
                     )
                 )
         else:
-            await msg.finish(msg.locale.t("wikilog.message.filter.set.failed"))
+            await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.failed"))
     else:
         await msg.finish(
-            msg.locale.t(
+            msg.session_info.locale.t(
                 "wikilog.message.enable.log.failed", apilink=apilink, logtype=logtype
             )
         )
@@ -213,7 +214,7 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
                 if status.value.api in infos:
                     await records.set_filters(status.value.api, logtype, filters)
                     await msg.finish(
-                        msg.locale.t(
+                        msg.session_info.locale.t(
                             "wikilog.message.filter.set.success",
                             wiki=status.value.name,
                             logtype=logtype,
@@ -221,10 +222,10 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
                         )
                     )
                 else:
-                    await msg.finish(msg.locale.t("wikilog.message.filter.set.failed"))
+                    await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.failed"))
             else:
                 await msg.finish(
-                    msg.locale.t(
+                    msg.session_info.locale.t(
                         "wikilog.message.enable.log.failed",
                         apilink=apilink,
                         logtype=logtype,
@@ -232,12 +233,12 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
                 )
         else:
             await msg.finish(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "wikilog.message.enable.log.invalid_logtype", logtype=logtype
                 )
             )
     else:
-        await msg.finish(msg.locale.t("wikilog.message.filter.set.no_filter"))
+        await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.no_filter"))
 
 
 @wikilog.command(
@@ -267,17 +268,17 @@ async def _(msg: Bot.MessageSession, apilink: str):
                 r = await records.set_use_bot(status.value.api, "enable" in msg.parsed_msg)
             if r:
                 await msg.finish(
-                    msg.locale.t(
+                    msg.session_info.locale.t(
                         "wikilog.message.config.wiki.success", wiki=status.value.name
                     )
                 )
             else:
-                await msg.finish(msg.locale.t("wikilog.message.filter.set.failed"))
+                await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.failed"))
         else:
-            await msg.finish(msg.locale.t("wikilog.message.filter.set.failed"))
+            await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.failed"))
     else:
         await msg.finish(
-            msg.locale.t("wikilog.message.config.wiki.failed", message=status.message)
+            msg.session_info.locale.t("wikilog.message.config.wiki.failed", message=status.message)
         )
 
 
@@ -298,26 +299,26 @@ async def _(msg: Bot.MessageSession, apilink: str):
                 for r in rcshows_:
                     if r not in rcshows:
                         return await msg.finish(
-                            msg.locale.t("wikilog.message.rcshow.invalid", rcshow=r)
+                            msg.session_info.locale.t("wikilog.message.rcshow.invalid", rcshow=r)
                         )
                 await records.set_rcshow(status.value.api, rcshows_)
                 await msg.finish(
-                    msg.locale.t(
+                    msg.session_info.locale.t(
                         "wikilog.message.rcshow_set.success",
                         wiki=status.value.name,
                         rcshows="\n".join(rcshows_),
                     )
                 )
             else:
-                await msg.finish(msg.locale.t("wikilog.message.filter.set.failed"))
+                await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.failed"))
         else:
             await msg.finish(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "wikilog.message.config.wiki.failed", message=status.message
                 )
             )
     else:
-        await msg.finish(msg.locale.t("wikilog.message.filter.set.no_filter"))
+        await msg.finish(msg.session_info.locale.t("wikilog.message.filter.set.no_filter"))
 
 
 @wikilog.command("list {[I18N:wikilog.help.list]}")
@@ -328,50 +329,50 @@ async def _(msg: Bot.MessageSession):
     for apilink in infos:
         text += f"{apilink}: \n"
         text += (
-            msg.locale.t("wikilog.message.list.abuselog")
+            msg.session_info.locale.t("wikilog.message.list.abuselog")
             + (
-                msg.locale.t("wikilog.message.enabled")
+                msg.session_info.locale.t("wikilog.message.enabled")
                 if infos[apilink]["AbuseLog"]["enable"]
-                else msg.locale.t("wikilog.message.disabled")
+                else msg.session_info.locale.t("wikilog.message.disabled")
             )
             + "\n"
         )
         text += (
-            msg.locale.t("wikilog.message.filters")
+            msg.session_info.locale.t("wikilog.message.filters")
             + "\n\""
             + "\" \"".join(infos[apilink]["AbuseLog"]["filters"])
             + "\""
             + "\n"
         )
         text += (
-            msg.locale.t("wikilog.message.recentchanges")
+            msg.session_info.locale.t("wikilog.message.recentchanges")
             + (
-                msg.locale.t("wikilog.message.enabled")
+                msg.session_info.locale.t("wikilog.message.enabled")
                 if infos[apilink]["RecentChanges"]["enable"]
-                else msg.locale.t("wikilog.message.disabled")
+                else msg.session_info.locale.t("wikilog.message.disabled")
             )
             + "\n"
         )
         text += (
-            msg.locale.t("wikilog.message.filters")
+            msg.session_info.locale.t("wikilog.message.filters")
             + "\n\""
             + "\" \"".join(infos[apilink]["RecentChanges"]["filters"])
             + "\""
             + "\n"
         )
         text += (
-            msg.locale.t("wikilog.message.rcshow")
+            msg.session_info.locale.t("wikilog.message.rcshow")
             + "\n\""
             + "\" \"".join(infos[apilink]["RecentChanges"]["rcshow"])
             + "\""
             + "\n"
         )
         text += (
-            msg.locale.t("wikilog.message.usebot")
+            msg.session_info.locale.t("wikilog.message.usebot")
             + (
-                msg.locale.t("wikilog.message.enabled")
+                msg.session_info.locale.t("wikilog.message.enabled")
                 if infos[apilink]["use_bot"]
-                else msg.locale.t("wikilog.message.disabled")
+                else msg.session_info.locale.t("wikilog.message.disabled")
             )
             + "\n"
         )

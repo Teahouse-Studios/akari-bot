@@ -28,7 +28,8 @@ async def query_java_server(
                 "".join(extra.get("text", "") for extra in description.get("extra", []))
             )
 
-        onlinesplayer = f"{msg.locale.t("server.message.player")}{status.players.online} / {status.players.max}"
+        onlinesplayer = f"{msg.session_info.locale.t("server.message.player")}{
+            status.players.online} / {status.players.max}"
         query_msg.append(onlinesplayer)
 
         if showplayer:
@@ -38,14 +39,14 @@ async def query_java_server(
                 else []
             )
             players_text = (
-                "\n".join(playerlist) if playerlist else msg.locale.t("message.none")
+                "\n".join(playerlist) if playerlist else msg.session_info.locale.t("message.none")
             )
             query_msg.append(
-                msg.locale.t("server.message.player.current") + "\n" + players_text
+                msg.session_info.locale.t("server.message.player.current") + "\n" + players_text
             )
 
         if hasattr(status, "version") and hasattr(status.version, "name"):
-            query_msg.append(msg.locale.t("server.message.version") + status.version.name)
+            query_msg.append(msg.session_info.locale.t("server.message.version") + status.version.name)
 
     except Exception:
         if Config("debug", False):
@@ -67,14 +68,15 @@ async def query_bedrock_server(msg, address, raw=False):
         query_msg.append("[BE]")
         query_msg.append(status.motd.raw)
 
-        player_count = f"{msg.locale.t("server.message.player")}{status.players_online} / {status.players_max}"
+        player_count = f"{msg.session_info.locale.t("server.message.player")}{
+            status.players_online} / {status.players_max}"
         query_msg.append(player_count)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):
-            query_msg.append(msg.locale.t("server.message.version") + status.version.name)
+            query_msg.append(msg.session_info.locale.t("server.message.version") + status.version.name)
 
         if hasattr(status, "gamemode"):
-            game_mode = msg.locale.t("server.message.gamemode") + status.gamemode
+            game_mode = msg.session_info.locale.t("server.message.gamemode") + status.gamemode
             query_msg.append(game_mode)
 
     except Exception:

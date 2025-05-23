@@ -32,7 +32,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("wordle.message.occupied"))
 
     qc = CoolDown("wordle", msg, 180)
-    if not msg.target.client_name == "TEST" and not msg.check_super_user():
+    if not msg.session_info.client_name == "TEST" and not msg.check_super_user():
         c = qc.check()
         if c != 0:
             await msg.finish(I18NContext("message.cooldown", time=int(c)))
@@ -115,8 +115,8 @@ async def _(msg: Bot.MessageSession):
     dark_theme = msg.target_data.get("wordle_dark_theme")
 
     if dark_theme:
-        await msg.target_info.edit_target_data("wordle_dark_theme", False)
+        await msg.session_info.target_info.edit_target_data("wordle_dark_theme", False)
         await msg.finish(I18NContext("wordle.message.theme.disable"))
     else:
-        await msg.target_info.edit_target_data("wordle_dark_theme", True)
+        await msg.session_info.target_info.edit_target_data("wordle_dark_theme", True)
         await msg.finish(I18NContext("wordle.message.theme.enable"))

@@ -53,7 +53,7 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
@@ -66,7 +66,7 @@ class MessageSession(MessageSessionT):
                     send_ = await self.session.message.respond(x.text)
                 else:
                     send_ = await self.session.message.send(x.text)
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 if first_send:
                     send_ = await self.session.message.respond(
@@ -77,7 +77,7 @@ class MessageSession(MessageSessionT):
                         file=discord.File(await x.get())
                     )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Image: {str(x.__dict__)}"
                 )
             elif isinstance(x, EmbedElement):
                 embeds, _ = await convert_embed(x, self)
@@ -86,7 +86,7 @@ class MessageSession(MessageSessionT):
                 else:
                     send_ = await self.session.message.send(embed=embeds)
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Embed: {str(x.__dict__)}"
                 )
             else:
                 send_ = None

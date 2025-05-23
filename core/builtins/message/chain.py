@@ -265,7 +265,7 @@ class MessageChain:
         """
         复制一个消息链。
         """
-        return MessageChain(self.values.copy())
+        return MessageChain.assign(self.values.copy())
 
     def __str__(self):
         return f"[{", ".join([x.__repr__() for x in self.values])}]"
@@ -275,18 +275,18 @@ class MessageChain:
 
     def __add__(self, other):
         if isinstance(other, MessageChain):
-            return MessageChain(self.values + other.values)
+            return MessageChain.assign(self.values + other.values)
         if isinstance(other, list):
-            return MessageChain(self.values + other)
+            return MessageChain.assign(self.values + other)
         raise TypeError(
             f"Unsupported operand type(s) for +: \"MessageChain\" and \"{type(other).__name__}\""
         )
 
     def __radd__(self, other):
         if isinstance(other, MessageChain):
-            return MessageChain(other.values + self.values)
+            return MessageChain.assign(other.values + self.values)
         if isinstance(other, list):
-            return MessageChain(other + self.values)
+            return MessageChain.assign(other + self.values)
         raise TypeError(
             f"Unsupported operand type(s) for +: \"{type(other).__name__}\" and \"MessageChain\""
         )

@@ -41,17 +41,17 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         self.sent.append(message_chain)
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
                 print(x.text)
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 image_path = await x.get()
                 img = PILImage.open(image_path)
                 img.show()
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {image_path}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: Image: {image_path}")
         return FinishedSession(self, [0], ["Should be a callable here... hmm..."])
 
     async def wait_confirm(
@@ -66,7 +66,7 @@ class MessageSession(MessageSessionT):
         if Config("no_confirm", False):
             return True
         if message_chain:
-            message_chain = MessageChain(message_chain)
+            message_chain = MessageChain.assign(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain)
@@ -95,7 +95,7 @@ class MessageSession(MessageSessionT):
     ):
         send = None
         if message_chain:
-            message_chain = MessageChain(message_chain)
+            message_chain = MessageChain.assign(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain)
@@ -122,7 +122,7 @@ class MessageSession(MessageSessionT):
         all_=False,
         append_instruction=True,
     ):
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain)
@@ -157,7 +157,7 @@ class MessageSession(MessageSessionT):
     ):
         send = None
         if message_chain:
-            message_chain = MessageChain(message_chain)
+            message_chain = MessageChain.assign(message_chain)
             send = await self.send_message(message_chain)
         try:
             if timeout:
@@ -177,7 +177,7 @@ class MessageSession(MessageSessionT):
         return self.session.message
 
     async def to_message_chain(self):
-        return MessageChain(Plain(self.session.message))
+        return MessageChain.assign(Plain(self.session.message))
 
     async def delete(self):
         print(

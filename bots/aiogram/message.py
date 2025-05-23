@@ -60,7 +60,7 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
@@ -77,7 +77,7 @@ class MessageSession(MessageSessionT):
                         else None
                     ),
                 )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
                 send.append(send_)
                 count += 1
             elif isinstance(x, ImageElement):
@@ -94,7 +94,7 @@ class MessageSession(MessageSessionT):
                             ),
                         )
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(xs.__dict__)}"
                         )
                         send.append(send_)
                         count += 1
@@ -109,7 +109,7 @@ class MessageSession(MessageSessionT):
                         ),
                     )
                     Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
+                        f"[Bot] -> [{self.session_info.target_id}]: Image: {str(x.__dict__)}"
                     )
                     send.append(send_)
                     count += 1
@@ -124,12 +124,12 @@ class MessageSession(MessageSessionT):
                     ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Voice: {str(x.__dict__)}"
                 )
                 send.append(send_)
                 count += 1
             elif isinstance(x, MentionElement):
-                if x.client == client_name and self.target.target_from in [
+                if x.client == client_name and self.session_info.target_from in [
                         f"{client_name}|Group", f"{client_name}|Supergroup"]:
                     send_ = await bot.send_message(
                         self.session.target,
@@ -140,7 +140,7 @@ class MessageSession(MessageSessionT):
                             else None
                         ), parse_mode="HTML"
                     )
-                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{x.id}")
+                    Logger.info(f"[Bot] -> [{self.session_info.target_id}]: Mention: {sender_prefix}|{x.id}")
                     send.append(send_)
                     count += 1
 
@@ -193,7 +193,7 @@ class MessageSession(MessageSessionT):
             lst.append(Plain(self.session.message.caption))
         if self.session.message.text:
             lst.append(Plain(self.session.message.text))
-        return MessageChain(lst)
+        return MessageChain.assign(lst)
 
     async def delete(self):
         try:
@@ -263,14 +263,14 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                         else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
+                            msgchain = MessageChain.assign([Plain(message)])
+                    msgchain = MessageChain.assign(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        await AnalyticsData.create(target_id=x.target.target_id,
-                                                   sender_id=x.target.sender_id,
+                        await AnalyticsData.create(target_id=x.session_info.target_id,
+                                                   sender_id=x.session_info.sender_id,
                                                    command="",
                                                    module_name=module_name,
                                                    module_type="schedule")
@@ -289,14 +289,14 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                             else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
+                                msgchain = MessageChain.assign([Plain(message)])
+                        msgchain = MessageChain.assign(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            await AnalyticsData.create(target_id=fetch.target.target_id,
-                                                       sender_id=fetch.target.sender_id,
+                            await AnalyticsData.create(target_id=fetch.session_info.target_id,
+                                                       sender_id=fetch.session_info.sender_id,
                                                        command="",
                                                        module_name=module_name,
                                                        module_type="schedule")

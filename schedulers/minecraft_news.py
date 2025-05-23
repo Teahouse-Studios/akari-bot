@@ -67,7 +67,7 @@ async def start_check_news():
                 if title not in alist:
                     await JobQueue.trigger_hook_all(
                         "minecraft_news",
-                        message=MessageChain(
+                        message=MessageChain.assign(
                             [
                                 I18NContext(
                                     "minecraft_news.message.minecraft_news",
@@ -115,7 +115,7 @@ async def feedback_news():
                     Logger.info(f"Huh, we find {name}.")
                     await JobQueue.trigger_hook_all(
                         "feedback_news",
-                        message=MessageChain(
+                        message=MessageChain.assign(
                             [
                                 I18NContext(
                                     "minecraft_news.message.feedback_news",

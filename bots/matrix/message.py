@@ -52,7 +52,7 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message((I18NContext("error.message.chain.unsafe", locale=self.locale.locale)))
         self.sent.append(message_chain)
@@ -63,7 +63,7 @@ class MessageSession(MessageSessionT):
                 reply_to = None
                 reply_to_user = None
                 if quote and len(sentMessages) == 0:
-                    reply_to = self.target.message_id
+                    reply_to = self.session_info.message_id
                     reply_to_user = self.session.sender
 
                 if reply_to:
@@ -114,7 +114,7 @@ class MessageSession(MessageSessionT):
                                 "rel_type": "m.thread",
                                 "event_id": thread_root,
                                 "is_falling_back": True,
-                                "m.in_reply_to": {"event_id": self.target.message_id},
+                                "m.in_reply_to": {"event_id": self.session_info.message_id},
                             }
 
                 resp = await bot.room_send(
@@ -132,7 +132,7 @@ class MessageSession(MessageSessionT):
 
             if isinstance(x, PlainElement):
                 content = {"msgtype": "m.notice", "body": x.text}
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
                 await sendMsg(content)
             elif isinstance(x, ImageElement):
                 split = [x]
@@ -184,7 +184,7 @@ class MessageSession(MessageSessionT):
                                 },
                             }
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(xs.__dict__)}"
                         )
                         await sendMsg(content)
             elif isinstance(x, VoiceElement):
@@ -232,13 +232,13 @@ class MessageSession(MessageSessionT):
                     }
 
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Voice: {str(x.__dict__)}"
                 )
                 await sendMsg(content)
             elif isinstance(x, MentionElement):
                 if x.client == client_name:
                     content = {"msgtype": "m.notice", "body": x.id}
-                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{x.id}")
+                    Logger.info(f"[Bot] -> [{self.session_info.target_id}]: Mention: {sender_prefix}|{x.id}")
                     await sendMsg(content)
         if callback:
             for x in sentMessages:
@@ -248,7 +248,7 @@ class MessageSession(MessageSessionT):
         )
 
     async def check_native_permission(self):
-        if self.session.target.startswith("@") or self.session.sender.startswith("!"):
+        if self.session.session_info.startswith("@") or self.session.sender.startswith("!"):
             return True
         # https://spec.matrix.org/v1.9/client-server-api/#permissions
         power_levels = (
@@ -274,19 +274,19 @@ class MessageSession(MessageSessionT):
 
     async def to_message_chain(self):
         if not self.session.message:
-            return MessageChain([])
+            return MessageChain.assign([])
         content = self.session.message["content"]
         msgtype = content["msgtype"]
         if msgtype == "m.emote":
             msgtype = "m.text"
         if msgtype == "m.text":  # compatible with py38
             text = str(content["body"])
-            if self.target.reply_id:
+            if self.session_info.reply_id:
                 # redact the fallback line for rich reply
                 # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                 while text.startswith("> "):
                     text = "".join(text.splitlines(keepends=True)[1:])
-            return MessageChain(Plain(text.strip()))
+            return MessageChain.assign(Plain(text.strip()))
         if msgtype == "m.image":
             url = None
             if "url" in content:
@@ -294,15 +294,15 @@ class MessageSession(MessageSessionT):
             elif "file" in content:
                 # todo: decrypt image
                 # url = str(content["file"]["url"])
-                return MessageChain([])
+                return MessageChain.assign([])
             else:
                 Logger.error(f"Got invalid m.image message from {self.session.target}")
-            return MessageChain(Image(await bot.mxc_to_http(url)))
+            return MessageChain.assign(Image(await bot.mxc_to_http(url)))
         if msgtype == "m.audio":
             url = str(content["url"])
-            return MessageChain(Voice(await bot.mxc_to_http(url)))
+            return MessageChain.assign(Voice(await bot.mxc_to_http(url)))
         Logger.error(f"Got unknown msgtype: {msgtype}")
-        return MessageChain([])
+        return MessageChain.assign([])
 
     async def delete(self):
         try:
@@ -410,14 +410,14 @@ class FetchTarget(FetchedTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                         else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
+                            msgchain = MessageChain.assign([Plain(message)])
+                    msgchain = MessageChain.assign(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        await AnalyticsData.create(target_id=x.target.target_id,
-                                                   sender_id=x.target.sender_id,
+                        await AnalyticsData.create(target_id=x.session_info.target_id,
+                                                   sender_id=x.session_info.sender_id,
                                                    command="",
                                                    module_name=module_name,
                                                    module_type="schedule")
@@ -434,14 +434,14 @@ class FetchTarget(FetchedTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                             else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
+                                msgchain = MessageChain.assign([Plain(message)])
+                        msgchain = MessageChain.assign(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            await AnalyticsData.create(target_id=fetch.target.target_id,
-                                                       sender_id=fetch.target.sender_id,
+                            await AnalyticsData.create(target_id=fetch.session_info.target_id,
+                                                       sender_id=fetch.session_info.sender_id,
                                                        command="",
                                                        module_name=module_name,
                                                        module_type="schedule")

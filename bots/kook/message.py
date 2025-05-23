@@ -88,7 +88,7 @@ class MessageSession(MessageSessionT):
         callback=None,
     ) -> FinishedSession:
         self.session.message: Message
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
@@ -103,7 +103,7 @@ class MessageSession(MessageSessionT):
                     ),
                 )
 
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
                 send.append(send_)
                 count += 1
             elif isinstance(x, ImageElement):
@@ -116,7 +116,7 @@ class MessageSession(MessageSessionT):
                     ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Image: {str(x.__dict__)}"
                 )
                 send.append(send_)
                 count += 1
@@ -130,12 +130,12 @@ class MessageSession(MessageSessionT):
                     ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Voice: {str(x.__dict__)}"
                 )
                 send.append(send_)
                 count += 1
             elif isinstance(x, MentionElement):
-                if x.client == client_name and self.target.target_from == target_group_prefix:
+                if x.client == client_name and self.session_info.target_from == target_group_prefix:
                     send_ = await self.session.message.reply(
                         f"(met){x.id}(met)",
                         quote=(
@@ -143,7 +143,7 @@ class MessageSession(MessageSessionT):
                         ),
                     )
                     Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
+                        f"[Bot] -> [{self.session_info.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
                     )
                     send.append(send_)
                     count += 1
@@ -196,7 +196,7 @@ class MessageSession(MessageSessionT):
             match = re.match(r"\(met\)(.*?)\(met\)", self.session.message.content)
             if match.group(1):
                 lst.append(Mention(f"{target_person_prefix}|{str(match.group(1))}"))
-        return MessageChain(lst)
+        return MessageChain.assign(lst)
 
     async def delete(self):
         self.session.message: Message
@@ -236,11 +236,11 @@ class FetchedSession(Bot.FetchedSession):
         enable_parse_message=True,
         enable_split_image=True,
     ):
-        if self.target.target_from == target_group_prefix:
+        if self.session_info.target_from == target_group_prefix:
             get_channel = await bot.client.fetch_public_channel(self.session.target)
             if not get_channel:
                 return False
-        elif self.target.target_from == target_person_prefix:
+        elif self.session_info.target_from == target_person_prefix:
             get_channel = await bot.client.fetch_user(self.session.target)
             Logger.debug(f"get_channel: {get_channel}")
             if not get_channel:
@@ -248,25 +248,25 @@ class FetchedSession(Bot.FetchedSession):
         else:
             return False
 
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             await self.send_direct_message(I18NContext("error.message.chain.unsafe"))
         for x in message_chain.as_sendable(self.parent, embed=False):
             if isinstance(x, PlainElement):
                 await get_channel.send(x.text)
 
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 url = await bot.create_asset(open(await x.get(), "rb"))
                 await get_channel.send(url, type=MessageTypes.IMG)
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Image: {str(x.__dict__)}"
                 )
             elif isinstance(x, VoiceElement):
                 url = await bot.create_asset(open(x.path, "rb"))
                 await get_channel.send(url, type=MessageTypes.AUDIO)
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Voice: {str(x.__dict__)}"
                 )
 
 
@@ -314,14 +314,14 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                         else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
+                            msgchain = MessageChain.assign([Plain(message)])
+                    msgchain = MessageChain.assign(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        await AnalyticsData.create(target_id=x.target.target_id,
-                                                   sender_id=x.target.sender_id,
+                        await AnalyticsData.create(target_id=x.session_info.target_id,
+                                                   sender_id=x.session_info.sender_id,
                                                    command="",
                                                    module_name=module_name,
                                                    module_type="schedule")
@@ -340,14 +340,14 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                             else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
+                                msgchain = MessageChain.assign([Plain(message)])
+                        msgchain = MessageChain.assign(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            await AnalyticsData.create(target_id=fetch.target.target_id,
-                                                       sender_id=fetch.target.sender_id,
+                            await AnalyticsData.create(target_id=fetch.session_info.target_id,
+                                                       sender_id=fetch.session_info.sender_id,
                                                        command="",
                                                        module_name=module_name,
                                                        module_type="schedule")

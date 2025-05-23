@@ -143,7 +143,7 @@ async def _(msg: Bot.MessageSession):
         play_state.disable()
         if expr.lower() in no_solution_lst:
             if solution:
-                if msg.Feature.markdown:
+                if msg.session_info.support_markdown:
                     solution.replace("*", "\\*")
                 send = [I18NContext("twenty_four.message.incorrect.have_solution", solution=solution)]
                 if g_msg := (g_msg := await lost_petal(msg, 1)):

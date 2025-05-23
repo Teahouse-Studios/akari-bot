@@ -70,10 +70,11 @@ class Bot:
         session_info.support_wait = features.wait
 
         async def _process_msg():
-            await ctx_manager.add_context(session_info, ctx)
+            ctx_manager.add_context(session_info, ctx)
             queue_client: "JobQueueClient" = exports["JobQueueClient"]
             await queue_client.send_message_signal_to_server(session_info)
-            await ctx_manager.del_context(session_info)
+            await asyncio.sleep(1)  # 清理上下文时等待1秒，删的太快了会报错
+            ctx_manager.del_context(session_info)
 
         asyncio.create_task(_process_msg())
 
@@ -207,7 +208,7 @@ class Bot:
         if isinstance(target, str):
             target = await cls.fetch_target(target)
         if isinstance(msg, list):
-            msg = MessageChain(msg)
+            msg = MessageChain.assign(msg)
         Logger.info(target.__dict__)
         m = await Bot.MessageSession.from_session_info(session=target)
         await m.send_direct_message(

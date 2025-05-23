@@ -32,13 +32,13 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True,
                                          timezone=False)} - {title} .. ({count}) .. {user}")
             if x["comment"]:
-                comment = msg.locale.t("message.brackets", msg=replace_brackets(x["comment"]))
+                comment = msg.session_info.locale.t("message.brackets", msg=replace_brackets(x["comment"]))
                 d.append(comment)
         if x["type"] == "log":
             if x["logtype"] == x["logaction"]:
-                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
+                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
             else:
-                log = msg.locale.t(
+                log = msg.session_info.locale.t(
                     f"wiki.message.rc.action.{
                         x["logtype"]}.{
                         x["logaction"]}",
@@ -52,7 +52,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True, timezone=False)} - {log}")
             params = x["logparams"]
             if "suppressredirect" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.suppress_redirect"))
+                d.append(msg.session_info.locale.t("wiki.message.rc.params.suppress_redirect"))
             if "oldgroups" and "newgroups" in params:
                 d.append(compare_groups(params["oldgroups"], params["newgroups"]))
             if "oldmodel" and "newmodel" in params:
@@ -60,15 +60,15 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             if "description" in params:
                 d.append(params["description"])
             if "duration" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.duration") + params["duration"])
+                d.append(msg.session_info.locale.t("wiki.message.rc.params.duration") + params["duration"])
             if "flags" in params:
                 d.append(", ".join(params["flags"]))
             if "tag" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.tag") + params["tag"])
+                d.append(msg.session_info.locale.t("wiki.message.rc.params.tag") + params["tag"])
             if "target_title" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.target_title") + params["target_title"])
+                d.append(msg.session_info.locale.t("wiki.message.rc.params.target_title") + params["target_title"])
             if x["comment"]:
-                comment = msg.locale.t("message.brackets", msg=replace_brackets(x["comment"]))
+                comment = msg.session_info.locale.t("message.brackets", msg=replace_brackets(x["comment"]))
                 d.append(comment)
     y = await check(*d)
     yy = "\n".join(z["content"] for z in y)
@@ -78,9 +78,9 @@ async def rc(msg: Bot.MessageSession, wiki_url):
             st = False
             break
     if not st:
-        return f"{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}\n{
-            msg.locale.t("wiki.message.utils.redacted")}"
-    return f"{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}"
+        return f"{str(Url(pageurl))}\n{yy}\n{msg.session_info.locale.t("message.collapse", amount=RC_LIMIT)}\n{
+            msg.session_info.locale.t("wiki.message.utils.redacted")}"
+    return f"{str(Url(pageurl))}\n{yy}\n{msg.session_info.locale.t("message.collapse", amount=RC_LIMIT)}"
 
 
 def compare_groups(old_groups, new_groups):
@@ -159,16 +159,16 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
                     "$1",
                     f"{urllib.parse.quote(title)}?oldid={x["old_revid"]}&diff={x["revid"]}"))
         if x["type"] == "new":
-            r = msg.locale.t("message.brackets", msg=msg.locale.t(
+            r = msg.session_info.locale.t("message.brackets", msg=msg.session_info.locale.t(
                 "wiki.message.rc.new_redirect")) if "redirect" in x else ""
             t.append(f"{title}{r} .. (+{x["newlen"]}) .. {user}")
             if comment:
                 t.append(comment)
         if x["type"] == "log":
             if x["logtype"] == x["logaction"]:
-                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
+                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
             else:
-                log = msg.locale.t(
+                log = msg.session_info.locale.t(
                     f"wiki.message.rc.action.{
                         x["logtype"]}.{
                         x["logaction"]}",
@@ -182,7 +182,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             t.append(log)
             params = x["logparams"]
             if "suppressredirect" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.suppress_redirect"))
+                t.append(msg.session_info.locale.t("wiki.message.rc.params.suppress_redirect"))
             if "oldgroups" and "newgroups" in params:
                 t.append(compare_groups(params["oldgroups"], params["newgroups"]))
             if "oldmodel" and "newmodel" in params:
@@ -190,13 +190,13 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             if "description" in params:
                 t.append(params["description"])
             if "duration" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.duration") + params["duration"])
+                t.append(msg.session_info.locale.t("wiki.message.rc.params.duration") + params["duration"])
             if "flags" in params:
                 t.append(", ".join(params["flags"]))
             if "tag" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.tag") + params["tag"])
+                t.append(msg.session_info.locale.t("wiki.message.rc.params.tag") + params["tag"])
             if "target_title" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.target_title") + params["target_title"])
+                t.append(msg.session_info.locale.t("wiki.message.rc.params.target_title") + params["target_title"])
             if comment:
                 t.append(comment)
             if x["revid"] != 0:
@@ -208,6 +208,6 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \
                 (original_user in user_checked_map and user_checked_map[original_user] != original_user) or \
                     (comment and comment_checked_map[replace_brackets(x["comment"])] != replace_brackets(x["comment"])):
-                t.append(msg.locale.t("wiki.message.utils.redacted"))
+                t.append(msg.session_info.locale.t("wiki.message.utils.redacted"))
         rclist.append("\n".join(t))
     return rclist

@@ -11,7 +11,7 @@ async def search(msg: Bot.MessageSession, keyword: str, pat: str):
         "https://api.github.com/search/repositories?q=" + keyword, 200, fmt="json", headers=[("Authorization", f"Bearer {pat}")] if pat else []
     )
     if result["total_count"] == 0:
-        message = msg.locale.t("github.message.search.not_found")
+        message = msg.session_info.locale.t("github.message.search.not_found")
     else:
         items = result["items"]
         items_out = []
@@ -23,12 +23,12 @@ async def search(msg: Bot.MessageSession, keyword: str, pat: str):
             except TypeError:
                 continue
         message = (
-            msg.locale.t("github.message.search")
+            msg.session_info.locale.t("github.message.search")
             + "\n"
             + "\n".join(items_out[0:SEARCH_LIMIT])
         )
         if result["total_count"] > 5:
-            message += "\n" + msg.locale.t("message.collapse", amount=SEARCH_LIMIT)
+            message += "\n" + msg.session_info.locale.t("message.collapse", amount=SEARCH_LIMIT)
 
     is_dirty = await dirty_check(message) or dark_check(message)
     if is_dirty:

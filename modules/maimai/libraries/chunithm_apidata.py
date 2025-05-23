@@ -24,7 +24,7 @@ async def get_info(music: Music, *details) -> MessageChain:
 async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = True) -> Optional[str]:
     maimai_cache_dir = os.path.join(cache_path, "maimai-record")
     os.makedirs(maimai_cache_dir, exist_ok=True)
-    cache_dir = os.path.join(maimai_cache_dir, f"{msg.target.sender_id.replace("|", "_")}_chunithm_record.json")
+    cache_dir = os.path.join(maimai_cache_dir, f"{msg.session_info.sender_id.replace("|", "_")}_chunithm_record.json")
     url = "https://www.diving-fish.com/api/chunithmprober/query/player"
     if "username" in payload:
         use_cache = False
@@ -41,21 +41,21 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
     except Exception as e:
         if str(e).startswith("400"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_unbound.qq"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith("403"):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden.eula"))
             else:
-                await msg.finish(msg.locale.t("maimai.message.forbidden"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.forbidden"))
         else:
             Logger.error(traceback.format_exc())
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())
-                await msg.send_message(msg.locale.t("maimai.message.use_cache"))
+                await msg.send_message(msg.session_info.locale.t("maimai.message.use_cache"))
                 return data
             except Exception:
                 raise e

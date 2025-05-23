@@ -67,8 +67,8 @@ async def _(msg: Bot.MessageSession):
 async def config_modules(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     alias = ModulesManager.modules_aliases
-    modules_ = ModulesManager.return_modules_list(target_from=msg.target.target_from)
-    enabled_modules_list = deepcopy(msg.target_info.modules)
+    modules_ = ModulesManager.return_modules_list(target_from=msg.session_info.target_from)
+    enabled_modules_list = deepcopy(msg.session_info.target_info.modules)
     wait_config = [msg.parsed_msg.get("<module>")] + msg.parsed_msg.get("...", [])
     wait_config_list = []
     for module_ in wait_config:
@@ -94,7 +94,7 @@ async def config_modules(msg: Bot.MessageSession):
                     or modules_[function].required_superuser
                 ):
                     continue
-                if modules_[function].rss and not msg.Feature.rss:
+                if modules_[function].rss and not msg.session_info.support_rss:
                     continue
                 enable_list.append(function)
         else:
@@ -106,7 +106,7 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(I18NContext("core.message.module.enable.already", module=module_))
-                    elif modules_[module_].rss and not msg.Feature.rss:
+                    elif modules_[module_].rss and not msg.session_info.support_rss:
                         msglist.append(I18NContext("core.message.module.enable.unsupported_rss"))
                     else:
                         enable_list.append(module_)
@@ -118,12 +118,12 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.session_info.target_from}|{x}"))[0]
                 await target_info.config_module(enable_list, True)
             for x in enable_list:
                 msglist.append(I18NContext("core.message.module.enable.qqchannel_global.success", module=x))
         else:
-            if await msg.target_info.config_module(enable_list, True):
+            if await msg.session_info.target_info.config_module(enable_list, True):
                 for x in enable_list:
                     if x in enabled_modules_list:
                         msglist.append(I18NContext("core.message.module.enable.already", module=x))
@@ -131,7 +131,7 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("core.message.module.enable.success", module=x))
                         support_lang = modules_[x].support_languages
                         if support_lang:
-                            if msg.locale.locale not in support_lang:
+                            if msg.session_info.locale.locale not in support_lang:
                                 msglist.append(I18NContext("core.message.module.unsupported_language", module=x))
         if recommend_modules_list:
             for m in recommend_modules_list:
@@ -140,13 +140,13 @@ async def config_modules(msg: Bot.MessageSession):
 
                     if modules_[m].desc:
                         recommend_modules_help_doc_list.append(
-                            Plain(msg.locale.t_str(modules_[m].desc))
+                            Plain(msg.session_info.locale.t_str(modules_[m].desc))
                         )
                     hdoc = CommandParser(
                         modules_[m],
                         msg=msg,
                         bind_prefix=modules_[m].bind_prefix,
-                        command_prefixes=msg.prefixes,
+                        command_prefixes=msg.session_info.prefixes,
                         is_superuser=is_superuser,
                     ).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(Plain(hdoc))
@@ -175,12 +175,12 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.target.target_from}|{x}"))[0]
+                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.session_info.target_from}|{x}"))[0]
                 await target_info.config_module(disable_list, False)
             for x in disable_list:
                 msglist.append(I18NContext("core.message.module.disable.qqchannel_global.success", module=x))
         else:
-            if await msg.target_info.config_module(disable_list, False):
+            if await msg.session_info.target_info.config_module(disable_list, False):
                 for x in disable_list:
                     if x not in enabled_modules_list:
                         msglist.append(I18NContext("core.message.module.disable.already", module=x))
@@ -299,7 +299,7 @@ async def config_modules(msg: Bot.MessageSession):
     if recommend_modules_help_doc_list and not ("-g" in msg.parsed_msg and msg.parsed_msg["-g"]):
         confirm = await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")] + recommend_modules_help_doc_list)
         if confirm:
-            if await msg.target_info.config_module(recommend_modules_list, True):
+            if await msg.session_info.target_info.config_module(recommend_modules_list, True):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(I18NContext("core.message.module.enable.success", module=x))

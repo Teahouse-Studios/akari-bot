@@ -27,12 +27,12 @@ chu = module(
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     result_set = []
     if constant <= 0:
-        await msg.finish(msg.locale.t("maimai.message.level_invalid"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.level_invalid"))
     elif constant_max:
         if constant > constant_max:
             data = (await total_list.get()).filter(ds=(constant_max, constant))
             s = (
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "maimai.message.base.range",
                     constant=round(constant_max, 1),
                     constant_max=round(constant, 1),
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         else:
             data = (await total_list.get()).filter(ds=(constant, constant_max))
             s = (
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "maimai.message.base.range",
                     constant=round(constant, 1),
                     constant_max=round(constant_max, 1),
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
             )
     else:
         data = (await total_list.get()).filter(ds=constant)
-        s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
+        s = msg.session_info.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
 
     for music in sorted(data, key=lambda i: int(i["id"])):
         for i in music.diff:
@@ -78,11 +78,11 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     for elem in result_set[start_index:end_index]:
         s += f"{elem[0]} - {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
             imgchain = []
@@ -121,16 +121,16 @@ async def _(msg: Bot.MessageSession, level: str):
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
-    s = msg.locale.t("maimai.message.level", level=level) + "\n"
+    s = msg.session_info.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set[start_index:end_index]:
         s += f"{elem[0]} - {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
 
     if len(result_set) == 0:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
             imgchain = []
@@ -147,7 +147,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     result_set = []
     data = (await total_list.get()).filter(title_search=name)
     if len(data) == 0:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
     else:
         for music in sorted(data, key=lambda i: int(i["id"])):
             result_set.append((music["id"], music["title"]))
@@ -161,13 +161,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
         start_index = (page - 1) * SONGS_PER_PAGE
         end_index = page * SONGS_PER_PAGE
 
-        s = msg.locale.t("maimai.message.search", keyword=name) + "\n"
+        s = msg.session_info.locale.t("maimai.message.search", keyword=name) + "\n"
         for elem in result_set[start_index:end_index]:
             s += f"{elem[0]} - {elem[1]}\n"
         if len(data) <= SONGS_PER_PAGE:
             await msg.finish(s.strip())
         else:
-            s += msg.locale.t(
+            s += msg.session_info.locale.t(
                 "maimai.message.pages", page=page, total_pages=total_pages
             )
             imgs = await msgchain2image([Plain(s)])
@@ -181,13 +181,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
 @chu.command("b30 [<username>] {[I18N:chunithm.help.b30]}")
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
-        if msg.target.sender_from == "QQ":
+        if msg.session_info.sender_from == "QQ":
             payload = {"qq": msg.session.sender}
         else:
-            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.target.sender_id)
+            bind_info = await DivingProberBindInfo.get_or_none(sender_id=msg.session_info.sender_id)
             if not bind_info:
                 await msg.finish(
-                    msg.locale.t("chunithm.message.user_unbound", prefix=msg.prefixes[0])
+                    msg.session_info.locale.t("chunithm.message.user_unbound", prefix=msg.session_info.prefixes[0])
                 )
             username = bind_info.username
             payload = {"username": username}
@@ -212,7 +212,7 @@ async def _(msg: Bot.MessageSession, song: str):
         music = (await total_list.get()).by_title(song)
 
     if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
 
     res = []
     if len(music["ds"]) == 6:
@@ -220,7 +220,7 @@ async def _(msg: Bot.MessageSession, song: str):
         ds = music["ds"][5]
         level = music["level"][5]
         res.append(
-            msg.locale.t(
+            msg.session_info.locale.t(
                 "chunithm.message.chart",
                 diff="World's End",
                 level=level,
@@ -234,7 +234,7 @@ async def _(msg: Bot.MessageSession, song: str):
             chart = music["charts"][_diff]
             level = music["level"][_diff]
             res.append(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "chunithm.message.chart",
                     diff=diff_list[_diff],
                     level=level,
@@ -259,10 +259,10 @@ async def _(msg: Bot.MessageSession, song: str):
         music = (await total_list.get()).by_title(song)
 
     if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
 
     if len(music["ds"]) == 6:
-        res = msg.locale.t(
+        res = msg.session_info.locale.t(
             "chunithm.message.song.worlds_end",
             artist=music["basic_info"]["artist"],
             genre=music["basic_info"]["genre"],
@@ -270,7 +270,7 @@ async def _(msg: Bot.MessageSession, song: str):
             version=music["basic_info"]["from"],
         )
     else:
-        res = msg.locale.t(
+        res = msg.session_info.locale.t(
             "chunithm.message.song",
             artist=music["basic_info"]["artist"],
             genre=music["basic_info"]["genre"],
@@ -312,24 +312,24 @@ async def _(msg: Bot.MessageSession):
                 )
 
         if len(music_data) == 0:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+            await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
         else:
             music = music_data.random()
             await msg.finish(
                 await get_info(music, Plain(f"{"/".join(str(ds) for ds in music.ds)}"))
             )
     except (ValueError, TypeError):
-        await msg.finish(msg.locale.t("maimai.message.random.failed"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.random.failed"))
 
 
 @chu.command("bind <username> {[I18N:maimai.help.bind]}", exclude_from=["QQ|Private", "QQ|Group"])
 async def _(msg: Bot.MessageSession, username: str):
     await get_record(msg, {"username": username}, use_cache=False)
-    await DivingProberBindInfo.set_bind_info(sender_id=msg.target.sender_id, username=username)
-    await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
+    await DivingProberBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=username)
+    await msg.finish(msg.session_info.locale.t("maimai.message.bind.success") + username)
 
 
 @chu.command("unbind {[I18N:maimai.help.unbind]}", exclude_from=["QQ|Private", "QQ|Group"])
 async def _(msg: Bot.MessageSession):
-    await DivingProberBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
-    await msg.finish(msg.locale.t("maimai.message.unbind.success"))
+    await DivingProberBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
+    await msg.finish(msg.session_info.locale.t("maimai.message.unbind.success"))

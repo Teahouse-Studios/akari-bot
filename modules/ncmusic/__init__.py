@@ -31,11 +31,11 @@ async def _(msg: Bot.MessageSession, keyword: str):
     legacy = True
 
     if song_count == 0:
-        await msg.finish(msg.locale.t("ncmusic.message.search.not_found"))
+        await msg.finish(msg.session_info.locale.t("ncmusic.message.search.not_found"))
 
     songs = result["result"]["songs"][:SEARCH_LIMIT]
 
-    if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
+    if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
 
         send_msg = [I18NContext("ncmusic.message.search.result")]
         data = [
@@ -62,10 +62,10 @@ async def _(msg: Bot.MessageSession, keyword: str):
         tables = ImageTable(
             data,
             [
-                msg.locale.t("ncmusic.message.search.table.header.id"),
-                msg.locale.t("ncmusic.message.search.table.header.name"),
-                msg.locale.t("ncmusic.message.search.table.header.artists"),
-                msg.locale.t("ncmusic.message.search.table.header.album"),
+                msg.session_info.locale.t("ncmusic.message.search.table.header.id"),
+                msg.session_info.locale.t("ncmusic.message.search.table.header.name"),
+                msg.session_info.locale.t("ncmusic.message.search.table.header.artists"),
+                msg.session_info.locale.t("ncmusic.message.search.table.header.album"),
                 "ID",
             ],
         )
@@ -96,19 +96,19 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 query = int(query)
                 if not query or query > song_count:
                     await msg.finish(
-                        msg.locale.t("mod_dl.message.invalid.out_of_range")
+                        msg.session_info.locale.t("mod_dl.message.invalid.out_of_range")
                     )
                 else:
                     sid = result["result"]["songs"][query - 1]["id"]
             else:
                 await msg.finish(
-                    msg.locale.t("ncmusic.message.search.invalid.non_digital")
+                    msg.session_info.locale.t("ncmusic.message.search.invalid.non_digital")
                 )
 
         await info(msg, sid)
 
     if legacy:
-        send_msg = msg.locale.t("ncmusic.message.search.result") + "\n"
+        send_msg = msg.session_info.locale.t("ncmusic.message.search.result") + "\n"
 
         for i, song in enumerate(songs, start=1):
             send_msg += f"{i} - {song["name"]}"
@@ -123,17 +123,17 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
         if song_count > SEARCH_LIMIT:
             song_count = SEARCH_LIMIT
-            send_msg += msg.locale.t("message.collapse", amount=SEARCH_LIMIT)
+            send_msg += msg.session_info.locale.t("message.collapse", amount=SEARCH_LIMIT)
 
         if song_count == 1:
-            send_msg += "\n" + msg.locale.t("ncmusic.message.search.confirm")
+            send_msg += "\n" + msg.session_info.locale.t("ncmusic.message.search.confirm")
             query = await msg.wait_confirm(send_msg, delete=False)
             if query:
                 sid = result["result"]["songs"][0]["id"]
             else:
                 await msg.finish()
         else:
-            send_msg += "\n" + msg.locale.t("ncmusic.message.search.prompt")
+            send_msg += "\n" + msg.session_info.locale.t("ncmusic.message.search.prompt")
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
 
@@ -141,16 +141,16 @@ async def _(msg: Bot.MessageSession, keyword: str):
                 query = int(query)
                 if query > song_count:
                     await msg.finish(
-                        msg.locale.t("mod_dl.message.invalid.out_of_range")
+                        msg.session_info.locale.t("mod_dl.message.invalid.out_of_range")
                     )
                 else:
                     sid = result["result"]["songs"][query - 1]["id"]
             else:
                 await msg.finish(
-                    msg.locale.t("ncmusic.message.search.invalid.non_digital")
+                    msg.session_info.locale.t("ncmusic.message.search.invalid.non_digital")
                 )
 
-        if msg.target.client_name == "QQ" and Config("ncmusic_enable_card", False):
+        if msg.session_info.client_name == "QQ" and Config("ncmusic_enable_card", False):
             await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
         else:
             await info(msg, sid)
@@ -195,4 +195,4 @@ async def info(msg: Bot.MessageSession, sid: int):
             ]
         )
     else:
-        await msg.finish(msg.locale.t("ncmusic.message.info.not_found"))
+        await msg.finish(msg.session_info.locale.t("ncmusic.message.info.not_found"))

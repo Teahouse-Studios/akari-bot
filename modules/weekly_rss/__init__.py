@@ -16,8 +16,8 @@ weekly_rss = module(
 
 @weekly_rss.hook()
 async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
-    weekly_cn = MessageChain(ctx.args["weekly_cn"])
-    weekly_tw = MessageChain(ctx.args["weekly_tw"])
+    weekly_cn = MessageChain.assign(ctx.args["weekly_cn"])
+    weekly_tw = MessageChain.assign(ctx.args["weekly_tw"])
     if Bot.name == "QQ":
         weekly_cn = [
             Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))

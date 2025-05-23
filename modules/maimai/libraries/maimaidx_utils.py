@@ -105,7 +105,8 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
     sd_charts = data["charts"]["sd"]
 
     html = "<style>pre { font-size: 13px; }</style><div style=\"margin-left: 30px; margin-right: 20px;\">\n"
-    html += f"{msg.locale.t("maimai.message.b50.text_prompt", user=data["username"], rating=data["rating"])}\n<pre>"
+    html += f"{msg.session_info.locale.t("maimai.message.b50.text_prompt",
+                                         user=data["username"], rating=data["rating"])}\n<pre>"
     html += f"Standard ({sum(chart["ra"] for chart in sd_charts)})\n"
     for idx, chart in enumerate(sd_charts, start=1):
         level = "".join(filter(str.isalpha, chart["level_label"]))[:3].upper()
@@ -177,7 +178,7 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
     img = await msgchain2image([Plain(html)])
     if img:
         return img
-    await msg.finish(msg.locale.t("error.config.webrender.invalid"))
+    await msg.finish(msg.session_info.locale.t("error.config.webrender.invalid"))
 
 
 async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = True):
@@ -219,14 +220,14 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
     average_rating = total_rating / total_rank
     surpassing_rate = (total_rank - rank) / total_rank * 100
 
-    await msg.finish(msg.locale.t("maimai.message.rank",
-                                  time=time,
-                                  total_rank=total_rank,
-                                  user=username,
-                                  rating=rating,
-                                  rank=rank,
-                                  average_rating=f"{average_rating:.4f}",
-                                  surpassing_rate=f"{surpassing_rate:.2f}"))
+    await msg.finish(msg.session_info.locale.t("maimai.message.rank",
+                                               time=time,
+                                               total_rank=total_rank,
+                                               user=username,
+                                               rating=rating,
+                                               rank=rank,
+                                               average_rating=f"{average_rating:.4f}",
+                                               surpassing_rate=f"{surpassing_rate:.2f}"))
 
 
 async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str, use_cache: bool = True) -> str:
@@ -280,7 +281,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
     output_lines = []
     if int(input_id) >= 100000:
         if len(level_scores.items()) > 1:
-            await msg.finish(msg.locale.t("maimai.message.score.utage"))
+            await msg.finish(msg.session_info.locale.t("maimai.message.score.utage"))
         else:
             for level, scores in level_scores.items():  # 使用循环输出格式化文本
                 if scores:
@@ -297,7 +298,9 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                         output_lines.append(entry_output)
                 else:
                     output_lines.append(
-                        f"U·TA·GE {music["level"][level]}\n{msg.locale.t("maimai.message.score.no_record")}")
+                        f"U·TA·GE {
+                            music["level"][level]}\n{
+                            msg.session_info.locale.t("maimai.message.score.no_record")}")
     else:
         for level, scores in level_scores.items():  # 使用循环输出格式化文本
             if scores:
@@ -313,8 +316,8 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                         entry_output += f"\n{dx[0]}/{dx[1]} {calc_dxstar(dx[0], dx[1])}"
                     output_lines.append(entry_output)
             else:
-                output_lines.append(
-                    f"{diffs[level]} {music["level"][level]}\n{msg.locale.t("maimai.message.score.no_record")}")
+                output_lines.append(f"{diffs[level]} {music["level"][level]}\n{
+                    msg.session_info.locale.t("maimai.message.score.no_record")}")
 
     return "\n".join(output_lines)
 
@@ -367,7 +370,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     get_img = False
     if len(song_remain) > 0:
         song_record = [[s["id"], s["level_index"]] for s in verlist]
-        output += f"{msg.locale.t("maimai.message.process.last", level=level, goal=goal)}\n"
+        output += f"{msg.session_info.locale.t("maimai.message.process.last", level=level, goal=goal)}\n"
         for i, s in enumerate(sorted(songs, key=lambda i: i[3], reverse=True)):  # 显示剩余歌曲信息
             self_record = ""
             if [int(s[0]), s[-2]] in song_record:
@@ -384,11 +387,12 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
             if i == SONGS_PER_PAGE - 1:
                 break
         if len(song_remain) > SONGS_PER_PAGE:
-            output += msg.locale.t("maimai.message.process", song_remain=len(song_remain), level=level, goal=goal)
+            output += msg.session_info.locale.t("maimai.message.process",
+                                                song_remain=len(song_remain), level=level, goal=goal)
         if len(song_remain) > SONGS_NEED_IMG:
             get_img = True
     else:
-        await msg.finish(msg.locale.t("maimai.message.process.completed", level=level, goal=goal))
+        await msg.finish(msg.session_info.locale.t("maimai.message.process.completed", level=level, goal=goal))
 
     return output, get_img
 
@@ -420,13 +424,17 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
             output_lines.append(output)
 
     outputs = "\n".join(output_lines)
-    res = f"{msg.locale.t("maimai.message.scorelist", user=player_data["username"], level=level)}\n{outputs}"
+    res = f"{
+        msg.session_info.locale.t(
+            "maimai.message.scorelist",
+            user=player_data["username"],
+            level=level)}\n{outputs}"
     get_img = False
 
     if len(output_lines) == 0:
-        await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.chart_not_found"))
     elif len(output_lines) > 10:
-        res += f"\n{msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)}"
+        res += f"\n{msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)}"
         get_img = True
 
     return res, get_img
@@ -458,7 +466,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     elif version in plate_mapping and version != "初":  # “初”不是版本名称
         payload["version"] = [plate_mapping[version]]
     else:
-        await msg.finish(msg.locale.t("maimai.message.plate.plate_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.plate.plate_not_found"))
 
     res = await get_plate(msg, payload, version, use_cache)
     verlist = res["verlist"]
@@ -520,7 +528,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                 song_remain_remaster.append([song["id"], song["level_index"]])
             song_played.append([song["id"], song["level_index"]])
     else:
-        await msg.finish(msg.locale.t("maimai.message.plate.plate_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.plate.plate_not_found"))
 
     for music in (await total_list.get()):  # 将未游玩歌曲ID加入目标列表
         if music["basic_info"]["from"] in payload["version"] and int(music.id) < 100000:  # 过滤宴谱
@@ -559,17 +567,17 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     song_remain: list[list] = song_remain_basic + song_remain_advanced + \
         song_remain_expert + song_remain_master + song_remain_remaster
 
-    prompt = [msg.locale.t("maimai.message.plate.prompt", plate=plate)]
+    prompt = [msg.session_info.locale.t("maimai.message.plate.prompt", plate=plate)]
     if song_remain_basic:
-        prompt.append(msg.locale.t("maimai.message.plate.basic", song_remain=len(song_remain_basic)))
+        prompt.append(msg.session_info.locale.t("maimai.message.plate.basic", song_remain=len(song_remain_basic)))
     if song_remain_advanced:
-        prompt.append(msg.locale.t("maimai.message.plate.advanced", song_remain=len(song_remain_advanced)))
+        prompt.append(msg.session_info.locale.t("maimai.message.plate.advanced", song_remain=len(song_remain_advanced)))
     if song_remain_expert:
-        prompt.append(msg.locale.t("maimai.message.plate.expert", song_remain=len(song_remain_expert)))
+        prompt.append(msg.session_info.locale.t("maimai.message.plate.expert", song_remain=len(song_remain_expert)))
     if song_remain_master:
-        prompt.append(msg.locale.t("maimai.message.plate.master", song_remain=len(song_remain_master)))
+        prompt.append(msg.session_info.locale.t("maimai.message.plate.master", song_remain=len(song_remain_master)))
     if version in ["舞", "覇"] and song_remain_remaster:  # 霸者和舞牌需要Re:MASTER难度
-        prompt.append(msg.locale.t("maimai.message.plate.remaster", song_remain=len(song_remain_remaster)))
+        prompt.append(msg.session_info.locale.t("maimai.message.plate.remaster", song_remain=len(song_remain_remaster)))
 
     if song_remain:
         await msg.send_message(prompt)
@@ -579,7 +587,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     output = ""
     if len(song_remain_difficult) > 0:
         if len(song_remain_difficult) < SONGS_PER_PAGE:
-            output += msg.locale.t("maimai.message.plate.difficult.last") + "\n"
+            output += msg.session_info.locale.t("maimai.message.plate.difficult.last") + "\n"
             for i, s in enumerate(sorted(song_remain_difficult, key=lambda i: i[3])):  # 根据定数排序结果
                 self_record = ""
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余13+以上歌曲信息
@@ -597,14 +605,15 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if len(song_remain_difficult) > SONGS_NEED_IMG:
                 get_img = True
         else:
-            output += msg.locale.t("maimai.message.plate.difficult", song_remain=len(song_remain_difficult))
+            output += msg.session_info.locale.t("maimai.message.plate.difficult",
+                                                song_remain=len(song_remain_difficult))
     elif len(song_remain) > 0:
         for i, s in enumerate(song_remain):
             m = (await total_list.get()).by_id(str(s[0]))
             ds = m.ds[s[1]]
             song_remain[i].append(ds)
         if len(song_remain) < SONGS_PER_PAGE:
-            output += msg.locale.t("maimai.message.plate.last") + "\n"
+            output += msg.session_info.locale.t("maimai.message.plate.last") + "\n"
             for i, s in enumerate(sorted(song_remain, key=lambda i: i[2])):  # 根据难度排序结果
                 m = (await total_list.get()).by_id(str(s[0]))
                 self_record = ""
@@ -623,9 +632,9 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if len(song_remain) > SONGS_NEED_IMG:
                 get_img = True
         else:
-            output += msg.locale.t("maimai.message.plate.difficult.completed")
+            output += msg.session_info.locale.t("maimai.message.plate.difficult.completed")
     else:
-        output += msg.locale.t("maimai.message.plate.completed", plate=plate)
+        output += msg.session_info.locale.t("maimai.message.plate.completed", plate=plate)
 
     return output, get_img
 
@@ -646,7 +655,7 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
     grade_key, grade = key_process(grade, grade_mapping)
 
     if not grade_key:
-        await msg.finish(msg.locale.t("maimai.message.grade_invalid"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.grade_invalid"))
     elif grade_key.startswith("tgrade"):
         grade_type = "tgrade"
     elif grade_key.startswith("grade"):
@@ -709,4 +718,4 @@ async def get_grade_info(msg: Bot.MessageSession, grade: str):
     content = "\n".join(chart_info)
     condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
 
-    await msg.finish(msg.locale.t("maimai.message.grade", grade=grade, content=content, life=grade_data["life"], condition=condition_info))
+    await msg.finish(msg.session_info.locale.t("maimai.message.grade", grade=grade, content=content, life=grade_data["life"], condition=condition_info))

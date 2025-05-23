@@ -60,7 +60,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     if not Info.web_render_local_status:
         use_local = False
     if isinstance(message_chain, List):
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
 
     lst = []
 

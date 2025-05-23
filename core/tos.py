@@ -10,24 +10,27 @@ WARNING_COUNTS = Config("tos_warning_counts", 5)
 async def warn_target(msg: Bot.MessageSession, reason: str):
     issue_url = Config("issue_url", issue_url_default)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
-        await msg.sender_info.warn_user()
-        current_warns = msg.sender_info.warns
+        await msg.session_info.sender_info.warn_user()
+        current_warns = msg.session_info.sender_info.warns
         warn_template = [
             I18NContext("tos.message.warning"),
             I18NContext("tos.message.reason", reason=reason)]
-        if current_warns < WARNING_COUNTS or msg.sender_info.trusted:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
-            warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))
-            if not msg.sender_info.trusted:
+        if current_warns < WARNING_COUNTS or msg.session_info.sender_info.trusted:
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
+            warn_template.append(
+                I18NContext(
+                    "tos.message.warning.count",
+                    current_warns=msg.session_info.sender_info.warns))
+            if not msg.session_info.sender_info.trusted:
                 warn_template.append(I18NContext("tos.message.warning.prompt", warn_counts=WARNING_COUNTS))
-            if msg.sender_info.warns <= 2 and issue_url:
+            if msg.session_info.sender_info.warns <= 2 and issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
-        elif msg.sender_info.warns == WARNING_COUNTS:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
+        elif msg.session_info.sender_info.warns == WARNING_COUNTS:
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.last"))
-        elif msg.sender_info.warns > WARNING_COUNTS:
-            await msg.sender_info.switch_identity(trust=False)
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
+        elif msg.session_info.sender_info.warns > WARNING_COUNTS:
+            await msg.session_info.sender_info.switch_identity(trust=False)
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason, banned=True)
             warn_template.append(I18NContext("tos.message.banned"))
             if issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))

@@ -27,7 +27,7 @@ async def mcjv(msg: Bot.MessageSession):
             if v["id"] == snapshot:
                 time_snapshot = datetime.fromisoformat(v["releaseTime"]).timestamp()
 
-        message1 = msg.locale.t(
+        message1 = msg.session_info.locale.t(
             "mcv.message.mcv.launcher",
             release=data["latest"]["release"],
             snapshot=data["latest"]["snapshot"],
@@ -35,7 +35,7 @@ async def mcjv(msg: Bot.MessageSession):
             snapshot_time=msg.ts2strftime(time_snapshot),
         )
     except Exception:  # Probably...
-        message1 = msg.locale.t("mcv.message.mcv.launcher.failed")
+        message1 = msg.session_info.locale.t("mcv.message.mcv.launcher.failed")
     try:
         mojira = json.loads(
             await get_url(
@@ -49,8 +49,8 @@ async def mcjv(msg: Bot.MessageSession):
                 release.append(v["name"])
         message2 = prefix.join(release)
     except Exception:
-        message2 = msg.locale.t("mcv.message.mcv.jira.failed")
-    return msg.locale.t("mcv.message.mcv", launcher_ver=message1, jira_ver=message2)
+        message2 = msg.session_info.locale.t("mcv.message.mcv.jira.failed")
+    return msg.session_info.locale.t("mcv.message.mcv", launcher_ver=message1, jira_ver=message2)
 
 
 async def mcbv(msg: Bot.MessageSession):
@@ -88,7 +88,7 @@ async def mcbv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(msg.session_info.locale.t("mcv.message.error.server"))
     beta = []
     preview = []
     release = []
@@ -105,16 +105,16 @@ async def mcbv(msg: Bot.MessageSession):
     msg2 = f"Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}"
     return (
         (
-            f"""{msg.locale.t("mcv.message.mcbv.play_store")}
-{play_store_version if play_store_version else msg.locale.t("mcv.message.mcbv.get_failed")}
+            f"""{msg.session_info.locale.t("mcv.message.mcbv.play_store")}
+{play_store_version if play_store_version else msg.session_info.locale.t("mcv.message.mcbv.get_failed")}
 """
             if Secret.ip_country != "China"
             else ""
         )
-        + f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
-{ms_store_version if ms_store_version else msg.locale.t("mcv.message.mcbv.get_failed")}
+        + f"""{msg.session_info.locale.t("mcv.message.mcbv.ms_store")}
+{ms_store_version if ms_store_version else msg.session_info.locale.t("mcv.message.mcbv.get_failed")}
 """
-        + msg.locale.t("mcv.message.mcbv", jira_ver=msg2)
+        + msg.session_info.locale.t("mcv.message.mcbv", jira_ver=msg2)
     )
 
 
@@ -126,12 +126,12 @@ async def mcdv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(msg.session_info.locale.t("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:
             release.append(v["name"])
-    return msg.locale.t("mcv.message.mcdv", version=" | ".join(release))
+    return msg.session_info.locale.t("mcv.message.mcdv", version=" | ".join(release))
 
 
 async def mcev(msg: Bot.MessageSession):
@@ -144,8 +144,8 @@ async def mcev(msg: Bot.MessageSession):
         version = re.search(r"(?<=\[)(.*?)(?=])", data)[0]
         Logger.debug(version)
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
-    return msg.locale.t("mcv.message.mcev", version=version)
+        await msg.finish(msg.session_info.locale.t("mcv.message.error.server"))
+    return msg.session_info.locale.t("mcv.message.mcev", version=version)
 
 
 async def mclgv(msg: Bot.MessageSession):
@@ -156,9 +156,9 @@ async def mclgv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(msg.session_info.locale.t("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:
             release.append(v["name"])
-    return msg.locale.t("mcv.message.mclgv", version=" | ".join(release))
+    return msg.session_info.locale.t("mcv.message.mclgv", version=" | ".join(release))

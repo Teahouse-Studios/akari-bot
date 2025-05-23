@@ -16,13 +16,20 @@ async def ab(msg: Bot.MessageSession, wiki_url):
         result = "pass" if not x["result"] else x["result"]
         title = x.get("title", "Unknown")
         user = x.get("user", "Unknown")
-        d.append("•" + msg.locale.t("wiki.message.ab.slice",
-                                    title=title,
-                                    user=user,
-                                    time=msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True, timezone=False),
-                                    action=x["action"],
-                                    filter_name=x["filter"],
-                                    result=result))
+        d.append(
+            "•" +
+            msg.session_info.locale.t(
+                "wiki.message.ab.slice",
+                title=title,
+                user=user,
+                time=msg.ts2strftime(
+                    strptime2ts(
+                        x["timestamp"]),
+                    iso=True,
+                    timezone=False),
+                action=x["action"],
+                filter_name=x["filter"],
+                result=result))
     y = await check(*d)
     yy = "\n".join(z["content"] for z in y)
     st = True
@@ -31,9 +38,9 @@ async def ab(msg: Bot.MessageSession, wiki_url):
             st = False
             break
     if not st:
-        return f"{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}\n{
-            msg.locale.t("wiki.message.utils.redacted")}"
-    return f"{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=AB_LIMIT)}"
+        return f"{str(Url(pageurl))}\n{yy}\n{msg.session_info.locale.t("message.collapse", amount=AB_LIMIT)}\n{
+            msg.session_info.locale.t("wiki.message.utils.redacted")}"
+    return f"{str(Url(pageurl))}\n{yy}\n{msg.session_info.locale.t("message.collapse", amount=AB_LIMIT)}"
 
 
 async def convert_ab_to_detailed_format(abl: list, msg: Bot.MessageSession):
@@ -67,17 +74,17 @@ async def convert_ab_to_detailed_format(abl: list, msg: Bot.MessageSession):
             original_title = x.get("title", "Unknown")
             original_user = x.get("user", "Unknown")
 
-            t.append(msg.locale.t("wiki.message.ab.qq.slice",
-                                  title=title_checked_map.get(original_title, original_title),
-                                  user=user_checked_map.get(original_user, original_user),
-                                  action=x["action"],
-                                  filter_name=x["filter"],
-                                  result=result))
+            t.append(msg.session_info.locale.t("wiki.message.ab.qq.slice",
+                                               title=title_checked_map.get(original_title, original_title),
+                                               user=user_checked_map.get(original_user, original_user),
+                                               action=x["action"],
+                                               filter_name=x["filter"],
+                                               result=result))
             time = msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True)
             t.append(time)
             if not text_status:
                 if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \
                         (original_user in user_checked_map and user_checked_map[original_user] != original_user):
-                    t.append(msg.locale.t("wiki.message.utils.redacted"))
+                    t.append(msg.session_info.locale.t("wiki.message.utils.redacted"))
             ablist.append("\n".join(t))
     return ablist

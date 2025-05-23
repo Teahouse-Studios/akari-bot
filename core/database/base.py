@@ -35,7 +35,7 @@ class DBModel(Model):
         else:
             if ex := exports.get("Bot"):
                 if isinstance(target_id, (ex.MessageSession, ex.FetchedSession)):
-                    t = target_id.target.target_id
+                    t = target_id.session_info.target_id
         if not t:
             raise ValueError(
                 "target_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
@@ -61,7 +61,7 @@ class DBModel(Model):
         else:
             if ex := exports.get("Bot"):
                 if isinstance(sender_id, (ex.MessageSession, ex.FetchedSession)):
-                    t = sender_id.target.sender_id
+                    t = sender_id.session_info.sender_id
         if not t:
             raise ValueError(
                 "sender_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")

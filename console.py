@@ -56,10 +56,9 @@ async def send_command(msg):
         sender_from=sender_prefix,
         client_name=client_name,
         message_id='0',
-        messages=MessageChain([Plain(msg),]),
+        messages=MessageChain.assign([Plain(msg),]),
         ctx_slot=ctx_id)
-    ConsoleContextManager.add_context(session_data, '')
-    await JobQueueClient.send_message_signal_to_server(session_data)
+    await Bot.process_message(session_data, '')
     Logger.info("----Process end----")
     # return returns
 

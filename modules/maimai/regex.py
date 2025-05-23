@@ -32,9 +32,9 @@ async def _(msg: Bot.MessageSession):
     else:
         sid_list = await search_by_alias(name)
         if len(sid_list) == 0:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+            await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.disambiguation") + "\n"
+            res = msg.session_info.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
     if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
 
     if int(sid) > 100000:
         res = []
@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
             except KeyError:
                 res.append(f"「Let's party!」")
 
-        res.append(msg.locale.t(
+        res.append(msg.session_info.locale.t(
             "maimai.message.song",
             artist=music[sid]["artist"],
             genre="宴會場",
@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession):
         ))
         res = "\n".join(res)
     else:
-        res = msg.locale.t(
+        res = msg.session_info.locale.t(
             "maimai.message.song",
             artist=music["basic_info"]["artist"],
             genre=genre_i18n_mapping.get(
@@ -85,15 +85,15 @@ async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
     if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
     title = (
         f"{music["id"]} - {music["title"]}{" (DX)" if music["type"] == "DX" else ""}"
     )
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
-        await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
+        await msg.finish(msg.session_info.locale.t("maimai.message.alias.alias_not_found"))
     else:
-        result = msg.locale.t("maimai.message.alias", title=title) + "\n"
+        result = msg.session_info.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
         await msg.finish([Plain(result.strip())])
 
@@ -147,7 +147,7 @@ async def _(msg: Bot.MessageSession):
                     level=level, diff=[get_diff(res.groups()[1])], type=tp
                 )
             if len(music_data) == 0:
-                await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+                await msg.finish(msg.session_info.locale.t("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
                 await msg.finish(
@@ -156,7 +156,7 @@ async def _(msg: Bot.MessageSession):
                     )
                 )
         except ValueError:
-            await msg.finish(msg.locale.t("maimai.message.random.failed"))
+            await msg.finish(msg.session_info.locale.t("maimai.message.random.failed"))
 
 
 @mai_regex.regex(r"(.+)\s?段位(?:[认認]定)?列?表", desc="[I18N:maimai.help.maimai_regex.grade]")

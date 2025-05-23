@@ -82,7 +82,7 @@ async def parser(msg: "Bot.MessageSession",
         f" ({msg.session_info.target_id})" if msg.session_info.target_from != msg.session_info.sender_from else ""}]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
     try:
-        asyncio.create_task(SessionTaskManager.check(msg))
+        await SessionTaskManager.check(msg)
         modules = ModulesManager.return_modules_list(msg.session_info.target_from)
 
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
@@ -150,11 +150,11 @@ def _transform_alias(msg, command: str):
                                     placeholder in enumerate(pattern_placeholders) if i < len(groups)}
                 result = Template(replacement).safe_substitute(placeholder_dict)
 
-                Logger.debug(msg.prefixes[0] + result)
-                return msg.prefixes[0] + result
+                Logger.debug(msg.session_info.prefixes[0] + result)
+                return msg.session_info.prefixes[0] + result
         elif command_split[0] == pattern:
             # 旧语法兼容
-            command_split[0] = msg.prefixes[0] + replacement  # 将自定义别名替换为命令
+            command_split[0] = msg.session_info.prefixes[0] + replacement  # 将自定义别名替换为命令
             Logger.debug(" ".join(command_split))
             return " ".join(command_split)  # 重新连接消息
         else:
@@ -250,13 +250,13 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
         module: Module = modules[command_first_word]
         if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
             if module.desc:
-                desc = [I18NContext("parser.module.desc", desc=msg.locale.t_str(module.desc))]
-                if command_first_word not in msg.enabled_modules:
+                desc = [I18NContext("parser.module.desc", desc=msg.session_info.locale.t_str(module.desc))]
+                if command_first_word not in msg.session_info.enabled_modules:
                     desc.append(
                         I18NContext(
                             "parser.module.disabled.prompt",
                             module=command_first_word,
-                            prefix=msg.prefixes[0]))
+                            prefix=msg.session_info.prefixes[0]))
                 await msg.send_message(desc)
             else:
                 await msg.send_message(I18NContext("error.module.unbound", module=command_first_word))
@@ -271,11 +271,11 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
                 await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                 return
         elif not module.base:
-            if command_first_word not in msg.enabled_modules and require_enable_modules:  # 若未开启
-                await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word, prefix=msg.prefixes[0]))
+            if command_first_word not in msg.session_info.enabled_modules and require_enable_modules:  # 若未开启
+                await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word, prefix=msg.session_info.prefixes[0]))
                 if await msg.check_permission():
                     if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable")):
-                        await msg.target_info.config_module(command_first_word)
+                        await msg.session_info.target_info.config_module(command_first_word)
                         await msg.send_message(I18NContext("core.message.module.enable.success", module=command_first_word))
                     else:
                         return
@@ -330,7 +330,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
 
     except NoReportException as e:
         Logger.error(traceback.format_exc())
-        err_msg = msg.locale.t_str(str(e))
+        err_msg = msg.session_info.locale.t_str(str(e))
         await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
 
     except Exception as e:
@@ -609,7 +609,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
         except InvalidCommandFormatError:
             await msg.send_message(I18NContext("parser.command.format.invalid",
                                                module=command_first_word,
-                                               prefix=msg.prefixes[0]))
+                                               prefix=msg.session_info.prefixes[0]))
             """if msg.target_data.get("typo_check", True):  # 判断是否开启错字检查
                 nmsg, command_first_word, command_split = await _typo_check(msg,
                                                                             display_prefix,
@@ -633,7 +633,7 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e):
         temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
                                                         "ts": datetime.now().timestamp()}
     else:
-        reason = msg.locale.t_str(str(e))
+        reason = msg.session_info.locale.t_str(str(e))
         await msg.send_message(I18NContext("error.prompt.noreport", detail=reason))
 
 
@@ -665,7 +665,7 @@ async def _process_send_message_failed(msg: "Bot.MessageSession"):
 
 async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportException):
     Logger.error(traceback.format_exc())
-    err_msg = msg.locale.t_str(str(e))
+    err_msg = msg.session_info.locale.t_str(str(e))
     await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
 
 
@@ -694,7 +694,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
 
 """async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
     enabled_modules = []
-    for m in msg.enabled_modules:
+    for m in msg.session_info.enabled_modules:
         if m in modules and isinstance(modules[m], Command):
             enabled_modules.append(m)
     match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.6)

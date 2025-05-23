@@ -176,7 +176,7 @@ class MessageSession:
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
 
-        return FinishedSession(self, return_val["message_id"])
+        return FinishedSession(self.session_info, return_val["message_id"])
 
     async def finish(
         self,
@@ -308,7 +308,7 @@ class MessageSession:
         if Config("no_confirm", False):
             return True
         if message_chain:
-            message_chain = MessageChain(message_chain)
+            message_chain = MessageChain.assign(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain, quote)
@@ -351,7 +351,7 @@ class MessageSession:
         send = None
         ExecutionLockList.remove(self)
         if message_chain:
-            message_chain = MessageChain(message_chain)
+            message_chain = MessageChain.assign(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
@@ -394,7 +394,7 @@ class MessageSession:
         self.session_info.tmp["enforce_send_by_master_client"] = True
         send = None
         ExecutionLockList.remove(self)
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
@@ -435,7 +435,7 @@ class MessageSession:
         send = None
         ExecutionLockList.remove(self)
         if message_chain:
-            message_chain = MessageChain(message_chain)
+            message_chain = MessageChain.assign(message_chain)
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()
@@ -524,22 +524,11 @@ class MessageSession:
             datetime.fromtimestamp(timestamp, datetimeUTC) + self.session_info.timezone_offset
         ).strftime(" ".join(ftime_template))
 
-    class Feature:
+    def __hash__(self):
         """
-        此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断。
+        用于将消息会话对象转换为哈希值。
         """
-
-        image = False
-        voice = False
-        mention = False
-        embed = False
-        forward = False
-        delete = False
-        markdown = False
-        quote = False
-        rss = False
-        typing = False
-        wait = False
+        return hash(self.session_info.session_id)
 
 
 class FinishedSession:
@@ -548,7 +537,7 @@ class FinishedSession:
     """
 
     def __init__(
-        self, session, message_id: Union[List[int], List[str], int, str]
+        self, session: SessionInfo, message_id: Union[List[int], List[str], int, str]
     ):
         self.session = session
         if isinstance(message_id, (int, str)):

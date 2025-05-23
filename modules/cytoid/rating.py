@@ -185,7 +185,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         )
 
         font5 = ImageFont.truetype(noto_sans_demilight_path, 20)
-        level_text = f"{msg.locale.t("cytoid.message.b30.level")} {profile_level}"
+        level_text = f"{msg.session_info.locale.t("cytoid.message.b30.level")} {profile_level}"
         level_text_size = get_fontsize(font5, level_text)
         level_text_width = level_text_size[0]
         level_text_height = level_text_size[1]

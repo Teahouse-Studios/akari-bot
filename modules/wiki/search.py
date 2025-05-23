@@ -18,13 +18,13 @@ async def _(msg: Bot.MessageSession, pagename: str):
 async def search_pages(
     msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix: bool = True
 ):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+    target = (await WikiTargetInfo.get_or_create(target_id=msg.session_info.target_id))[0]
     start_wiki = target.api_link
     interwiki_list = target.interwikis
     headers = target.headers
     prefix = target.prefix
     if not start_wiki:
-        await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.prefixes[0]))
+        await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.session_info.prefixes[0]))
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {"query": [], "iw_prefix": ""}}

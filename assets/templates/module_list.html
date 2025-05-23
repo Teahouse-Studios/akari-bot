@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ msg.locale.locale }}">
+<html lang="{{ msg.session_info.locale.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -119,21 +119,21 @@
 <body>
     <div class="botbox">
         <div class="content-layout">
-        <h2>{{ msg.locale.t("core.message.module.list.header") }}</h2>
+        <h2>{{ msg.session_info.locale.t("core.message.module.list.header") }}</h2>
         <hr>
         <div class="grid-container">
             {% for key, value in module_list.items() %}
             <div class="grid-item{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else (' base' if value.base else ' external') }}">
                 <div class="{% if not (value.required_superuser or value.required_base_superuser) %}{{ 'admin' if value.required_admin else '' }}{% endif %}">
                     {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
-                                  command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
-                    {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
+                                  command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser) %}
+                    {% set regex_list=value.regex_list.get(msg.session_info.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
                     <div class="module-name">{{ value.bind_prefix | e }}</div>
                     {% if len(help_.args) > 0 %}
-                    <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
+                    <div>{{ msg.session_info.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
                     {%- endif %}
                     {% if len(regex_list) > 0 %}
-                    <div>{{ msg.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
+                    <div>{{ msg.session_info.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
                     {%- endif %}
                 </div>
             </div>
@@ -141,8 +141,8 @@
         </div>
         <hr>
             <div class="footer">
-                {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]) }} <br> {{ 
-                    msg.locale.t('core.message.help.detail', prefix=msg.prefixes[0]) |safe }}
+                {{ msg.session_info.locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) }} <br> {{
+                    msg.session_info.locale.t('core.message.help.detail', prefix=msg.session_info.prefixes[0]) |safe }}
             </div>
         </div>
     </div>

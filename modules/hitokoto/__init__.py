@@ -25,10 +25,10 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         if msg_type in msg_types:
             url += "?c=" + msg_type
         else:
-            await msg.finish(msg.locale.t("hitokoto.message.invalid"))
+            await msg.finish(msg.session_info.locale.t("hitokoto.message.invalid"))
 
     data = await get_url(url, 200, fmt="json")
-    if msg.locale.locale == "zh_tw":
+    if msg.session_info.locale.locale == "zh_tw":
         data = {
             k: (
                 LanguageConverter.from_language(zh_tw).convert(v)
@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
             for k, v in data.items()
         }
     from_who = data["from_who"] or ""
-    tp = msg.locale.t("hitokoto.message.type") + msg.locale.t(
+    tp = msg.session_info.locale.t("hitokoto.message.type") + msg.session_info.locale.t(
         "hitokoto.message.type." + data["type"]
     )
     link = f"https://hitokoto.cn?id={data["id"]}"

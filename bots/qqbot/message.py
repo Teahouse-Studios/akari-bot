@@ -37,17 +37,17 @@ class FinishedSession(FinishedSessionT):
         try:
             from bots.qqbot.bot import client  # noqa
 
-            if self.session.target.target_from == target_guild_prefix:
+            if self.session.session_info.target_from == target_guild_prefix:
                 for x in self.message_id:
                     await client.api.recall_message(
-                        channel_id=self.session.target.target_id.split("|")[-1],
+                        channel_id=self.session.session_info.target_id.split("|")[-1],
                         message_id=x,
                         hidetip=True,
                     )
-            elif self.session.target.target_from == target_group_prefix:
+            elif self.session.session_info.target_from == target_group_prefix:
                 for x in self.message_id:
                     await client.api.recall_group_message(
-                        group_openid=self.session.target.target_id.split("|")[-1],
+                        group_openid=self.session.session_info.target_id.split("|")[-1],
                         message_id=x,
                     )
         except Exception:
@@ -77,7 +77,7 @@ class MessageSession(MessageSessionT):
         enable_split_image=False,
         callback=None,
     ) -> FinishedSession:
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
 
@@ -90,7 +90,7 @@ class MessageSession(MessageSessionT):
             elif isinstance(x, ImageElement):
                 images.append(x)
             elif isinstance(x, MentionElement):
-                if x.client == client_name and self.target.target_from == target_guild_prefix:
+                if x.client == client_name and self.session_info.target_from == target_guild_prefix:
                     plains.append(PlainElement(text=f"<@{x.id}>"))
         sends = []
         if len(plains + images) != 0:
@@ -129,17 +129,17 @@ class MessageSession(MessageSessionT):
                 send = await self.session.message.reply(
                     content=msg, file_image=send_img, message_reference=msg_quote
                 )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {msg}")
                 if image_1:
                     Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                        f"[Bot] -> [{self.session_info.target_id}]: Image: {str(image_1.__dict__)}"
                     )
                 if images:
                     for img in images:
                         send_img = await img.get()
                         send = await self.session.message.reply(file_image=send_img)
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(img.__dict__)}"
                         )
                         if send:
                             sends.append(send)
@@ -162,17 +162,17 @@ class MessageSession(MessageSessionT):
                     content=msg, file_image=send_img, message_reference=msg_quote
                 )
                 sends.append(send)
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {msg}")
                 if image_1:
                     Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                        f"[Bot] -> [{self.session_info.target_id}]: Image: {str(image_1.__dict__)}"
                     )
                 if images:
                     for img in images:
                         send_img = await img.get()
                         send = await self.session.message.reply(file_image=send_img)
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(img.__dict__)}"
                         )
                         if send:
                             sends.append(send)
@@ -198,10 +198,10 @@ class MessageSession(MessageSessionT):
                         media=send_img,
                         msg_seq=seq,
                     )
-                    Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
+                    Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {msg.strip()}")
                     if image_1:
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(image_1.__dict__)}"
                         )
                     if send:
                         sends.append(send)
@@ -226,7 +226,7 @@ class MessageSession(MessageSessionT):
                             msg_type=7, media=send_img, msg_seq=seq
                         )
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(img.__dict__)}"
                         )
                         if send:
                             sends.append(send)
@@ -252,10 +252,10 @@ class MessageSession(MessageSessionT):
                         media=send_img,
                         msg_seq=seq,
                     )
-                    Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
+                    Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {msg.strip()}")
                     if image_1:
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(image_1.__dict__)}"
                         )
                     if send:
                         sends.append(send)
@@ -280,7 +280,7 @@ class MessageSession(MessageSessionT):
                             msg_type=7, media=send_img, msg_seq=seq
                         )
                         Logger.info(
-                            f"[Bot] -> [{self.target.target_id}]: Image: {str(img.__dict__)}"
+                            f"[Bot] -> [{self.session_info.target_id}]: Image: {str(img.__dict__)}"
                         )
                         if send:
                             sends.append(send)
@@ -316,18 +316,18 @@ class MessageSession(MessageSessionT):
             d = await download(x.url)
             if filetype.is_image(d):
                 lst.append(Image(d))
-        return MessageChain(lst)
+        return MessageChain.assign(lst)
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
+        if self.session_info.target_from in [target_guild_prefix, target_direct_prefix]:
             msg = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", msg)
         else:
             msg = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", msg)
         return msg
 
     async def delete(self):
-        if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
+        if self.session_info.target_from in [target_guild_prefix, target_direct_prefix]:
             try:
                 await self.session.message._api.recall_message(
                     channel_id=self.session.message.channel_id,
@@ -351,7 +351,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.target.target_from == target_guild_prefix:
+            if self.msg.session_info.target_from == target_guild_prefix:
                 emoji_id = str(
                     Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot")
                 )
@@ -359,8 +359,8 @@ class MessageSession(MessageSessionT):
                 from bots.qqbot.bot import client  # noqa
 
                 await client.api.put_reaction(
-                    channel_id=self.msg.target.target_id.split("|")[-1],
-                    message_id=self.msg.target.message_id,
+                    channel_id=self.msg.session_info.target_id.split("|")[-1],
+                    message_id=self.msg.session_info.message_id,
                     emoji_type=emoji_type,
                     emoji_id=emoji_id,
                 )
@@ -380,29 +380,29 @@ class FetchedSession(Bot.FetchedSession):
     ):
         from bots.qqbot.bot import client  # noqa
 
-        if self.target.target_from == target_guild_prefix:
+        if self.session_info.target_from == target_guild_prefix:
             self.session.message = Message(
                 api=client.api,
                 event_id=None,
-                data={"channel_id": self.target.target_id.split("|")[-1]},
+                data={"channel_id": self.session_info.target_id.split("|")[-1]},
             )
-        elif self.target.target_from == target_direct_prefix:
+        elif self.session_info.target_from == target_direct_prefix:
             self.session.message = DirectMessage(
                 api=client.api,
                 event_id=None,
-                data={"guild_id": self.target.target_id.split("|")[-1]},
+                data={"guild_id": self.session_info.target_id.split("|")[-1]},
             )
-        elif self.target.target_from == target_group_prefix:
+        elif self.session_info.target_from == target_group_prefix:
             self.session.message = GroupMessage(
                 api=client.api,
                 event_id=None,
-                data={"group_openid": self.target.target_id.split("|")[-1]},
+                data={"group_openid": self.session_info.target_id.split("|")[-1]},
             )
-        elif self.target.target_from == target_c2c_prefix:
+        elif self.session_info.target_from == target_c2c_prefix:
             self.session.message = C2CMessage(
                 api=client.api,
                 event_id=None,
-                data={"author": {"user_openid": self.target.target_id.split("|")[-1]}},
+                data={"author": {"user_openid": self.session_info.target_id.split("|")[-1]}},
             )
 
         return await self.parent.send_direct_message(
@@ -454,14 +454,14 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                         else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
+                            msgchain = MessageChain.assign([Plain(message)])
+                    msgchain = MessageChain.assign(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        await AnalyticsData.create(target_id=x.target.target_id,
-                                                   sender_id=x.target.sender_id,
+                        await AnalyticsData.create(target_id=x.session_info.target_id,
+                                                   sender_id=x.session_info.sender_id,
                                                    command="",
                                                    module_name=module_name,
                                                    module_type="schedule")
@@ -478,14 +478,14 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                             else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
+                                msgchain = MessageChain.assign([Plain(message)])
+                        msgchain = MessageChain.assign(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            await AnalyticsData.create(target_id=fetch.target.target_id,
-                                                       sender_id=fetch.target.sender_id,
+                            await AnalyticsData.create(target_id=fetch.session_info.target_id,
+                                                       sender_id=fetch.session_info.sender_id,
                                                        command="",
                                                        module_name=module_name,
                                                        module_type="schedule")

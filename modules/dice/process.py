@@ -61,7 +61,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: str):
         ]
     ):
         raise ConfigValueError("[I18N:error.config.invalid]")
-    if msg.Feature.markdown:
+    if msg.session_info.support_markdown:
         expr = expr.replace("*", "\\*")
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)
@@ -86,13 +86,13 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
     else:
         times = "1"
     if not isint(times):
-        errmsg = msg.locale.t("dice.message.error.value.times.invalid")
+        errmsg = msg.session_info.locale.t("dice.message.error.value.times.invalid")
         return (
             None,
             None,
             None,
             DiceValueError(
-                msg, msg.locale.t("dice.message.error") + "\n" + errmsg
+                msg, msg.session_info.locale.t("dice.message.error") + "\n" + errmsg
             ).message,
         )
 
@@ -122,12 +122,12 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 
     Logger.debug(dice_expr_list)
     if len(dice_item_list) > MAX_ITEM_COUNT:
-        errmsg = msg.locale.t("dice.message.error.value.too_long")
+        errmsg = msg.session_info.locale.t("dice.message.error.value.too_long")
         return (
             None,
             None,
             None,
-            DiceValueError(msg, msg.locale.t("dice.message.error") + errmsg).message,
+            DiceValueError(msg, msg.session_info.locale.t("dice.message.error") + errmsg).message,
         )
 
     dice_count = 0
@@ -157,7 +157,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
                 continue
         except (DiceSyntaxError, DiceValueError) as ex:
             errmsg = (
-                msg.locale.t("dice.message.error.prompt", i=dice_count) + ex.message
+                msg.session_info.locale.t("dice.message.error.prompt", i=dice_count) + ex.message
             )
     if errmsg:
         return (
@@ -165,7 +165,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
             None,
             None,
             DiceValueError(
-                msg, msg.locale.t("dice.message.error") + "\n" + errmsg
+                msg, msg.session_info.locale.t("dice.message.error") + "\n" + errmsg
             ).message,
         )
     return dice_expr_list, dice_count, int(times), None
@@ -174,7 +174,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 def insert_multiply(msg: Bot.MessageSession, lst: list):
     """在各项之间加上乘号"""
     result = []
-    asterisk = "\\*" if msg.Feature.markdown else "*"
+    asterisk = "\\*" if msg.session_info.support_markdown else "*"
     for i, item in enumerate(lst):
         if i == 0:
             result.append(item)
@@ -202,15 +202,15 @@ def generate_dice_message(
     """开始投掷并生成消息"""
     success_num = 0
     fail_num = 0
-    output = msg.locale.t("dice.message.output")
+    output = msg.session_info.locale.t("dice.message.output")
     if "#" in expr:
         expr = expr.partition("#")[2]
     if times < 1 or times > MAX_ROLL_TIMES:
-        errmsg = msg.locale.t(
+        errmsg = msg.session_info.locale.t(
             "dice.message.error.value.times.out_of_range", max=MAX_ROLL_TIMES
         )
         return DiceValueError(
-            msg, msg.locale.t("dice.message.error") + "\n" + errmsg
+            msg, msg.session_info.locale.t("dice.message.error") + "\n" + errmsg
         ).message
 
     for _ in range(times):
@@ -243,20 +243,20 @@ def generate_dice_message(
                 raise SyntaxError
         except (FunctionNotDefined, NameNotDefined, SyntaxError, TypeError):
             return DiceSyntaxError(
-                msg, msg.locale.t("dice.message.error.syntax")
+                msg, msg.session_info.locale.t("dice.message.error.syntax")
             ).message
         except Exception as e:
             return DiceValueError(
-                msg, msg.locale.t("dice.message.error") + "\n" + str(e)
+                msg, msg.session_info.locale.t("dice.message.error") + "\n" + str(e)
             ).message
         try:
             output_line += f"={fmt_num(result, sep=True)}"
         except Exception:
             return DiceValueError(
                 msg,
-                msg.locale.t("dice.message.error")
+                msg.session_info.locale.t("dice.message.error")
                 + "\n"
-                + msg.locale.t("dice.message.too_long"),
+                + msg.session_info.locale.t("dice.message.too_long"),
             ).message
 
         try:
@@ -264,23 +264,23 @@ def generate_dice_message(
                 output_line += f"/{dc}  "
                 if msg.target_data.get("dice_dc_reversed"):
                     if int(result) <= int(dc):
-                        output_line += msg.locale.t("dice.message.dc.success")
+                        output_line += msg.session_info.locale.t("dice.message.dc.success")
                         success_num += 1
                     else:
-                        output_line += msg.locale.t("dice.message.dc.failed")
+                        output_line += msg.session_info.locale.t("dice.message.dc.failed")
                         fail_num += 1
                 else:
                     if int(result) >= int(dc):
-                        output_line += msg.locale.t("dice.message.dc.success")
+                        output_line += msg.session_info.locale.t("dice.message.dc.success")
                         success_num += 1
                     else:
-                        output_line += msg.locale.t("dice.message.dc.failed")
+                        output_line += msg.session_info.locale.t("dice.message.dc.failed")
                         fail_num += 1
             output += f"\n{expr}={output_line}"
         except ValueError:
-            return msg.locale.t("dice.message.dc.invalid") + dc
+            return msg.session_info.locale.t("dice.message.dc.invalid") + dc
     if dc and times > 1:
-        output += "\n" + msg.locale.t(
+        output += "\n" + msg.session_info.locale.t(
             "dice.message.dc.check", success=success_num, failed=fail_num
         )
     return output

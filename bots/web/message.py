@@ -63,17 +63,17 @@ class MessageSession(MessageSessionT):
         callback=None,
     ) -> FinishedSession:
         websocket: WebSocket = Temp.data["web_chat_websocket"]
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         self.sent.append(message_chain)
         sends = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
                 sends.append({"type": "text", "content": x.text})
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 img_b64 = await x.get_base64(mime=True)
                 sends.append({"type": "image", "content": img_b64})
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: Image: {img_b64[:50]}...")
 
         resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
         await websocket.send_text(json.dumps(resp).decode())
@@ -90,7 +90,7 @@ class MessageSession(MessageSessionT):
         return "\n".join(msgs)
 
     async def to_message_chain(self):
-        msg_chain = MessageChain()
+        msg_chain = MessageChain.assign()
         for msg in self.session.message["message"]:
             if msg["type"] == "text":
                 msg_chain.append(Plain(msg["content"]))

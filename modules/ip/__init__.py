@@ -17,7 +17,7 @@ async def _(msg: Bot.MessageSession, ip_address: str):
         if isinstance(ip, ipaddress.IPv6Address) and "::" in ip_address:
             ip_address = ip.exploded
     except Exception:
-        await msg.finish(msg.locale.t("ip.message.invalid"))
+        await msg.finish(msg.session_info.locale.t("ip.message.invalid"))
     res = await check_ip(ip_address)
     await msg.finish(await format_ip(msg, res), disable_secret_check=True)
 
@@ -97,7 +97,7 @@ async def check_ip(ip: str):
 
 
 def zzzq(msg: Bot.MessageSession, country: str):
-    if msg.target.client_name in ["KOOK", "QQ", "QQBot"] and \
+    if msg.session_info.client_name in ["KOOK", "QQ", "QQBot"] and \
             country in ["Hong Kong", "Macao", "Taiwan"]:
         return "China"
     return country
@@ -113,32 +113,51 @@ def parse_coordinate(axis: str, value: float):
 async def format_ip(msg, info: Dict[str, Any]):
     res = []
     ip_property = {
-        "global": msg.locale.t("ip.message.ip_property.global"),
-        "private": msg.locale.t("ip.message.ip_property.private"),
-        "reserved": msg.locale.t("ip.message.ip_property.reserved"),
-        "multicast": msg.locale.t("ip.message.ip_property.multicast"),
-        "link_local": msg.locale.t("ip.message.ip_property.link_local"),
-        "loopback": msg.locale.t("ip.message.ip_property.loopback"),
-        "unspecified": msg.locale.t("ip.message.ip_property.unspecified"),
-        "ipv4_mapped": msg.locale.t("ip.message.ip_property.ipv4_mapped"),
-        "sixtofour": msg.locale.t("ip.message.ip_property.sixtofour"),
-        "teredo": msg.locale.t("ip.message.ip_property.teredo"),
-        "site_local": msg.locale.t("ip.message.ip_property.site_local"),
-        "unknown": msg.locale.t("message.unknown")
+        "global": msg.session_info.locale.t("ip.message.ip_property.global"),
+        "private": msg.session_info.locale.t("ip.message.ip_property.private"),
+        "reserved": msg.session_info.locale.t("ip.message.ip_property.reserved"),
+        "multicast": msg.session_info.locale.t("ip.message.ip_property.multicast"),
+        "link_local": msg.session_info.locale.t("ip.message.ip_property.link_local"),
+        "loopback": msg.session_info.locale.t("ip.message.ip_property.loopback"),
+        "unspecified": msg.session_info.locale.t("ip.message.ip_property.unspecified"),
+        "ipv4_mapped": msg.session_info.locale.t("ip.message.ip_property.ipv4_mapped"),
+        "sixtofour": msg.session_info.locale.t("ip.message.ip_property.sixtofour"),
+        "teredo": msg.session_info.locale.t("ip.message.ip_property.teredo"),
+        "site_local": msg.session_info.locale.t("ip.message.ip_property.site_local"),
+        "unknown": msg.session_info.locale.t("message.unknown")
     }
 
     res.append(info["ip"])
-    res.append(f"{msg.locale.t("ip.message.type")}IPv{info["version"]} {
-               ip_property[info["ip_property"]]}{msg.locale.t("ip.message.ip_property")}")
-    res.append(f"{msg.locale.t("ip.message.real_ip")}{info["real_ip"]}" if info["real_ip"] else "")
-    res.append(f"{f"{msg.locale.t("ip.message.location")}{f"{info["city"]}, " if info["city"] else ""}{f"{info["region"]}, " if info["region"] else ""}{zzzq(msg, info["country"])}" if info["country"] else ""}{
-               f" ({parse_coordinate("longitude", info["longitude"])}, {parse_coordinate("latitude", info["latitude"])})" if info["longitude"] and info["latitude"] else ""}")
-    res.append(f"{msg.locale.t("ip.message.postal_code")}{info["postal_code"]}" if info["postal_code"] else "")
-    res.append(f"{msg.locale.t("ip.message.organization")}{info["organization"]}" if info["organization"] else "")
-    res.append(f"{f"{msg.locale.t("ip.message.asn")}{info["asn"]}" if info["asn"] else ""}{
+    res.append(f"{msg.session_info.locale.t("ip.message.type")}IPv{info["version"]} {
+               ip_property[info["ip_property"]]}{msg.session_info.locale.t("ip.message.ip_property")}")
+    res.append(f"{msg.session_info.locale.t("ip.message.real_ip")}{info["real_ip"]}" if info["real_ip"] else "")
+    res.append(
+        f"{
+            f"{
+                msg.session_info.locale.t("ip.message.location")}{
+                f"{
+                    info["city"]}, " if info["city"] else ""}{
+                        f"{
+                            info["region"]}, " if info["region"] else ""}{
+                                zzzq(
+                                    msg,
+                                    info["country"])}" if info["country"] else ""}{
+                                        f" ({
+                                            parse_coordinate(
+                                                "longitude",
+                                                info["longitude"])}, {
+                                                    parse_coordinate(
+                                                        "latitude",
+                                                        info["latitude"])})" if info["longitude"] and info["latitude"] else ""}")
+    res.append(f"{msg.session_info.locale.t("ip.message.postal_code")}{
+               info["postal_code"]}" if info["postal_code"] else "")
+    res.append(f"{msg.session_info.locale.t("ip.message.organization")}{
+               info["organization"]}" if info["organization"] else "")
+    res.append(f"{f"{msg.session_info.locale.t("ip.message.asn")}{info["asn"]}" if info["asn"] else ""}{
                f" ({info["asn_organization"]}) " if info["asn_organization"] else ""}")
-    res.append(f"{msg.locale.t("ip.message.utc")}UTC{(info["offset"] / 3600):+g}" if info["offset"] else "")
-    res.append(f"{msg.locale.t("ip.message.reverse")}{
+    res.append(f"{msg.session_info.locale.t("ip.message.utc")}UTC{
+               (info["offset"] / 3600):+g}" if info["offset"] else "")
+    res.append(f"{msg.session_info.locale.t("ip.message.reverse")}{
                info["reverse"]}" if info["reverse"] and info["reverse"] != info["ip"] else "")
 
     return "\n".join([x for x in res if x])

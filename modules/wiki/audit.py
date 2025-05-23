@@ -22,13 +22,13 @@ async def _(msg: Bot.MessageSession, apilink: str):
         apilink = check.value.api
         if msg.parsed_msg.get("trust", False):
             res = await WikiAllowList.add(apilink)
-            list_name = msg.locale.t("wiki.message.wiki_audit.list_name.allowlist")
+            list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.allowlist")
         else:
             res = await WikiBlockList.add(apilink)
-            list_name = msg.locale.t("wiki.message.wiki_audit.list_name.blocklist")
+            list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.blocklist")
         if not res:
             await msg.finish(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "wiki.message.wiki_audit.add.failed",
                     list_name=list_name,
                     api=apilink,
@@ -36,15 +36,15 @@ async def _(msg: Bot.MessageSession, apilink: str):
             )
         else:
             await msg.finish(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "wiki.message.wiki_audit.add.success",
                     list_name=list_name,
                     api=apilink,
                 )
             )
     else:
-        result = msg.locale.t("wiki.message.error.add") + (
-            "\n" + msg.locale.t("wiki.message.error.info") + check.message
+        result = msg.session_info.locale.t("wiki.message.error.add") + (
+            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message
             if check.message != ""
             else ""
         )
@@ -60,17 +60,17 @@ async def _(msg: Bot.MessageSession, apilink: str):
         res = await WikiAllowList.remove(apilink)  # 已关闭的站点无法验证有效性
         if not res:
             await msg.finish(
-                msg.locale.t(
+                msg.session_info.locale.t(
                     "wiki.message.wiki_audit.remove.failed.other_wiki", api=apilink
                 )
             )
-        list_name = msg.locale.t("wiki.message.wiki_audit.list_name.allowlist")
+        list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.allowlist")
     else:
         res = WikiBlockList.remove(apilink)
-        list_name = msg.locale.t("wiki.message.wiki_audit.list_name.blocklist")
+        list_name = msg.session_info.locale.t("wiki.message.wiki_audit.list_name.blocklist")
     if not res:
         await msg.finish(
-            msg.locale.t(
+            msg.session_info.locale.t(
                 "wiki.message.wiki_audit.remove.failed",
                 list_name=list_name,
                 api=apilink,
@@ -78,7 +78,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         )
     else:
         await msg.finish(
-            msg.locale.t(
+            msg.session_info.locale.t(
                 "wiki.message.wiki_audit.remove.success",
                 list_name=list_name,
                 api=apilink,
@@ -96,22 +96,22 @@ async def _(msg: Bot.MessageSession, apilink: str):
         block = await WikiBlockList.check(apilink)
         if allow:
             msg_list.append(
-                msg.locale.t("wiki.message.wiki_audit.query.allowlist", api=apilink)
+                msg.session_info.locale.t("wiki.message.wiki_audit.query.allowlist", api=apilink)
             )
         if block:
             msg_list.append(
-                msg.locale.t("wiki.message.wiki_audit.query.blocklist", api=apilink)
+                msg.session_info.locale.t("wiki.message.wiki_audit.query.blocklist", api=apilink)
             )
         if allow and block:
-            msg_list.append(msg.locale.t("wiki.message.wiki_audit.query.conflict"))
+            msg_list.append(msg.session_info.locale.t("wiki.message.wiki_audit.query.conflict"))
         if not msg_list:
             msg_list.append(
-                msg.locale.t("wiki.message.wiki_audit.query.none", api=apilink)
+                msg.session_info.locale.t("wiki.message.wiki_audit.query.none", api=apilink)
             )
         await msg.finish(msg_list)
     else:
-        result = msg.locale.t("wiki.message.error.query") + (
-            "\n" + msg.locale.t("wiki.message.error.info") + check.message
+        result = msg.session_info.locale.t("wiki.message.error.query") + (
+            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message
             if check.message != ""
             else ""
         )
@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
     allow_list = await WikiAllowList.all().values("api_link", "timestamp")
     block_list = await WikiBlockList.all().values("api_link", "timestamp")
     legacy = True
-    if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
+    if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
         send_msgs = []
         allow_columns = [
             [x['api_link'], msg.ts2strftime(x['timestamp'].timestamp(), iso=True, timezone=False)]
@@ -134,8 +134,8 @@ async def _(msg: Bot.MessageSession):
             allow_table = ImageTable(
                 data=allow_columns,
                 headers=[
-                    msg.locale.t("wiki.message.wiki_audit.list.table.header.apilink"),
-                    msg.locale.t("wiki.message.wiki_audit.list.table.header.date"),
+                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.apilink"),
+                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.date"),
                 ],
             )
             if allow_table:
@@ -154,8 +154,8 @@ async def _(msg: Bot.MessageSession):
             block_table = ImageTable(
                 data=block_columns,
                 headers=[
-                    msg.locale.t("wiki.message.wiki_audit.list.table.header.apilink"),
-                    msg.locale.t("wiki.message.wiki_audit.list.table.header.date"),
+                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.apilink"),
+                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.date"),
                 ],
             )
             if block_table:
@@ -172,16 +172,16 @@ async def _(msg: Bot.MessageSession):
     if legacy:
         wikis = []
         if allow_list:
-            wikis.append(msg.locale.t("wiki.message.wiki_audit.list.allowlist"))
+            wikis.append(msg.session_info.locale.t("wiki.message.wiki_audit.list.allowlist"))
             for al in allow_list:
                 wikis.append(
                     f"{al[0]} ({msg.ts2strftime(al[1].timestamp(), iso=True, timezone=False)})"
                 )
         if block_list:
-            wikis.append(msg.locale.t("wiki.message.wiki_audit.list.blocklist"))
+            wikis.append(msg.session_info.locale.t("wiki.message.wiki_audit.list.blocklist"))
             for bl in block_list:
                 wikis.append(f"{bl[0]} ({bl[1]})")
         if wikis:
             await msg.finish(wikis)
         else:
-            await msg.finish(msg.locale.t("wiki.message.wiki_audit.list.none"))
+            await msg.finish(msg.session_info.locale.t("wiki.message.wiki_audit.list.none"))

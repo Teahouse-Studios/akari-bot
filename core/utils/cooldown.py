@@ -48,8 +48,8 @@ class CoolDown:
         self.msg = msg
         self.delay = delay
         self.whole_target = whole_target
-        self.target_id = self.msg.target.target_id
-        self.sender_id = self.msg.target.sender_id
+        self.target_id = self.msg.session_info.target_id
+        self.sender_id = self.msg.session_info.sender_id
 
     def _get_cd_dict(self):
         target_dict = _cd_lst[self.target_id]

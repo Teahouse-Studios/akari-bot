@@ -163,7 +163,7 @@ async def _(tsk: JobQueuesTable, args: dict):
 
 @action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    await Bot.send_message(args["target_id"], MessageChain(args["message"]))
+    await Bot.send_message(args["target_id"], MessageChain.assign(args["message"]))
     await return_val(tsk, {"send": True})
 
 

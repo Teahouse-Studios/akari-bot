@@ -93,7 +93,7 @@ async def mcv_rss():
 
             await JobQueue.trigger_hook_all(
                 "mcv_rss",
-                message=MessageChain(
+                message=MessageChain.assign(
                     [
                         I18NContext("mcv_rss.message.mcv_rss.release", version=release),
                         FormattedTime(time_release),
@@ -108,7 +108,7 @@ async def mcv_rss():
                 if article[1] not in get_stored_news_title:
                     await JobQueue.trigger_hook_all(
                         "minecraft_news",
-                        message=MessageChain(
+                        message=MessageChain.assign(
                             [
                                 I18NContext(
                                     "minecraft_news.message.update_log",
@@ -124,7 +124,7 @@ async def mcv_rss():
             Logger.info(f"Huh, we find {snapshot}.")
             await JobQueue.trigger_hook_all(
                 "mcv_rss",
-                message=MessageChain(
+                message=MessageChain.assign(
                     [
                         I18NContext(
                             "mcv_rss.message.mcv_rss.snapshot",
@@ -142,7 +142,7 @@ async def mcv_rss():
                 if article[1] not in get_stored_news_title:
                     await JobQueue.trigger_hook_all(
                         "minecraft_news",
-                        message=MessageChain(
+                        message=MessageChain.assign(
                             [
                                 I18NContext(
                                     "minecraft_news.message.update_log",
@@ -170,7 +170,7 @@ async def mcbv_rss():
             Logger.info(f"Huh, we find Bedrock {version}.")
             await JobQueue.trigger_hook_all(
                 "mcbv_rss",
-                message=MessageChain(
+                message=MessageChain.assign(
                     [I18NContext("mcv_rss.message.mcbv_rss", version=version)]
                 ),
             )
@@ -201,7 +201,7 @@ async def mcv_jira_rss():
                 if release.lower().find("future version") != -1:
                     await JobQueue.trigger_hook_all(
                         "mcv_jira_rss",
-                        message=MessageChain(
+                        message=MessageChain.assign(
                             [
                                 I18NContext(
                                     "mcv_rss.message.mcv_jira_rss.future",
@@ -213,7 +213,7 @@ async def mcv_jira_rss():
                 else:
                     await JobQueue.trigger_hook_all(
                         "mcv_jira_rss",
-                        message=MessageChain(
+                        message=MessageChain.assign(
                             [
                                 I18NContext(
                                     "mcv_rss.message.mcv_jira_rss", version=release
@@ -248,7 +248,7 @@ async def mcbv_jira_rss():
 
                 await JobQueue.trigger_hook_all(
                     "mcbv_jira_rss",
-                    message=MessageChain(
+                    message=MessageChain.assign(
                         [I18NContext("mcv_rss.message.mcbv_jira_rss", version=release)]
                     ),
                 )
@@ -278,7 +278,7 @@ async def mcdv_rss():
 
                 await JobQueue.trigger_hook_all(
                     "mcdv_rss",
-                    message=MessageChain(
+                    message=MessageChain.assign(
                         [I18NContext("mcv_rss.message.mcdv_rss", version=release)]
                     ),
                 )
@@ -308,7 +308,7 @@ async def mclgv_rss():
 
                 await JobQueue.trigger_hook_all(
                     "mclgv_rss",
-                    message=MessageChain(
+                    message=MessageChain.assign(
                         [I18NContext("mcv_rss.message.mclgv_rss", version=release)]
                     ),
                 )

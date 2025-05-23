@@ -31,10 +31,10 @@ hlp = module("help", base=True, doc=True)
 @hlp.command("<module> [--legacy] {[I18N:core.help.help.detail]}",
              options_desc={"--legacy": "[I18N:help.option.legacy]"})
 async def _(msg: Bot.MessageSession, module: str):
-    is_base_superuser = msg.target.sender_id in Bot.base_superuser_list
+    is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
+        target_from=msg.session_info.target_from)
     alias = ModulesManager.modules_aliases
 
     if msg.parsed_msg:
@@ -50,17 +50,17 @@ async def _(msg: Bot.MessageSession, module: str):
             module_ = module_list[help_name]
 
             if module_.desc:
-                desc = msg.locale.t_str(module_.desc)
+                desc = msg.session_info.locale.t_str(module_.desc)
                 mdocs.append(desc)
 
             help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
-                                  command_prefixes=msg.prefixes, is_superuser=is_superuser)
+                                  command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser)
 
             if help_.args:
                 mdocs.append(help_.return_formatted_help_doc())
 
             regex_list = module_.regex_list.get(
-                msg.target.target_from,
+                msg.session_info.target_from,
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser)
 
@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession, module: str):
             if (module_.required_superuser and not is_superuser) or \
                (module_.required_base_superuser and not is_base_superuser):
                 pass
-            elif module_.rss and not msg.Feature.rss:
+            elif module_.rss and not msg.session_info.support_rss:
                 pass
             else:
                 if regex_list:
@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession, module: str):
                         if pattern:
                             rdesc = regex.desc
                             if rdesc:
-                                rdesc = msg.locale.t_str(rdesc)
+                                rdesc = msg.session_info.locale.t_str(rdesc)
                                 mdocs.append(f"{pattern} {f"[I18N:core.message.help.regex.detail,msg={rdesc}]"}")
                             else:
                                 mdocs.append(f"{pattern} {"[I18N:core.message.help.regex.no_information]"}")
@@ -106,13 +106,13 @@ async def _(msg: Bot.MessageSession, module: str):
             else:
                 wiki_msg = ""
 
-            if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image and Info.web_render_status:
+            if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image and Info.web_render_status:
                 use_local = bool(Info.web_render_local_status)
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
                     pass
-                elif module_.rss and not msg.Feature.rss:
+                elif module_.rss and not msg.session_info.support_rss:
                     pass
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
@@ -190,7 +190,7 @@ async def _(msg: Bot.MessageSession, module: str):
              options_desc={"--legacy": "[I18N:help.option.legacy]"})
 async def _(msg: Bot.MessageSession):
     legacy_help = True
-    if not msg.parsed_msg and msg.Feature.image:
+    if not msg.parsed_msg and msg.session_info.support_image:
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
@@ -199,18 +199,18 @@ async def _(msg: Bot.MessageSession):
                 imgchain.append(Image(img))
 
             help_msg_list = [I18NContext("core.message.help.all_modules",
-                                         prefix=msg.prefixes[0])]
+                                         prefix=msg.session_info.prefixes[0])]
             if help_url:
                 help_msg_list.append(I18NContext("core.message.help.document", url=help_url))
             if donate_url:
                 help_msg_list.append(I18NContext("core.message.help.donate", url=donate_url))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
-        is_base_superuser = msg.target.sender_id in Bot.base_superuser_list
+        is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
         module_list = ModulesManager.return_modules_list(
-            target_from=msg.target.target_from)
-        target_enabled_list = msg.enabled_modules
+            target_from=msg.session_info.target_from)
+        target_enabled_list = msg.session_info.enabled_modules
         help_msg = [I18NContext("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
@@ -228,8 +228,8 @@ async def _(msg: Bot.MessageSession):
         if module_:
             help_msg.append(I18NContext("core.message.help.legacy.external"))
             help_msg.append(Plain(" | ".join(module_)))
-        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.prefixes[0]))
-        help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.prefixes[0]))
+        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
+        help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.session_info.prefixes[0]))
         if help_url:
             help_msg.append(I18NContext("core.message.help.document", url=help_url))
         if donate_url:
@@ -239,7 +239,7 @@ async def _(msg: Bot.MessageSession):
 
 async def modules_list_help(msg: Bot.MessageSession, legacy):
     legacy_help = True
-    if msg.Feature.image and not legacy:
+    if msg.session_info.support_image and not legacy:
         imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
@@ -254,7 +254,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             await msg.finish(imgchain + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
-            target_from=msg.target.target_from)
+            target_from=msg.session_info.target_from)
         module_ = []
         for x in module_list:
             if x[0] == "_":
@@ -267,7 +267,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             help_msg = [I18NContext("core.message.help.legacy.availables"), Plain(" | ".join(module_))]
         else:
             help_msg = [I18NContext("core.message.help.legacy.availables.none")]
-        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.prefixes[0]))
+        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
         if help_url:
             help_msg.append(I18NContext("core.message.help.document", url=help_url))
         await msg.finish(help_msg)
@@ -278,11 +278,11 @@ async def help_generator(msg: Bot.MessageSession,
                          show_disabled_modules: bool = False,
                          show_dev_modules: bool = True,
                          use_local: bool = True):
-    is_base_superuser = msg.target.sender_id in Bot.base_superuser_list
+    is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
-        target_from=msg.target.target_from)
-    target_enabled_list = msg.enabled_modules
+        target_from=msg.session_info.target_from)
+    target_enabled_list = msg.session_info.enabled_modules
 
     if not Info.web_render_status:
         return False
@@ -296,7 +296,7 @@ async def help_generator(msg: Bot.MessageSession,
     for key, value in module_list.items():
         if value.hidden:
             continue
-        if value.rss and not msg.Feature.rss:
+        if value.rss and not msg.session_info.support_rss:
             continue
         if not is_superuser and value.required_superuser or \
                 not is_base_superuser and value.required_base_superuser:

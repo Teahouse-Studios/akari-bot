@@ -85,7 +85,7 @@ async def _(msg: Bot.MessageSession):
 
     async def bgtask():
         query_list = []
-        target = (await WikiTargetInfo.get_or_create(target_id=msg.target.target_id))[0]
+        target = (await WikiTargetInfo.get_or_create(target_id=msg.session_info.target_id))[0]
         headers = target.headers
         for x in match_msg:
             wiki_ = WikiLib(x)
@@ -131,7 +131,7 @@ async def _(msg: Bot.MessageSession):
                                     "bmp",
                                     "ico",
                                 ]:
-                                    if msg.Feature.image:
+                                    if msg.session_info.support_image:
                                         await msg.send_message(
                                             [
                                                 I18NContext(
@@ -150,7 +150,7 @@ async def _(msg: Bot.MessageSession):
                                     "mp3",
                                     "wav",
                                 ]:
-                                    if msg.Feature.voice:
+                                    if msg.session_info.support_voice:
                                         await msg.send_message(
                                             [
                                                 I18NContext(
@@ -163,7 +163,7 @@ async def _(msg: Bot.MessageSession):
                                         )
                             elif check_svg(dl):
                                 rd = await svg_render(dl)
-                                if msg.Feature.image and rd:
+                                if msg.session_info.support_image and rd:
                                     chain = [
                                         I18NContext(
                                             "wiki.message.wiki_inline.flies",
@@ -174,7 +174,7 @@ async def _(msg: Bot.MessageSession):
                                         chain.append(Image(r))
                                     await msg.send_message(chain, quote=False)
 
-                        if msg.Feature.image:
+                        if msg.session_info.support_image:
                             if (
                                 get_page.status
                                 and get_page.title
@@ -250,10 +250,10 @@ async def _(msg: Bot.MessageSession):
                                             ImageTable(
                                                 session_data,
                                                 [
-                                                    msg.locale.t(
+                                                    msg.session_info.locale.t(
                                                         "wiki.message.table.header.id"
                                                     ),
-                                                    msg.locale.t(
+                                                    msg.session_info.locale.t(
                                                         "wiki.message.table.header.section"
                                                     ),
                                                 ],
@@ -332,7 +332,7 @@ async def _(msg: Bot.MessageSession):
                                 await msg.send_message(i_msg_lst, callback=_callback)
                 if len(query_list) == 1 and img_send:
                     return
-                if msg.Feature.image:
+                if msg.session_info.support_image:
                     for qq in q:
                         section_ = []
                         quote_code = False

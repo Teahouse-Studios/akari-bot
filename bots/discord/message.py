@@ -38,8 +38,8 @@ async def convert_embed(embed: EmbedElement, msg: MessageSessionT):
     if isinstance(embed, EmbedElement):
         files = []
         embeds = discord.Embed(
-            title=msg.locale.t_str(embed.title) if embed.title else None,
-            description=msg.locale.t_str(embed.description) if embed.description else None,
+            title=msg.session_info.locale.t_str(embed.title) if embed.title else None,
+            description=msg.session_info.locale.t_str(embed.description) if embed.description else None,
             color=embed.color if embed.color else None,
             url=embed.url if embed.url else None,
             timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
@@ -53,14 +53,14 @@ async def convert_embed(embed: EmbedElement, msg: MessageSessionT):
             files.append(upload)
             embeds.set_thumbnail(url="attachment://thumbnail.png")
         if embed.author:
-            embeds.set_author(name=msg.locale.t_str(embed.author))
+            embeds.set_author(name=msg.session_info.locale.t_str(embed.author))
         if embed.footer:
-            embeds.set_footer(text=msg.locale.t_str(embed.footer))
+            embeds.set_footer(text=msg.session_info.locale.t_str(embed.footer))
         if embed.fields:
             for field in embed.fields:
                 embeds.add_field(
-                    name=msg.locale.t_str(field.name),
-                    value=msg.locale.t_str(field.value),
+                    name=msg.session_info.locale.t_str(field.name),
+                    value=msg.session_info.locale.t_str(field.value),
                     inline=field.inline
                 )
         return embeds, files
@@ -98,7 +98,7 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        message_chain = MessageChain(message_chain)
+        message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
@@ -106,7 +106,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self):
             if isinstance(x, PlainElement):
-                send_ = await self.session.target.send(
+                send_ = await self.session.session_info.send(
                     x.text,
                     reference=(
                         self.session.message
@@ -114,9 +114,9 @@ class MessageSession(MessageSessionT):
                         else None
                     ),
                 )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
+                Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
-                send_ = await self.session.target.send(
+                send_ = await self.session.session_info.send(
                     file=discord.File(await x.get()),
                     reference=(
                         self.session.message
@@ -125,10 +125,10 @@ class MessageSession(MessageSessionT):
                     ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Image: {str(x.__dict__)}"
                 )
             elif isinstance(x, VoiceElement):
-                send_ = await self.session.target.send(
+                send_ = await self.session.session_info.send(
                     file=discord.File(x.path),
                     reference=(
                         self.session.message
@@ -137,11 +137,11 @@ class MessageSession(MessageSessionT):
                     ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Voice: {str(x.__dict__)}"
                 )
             elif isinstance(x, MentionElement):
-                if x.client == client_name and self.target.target_from == target_channel_prefix:
-                    send_ = await self.session.target.send(
+                if x.client == client_name and self.session_info.target_from == target_channel_prefix:
+                    send_ = await self.session.session_info.send(
                         f"<@{x.id}>",
                         reference=(
                             self.session.message
@@ -150,11 +150,11 @@ class MessageSession(MessageSessionT):
                         ),
                     )
                     Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
+                        f"[Bot] -> [{self.session_info.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
                     )
             elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x, self)
-                send_ = await self.session.target.send(
+                send_ = await self.session.session_info.send(
                     embed=embeds,
                     reference=(
                         self.session.message
@@ -164,7 +164,7 @@ class MessageSession(MessageSessionT):
                     files=files,
                 )
                 Logger.info(
-                    f"[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}"
+                    f"[Bot] -> [{self.session_info.target_id}]: Embed: {str(x.__dict__)}"
                 )
             else:
                 send_ = None
@@ -204,7 +204,7 @@ class MessageSession(MessageSessionT):
                 lst.append(Image(d))
             elif filetype.is_audio(d):
                 lst.append(Voice(d))
-        return MessageChain(lst)
+        return MessageChain.assign(lst)
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
@@ -229,7 +229,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            async with self.msg.session.target.typing() as typing:
+            async with self.msg.session.session_info.typing() as typing:
                 return typing
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -302,14 +302,14 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                         else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
+                            msgchain = MessageChain.assign([Plain(message)])
+                    msgchain = MessageChain.assign(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
-                        await AnalyticsData.create(target_id=x.target.target_id,
-                                                   sender_id=x.target.sender_id,
+                        await AnalyticsData.create(target_id=x.session_info.target_id,
+                                                   sender_id=x.session_info.sender_id,
                                                    command="",
                                                    module_name=module_name,
                                                    module_type="schedule")
@@ -328,14 +328,14 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain.assign([I18NContext(message, **kwargs)])
                             else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
+                                msgchain = MessageChain.assign([Plain(message)])
+                        msgchain = MessageChain.assign(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
-                            await AnalyticsData.create(target_id=fetch.target.target_id,
-                                                       sender_id=fetch.target.sender_id,
+                            await AnalyticsData.create(target_id=fetch.session_info.target_id,
+                                                       sender_id=fetch.session_info.sender_id,
                                                        command="",
                                                        module_name=module_name,
                                                        module_type="schedule")

@@ -57,7 +57,7 @@ async def _(msg: Bot.MessageSession, pageid: str):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
     if not isint(pageid):
-        await msg.finish(msg.locale.t("wiki.message.id.invalid"))
+        await msg.finish(msg.session_info.locale.t("wiki.message.id.invalid"))
     get_lang = msg.parsed_msg.get("-l", False)
     if get_lang:
         lang = get_lang["<lang>"]
@@ -80,7 +80,7 @@ async def query_pages(
     inline_mode: bool = False,
 ):
     if isinstance(session, MessageSession):
-        target = (await WikiTargetInfo.get_or_create(target_id=session.target.target_id))[0]
+        target = (await WikiTargetInfo.get_or_create(target_id=session.session_info.target_id))[0]
         start_wiki = target.api_link
         if start_wiki_api:
             start_wiki = start_wiki_api
@@ -182,7 +182,7 @@ async def query_pages(
                 tasks.append(
                     asyncio.ensure_future(
                         WikiLib(
-                            q, headers, locale=session.locale.locale
+                            q, headers, locale=session.session_info.locale.locale
                         ).parse_page_info(title=rd, inline=inline_mode, lang=lang)
                     )
                 )
@@ -190,7 +190,7 @@ async def query_pages(
                 tasks.append(
                     asyncio.ensure_future(
                         WikiLib(
-                            q, headers, locale=session.locale.locale
+                            q, headers, locale=session.session_info.locale.locale
                         ).parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)
                     )
                 )
@@ -293,7 +293,7 @@ async def query_pages(
                         ):
                             if (
                                 isinstance(session, Bot.MessageSession)
-                                and session.Feature.image
+                                and session.session_info.support_image
                                 and r.sections
                             ):
                                 i_msg_lst = []
@@ -366,7 +366,7 @@ async def query_pages(
                         if r.is_forum:
                             if (
                                 isinstance(session, Bot.MessageSession)
-                                and session.Feature.image
+                                and session.session_info.support_image
                             ):
                                 forum_data = r.forum_data
                                 img_table_data = []
@@ -422,9 +422,9 @@ async def query_pages(
                     if display_title and display_before_title:
                         if (
                             isinstance(session, Bot.MessageSession)
-                            and session.Feature.wait
+                            and session.session_info.support_wait
                         ):
-                            if not session.target_data.get("wiki_redlink", False):
+                            if not session.session_info.target_info.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
                                         session.locale.t(
@@ -544,7 +544,7 @@ async def query_pages(
                 await session.send_message(msg_list)
 
         async def infobox():
-            if render_infobox_list and session.Feature.image:
+            if render_infobox_list and session.session_info.support_image:
                 infobox_msg_list = []
                 for i in render_infobox_list:
                     for ii in i:
@@ -573,7 +573,7 @@ async def query_pages(
                     await session.send_message(infobox_msg_list, quote=False)
 
         async def section():
-            if render_section_list and session.Feature.image:
+            if render_section_list and session.session_info.support_image:
                 section_msg_list = []
                 for i in render_section_list:
                     for ii in i:
@@ -634,7 +634,7 @@ async def query_pages(
                             "bmp",
                             "ico",
                         ]:
-                            if session.Feature.image:
+                            if session.session_info.support_image:
                                 await session.send_message(Image(dl), quote=False)
                         elif guess_type.extension in [
                             "oga",
@@ -643,18 +643,18 @@ async def query_pages(
                             "mp3",
                             "wav",
                         ]:
-                            if session.Feature.voice:
+                            if session.session_info.support_voice:
                                 await session.send_message(Voice(dl), quote=False)
                     elif check_svg(dl):
                         rd = await svg_render(dl)
-                        if session.Feature.image and rd:
+                        if session.session_info.support_image and rd:
                             img_chain = []
                             for rr in rd:
                                 img_chain.append(Image(rr))
                             await session.send_message(img_chain, quote=False)
 
         async def wait_confirm():
-            if wait_msg_list and session.Feature.wait:
+            if wait_msg_list and session.session_info.support_wait:
                 confirm = await session.wait_next_message(
                     wait_msg_list, delete=True, append_instruction=False
                 )

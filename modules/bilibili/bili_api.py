@@ -8,7 +8,7 @@ DESC_LENGTH = 100
 async def get_video_info(
     msg: Bot.MessageSession, query, get_detail=False, use_embed=False
 ):
-    if msg.target.sender_from in ["Discord|Client"]:
+    if msg.session_info.sender_from in ["Discord|Client"]:
         use_embed = True
     try:
         url = f"https://api.bilibili.com/x/web-interface/view/detail{query}"
@@ -40,17 +40,17 @@ async def get_video_info(
     else:
         pages = ""
 
-    stat_view = msg.locale.num(stat["view"], 1)
-    stat_danmaku = msg.locale.num(stat["danmaku"], 1)
-    stat_reply = msg.locale.num(stat["reply"], 1)
-    stat_favorite = msg.locale.num(stat["favorite"], 1)
-    stat_coin = msg.locale.num(stat["coin"], 1)
-    stat_share = msg.locale.num(stat["share"], 1)
-    stat_like = msg.locale.num(stat["like"], 1)
+    stat_view = msg.session_info.locale.num(stat["view"], 1)
+    stat_danmaku = msg.session_info.locale.num(stat["danmaku"], 1)
+    stat_reply = msg.session_info.locale.num(stat["reply"], 1)
+    stat_favorite = msg.session_info.locale.num(stat["favorite"], 1)
+    stat_coin = msg.session_info.locale.num(stat["coin"], 1)
+    stat_share = msg.session_info.locale.num(stat["share"], 1)
+    stat_like = msg.session_info.locale.num(stat["like"], 1)
 
     owner = view["owner"]["name"]
     avatar = view["owner"]["face"]
-    fans = msg.locale.num(res["data"]["Card"]["card"]["fans"], 1)
+    fans = msg.session_info.locale.num(res["data"]["Card"]["card"]["fans"], 1)
 
     if use_embed:
         return Embed(

@@ -3,7 +3,6 @@ import shutil
 
 from core.builtins.session import SessionTaskManager
 from core.constants.path import cache_path
-from core.queue.client import JobQueueClient
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list

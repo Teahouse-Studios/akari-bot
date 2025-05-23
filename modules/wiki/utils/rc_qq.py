@@ -17,16 +17,16 @@ async def rc_qq(msg: MessageSession, wiki_url):
     wiki_info = wiki.wiki_info
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
     msgchain_lst = [
-        MessageChain([I18NContext("wiki.message.rc.qq.title"), Url(pageurl)])
+        MessageChain.assign([I18NContext("wiki.message.rc.qq.title"), Url(pageurl)])
     ]
     if wiki.wiki_info.in_allowlist:
-        msgchain_lst.append(MessageChain([I18NContext("wiki.message.rc.qq.link.prompt")]))
+        msgchain_lst.append(MessageChain.assign([I18NContext("wiki.message.rc.qq.link.prompt")]))
     rclist = await convert_rc_to_detailed_format(
         query["query"]["recentchanges"], wiki_info, msg
     )
 
     for x in rclist:
-        msgchain_lst.append(MessageChain([Plain(x)]))
+        msgchain_lst.append(MessageChain.assign([Plain(x)]))
     nodelist = await msg.msgchain2nodelist(msgchain_lst)
     Logger.debug(nodelist)
     return nodelist
