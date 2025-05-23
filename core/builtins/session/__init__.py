@@ -168,8 +168,8 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
         """
-        return_val = await exports["JobQueueServer"].send_message_to_client(self.session_info.client_name, self.session_info,
-                                                                            message_chain, quote=quote)
+        return_val = await exports["JobQueueServer"].send_message_signal_to_client(self.session_info.client_name, self.session_info,
+                                                                                   message_chain, quote=quote)
 
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
@@ -249,8 +249,8 @@ class MessageSession:
         """
         用于删除这条消息。
         """
-        await exports["JobQueueServer"].delete_message_to_client(self.session_info.client_name, self.session_info,
-                                                                 self.session_info.message_id)
+        await exports["JobQueueServer"].delete_message_signal_to_client(self.session_info.client_name, self.session_info,
+                                                                        self.session_info.message_id)
 
     async def check_native_permission(self) -> bool:
         """
@@ -556,8 +556,8 @@ class FinishedSession:
         """
         用于删除这条消息。
         """
-        await exports["JobQueueServer"].delete_message_to_client(self.session.client_name, self.session,
-                                                                 self.message_id)
+        await exports["JobQueueServer"].delete_message_signal_to_client(self.session.client_name, self.session,
+                                                                        self.message_id)
 
     def __str__(self):
         return f"FinishedSession(message_id={self.message_id})"

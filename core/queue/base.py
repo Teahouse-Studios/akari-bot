@@ -59,7 +59,9 @@ class JobQueueBase:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
                 await tsk.return_val({}, status="timeout")
             elif tsk.action in cls.queue_actions:
-                await cls.queue_actions[tsk.action](tsk, tsk.args)
+                returns: dict = await cls.queue_actions[tsk.action](tsk, tsk.args)
+                if returns is not None:
+                    await tsk.return_val(returns, status="done")
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
                 await tsk.return_val({}, status="failed")

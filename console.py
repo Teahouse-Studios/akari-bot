@@ -59,7 +59,7 @@ async def send_command(msg):
         messages=MessageChain([Plain(msg),]),
         ctx_slot=ctx_id)
     ConsoleContextManager.add_context(session_data, '')
-    await JobQueueClient.send_message_to_server(session_data)
+    await JobQueueClient.send_message_signal_to_server(session_data)
     Logger.info("----Process end----")
     # return returns
 

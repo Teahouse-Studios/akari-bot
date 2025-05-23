@@ -67,7 +67,7 @@ class Bot:
 
         async def _process_msg():
             await ctx_manager.add_context(session_info, ctx)
-            await exports['JobQueueClient'].send_message_to_server(session_info)
+            await exports['JobQueueClient'].send_message_signal_to_server(session_info)
             await ctx_manager.del_context(session_info)
 
         asyncio.create_task(_process_msg())
@@ -80,7 +80,7 @@ class Bot:
         **kwargs: Dict[str, Any],
     ):
         await Bot.post_message(
-            "*", message=message, session_list=session_list, i18n=i18n, **kwargs
+            "*", message=message, session_list=session_list, **kwargs
         )
         ...
 
@@ -132,7 +132,7 @@ class Bot:
         if isinstance(message, str):
             message = MessageChain.assign(message)
         for session in session_list:
-            await exports['JobQueueServer'].send_message_to_client(session)
+            await exports['JobQueueServer'].send_message_signal_to_client(session)
 
     postMessage = post_message
     postGlobalMessage = post_global_message
@@ -144,13 +144,13 @@ class Bot:
         """
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        await exports['JobQueueServer'].start_typing_to_client(session_info.client_name, session_info)
+        await exports['JobQueueServer'].start_typing_signal_to_client(session_info.client_name, session_info)
 
     @staticmethod
     async def end_typing(session_info: SessionInfo) -> None:
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        await exports['JobQueueServer'].end_typing_to_client(session_info.client_name, session_info)
+        await exports['JobQueueServer'].end_typing_signal_to_client(session_info.client_name, session_info)
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any, fetch_session: bool = False) -> int:
@@ -201,7 +201,8 @@ class Bot:
         if isinstance(msg, list):
             msg = MessageChain(msg)
         Logger.info(target.__dict__)
-        await target.send_direct_message(
+        m = await Bot.MessageSession.from_session_info(session=target)
+        await m.send_direct_message(
             message_chain=msg,
             disable_secret_check=disable_secret_check,
             enable_parse_message=enable_parse_message,
@@ -209,12 +210,12 @@ class Bot:
         )
 
     @classmethod
-    async def get_enabled_this_module(cls, module: str) -> List[FetchedSession]:
+    async def get_enabled_this_module(cls, module: str) -> List[FetchedSessionInfo]:
         lst = await TargetInfo.get_target_list_by_module(module)
         fetched = []
         for x in lst:
             x = cls.fetch_target(x.target_id)
-            if isinstance(x, FetchedSession):
+            if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched
 

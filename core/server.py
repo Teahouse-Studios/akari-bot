@@ -11,4 +11,4 @@ async def main():
 
     while True:
         await JobQueueServer.check_job_queue("Server")
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
