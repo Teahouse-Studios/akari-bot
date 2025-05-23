@@ -15,6 +15,29 @@ class QueueFinished(Exception):
     pass
 
 
+class QueueTaskManager:
+    tasks = {}
+
+    @classmethod
+    async def add(cls, task_id: str):
+        try:
+            cls.tasks[task_id] = {"flag": asyncio.Event()}
+            await cls.tasks[task_id]["flag"].wait()
+            return cls.tasks[task_id]["result"]
+        except Exception as e:
+            Logger.error(f"Error in QueueTaskManager: {e}")
+            return None
+        finally:
+            if task_id in cls.tasks:
+                del cls.tasks[task_id]
+
+    @classmethod
+    async def set_result(cls, task_id: str, result: dict):
+        if task_id in cls.tasks:
+            cls.tasks[task_id]["result"] = result
+            cls.tasks[task_id]["flag"].set()
+
+
 class JobQueueBase:
     name = "Internal|" + str(uuid4())
     _queue_tasks = {}
@@ -25,11 +48,7 @@ class JobQueueBase:
     async def add_job(cls, target_client: str, action, args, wait=True):
         task_id = await JobQueuesTable.add_task(target_client, action, args)
         if wait:
-            flag = asyncio.Event()
-            cls._queue_tasks[task_id] = {"flag": flag}
-            await flag.wait()
-            result = cls._queue_tasks[task_id]["result"]
-            return result
+            return await QueueTaskManager.add(task_id)
         return task_id
 
     @classmethod
@@ -85,11 +104,10 @@ class JobQueueBase:
 
     @classmethod
     async def check_job_queue(cls, target_client: str = None):
-        for task_id in cls._queue_tasks:
+        for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get(task_id=task_id)
             if tsk.status == "done":
-                cls._queue_tasks[task_id]["result"] = tsk.result
-                cls._queue_tasks[task_id]["flag"].set()
+                await QueueTaskManager.set_result(task_id, tsk.result)
 
         get_all = await JobQueuesTable.get_all([cls.name, target_client if target_client else exports['Bot'].client_name])
 

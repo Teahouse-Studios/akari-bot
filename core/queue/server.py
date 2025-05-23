@@ -13,30 +13,35 @@ from ..utils.alive import Alive
 class JobQueueServer(JobQueueBase):
 
     @classmethod
-    async def send_message_signal_to_client(cls, target_client: str, session_info: SessionInfo, message: MessageChain, quote: bool = True):
+    async def send_message_signal_to_client(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True):
         message = MessageChain.assign(message)
-        value = await cls.add_job(target_client, "send_message", {"session_info": converter.unstructure(session_info),
-                                                                  "message": converter.unstructure(message),
-                                                                  'quote': quote})
+        value = await cls.add_job(session_info.client_name, "send_message", {"session_info": converter.unstructure(session_info),
+                                                                             "message": converter.unstructure(message),
+                                                                             'quote': quote})
         return value
 
     @classmethod
-    async def delete_message_signal_to_client(cls, target_client: str, session_info: SessionInfo, message_id: Union[str, list]):
+    async def delete_message_signal_to_client(cls, session_info: SessionInfo, message_id: Union[str, list]):
         if isinstance(message_id, str):
             message_id = [message_id]
-        value = await cls.add_job(target_client, "delete_message", {"session_info": converter.unstructure(session_info),
-                                                                    "message_id": message_id}, wait=False)
+        value = await cls.add_job(session_info.client_name, "delete_message", {"session_info": converter.unstructure(session_info),
+                                                                               "message_id": message_id}, wait=False)
         return value
 
     @classmethod
-    async def start_typing_signal_to_client(cls, target_client: str, session_info: SessionInfo):
-        value = await cls.add_job(target_client, "start_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
+    async def start_typing_signal_to_client(cls, session_info: SessionInfo):
+        value = await cls.add_job(session_info.client_name, "start_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
         return value
 
     @classmethod
-    async def end_typing_signal_to_client(cls, target_client: str, session_info: SessionInfo):
-        value = await cls.add_job(target_client, "end_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
+    async def end_typing_signal_to_client(cls, session_info: SessionInfo):
+        value = await cls.add_job(session_info.client_name, "end_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
         return value
+
+    @classmethod
+    async def check_session_native_permission(cls, session_info: SessionInfo):
+        v = await cls.add_job(session_info.client_name, "check_session_native_permission", {"session_info": converter.unstructure(session_info)})
+        return v['value']
 
 
 @JobQueueServer.action("receive_message_from_client")

@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from core.config import Config
 from core.constants.info import Info
@@ -22,6 +22,10 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.lock import ExecutionLockList
 
 from core.builtins.session.features import Features
+
+if TYPE_CHECKING:
+    from ..queue.client import JobQueueClient
+    from ..queue.server import JobQueueServer
 
 
 class Bot:
@@ -67,7 +71,8 @@ class Bot:
 
         async def _process_msg():
             await ctx_manager.add_context(session_info, ctx)
-            await exports['JobQueueClient'].send_message_signal_to_server(session_info)
+            queue_client: "JobQueueClient" = exports["JobQueueClient"]
+            await queue_client.send_message_signal_to_server(session_info)
             await ctx_manager.del_context(session_info)
 
         asyncio.create_task(_process_msg())
@@ -113,13 +118,13 @@ class Bot:
                 fetched.append(x)
         return fetched
 
-    @staticmethod
-    async def post_message(
-        module_name: str,
-        message: Union[str, MessageChain],
-        session_list: Optional[List[FetchedSessionInfo]] = None,
-        **kwargs: Dict[str, Any],
-    ):
+    @classmethod
+    async def post_message(cls,
+                           module_name: str,
+                           message: Union[str, MessageChain],
+                           session_list: Optional[List[FetchedSessionInfo]] = None,
+                           **kwargs: Dict[str, Any],
+                           ):
         """
         尝试向开启此模块的对象发送一条消息。
 
@@ -132,25 +137,28 @@ class Bot:
         if isinstance(message, str):
             message = MessageChain.assign(message)
         for session in session_list:
-            await exports['JobQueueServer'].send_message_signal_to_client(session)
+            queue_server: "JobQueueServer" = exports["JobQueueServer"]
+            await queue_server.send_message_signal_to_client(session, message)
 
     postMessage = post_message
     postGlobalMessage = post_global_message
 
-    @staticmethod
-    async def start_typing(session_info: SessionInfo) -> None:
+    @classmethod
+    async def start_typing(cls, session_info: SessionInfo) -> None:
         """
         :param session_info: SessionInfo
         """
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        await exports['JobQueueServer'].start_typing_signal_to_client(session_info.client_name, session_info)
+        queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await queue_server.start_typing_signal_to_client(session_info)
 
-    @staticmethod
-    async def end_typing(session_info: SessionInfo) -> None:
+    @classmethod
+    async def end_typing(cls, session_info: SessionInfo) -> None:
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
-        await exports['JobQueueServer'].end_typing_signal_to_client(session_info.client_name, session_info)
+        queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await queue_server.end_typing_signal_to_client(session_info)
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any, fetch_session: bool = False) -> int:

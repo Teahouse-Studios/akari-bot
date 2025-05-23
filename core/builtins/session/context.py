@@ -22,6 +22,18 @@ class ContextManager:
             del cls.context[session_info.session_id]
 
     @classmethod
+    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+        """
+        检查会话权限。
+        :param session_info: 会话信息
+        :return: 是否有权限
+        """
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加权限检查的逻辑
+        raise NotImplementedError
+
+    @classmethod
     async def send_message(cls, session_info: SessionInfo, message: Union[MessageChain, str], quote: bool = True,) -> List[str]:
         """
         发送消息到指定的会话。

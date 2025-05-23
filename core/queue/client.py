@@ -1,4 +1,5 @@
 import traceback
+from typing import TYPE_CHECKING
 
 from .base import JobQueueBase
 from ..builtins.converter import converter
@@ -7,6 +8,9 @@ from ..builtins.session import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
 from ..logger import Logger
+
+if TYPE_CHECKING:
+    from core.builtins import Bot
 
 
 class JobQueueClient(JobQueueBase):
@@ -21,17 +25,19 @@ class JobQueueClient(JobQueueBase):
         await cls.add_job("Server", "client_keepalive", {"client_name": client_name}, wait=False)
 
 
-@JobQueueClient.action("check_permission")
+@JobQueueClient.action("check_session_native_permission")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
-    return {"value": await ctx_manager.check_permission(session_info)}
+    bot: "Bot" = exports["Bot"]
+    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    return {"value": await ctx_manager.check_native_permission(session_info)}
 
 
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    bot: "Bot" = exports["Bot"]
+    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
     send = await ctx_manager.send_message(session_info, converter.structure(args["message"], MessageChain), quote=args["quote"])
     return {"message_id": send}
 
@@ -39,7 +45,8 @@ async def _(tsk: JobQueuesTable, args: dict):
 @JobQueueClient.action("delete_message")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    bot: "Bot" = exports["Bot"]
+    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
     await ctx_manager.delete_message(session_info, message_id=args["message_id"])
     return {"success": True}
 
@@ -47,7 +54,8 @@ async def _(tsk: JobQueuesTable, args: dict):
 @JobQueueClient.action("start_typing")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    bot: "Bot" = exports["Bot"]
+    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
     await ctx_manager.start_typing(session_info)
     return {"success": True}
 
@@ -55,7 +63,8 @@ async def _(tsk: JobQueuesTable, args: dict):
 @JobQueueClient.action("end_typing")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    ctx_manager = exports["Bot"].ContextSlots[session_info.ctx_slot]
+    bot: "Bot" = exports["Bot"]
+    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
     await ctx_manager.end_typing(session_info)
     return {"success": True}
 

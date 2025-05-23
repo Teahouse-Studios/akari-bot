@@ -14,11 +14,6 @@ async def bg():
     await SessionTaskManager.bg_check()
 
 
-@Scheduler.scheduled_job(IntervalTrigger(seconds=1), max_instances=1)
-async def job():
-    await JobQueueClient.check_job_queue()
-
-
 @Scheduler.scheduled_job(CronTrigger.from_crontab("0 0 * * *"))
 async def auto_purge():
     if os.path.exists(cache_path):
