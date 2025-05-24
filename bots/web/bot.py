@@ -20,7 +20,7 @@ from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
-from flask import Flask, send_from_directory
+from flask import Flask, abort, send_from_directory
 from jwt.exceptions import ExpiredSignatureError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -882,37 +882,41 @@ async def restart():
     await cleanup_sessions()
     os._exit(233)
 
+
 if os.path.exists(webui_index):
     flask_app = Flask(__name__)
 
     @flask_app.route("/")
     @flask_app.route("/<path:path>")
-    def static_files(path=None):
+    def serve_webui(path=None):
+        if path and "/" in path:
+            abort(404)
         return send_from_directory(webui_path, "index.html")
 
     app.mount("/webui", WSGIMiddleware(flask_app))
 
-    @app.get("/webui")
-    async def redirect_webui():
+    @app.get("/")
+    async def redirect_to_webui():
         return RedirectResponse(url="/webui/")
 
+else:
+    @app.get("/")
+    async def redirect_to_api():
+        return RedirectResponse(url="/api")
 
-@app.get("/{path:path}")
-async def redirect_root(path: str = ""):
-    if os.path.exists(webui_index):
-        if not path:
-            return RedirectResponse(url="/webui")
-        if path.startswith("/api") or path.startswith("/webui"):
-            return RedirectResponse(url=path)
+
+@app.get("/{full_path:path}")
+async def route_handler(full_path: str):
+    if full_path.startswith("api"):
+        return RedirectResponse(url=f"/{full_path}")
+    if os.path.exists(webui_index) and full_path == "webui":
+        return RedirectResponse(url=f"/webui/")
+
+    static_file = os.path.normpath(os.path.join(webui_path, full_path))
+    if static_file.startswith(webui_path) and os.path.exists(static_file):
+        return FileResponse(static_file)
     else:
-        if not path:
-            return RedirectResponse(url="/api")
-        if path.startswith("/api"):
-            return RedirectResponse(url=path)
-    static_path = os.path.normpath(os.path.join(webui_path, path))
-    if not static_path.startswith(webui_path) or not os.path.exists(static_path):
         raise HTTPException(status_code=404, detail="Not found")
-    return FileResponse(static_path)
 
 
 if Config("enable", True, table_name="bot_web"):

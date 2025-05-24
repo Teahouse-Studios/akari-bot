@@ -66,13 +66,17 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
         sends = []
+        sends_display = []
+
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
                 sends.append({"type": "text", "content": x.text})
+                sends_display.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 img_b64 = await x.get_base64(mime=True)
                 sends.append({"type": "image", "content": img_b64})
+                sends_display.append({"type": "image", "content": f"{img_b64[:50]}..."})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
 
         resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
@@ -80,7 +84,7 @@ class MessageSession(MessageSessionT):
 
         if callback:
             MessageTaskManager.add_callback(resp["id"], callback)
-        return FinishedSession(self, resp["id"], sends)
+        return FinishedSession(self, resp["id"], sends_display)
 
     def as_display(self, text_only=False):
         msgs = []
