@@ -177,7 +177,7 @@ class DrawPlateList:
                     fill=vcolor,
                 )
 
-                if int(sid) in self.remaster_required:
+                if sid in self.remaster_required:
                     mark_count = 5
                 else:
                     mark_count = 4
@@ -231,14 +231,14 @@ class DrawPlateList:
     def update_cover_marks(self):
         for cover_id, diff in self.song_complete:
             for _, elements in self.song_list.items():
-                if str(cover_id) in elements:
-                    if str(cover_id) not in self.cover_marks:
-                        if int(cover_id) in self.remaster_required:
-                            self.cover_marks[str(cover_id)] = [False, False, False, False, False]
+                if cover_id in elements:
+                    if cover_id not in self.cover_marks:
+                        if cover_id in self.remaster_required:
+                            self.cover_marks[cover_id] = [False, False, False, False, False]
                         else:
-                            self.cover_marks[str(cover_id)] = [False, False, False, False]
+                            self.cover_marks[cover_id] = [False, False, False, False]
                     try:
-                        self.cover_marks[str(cover_id)][diff] = True
+                        self.cover_marks[cover_id][diff] = True
                     except IndexError:
                         pass
 
