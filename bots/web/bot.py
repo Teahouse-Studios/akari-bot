@@ -50,7 +50,6 @@ from core.types import MsgInfo, Session  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 
 started_time = datetime.now()
-webui_index = os.path.join(webui_path, "index.html")
 PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 default_locale = Config("default_locale", cfg_type=str)
@@ -78,7 +77,7 @@ async def lifespan(app: FastAPI):
     Scheduler.start()
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
-    if os.path.exists(webui_index):
+    if os.path.exists(webui_path):
         Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
     yield
     await cleanup_sessions()
@@ -883,7 +882,7 @@ async def restart():
     os._exit(233)
 
 
-if os.path.exists(webui_index):
+if os.path.exists(webui_path):
     flask_app = Flask(__name__)
 
     @flask_app.route("/")
@@ -907,16 +906,20 @@ else:
 
 @app.get("/{full_path:path}")
 async def route_handler(full_path: str):
-    if full_path.startswith("api"):
-        return RedirectResponse(url=f"/{full_path}")
-    if os.path.exists(webui_index) and full_path == "webui":
-        return RedirectResponse(url=f"/webui/")
+    if os.path.exists(webui_path):
+        if full_path == "webui":
+            return RedirectResponse(url=f"/webui/")
 
-    static_file = os.path.normpath(os.path.join(webui_path, full_path))
-    if static_file.startswith(webui_path) and os.path.exists(static_file):
-        return FileResponse(static_file)
+        static_file = os.path.normpath(os.path.join(webui_path, full_path))
+        if os.path.commonpath([webui_path, static_file]) != webui_path:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        if os.path.exists(static_file):
+            return FileResponse(static_file)
     else:
-        raise HTTPException(status_code=404, detail="Not found")
+        favicon_file = os.path.join(assets_path, "favicon.ico")
+        if full_path == "favicon.ico" and os.path.exists(favicon_file):
+            return FileResponse(favicon_file)
+    raise HTTPException(status_code=404, detail="Not found")
 
 
 if Config("enable", True, table_name="bot_web"):
@@ -928,7 +931,7 @@ if Config("enable", True, table_name="bot_web"):
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    if os.path.exists(webui_index):
+    if os.path.exists(webui_path):
         generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
 
     uvicorn.run(app, host=WEB_HOST, port=web_port, log_level="info")
