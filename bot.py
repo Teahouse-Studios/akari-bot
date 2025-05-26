@@ -91,6 +91,15 @@ def init_bot():
     run_async(update_db())
 
 
+def terminate_process(process: multiprocessing.Process, timeout=5):
+    process.terminate()
+    process.join(timeout=timeout)
+    if process.is_alive():
+        process.kill()
+    process.join()
+    process.close()
+
+
 def multiprocess_run_until_complete(func):
     p = multiprocessing.Process(
         target=func,
@@ -102,9 +111,7 @@ def multiprocess_run_until_complete(func):
         if not p.is_alive():
             break
         sleep(1)
-    p.terminate()
-    p.join()
-    p.close()
+    terminate_process(p)
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
@@ -197,6 +204,12 @@ def run_bot():
         for p in processes:
             if p.is_alive():
                 continue
+            if p.exitcode == 0:
+                Logger.warning(
+                    f"{p.pid} ({p.name}) exited with code 0, please check the log."
+                )
+                terminate_process(p)
+                break
             if p.exitcode == 233:
                 Logger.warning(
                     f"{p.pid} ({p.name}) exited with code 233, restart all bots."
@@ -206,9 +219,7 @@ def run_bot():
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
             processes.remove(p)
-            p.terminate()
-            p.join()
-            p.close()
+            terminate_process(p)
             restart_process(p.name)
             break
 
@@ -216,15 +227,6 @@ def run_bot():
             break
         sleep(1)
     Logger.critical("All bots exited unexpectedly, please check the output.")
-
-
-def terminate_process(process: multiprocessing.Process, timeout=5):
-    process.terminate()
-    process.join(timeout=timeout)
-    if process.is_alive():
-        process.kill()
-    process.join()
-    process.close()
 
 
 if __name__ == "__main__":

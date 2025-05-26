@@ -81,7 +81,7 @@ async def lifespan(app: FastAPI):
         Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
     yield
     await cleanup_sessions()
-    sys.exit()
+    sys.exit(0)
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)

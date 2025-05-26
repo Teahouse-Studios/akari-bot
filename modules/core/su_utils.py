@@ -477,7 +477,7 @@ exit_ = module("exit", required_superuser=True, base=True, doc=True, available_f
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(append_instruction=False, delete=False):
         await msg.sleep(0.5)
-        sys.exit()
+        sys.exit(0)
 
 
 git = module("git", required_superuser=True, base=True, doc=True, load=bool(Info.version))
