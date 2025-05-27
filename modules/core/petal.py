@@ -25,12 +25,15 @@ async def _(msg: Bot.MessageSession):
 
 @petal_.command("sign {[I18N:core.help.petal.sign]}")
 async def _(msg: Bot.MessageSession):
-    amount = await sign_get_petal(msg)
-    if amount:
-        await msg.finish([I18NContext("core.message.petal.sign.success"),
-                          I18NContext("petal.message.gained.success", amount=amount)])
+    if not msg.target_data.get("disable_sign", False):
+        amount = await sign_get_petal(msg)
+        if amount:
+            await msg.finish([I18NContext("core.message.petal.sign.success"),
+                              I18NContext("petal.message.gained.success", amount=amount)])
+        else:
+            await msg.finish(I18NContext("core.message.petal.sign.already"))
     else:
-        await msg.finish(I18NContext("core.message.petal.sign.already"))
+        await msg.finish(I18NContext("core.message.petal.sign.disabled"))
 
 
 @petal_.command("give <petal> <user> {[I18N:core.help.petal.give]}")
