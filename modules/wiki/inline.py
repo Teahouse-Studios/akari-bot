@@ -12,7 +12,7 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.text import isint
+from core.utils.message import isint
 from .wiki import query_pages
 from .database.models import WikiTargetInfo
 from .utils.screenshot_image import (

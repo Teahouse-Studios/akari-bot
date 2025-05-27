@@ -4,7 +4,7 @@ import orjson as json
 
 from core.builtins import Bot, Plain
 from core.component import module
-from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
+from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import get_diff, get_grade_info

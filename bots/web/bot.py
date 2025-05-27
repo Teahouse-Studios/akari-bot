@@ -908,7 +908,7 @@ else:
 async def route_handler(full_path: str):
     if os.path.exists(webui_path):
         if full_path == "webui":
-            return RedirectResponse(url=f"/webui/")
+            return RedirectResponse(url="/webui/")
 
         static_file = os.path.normpath(os.path.join(webui_path, full_path))
         if os.path.commonpath([webui_path, static_file]) != webui_path:

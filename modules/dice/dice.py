@@ -4,8 +4,8 @@ from typing import Optional, Union
 import numpy as np
 
 from core.config import Config
+from core.utils.message import isint
 from core.utils.random import Random
-from core.utils.text import isint
 
 MAX_DICE_COUNT = Config("dice_limit", 100, table_name="module_dice")  # 一次摇动最多的骰子数量
 MAX_OUTPUT_CNT = Config("dice_output_count", 50, table_name="module_dice")  # 输出的最多数据量

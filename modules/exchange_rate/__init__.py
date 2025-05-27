@@ -6,7 +6,7 @@ from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
-from core.utils.text import isfloat
+from core.utils.message import isfloat
 
 api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True, table_name="module_exchange_rate")
 

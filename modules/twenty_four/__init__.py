@@ -6,8 +6,8 @@ from core.builtins import Bot, I18NContext
 from core.component import module
 from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal, lost_petal
+from core.utils.message import isint
 from core.utils.random import Random
-from core.utils.text import isint
 
 no_solution_lst = [
     "无解",

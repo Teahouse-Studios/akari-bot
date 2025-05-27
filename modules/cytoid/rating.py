@@ -23,7 +23,7 @@ from core.utils.cache import random_cache_path
 from core.utils.html2text import html2text
 from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
-from core.utils.text import parse_time_string
+from core.utils.message import parse_time_string
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):

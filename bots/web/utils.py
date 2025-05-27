@@ -21,7 +21,7 @@ def generate_webui_config(port: int,
             ))
 
 
-def check_port_available(port: int, host: str = "0.0.0.0") -> bool:
+def check_port_available(port: int, host: str = "127.0.0.1") -> bool:
     try:
         socket.gethostbyname(host)
 

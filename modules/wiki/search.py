@@ -4,7 +4,7 @@ from typing import Union
 
 from core.builtins import Bot, I18NContext
 from core.logger import Logger
-from core.utils.text import isint
+from core.utils.message import isint
 from .wiki import wiki, query_pages
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib

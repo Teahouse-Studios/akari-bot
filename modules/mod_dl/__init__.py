@@ -5,7 +5,7 @@ from core.builtins import Bot
 from core.component import module
 from core.config import Config
 from core.utils.http import get_url
-from core.utils.text import isint
+from core.utils.message import isint
 
 mod_dl = module(
     bind_prefix="mod_dl",

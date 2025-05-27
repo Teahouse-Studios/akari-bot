@@ -10,7 +10,7 @@ from core.constants import config_filename, config_version
 from core.constants.exceptions import ConfigFileNotFound
 from core.constants.path import config_path
 from core.i18n import Locale
-from core.utils.text import isint, isfloat
+from core.utils.message import isint, isfloat
 
 cfg_file_path = os.path.join(config_path, config_filename)
 old_cfg_file_path = os.path.join(config_path, "config.cfg")

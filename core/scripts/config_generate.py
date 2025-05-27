@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
 from core.constants import *
 from core.i18n import Locale, load_locale_file
-from core.utils.text import isint
+from core.utils.message import isint
 
 
 def generate_config(dir_path, language):

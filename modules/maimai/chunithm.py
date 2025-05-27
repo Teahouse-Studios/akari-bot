@@ -1,7 +1,7 @@
 from core.builtins import Bot, Plain, Image as BImage, I18NContext
 from core.component import module
 from core.utils.image import msgchain2image
-from core.utils.text import isint
+from core.utils.message import isint
 from .database.models import DivingProberBindInfo
 from .libraries.chunithm_apidata import get_info, get_record
 from .libraries.chunithm_mapping import diff_list

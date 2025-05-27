@@ -11,7 +11,7 @@ from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import download, get_url, post_url
-from core.utils.text import isint
+from core.utils.message import isint
 from .maimaidx_mapping import *
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 

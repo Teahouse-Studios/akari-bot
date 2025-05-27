@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.utils.list import convert2lst
+from core.utils.message import convert2lst
 from .component_matches import *
 
 
