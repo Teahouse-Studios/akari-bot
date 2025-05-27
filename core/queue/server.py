@@ -15,7 +15,6 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def send_message_signal_to_client(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True):
-        message = MessageChain.assign(message)
         value = await cls.add_job(session_info.client_name, "send_message", {"session_info": converter.unstructure(session_info),
                                                                              "message": converter.unstructure(message),
                                                                              'quote': quote})

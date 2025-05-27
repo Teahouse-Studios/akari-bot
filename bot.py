@@ -22,13 +22,13 @@ ascii_art = r"""
 encode = "UTF-8"
 
 bots_and_required_configs = {
-    "aiocqhttp": ["qq_host"],
+    # "aiocqhttp": ["qq_host"],
     "discord": ["discord_token"],
-    "aiogram": ["telegram_token"],
-    "kook": ["kook_token"],
-    "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    "qqbot": ["qq_bot_appid", "qq_bot_secret"],
-    "web": ["jwt_secret"],
+    # "aiogram": ["telegram_token"],
+    # "kook": ["kook_token"],
+    # "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
+    # "qqbot": ["qq_bot_appid", "qq_bot_secret"],
+    # "web": ["jwt_secret"],
 }
 
 
@@ -133,6 +133,7 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
 def run_bot():
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
+    from core.server import run_async as server_run_async  # noqa
 
     def restart_process(bot_name: str):
         if (
@@ -194,6 +195,9 @@ def run_bot():
         )
         p.start()
         processes.append(p)
+    server_process = multiprocessing.Process(target=server_run_async, name="server", daemon=True)
+    server_process.start()
+    processes.append(server_process)
     while True:
         for p in processes:
             if p.is_alive():

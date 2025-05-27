@@ -34,38 +34,6 @@ from core.utils.http import download
 enable_analytics = Config("enable_analytics", False)
 
 
-async def convert_embed(embed: EmbedElement, msg: MessageSessionT):
-    if isinstance(embed, EmbedElement):
-        files = []
-        embeds = discord.Embed(
-            title=msg.session_info.locale.t_str(embed.title) if embed.title else None,
-            description=msg.session_info.locale.t_str(embed.description) if embed.description else None,
-            color=embed.color if embed.color else None,
-            url=embed.url if embed.url else None,
-            timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
-        )
-        if embed.image:
-            upload = discord.File(await embed.image.get(), filename="image.png")
-            files.append(upload)
-            embeds.set_image(url="attachment://image.png")
-        if embed.thumbnail:
-            upload = discord.File(await embed.thumbnail.get(), filename="thumbnail.png")
-            files.append(upload)
-            embeds.set_thumbnail(url="attachment://thumbnail.png")
-        if embed.author:
-            embeds.set_author(name=msg.session_info.locale.t_str(embed.author))
-        if embed.footer:
-            embeds.set_footer(text=msg.session_info.locale.t_str(embed.footer))
-        if embed.fields:
-            for field in embed.fields:
-                embeds.add_field(
-                    name=msg.session_info.locale.t_str(field.name),
-                    value=msg.session_info.locale.t_str(field.value),
-                    inline=field.inline
-                )
-        return embeds, files
-
-
 class FinishedSession(FinishedSessionT):
     async def delete(self):
         try:

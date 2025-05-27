@@ -18,7 +18,7 @@ class DBModel(Model):
 
     @classmethod
     async def get_by_target_id(cls,
-                               target_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
+                               target_id: Union["Bot.MessageSession", "Bot.FetchedMessageSession", str],
                                create: bool = True
                                ) -> Optional[Self]:
         """
@@ -45,7 +45,7 @@ class DBModel(Model):
 
     @classmethod
     async def get_by_sender_id(cls,
-                               sender_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
+                               sender_id: Union["Bot.MessageSession", "Bot.FetchedMessageSession", str],
                                create: bool = True
                                ) -> Optional[Self]:
         """

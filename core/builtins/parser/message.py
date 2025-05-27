@@ -13,7 +13,7 @@ from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.config import Config
-from core.constants.default import bug_report_url_default
+from core.constants.default import bug_report_url_default, ignored_sender_default
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
     InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 
 qq_account = Temp().data.get("qq_account")
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 enable_tos = Config("enable_tos", True)
 enable_analytics = Config("enable_analytics", False)
@@ -81,6 +82,10 @@ async def parser(msg: "Bot.MessageSession",
     identify_str = f"[{msg.session_info.sender_id}{
         f" ({msg.session_info.target_id})" if msg.session_info.target_from != msg.session_info.sender_from else ""}]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
+
+    if msg.session_info.sender_id in ignored_sender:
+        return
+
     try:
         await SessionTaskManager.check(msg)
         modules = ModulesManager.return_modules_list(msg.session_info.target_from)

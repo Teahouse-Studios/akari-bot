@@ -60,9 +60,9 @@ class MessageChain:
         """
         :param elements: 消息链元素。
         """
-        values = []
         if isinstance(elements, MessageChain):
             return elements
+        values = []
         if isinstance(elements, str):
             elements = match_kecode(elements)
         if isinstance(elements, BaseElement):
@@ -165,13 +165,13 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, session_info: SessionInfo = None, embed: bool = True) -> list:
+    def as_sendable(self, session_info: SessionInfo = None) -> list:
         """
         将消息链转换为可发送的格式。
         """
         value = []
         for x in self.values:
-            if isinstance(x, EmbedElement) and not embed:
+            if isinstance(x, EmbedElement) and not session_info.support_embed:
                 value += x.to_message_chain()
             elif isinstance(x, PlainElement):
                 if session_info:

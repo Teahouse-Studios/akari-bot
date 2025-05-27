@@ -171,6 +171,10 @@ class MessageSession:
         :return: 被发送的消息链。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        message_chain = MessageChain.assign(message_chain)
+        if not message_chain.is_safe and not disable_secret_check:
+            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+
         return_val = await _queue_server.send_message_signal_to_client(self.session_info, message_chain, quote=quote)
 
         if callback:
@@ -531,25 +535,26 @@ class MessageSession:
         return hash(self.session_info.session_id)
 
 
+@define
 class FinishedSession:
     """
     结束会话。
     """
+    session: SessionInfo
+    message_id: Union[List[int], List[str], int, str] = None
 
-    def __init__(
-        self, session: SessionInfo, message_id: Union[List[int], List[str], int, str]
-    ):
-        self.session = session
+    @classmethod
+    def assign(cls, session: SessionInfo, message_id: Union[List[int], List[str], int, str]):
         if isinstance(message_id, (int, str)):
             message_id = [message_id]
-        self.message_id = message_id
-        self._queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return cls(session, message_id)
 
     async def delete(self):
         """
         用于删除这条消息。
         """
-        await self._queue_server.delete_message_signal_to_client(self.session, self.message_id)
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.delete_message_signal_to_client(self.session, self.message_id)
 
     def __str__(self):
         return f"FinishedSession(message_id={self.message_id})"

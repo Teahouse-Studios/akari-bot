@@ -46,7 +46,7 @@ class ConsoleContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
-        for x in message.as_sendable(session_info, embed=False):
+        for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
                 print(x.text)
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
