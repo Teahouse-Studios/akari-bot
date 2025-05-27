@@ -57,7 +57,10 @@ def get_bot_names(attribute_name, console_name) -> List[str]:
         except Exception:
             Logger.error("Failed to load pre-built bots list...")
             return []
-    names.append(console_name)
+    if isinstance(console_name, list):
+        names.extend(console_name)
+    else:
+        names.append(console_name)
     return names
 
 

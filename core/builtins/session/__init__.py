@@ -89,13 +89,13 @@ class SessionInfo:
         """
         if target_from is None:
             target_from = determine_target_from(target_id)
-        if sender_from is None:
-            sender_from = determine_sender_from(sender_id)
         target_info = await TargetInfo.get_by_target_id(target_id, create)
         if target_info is None:
             raise ValueError(f"TargetInfo not found for target_id: {target_id}")
 
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create) if sender_id else None
+        if sender_from is None and sender_id:
+            sender_from = determine_sender_from(sender_id)
         timestamp = datetime.now().timestamp()
         session_id = str(uuid.uuid4())
         locale = Locale(target_info.locale)
@@ -553,6 +553,18 @@ class FinishedSession:
 
     def __str__(self):
         return f"FinishedSession(message_id={self.message_id})"
+
+
+@define
+class FetchedMessageSession(MessageSession):
+    """
+    主动获取的消息会话。
+    """
+    @classmethod
+    async def from_session_info(cls, session: FetchedSessionInfo):
+        return cls(
+            session_info=session
+        )
 
 
 @define

@@ -43,8 +43,8 @@ class ConsoleContextManager(ContextManager):
         if not isinstance(message, MessageChain):
             raise TypeError("Message must be a MessageChain or str")
 
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
 
         for x in message.as_sendable(session_info, embed=False):
             if isinstance(x, PlainElement):

@@ -17,7 +17,7 @@ from ..constants import base_superuser_default
 from ..database.models import TargetInfo
 from ..logger import Logger
 
-from core.builtins.session import MessageSession
+from core.builtins.session import MessageSession, FetchedMessageSession
 from core.builtins.session.context import ContextManager
 from core.builtins.session.lock import ExecutionLockList
 
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
 class Bot:
     MessageSession = MessageSession
+    FetchedMessageSession = FetchedMessageSession
     ModuleHookContext = ModuleHookContext
     ExecutionLockList = ExecutionLockList
     Info = Info
@@ -93,21 +94,25 @@ class Bot:
     @classmethod
     async def fetch_target(cls,
                            target_id: str, sender_id: Optional[Union[int, str]] = None
-                           ) -> FetchedSessionInfo:
+                           ) -> Union[FetchedMessageSession, None]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         # todo
-        session = await FetchedSessionInfo.assign(target_id=target_id,
-                                                  sender_id=sender_id,
-                                                  client_name=Bot.client_name,
-                                                  ctx_slot=cls.fetched_session_ctx_slot, create=False)
-        return session
+        try:
+            session = await FetchedSessionInfo.assign(target_id=target_id,
+                                                      sender_id=sender_id,
+                                                      client_name=Bot.client_name,
+                                                      ctx_slot=cls.fetched_session_ctx_slot, create=False)
+        except ValueError:
+            return None
+
+        return await FetchedMessageSession.from_session_info(session)
 
     @classmethod
     async def fetch_target_list(cls,
                                 target_list: List[Union[int, str]]
-                                ) -> List[FetchedSessionInfo]:
+                                ) -> List[FetchedMessageSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
@@ -116,7 +121,7 @@ class Bot:
             if isinstance(x, str):
                 x = await cls.fetch_target(x)
             if isinstance(x, FetchedSessionInfo):
-                fetched.append(x)
+                fetched.append(await FetchedMessageSession.from_session_info(x))
         return fetched
 
     @classmethod
@@ -207,11 +212,14 @@ class Bot:
                                   ):
         if isinstance(target, str):
             target = await cls.fetch_target(target)
+        if isinstance(target, (FetchedMessageSession, MessageSession)):
+            ...
+        if not target:
+            raise ValueError("Target not found.")
         if isinstance(msg, list):
             msg = MessageChain.assign(msg)
         Logger.info(target.__dict__)
-        m = await Bot.MessageSession.from_session_info(session=target)
-        await m.send_direct_message(
+        await target.send_direct_message(
             message_chain=msg,
             disable_secret_check=disable_secret_check,
             enable_parse_message=enable_parse_message,
