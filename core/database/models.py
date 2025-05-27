@@ -70,8 +70,7 @@ class SenderInfo(DBModel):
 
         :param amount: 要添加或减少的花瓣数量。
         """
-        petal = self.petal + int(amount)
-        self.petal = petal
+        self.petal += int(amount)
         await self.save()
         return True
 
@@ -186,9 +185,15 @@ class TargetInfo(DBModel):
         if enable:
             if sender_id not in custom_admins:
                 custom_admins.append(sender_id)
+            else:
+                return False
         else:
             if sender_id in custom_admins:
                 custom_admins.remove(sender_id)
+            else:
+                return False
+
+        self.custom_admins = custom_admins
         await self.save()
         return True
 
@@ -203,9 +208,15 @@ class TargetInfo(DBModel):
         if enable:
             if sender_id not in banned_users:
                 banned_users.append(sender_id)
+            else:
+                return False
         else:
             if sender_id in banned_users:
                 banned_users.remove(sender_id)
+            else:
+                return False
+
+        self.banned_users = banned_users
         await self.save()
         return True
 

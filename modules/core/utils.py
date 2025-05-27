@@ -103,17 +103,18 @@ async def _(msg: Bot.MessageSession):
     if not user.startswith(f"{msg.target.sender_from}|"):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.target.sender_from, prefix=msg.prefixes[0]))
     if "add" in msg.parsed_msg:
-        if user and user not in msg.custom_admins:
-            if await msg.target_info.config_custom_admin(user):
-                await msg.finish(I18NContext("core.message.admin.add.success", user=user))
+        if user and await msg.target_info.config_custom_admin(user):
+            await msg.finish(I18NContext("core.message.admin.add.success", user=user))
         else:
-            await msg.finish(I18NContext("core.message.admin.already"))
+            await msg.finish(I18NContext("core.message.admin.add.already"))
     if "remove" in msg.parsed_msg:
         if user == msg.target.sender_id:
             if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
                 await msg.finish()
-        elif user and msg.target_info.config_custom_admin(user, enable=False):
+        if user and await msg.target_info.config_custom_admin(user, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", user=user))
+        else:
+            await msg.finish(I18NContext("core.message.admin.remove.none"))
 
 
 @admin.command(
@@ -133,15 +134,13 @@ async def _(msg: Bot.MessageSession):
     if user == msg.target.sender_id:
         await msg.finish(I18NContext("core.message.admin.ban.self"))
     if "ban" in msg.parsed_msg:
-        if user not in msg.banned_users:
-            if await msg.target_info.config_banned_user(user):
-                await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
+        if await msg.target_info.config_banned_user(user):
+            await msg.finish(I18NContext("core.message.admin.ban.success", user=user))
         else:
             await msg.finish(I18NContext("core.message.admin.ban.already"))
     if "unban" in msg.parsed_msg:
-        if user in msg.banned_users:
-            if await msg.target_info.config_banned_user(user, enable=False):
-                await msg.finish(I18NContext("core.message.admin.unban.success", user=user))
+        if await msg.target_info.config_banned_user(user, enable=False):
+            await msg.finish(I18NContext("core.message.admin.unban.success", user=user))
         else:
             await msg.finish(I18NContext("core.message.admin.unban.none"))
 
@@ -222,6 +221,18 @@ async def _(msg: Bot.MessageSession):
         await msg.sender_info.edit_sender_data("typo_check", False)
         await msg.finish(I18NContext("core.message.setup.check.enable"))
 """
+
+
+@setup.command("sign {[I18N:core.help.setup.sign]}",
+               required_admin=True,
+               load=Config("enable_petal", False))
+async def _(msg: Bot.MessageSession):
+    if not msg.target_data.get("disable_sign", False):
+        await msg.target_info.edit_target_data("disable_sign", True)
+        await msg.finish(I18NContext("core.message.setup.sign.disable"))
+    else:
+        await msg.target_info.edit_target_data("disable_sign", False)
+        await msg.finish(I18NContext("core.message.setup.sign.enable"))
 
 
 @setup.command(
