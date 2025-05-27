@@ -7,7 +7,7 @@ from typing import Dict, Optional, Union, Callable
 
 from core.config import Config
 from core.constants.path import modules_path, PrivateAssets
-from core.i18n import locale_loaded_err
+from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
 from core.types.module.component_meta import (
@@ -27,8 +27,9 @@ err_modules = []
 def load_modules():
     unloaded_modules = Config("unloaded_modules", [])
     err_prompt = []
+    locale_loaded_err = load_locale_file()
     if locale_loaded_err:
-        err_prompt.append("i18n:")
+        err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
     fun_file = None
     dir_list = fetch_modules_list()

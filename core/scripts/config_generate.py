@@ -8,11 +8,13 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
 from core.constants import *
-from core.i18n import Locale
+from core.i18n import Locale, load_locale_file
 from core.utils.text import isint
 
 
 def generate_config(dir_path, language):
+    load_locale_file()
+
     config_code_list = {}
     os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
