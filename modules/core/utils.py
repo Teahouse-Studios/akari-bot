@@ -224,13 +224,13 @@ async def _(msg: Bot.MessageSession):
 """
 
 
-@setup.command("sign {[I18N:core.help.setup.sign]}")
+@setup.command("sign {[I18N:core.help.setup.sign]}", load=Config("enable_petal", False))
 async def _(msg: Bot.MessageSession):
-    if not msg.sender_data.get("disable_sign", False):
-        await msg.sender_info.edit_sender_data("disable_sign", True)
+    if not msg.target_data.get("disable_sign", False):
+        await msg.target_info.edit_target_data("disable_sign", True)
         await msg.finish(I18NContext("core.message.setup.sign.disable"))
     else:
-        await msg.sender_info.edit_sender_data("disable_sign", False)
+        await msg.target_info.edit_target_data("disable_sign", False)
         await msg.finish(I18NContext("core.message.setup.sign.enable"))
 
 
