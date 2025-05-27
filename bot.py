@@ -137,7 +137,7 @@ def run_bot():
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
 
-    def restart_process(bot_name: str):
+    def restart_bot_process(bot_name: str):
         if (
             bot_name not in failed_to_start_attempts
             or datetime.now().timestamp()
@@ -206,8 +206,9 @@ def run_bot():
                 continue
             if p.exitcode == 0:
                 Logger.warning(
-                    f"{p.pid} ({p.name}) exited with code 0, please check the log."
+                    f"{p.pid} ({p.name}) exited with code 0, abort to restart."
                 )
+                processes.remove(p)
                 terminate_process(p)
                 break
             if p.exitcode == 233:
@@ -220,7 +221,7 @@ def run_bot():
             )
             processes.remove(p)
             terminate_process(p)
-            restart_process(p.name)
+            restart_bot_process(p.name)
             break
 
         if not processes:

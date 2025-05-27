@@ -103,18 +103,16 @@ async def _(msg: Bot.MessageSession):
     if not user.startswith(f"{msg.target.sender_from}|"):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.target.sender_from, prefix=msg.prefixes[0]))
     if "add" in msg.parsed_msg:
-        if user and await msg.target_info.config_custom_admin(user):
-            await msg.finish(I18NContext("core.message.admin.add.success", user=user))
-        else:
+        if await msg.check_permission():
             await msg.finish(I18NContext("core.message.admin.add.already"))
+        if await msg.target_info.config_custom_admin(user):
+            await msg.finish(I18NContext("core.message.admin.add.success", user=user))
     if "remove" in msg.parsed_msg:
         if user == msg.target.sender_id:
             if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
                 await msg.finish()
-        if user and await msg.target_info.config_custom_admin(user, enable=False):
+        if await msg.target_info.config_custom_admin(user, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", user=user))
-        else:
-            await msg.finish(I18NContext("core.message.admin.remove.none"))
 
 
 @admin.command(

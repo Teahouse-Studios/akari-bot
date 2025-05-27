@@ -187,11 +187,8 @@ class TargetInfo(DBModel):
                 custom_admins.append(sender_id)
             else:
                 return False
-        else:
-            if sender_id in custom_admins:
-                custom_admins.remove(sender_id)
-            else:
-                return False
+        elif sender_id in custom_admins:
+            custom_admins.remove(sender_id)
 
         self.custom_admins = custom_admins
         await self.save()

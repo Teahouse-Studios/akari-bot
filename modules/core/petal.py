@@ -50,7 +50,10 @@ async def _(msg: Bot.MessageSession, petal: int, user: str):
     if await msg.wait_confirm(I18NContext("core.message.petal.give.confirm", sender=user, give_petal=petal)):
         if cost_petal(msg, petal):
             await sender_info.modify_petal(petal)
-            await msg.finish(I18NContext("core.message.petal.give.success", sender=user, give_petal=petal, petal=sender_info.petal))
+            await msg.finish(I18NContext("core.message.petal.give.success",
+                                         sender=user,
+                                         give_petal=petal,
+                                         petal=(msg.petal - int(petal))))
         else:
             await msg.finish()
     else:
@@ -73,7 +76,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.petal.modify", sender=user, add_petal=petal, petal=sender_info.petal))
         else:
             await msg.sender_info.modify_petal(petal)
-            await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=sender_info.petal))
+            await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=(msg.petal + int(petal))))
     elif msg.parsed_msg.get("clear", False):
         if user:
             if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
