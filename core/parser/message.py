@@ -117,7 +117,7 @@ async def parser(msg: Bot.MessageSession,
         Logger.warning("Waiting task cancelled by user.")
 
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
     finally:
         ExecutionLockList.remove(msg)
 
@@ -326,7 +326,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
         await _process_tos_abuse_warning(msg, str(e))
 
     except NoReportException as e:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         err_msg = msg.locale.t_str(str(e))
         await msg.send_message(I18NContext("error.message.prompt.noreport", detail=err_msg))
 
@@ -615,7 +615,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
                 await _execute_submodule(msg, command_first_word, command_split)"""
             return
     except InvalidHelpDocTypeError:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.send_message(I18NContext("error.module.helpdoc.invalid", module=command_first_word))
         return
 
@@ -657,7 +657,7 @@ async def _process_send_message_failed(msg: Bot.MessageSession):
 
 
 async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportException):
-    Logger.error(traceback.format_exc())
+    Logger.exception()
     errmsgchain = [I18NContext("error.message.prompt")]
     err_msg = msg.locale.t_str(str(e))
     errmsgchain += match_kecode(err_msg)

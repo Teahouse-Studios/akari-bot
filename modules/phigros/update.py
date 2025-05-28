@@ -3,7 +3,6 @@ import os
 import re
 import shutil
 import string
-import traceback
 
 import orjson as json
 
@@ -46,7 +45,7 @@ async def update_assets():
     try:
         update = await get_url(json_url, 200, fmt="json")
     except Exception:
-        traceback.format_exc()
+        Logger.exception()
         return False
     if update:
         for song in update:
@@ -77,7 +76,7 @@ async def update_assets():
     try:
         download_file = await download(another_assets_url)
     except Exception:
-        traceback.format_exc()
+        Logger.exception()
         return False
     if download_file:
         ca = random_cache_path()

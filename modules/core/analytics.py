@@ -1,4 +1,3 @@
-import traceback
 from datetime import datetime, timedelta, UTC
 
 import matplotlib.pyplot as plt
@@ -41,7 +40,7 @@ async def _(msg: Bot.MessageSession):
             if str(e).find("NoneType") != -1:
                 await msg.finish(I18NContext("core.message.analytics.none"))
             else:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
     else:
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
@@ -104,7 +103,7 @@ async def _(msg: Bot.MessageSession):
             if str(e).find("NoneType") != -1:
                 await msg.finish(I18NContext("core.message.analytics.none"))
             else:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
     else:
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
@@ -167,7 +166,7 @@ async def _(msg: Bot.MessageSession):
             if str(e).find("NoneType") != -1:
                 await msg.finish(I18NContext("core.message.analytics.none"))
             else:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
     else:
         await msg.finish(I18NContext("core.message.analytics.disabled"))
 
@@ -202,6 +201,6 @@ async def _(msg: Bot.MessageSession, rank: int = None):
             if str(e).find("NoneType") != -1:
                 await msg.finish(I18NContext("core.message.analytics.none"))
             else:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
     else:
         await msg.finish(I18NContext("core.message.analytics.disabled"))

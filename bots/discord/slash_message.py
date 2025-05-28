@@ -1,5 +1,3 @@
-import traceback
-
 import discord
 
 from core.builtins import MessageTaskManager
@@ -26,7 +24,7 @@ class FinishedSession(FinS):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -120,5 +118,5 @@ class MessageSession(MessageSessionT):
             await self.session.message.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False

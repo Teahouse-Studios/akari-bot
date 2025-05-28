@@ -1,5 +1,4 @@
 import os
-import traceback
 from typing import Optional, Union
 
 import orjson as json
@@ -42,7 +41,7 @@ async def update_cover() -> bool:
                     if Config("debug", False):
                         Logger.error(f"Failed to download {id}.png")
                     continue
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 return False
     return True
 
@@ -64,7 +63,7 @@ async def update_alias() -> bool:
                 file.write(json.dumps(alias_data, option=json.OPT_INDENT_2))
         return True
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False
 
 
@@ -162,7 +161,7 @@ async def get_record(
             else:
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
@@ -217,7 +216,7 @@ async def get_song_record(
         except Exception as e:
             if str(e).startswith("400"):
                 raise ConfigValueError("[I18N:error.config.invalid]")
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             if use_cache and os.path.exists(cache_dir):
                 try:
                     with open(cache_dir, "r", encoding="utf-8") as f:
@@ -270,7 +269,7 @@ async def get_total_record(
             else:
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:
@@ -326,7 +325,7 @@ async def get_plate(
             else:
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:

@@ -1,5 +1,4 @@
 import re
-import traceback
 
 from core.logger import Logger
 from core.queue import JobQueue
@@ -71,7 +70,7 @@ async def wiki_log():
                                     if matched_f:
                                         matched_logs[id_][wiki]["AbuseLog"].append(y)
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
             if fetches[id_][wiki]["RecentChanges"]["enable"]:
                 try:
                     query = await query_wiki.get_json(
@@ -117,5 +116,5 @@ async def wiki_log():
                                             y
                                         )
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
     await JobQueue.trigger_hook_all("wikilog.matched", matched_logs=matched_logs)

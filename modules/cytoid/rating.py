@@ -1,7 +1,6 @@
 import asyncio
 import os
 import time
-import traceback
 from datetime import datetime
 
 import orjson as json
@@ -174,7 +173,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 output.convert("RGBA")
                 b30img.alpha_composite(output, (1825, 22))
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
         font4 = ImageFont.truetype(nunito_regular_path, 35)
         drawtext = ImageDraw.Draw(b30img)
@@ -245,7 +244,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 fname += 1
                 s += 1
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 break
         if __name__ == "__main__":
             b30img.show()
@@ -257,7 +256,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
     except Exception as e:
         if str(e).startswith("404"):
             await msg.finish(I18NContext("cytoid.message.user_not_found"))
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return {"status": False, "text": Plain("[I18N:message.error]" + str(e))}
 
 
@@ -276,7 +275,7 @@ async def download_cover_thumb(uid):
             )
         return path
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False
 
 
@@ -290,7 +289,7 @@ async def download_avatar_thumb(link, id):
         )
         return path
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False
 
 

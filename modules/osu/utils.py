@@ -1,5 +1,3 @@
-import traceback
-
 import orjson as json
 
 from core.builtins import Bot
@@ -19,7 +17,7 @@ async def get_profile_name(msg: Bot.MessageSession, uid, api_key):
     except ValueError as e:
         if str(e).startswith("401"):
             raise ConfigValueError("[I18N:error.config.invalid]")
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False
     except Exception:
         return False

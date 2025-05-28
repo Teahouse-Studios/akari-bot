@@ -1,4 +1,3 @@
-import traceback
 from typing import Tuple, Optional
 from urllib.parse import quote
 
@@ -60,7 +59,7 @@ async def check_web_render() -> Tuple[bool, bool]:
             Logger.success("[WebRender] WebRender is working as expected.")
         except Exception:
             Logger.error("[WebRender] WebRender is not working as expected.")
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             web_render_status = False
     return web_render_status, web_render_local_status
 

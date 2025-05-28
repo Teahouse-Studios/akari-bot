@@ -268,9 +268,7 @@ class ModulesManager:
                 err_modules.remove(m.group(1))
             return cnt + 1
         except Exception:
-            tb = traceback.format_exc()
-            errmsg = f"Failed to reload {module_name}: \n{tb}"
-            Logger.error(errmsg)
+            Logger.exception(f"Failed to reload {module_name}:")
             if (m := re.match(r"^modules(\.[a-zA-Z0-9_]*)?", module_name)) and m.group(
                 1
             ) not in err_modules:

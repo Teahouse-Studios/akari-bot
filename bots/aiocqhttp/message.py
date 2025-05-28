@@ -53,7 +53,7 @@ class FinishedSession(FinishedSessionT):
                     if x != 0:
                         await bot.call_action("delete_msg", message_id=x)
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
 
 last_send_typing_time = {}
@@ -75,13 +75,13 @@ async def resending_group_message():
                     Temp.data["waiting_for_send_group_message"].remove(x)
                     await asyncio.sleep(30)
                 except SendMessageFailed:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
                     falied_list.append(x)
                     if len(falied_list) > 3:
                         raise SendMessageFailed
         Temp.data["is_group_message_blocked"] = False
     except SendMessageFailed:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         Temp.data["is_group_message_blocked"] = True
         for bu in base_superuser_list:
             fetch_base_superuser = await FetchTarget.fetch_target(bu)
@@ -386,7 +386,7 @@ class MessageSession(MessageSessionT):
                     )
                 return True
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 return False
 
     async def get_text_channel_list(self):
@@ -638,7 +638,7 @@ class FetchTarget(FetchTargetT):
                                     I18NContext("error.message.paused", disable_joke=True, prefix=command_prefix[0])
                                 )
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
         if user_list:
             for x in user_list:

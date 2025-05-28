@@ -1,5 +1,4 @@
 import re
-import traceback
 from typing import List, Union
 
 import httpx
@@ -62,7 +61,7 @@ class FinishedSession(FinishedSessionT):
                     else:
                         await channel_msg_delete(y["msg_id"])
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -208,7 +207,7 @@ class MessageSession(MessageSessionT):
                 await channel_msg_delete(self.session.message.id)
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -327,7 +326,7 @@ class FetchTarget(FetchTargetT):
                                                    module_name=module_name,
                                                    module_type="schedule")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
@@ -353,7 +352,7 @@ class FetchTarget(FetchTargetT):
                                                        module_name=module_name,
                                                        module_type="schedule")
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession

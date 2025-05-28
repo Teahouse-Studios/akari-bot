@@ -1,5 +1,4 @@
 import base64
-import traceback
 from io import BytesIO
 from typing import List, Optional, Union
 
@@ -73,7 +72,7 @@ async def msgchain2image(message_chain: Union[MessageChain, str, list, MessageEl
                     lst.append(f"<img src=\"data:{ftt.mime};base64,{
                                (base64.encodebytes(data)).decode("utf-8")}\" width=\"720\" />")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         elif isinstance(m, VoiceElement):
             lst.append("<div>[Voice]</div>")
         elif isinstance(m, EmbedElement):

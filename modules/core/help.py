@@ -1,6 +1,5 @@
 import base64
 import re
-import traceback
 from html import escape
 from io import BytesIO
 
@@ -169,7 +168,7 @@ async def _(msg: Bot.MessageSession, module: str):
                             img_lst.append(Image(bimg))
                         await msg.finish(img_lst + [Plain(wiki_msg.strip())])
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                 if wiki_msg:
                     await msg.finish(wiki_msg.strip())

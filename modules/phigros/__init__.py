@@ -1,5 +1,4 @@
 import shutil
-import traceback
 
 from core.builtins import Bot, Image
 from core.component import module
@@ -102,7 +101,7 @@ async def _(msg: Bot.MessageSession):
                 Image(drawb19(bind_info.username, round(sum(rks_acc) / len(rks_acc), 2), b19_data))
             )
         except Exception as e:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             await msg.finish(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
 
 

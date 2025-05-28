@@ -1,4 +1,3 @@
-import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
@@ -197,7 +196,7 @@ class TotalList:
             self.total_list = total_list
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     @staticmethod
@@ -210,7 +209,7 @@ class TotalList:
                     f.write(json.dumps(data, option=json.OPT_INDENT_2))
             return data
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             try:
                 with open(mai_song_info_path, "r", encoding="utf-8") as f:
                     data = json.loads(f.read())

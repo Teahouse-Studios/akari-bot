@@ -1,7 +1,6 @@
 import mimetypes
 import os
 import re
-import traceback
 from typing import List, Union
 
 import nio
@@ -26,7 +25,7 @@ class FinishedSession(FinishedSessionT):
             for x in self.message_id:
                 await bot.room_redact(str(self.result), x)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -309,7 +308,7 @@ class MessageSession(MessageSessionT):
             await bot.room_redact(self.session.target, self.session.message["event_id"])
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -422,7 +421,7 @@ class FetchTarget(FetchedTargetT):
                                                    module_name=module_name,
                                                    module_type="schedule")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(module_name, client_name)
             for x in get_target_id:
@@ -446,7 +445,7 @@ class FetchTarget(FetchedTargetT):
                                                        module_name=module_name,
                                                        module_type="schedule")
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession

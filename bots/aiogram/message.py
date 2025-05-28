@@ -1,5 +1,4 @@
 import re
-import traceback
 from typing import List, Union
 
 from aiogram.types import FSInputFile
@@ -34,7 +33,7 @@ class FinishedSession(FinishedSessionT):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -201,7 +200,7 @@ class MessageSession(MessageSessionT):
                 await x.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -275,7 +274,7 @@ class FetchTarget(FetchTargetT):
                                                    module_name=module_name,
                                                    module_type="schedule")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
@@ -301,7 +300,7 @@ class FetchTarget(FetchTargetT):
                                                        module_name=module_name,
                                                        module_type="schedule")
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession

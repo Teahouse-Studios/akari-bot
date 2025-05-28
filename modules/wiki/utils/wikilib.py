@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import re
-import traceback
 import urllib.parse
 from copy import deepcopy
 from typing import Union, Dict, List
@@ -175,7 +174,7 @@ class WikiLib:
                 if "*" in ns and "canonical" in ns:
                     namespaces_local.update({ns["*"]: ns["canonical"]})
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
         for x in info["query"]["namespacealiases"]:
             if "*" in x:
                 namespaces[x["*"]] = x["id"]
@@ -248,7 +247,7 @@ class WikiLib:
                 )
             except Exception as e:
                 if Config("debug", False):
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
                 if str(e).startswith("403"):
                     message = self.locale.t(
                         "wiki.message.utils.wikilib.get_failed.forbidden"
@@ -287,7 +286,7 @@ class WikiLib:
             )
         except Exception as e:
             if Config("debug", False):
-                Logger.error(traceback.format_exc())
+                Logger.exception()
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(
                 e
             )
@@ -377,7 +376,7 @@ class WikiLib:
                     )
                 desc = desc_end[0]
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             desc = ""
         if desc in ["...", "…"]:
             desc = ""
@@ -429,7 +428,7 @@ class WikiLib:
             )
             desc = load_desc["parse"]["wikitext"]["*"]
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             desc = ""
         return desc
 
@@ -781,7 +780,7 @@ class WikiLib:
                                         return research
                                     except Exception:
                                         if Config("debug", False):
-                                            Logger.error(traceback.format_exc())
+                                            Logger.exception()
                                         return None, False
 
                                 searches = []
@@ -828,7 +827,7 @@ class WikiLib:
                                         page_info.is_forum_topic = True
                                         break
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                     templates = page_info.templates = [
                         t["title"] for t in page_raw.get("templates", [])

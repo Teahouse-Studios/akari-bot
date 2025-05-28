@@ -1,4 +1,3 @@
-import traceback
 from typing import Optional
 
 import orjson as json
@@ -53,7 +52,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
             else:
                 await msg.finish(I18NContext("maimai.message.forbidden"))
         else:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
                 with open(cache_dir, "r", encoding="utf-8") as f:

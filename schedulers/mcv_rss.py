@@ -1,5 +1,4 @@
 import re
-import traceback
 from datetime import datetime
 
 import orjson as json
@@ -65,7 +64,7 @@ async def get_article(version):
         return link, title.text
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         return "", ""
 
 
@@ -156,7 +155,7 @@ async def mcv_rss():
                     await update_stored_list("scheduler", "mcnews", get_stored_news_title)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=180))
@@ -178,7 +177,7 @@ async def mcbv_rss():
             await update_stored_list("scheduler", "mcbv_rss", verlist)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 """
 
@@ -226,7 +225,7 @@ async def mcv_jira_rss():
 
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
@@ -256,7 +255,7 @@ async def mcbv_jira_rss():
                 await update_stored_list("scheduler", "mcbv_jira_rss", verlist)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
@@ -286,7 +285,7 @@ async def mcdv_rss():
                 await update_stored_list("scheduler", "mcdv_rss", verlist)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
@@ -316,5 +315,5 @@ async def mclgv_rss():
                 await update_stored_list("scheduler", "mclgv_rss", verlist)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 """

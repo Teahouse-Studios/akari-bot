@@ -1,6 +1,5 @@
 import asyncio
 import re
-import traceback
 import uuid
 from typing import Union
 
@@ -33,7 +32,7 @@ class FinishedSession(FinS):
             resp = {"action": "delete", "id": self.message_id}
             await websocket.send_text(json.dumps(resp).decode())
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -109,7 +108,7 @@ class MessageSession(MessageSessionT):
             await websocket.send_text(json.dumps(resp).decode())
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     async def check_permission(self):

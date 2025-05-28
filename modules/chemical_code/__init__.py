@@ -1,7 +1,6 @@
 import asyncio
 import io
 import re
-import traceback
 from datetime import datetime
 from typing import Optional
 from PIL import Image as PImage
@@ -248,7 +247,7 @@ async def chemical_code(
     try:
         csr = await search_pubchem(id)
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         play_state.disable()
         await msg.finish(I18NContext("chemical_code.message.error"))
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
@@ -323,7 +322,7 @@ async def chemical_code(
                                     incorrect_elements = "[I18N:message.delimiter]".join(incorrect_list)
                                     await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2", elements=incorrect_elements))
                     except ValueError:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                 Logger.info(f"{wait_text} != {play_state.get("answer")}")
                 return await ans(wait, random_mode)

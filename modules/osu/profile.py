@@ -1,4 +1,3 @@
-import traceback
 from datetime import datetime, UTC
 
 import orjson as json
@@ -65,7 +64,7 @@ async def osu_profile(msg: Bot.MessageSession, uid, mode, api_key):
             raise ConfigValueError("[I18N:error.config.invalid]")
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.finish(I18NContext("osu.message.not_found"))
 
     text = f"UID: {userid}\n" + \

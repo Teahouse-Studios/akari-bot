@@ -1,5 +1,3 @@
-import traceback
-
 from core.config import Config
 from core.logger import Logger
 from core.scheduler import Scheduler, CronTrigger
@@ -13,4 +11,4 @@ async def update_maimai_alias():
         await update_alias()
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()

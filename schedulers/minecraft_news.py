@@ -1,5 +1,3 @@
-import traceback
-
 import orjson as json
 
 from core.builtins import Url, I18NContext, MessageChain
@@ -82,7 +80,7 @@ async def start_check_news():
                     await update_stored_list("scheduler", "mcnews", alist)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=300))
@@ -129,4 +127,4 @@ async def feedback_news():
                     await update_stored_list("scheduler", "mcfeedbacknews", alist)
         except Exception:
             if Config("debug", False):
-                Logger.error(traceback.format_exc())
+                Logger.exception()

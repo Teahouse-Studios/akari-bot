@@ -3,7 +3,6 @@ import importlib
 import os
 import re
 import sys
-import traceback
 
 import discord
 import orjson as json
@@ -81,11 +80,9 @@ def load_slashcommands():
                 Logger.info(f"Loading slash.{fun_file}...")
                 modules = "bots.discord.slash." + fun_file
                 importlib.import_module(modules)
-                Logger.success(f"Succeeded loaded bots.discord.slash.{fun_file}!")
+                Logger.success(f"Successfully loaded bots.discord.slash.{fun_file}!")
         except Exception:
-            tb = traceback.format_exc()
-            errmsg = f"Failed to load bots.discord.slash.{fun_file}: \n{tb}"
-            Logger.error(errmsg)
+            Logger.exception(f"Failed to load bots.discord.slash.{fun_file}: ")
 
 
 load_slashcommands()
