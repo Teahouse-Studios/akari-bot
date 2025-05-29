@@ -291,28 +291,69 @@ class MessageChain:
         return self
 
 
+def _extract_kecode_blocks(text):
+    result = []
+    i = 0
+    while i < len(text):
+        if text.startswith("[KE:", i):
+            start = i
+            depth = 0
+            i += 4  # skip "[KE:"
+            while i < len(text):
+                c = text[i]
+                if c in "[{(<":
+                    depth += 1
+                elif c in "]})>":
+                    depth -= 1
+                elif c == "]" and depth <= 0:
+                    i += 1
+                    result.append(text[start:i])
+                    break
+                i += 1
+            else:
+                result.append(text[start:])
+                break
+        else:
+            start = i
+            while i < len(text) and not text.startswith("[KE:", i):
+                i += 1
+            result.append(text[start:i])
+    return result
+
+
 def match_kecode(text: str,
-                 disable_joke: bool = False) -> List[Union[PlainElement,
-                                                           ImageElement,
-                                                           VoiceElement,
-                                                           I18NContextElement,
-                                                           MentionElement]]:
-    split_all = re.split(r"(\[KE:.*?])", text)
+                 disable_joke: bool = False) -> List[Union[
+                     PlainElement, ImageElement, VoiceElement,
+                     I18NContextElement, MentionElement]]:
+    split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
     elements = []
-    params = []
 
     for e in split_all:
-        match = re.match(r"\[KE:([^\s,\]]+)(?:,([^\]]+))?\]", e)
+        match = re.match(r"\[KE:([^\s,\]]+)(?:,(.*))?\]$", e, re.DOTALL)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e, disable_joke=disable_joke))
         else:
             element_type = match.group(1).lower()
+            param_str = match.group(2) or ""
 
-            if match.group(2):
-                params = match.group(2).split(",")
-                params = [x for x in params if x]
+            params = []
+            buf = ""
+            stack = []
+            for ch in param_str:
+                if ch == "," and not stack:
+                    params.append(buf)
+                    buf = ""
+                else:
+                    buf += ch
+                    if ch in "[{(<":
+                        stack.append(ch)
+                    elif ch in "]})>":
+                        if stack:
+                            stack.pop()
+            if buf:
+                params.append(buf)
 
             if element_type == "plain":
                 for a in params:
@@ -327,6 +368,7 @@ def match_kecode(text: str,
                     else:
                         a = html.unescape(a)
                         elements.append(PlainElement.assign(a, disable_joke=disable_joke))
+
             elif element_type == "image":
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -346,6 +388,7 @@ def match_kecode(text: str,
                     else:
                         a = html.unescape(a)
                         elements.append(ImageElement.assign(a))
+
             elif element_type == "voice":
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -360,6 +403,7 @@ def match_kecode(text: str,
                     else:
                         a = html.unescape(a)
                         elements.append(VoiceElement.assign(a))
+
             elif element_type == "i18n":
                 i18nkey = None
                 kwargs = {}
@@ -372,6 +416,7 @@ def match_kecode(text: str,
                             kwargs[ma.group(1)] = html.unescape(ma.group(2))
                 if i18nkey:
                     elements.append(I18NContextElement.assign(i18nkey, disable_joke, **kwargs))
+
             elif element_type == "mention":
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)

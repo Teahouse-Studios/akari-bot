@@ -183,9 +183,7 @@ class Locale:
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(**kwargs)
 
-    def t_str(
-        self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]
-    ) -> str:
+    def t_str(self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]) -> str:
         """
         替换字符串中的本地化键名。
 
@@ -193,29 +191,32 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
-        split_all = re.split(r"(\{I18N:.*?\})", text)
-        split_all = [x for x in split_all if x]
-        msgs = []
-        kwargs = {}
+        def match_i18ncode(match):
+            full = match.group(0)
+            key = html.unescape(match.group(1))
+            params_str = match.group(2)
 
-        for e in split_all:
-            match = re.match(r"\{I18N:([^\s,\]]+)(?:,([^\]]+))?\}", e)
-            if not match:
-                msgs.append(e)
-            else:
-                i18nkey = html.unescape(match.group(1))
+            local_kwargs = {}
 
-                if match.group(2):
-                    params = match.group(2).split(",")
-                    params = [x for x in params if x]
-                    for a in params:
-                        ma = re.match(r"(.*?)=(.*)", a)
-                        if ma:
-                            kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
-                t_value = self.t(i18nkey, **kwargs)
-                msgs.append(t_value if isinstance(t_value, str) else match.group(0))
+            if params_str:
+                params_str = self.t_str(params_str, fallback_failed_prompt=fallback_failed_prompt)
 
-        return "".join(msgs)
+                param_pairs = re.findall(r'(\w+)=([^\s,]+)', params_str)
+                for k, v in param_pairs:
+                    local_kwargs[html.unescape(k)] = html.unescape(v)
+
+            all_kwargs = {**kwargs, **local_kwargs}
+
+            t_value = self.t(key, fallback_failed_prompt=fallback_failed_prompt, **all_kwargs)
+
+            return t_value if isinstance(t_value, str) else full
+
+        prev_text = None
+        while prev_text != text:
+            prev_text = text
+            text = re.sub(r"\{I18N:([^\s,{}]+)(?:,([^\{\}]*))?\}", match_i18ncode, text)
+
+        return text
 
     def num(
         self,
