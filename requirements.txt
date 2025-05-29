@@ -103,7 +103,7 @@ pbs-installer==2025.4.9 ; python_version >= "3.12" and python_full_version < "4.
 pillow==11.2.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
 pint==0.24.4 ; python_version >= "3.12" and python_full_version < "4.0.0"
 pkginfo==1.12.1.2 ; python_version >= "3.12" and python_full_version < "4.0.0"
-platformdirs==4.3.7 ; python_version >= "3.12" and python_full_version < "4.0.0"
+platformdirs==4.3.8 ; python_version >= "3.12" and python_full_version < "4.0.0"
 poetry-core==2.1.2 ; python_version >= "3.12" and python_version < "4.0"
 poetry-plugin-export==1.9.0 ; python_version >= "3.12" and python_version < "4.0"
 poetry==2.1.2 ; python_version >= "3.12" and python_version < "4.0"
