@@ -18,19 +18,14 @@ from core.utils.info import Info
 from core.database import init_db
 
 
-async def check_queue() -> None:
-    while True:
-        await JobQueueClient.check_job_queue()
-        await asyncio.sleep(0.1)
-
-
 async def init_async(start_scheduler=True) -> None:
-    await init_db()
     returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
     if returncode == 0:
         Info.version = commit_hash
     else:
         Logger.warning("Failed to get Git commit hash, is it a Git repository?")
+    Info.client_name = 'Server'
+    await init_db()
 
     load_modules()
     gather_list = []
@@ -54,7 +49,6 @@ async def init_async(start_scheduler=True) -> None:
         Scheduler.start()
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
     await load_secret()
-    asyncio.create_task(check_queue())
     Logger.info(f"Hello, {Info.client_name}!")
 
 

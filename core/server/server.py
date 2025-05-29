@@ -1,7 +1,6 @@
 import asyncio
 
-from core.bot_init import init_async
-from core.constants import Info
+from core.server.init import init_async
 from core.logger import Logger
 from core.queue.server import JobQueueServer
 

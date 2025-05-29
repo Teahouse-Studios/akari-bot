@@ -31,7 +31,7 @@ sys.path.append(os.getcwd())
 from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
 from bots.web.utils import find_available_port, generate_webui_config  # noqa: E402
-from core.bot_init import init_async  # noqa: E402
+from core.server.init import init_async  # noqa: E402
 from core.builtins import PrivateAssets, Temp  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename  # noqa: E402

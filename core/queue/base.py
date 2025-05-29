@@ -109,7 +109,7 @@ class JobQueueBase:
             if tsk.status == "done":
                 await QueueTaskManager.set_result(task_id, tsk.result)
 
-        get_all = await JobQueuesTable.get_all([cls.name, target_client if target_client else exports['Bot'].client_name])
+        get_all = await JobQueuesTable.get_all([cls.name, target_client if target_client else exports['Bot'].Info.client_name])
 
         for tsk in get_all:
             Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")

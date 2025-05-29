@@ -11,7 +11,7 @@ from hypercorn import Config as HyperConfig
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.message import MessageSession, FetchTarget
-from core.bot_init import load_prompt, init_async
+from core.server.init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp

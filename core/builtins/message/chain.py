@@ -21,12 +21,12 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
 )
+from core.constants import Secret
 from core.exports import add_export
 
 if TYPE_CHECKING:
     from core.builtins.session import SessionInfo
 
-from core.builtins.utils import Secret
 from core.builtins.types import MessageElement
 from core.builtins.converter import converter
 from core.joke import shuffle_joke as joke

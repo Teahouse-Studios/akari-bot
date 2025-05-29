@@ -133,7 +133,7 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
 def run_bot():
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
-    from core.server import run_async as server_run_async  # noqa
+    from core.server.server import run_async as server_run_async  # noqa
 
     def restart_process(bot_name: str):
         if (

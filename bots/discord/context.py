@@ -18,11 +18,11 @@ from core.logger import Logger
 
 
 def get_channel_id(session_info: SessionInfo) -> str:
-    return session_info.target_id.split(session_info.target_from)[1]
+    return session_info.target_id.split(session_info.target_from + "|")[1]
 
 
 def get_sender_id(session_info: SessionInfo) -> str:
-    return session_info.sender_id.split(session_info.sender_from)[1]
+    return session_info.sender_id.split(session_info.sender_from + "|")[1]
 
 
 async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
@@ -80,11 +80,11 @@ class DiscordContextManager(ContextManager):
         :param session_info: 会话信息
         :return: 是否有权限
         """
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx = cls.context[session_info.session_id]
+        ctx = cls.context.get(session_info.session_id, None)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
@@ -117,16 +117,20 @@ class DiscordContextManager(ContextManager):
         if not isinstance(message, MessageChain):
             raise TypeError("Message must be a MessageChain or str")
 
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
-        ctx = cls.context[session_info.session_id]
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
+        ctx = cls.context.get(session_info.session_id)
+        if ctx:
+            channel = ctx.channel
+        else:
+            channel = await client.fetch_channel(get_channel_id(session_info))
 
         count = 0
         msg_ids = []
         for x in message.as_sendable(session_info):
             send_ = None
             if isinstance(x, PlainElement):
-                send_ = await ctx.channel.send(
+                send_ = await channel.send(
                     x.text,
                     reference=(
                         ctx
@@ -136,7 +140,7 @@ class DiscordContextManager(ContextManager):
                 )
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
-                send_ = await ctx.channel.send(
+                send_ = await channel.send(
                     file=discord.File(await x.get()),
                     reference=(ctx
                                if quote and count == 0 and ctx
@@ -147,7 +151,7 @@ class DiscordContextManager(ContextManager):
                     f"[Bot] -> [{session_info.target_id}]: Image: {str(x.__dict__)}"
                 )
             elif isinstance(x, VoiceElement):
-                send_ = await ctx.channel.send(
+                send_ = await channel.send(
                     file=discord.File(x.path),
                     reference=(
                         ctx
@@ -160,7 +164,7 @@ class DiscordContextManager(ContextManager):
                 )
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_channel_prefix:
-                    send_ = await ctx.channel.send(
+                    send_ = await channel.send(
                         f"<@{x.id}>",
                         reference=(ctx
                                    if quote and count == 0 and ctx
@@ -172,7 +176,7 @@ class DiscordContextManager(ContextManager):
                     )
             elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x, session_info)
-                send_ = await ctx.channel.send(
+                send_ = await channel.send(
                     embed=embeds,
                     reference=(
                         ctx

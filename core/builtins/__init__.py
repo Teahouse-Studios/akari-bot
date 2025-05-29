@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from core.config import Config
 from core.constants.info import Info
+from core.constants.path import PrivateAssets
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.types.message import ModuleHookContext
@@ -12,7 +13,6 @@ from .message.internal import *
 from .session import SessionInfo, FetchedSessionInfo
 from .temp import *
 from .utils import *
-from .utils import determine_target_from, determine_sender_from
 from ..constants import base_superuser_default
 from ..database.models import TargetInfo
 from ..logger import Logger
@@ -37,8 +37,6 @@ class Bot:
     Temp = Temp
     PrivateAssets = PrivateAssets
     ContextSlots: list[ContextManager] = []
-
-    client_name = ''
     fetched_session_ctx_slot = 0
 
     base_superuser_list = Config(
@@ -102,7 +100,6 @@ class Bot:
         try:
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
-                                                      client_name=Bot.client_name,
                                                       ctx_slot=cls.fetched_session_ctx_slot, create=False)
         except ValueError:
             return None
@@ -194,7 +191,6 @@ class Bot:
         :param use_url_md_format: Whether to use URL markdown format
         :return: None
         """
-        cls.client_name = client_name
         if private_assets_path:
             cls.PrivateAssets = PrivateAssets.set(private_assets_path)
         Info.dirty_word_check = dirty_word_check

@@ -8,7 +8,7 @@ from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coro
 
 from attrs import define
 
-from core.builtins.utils import confirm_command, command_prefix, determine_target_from, determine_sender_from
+from core.builtins.utils import confirm_command, command_prefix
 from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
@@ -24,6 +24,8 @@ from core.logger import Logger
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
 from core.utils.text import parse_time_string
+
+from core.utils.alive import Alive
 
 
 @define
@@ -68,8 +70,7 @@ class SessionInfo:
 
     @classmethod
     async def assign(cls, target_id: str,
-
-                     client_name: str,
+                     client_name: Optional[str] = None,
                      target_from: Optional[str] = None,
                      sender_id: Optional[str] = None,
                      sender_from: Optional[str] = None,
@@ -88,14 +89,16 @@ class SessionInfo:
         :return: SessionInfo对象。
         """
         if target_from is None:
-            target_from = determine_target_from(target_id)
+            target_from = Alive.determine_target_from(target_id)
         target_info = await TargetInfo.get_by_target_id(target_id, create)
         if target_info is None:
             raise ValueError(f"TargetInfo not found for target_id: {target_id}")
 
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create) if sender_id else None
         if sender_from is None and sender_id:
-            sender_from = determine_sender_from(sender_id)
+            sender_from = Alive.determine_sender_from(sender_id)
+        if not client_name:
+            client_name = Alive.determine_client(target_from)
         timestamp = datetime.now().timestamp()
         session_id = str(uuid.uuid4())
         locale = Locale(target_info.locale)

@@ -7,7 +7,7 @@ from khl import Message, MessageTypes
 from bots.kook.client import bot
 from bots.kook.info import *
 from bots.kook.message import MessageSession, FetchTarget
-from core.bot_init import load_prompt, init_async
+from core.server.init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.config import Config
 from core.constants.default import ignored_sender_default

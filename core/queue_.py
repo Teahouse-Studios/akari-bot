@@ -98,8 +98,8 @@ async def check_job_queue(target_client: str = None):
             _queue_tasks[task_id]["result"] = tsk.result
             _queue_tasks[task_id]["flag"].set()
 
-    get_internal = await JobQueuesTable.get_all(target_client=JobQueue.name)
-    get_all = await JobQueuesTable.get_all(target_client=target_client if target_client else Bot.client_name)
+    get_internal = await JobQueuesTable.get_all(target_clients=JobQueue.name)
+    get_all = await JobQueuesTable.get_all(target_clients=target_client if target_client else Bot.Info.client_name)
 
     for tsk in get_internal + get_all:
         Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")

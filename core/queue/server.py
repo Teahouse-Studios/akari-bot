@@ -52,7 +52,9 @@ async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
 
 @JobQueueServer.action("client_keepalive")
 async def client_keepalive(tsk: JobQueuesTable, args: dict):
-    Alive.refresh_alive(tsk.args["client_name"])
+    Alive.refresh_alive(tsk.args["client_name"],
+                        target_prefix_list=tsk.args.get("target_prefix_list"),
+                        sender_prefix_list=tsk.args.get("sender_prefix_list"))
     return {"success": True}
 
 add_export(JobQueueServer)

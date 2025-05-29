@@ -37,7 +37,7 @@ async def on_ready():
     Logger.info(f"Logged on as {client.user}")
     global count
     if count == 0:
-        await client_init()
+        await client_init(target_prefix_list, sender_prefix_list)
         count += 1
 
 slash_load_dir = os.path.abspath(

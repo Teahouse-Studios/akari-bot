@@ -8,7 +8,7 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
 from bots.qqbot.info import *
 from bots.qqbot.message import MessageSession, FetchTarget
-from core.bot_init import init_async, load_prompt
+from core.server.init import init_async, load_prompt
 from core.builtins import PrivateAssets
 from core.config import Config
 from core.constants.info import Info
