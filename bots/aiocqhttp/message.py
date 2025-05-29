@@ -209,7 +209,7 @@ class MessageSession(MessageSessionT):
                     )
                     count += 1
             elif isinstance(x, MentionElement):
-                convert_msg_segments = convert_msg_segments + MessageSegment.text("\n")
+                convert_msg_segments = convert_msg_segments + MessageSegment.text(("\n" if count != 0 else ""))
                 if x.client == client_name and self.target.target_from == target_group_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
                 else:

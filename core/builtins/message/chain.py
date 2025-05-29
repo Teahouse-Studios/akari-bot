@@ -295,7 +295,8 @@ def match_kecode(text: str,
                  disable_joke: bool = False) -> List[Union[PlainElement,
                                                            ImageElement,
                                                            VoiceElement,
-                                                           I18NContextElement]]:
+                                                           I18NContextElement,
+                                                           MentionElement]]:
     split_all = re.split(r"(\[KE:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
