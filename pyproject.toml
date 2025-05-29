@@ -54,7 +54,7 @@ tenacity = "^9.0.0"
 tomlkit = "^0.13.2"
 
 # core.database
-tortoise-orm = {extras = ["asyncmy"], version = "^0.24.2"}
+tortoise-orm = {extras = ["asyncmy"], version = "^0.25.0"}
 
 # core.http
 aiofile = "^3.8.1"
