@@ -2,7 +2,7 @@
     "config.comments.wordle_disable_image": "wordle 模組是否停用圖片。",
     "wordle.help": "開始新遊戲。",
     "wordle.help.desc": "玩 Wordle。",
-    "wordle.help.option.hard": "使用困难模式。",
+    "wordle.help.option.hard": "使用困難模式。",
     "wordle.help.option.trial": "使用挑戰模式。",
     "wordle.help.theme": "設定是否使用深色主題。",
     "wordle.message.occupied": "此會話內有遊戲正在進行。",
