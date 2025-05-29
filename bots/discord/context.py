@@ -228,11 +228,15 @@ class DiscordContextManager(ContextManager):
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
+            ctx = cls.context[session_info.session_id]
+            if ctx:
+                async with ctx.channel.typing() as typing:
+                    Logger.debug(f"Start typing in session: {session_info.session_id}")
+                    # 这里可以添加开始输入状态的逻辑
+                    flag = asyncio.Event()
+                    cls.typing_flags[session_info.session_id] = flag
+                    await flag.wait()
             # 这里可以添加开始输入状态的逻辑
-            Logger.debug(f"Start typing in session: {session_info.session_id}")
-            flag = asyncio.Event()
-            cls.typing_flags[session_info.session_id] = flag
-            await flag.wait()
         asyncio.create_task(_typing())
 
     @classmethod
