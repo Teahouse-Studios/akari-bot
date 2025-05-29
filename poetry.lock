@@ -1592,20 +1592,20 @@ files = [
 
 [[package]]
 name = "gql"
-version = "3.5.2"
+version = "3.5.3"
 description = "GraphQL client for Python"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "gql-3.5.2-py2.py3-none-any.whl", hash = "sha256:c830ffc38b3997b2a146317b27758305ab3d0da3bde607b49f34e32affb23ba2"},
-    {file = "gql-3.5.2.tar.gz", hash = "sha256:07e1325b820c8ba9478e95de27ce9f23250486e7e79113dbb7659a442dc13e74"},
+    {file = "gql-3.5.3-py2.py3-none-any.whl", hash = "sha256:e1fcbde2893fcafdd28114ece87ff47f1cc339a31db271fc4e1d528f5a1d4fbc"},
+    {file = "gql-3.5.3.tar.gz", hash = "sha256:393b8c049d58e0d2f5461b9d738a2b5f904186a40395500b4a84dd092d56e42b"},
 ]
 
 [package.dependencies]
 anyio = ">=3.0,<5"
 backoff = ">=1.11.1,<3.0"
-graphql-core = ">=3.2,<3.2.5"
+graphql-core = ">=3.2,<3.2.7"
 yarl = ">=1.6,<2.0"
 
 [package.extras]
