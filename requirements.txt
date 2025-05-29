@@ -121,7 +121,7 @@ pydantic-core==2.34.1 ; python_version >= "3.12" and python_full_version < "4.0.
 pydantic==2.11.3 ; python_version >= "3.12" and python_full_version < "4.0.0"
 pyjwt==2.10.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
 pyparsing==3.2.3 ; python_version >= "3.12" and python_full_version < "4.0.0"
-pypika-tortoise==0.5.0 ; python_version >= "3.12" and python_version < "4.0"
+pypika-tortoise==0.6.0 ; python_version >= "3.12" and python_version < "4.0"
 pyproject-hooks==1.2.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 python-dateutil==2.9.0.post0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 python-dotenv==1.1.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
