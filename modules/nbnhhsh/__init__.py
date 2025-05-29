@@ -7,14 +7,14 @@ from core.logger import Logger
 from core.utils.http import post_url
 
 n = module("nbnhhsh",
-           desc="[I18N:nbnhhsh.help.desc]",
+           desc="{I18N:nbnhhsh.help.desc}",
            doc=True,
            developers=["Dianliang233"],
            support_languages=["zh_cn"]
            )
 
 
-@n.command("<term> {[I18N:nbnhhsh.help]}")
+@n.command("<term> {{I18N:nbnhhsh.help}}")
 async def _(msg: Bot.MessageSession, term: str):
     res = await nbnhhsh(msg, term)
     await msg.finish([Plain(term.lower()), res])

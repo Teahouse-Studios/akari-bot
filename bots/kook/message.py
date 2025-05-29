@@ -12,12 +12,11 @@ from core.builtins import (
     Voice,
     MessageSession as MessageSessionT,
     I18NContext,
-    Mention,
     MessageTaskManager,
     FetchTarget as FetchTargetT,
-    FinishedSession as FinishedSessionT,
+    FinishedSession as FinishedSessionT
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
@@ -96,6 +95,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 send_ = await self.session.message.reply(
                     x.text,
                     quote=(
@@ -192,10 +192,6 @@ class MessageSession(MessageSessionT):
             lst.append(Image(self.session.message.content))
         elif self.session.message.type == MessageTypes.AUDIO:
             lst.append(Voice(self.session.message.content))
-        elif self.session.message.type == MessageTypes.KMD:
-            match = re.match(r"\(met\)(.*?)\(met\)", self.session.message.content)
-            if match.group(1):
-                lst.append(Mention(f"{target_person_prefix}|{str(match.group(1))}"))
         return MessageChain(lst)
 
     async def delete(self):
@@ -314,9 +310,9 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
@@ -340,9 +336,9 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
                             else:
-                                msgchain = MessageChain([Plain(message)])
+                                msgchain = MessageChain(Plain(message))
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:

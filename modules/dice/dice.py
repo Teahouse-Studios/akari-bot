@@ -36,7 +36,7 @@ class DiceValueError(Exception):
 
     def __init__(self, message: str, value: Optional[Union[int, str]] = None):
         if value:
-            self.message = f"[I18N:dice.message.error.value,value={value}]" + message
+            self.message = f"{{I18N:dice.message.error.value,value={value}}}" + message
         else:
             self.message = message
 
@@ -73,19 +73,19 @@ class Dice(DiceItemBase):
         self.positive = args[3]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}]",
+                f"{{I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}}}",
                 self.count
             )
         if self.sides < 1:
             raise DiceValueError(
-                "[I18N:dice.message.error.value.sides.out_of_range]",
+                "{I18N:dice.message.error.value.sides.out_of_range}",
                 self.sides
             )
         if self.sides == 1:
-            raise DiceValueError("[I18N:dice.message.error.value.sides.d1]")
+            raise DiceValueError("{I18N:dice.message.error.value.sides.d1}")
         if self.adv > self.count:
             raise DiceValueError(
-                "[dice.message.error.value.advantage.out_of_range]",
+                "{I18N:dice.message.error.value.advantage.out_of_range}",
                 self.adv
             )
 
@@ -96,7 +96,7 @@ class Dice(DiceItemBase):
         dice_adv = "0"  # 保留的骰子量
         positive = 0  # 是否保留骰子
         if re.search(r"[^0-9DKQ\%]", dice_code):
-            raise DiceSyntaxError("[I18N:dice.message.error.invalid]")
+            raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         temp = dice_code.split("D")
         if len(temp[0]):
             dice_count = temp[0]
@@ -116,17 +116,17 @@ class Dice(DiceItemBase):
         # 语法合法检定
         if not isint(dice_count):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.count.invalid]",
+                "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
         if not isint(dice_sides):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.sides.invalid]",
+                "{I18N:dice.message.error.value.sides.invalid}",
                 dice_sides
             )
         if not isint(dice_adv):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.advantage.invalid]",
+                "{I18N:dice.message.error.value.advantage.invalid}",
                 dice_adv,
             )
         return (int(dice_count), int(dice_sides), int(dice_adv), positive)
@@ -156,7 +156,7 @@ class Dice(DiceItemBase):
             if self.count >= MAX_OUTPUT_CNT:
                 output_buffer = (
                     "=["
-                    + f"[I18N:dice.message.output.too_long,length={self.count}]"
+                    + f"{{I18N:dice.message.output.too_long,length={self.count}}}"
                     + "]"
                 )
             output += output_buffer
@@ -174,7 +174,7 @@ class Dice(DiceItemBase):
             if self.count > MAX_OUTPUT_CNT:
                 output_buffer = (
                     "=["
-                    + f"[I18N:dice.message.output.too_long,length={self.count}]"
+                    + f"{{I18N:dice.message.output.too_long,length={self.count}}}"
                     + "]"
                 )
             output += output_buffer
@@ -182,7 +182,7 @@ class Dice(DiceItemBase):
             result = dice_results[0]
         output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
-            output = "[I18N:dice.message.too_long]"
+            output = "{I18N:dice.message.too_long}"
         self.detail = output
         self.result = result
 
@@ -197,7 +197,7 @@ class FudgeDice(DiceItemBase):
         self.count = args[0]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}]",
+                f"{{I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}}}",
                 self.count
             )
 
@@ -206,7 +206,7 @@ class FudgeDice(DiceItemBase):
         dice_code = dice_code.replace("D", "")  # 去除“D”
         dice_count = "4"  # 骰子数量
         if re.search(r"[^0-9F]", dice_code):
-            raise DiceSyntaxError("[I18N:dice.message.error.invalid]")
+            raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         temp = dice_code.split("F")
         if len(temp[0]):
             dice_count = temp[0]
@@ -214,7 +214,7 @@ class FudgeDice(DiceItemBase):
         # 语法合法检定
         if not isint(dice_count):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.count.invalid]",
+                "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
         return (int(dice_count), 0)
@@ -228,7 +228,7 @@ class FudgeDice(DiceItemBase):
         if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
             output = (
                 "=["
-                + f"[I18N:dice.message.output.too_long,length={self.count}]"
+                + f"{{I18N:dice.message.output.too_long,length={self.count}}}"
                 + "]"
             )
         else:
@@ -242,7 +242,7 @@ class FudgeDice(DiceItemBase):
 
         output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
-            output = "[I18N:dice.message.too_long]"
+            output = "{I18N:dice.message.too_long}"
         self.detail = output
         self.result = result
 
@@ -258,7 +258,7 @@ class BonusPunishDice(DiceItemBase):
         self.positive = args[1]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}]",
+                f"{{I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}}}",
                 self.count
             )
 
@@ -266,7 +266,7 @@ class BonusPunishDice(DiceItemBase):
         dice_code = self.code.upper()  # 便于识别
         dice_count = "1"  # 骰子数量
         if re.search(r"[^0-9BP]", dice_code):
-            raise DiceSyntaxError("[I18N:dice.message.error.invalid]")
+            raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         if "B" in dice_code:
             positive = False
             temp = dice_code.split("B")
@@ -281,7 +281,7 @@ class BonusPunishDice(DiceItemBase):
         # 语法合法检定
         if not isint(dice_count):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.count.invalid]",
+                "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
 
@@ -312,7 +312,7 @@ class BonusPunishDice(DiceItemBase):
             if self.count >= MAX_OUTPUT_CNT:
                 output_buffer = (
                     "=["
-                    + f"[I18N:dice.message.output.too_long,length={self.count}]"
+                    + f"{{I18N:dice.message.output.too_long,length={self.count}}}"
                     + "]"
                 )
             else:
@@ -333,7 +333,7 @@ class BonusPunishDice(DiceItemBase):
 
         output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
-            output = "[I18N:dice.message.too_long]"
+            output = "{I18N:dice.message.too_long}"
         self.detail = output
         self.result = result
 
@@ -352,19 +352,19 @@ class WODDice(DiceItemBase):
         self.sides = args[4]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}]",
+                f"{{I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}}}",
                 self.count
             )
         if self.sides < 1:
             raise DiceValueError(
-                "[I18N:dice.message.error.value.sides.out_of_range]",
+                "{I18N:dice.message.error.value.sides.out_of_range}",
                 self.sides
             )
         if self.sides == 1:
-            raise DiceValueError("[I18N:dice.message.error.value.sides.d1]")
+            raise DiceValueError("{I18N:dice.message.error.value.sides.d1}")
         if self.add_line != 0 and (self.add_line < 2 or self.add_line > self.sides):
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.add_line.out_of_range,max={self.sides}]",
+                f"{{I18N:dice.message.error.value.add_line.out_of_range,max={self.sides}}}",
                 self.add_line
             )
 
@@ -372,7 +372,7 @@ class WODDice(DiceItemBase):
         dice_code = self.code.upper()  # 便于识别
         match = re.match(r"(\d+)A(\d+)(?:K(\d+))?(?:Q(\d+))?(?:M(\d+))?", dice_code)
         if not match:
-            raise DiceSyntaxError("[I18N:dice.message.error.invalid]")
+            raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         dice_count = match.group(1)  # 骰子个数
         dice_add_line = match.group(2)  # 加骰线
         dice_success_line = match.group(3) if match.group(3) else "8"  # 成功线
@@ -381,27 +381,27 @@ class WODDice(DiceItemBase):
         # 语法合法检定
         if not isint(dice_count):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.count.invalid]",
+                "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
         if not isint(dice_add_line):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.add_line.invalid]",
+                "{I18N:dice.message.error.value.add_line.invalid}",
                 dice_add_line
             )
         if not isint(dice_success_line):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.dice_success_line.invalid]",
+                "{I18N:dice.message.error.value.dice_success_line.invalid}",
                 dice_success_line
             )
         if not isint(dice_success_line_max):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.dice_success_line.invalid]",
+                "{I18N:dice.message.error.value.dice_success_line.invalid}",
                 dice_success_line_max
             )
         if not isint(dice_sides):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.sides.invalid]",
+                "{I18N:dice.message.error.value.sides.invalid}",
                 dice_sides
             )
 
@@ -470,7 +470,7 @@ class WODDice(DiceItemBase):
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = (
                 "=["
-                + f"[I18N:dice.message.output.too_long,length={self.count}]"
+                + f"{{I18N:dice.message.output.too_long,length={self.count}}}"
                 + "]"
             )
         output += output_buffer
@@ -478,7 +478,7 @@ class WODDice(DiceItemBase):
         result = success_count
         output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
-            output = "[I18N:dice.message.too_long]"
+            output = "{I18N:dice.message.too_long}"
         self.detail = output
         self.result = result
 
@@ -495,19 +495,19 @@ class DXDice(DiceItemBase):
         self.sides = args[2]
         if self.count < 1 or self.count > MAX_DICE_COUNT:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}]",
+                f"{{I18N:dice.message.error.value.count.out_of_range,max={MAX_DICE_COUNT}}}",
                 self.count
             )
         if self.sides < 1:
             raise DiceValueError(
-                "[I18N:dice.message.error.value.sides.out_of_range]",
+                "{I18N:dice.message.error.value.sides.out_of_range}",
                 self.sides
             )
         if self.sides == 1:
-            raise DiceValueError("[I18N:dice.message.error.value.sides.d1]")
+            raise DiceValueError("{I18N:dice.message.error.value.sides.d1}")
         if self.add_line < 2 or self.add_line > self.sides:
             raise DiceValueError(
-                f"[I18N:dice.message.error.value.add_line.out_of_range,max={self.sides}]",
+                f"{{I18N:dice.message.error.value.add_line.out_of_range,max={self.sides}}}",
                 self.add_line,
             )
 
@@ -515,24 +515,24 @@ class DXDice(DiceItemBase):
         dice_code = self.code.upper()  # 便于识别
         match = re.match(r"(\d+)C(\d+)(?:M(\d+))?", dice_code)
         if not match:
-            raise DiceSyntaxError("[I18N:dice.message.error.invalid]")
+            raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         dice_count = match.group(1)  # 骰子个数
         dice_add_line = match.group(2)  # 加骰线
         dice_sides = match.group(3) if match.group(3) else "10"  # 骰子面数
         # 语法合法检定
         if not isint(dice_count):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.count.invalid]",
+                "{I18N:dice.message.error.value.count.invalid}",
                 dice_count
             )
         if not isint(dice_add_line):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.add_line.invalid]",
+                "{I18N:dice.message.error.value.add_line.invalid}",
                 dice_add_line,
             )
         if not isint(dice_sides):
             raise DiceValueError(
-                "[I18N:dice.message.error.value.sides.invalid]",
+                "{I18N:dice.message.error.value.sides.invalid}",
                 dice_sides
             )
         return (int(dice_count), int(dice_add_line), int(dice_sides))
@@ -577,7 +577,7 @@ class DXDice(DiceItemBase):
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = (
                 "=["
-                + f"[I18N:dice.message.output.too_long,length={self.count}]"
+                + f"{{I18N:dice.message.output.too_long,length={self.count}}}"
                 + "]"
             )
         output += output_buffer
@@ -585,6 +585,6 @@ class DXDice(DiceItemBase):
         result = (dice_rounds - 1) * self.sides + max(dice_results)
         output += f"={fmt_num(result, sep=True)}"
         if len(output) > MAX_OUTPUT_LEN:
-            output = "[I18N:dice.message.too_long]"
+            output = "{I18N:dice.message.too_long}"
         self.detail = output
         self.result = result

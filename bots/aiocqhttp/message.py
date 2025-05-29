@@ -20,13 +20,12 @@ from core.builtins import (
     MessageTaskManager,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
-    Mention,
     Plain,
     Image,
     Voice,
 )
 from core.builtins.message import MessageSession as MessageSessionT
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
@@ -133,6 +132,7 @@ class MessageSession(MessageSessionT):
         count = 0
         for x in message_chain_assendable:
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                 if enable_parse_message:
                     parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                     parts = [part for part in parts if part]
@@ -209,6 +209,7 @@ class MessageSession(MessageSessionT):
                     )
                     count += 1
             elif isinstance(x, MentionElement):
+                convert_msg_segments = convert_msg_segments + MessageSegment.text("\n")
                 if x.client == client_name and self.target.target_from == target_group_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
                 else:
@@ -424,8 +425,6 @@ class MessageSession(MessageSessionT):
                                 lst.append(Image(img_src))
                         elif cq_data["type"] == "record":
                             lst.append(Voice(cq_data["data"].get("file")))
-                        elif cq_data["type"] == "at":
-                            lst.append(Mention(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
                         else:
                             lst.append(Plain(s))
                     else:
@@ -444,8 +443,6 @@ class MessageSession(MessageSessionT):
                         lst.append(Image(item["data"]["url"]))
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
-                elif item["type"] == "at":
-                    lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
@@ -584,9 +581,9 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     new_msgchain = []
                     for v in msgchain.value:

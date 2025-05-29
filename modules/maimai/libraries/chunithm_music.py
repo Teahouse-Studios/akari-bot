@@ -175,7 +175,7 @@ class TotalList:
         except Exception:
             Logger.exception()
             try:
-                with open(chu_song_info_path, "r", encoding="utf-8") as f:
+                with open(chu_song_info_path, "rb") as f:
                     data = json.loads(f.read())
                 return data
             except Exception:

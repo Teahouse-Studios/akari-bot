@@ -17,7 +17,7 @@ def format_lst(input_):
 w = module("whois", developers=["DoroWolf"], doc=True)
 
 
-@w.command("<domain> {[I18N:whois.help]}")
+@w.command("<domain> {{I18N:whois.help}}")
 async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     await msg.finish(res)

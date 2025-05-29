@@ -16,7 +16,7 @@ from core.utils.info import Info
 ver = module("version", base=True, doc=True)
 
 
-@ver.command("{[I18N:core.help.version]}")
+@ver.command("{{I18N:core.help.version}}")
 async def _(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
@@ -37,7 +37,7 @@ ping = module("ping", base=True, doc=True)
 started_time = datetime.now()
 
 
-@ping.command("{[I18N:core.help.ping]}")
+@ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
     result = [Plain("Pong!")]
     timediff = str(datetime.now() - started_time).split(".")[0]
@@ -83,16 +83,16 @@ admin = module(
     base=True,
     required_admin=True,
     alias={"ban": "admin ban", "unban": "admin unban", "ban list": "admin ban list"},
-    desc="[I18N:core.help.admin.desc]",
+    desc="{I18N:core.help.admin.desc}",
     doc=True,
     exclude_from=["TEST|Console"],
 )
 
 
 @admin.command(
-    "add <user> {[I18N:core.help.admin.add]}",
-    "remove <user> {[I18N:core.help.admin.remove]}",
-    "list {[I18N:core.help.admin.list]}")
+    "add <user> {{I18N:core.help.admin.add}}",
+    "remove <user> {{I18N:core.help.admin.remove}}",
+    "list {{I18N:core.help.admin.list}}")
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.custom_admins:
@@ -116,9 +116,9 @@ async def _(msg: Bot.MessageSession):
 
 
 @admin.command(
-    "ban <user> {[I18N:core.help.admin.ban]}",
-    "unban <user> {[I18N:core.help.admin.unban]}",
-    "ban list {[I18N:core.help.admin.ban.list]}",
+    "ban <user> {{I18N:core.help.admin.ban}}",
+    "unban <user> {{I18N:core.help.admin.unban}}",
+    "ban list {{I18N:core.help.admin.ban.list}}",
 )
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
@@ -144,14 +144,14 @@ async def _(msg: Bot.MessageSession):
 
 
 locale = module(
-    "locale", base=True, desc="[I18N:core.help.locale.desc]", alias="lang", doc=True
+    "locale", base=True, desc="{I18N:core.help.locale.desc}", alias="lang", doc=True
 )
 
 
 @locale.command()
 async def _(msg: Bot.MessageSession):
-    avaliable_lang = "[I18N:message.delimiter]".join(get_available_locales())
-    res = [I18NContext("core.message.locale.prompt", lang="[I18N:language]"),
+    avaliable_lang = "{I18N:message.delimiter}".join(get_available_locales())
+    res = [I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
            I18NContext("core.message.locale.set.prompt", prefix=msg.prefixes[0]),
            I18NContext("core.message.locale.langlist", langlist=avaliable_lang)]
 
@@ -160,12 +160,12 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(res)
 
 
-@locale.command("[<lang>] {[I18N:core.help.locale.set]}", required_admin=True)
+@locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and await msg.target_info.edit_attr("locale", lang):
         await msg.finish(Locale(lang).t("message.success"))
     else:
-        avaliable_lang = "[I18N:message.delimiter]".join(get_available_locales())
+        avaliable_lang = "{I18N:message.delimiter}".join(get_available_locales())
         await msg.finish([I18NContext("core.message.locale.set.invalid"),
                           I18NContext("core.message.locale.langlist", langlist=avaliable_lang)])
 
@@ -182,7 +182,7 @@ async def _(msg: Bot.MessageSession):
 whoami = module("whoami", base=True, doc=True)
 
 
-@whoami.command("{[I18N:core.help.whoami]}")
+@whoami.command("{{I18N:core.help.whoami}}")
 async def _(msg: Bot.MessageSession):
     perm = []
     if await msg.check_native_permission():
@@ -195,11 +195,11 @@ async def _(msg: Bot.MessageSession):
 
 
 setup = module(
-    "setup", base=True, desc="[I18N:core.help.setup.desc]", doc=True, alias="toggle"
+    "setup", base=True, desc="{I18N:core.help.setup.desc}", doc=True, alias="toggle"
 )
 
 
-@setup.command("typing {[I18N:core.help.setup.typing]}")
+@setup.command("typing {{I18N:core.help.setup.typing}}")
 async def _(msg: Bot.MessageSession):
     if not msg.sender_data.get("disable_typing", False):
         await msg.sender_info.edit_sender_data("disable_typing", True)
@@ -210,7 +210,7 @@ async def _(msg: Bot.MessageSession):
 
 
 """
-@setup.command("check {[I18N:core.help.setup.check]}", required_admin=True)
+@setup.command("check {{I18N:core.help.setup.check}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     if not msg.sender_data.get("typo_check", False):
         await msg.sender_info.edit_sender_data("typo_check", True)
@@ -221,7 +221,7 @@ async def _(msg: Bot.MessageSession):
 """
 
 
-@setup.command("sign {[I18N:core.help.setup.sign]}",
+@setup.command("sign {{I18N:core.help.setup.sign}}",
                required_admin=True,
                load=Config("enable_petal", False))
 async def _(msg: Bot.MessageSession):
@@ -234,7 +234,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @setup.command(
-    "timeoffset <offset> {[I18N:core.help.setup.timeoffset]}", required_admin=True
+    "timeoffset <offset> {{I18N:core.help.setup.timeoffset}}", required_admin=True
 )
 async def _(msg: Bot.MessageSession, offset: str):
     try:
@@ -251,7 +251,7 @@ async def _(msg: Bot.MessageSession, offset: str):
                                  offset="" if offset == "+0" else offset))
 
 
-@setup.command("cooldown <second> {[I18N:core.help.setup.cooldown]}", required_admin=True)
+@setup.command("cooldown <second> {{I18N:core.help.setup.cooldown}}", required_admin=True)
 async def _(msg: Bot.MessageSession, second: int):
     second = 0 if second < 0 else second
     await msg.target_info.edit_target_data("cooldown_time", second)
@@ -263,7 +263,7 @@ mute = module(
 )
 
 
-@mute.command("{[I18N:core.help.mute]}")
+@mute.command("{{I18N:core.help.mute}}")
 async def _(msg: Bot.MessageSession):
     state = await msg.target_info.switch_mute()
     if state:
@@ -282,7 +282,7 @@ leave = module(
 )
 
 
-@leave.command("{[I18N:core.help.leave]}")
+@leave.command("{{I18N:core.help.leave}}")
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(I18NContext("core.message.leave.confirm")):
         await msg.send_message(I18NContext("core.message.leave.success"))

@@ -14,13 +14,13 @@ default_llm = default_llm if default_llm in llm_list else None
 
 ai = module("ai",
             developers=["DoroWolf", "Dianliang233"],
-            desc="[I18N:ai.help.desc]",
+            desc="{I18N:ai.help.desc}",
             doc=True,
             exclude_from="QQBot")
 
 
-@ai.command("<question> [--llm <llm>] {[I18N:ai.help]}",
-            options_desc={"--llm": "[I18N:ai.help.option.llm]"})
+@ai.command("<question> [--llm <llm>] {{I18N:ai.help}}",
+            options_desc={"--llm": "{{I18N:ai.help.option.llm}}"})
 async def _(msg: Bot.MessageSession, question: str):
     get_llm = msg.parsed_msg.get("--llm", False)
     llm = get_llm["<llm>"].lower() if get_llm else None
@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession, question: str):
         await msg.finish(I18NContext("ai.message.llm.invalid"))
 
 
-@ai.command("set <llm> {[I18N:ai.help.set]}", required_admin=True)
+@ai.command("set <llm> {{I18N:ai.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, llm: str):
     llm = llm.lower()
     if llm in llm_list:
@@ -73,7 +73,7 @@ async def _(msg: Bot.MessageSession, llm: str):
         await msg.finish(I18NContext("ai.message.llm.invalid"))
 
 
-@ai.command("list {[I18N:ai.help.list]}")
+@ai.command("list {{I18N:ai.help.list}}")
 async def _(msg: Bot.MessageSession):
     avaliable_llms = llm_list + (llm_su_list if msg.check_super_user() else [])
 

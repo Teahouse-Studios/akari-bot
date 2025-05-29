@@ -584,7 +584,7 @@ rse = module("raise", required_superuser=True, base=True, doc=True)
 @rse.command()
 @rse.command("[<args>]")
 async def _(msg: Bot.MessageSession, args: str = None):
-    e = args or "[I18N:core.message.raise]"
+    e = args or "{I18N:core.message.raise}"
     raise TestException(e)
 
 
@@ -607,7 +607,7 @@ post_ = module("post", required_superuser=True, base=True, doc=True, exclude_fro
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f"{msg.target.client_name}|"):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.target.target_from))
-    post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
+    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
     session = await Bot.FetchTarget.fetch_target(target)
     if await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False):
         await Bot.FetchTarget.post_global_message(post_msg, [session])
@@ -618,7 +618,7 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 
 @post_.command("global <post_msg>")
 async def _(msg: Bot.MessageSession, post_msg: str):
-    post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
+    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
     if await msg.wait_confirm(I18NContext("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False):
         await Bot.FetchTarget.post_global_message(post_msg)
         await msg.finish(I18NContext("core.message.post.success"))

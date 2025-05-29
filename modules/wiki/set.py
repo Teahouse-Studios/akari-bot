@@ -12,7 +12,7 @@ enable_urlmanager = Config("enable_urlmanager", False)
 wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")
 
 
-@wiki.command("set <wikiurl> {[I18N:wiki.help.set]}", required_admin=True)
+@wiki.command("set <wikiurl> {{I18N:wiki.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, wikiurl: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
         await msg.finish(result)
 
 
-@wiki.command("iw add <interwiki> <wikiurl> {[I18N:wiki.help.iw.add]}", required_admin=True)
+@wiki.command("iw add <interwiki> <wikiurl> {{I18N:wiki.help.iw.add}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
@@ -77,7 +77,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
         await msg.finish(result)
 
 
-@wiki.command("iw remove <interwiki> {[I18N:wiki.help.iw.remove]}", required_admin=True)
+@wiki.command("iw remove <interwiki> {{I18N:wiki.help.iw.remove}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     result = await target.config_interwikis(interwiki)
@@ -86,8 +86,8 @@ async def _(msg: Bot.MessageSession, interwiki: str):
 
 
 @wiki.command(
-    "iw list [--legacy] {[I18N:wiki.help.iw.list]}",
-    options_desc={"--legacy": "[I18N:help.option.legacy]"},
+    "iw list [--legacy] {{I18N:wiki.help.iw.list}}",
+    options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
@@ -130,7 +130,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-@wiki.command("iw get <interwiki> {[I18N:wiki.help.iw.get]}")
+@wiki.command("iw get <interwiki> {{I18N:wiki.help.iw.get}}")
 async def _(msg: Bot.MessageSession, interwiki: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     query = target.interwikis
@@ -147,7 +147,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
         )
 
 
-@wiki.command("headers show {[I18N:wiki.help.headers.show]}")
+@wiki.command("headers show {{I18N:wiki.help.headers.show}}")
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     headers = target.headers
@@ -159,7 +159,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(prompt)
 
 
-@wiki.command("headers add <headers> {[I18N:wiki.help.headers.add]}", required_admin=True)
+@wiki.command("headers add <headers> {{I18N:wiki.help.headers.add}}", required_admin=True)
 async def _(msg: Bot.MessageSession, headers: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     add = await target.config_headers(headers)
@@ -175,7 +175,7 @@ async def _(msg: Bot.MessageSession, headers: str):
 
 
 @wiki.command(
-    "headers remove <headerkey> {[I18N:wiki.help.headers.remove]}", required_admin=True
+    "headers remove <headerkey> {{I18N:wiki.help.headers.remove}}", required_admin=True
 )
 async def _(msg: Bot.MessageSession, headerkey: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
@@ -189,7 +189,7 @@ async def _(msg: Bot.MessageSession, headerkey: str):
         )
 
 
-@wiki.command("headers reset {[I18N:wiki.help.headers.reset]}", required_admin=True)
+@wiki.command("headers reset {{I18N:wiki.help.headers.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     reset = await target.config_headers()
@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.message.headers.reset.success"))
 
 
-@wiki.command("prefix set <prefix> {[I18N:wiki.help.prefix.set]}", required_admin=True)
+@wiki.command("prefix set <prefix> {{I18N:wiki.help.prefix.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, prefix: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     set_prefix = await target.config_prefix(prefix)
@@ -207,7 +207,7 @@ async def _(msg: Bot.MessageSession, prefix: str):
         )
 
 
-@wiki.command("prefix reset {[I18N:wiki.help.prefix.reset]}", required_admin=True)
+@wiki.command("prefix reset {{I18N:wiki.help.prefix.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     set_prefix = await target.config_prefix()
@@ -215,7 +215,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.message.prefix.reset.success"))
 
 
-@wiki.command("redlink {[I18N:wiki.help.redlink]}", required_admin=True)
+@wiki.command("redlink {{I18N:wiki.help.redlink}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     redlink_state = msg.target_data.get("wiki_redlink")
 

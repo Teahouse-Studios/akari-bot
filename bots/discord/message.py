@@ -14,7 +14,7 @@ from core.builtins import (
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import (
     PlainElement,
     ImageElement,
@@ -105,6 +105,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 send_ = await self.session.target.send(
                     x.text,
                     reference=(
@@ -301,9 +302,9 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
@@ -327,9 +328,9 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
                             else:
-                                msgchain = MessageChain([Plain(message)])
+                                msgchain = MessageChain(Plain(message))
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:

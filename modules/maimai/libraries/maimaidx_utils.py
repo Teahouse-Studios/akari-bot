@@ -636,7 +636,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
 
 
 async def get_grade_info(msg: Bot.MessageSession, grade: str):
-    with open(mai_grade_info_path, "r", encoding="utf-8") as file:
+    with open(mai_grade_info_path, "rb") as file:
         data = json.loads(file.read())
 
     def key_process(input_key, conv_dict):

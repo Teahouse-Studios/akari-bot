@@ -83,7 +83,7 @@ def load_locale_file() -> List[str]:
     locales = os.listdir(locales_path)
     try:
         for loc in locales:
-            with open(os.path.join(locales_path, loc), "r", encoding="utf-8") as f:
+            with open(os.path.join(locales_path, loc), "rb") as f:
                 locale_dict[loc.removesuffix(".json")] = flatten(json.loads(f.read()))
     except Exception as e:
         traceback.print_exc()
@@ -94,7 +94,7 @@ def load_locale_file() -> List[str]:
             locales_m = os.listdir(modules_locales_file)
             for lang_file in locales_m:
                 lang_file_path = os.path.join(modules_locales_file, lang_file)
-                with open(lang_file_path, "r", encoding="utf-8") as f:
+                with open(lang_file_path, "rb") as f:
                     try:
                         if lang_file.removesuffix(".json") in locale_dict:
                             locale_dict[lang_file.removesuffix(".json")].update(
@@ -193,13 +193,13 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
-        split_all = re.split(r"(\[I18N:.*?])", text)
+        split_all = re.split(r"(\{I18N:.*?\})", text)
         split_all = [x for x in split_all if x]
         msgs = []
         kwargs = {}
 
         for e in split_all:
-            match = re.match(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", e)
+            match = re.match(r"\{I18N:([^\s,\]]+)(?:,([^\]]+))?\}", e)
             if not match:
                 msgs.append(e)
             else:
@@ -246,7 +246,7 @@ class Locale:
 
         unit, scale = unit_info
         fmted_num = self._fmt_num(number / scale, precision)
-        return self.t_str(f"{fmted_num} [I18N:i18n.unit.{unit}]", fallback_failed_prompt)
+        return self.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", fallback_failed_prompt)
 
     @staticmethod
     def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:

@@ -47,9 +47,9 @@ wikilog = module(
 
 
 @wikilog.command(
-    "add wiki <apilink> {[I18N:wikilog.help.add.wiki]}",
-    "reset wiki <apilink> {[I18N:wikilog.help.reset.wiki]}",
-    "remove wiki <apilink> {[I18N:wikilog.help.remove.wiki]}",
+    "add wiki <apilink> {{I18N:wikilog.help.add.wiki}}",
+    "reset wiki <apilink> {{I18N:wikilog.help.reset.wiki}}",
+    "remove wiki <apilink> {{I18N:wikilog.help.remove.wiki}}",
 )
 async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
@@ -84,8 +84,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 
 @wikilog.command(
-    "enable <apilink> <logtype> {[I18N:wikilog.help.enable.logtype]}",
-    "disable <apilink> <logtype> {[I18N:wikilog.help.disable.logtype]}",
+    "enable <apilink> <logtype> {{I18N:wikilog.help.enable.logtype}}",
+    "disable <apilink> <logtype> {{I18N:wikilog.help.disable.logtype}}",
 )
 async def _(msg: Bot.MessageSession, apilink, logtype: str):
     logtype = type_map.get(logtype)
@@ -126,7 +126,7 @@ async def _(msg: Bot.MessageSession, apilink, logtype: str):
         )
 
 
-@wikilog.command("filter test <filters> <example> {[I18N:wikilog.help.filter.test]}")
+@wikilog.command("filter test <filters> <example> {{I18N:wikilog.help.filter.test}}")
 async def _(msg: Bot.MessageSession, filters: str, example: str):
     f = re.compile(filters)
     if m := f.search(example):
@@ -142,7 +142,7 @@ async def _(msg: Bot.MessageSession, filters: str, example: str):
         await msg.finish(msg.locale.t("wikilog.message.filter.test.failed"))
 
 
-@wikilog.command("filter example <example> {[I18N:wikilog.help.filter.example]}")
+@wikilog.command("filter example <example> {{I18N:wikilog.help.filter.example}}")
 async def _(msg: Bot.MessageSession):
     try:
         example = msg.trigger_msg.replace("wikilog filter example ", "", 1)
@@ -153,7 +153,7 @@ async def _(msg: Bot.MessageSession):
         await msg.send_message(msg.locale.t("wikilog.message.filter.example.invalid"))
 
 
-@wikilog.command("api get <apilink> <logtype> {[I18N:wikilog.help.api.get]}")
+@wikilog.command("api get <apilink> <logtype> {{I18N:wikilog.help.api.get}}")
 async def _(msg: Bot.MessageSession, apilink, logtype):
     records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos
@@ -195,8 +195,8 @@ async def _(msg: Bot.MessageSession, apilink, logtype):
         )
 
 
-@wikilog.command("filter set <apilink> <logtype> ... {[I18N:wikilog.help.filter.set]}")
-@wikilog.command("filter reset <apilink> <logtype> {[I18N:wikilog.help.filter.reset]}")
+@wikilog.command("filter set <apilink> <logtype> ... {{I18N:wikilog.help.filter.set}}")
+@wikilog.command("filter reset <apilink> <logtype> {{I18N:wikilog.help.filter.reset}}")
 async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
     if "reset" in msg.parsed_msg:
         filters = ["*"]
@@ -241,17 +241,17 @@ async def _(msg: Bot.MessageSession, apilink: str, logtype: str):
 
 
 @wikilog.command(
-    "bot enable <apilink> {[I18N:wikilog.help.bot.enable]}", required_superuser=True
+    "bot enable <apilink> {{I18N:wikilog.help.bot.enable}}", required_superuser=True
 )
 @wikilog.command(
-    "bot disable <apilink> {[I18N:wikilog.help.bot.disable]}", required_superuser=True
+    "bot disable <apilink> {{I18N:wikilog.help.bot.disable}}", required_superuser=True
 )
 @wikilog.command(
-    "keepalive enable <apilink> {[I18N:wikilog.help.keepalive.enable]}",
+    "keepalive enable <apilink> {{I18N:wikilog.help.keepalive.enable}}",
     required_superuser=True,
 )
 @wikilog.command(
-    "keepalive disable <apilink> {[I18N:wikilog.help.keepalive.disable]}",
+    "keepalive disable <apilink> {{I18N:wikilog.help.keepalive.disable}}",
     required_superuser=True,
 )
 async def _(msg: Bot.MessageSession, apilink: str):
@@ -281,8 +281,8 @@ async def _(msg: Bot.MessageSession, apilink: str):
         )
 
 
-@wikilog.command("rcshow set <apilink> ... {[I18N:wikilog.help.rcshow.set]}")
-@wikilog.command("rcshow reset <apilink> {[I18N:wikilog.help.rcshow.reset]}")
+@wikilog.command("rcshow set <apilink> ... {{I18N:wikilog.help.rcshow.set}}")
+@wikilog.command("rcshow reset <apilink> {{I18N:wikilog.help.rcshow.reset}}")
 async def _(msg: Bot.MessageSession, apilink: str):
     if "reset" in msg.parsed_msg:
         rcshows_ = []
@@ -320,7 +320,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         await msg.finish(msg.locale.t("wikilog.message.filter.set.no_filter"))
 
 
-@wikilog.command("list {[I18N:wikilog.help.list]}")
+@wikilog.command("list {{I18N:wikilog.help.list}}")
 async def _(msg: Bot.MessageSession):
     records = await WikiLogTargetSetInfo.get_by_target_id(msg)
     infos = records.infos

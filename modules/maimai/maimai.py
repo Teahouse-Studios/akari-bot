@@ -15,14 +15,14 @@ mai = module(
     developers=["mai-bot", "OasisAkari", "DoroWolf"],
     alias="mai",
     support_languages=["zh_cn"],
-    desc="[I18N:maimai.help.desc]",
+    desc="{I18N:maimai.help.desc}",
     doc=True,
 )
 
 
 @mai.command(
-    "base <constant> [<constant_max>] [-p <page>] {[I18N:maimai.help.base]}",
-    options_desc={"-p": "[I18N:maimai.help.option.p]"}
+    "base <constant> [<constant_max>] [-p <page>] {{I18N:maimai.help.base}}",
+    options_desc={"-p": "{I18N:maimai.help.option.p}"}
 )
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     result_set = []
@@ -95,8 +95,8 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
 
 @mai.command(
-    "level <level> [-p <page>] {[I18N:maimai.help.level]}",
-    options_desc={"-p": "[I18N:maimai.help.option.p]"}
+    "level <level> [-p <page>] {{I18N:maimai.help.level}}",
+    options_desc={"-p": "{I18N:maimai.help.option.p}"}
 )
 async def _(msg: Bot.MessageSession, level: str):
     result_set = []
@@ -145,8 +145,8 @@ async def _(msg: Bot.MessageSession, level: str):
 
 
 @mai.command(
-    "new [-p <page>] {[I18N:maimai.help.new]}",
-    options_desc={"-p": "[I18N:maimai.help.option.p]"}
+    "new [-p <page>] {{I18N:maimai.help.new}}",
+    options_desc={"-p": "{I18N:maimai.help.option.p}"}
 )
 async def _(msg: Bot.MessageSession):
     result_set = []
@@ -185,8 +185,8 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai.command(
-    "search <keyword> [-p <page>] {[I18N:maimai.help.search]}",
-    options_desc={"-p": "[I18N:maimai.help.option.p]"},
+    "search <keyword> [-p <page>] {{I18N:maimai.help.search}}",
+    options_desc={"-p": "{I18N:maimai.help.option.p}"},
 )
 async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
@@ -224,7 +224,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish(s)
 
 
-@mai.command("alias <sid> {[I18N:maimai.help.alias]}")
+@mai.command("alias <sid> {{I18N:maimai.help.alias}}")
 async def _(msg: Bot.MessageSession, sid: str):
     if not isint(sid):
         if sid[:2].lower() == "id":
@@ -262,25 +262,25 @@ async def query_alias(msg, sid):
             await msg.finish(res)
 
 
-@mai.command("grade <grade> {[I18N:maimai.help.grade]}")
+@mai.command("grade <grade> {{I18N:maimai.help.grade}}")
 async def _(msg: Bot.MessageSession, grade: str):
     await get_grade_info(msg, grade)
 
 
-@mai.command("bind <username> {[I18N:maimai.help.bind]}", exclude_from=["QQ|Private", "QQ|Group"])
+@mai.command("bind <username> {{I18N:maimai.help.bind}}", exclude_from=["QQ|Private", "QQ|Group"])
 async def _(msg: Bot.MessageSession, username: str):
     await get_record(msg, {"username": username}, use_cache=False)
     await DivingProberBindInfo.set_bind_info(sender_id=msg.target.sender_id, username=username)
     await msg.finish(msg.locale.t("maimai.message.bind.success") + username)
 
 
-@mai.command("unbind {[I18N:maimai.help.unbind]}", exclude_from=["QQ|Private", "QQ|Group"])
+@mai.command("unbind {{I18N:maimai.help.unbind}}", exclude_from=["QQ|Private", "QQ|Group"])
 async def _(msg: Bot.MessageSession):
     await DivingProberBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
     await msg.finish(I18NContext("maimai.message.unbind.success"))
 
 
-@mai.command("b50 [<username>] {[I18N:maimai.help.b50]}")
+@mai.command("b50 [<username>] {{I18N:maimai.help.b50}}")
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.target.sender_from == "QQ":
@@ -300,7 +300,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
-@mai.command("chart <id_or_alias> {[I18N:maimai.help.chart]}")
+@mai.command("chart <id_or_alias> {{I18N:maimai.help.chart}}")
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
@@ -324,7 +324,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     res = []
     if int(sid) > 100000:
-        with open(mai_utage_info_path, "r", encoding="utf-8") as file:
+        with open(mai_utage_info_path, "rb") as file:
             utage_data = json.loads(file.read())
 
         res.append(f"「{utage_data[sid]["comment"]}」")
@@ -406,8 +406,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
     await msg.finish(await get_info(music, Plain("\n".join(res))))
 
 
-@mai.command("id <id> {[I18N:maimai.help.id]}")
-@mai.command("song <id_or_alias> {[I18N:maimai.help.song]}")
+@mai.command("id <id> {{I18N:maimai.help.id}}")
+@mai.command("song <id_or_alias> {{I18N:maimai.help.song}}")
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     if "<id>" in msg.parsed_msg:
         sid = msg.parsed_msg["<id>"]
@@ -433,7 +433,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
     if int(sid) > 100000:
         res = []
-        with open(mai_utage_info_path, "r", encoding="utf-8") as file:
+        with open(mai_utage_info_path, "rb") as file:
             utage_data = json.loads(file.read())
         if utage_data:
             try:
@@ -465,8 +465,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
 
 
 @mai.command(
-    "score <id_or_alias> [-u <username>] {[I18N:maimai.help.score]}",
-    options_desc={"-u": "[I18N:maimai.help.option.u]"},
+    "score <id_or_alias> [-u <username>] {{I18N:maimai.help.score}}",
+    options_desc={"-u": "{I18N:maimai.help.option.u}"},
 )
 async def _(msg: Bot.MessageSession, id_or_alias: str):
     get_user = msg.parsed_msg.get("-u", False)
@@ -515,8 +515,8 @@ async def query_song_score(msg, query, username):
     await msg.finish(await get_info(music, output))
 
 
-@mai.command("plate <plate> [<username>] [-l] {[I18N:maimai.help.plate]}",
-             options_desc={"-l": "[I18N:maimai.help.option.l]"})
+@mai.command("plate <plate> [<username>] [-l] {{I18N:maimai.help.plate}}",
+             options_desc={"-l": "{I18N:maimai.help.option.l}"})
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
     get_list = msg.parsed_msg.get("-l", False)
     await query_plate(msg, plate, username, get_list)
@@ -559,7 +559,7 @@ async def query_plate(msg, plate, username, get_list=False):
             await msg.finish(output)
 
 
-@mai.command("process <level> <goal> [<username>] {[I18N:maimai.help.process]}")
+@mai.command("process <level> <goal> [<username>] {{I18N:maimai.help.process}}")
 async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
     await query_process(msg, level, goal, username)
 
@@ -599,7 +599,7 @@ async def query_process(msg, level, goal, username):
         await msg.finish(output)
 
 
-@mai.command("rank [<username>] {[I18N:maimai.help.rank]}")
+@mai.command("rank [<username>] {{I18N:maimai.help.rank}}")
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.target.sender_from == "QQ":
@@ -619,9 +619,9 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @mai.command(
-    "scorelist <level> [-p <page>] [-u <username>] {[I18N:maimai.help.scorelist]}",
-    options_desc={"-p": "[I18N:maimai.help.option.p]",
-                  "-u": "[I18N:maimai.help.option.u]"}
+    "scorelist <level> [-p <page>] [-u <username>] {{I18N:maimai.help.scorelist}}",
+    options_desc={"-p": "{I18N:maimai.help.option.p}",
+                  "-u": "{I18N:maimai.help.option.u}"}
 )
 async def _(msg: Bot.MessageSession, level: str):
     get_user = msg.parsed_msg.get("-u", False)
@@ -657,7 +657,7 @@ async def _(msg: Bot.MessageSession, level: str):
         await msg.finish(output)
 
 
-@mai.command("random <diff+level> [<dx_type>] {[I18N:maimai.help.random.filter]}")
+@mai.command("random <diff+level> [<dx_type>] {{I18N:maimai.help.random.filter}}")
 async def _(msg: Bot.MessageSession, dx_type: str = None):
     condit = msg.parsed_msg["<diff+level>"]
     level = ""
@@ -702,7 +702,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
-@mai.command("random {[I18N:maimai.help.random]}")
+@mai.command("random {{I18N:maimai.help.random}}")
 async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).random()
     await msg.finish(
@@ -710,7 +710,7 @@ async def _(msg: Bot.MessageSession):
     )
 
 
-@mai.command("scoreline <sid> <diff> <score> {[I18N:maimai.help.scoreline]}")
+@mai.command("scoreline <sid> <diff> <score> {{I18N:maimai.help.scoreline}}")
 async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
     try:
         if not isint(sid):
@@ -767,7 +767,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         )
 
 
-@mai.command("calc <base> <score> {[I18N:maimai.help.calc]}")
+@mai.command("calc <base> <score> {{I18N:maimai.help.calc}}")
 async def _(msg: Bot.MessageSession, base: float, score: float):
     await msg.finish(Plain(compute_rating(base, score)))
 

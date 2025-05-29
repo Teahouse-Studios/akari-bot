@@ -10,7 +10,7 @@ from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
 
 
-@wiki.command("search <pagename> {[I18N:wiki.help.search]}")
+@wiki.command("search <pagename> {{I18N:wiki.help.search}}")
 async def _(msg: Bot.MessageSession, pagename: str):
     await search_pages(msg, pagename)
 

@@ -36,7 +36,7 @@ async def get_video_info(
     time = msg.ts2strftime(view["ctime"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
-        pages = f"[I18N:message.brackets,msg={len(view["pages"])}P]"
+        pages = f"{{I18N:message.brackets,msg={len(view["pages"])}P}}"
     else:
         pages = ""
 
@@ -57,41 +57,41 @@ async def get_video_info(
             title=f"{title}{pages}",
             description=desc,
             url=video_url,
-            author=f"{owner}{f"[I18N:message.brackets,msg={fans}]"}",
+            author=f"{owner}{f"{{I18N:message.brackets,msg={fans}}}"}",
             footer="Bilibili",
             image=Image(pic),
             thumbnail=Image(avatar),
             fields=[
-                EmbedField("[I18N:bilibili.message.embed.type]", tname),
-                EmbedField("[I18N:bilibili.message.embed.view]",
+                EmbedField("{I18N:bilibili.message.embed.type}", tname),
+                EmbedField("{I18N:bilibili.message.embed.view}",
                            stat_view,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.danmaku]",
+                EmbedField("{I18N:bilibili.message.embed.danmaku}",
                            stat_danmaku,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.reply]",
+                EmbedField("{I18N:bilibili.message.embed.reply}",
                            stat_reply,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.like]",
+                EmbedField("{I18N:bilibili.message.embed.like}",
                            stat_like,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.coin]",
+                EmbedField("{I18N:bilibili.message.embed.coin}",
                            stat_coin,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.favorite]",
+                EmbedField("{I18N:bilibili.message.embed.favorite}",
                            stat_favorite,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.share]",
+                EmbedField("{I18N:bilibili.message.embed.share}",
                            stat_share,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.time]", time),
+                EmbedField("{I18N:bilibili.message.embed.time}", time),
             ],
         )
 

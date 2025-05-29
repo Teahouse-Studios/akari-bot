@@ -5,9 +5,18 @@ from typing import List, Union
 
 import nio
 
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
-    FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
-from core.builtins.message.chain import MessageChain
+from core.builtins import (
+    Bot,
+    Plain,
+    Image,
+    Voice,
+    MessageSession as MessageSessionT,
+    I18NContext,
+    MessageTaskManager,
+    FetchTarget as FetchTargetT,
+    FinishedSession as FinishedSessionT,
+)
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
@@ -130,6 +139,7 @@ class MessageSession(MessageSessionT):
                 reply_to_user = None
 
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "{uid}")
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 await sendMsg(content)
@@ -369,7 +379,7 @@ class FetchedSession(Bot.FetchedSession):
 Bot.FetchedSession = FetchedSession
 
 
-class FetchTarget(FetchedTargetT):
+class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod
@@ -409,9 +419,9 @@ class FetchTarget(FetchedTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
@@ -433,9 +443,9 @@ class FetchTarget(FetchedTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
                             else:
-                                msgchain = MessageChain([Plain(message)])
+                                msgchain = MessageChain(Plain(message))
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:

@@ -89,7 +89,7 @@ async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
         await msg.finish(
             I18NContext("maimai.message.alias.file_not_found", prefix=msg.prefixes[0])
         )
-    with open(mai_alias_path, "r", encoding="utf-8") as file:
+    with open(mai_alias_path, "rb") as file:
         data = json.loads(file.read())
 
     result = []
@@ -117,7 +117,7 @@ async def search_by_alias(input_: str) -> list:
     if not os.path.exists(mai_alias_path):
         return list(set(result))
 
-    with open(mai_alias_path, "r", encoding="utf-8") as file:
+    with open(mai_alias_path, "rb") as file:
         data = json.loads(file.read())
 
     for song in data:
@@ -164,7 +164,7 @@ async def get_record(
             Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
-                with open(cache_dir, "r", encoding="utf-8") as f:
+                with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data
@@ -202,7 +202,7 @@ async def get_song_record(
             )
             if use_cache and data:
                 if os.path.exists(cache_dir):
-                    with open(cache_dir, "r", encoding="utf-8") as f:
+                    with open(cache_dir, "rb") as f:
                         try:
                             backup_data = json.loads(f.read())
                         except Exception:
@@ -215,11 +215,11 @@ async def get_song_record(
             return data
         except Exception as e:
             if str(e).startswith("400"):
-                raise ConfigValueError("[I18N:error.config.invalid]")
+                raise ConfigValueError("{I18N:error.config.invalid}")
             Logger.exception()
             if use_cache and os.path.exists(cache_dir):
                 try:
-                    with open(cache_dir, "r", encoding="utf-8") as f:
+                    with open(cache_dir, "rb") as f:
                         data = json.loads(f.read())
                     await msg.send_message(I18NContext("maimai.message.use_cache"))
                     return data
@@ -228,7 +228,7 @@ async def get_song_record(
             else:
                 raise e
     else:
-        raise ConfigValueError("[I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
 
 
 async def get_total_record(
@@ -272,7 +272,7 @@ async def get_total_record(
             Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
-                with open(cache_dir, "r", encoding="utf-8") as f:
+                with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 if not utage:
@@ -328,7 +328,7 @@ async def get_plate(
             Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
-                with open(cache_dir, "r", encoding="utf-8") as f:
+                with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data

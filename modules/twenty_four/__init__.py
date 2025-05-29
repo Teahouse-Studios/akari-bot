@@ -120,13 +120,13 @@ def contains_all_numbers(expr, numbers):
 tf = module(
     "twenty_four",
     alias=["twentyfour", "24"],
-    desc="[I18N:twenty_four.help.desc]",
+    desc="{I18N:twenty_four.help.desc}",
     developers=["DoroWolf"],
     doc=True,
 )
 
 
-@tf.command("{[I18N:twenty_four.help]}")
+@tf.command("{{I18N:twenty_four.help}}")
 async def _(msg: Bot.MessageSession):
     play_state = PlayState("twenty_four", msg)
     if play_state.check():
@@ -169,7 +169,7 @@ async def _(msg: Bot.MessageSession):
             await answer.finish(I18NContext("twenty_four.message.incorrect.invalid"))
 
 
-@tf.command("stop {[I18N:game.help.stop]}")
+@tf.command("stop {{I18N:game.help.stop}}")
 async def s(msg: Bot.MessageSession):
     play_state = PlayState("twenty_four", msg)
     if play_state.check():

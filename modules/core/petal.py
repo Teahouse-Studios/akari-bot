@@ -18,12 +18,12 @@ petal_ = module("petal",
                 )
 
 
-@petal_.command("{[I18N:core.help.petal]}")
+@petal_.command("{{I18N:core.help.petal}}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
 
 
-@petal_.command("sign {[I18N:core.help.petal.sign]}")
+@petal_.command("sign {{I18N:core.help.petal.sign}}")
 async def _(msg: Bot.MessageSession):
     if not msg.target_data.get("disable_sign", False):
         amount = await sign_get_petal(msg)
@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.petal.sign.disabled"))
 
 
-@petal_.command("give <petal> <user> {[I18N:core.help.petal.give]}")
+@petal_.command("give <petal> <user> {{I18N:core.help.petal.give}}")
 async def _(msg: Bot.MessageSession, petal: int, user: str):
     if petal <= 0:
         await msg.finish(I18NContext("petal.message.count.invalid"))

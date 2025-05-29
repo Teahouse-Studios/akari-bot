@@ -15,20 +15,20 @@ from core.utils.web_render import webrender
 t = module(
     "tweet",
     developers=["Dianliang233"],
-    desc="[I18N:tweet.help.desc]",
+    desc="{I18N:tweet.help.desc}",
     doc=True,
     alias=["x"],
 )
 
 
-@t.command("<tweet> {[I18N:tweet.help]}")
+@t.command("<tweet> {{I18N:tweet.help}}")
 async def _(msg: Bot.MessageSession, tweet: int):
     await get_tweet(msg, tweet)
 
 
 @t.regex(r"(?:http[s]?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/\S+\/status\/(\d+)",
          mode="M",
-         desc="[I18N:tweet.help.regex.url]",
+         desc="{I18N:tweet.help.regex.url}",
          show_typing=False,
          text_only=False
          )

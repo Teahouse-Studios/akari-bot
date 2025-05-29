@@ -13,13 +13,13 @@ from .update import update_assets, p_headers
 phi = module(
     "phigros",
     developers=["OasisAkari"],
-    desc="[I18N:phigros.help.desc]",
+    desc="{I18N:phigros.help.desc}",
     alias=["p", "pgr", "phi"],
     doc=True,
 )
 
 
-@phi.command("bind <sessiontoken> {[I18N:phigros.help.bind]}")
+@phi.command("bind <sessiontoken> {{I18N:phigros.help.bind}}")
 async def _(msg: Bot.MessageSession, sessiontoken: str):
     if msg.target.target_from in [
         "Discord|Channel",
@@ -53,13 +53,13 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
 
 
-@phi.command("unbind {[I18N:phigros.help.unbind]}")
+@phi.command("unbind {{I18N:phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await PhigrosBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
     await msg.finish(msg.locale.t("phigros.message.unbind.success"))
 
 
-@phi.command("b19 {[I18N:phigros.help.b19]}")
+@phi.command("b19 {{I18N:phigros.help.b19}}")
 async def _(msg: Bot.MessageSession):
     bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:

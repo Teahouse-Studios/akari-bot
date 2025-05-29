@@ -488,7 +488,7 @@ async def _check_temp_ban(msg: Bot.MessageSession):
                 is_temp_banned["count"] += 1
                 await msg.finish(I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning("{tos.message.reason.ignore}")
+                raise AbuseWarning("{I18N:tos.message.reason.ignore}")
 
 
 async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
@@ -500,7 +500,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         same["count"] += 1
         if same["count"] > 10:
-            raise AbuseWarning("[I18N:tos.message.reason.cooldown]")
+            raise AbuseWarning("{I18N:tos.message.reason.cooldown}")
     all_ = counter_all.get(msg.target.sender_id)
     if not all_ or datetime.now().timestamp() - all_["ts"] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {"count": 1,
@@ -508,7 +508,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         all_["count"] += 1
         if all_["count"] > 20:
-            raise AbuseWarning("[I18N:tos.message.reason.abuse]")
+            raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
 async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word):

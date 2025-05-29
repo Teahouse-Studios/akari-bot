@@ -257,7 +257,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         if str(e).startswith("404"):
             await msg.finish(I18NContext("cytoid.message.user_not_found"))
         Logger.exception()
-        return {"status": False, "text": Plain("[I18N:message.error]" + str(e))}
+        return {"status": False, "text": Plain("{I18N:message.error}" + str(e))}
 
 
 async def download_cover_thumb(uid):

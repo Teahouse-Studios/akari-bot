@@ -107,7 +107,7 @@ async def get_url(
                     if not logging_resp and logging_err_resp:
                         Logger.error(resp.text)
                     raise ValueError(
-                        f"{str(resp.status_code)}[Ke:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
                     )
                 if fmt:
                     if hasattr(resp, fmt):
@@ -186,7 +186,7 @@ async def post_url(
                     if not logging_resp and logging_err_resp:
                         Logger.error(resp.text)
                     raise ValueError(
-                        f"{str(resp.status_code)}[Ke:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
                     )
                 if fmt:
                     if hasattr(resp, fmt):

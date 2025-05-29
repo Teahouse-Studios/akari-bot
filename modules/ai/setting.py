@@ -15,7 +15,7 @@ else:
 
 llm_api_list_path = os.path.join(ai_assets_path, "llm_api_list.json")
 if os.path.exists(llm_api_list_path):
-    with open(llm_api_list_path, "r") as f:
+    with open(llm_api_list_path, "rb") as f:
         llm_api_list = json.loads(f.read()).get("llm_api_list", [])
 else:
     llm_api_list = []

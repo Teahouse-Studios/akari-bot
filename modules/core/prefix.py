@@ -5,11 +5,11 @@ from core.component import module
 p = module("prefix", base=True, doc=True)
 
 
-@p.command("list {[I18N:core.help.prefix.list]}")
+@p.command("list {{I18N:core.help.prefix.list}}")
 @p.command([
-    "add <prefix> {[I18N:core.help.prefix.add]}",
-    "remove <prefix> {[I18N:core.help.prefix.remove]}",
-    "reset {[I18N:core.help.prefix.reset]}"
+    "add <prefix> {{I18N:core.help.prefix.add}}",
+    "remove <prefix> {{I18N:core.help.prefix.remove}}",
+    "reset {{I18N:core.help.prefix.reset}}"
 ], required_admin=True)
 async def _(msg: Bot.MessageSession):
     prefixes = msg.target_data.get("command_prefix")

@@ -11,7 +11,7 @@ SEARCH_LIMIT = 5
 i = module("idlist", doc=True, support_languages=["zh_cn"])
 
 
-@i.command("<query> {[I18N:idlist.help]}")
+@i.command("<query> {{I18N:idlist.help}}")
 async def _(msg: Bot.MessageSession, query: str):
     query_options = {"q": query, "limit": f"{SEARCH_LIMIT + 1}"}
     query_url = f"{API}?{urllib.parse.urlencode(query_options)}"

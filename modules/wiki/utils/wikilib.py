@@ -567,7 +567,7 @@ class WikiLib:
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if _tried > 5 and enable_tos:
-            raise AbuseWarning("{tos.message.reason.too_many_redirects}")
+            raise AbuseWarning("{I18N:tos.message.reason.too_many_redirects}")
         selected_section = None
         query_props = ["info", "imageinfo", "langlinks", "templates"]
         if self.wiki_info.api.find("moegirl.org.cn") != -1:

@@ -41,7 +41,7 @@ def get_bot_names(attribute_name, console_name) -> List[str]:
                 "Binary mode detected, trying to load pre-built bots list..."
             )
             js = "assets/bots_list.json"
-            with open(js, "r", encoding="utf-8") as f:
+            with open(js, "rb") as f:
                 dir_list = json.loads(f.read())
                 for i in dir_list:
                     try:

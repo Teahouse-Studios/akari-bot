@@ -55,7 +55,7 @@ async def get_record(msg: Bot.MessageSession, payload: dict, use_cache: bool = T
             Logger.exception()
         if use_cache and os.path.exists(cache_dir):
             try:
-                with open(cache_dir, "r", encoding="utf-8") as f:
+                with open(cache_dir, "rb") as f:
                     data = json.loads(f.read())
                 await msg.send_message(I18NContext("maimai.message.use_cache"))
                 return data

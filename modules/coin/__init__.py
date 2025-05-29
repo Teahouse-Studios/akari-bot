@@ -9,11 +9,11 @@ FACE_UP_WEIGHT = Config("coin_faceup_weight", 4997, table_name="module_coin")
 FACE_DOWN_WEIGHT = Config("coin_facedown_weight", 4997, table_name="module_coin")
 STAND_WEIGHT = Config("coin_stand_weight", 6, table_name="module_coin")
 
-coin = module("coin", developers=["Light-Beacon"], desc="[I18N:coin.help.desc]", doc=True)
+coin = module("coin", developers=["Light-Beacon"], desc="{I18N:coin.help.desc}", doc=True)
 
 
 @coin.command()
-@coin.command("[<amount>] {[I18N:coin.help]}")
+@coin.command("[<amount>] {{I18N:coin.help}}")
 async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flip_coins(amount, msg))
 
@@ -27,7 +27,7 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
             MAX_COIN_NUM > 0,
         ]
     ):
-        raise ConfigValueError("[I18N:error.config.invalid]")
+        raise ConfigValueError("{I18N:error.config.invalid}")
     if count > MAX_COIN_NUM:
         return I18NContext("coin.message.invalid.out_of_range", max=MAX_COIN_NUM)
     if count < 0:
@@ -69,15 +69,15 @@ async def flip_coins(count: int, msg: Bot.MessageSession):
         prompt.append(I18NContext("coin.message.mix.prompt", count=count))
         output = ""
         if face_up and face_down:
-            output += f"[I18N:coin.message.mix.head_and_tail,head={face_up},tail={face_down}]"
+            output += f"{{I18N:coin.message.mix.head_and_tail,head={face_up},tail={face_down}}}"
         elif face_up:
-            output += f"[I18N:coin.message.mix.head,head={face_up}]"
+            output += f"{{I18N:coin.message.mix.head,head={face_up}}}"
         elif face_down:
-            output += f"[I18N:coin.message.mix.tail,tail={face_down}]"
+            output += f"{{I18N:coin.message.mix.tail,tail={face_down}}}"
         if stand:
-            output += f"[I18N:coin.message.mix.stand,stand={stand}]"
+            output += f"{{I18N:coin.message.mix.stand,stand={stand}}}"
         else:
-            output += "[I18N:message.end]"
+            output += "{{I18N:message.end]"
         prompt.append(Plain(output))
 
     return prompt
