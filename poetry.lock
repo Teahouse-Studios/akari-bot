@@ -2494,19 +2494,19 @@ e2e = ["atomicwrites (>=1.4,<2.0)", "cachetools (>=5.3,<6.0)", "peewee (>=3.14,<
 
 [[package]]
 name = "mcstatus"
-version = "11.1.1"
+version = "12.0.1"
 description = "A library to query Minecraft Servers for their status and capabilities."
 optional = false
-python-versions = ">=3.8.1,<4"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "mcstatus-11.1.1-py3-none-any.whl", hash = "sha256:7f5f7f44fa1d17c4e05c0ae94ecc114d9d146ef572e7dd9f2d9da72771ce135c"},
-    {file = "mcstatus-11.1.1.tar.gz", hash = "sha256:b2856ee4032faf810b0c6af10a141381e6115caf14a7348c47edc8e3da84f5d4"},
+    {file = "mcstatus-12.0.1-py3-none-any.whl", hash = "sha256:d75cdf8ee78fda750901afad1b7a84864df7f8e29f46e295ac048531a2345e83"},
+    {file = "mcstatus-12.0.1.tar.gz", hash = "sha256:5a09a46ff09abaf93ef4c7717a0e7d61bbd8409272dd7b6a5e0f5ca1557a72e4"},
 ]
 
 [package.dependencies]
-asyncio-dgram = ">=2.1.2,<3.0.0"
-dnspython = ">=2.4.2,<3.0.0"
+asyncio-dgram = ">=2.1.2"
+dnspython = ">=2.4.2"
 
 [[package]]
 name = "more-itertools"
@@ -5406,4 +5406,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "83a543ceb5a8cf2825f1ea9575a4c2b39be920eca01b84f306a2972576769f8a"
+content-hash = "81a2f1020e5b33d863f29041aaec03821499319ef2eb848a0e0c8d06e3c262d1"
