@@ -19,7 +19,7 @@ def fetch_modules_list() -> list:
                 "Binary mode detected, trying to load pre-built modules list..."
             )
             js = "assets/modules_list.json"
-            with open(js, "r", encoding="utf-8") as f:
+            with open(js, "rb") as f:
                 dir_list = json.loads(f.read())
         except Exception:
             Logger.error("Failed to load pre-built modules list, using default list.")

@@ -8,9 +8,6 @@ import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
-from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import *
-from bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
@@ -25,6 +22,9 @@ from core.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.tos import tos_report
 from core.types import MsgInfo, Session
+from .client import bot
+from .info import *
+from .message import MessageSession, FetchTarget
 
 
 PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))

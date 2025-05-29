@@ -1,7 +1,6 @@
 import base64
 import os
 import re
-import traceback
 import uuid
 from io import BytesIO
 from typing import Union, List
@@ -115,7 +114,7 @@ async def generate_screenshot_v1(
                 resp = await client.get(page_link, timeout=20)
                 html = resp.text
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
         soup = BeautifulSoup(html, "html.parser")
         pagename = uuid.uuid4()
@@ -373,5 +372,5 @@ async def generate_screenshot_v1(
 
         return img_lst
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False

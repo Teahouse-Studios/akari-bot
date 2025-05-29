@@ -1,5 +1,4 @@
 import base64
-import traceback
 from io import BytesIO
 from typing import List, Optional, Union
 
@@ -10,7 +9,7 @@ from aiofile import async_open
 from jinja2 import FileSystemLoader, Environment
 
 from core.builtins import Image, MessageChain, MessageSession
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
+from core.builtins.message.elements import MessageElement, PlainElement, ImageElement, VoiceElement, EmbedElement
 from core.constants.info import Info
 from core.constants.path import templates_path
 from core.logger import Logger
@@ -46,7 +45,7 @@ def get_fontsize(font, text):
 save_source = True
 
 
-async def msgchain2image(message_chain: Union[List, MessageChain],
+async def msgchain2image(message_chain: Union[MessageChain, str, list, MessageElement],
                          msg: Optional[MessageSession] = None,
                          use_local: bool = True) -> Union[List[PILImage.Image], bool]:
     """使用WebRender将消息链转换为图片。
@@ -59,11 +58,9 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
         return False
     if not Info.web_render_local_status:
         use_local = False
-    if isinstance(message_chain, List):
-        message_chain = MessageChain(message_chain)
 
     lst = []
-
+    message_chain = MessageChain(message_chain)
     for m in message_chain.as_sendable(msg=msg, embed=False):
         if isinstance(m, PlainElement):
             lst.append("<div>" + m.text.replace("\n", "<br>") + "</div>")
@@ -75,7 +72,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
                     lst.append(f"<img src=\"data:{ftt.mime};base64,{
                                (base64.encodebytes(data)).decode("utf-8")}\" width=\"720\" />")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         elif isinstance(m, VoiceElement):
             lst.append("<div>[Voice]</div>")
         elif isinstance(m, EmbedElement):

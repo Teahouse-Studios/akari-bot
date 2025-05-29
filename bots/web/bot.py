@@ -20,7 +20,7 @@ from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
-from flask import Flask, send_from_directory
+from flask import Flask, abort, send_from_directory
 from jwt.exceptions import ExpiredSignatureError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -50,7 +50,6 @@ from core.types import MsgInfo, Session  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 
 started_time = datetime.now()
-webui_index = os.path.join(webui_path, "index.html")
 PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 default_locale = Config("default_locale", cfg_type=str)
@@ -78,11 +77,11 @@ async def lifespan(app: FastAPI):
     Scheduler.start()
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
-    if os.path.exists(webui_index):
+    if os.path.exists(webui_path):
         Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
     yield
     await cleanup_sessions()
-    sys.exit()
+    sys.exit(0)
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
@@ -882,49 +881,57 @@ async def restart():
     await cleanup_sessions()
     os._exit(233)
 
-if os.path.exists(webui_index):
+
+if os.path.exists(webui_path):
     flask_app = Flask(__name__)
 
     @flask_app.route("/")
     @flask_app.route("/<path:path>")
-    def static_files(path=None):
+    def serve_webui(path=None):
+        if path and "/" in path:
+            abort(404)
         return send_from_directory(webui_path, "index.html")
 
     app.mount("/webui", WSGIMiddleware(flask_app))
 
-    @app.get("/webui")
-    async def redirect_webui():
+    @app.get("/")
+    async def redirect_to_webui():
         return RedirectResponse(url="/webui/")
 
+else:
+    @app.get("/")
+    async def redirect_to_api():
+        return RedirectResponse(url="/api")
 
-@app.get("/{path:path}")
-async def redirect_root(path: str = ""):
-    if os.path.exists(webui_index):
-        if not path:
-            return RedirectResponse(url="/webui")
-        if path.startswith("/api") or path.startswith("/webui"):
-            return RedirectResponse(url=path)
+
+@app.get("/{full_path:path}")
+async def route_handler(full_path: str):
+    if os.path.exists(webui_path):
+        if full_path == "webui":
+            return RedirectResponse(url="/webui/")
+
+        static_file = os.path.normpath(os.path.join(webui_path, full_path))
+        if os.path.commonpath([webui_path, static_file]) != webui_path:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        if os.path.exists(static_file):
+            return FileResponse(static_file)
     else:
-        if not path:
-            return RedirectResponse(url="/api")
-        if path.startswith("/api"):
-            return RedirectResponse(url=path)
-    static_path = os.path.normpath(os.path.join(webui_path, path))
-    if not static_path.startswith(webui_path) or not os.path.exists(static_path):
-        raise HTTPException(status_code=404, detail="Not found")
-    return FileResponse(static_path)
+        favicon_file = os.path.join(assets_path, "favicon.ico")
+        if full_path == "favicon.ico" and os.path.exists(favicon_file):
+            return FileResponse(favicon_file)
+    raise HTTPException(status_code=404, detail="Not found")
 
 
 if Config("enable", True, table_name="bot_web"):
     Info.client_name = client_name
     web_port = find_available_port(WEB_PORT)
     if web_port == 0:
-        Logger.error(f"API port is disabled, abort to run.")
+        Logger.error("API port is disabled.")
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
-    if os.path.exists(webui_index):
+    if os.path.exists(webui_path):
         generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
 
     uvicorn.run(app, host=WEB_HOST, port=web_port, log_level="info")

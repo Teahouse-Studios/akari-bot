@@ -6,7 +6,7 @@ from core.utils.image import msgchain2image
 
 weekly_rss = module(
     "weekly_rss",
-    desc="[I18N:weekly_rss.help.desc]",
+    desc="{I18N:weekly_rss.help.desc}",
     developers=["Dianliang233"],
     alias="weeklyrss",
     doc=True,
@@ -34,7 +34,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
 
 teahouse_weekly_rss = module(
     "teahouse_weekly_rss",
-    desc="[I18N:weekly_rss.help.teahouse_weekly_rss.desc]",
+    desc="{I18N:weekly_rss.help.teahouse_weekly_rss.desc}",
     developers=["OasisAkari"],
     alias=["teahouseweeklyrss", "teahouserss"],
     doc=True,

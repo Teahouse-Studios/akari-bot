@@ -60,9 +60,7 @@ def decrypt_bytes(encrypted):
 
 
 def parse_game_record(rd_path):
-    with open(
-        os.path.join(assets_path, "modules", "phigros", "rating.json"), "r", encoding="utf-8"
-    ) as f:
+    with open(os.path.join(assets_path, "modules", "phigros", "rating.json"), "rb") as f:
         rating = json.loads(f.read())
     decrypted_data = {}
     with open(os.path.join(rd_path, "gameRecord"), "rb+") as rd:

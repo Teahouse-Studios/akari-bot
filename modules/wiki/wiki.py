@@ -13,10 +13,11 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.text import isint
-from modules.wiki.database.models import WikiTargetInfo
+from core.utils.message import isint
+from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
+from .utils.utils import check_svg
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = module(
@@ -34,9 +35,14 @@ wiki = module(
 )
 
 
+@wiki.command()
+async def _(msg: Bot.MessageSession):
+    await query_pages(msg)
+
+
 @wiki.command(
-    "<pagename> [-l <lang>] {[I18N:wiki.help]}",
-    options_desc={"-l": "[I18N:wiki.help.option.l]"}
+    "<pagename> [-l <lang>] {{I18N:wiki.help}}",
+    options_desc={"-l": "{I18N:wiki.help.option.l}"}
 )
 async def _(msg: Bot.MessageSession, pagename: str):
     get_lang = msg.parsed_msg.get("-l", False)
@@ -48,8 +54,8 @@ async def _(msg: Bot.MessageSession, pagename: str):
 
 
 @wiki.command(
-    "id <pageid> [-l <lang>] {[I18N:wiki.help.id]}",
-    options_desc={"-l": "[I18N:wiki.help.option.l]"},
+    "id <pageid> [-l <lang>] {{I18N:wiki.help.id}}",
+    options_desc={"-l": "{I18N:wiki.help.option.l}"},
 )
 async def _(msg: Bot.MessageSession, pageid: str):
     iw = None
@@ -107,7 +113,7 @@ async def query_pages(
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
-            raise AbuseWarning("{tos.message.reason.wiki_abuse}")
+            raise AbuseWarning("{I18N:tos.message.reason.wiki_abuse}")
         query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
         for t in title:
             if prefix and use_prefix:
@@ -152,7 +158,13 @@ async def query_pages(
                 else:
                     raise ValueError(f"iw_prefix \"{iw}\" not found.")
     else:
-        raise ValueError("Title or pageid must be specified.")
+        get_wiki_info = WikiLib(start_wiki)
+        query = await get_wiki_info.get_json(
+            action="query",
+            meta="siteinfo",
+            siprop="general"
+        )
+        query_task = {start_wiki: {"query": [query["query"]["general"]["mainpage"]], "iw_prefix": ""}}
     Logger.debug(query_task)
     msg_list = []
     wait_msg_list = []
@@ -612,14 +624,6 @@ async def query_pages(
                     await session.send_message(section_msg_list, quote=False)
 
         async def image_and_voice():
-            def check_svg(file_path):
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        check = file.read(1024)
-                        return "<svg" in check
-                except Exception:
-                    return False
-
             if dl_list:
                 for f in dl_list:
                     dl = await download(f)

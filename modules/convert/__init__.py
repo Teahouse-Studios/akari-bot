@@ -11,14 +11,14 @@ ureg = UnitRegistry(non_int_type=Decimal)
 i = module(
     "convert",
     alias=["conv", "unit"],
-    desc="[I18N:convert.help.desc]",
+    desc="{I18N:convert.help.desc}",
     developers=["Dianliang233"],
     doc=True,
     support_languages=["en_us"],
 )
 
 
-@i.command("<from_val> <to_unit> {[I18N:convert.help]}")
+@i.command("<from_val> <to_unit> {{I18N:convert.help}}")
 async def _(msg: Bot.MessageSession, from_val: str, to_unit: str):
     try:
         ori = ureg.parse_expression(from_val)

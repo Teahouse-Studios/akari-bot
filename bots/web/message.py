@@ -1,6 +1,5 @@
 import asyncio
 import re
-import traceback
 import uuid
 from typing import Union
 
@@ -16,13 +15,13 @@ from core.builtins import (
     FinishedSession as FinS,
     FetchTarget as FetchTargetT
 )
-from bots.web.info import *
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.temp import Temp
 from core.logger import Logger
 from core.types import Session
+from .info import *
 
 
 class FinishedSession(FinS):
@@ -33,7 +32,7 @@ class FinishedSession(FinS):
             resp = {"action": "delete", "id": self.message_id}
             await websocket.send_text(json.dumps(resp).decode())
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -66,13 +65,17 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
         sends = []
+        sends_display = []
+
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
                 sends.append({"type": "text", "content": x.text})
+                sends_display.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 img_b64 = await x.get_base64(mime=True)
                 sends.append({"type": "image", "content": img_b64})
+                sends_display.append({"type": "image", "content": f"{img_b64[:50]}..."})
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
 
         resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
@@ -80,7 +83,7 @@ class MessageSession(MessageSessionT):
 
         if callback:
             MessageTaskManager.add_callback(resp["id"], callback)
-        return FinishedSession(self, resp["id"], sends)
+        return FinishedSession(self, resp["id"], sends_display)
 
     def as_display(self, text_only=False):
         msgs = []
@@ -105,7 +108,7 @@ class MessageSession(MessageSessionT):
             await websocket.send_text(json.dumps(resp).decode())
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     async def check_permission(self):

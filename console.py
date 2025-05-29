@@ -1,7 +1,6 @@
 import asyncio
 import os
 import shutil
-import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
@@ -42,7 +41,7 @@ async def console_command():
             m = await asyncio.to_thread(session.prompt)
             await send_command(m)
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
 
 
 async def send_command(msg):

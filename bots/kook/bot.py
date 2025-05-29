@@ -4,9 +4,6 @@ import sys
 
 from khl import Message, MessageTypes
 
-from bots.kook.client import bot
-from bots.kook.info import *
-from bots.kook.message import MessageSession, FetchTarget
 from core.bot_init import load_prompt, init_async
 from core.builtins import PrivateAssets
 from core.config import Config
@@ -16,6 +13,9 @@ from core.constants.path import assets_path
 from core.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.types import MsgInfo, Session
+from .client import bot
+from .info import *
+from .message import MessageSession, FetchTarget
 
 PrivateAssets.set(os.path.join(assets_path, "private", "kook"))
 Info.dirty_word_check = Config("enable_dirty_check", False)

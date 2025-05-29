@@ -1,11 +1,11 @@
 import html
 import re
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, Optional, Union
 
 import orjson as json
 
-from bots.aiocqhttp.client import bot
 from core.logger import Logger
+from .client import bot
 
 
 async def get_onebot_implementation() -> Optional[str]:

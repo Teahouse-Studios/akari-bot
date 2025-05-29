@@ -1,7 +1,7 @@
 from core.builtins import MessageSession, MessageChain, I18NContext, Plain, Url
 from core.logger import Logger
-from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
+from .rc import convert_rc_to_detailed_format
 
 
 async def rc_qq(msg: MessageSession, wiki_url, headers=None):

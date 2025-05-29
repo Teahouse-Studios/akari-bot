@@ -12,18 +12,20 @@ from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.text import isint
-from modules.wiki.database.models import WikiTargetInfo
-from modules.wiki.utils.screenshot_image import (
+from core.utils.message import isint
+from .wiki import query_pages
+from .database.models import WikiTargetInfo
+from .utils.screenshot_image import (
     generate_screenshot_v1,
     generate_screenshot_v2,
 )
-from modules.wiki.utils.wikilib import WikiLib
-from .wiki import query_pages, generate_screenshot_v2_blocklist
+from .utils.mapping import generate_screenshot_v2_blocklist
+from .utils.utils import check_svg
+from .utils.wikilib import WikiLib
 
 wiki_inline = module(
     "wiki_inline",
-    desc="[I18N:wiki.help.wiki_inline.desc]",
+    desc="{I18N:wiki.help.wiki_inline.desc}",
     doc=True,
     recommend_modules=["wiki"],
     alias="wiki_regex",
@@ -31,7 +33,7 @@ wiki_inline = module(
 )
 
 
-@wiki_inline.regex(r"\[\[(.*?)\]\]", flags=re.I, mode="A", desc="[I18N:wiki.help.wiki_inline.page]")
+@wiki_inline.regex(r"\[\[(.*?)\]\]", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki_inline.page}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -41,7 +43,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list[:5], inline_mode=True)
 
 
-@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="[I18N:wiki.help.wiki_inline.template]")
+@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki_inline.template}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -55,7 +57,7 @@ async def _(msg: Bot.MessageSession):
                    flags=re.I,
                    mode="A",
                    show_typing=False,
-                   desc="[I18N:wiki.help.wiki_inline.mediawiki]")
+                   desc="{I18N:wiki.help.wiki_inline.mediawiki}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -71,17 +73,9 @@ async def _(msg: Bot.MessageSession):
                    mode="A",
                    show_typing=False,
                    logging=False,
-                   desc="[I18N:wiki.help.wiki_inline.url]")
+                   desc="{I18N:wiki.help.wiki_inline.url}")
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
-
-    def check_svg(file_path):
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                check = file.read(1024)
-                return "<svg" in check
-        except Exception:
-            return False
 
     async def bgtask():
         query_list = []

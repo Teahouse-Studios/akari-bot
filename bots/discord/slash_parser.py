@@ -2,11 +2,11 @@ from typing import Union
 
 import discord
 
-from bots.discord.info import *
-from bots.discord.slash_message import MessageSession
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
+from .info import *
+from .slash_message import MessageSession
 
 
 def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext]):

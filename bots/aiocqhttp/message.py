@@ -11,9 +11,6 @@ import aiocqhttp.exceptions
 from aiocqhttp import MessageSegment
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
 from core.builtins import (
     Bot,
     base_superuser_list,
@@ -23,13 +20,12 @@ from core.builtins import (
     MessageTaskManager,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
-    Mention,
     Plain,
     Image,
     Voice,
 )
 from core.builtins.message import MessageSession as MessageSessionT
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.constants.exceptions import SendMessageFailed
@@ -37,6 +33,9 @@ from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
+from .client import bot
+from .info import *
+from .utils import CQCodeHandler, get_onebot_implementation
 
 enable_analytics = Config("enable_analytics", False)
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
@@ -53,7 +52,7 @@ class FinishedSession(FinishedSessionT):
                     if x != 0:
                         await bot.call_action("delete_msg", message_id=x)
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
 
 last_send_typing_time = {}
@@ -75,13 +74,13 @@ async def resending_group_message():
                     Temp.data["waiting_for_send_group_message"].remove(x)
                     await asyncio.sleep(30)
                 except SendMessageFailed:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
                     falied_list.append(x)
                     if len(falied_list) > 3:
                         raise SendMessageFailed
         Temp.data["is_group_message_blocked"] = False
     except SendMessageFailed:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         Temp.data["is_group_message_blocked"] = True
         for bu in base_superuser_list:
             fetch_base_superuser = await FetchTarget.fetch_target(bu)
@@ -133,6 +132,7 @@ class MessageSession(MessageSessionT):
         count = 0
         for x in message_chain_assendable:
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                 if enable_parse_message:
                     parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                     parts = [part for part in parts if part]
@@ -209,6 +209,7 @@ class MessageSession(MessageSessionT):
                     )
                     count += 1
             elif isinstance(x, MentionElement):
+                convert_msg_segments = convert_msg_segments + MessageSegment.text("\n")
                 if x.client == client_name and self.target.target_from == target_group_prefix:
                     convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
                 else:
@@ -386,7 +387,7 @@ class MessageSession(MessageSessionT):
                     )
                 return True
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 return False
 
     async def get_text_channel_list(self):
@@ -424,8 +425,6 @@ class MessageSession(MessageSessionT):
                                 lst.append(Image(img_src))
                         elif cq_data["type"] == "record":
                             lst.append(Voice(cq_data["data"].get("file")))
-                        elif cq_data["type"] == "at":
-                            lst.append(Mention(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
                         else:
                             lst.append(Plain(s))
                     else:
@@ -444,8 +443,6 @@ class MessageSession(MessageSessionT):
                         lst.append(Image(item["data"]["url"]))
                 elif item["type"] == "record":
                     lst.append(Voice(item["data"]["file"]))
-                elif item["type"] == "at":
-                    lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
                 else:
                     lst.append(Plain(CQCodeHandler.generate_cq(item)))
 
@@ -584,9 +581,9 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     new_msgchain = []
                     for v in msgchain.value:
@@ -638,7 +635,7 @@ class FetchTarget(FetchTargetT):
                                     I18NContext("error.message.paused", disable_joke=True, prefix=command_prefix[0])
                                 )
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
         if user_list:
             for x in user_list:

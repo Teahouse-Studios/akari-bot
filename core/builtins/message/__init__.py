@@ -16,7 +16,7 @@ from core.exports import add_export
 from core.i18n import Locale
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
-from core.utils.text import parse_time_string
+from core.utils.message import parse_time_string
 
 
 class ExecutionLockList:

@@ -1,18 +1,16 @@
-import traceback
-
 import discord
 
-from bots.discord.message import (
-    convert_embed,
-    MessageSession as MessageSessionT,
-    FinishedSession as FinS,
-)
 from core.builtins import MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
 from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.logger import Logger
+from .message import (
+    convert_embed,
+    MessageSession as MessageSessionT,
+    FinishedSession as FinS,
+)
 
 enable_analytics = Config("enable_analytics", False)
 
@@ -26,7 +24,7 @@ class FinishedSession(FinS):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -120,5 +118,5 @@ class MessageSession(MessageSessionT):
             await self.session.message.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False

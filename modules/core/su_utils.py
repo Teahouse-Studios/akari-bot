@@ -21,8 +21,8 @@ from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
 from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
+from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.text import isfloat, isint
 
 target_list = get_all_target_prefix()
 sender_list = get_all_sender_prefix()
@@ -477,7 +477,7 @@ exit_ = module("exit", required_superuser=True, base=True, doc=True, available_f
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(append_instruction=False, delete=False):
         await msg.sleep(0.5)
-        sys.exit()
+        sys.exit(0)
 
 
 git = module("git", required_superuser=True, base=True, doc=True, load=bool(Info.version))
@@ -584,7 +584,7 @@ rse = module("raise", required_superuser=True, base=True, doc=True)
 @rse.command()
 @rse.command("[<args>]")
 async def _(msg: Bot.MessageSession, args: str = None):
-    e = args or "[I18N:core.message.raise]"
+    e = args or "{I18N:core.message.raise}"
     raise TestException(e)
 
 
@@ -607,7 +607,7 @@ post_ = module("post", required_superuser=True, base=True, doc=True, exclude_fro
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f"{msg.target.client_name}|"):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.target.target_from))
-    post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
+    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
     session = await Bot.FetchTarget.fetch_target(target)
     if await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False):
         await Bot.FetchTarget.post_global_message(post_msg, [session])
@@ -618,7 +618,7 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 
 @post_.command("global <post_msg>")
 async def _(msg: Bot.MessageSession, post_msg: str):
-    post_msg = f"[I18N:core.message.post.prefix] {post_msg}"
+    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
     if await msg.wait_confirm(I18NContext("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False):
         await Bot.FetchTarget.post_global_message(post_msg)
         await msg.finish(I18NContext("core.message.post.success"))

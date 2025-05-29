@@ -117,7 +117,7 @@ async def parser(msg: Bot.MessageSession,
         Logger.warning("Waiting task cancelled by user.")
 
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
     finally:
         ExecutionLockList.remove(msg)
 
@@ -326,7 +326,7 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
         await _process_tos_abuse_warning(msg, str(e))
 
     except NoReportException as e:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         err_msg = msg.locale.t_str(str(e))
         await msg.send_message(I18NContext("error.message.prompt.noreport", detail=err_msg))
 
@@ -488,7 +488,7 @@ async def _check_temp_ban(msg: Bot.MessageSession):
                 is_temp_banned["count"] += 1
                 await msg.finish(I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning("{tos.message.reason.ignore}")
+                raise AbuseWarning("{I18N:tos.message.reason.ignore}")
 
 
 async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
@@ -500,7 +500,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         same["count"] += 1
         if same["count"] > 10:
-            raise AbuseWarning("[I18N:tos.message.reason.cooldown]")
+            raise AbuseWarning("{I18N:tos.message.reason.cooldown}")
     all_ = counter_all.get(msg.target.sender_id)
     if not all_ or datetime.now().timestamp() - all_["ts"] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {"count": 1,
@@ -508,7 +508,7 @@ async def _tos_msg_counter(msg: Bot.MessageSession, command: str):
     else:
         all_["count"] += 1
         if all_["count"] > 20:
-            raise AbuseWarning("[I18N:tos.message.reason.abuse]")
+            raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
 async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word):
@@ -615,7 +615,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
                 await _execute_submodule(msg, command_first_word, command_split)"""
             return
     except InvalidHelpDocTypeError:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.send_message(I18NContext("error.module.helpdoc.invalid", module=command_first_word))
         return
 
@@ -657,7 +657,7 @@ async def _process_send_message_failed(msg: Bot.MessageSession):
 
 
 async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportException):
-    Logger.error(traceback.format_exc())
+    Logger.exception()
     errmsgchain = [I18NContext("error.message.prompt")]
     err_msg = msg.locale.t_str(str(e))
     errmsgchain += match_kecode(err_msg)

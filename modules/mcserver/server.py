@@ -1,5 +1,5 @@
 import re
-import traceback
+
 
 from mcstatus import JavaServer, BedrockServer
 
@@ -49,7 +49,7 @@ async def query_java_server(
 
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         return ""
 
     if raw:
@@ -79,7 +79,7 @@ async def query_bedrock_server(msg, address, raw=False):
 
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         return ""
 
     if raw:

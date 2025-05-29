@@ -1,5 +1,3 @@
-import traceback
-
 from core.constants import Secret
 from core.logger import Logger
 from core.utils.http import get_url
@@ -20,5 +18,5 @@ async def fetch_ip_info() -> dict:
         return ip_info
     except Exception:
         Logger.error("Failed to get IP information.")
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return {}

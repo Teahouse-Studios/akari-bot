@@ -1,4 +1,5 @@
 import re
+from attrs import define, field
 from typing import Callable, Union, List
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
@@ -7,9 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.parser.args import Template
-
-from attrs import define, field
-from core.utils.list import convert2lst
+from core.utils.message import convert2lst
 
 
 class ModuleMeta:

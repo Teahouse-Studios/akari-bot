@@ -16,7 +16,7 @@ API = "https://www.gstatic.com/android/keyboard/emojikitchen"
 
 class EmojimixGenerator:
     def __init__(self):
-        with open(data_path, "r", encoding="utf-8") as f:
+        with open(data_path, "rb") as f:
             data = json.loads(f.read())
         self.known_supported_emoji: List[str] = data["knownSupportedEmoji"]
         self.data: dict = data["data"]
@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish([Plain(f"{mixer.str2emoji(combo[0])}+{mixer.str2emoji(combo[1])}"), Image(result)])
 
 
-@emojimix.command("<emoji1> [<emoji2>] {[I18N:emojimix.help]}")
+@emojimix.command("<emoji1> [<emoji2>] {{I18N:emojimix.help}}")
 async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
     if "+" in emoji1:
         emojis = emoji1.split("+", 1)
@@ -138,7 +138,7 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         Logger.debug(str(combo))
         unsupported_emojis = mixer.check_supported(combo)
         if unsupported_emojis:
-            await msg.finish(I18NContext("emojimix.message.unsupported", emoji="[I18N:message.delimiter]".join(unsupported_emojis)))
+            await msg.finish(I18NContext("emojimix.message.unsupported", emoji="{I18N:message.delimiter}".join(unsupported_emojis)))
     else:
         emoji_code1 = "-".join(f"{ord(char):x}" for char in emoji1)
         if emoji_code1 not in mixer.known_supported_emoji:
@@ -156,7 +156,7 @@ def check_valid_emoji(emoji_str):
     return emoji.is_emoji(emoji_str)
 
 
-@emojimix.command("list [<emoji>] {[I18N:emojimix.help.list]}")
+@emojimix.command("list [<emoji>] {{I18N:emojimix.help.list}}")
 async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:

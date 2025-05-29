@@ -33,25 +33,25 @@ m = module(
     required_superuser=True,
 )
 @m.command(
-    ["enable <module>... {[I18N:core.help.module.enable]}",
-     "enable all {[I18N:core.help.module.enable_all]}",
-     "disable <module>... {[I18N:core.help.module.disable]}",
-     "disable all {[I18N:core.help.module.disable_all]}",
-     "list [--legacy] {[I18N:core.help.module.list]}",
+    ["enable <module>... {{I18N:core.help.module.enable}}",
+     "enable all {{I18N:core.help.module.enable_all}}",
+     "disable <module>... {{I18N:core.help.module.disable}}",
+     "disable all {{I18N:core.help.module.disable_all}}",
+     "list [--legacy] {{I18N:core.help.module.list}}",
      ],
-    options_desc={"--legacy": "[I18N:help.option.legacy]"},
+    options_desc={"--legacy": "{I18N:help.option.legacy}"},
     exclude_from=["QQ|Guild"],
 )
 @m.command(
-    ["enable [-g] <module> ... {[I18N:core.help.module.enable]}",
-     "enable all [-g] {[I18N:core.help.module.enable_all]}",
-     "disable [-g] <module> ... {[I18N:core.help.module.disable]}",
-     "disable all [-g] {[I18N:core.help.module.disable_all]}",
-     "list [--legacy] {[I18N:core.help.module.list]}",
+    ["enable [-g] <module> ... {{I18N:core.help.module.enable}}",
+     "enable all [-g] {{I18N:core.help.module.enable_all}}",
+     "disable [-g] <module> ... {{I18N:core.help.module.disable}}",
+     "disable all [-g] {{I18N:core.help.module.disable_all}}",
+     "list [--legacy] {{I18N:core.help.module.list}}",
      ],
     options_desc={
-        "-g": "[I18N:core.help.option.module.g]",
-        "--legacy": "[I18N:help.option.legacy]",
+        "-g": "{I18N:core.help.option.module.g}",
+        "--legacy": "{I18N:help.option.legacy}",
     },
     available_for=["QQ|Guild"],
 )
@@ -193,17 +193,17 @@ async def config_modules(msg: Bot.MessageSession):
             if base_module and reload_count >= 1:
                 return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
-                return Plain(f"[I18N:core.message.module.reload.success,module={module}]"
+                return Plain(f"{{I18N:core.message.module.reload.success,module={module}}}"
                              + ("\n" if len(extra_modules) != 0 else "")
                              + "\n".join(extra_modules)
                              + "\n"
-                             + f"[I18N:core.message.module.reload.with,reload_count={reload_count - 1}]")
+                             + f"{{I18N:core.message.module.reload.with,reload_count={reload_count - 1}}}")
             if reload_count == 1:
-                return Plain(f"[I18N:core.message.module.reload.success,module={module}]"
+                return Plain(f"{{I18N:core.message.module.reload.success,module={module}}}"
                              + ("\n" if len(extra_modules) != 0 else "")
                              + "\n".join(extra_modules)
                              + "\n"
-                             + "[I18N:core.message.module.reload.no_more]")
+                             + "{I18N:core.message.module.reload.no_more}")
             return I18NContext("core.message.module.reload.failed")
 
         for module_ in wait_config_list:

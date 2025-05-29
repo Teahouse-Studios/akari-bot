@@ -3,14 +3,10 @@ import importlib
 import os
 import re
 import sys
-import traceback
 
 import discord
 import orjson as json
 
-from bots.discord.client import client
-from bots.discord.info import *
-from bots.discord.message import MessageSession, FetchTarget
 from core.bot_init import init_async, load_prompt
 from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
@@ -22,6 +18,9 @@ from core.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.types import MsgInfo, Session
 from core.utils.info import Info
+from .client import client
+from .info import *
+from .message import MessageSession, FetchTarget
 
 PrivateAssets.set(os.path.join(assets_path, "private", "discord"))
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
@@ -56,7 +55,7 @@ def load_slashcommands():
                 "Binary mode detected, trying to load pre-built slash list..."
             )
             js = "assets/discord_slash_list.json"
-            with open(js, "r", encoding="utf-8") as f:
+            with open(js, "rb") as f:
                 dir_list = json.loads(f.read())
         except Exception:
             Logger.error("Failed to load pre-built slash list, using default list.")
@@ -81,11 +80,9 @@ def load_slashcommands():
                 Logger.info(f"Loading slash.{fun_file}...")
                 modules = "bots.discord.slash." + fun_file
                 importlib.import_module(modules)
-                Logger.success(f"Succeeded loaded bots.discord.slash.{fun_file}!")
+                Logger.success(f"Successfully loaded bots.discord.slash.{fun_file}!")
         except Exception:
-            tb = traceback.format_exc()
-            errmsg = f"Failed to load bots.discord.slash.{fun_file}: \n{tb}"
-            Logger.error(errmsg)
+            Logger.exception(f"Failed to load bots.discord.slash.{fun_file}: ")
 
 
 load_slashcommands()

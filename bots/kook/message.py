@@ -1,13 +1,10 @@
 import re
-import traceback
 from typing import List, Union
 
 import httpx
 import orjson as json
 from khl import MessageTypes, Message
 
-from bots.kook.client import bot
-from bots.kook.info import *
 from core.builtins import (
     Bot,
     Plain,
@@ -15,16 +12,18 @@ from core.builtins import (
     Voice,
     MessageSession as MessageSessionT,
     I18NContext,
-    Mention,
     MessageTaskManager,
     FetchTarget as FetchTargetT,
-    FinishedSession as FinishedSessionT,
+    FinishedSession as FinishedSessionT
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
+from .client import bot
+from .info import *
+
 enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"
 kook_token = Config("kook_token", cfg_type=str, secret=True, table_name="bot_kook")
@@ -61,7 +60,7 @@ class FinishedSession(FinishedSessionT):
                     else:
                         await channel_msg_delete(y["msg_id"])
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -96,6 +95,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 send_ = await self.session.message.reply(
                     x.text,
                     quote=(
@@ -192,10 +192,6 @@ class MessageSession(MessageSessionT):
             lst.append(Image(self.session.message.content))
         elif self.session.message.type == MessageTypes.AUDIO:
             lst.append(Voice(self.session.message.content))
-        elif self.session.message.type == MessageTypes.KMD:
-            match = re.match(r"\(met\)(.*?)\(met\)", self.session.message.content)
-            if match.group(1):
-                lst.append(Mention(f"{target_person_prefix}|{str(match.group(1))}"))
         return MessageChain(lst)
 
     async def delete(self):
@@ -207,7 +203,7 @@ class MessageSession(MessageSessionT):
                 await channel_msg_delete(self.session.message.id)
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -314,9 +310,9 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
@@ -326,7 +322,7 @@ class FetchTarget(FetchTargetT):
                                                    module_name=module_name,
                                                    module_type="schedule")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
@@ -340,9 +336,9 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
                             else:
-                                msgchain = MessageChain([Plain(message)])
+                                msgchain = MessageChain(Plain(message))
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
@@ -352,7 +348,7 @@ class FetchTarget(FetchTargetT):
                                                        module_name=module_name,
                                                        module_type="schedule")
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession

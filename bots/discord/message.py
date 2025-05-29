@@ -1,13 +1,10 @@
 import datetime
 import re
-import traceback
 from typing import List, Union
 
 import discord
 import filetype
 
-from bots.discord.client import client
-from bots.discord.info import *
 from core.builtins import (
     Bot,
     Plain,
@@ -17,7 +14,7 @@ from core.builtins import (
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import (
     PlainElement,
     ImageElement,
@@ -30,6 +27,8 @@ from core.config import Config
 from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download
+from .client import client
+from .info import *
 
 enable_analytics = Config("enable_analytics", False)
 
@@ -72,7 +71,7 @@ class FinishedSession(FinishedSessionT):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -106,6 +105,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 send_ = await self.session.target.send(
                     x.text,
                     reference=(
@@ -192,7 +192,7 @@ class MessageSession(MessageSessionT):
             ):
                 return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         return False
 
     async def to_message_chain(self):
@@ -216,7 +216,7 @@ class MessageSession(MessageSessionT):
             await self.session.message.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -248,7 +248,7 @@ class FetchedSession(Bot.FetchedSession):
         try:
             get_channel = await client.fetch_channel(self.session.target)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
         self.session.target = self.session.sender = self.parent.session.target = (
             self.parent.session.sender
@@ -302,9 +302,9 @@ class FetchTarget(FetchTargetT):
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
-                            msgchain = MessageChain([I18NContext(message, **kwargs)])
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
                         else:
-                            msgchain = MessageChain([Plain(message)])
+                            msgchain = MessageChain(Plain(message))
                     msgchain = MessageChain(msgchain)
                     await x.send_direct_message(msgchain)
                     if enable_analytics and module_name:
@@ -314,7 +314,7 @@ class FetchTarget(FetchTargetT):
                                                    module_name=module_name,
                                                    module_type="schedule")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
@@ -328,9 +328,9 @@ class FetchTarget(FetchTargetT):
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:
-                                msgchain = MessageChain([I18NContext(message, **kwargs)])
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
                             else:
-                                msgchain = MessageChain([Plain(message)])
+                                msgchain = MessageChain(Plain(message))
                         msgchain = MessageChain(msgchain)
                         await fetch.send_direct_message(msgchain)
                         if enable_analytics and module_name:
@@ -340,7 +340,7 @@ class FetchTarget(FetchTargetT):
                                                        module_name=module_name,
                                                        module_type="schedule")
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession

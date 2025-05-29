@@ -7,9 +7,9 @@ from core.builtins import Bot, MessageChain, I18NContext, Plain
 from core.config import Config
 from core.constants import Info
 from core.database.models import JobQueuesTable
+from core.ip import append_ip, fetch_ip_info
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
-from core.utils.ip import append_ip, fetch_ip_info
 from core.utils.web_render import check_web_render
 
 _queue_tasks = {}
@@ -111,20 +111,20 @@ async def check_job_queue():
         except QueueFinished:
             Logger.debug(f"Task {tsk.action}({tsk.task_id}) finished.")
         except Exception:
-            f = traceback.format_exc()
-            Logger.error(f)
+            tb = traceback.format_exc()
+            Logger.error(tb)
             try:
-                await tsk.return_val({"traceback": f}, status="failed")
+                await tsk.return_val({"traceback": tb}, status="failed")
             except QueueFinished:
                 pass
             try:
                 for target in report_targets:
                     if ft := await Bot.FetchTarget.fetch_target(target):
                         await ft.send_direct_message([I18NContext("error.message.report", module=tsk.action),
-                                                      Plain(f.strip(), disable_joke=True)],
+                                                      Plain(tb.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
 
 @action("validate_permission")

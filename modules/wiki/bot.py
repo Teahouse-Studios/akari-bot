@@ -1,9 +1,9 @@
 from core.builtins import Bot, I18NContext
 from core.component import module
 from core.logger import Logger
-from modules.wiki.database.models import WikiBotAccountList
-from .utils.bot import BotAccount, LoginFailed
+from .database.models import WikiBotAccountList
 from .utils.wikilib import WikiLib
+from .utils.bot import BotAccount, LoginFailed
 
 
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")

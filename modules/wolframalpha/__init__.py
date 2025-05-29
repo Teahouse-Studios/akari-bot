@@ -17,19 +17,19 @@ w = module(
     "wolframalpha",
     alias=["wolfram", "wa"],
     developers=["DoroWolf"],
-    desc="[I18N:wolframalpha.help.desc]",
+    desc="{I18N:wolframalpha.help.desc}",
     support_languages=["en_us"],
     doc=True,
 )
 
 
-@w.command("<query> {[I18N:wolframalpha.help]}")
+@w.command("<query> {{I18N:wolframalpha.help}}")
 async def _(msg: Bot.MessageSession, query: str):
     if await secret_check(query):
         await msg.finish(rickroll())
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise ConfigValueError("[I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
@@ -47,13 +47,13 @@ async def _(msg: Bot.MessageSession, query: str):
             raise e
 
 
-@w.command("ask <question> {[I18N:wolframalpha.help.ask]}")
+@w.command("ask <question> {{I18N:wolframalpha.help.ask}}")
 async def _(msg: Bot.MessageSession, question: str):
     if await secret_check(question):
         await msg.finish(rickroll())
     url_query = urllib.parse.quote(question)
     if not appid:
-        raise ConfigValueError("[I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)

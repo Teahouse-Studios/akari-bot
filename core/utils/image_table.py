@@ -1,6 +1,5 @@
 import base64
 import re
-import traceback
 from html import escape
 from io import BytesIO
 from typing import Any, List, Union
@@ -120,7 +119,7 @@ async def image_table_render(
                 Logger.error("Generation failed.")
                 return False
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False
     with open(pic, "rb") as read:
         load_img = json.loads(read.read())

@@ -63,7 +63,7 @@ async def load_prompt(bot) -> None:
     author_cache = os.path.join(PrivateAssets.path, ".cache_restart_author")
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
     if os.path.exists(author_cache):
-        with open(author_cache, "r", encoding="utf-8") as open_author_cache:
+        with open(author_cache, "rb") as open_author_cache:
             author = json.loads(open_author_cache.read())["ID"]
             with open(loader_cache, "r", encoding="utf-8") as open_loader_cache:
                 m = await bot.fetch_target(author)

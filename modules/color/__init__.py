@@ -16,14 +16,14 @@ c = module(
     "color",
     alias="colour",
     developers=["Dianliang233"],
-    desc="[I18N:color.help.desc]",
+    desc="{I18N:color.help.desc}",
     doc=True,
 )
 
 md_color_path = os.path.join(assets_path, "modules", "color", "material_colors.json")
 
 font = ImageFont.truetype(noto_sans_demilight_path, 40)
-with open(md_color_path, "r", encoding="utf-8") as f:
+with open(md_color_path, "rb") as f:
     material_colors = material_colors_names_to_hex = json.loads(f.read())
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 
@@ -39,7 +39,7 @@ css_hex_to_names = {
 
 
 @c.command()
-@c.command("[<color>] {[I18N:color.help]}")
+@c.command("[<color>] {{I18N:color.help}}")
 async def _(msg: Bot.MessageSession, color: str = None):
     if not color:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
@@ -96,20 +96,20 @@ async def _(msg: Bot.MessageSession, color: str = None):
     css_color_name = ""
     css_color_name_short = ""
     if css_color_name_raw[1]:
-        css_color_name = "[I18N:color.message.embed.css]"
+        css_color_name = "{I18N:color.message.embed.css}"
         if css_color_name_raw[0] != "black" and css_color_name_raw[0] != "white":
             css_color_name_short = f"{css_color_name_raw[0]}\n"
     elif css_color_name_raw[0]:
-        css_color_name = "[I18N:color.message.embed.css.approximate]"
+        css_color_name = "{I18N:color.message.embed.css.approximate}"
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ""
     material_color_name_short = ""
     if material_color_name_raw[1]:
-        material_color_name = "[I18N:color.message.embed.md]"
+        material_color_name = "{I18N:color.message.embed.md}"
         material_color_name_short = f"{material_color_name_raw[0]}\n"
     elif material_color_name_raw[0]:
-        material_color_name = "[I18N:color.message.embed.md.approximate]"
+        material_color_name = "{I18N:color.message.embed.md.approximate}"
 
     draw.multiline_text(
         (250, 250),

@@ -1,5 +1,4 @@
 import re
-import traceback
 
 from core.builtins import Bot
 from core.component import module
@@ -52,14 +51,14 @@ async def _(msg: Bot.MessageSession):
                 await msg.fake_forward_msg(nodelist)
                 legacy = False
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
     if legacy:
         try:
             res = await rc(msg, start_wiki, headers)
             await msg.finish(res)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
@@ -74,7 +73,7 @@ async def _(msg: Bot.MessageSession):
         res = await rc(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
@@ -118,14 +117,14 @@ async def _(msg: Bot.MessageSession):
                 await msg.fake_forward_msg(nodelist)
                 legacy = False
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
     if legacy:
         try:
             res = await ab(msg, start_wiki, headers)
             await msg.finish(res)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
@@ -140,7 +139,7 @@ async def _(msg: Bot.MessageSession):
         res = await ab(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
@@ -158,7 +157,7 @@ async def _(msg: Bot.MessageSession):
         res = await newbie(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 

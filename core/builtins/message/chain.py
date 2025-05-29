@@ -296,13 +296,13 @@ def match_kecode(text: str,
                                                            ImageElement,
                                                            VoiceElement,
                                                            I18NContextElement]]:
-    split_all = re.split(r"(\[Ke:.*?])", text)
+    split_all = re.split(r"(\[KE:.*?])", text)
     split_all = [x for x in split_all if x]
     elements = []
     params = []
 
     for e in split_all:
-        match = re.match(r"\[Ke:([^\s,\]]+)(?:,([^\]]+))?\]", e)
+        match = re.match(r"\[KE:([^\s,\]]+)(?:,([^\]]+))?\]", e)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e, disable_joke=disable_joke))
@@ -386,6 +386,18 @@ def match_kecode(text: str,
                         elements.append(MentionElement.assign(a))
 
     return elements
+
+
+def match_atcode(text: str, client: str, pattern: str) -> str:
+    def _replacer(match):
+        match_client = match.group(1)
+        user_id = match.group(2)
+        if match_client == client:
+            return pattern.replace("{uid}", user_id)
+        else:
+            return match.group(0)
+
+    return re.sub(r"<AT:([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
 __all__ = ["MessageChain"]
