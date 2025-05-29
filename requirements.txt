@@ -140,7 +140,7 @@ requests-toolbelt==1.0.0 ; python_version >= "3.12" and python_full_version < "4
 requests==2.32.3 ; python_version >= "3.12" and python_full_version < "4.0.0"
 rpds-py==0.24.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 secretstorage==3.3.3 ; python_version >= "3.12" and python_full_version < "4.0.0" and sys_platform == "linux"
-setuptools==79.0.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
+setuptools==80.9.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
 sgmllib3k==1.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 shellingham==1.5.4 ; python_version >= "3.12" and python_full_version < "4.0.0"
 simpleeval==1.0.3 ; python_version >= "3.12" and python_full_version < "4.0.0"
