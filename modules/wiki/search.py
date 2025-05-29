@@ -74,7 +74,7 @@ async def search_pages(
         msg_list.append(I18NContext("wiki.message.search.prompt"))
     else:
         await msg.finish(I18NContext("wiki.message.search.not_found"))
-    reply = await msg.wait_reply(msg_list)
+    reply = await msg.wait_reply(msg_list, delete=True)
     if isint(reply.as_display(text_only=True)):
         reply_number = max(0, int(reply.as_display(text_only=True)) - 1)
         await query_pages(reply, wait_msg_list[reply_number])
