@@ -297,19 +297,20 @@ def _extract_kecode_blocks(text):
     while i < len(text):
         if text.startswith("[KE:", i):
             start = i
-            depth = 0
-            i += 4  # skip "[KE:"
+            i += 4  # Skip "[KE:"
+            depth = 1
             while i < len(text):
-                c = text[i]
-                if c in "[{(<":
-                    depth += 1
-                elif c in "]})>":
-                    depth -= 1
-                elif c == "]" and depth <= 0:
+                if text.startswith("[KE:", i):
+                    break
+                elif text[i] == "]" and depth == 1:
                     i += 1
                     result.append(text[start:i])
                     break
-                i += 1
+                elif text[i] == "]":
+                    depth -= 1
+                    i += 1
+                else:
+                    i += 1
             else:
                 result.append(text[start:])
                 break
@@ -443,7 +444,7 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
         else:
             return match.group(0)
 
-    return re.sub(r"<AT:([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
+    return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
 __all__ = ["MessageChain"]

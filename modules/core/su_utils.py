@@ -562,20 +562,30 @@ echo = module("echo", required_superuser=True, base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     dis = await msg.wait_next_message()
     if dis:
-        dis = dis.as_display()
-        await msg.finish(dis, enable_parse_message=False)
+        try:
+            dis = dis.as_display()
+            await msg.finish(dis, enable_parse_message=False)
+        except Exception as e:
+            raise NoReportException(str(e))
 
 
 @echo.command("[<display_msg>]")
 async def _(msg: Bot.MessageSession, dis: Param("<display_msg>", str)):
-    await msg.finish(dis, enable_parse_message=False)
+    try:
+        await msg.finish(dis, enable_parse_message=False)
+    except Exception as e:
+        raise NoReportException(str(e))
+
 
 say = module("say", required_superuser=True, base=True, doc=True)
 
 
 @say.command("<display_msg>")
 async def _(msg: Bot.MessageSession, display_msg: str):
-    await msg.finish(display_msg, quote=False)
+    try:
+        await msg.finish(display_msg, quote=False)
+    except Exception as e:
+        raise NoReportException(str(e))
 
 
 rse = module("raise", required_superuser=True, base=True, doc=True)
@@ -585,7 +595,7 @@ rse = module("raise", required_superuser=True, base=True, doc=True)
 @rse.command("[<args>]")
 async def _(msg: Bot.MessageSession, args: str = None):
     e = args or "{I18N:core.message.raise}"
-    raise TestException(e)
+    raise TestException(str(e))
 
 
 _eval = module("eval", required_superuser=True, base=True, doc=True, load=Config("enable_eval", False))
@@ -596,8 +606,7 @@ async def _(msg: Bot.MessageSession, display_msg: str):
     try:
         await msg.finish(str(eval(display_msg, {"msg": msg})))  # skipcq
     except Exception as e:
-        Logger.error(str(e))
-        raise NoReportException(e)
+        raise NoReportException(str(e))
 
 
 post_ = module("post", required_superuser=True, base=True, doc=True, exclude_from=["Web", "TEST|Console"])
@@ -607,8 +616,8 @@ post_ = module("post", required_superuser=True, base=True, doc=True, exclude_fro
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
     if not target.startswith(f"{msg.target.client_name}|"):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.target.target_from))
-    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
     session = await Bot.FetchTarget.fetch_target(target)
+    post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
     if await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False):
         await Bot.FetchTarget.post_global_message(post_msg, [session])
         await msg.finish(I18NContext("core.message.post.success"))
