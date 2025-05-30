@@ -7,6 +7,7 @@ from datetime import datetime
 import orjson as json
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp
+from core.builtins.converter import converter
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
@@ -335,7 +336,7 @@ rst = module("restart", required_superuser=True, base=True, doc=True, exclude_fr
 def write_restart_cache(msg: Bot.MessageSession):
     update = os.path.join(PrivateAssets.path, ".cache_restart_author")
     with open(update, "wb") as write_version:
-        write_version.write(json.dumps({"From": msg.session_info.target_from, "ID": msg.session_info.target_id}))
+        write_version.write(json.dumps(converter.unstructure(msg.session_info)))
 
 
 restart_time = []

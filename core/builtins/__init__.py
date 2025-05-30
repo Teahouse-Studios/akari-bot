@@ -81,7 +81,6 @@ class Bot:
     async def post_global_message(
         message: str,
         session_list: Optional[List[FetchedSessionInfo]] = None,
-        i18n: bool = False,
         **kwargs: Dict[str, Any],
     ):
         await Bot.post_message(
@@ -208,13 +207,14 @@ class Bot:
                                   ):
         if isinstance(target, str):
             target = await cls.fetch_target(target)
+        if isinstance(target, (SessionInfo, FetchedSessionInfo)):
+            target = await FetchedMessageSession.from_session_info(target)
         if isinstance(target, (FetchedMessageSession, MessageSession)):
             ...
         if not target:
             raise ValueError("Target not found.")
         if isinstance(msg, list):
             msg = MessageChain.assign(msg)
-        Logger.info(target.__dict__)
         await target.send_direct_message(
             message_chain=msg,
             disable_secret_check=disable_secret_check,

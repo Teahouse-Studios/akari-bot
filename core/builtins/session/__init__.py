@@ -569,7 +569,7 @@ class FetchedMessageSession(MessageSession):
     主动获取的消息会话。
     """
     @classmethod
-    async def from_session_info(cls, session: FetchedSessionInfo):
+    async def from_session_info(cls, session: Union[FetchedSessionInfo, SessionInfo]):
         return cls(
             session_info=session
         )

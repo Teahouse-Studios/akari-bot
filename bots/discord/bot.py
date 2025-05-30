@@ -7,12 +7,11 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.info import *
-from core.builtins import PrivateAssets, SessionInfo, Bot
+from core.builtins import SessionInfo, Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants.path import assets_path
-from core.database import init_db
 from core.logger import Logger
 from core.terminate import cleanup_sessions
 from core.utils.info import Info

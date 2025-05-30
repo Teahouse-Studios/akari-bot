@@ -307,7 +307,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
             msg.parsed_msg = None
             for func in module.command_list.set:
                 if not func.help_doc:
-                    if not msg.sender_data.get("disable_typing", False):
+                    if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
                         await exports["Bot"].start_typing(msg.session_info)
                         await func.function(msg)  # 将msg传入下游模块
 

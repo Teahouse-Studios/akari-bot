@@ -221,8 +221,6 @@ class DiscordContextManager(ContextManager):
             except Exception as e:
                 Logger.error(f"Failed to delete message {msg_id} in session {session_info.session_id}: {e}")
 
-        raise NotImplementedError        # 请继承 class 后实现方法
-
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
         """
