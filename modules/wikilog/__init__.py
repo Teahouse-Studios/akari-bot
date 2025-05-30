@@ -1,4 +1,5 @@
 import re
+import traceback
 
 import orjson as json
 
@@ -7,11 +8,14 @@ from core.component import module
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.logger import Logger
+from core.utils.templist import TempList
 from modules.wiki.utils.wikilib import WikiLib
 from .utils import convert_data_to_text
 from ..wiki.utils.ab import convert_ab_to_detailed_format
 from ..wiki.utils.rc import convert_rc_to_detailed_format
 from .database.models import WikiLogTargetSetInfo
+
+from core.scheduler import IntervalTrigger
 
 wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")
 
@@ -379,34 +383,6 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(text)
 
 
-@wikilog.hook("matched")
-async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
-    matched = ctx.args["matched_logs"]
-    Logger.debug("Received matched_logs hook: " + str(matched))
-    for id_ in matched:
-        ft = await fetch.fetch_target(id_)
-        if ft:
-            for wiki in matched[id_]:
-                wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                if matched[id_][wiki]["AbuseLog"]:
-                    ab = await convert_ab_to_detailed_format(
-                        matched[id_][wiki]["AbuseLog"], ft.parent
-                    )
-                    for x in ab:
-                        await ft.send_direct_message(
-                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
-                        )
-                if matched[id_][wiki]["RecentChanges"]:
-                    rc = await convert_rc_to_detailed_format(
-                        matched[id_][wiki]["RecentChanges"], wiki_info, ft.parent
-                    )
-
-                    for x in rc:
-                        await ft.send_direct_message(
-                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
-                        )
-
-
 @wikilog.hook("keepalive")
 async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
@@ -436,4 +412,140 @@ async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
                         Logger.error(f"Keep alive failed: {e}")
                         await fetch_target.send_direct_message(
                             I18NContext("wikilog.message.keepalive.failed", link=wiki)
+                        )
+
+
+fetch_cache = {}
+
+
+@wikilog.schedule(IntervalTrigger(seconds=60))
+async def wiki_log():
+    fetches = await WikiLogTargetSetInfo.return_all_data()
+    matched_logs = {}
+    Logger.debug(fetches)
+    for id_ in fetches:
+        Logger.debug(f"Checking fetch {id_}...")
+        if id_ not in fetch_cache:
+            fetch_cache[id_] = {}
+        if id_ not in matched_logs:
+            matched_logs[id_] = {}
+        for wiki in fetches[id_]:
+            Logger.debug(f"Checking fetch {id_} {wiki}...")
+            if wiki not in fetch_cache[id_]:
+                fetch_cache[id_][wiki] = {
+                    "AbuseLog": TempList(300),
+                    "RecentChanges": TempList(300),
+                }
+            if wiki not in matched_logs[id_]:
+                matched_logs[id_][wiki] = {"AbuseLog": [], "RecentChanges": []}
+            use_bot = fetches[id_][wiki]["use_bot"]
+            query_wiki = WikiLib(wiki)
+            await query_wiki.fixup_wiki_info()
+            Logger.debug(query_wiki.wiki_info.api)
+            if fetches[id_][wiki]["AbuseLog"]["enable"]:
+                try:
+                    query = await query_wiki.get_json(
+                        action="query",
+                        list="abuselog",
+                        aflprop="user|title|action|result|filter|timestamp",
+                        _no_login=not use_bot,
+                        afllimit=30,
+                    )
+                    if "error" not in query:
+                        first_fetch = False
+                        if not fetch_cache[id_][wiki]["AbuseLog"]:
+                            first_fetch = True
+                        for y in query["query"]["abuselog"]:
+                            identify = convert_data_to_text(y)
+                            if identify not in fetch_cache[id_][wiki]["AbuseLog"]:
+                                fetch_cache[id_][wiki]["AbuseLog"].append(identify)
+                                if not first_fetch:
+                                    matched_f = False
+                                    if (
+                                        "*" in fetches[id_][wiki]["AbuseLog"]["filters"]
+                                        or not fetches[id_][wiki]["AbuseLog"]["filters"]
+                                    ):
+                                        matched_f = True
+                                    else:
+                                        for f in fetches[id_][wiki]["AbuseLog"][
+                                            "filters"
+                                        ]:
+                                            fc = re.compile(f)
+                                            if fc.search(identify):
+                                                matched_f = True
+                                                break
+                                    if matched_f:
+                                        matched_logs[id_][wiki]["AbuseLog"].append(y)
+                except Exception:
+                    Logger.error(traceback.format_exc())
+            if fetches[id_][wiki]["RecentChanges"]["enable"]:
+                try:
+                    query = await query_wiki.get_json(
+                        action="query",
+                        list="recentchanges",
+                        rcprop="title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids",
+                        _no_login=not use_bot,
+                        rclimit=100,
+                        rcshow="|".join(fetches[id_][wiki]["RecentChanges"]["rcshow"]),
+                    )
+                    if "error" not in query:
+                        first_fetch = False
+                        if not fetch_cache[id_][wiki]["RecentChanges"]:
+                            first_fetch = True
+                        for y in query["query"]["recentchanges"]:
+                            if "actionhidden" in y:
+                                continue
+                            identify = convert_data_to_text(y)
+                            if identify not in fetch_cache[id_][wiki]["RecentChanges"]:
+                                fetch_cache[id_][wiki]["RecentChanges"].append(identify)
+                                if not first_fetch:
+                                    matched_f = False
+                                    if (
+                                        "*"
+                                        in fetches[id_][wiki]["RecentChanges"][
+                                            "filters"
+                                        ]
+                                        or not fetches[id_][wiki]["RecentChanges"][
+                                            "filters"
+                                        ]
+                                    ):
+                                        matched_f = True
+                                    else:
+                                        for f in fetches[id_][wiki]["RecentChanges"][
+                                            "filters"
+                                        ]:
+                                            fc = re.compile(f)
+                                            if fc.search(identify):
+                                                matched_f = True
+                                                break
+                                    if matched_f:
+                                        matched_logs[id_][wiki]["RecentChanges"].append(
+                                            y
+                                        )
+                except Exception:
+                    Logger.error(traceback.format_exc())
+
+    matched = matched_logs
+
+    for id_ in matched:
+        ft = await Bot.fetch_target(id_)
+        if ft:
+            for wiki in matched[id_]:
+                wiki_info = (await WikiLib(wiki).check_wiki_available()).value
+                if matched[id_][wiki]["AbuseLog"]:
+                    ab = await convert_ab_to_detailed_format(
+                        matched[id_][wiki]["AbuseLog"], ft
+                    )
+                    for x in ab:
+                        await ft.send_direct_message(
+                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
+                        )
+                if matched[id_][wiki]["RecentChanges"]:
+                    rc = await convert_rc_to_detailed_format(
+                        matched[id_][wiki]["RecentChanges"], wiki_info, ft
+                    )
+
+                    for x in rc:
+                        await ft.send_direct_message(
+                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
                         )

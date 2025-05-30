@@ -12,7 +12,6 @@ from core.builtins.message.internal import Plain, I18NContext
 from core.background_tasks import init_background_task
 from core.config import CFGManager
 from core.constants import PrivateAssets, Secret
-from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
@@ -46,8 +45,6 @@ async def init_async(start_scheduler=True) -> None:
     await asyncio.gather(*gather_list)
     init_background_task()
     if start_scheduler:
-        if not Info.subprocess:
-            load_extra_schedulers()
         # await JobQueue.secret_append_ip()
         # await JobQueue.web_render_status()
         Scheduler.start()

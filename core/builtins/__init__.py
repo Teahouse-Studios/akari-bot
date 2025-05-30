@@ -123,7 +123,7 @@ class Bot:
     @classmethod
     async def post_message(cls,
                            module_name: str,
-                           message: Union[str, MessageChain],
+                           message: Union[str, MessageChain, dict[str, MessageChain]],
                            session_list: Optional[List[FetchedSessionInfo]] = None,
                            **kwargs: Dict[str, Any],
                            ):
@@ -131,16 +131,24 @@ class Bot:
         尝试向开启此模块的对象发送一条消息。
 
         :param module_name: 模块名称。
-        :param message: 消息文本。
+        :param message: 消息文本，若传入dict则会根据键名针对不同的客户端发送不同格式的消息（默认键名为default）。
         :param session_list: 用户列表。
         """
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
         if isinstance(message, str):
             message = MessageChain.assign(message)
-        for session in session_list:
+        for session_ in session_list:
             queue_server: "JobQueueServer" = exports["JobQueueServer"]
-            await queue_server.send_message_signal_to_client(session, message)
+
+            if isinstance(message, dict):
+                if session_.client_name in message:
+                    post_message = message[session_.client_name]
+                else:
+                    post_message = message['default']
+            else:
+                post_message = message
+            await queue_server.send_message_signal_to_client(session_, post_message)
 
     postMessage = post_message
     postGlobalMessage = post_global_message

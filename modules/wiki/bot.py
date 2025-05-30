@@ -1,10 +1,14 @@
+from datetime import datetime, timedelta
+
 from core.builtins import Bot, I18NContext
 from core.component import module
 from core.logger import Logger
+from core.queue.client import JobQueueClient
 from modules.wiki.database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
 from .utils.wikilib import WikiLib
 
+from core.scheduler import DateTrigger, IntervalTrigger
 
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
 
@@ -57,4 +61,12 @@ async def _(msg: Bot.MessageSession):
 @wb.hook("login_wiki_bots")
 async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     Logger.debug("Received login_wiki_bots hook: " + str(ctx.args["cookies"]))
-    BotAccount.cookies.update(ctx.args["cookies"])
+
+
+@wb.schedule(DateTrigger(datetime.now() + timedelta(seconds=30)))
+@wb.schedule(IntervalTrigger(minutes=30))
+async def login_bots():
+    Logger.info("Start login wiki bot account...")
+    await BotAccount.login()
+    await JobQueueClient.trigger_hook_all("wikilog.keepalive")
+    Logger.success("Successfully login wiki bot account.")

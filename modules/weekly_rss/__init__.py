@@ -4,6 +4,9 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.utils.image import msgchain2image
 
+from core.scheduler import CronTrigger
+from modules.weekly import get_weekly, get_teahouse_rss
+
 weekly_rss = module(
     "weekly_rss",
     desc="[I18N:weekly_rss.help.desc]",
@@ -12,24 +15,6 @@ weekly_rss = module(
     doc=True,
     rss=True,
 )
-
-
-@weekly_rss.hook()
-async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
-    weekly_cn = MessageChain.assign(ctx.args["weekly_cn"])
-    weekly_tw = MessageChain.assign(ctx.args["weekly_tw"])
-    if Bot.name == "QQ":
-        weekly_cn = [
-            Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))
-        ] + weekly_cn.as_sendable()
-        weekly_tw = [
-            Plain(Locale("zh_tw").t("weekly_rss.message", prefix=command_prefix[0]))
-        ] + weekly_tw.as_sendable()
-        weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
-        weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
-    post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
-    await fetch.post_message("weekly_rss", I18NContext(post_msg), i18n=True)
-    Logger.success("Weekly checked.")
 
 
 teahouse_weekly_rss = module(
@@ -42,30 +27,62 @@ teahouse_weekly_rss = module(
 )
 
 
-@teahouse_weekly_rss.hook()
-async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
-    Logger.info("Checking teahouse weekly...")
-
-    weekly = ctx.args["weekly"]
-    weekly_cn = [
-        Plain(
-            Locale("zh_cn").t(
-                "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
-            )
-            + weekly
-        )
-    ]
-    weekly_tw = [
-        Plain(
-            Locale("zh_tw").t(
-                "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
-            )
-            + weekly
-        )
-    ]
-    if Bot.name == "QQ":
-        weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
-        weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
-    post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
-    await fetch.post_message("teahouse_weekly_rss", I18NContext(post_msg), i18n=True)
-    Logger.success("Teahouse Weekly checked.")
+#
+# @weekly_rss.schedule(CronTrigger.from_crontab("0 9 * * MON"))
+# async def weekly_rss():
+#     Logger.info("Checking MCWZH weekly...")
+#
+#     weekly_cn = MessageChain.assign(await get_weekly())
+#     weekly_tw = MessageChain.assign(await get_weekly(zh_tw=True))
+#     w_cn_qq = await get_weekly(True)
+#     w_tw_qq = await get_weekly(True, zh_tw=True)
+#     w_cn_qq = [
+#         Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))
+#     ] + w_cn_qq.as_sendable()
+#     w_tw_qq = [
+#         Plain(Locale("zh_tw").t("weekly_rss.message", prefix=command_prefix[0]))
+#     ] + w_tw_qq.as_sendable()
+#     weekly_cn_qq = MessageChain.assign([Image(x) for x in await msgchain2image(w_cn_qq)])
+#     weekly_tw_qq = MessageChain.assign([Image(x) for x in await msgchain2image(w_tw_qq)])
+#     post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
+#     post_msg_qq = {
+#         "zh_cn": weekly_cn_qq,
+#         "zh_tw": weekly_tw_qq,
+#         "fallback": weekly_cn_qq,
+#     }
+#     await Bot.post_message("weekly_rss", {'QQ': I18NContext(post_msg_qq), 'default': I18NContext(post_msg)})
+#     Logger.success("Weekly checked.")
+#
+#
+# @teahouse_weekly_rss.schedule(trigger=CronTrigger.from_crontab("30 9 * * MON"))
+# async def teahouse_weekly_rss():
+#     Logger.info("Checking teahouse weekly...")
+#
+#     weekly = await get_teahouse_rss()
+#     Logger.info("Checking teahouse weekly...")
+#
+#     weekly_cn = [
+#         Plain(
+#             Locale("zh_cn").t(
+#                 "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
+#             )
+#             + weekly
+#         )
+#     ]
+#     weekly_tw = [
+#         Plain(
+#             Locale("zh_tw").t(
+#                 "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
+#             )
+#             + weekly
+#         )
+#     ]
+#     weekly_cn = MessageChain.assign(weekly_cn)
+#     weekly_tw = MessageChain.assign(weekly_tw)
+#     weekly_cn_qq = MessageChain.assign([Image(x) for x in await msgchain2image(weekly_cn)])
+#     weekly_tw_qq = MessageChain.assign([Image(x) for x in await msgchain2image(weekly_tw)])
+#     post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
+#     post_msg_qq = {"zh_cn": weekly_cn_qq, "zh_tw": weekly_tw_qq, "fallback": weekly_cn_qq}
+#     await Bot.post_message("teahouse_weekly_rss",
+#                            {'QQ': post_msg_qq, 'default': post_msg})
+#     Logger.success("Teahouse Weekly checked.")

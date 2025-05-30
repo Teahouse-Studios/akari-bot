@@ -1,5 +1,10 @@
+import traceback
+
+from apscheduler.triggers.cron import CronTrigger
+
 from core.builtins import Image as BImage
 from core.component import module
+from core.logger import Logger
 from core.utils.text import isint
 from modules.maimai.database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
@@ -783,3 +788,13 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.session_info.locale.t("message.success"))
     else:
         await msg.finish(msg.session_info.locale.t("message.failed"))
+
+
+@mai.schedule(CronTrigger.from_crontab("0 0 * * *"))
+async def update_maimai_alias():
+    Logger.info("Updating Maimai alias...")
+    try:
+        await update_alias()
+    except Exception:
+        if Config("debug", False):
+            Logger.error(traceback.format_exc())
