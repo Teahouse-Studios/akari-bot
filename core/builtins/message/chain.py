@@ -302,11 +302,11 @@ def _extract_kecode_blocks(text):
             while i < len(text):
                 if text.startswith("[KE:", i):
                     break
-                elif text[i] == "]" and depth == 1:
+                if text[i] == "]" and depth == 1:
                     i += 1
                     result.append(text[start:i])
                     break
-                elif text[i] == "]":
+                if text[i] == "]":
                     depth -= 1
                     i += 1
                 else:
