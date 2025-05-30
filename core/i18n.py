@@ -278,4 +278,6 @@ class Locale:
         return num_str if precision > 0 else str(int(number))
 
 
+load_locale_file()
+
 __all__ = ["Locale", "load_locale_file", "get_available_locales"]
