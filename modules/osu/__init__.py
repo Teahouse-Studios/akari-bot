@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 @osu.command("bind <username> {{I18N:osu.help.bind}}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
-    getcode = await get_profile_name(msg, code, api_key)
+    getcode = await get_profile_name(code, api_key)
     if getcode:
         await OsuBindInfo.set_bind_info(sender_id=msg.target.sender_id, username=getcode[0])
         if getcode[1]:

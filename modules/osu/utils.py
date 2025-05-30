@@ -6,7 +6,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def get_profile_name(msg: Bot.MessageSession, uid, api_key):
+async def get_profile_name(uid, api_key):
     if not api_key:
         raise ConfigValueError("{I18N:error.config.secret.not_found}")
     try:

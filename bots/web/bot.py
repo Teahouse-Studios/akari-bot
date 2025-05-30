@@ -515,19 +515,19 @@ async def edit_target_info(request: Request, target_id: str):
         target_data = body.get("target_data")
 
         if blocked is not None and not isinstance(blocked, bool):
-            raise HTTPException(status_code=400, detail="'blocked' must be bool")
+            raise HTTPException(status_code=400, detail="\"blocked\" must be bool")
         if muted is not None and not isinstance(muted, bool):
-            raise HTTPException(status_code=400, detail="'muted' must be bool")
+            raise HTTPException(status_code=400, detail="\"muted\" must be bool")
         if locale is not None and not isinstance(locale, str):
-            raise HTTPException(status_code=400, detail="'locale' must be str")
+            raise HTTPException(status_code=400, detail="\"locale\" must be str")
         if modules is not None and not isinstance(modules, list):
-            raise HTTPException(status_code=400, detail="'modules' must be list")
+            raise HTTPException(status_code=400, detail="\"modules\" must be list")
         if custom_admins is not None and not isinstance(custom_admins, list):
-            raise HTTPException(status_code=400, detail="'custom_admins' must be list")
+            raise HTTPException(status_code=400, detail="\"custom_admins\" must be list")
         if banned_users is not None and not isinstance(banned_users, list):
-            raise HTTPException(status_code=400, detail="'banned_users' must be list")
+            raise HTTPException(status_code=400, detail="\"banned_users\" must be list")
         if target_data is not None and not isinstance(target_data, dict):
-            raise HTTPException(status_code=400, detail="'target_data' must be dict")
+            raise HTTPException(status_code=400, detail="\"target_data\" must be dict")
 
         if blocked is not None:
             target_info.blocked = blocked
@@ -644,17 +644,17 @@ async def edit_sender_info(request: Request, sender_id: str):
         sender_data = body.get("sender_data")
 
         if superuser is not None and not isinstance(superuser, bool):
-            raise HTTPException(status_code=400, detail="'superuser' must be bool")
+            raise HTTPException(status_code=400, detail="\"superuser\" must be bool")
         if trusted is not None and not isinstance(trusted, bool):
-            raise HTTPException(status_code=400, detail="'trusted' must be bool")
+            raise HTTPException(status_code=400, detail="\"trusted\" must be bool")
         if blocked is not None and not isinstance(blocked, bool):
-            raise HTTPException(status_code=400, detail="'blocked' must be bool")
+            raise HTTPException(status_code=400, detail="\"blocked\" must be bool")
         if warns is not None and not isinstance(warns, int):
-            raise HTTPException(status_code=400, detail="'warns' must be int")
+            raise HTTPException(status_code=400, detail="\"warns\" must be int")
         if petal is not None and not isinstance(petal, int):
-            raise HTTPException(status_code=400, detail="'petal' must be int")
+            raise HTTPException(status_code=400, detail="\"petal\" must be int")
         if sender_data is not None and not isinstance(sender_data, dict):
-            raise HTTPException(status_code=400, detail="'sender_data' must be dict")
+            raise HTTPException(status_code=400, detail="\"sender_data\" must be dict")
 
         if superuser is not None:
             sender_info.superuser = superuser
@@ -701,7 +701,7 @@ async def get_modules_list(request: Request):
     try:
         verify_jwt(request)
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
         modules_list = []
         for module in modules.values():
@@ -720,11 +720,11 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
     try:
         verify_jwt(request)
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
         for module in modules.values():
-            if 'desc' in module and module.get('desc'):
-                module['desc'] = Locale(locale).t_str(module['desc'])
+            if "desc" in module and module.get("desc"):
+                module["desc"] = Locale(locale).t_str(module["desc"])
         return {"message": "Success", "modules": modules}
     except HTTPException as e:
         raise e
@@ -739,10 +739,12 @@ async def get_module_info(request: Request, module: str, locale: str = Query(def
     try:
         verify_jwt(request)
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
         for m in modules.values():
             if module == m["bind_prefix"]:
+                if "desc" in m and m.get("desc"):
+                    m["desc"] = Locale(locale).t_str(m["desc"])
                 return {"message": "Success", "modules": m}
         raise HTTPException(status_code=404, detail="Not found")
     except HTTPException as e:
@@ -755,7 +757,7 @@ async def get_module_info(request: Request, module: str, locale: str = Query(def
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
-    Temp.data['web_chat_websocket'] = websocket
+    Temp.data["web_chat_websocket"] = websocket
     try:
         while True:
             rmessage = await websocket.receive_text()
@@ -781,8 +783,8 @@ async def websocket_chat(websocket: WebSocket):
         Logger.error(traceback.format_exc())
         await websocket.close()
     finally:
-        if 'web_chat_websocket' in Temp.data:
-            del Temp.data['web_chat_websocket']
+        if "web_chat_websocket" in Temp.data:
+            del Temp.data["web_chat_websocket"]
 
 
 @app.websocket("/ws/logs")

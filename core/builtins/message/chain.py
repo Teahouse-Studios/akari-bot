@@ -441,8 +441,7 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
         user_id = match.group(2)
         if match_client == client:
             return pattern.replace("{uid}", user_id)
-        else:
-            return match.group(0)
+        return match.group(0)
 
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 

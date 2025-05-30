@@ -15,10 +15,10 @@ coin = module("coin", developers=["Light-Beacon"], desc="{I18N:coin.help.desc}",
 @coin.command()
 @coin.command("[<amount>] {{I18N:coin.help}}")
 async def _(msg: Bot.MessageSession, amount: int = 1):
-    await msg.finish(await flip_coins(amount, msg))
+    await msg.finish(await flip_coins(amount))
 
 
-async def flip_coins(count: int, msg: Bot.MessageSession):
+async def flip_coins(count: int):
     if not all(
         [
             STAND_WEIGHT >= 0,

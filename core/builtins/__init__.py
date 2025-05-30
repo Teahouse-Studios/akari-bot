@@ -112,11 +112,6 @@ class FetchedSession(FetchedSession):
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
 
-#        if sender_id:
-#            self.parent.target.sender_id = exports.get("BotDBUtil").SenderInfo(
-#                f"{sender_from}|{sender_id}"
-#            )
-
 
 Bot.FetchedSession = FetchedSession
 
@@ -127,7 +122,7 @@ class FetchTarget(FetchTarget):
         message: str,
         user_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: Dict[str, Any]
     ):
         await Bot.FetchTarget.post_message(
             "*", message=message, user_list=user_list, i18n=i18n, **kwargs

@@ -11,7 +11,7 @@ api = "https://search.mcmod.cn/s?key="
 api_details = "https://search.mcmod.cn/s?filter=3&key="
 
 
-async def mcmod(msg, keyword: str, detail: bool = False):
+async def mcmod(keyword: str, detail: bool = False):
     endpoint = api_details if detail else api
     search_url = endpoint + quote(keyword)
     html = await get_url(

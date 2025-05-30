@@ -295,7 +295,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("ban <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f'{sender_from}|') for sender_from in sender_list):
+    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:

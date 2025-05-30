@@ -748,7 +748,7 @@ class FetchTarget:
         message: str,
         user_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
-        **kwargs,
+        **kwargs: Dict[str, Any]
     ):
         """
         尝试向客户端内的任意对象发送一条消息。

@@ -14,9 +14,9 @@ mcmod = module(
 
 @mcmod.command("<mod_name> {{I18N:mcmod.help.mod_name}}")
 async def _(msg: Bot.MessageSession, mod_name: str):
-    await msg.finish(await m(msg, mod_name))
+    await msg.finish(await m(mod_name))
 
 
 @mcmod.command("details <content> {{I18N:mcmod.help.details}}")
 async def _(msg: Bot.MessageSession, content: str):
-    await msg.finish(await m(msg, content, detail=True))
+    await msg.finish(await m(content, detail=True))
