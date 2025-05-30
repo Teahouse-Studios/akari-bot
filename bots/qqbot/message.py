@@ -1,4 +1,5 @@
 import re
+import html
 from typing import List, Union
 
 import filetype
@@ -85,6 +86,7 @@ class MessageSession(MessageSessionT):
 
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = html.unescape(x.text)
                 x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 plains.append(x)
             elif isinstance(x, ImageElement):
@@ -321,9 +323,9 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         msg = self.session.message.content
         if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
-            msg = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", msg)
+            msg = re.sub(r"<@(\d+)>", rf"{sender_tiny_prefix}|\1", msg)
         else:
-            msg = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", msg)
+            msg = re.sub(r"<@(\d+)>", rf"{sender_prefix}|\1", msg)
         return msg
 
     async def delete(self):

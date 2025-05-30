@@ -180,7 +180,7 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         if self.session.message.content:
-            m = re.sub(r"\[.*]\((.*)\)", "\\1", self.session.message.content)
+            m = re.sub(r"\[.*\]\((.*)\)", r"\1", self.session.message.content)
             return m
         return ""
 

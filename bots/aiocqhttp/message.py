@@ -312,9 +312,9 @@ class MessageSession(MessageSessionT):
             m = html.unescape(self.session.message.message)
             if not text_only:
                 m = CQCodeHandler.filter_cq(m)
-                m = re.sub(r"\[CQ:at,qq=(.*?)]", rf"{sender_prefix}|\1", m)
+                m = re.sub(r"\[CQ:at,qq=(\d+)]", rf"{sender_prefix}|\1", m)
                 m = re.sub(r"\[CQ:json,data=(.*?)]", r"\1", m).replace("\\/", "/")
-            m = re.sub(r"\[CQ:text,qq=(.*?)]", r"\1", m)
+            m = re.sub(r"\[CQ:text,text=(.*?)]", r"\1", m)
             m = CQCodeHandler.pattern.sub("", m)
             return m.strip()
         m = []

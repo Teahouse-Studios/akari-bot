@@ -9,7 +9,7 @@ from typing import Optional
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins import command_prefix, ExecutionLockList, MessageTaskManager, Bot, \
-    base_superuser_list, Temp, Plain, I18NContext
+    base_superuser_list, Temp, MessageChain, Plain, I18NContext
 from core.builtins.message.chain import match_kecode
 from core.config import Config
 from core.constants.default import bug_report_url_default
@@ -323,12 +323,10 @@ async def _execute_module(msg: Bot.MessageSession, require_enable_modules, modul
                                        module_type="normal")
 
     except AbuseWarning as e:
-        await _process_tos_abuse_warning(msg, str(e))
+        await _process_tos_abuse_warning(msg, e)
 
     except NoReportException as e:
-        Logger.exception()
-        err_msg = msg.locale.t_str(str(e))
-        await msg.send_message(I18NContext("error.message.prompt.noreport", detail=err_msg))
+        await _process_noreport_exception(msg, e)
 
     except Exception as e:
         await _process_exception(msg, e)
@@ -445,7 +443,7 @@ async def _execute_regex(msg: Bot.MessageSession, modules, identify_str):
                         await _process_noreport_exception(msg, e)
 
                     except AbuseWarning as e:
-                        await _process_tos_abuse_warning(msg, str(e))
+                        await _process_tos_abuse_warning(msg, e)
 
                     except Exception as e:
                         await _process_exception(msg, e)
@@ -620,14 +618,16 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
         return
 
 
-async def _process_tos_abuse_warning(msg: Bot.MessageSession, e):
+async def _process_tos_abuse_warning(msg: Bot.MessageSession, e: AbuseWarning):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {"count": 1,
                                                   "ts": datetime.now().timestamp()}
     else:
-        reason = msg.locale.t_str(str(e))
-        await msg.send_message(I18NContext("error.message.prompt.noreport", detail=reason))
+        errmsgchain = MessageChain(I18NContext("error.message.prompt"))
+        errmsgchain.append(Plain(msg.locale.t_str(str(e))))
+        errmsgchain.append(I18NContext("error.message.prompt.noreport"))
+        await msg.send_message(errmsgchain)
 
 
 async def _process_send_message_failed(msg: Bot.MessageSession):
@@ -658,7 +658,7 @@ async def _process_send_message_failed(msg: Bot.MessageSession):
 
 async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportException):
     Logger.exception()
-    errmsgchain = [I18NContext("error.message.prompt")]
+    errmsgchain = MessageChain(I18NContext("error.message.prompt"))
     err_msg = msg.locale.t_str(str(e))
     errmsgchain += match_kecode(err_msg)
     errmsgchain.append(I18NContext("error.message.prompt.noreport"))
@@ -668,7 +668,7 @@ async def _process_noreport_exception(msg: Bot.MessageSession, e: NoReportExcept
 async def _process_exception(msg: Bot.MessageSession, e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
-    errmsgchain = [I18NContext("error.message.prompt")]
+    errmsgchain = MessageChain(I18NContext("error.message.prompt"))
     err_msg = msg.locale.t_str(str(e))
     errmsgchain += match_kecode(err_msg)
     if "timeout" in err_msg.lower().replace(" ", ""):
