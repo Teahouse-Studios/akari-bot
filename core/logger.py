@@ -11,8 +11,6 @@ from loguru import logger
 from core.config import Config
 from core.constants.path import logs_path
 
-debug = Config("debug", False)
-
 os.makedirs(logs_path, exist_ok=True)
 
 bot_name = re.split(r"[/\\]", sys.path[0])[-1]
@@ -54,15 +52,12 @@ class LoggingLogger:
 
         self.rename(name)
 
-        if debug:
-            self.log.warning("Debug mode is enabled.")
-
     def rename(self, name):
         self.log.remove()
         self.log.add(
             sys.stderr,
             format=basic_logger_format(name),
-            level="TRACE" if debug else "INFO",
+            level="TRACE" if Config("debug", False) else "INFO",
             colorize=True,
         )
 

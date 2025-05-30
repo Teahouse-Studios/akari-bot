@@ -50,6 +50,8 @@ def init_bot():
     from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)
+    if Config("debug", False):
+        Logger.debug("Debug mode is enabled.")
 
     async def update_db():
         await Tortoise.init(
@@ -89,6 +91,12 @@ def init_bot():
             )
 
     run_async(update_db())
+
+
+def clear_core_cache():
+    for pymod in list(sys.modules):
+        if pymod.startswith("core."):
+            del sys.modules[pymod]
 
 
 def terminate_process(process: multiprocessing.Process, timeout=5):
@@ -235,13 +243,14 @@ if __name__ == "__main__":
         while True:
             try:
                 multiprocess_run_until_complete(init_bot)
-                run_bot()  # Process will block here so
+                run_bot()  # Process will block here
                 break
             except RestartBot:
                 for ps in processes:
                     loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
                     terminate_process(ps)
                 processes.clear()
+                clear_core_cache()
                 continue
             except Exception:
                 loggerFallback.critical("An error occurred, please check the output.")
