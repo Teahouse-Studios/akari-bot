@@ -26,7 +26,7 @@
     "core.help.option.module.g": "對頻道進行全域操作。",
     "core.help.petal": "取得花瓣數量。",
     "core.help.petal.give": "將花瓣給予他人。",
-    "core.help.petal.sign": "每日簽到得到花瓣。",
+    "core.help.petal.sign": "每日簽到取得花瓣。",
     "core.help.ping": "取得機器人狀態。",
     "core.help.prefix.add": "新增自訂指令前綴。",
     "core.help.prefix.list": "檢視自訂指令前綴列表。",
