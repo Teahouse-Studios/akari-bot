@@ -93,9 +93,9 @@ def init_bot():
     run_async(update_db())
 
 
-def clear_core_cache():
+def clear_import_cache():
     for pymod in list(sys.modules):
-        if pymod.startswith("core."):
+        if pymod.startswith("bots.") or pymod.startswith("core."):
             del sys.modules[pymod]
 
 
@@ -250,7 +250,7 @@ if __name__ == "__main__":
                     loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
                     terminate_process(ps)
                 processes.clear()
-                clear_core_cache()
+                clear_import_cache()
                 continue
             except Exception:
                 loggerFallback.critical("An error occurred, please check the output.")
