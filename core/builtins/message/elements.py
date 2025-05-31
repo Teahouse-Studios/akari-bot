@@ -21,7 +21,7 @@ from core.utils.cache import random_cache_path
 from copy import deepcopy
 
 if TYPE_CHECKING:
-    from core.builtins.session import SessionInfo
+    from core.builtins.session.info import SessionInfo
     from core.builtins.message.chain import MessageChain
 
 

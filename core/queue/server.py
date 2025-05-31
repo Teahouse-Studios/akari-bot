@@ -4,7 +4,7 @@ from typing import Union
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain
-from ..builtins.session import SessionInfo
+from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from core.builtins.parser.message import parser
 from ..exports import exports, add_export

@@ -7,7 +7,8 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.info import *
-from core.builtins import SessionInfo, Bot
+from core.builtins import Bot
+from core.builtins.session.info import SessionInfo
 from core.builtins.message.chain import MessageChain
 from core.builtins.utils import command_prefix
 from core.config import Config

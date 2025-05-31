@@ -25,7 +25,7 @@ from core.constants import Secret
 from core.exports import add_export
 
 if TYPE_CHECKING:
-    from core.builtins.session import SessionInfo
+    from core.builtins.session.info import SessionInfo
 
 from core.builtins.types import MessageElement
 from core.builtins.converter import converter
@@ -303,6 +303,44 @@ class MessageChain:
         return self
 
 
+@define
+class I18NMessageChain:
+    """
+    多语言消息链，适用于不同语言环境下的消息处理。优先级为 PlatformMessageChain > I18NMessageChain > MessageChain，使用时须保证嵌套关系正确。
+    """
+
+    values: dict[str, MessageChain]
+
+    @classmethod
+    def assign(cls, values: dict[str, MessageChain]) -> I18NMessageChain:
+        """
+        :param values: 多语言消息链元素，键为语言代码，值为消息链。必须包含 'default' 键用于回滚处理。
+        """
+        if not isinstance(values, dict):
+            raise TypeError("I18NMessageChain values must be a dictionary.")
+        if 'default' not in values:
+            raise ValueError("I18NMessageChain values must have 'default' key.")
+        return cls(values=deepcopy(values))
+
+
+@define
+class PlatformMessageChain:
+    """
+    平台消息链，适用于不同平台的消息处理。优先级为 PlatformMessageChain > I18NMessageChain > MessageChain，使用时须保证嵌套关系正确。
+    """
+
+    values: dict[str, Union[MessageChain, I18NMessageChain]]
+
+    @classmethod
+    def assign(cls, values: dict[str, Union[MessageChain, I18NMessageChain]]) -> PlatformMessageChain:
+        """
+        :param values: 平台消息链元素，键为平台名称，值为消息链。必须包含 'default' 键用于回滚处理。
+        """
+        if not isinstance(values, dict):
+            raise TypeError("PlatformMessageChain values must be a dictionary.")
+        return cls(values=deepcopy(values))
+
+
 def match_kecode(text: str,
                  disable_joke: bool = False) -> List[Union[PlainElement,
                                                            ImageElement,
@@ -401,6 +439,16 @@ def match_kecode(text: str,
 
 
 add_export(MessageChain)
+add_export(I18NMessageChain)
 
 
-__all__ = ["MessageChain"]
+converter.register_unstructure_hook(Union[MessageChain, I18NMessageChain],
+                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
+
+converter.register_structure_hook(
+    Union[MessageChain, I18NMessageChain],
+    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain)
+)
+
+
+__all__ = ["MessageChain", "I18NMessageChain", "PlatformMessageChain"]

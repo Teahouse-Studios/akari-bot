@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain
-from ..builtins.session import SessionInfo
+from core.builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
 from ..logger import Logger

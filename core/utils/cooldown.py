@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 
-from core.builtins import MessageSession
+from core.builtins.session.internal import MessageSession
 
 _cd_lst = defaultdict(lambda: defaultdict(dict))
 

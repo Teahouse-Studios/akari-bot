@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from core.exports import add_export
 
 if TYPE_CHECKING:
-    from core.builtins.session import MessageSession
+    from core.builtins.session.internal import MessageSession
 
 
 class ExecutionLockList:

@@ -11,7 +11,7 @@ from bots.discord.client import client
 from bots.discord.info import client_name, target_channel_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
-from core.builtins.session import SessionInfo, FinishedSession
+from core.builtins.session.info import SessionInfo
 from bots.discord.features import Features
 from core.builtins.session.context import ContextManager
 from core.logger import Logger

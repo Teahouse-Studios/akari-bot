@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from core.builtins.session import SessionTaskManager
+from core.builtins.session.tasks import SessionTaskManager
 from core.constants.path import cache_path
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list

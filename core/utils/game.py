@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
-from core.builtins import MessageSession
+from core.builtins.session.internal import MessageSession
 from core.logger import Logger
 
 _ps_lst = defaultdict(lambda: defaultdict(dict))

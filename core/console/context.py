@@ -3,7 +3,7 @@ from typing import Any, Union
 from core.builtins import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
-from core.builtins.session import SessionInfo
+from core.builtins.session.info import SessionInfo
 from core.builtins.session.context import ContextManager
 from core.logger import Logger
 from .features import Features

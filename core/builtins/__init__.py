@@ -10,14 +10,14 @@ from core.types.message import ModuleHookContext
 from .message import *
 from .message.chain import *
 from .message.internal import *
-from .session import SessionInfo, FetchedSessionInfo
+from .session.info import SessionInfo, FetchedSessionInfo
 from .temp import *
 from .utils import *
 from ..constants import base_superuser_default
 from ..database.models import TargetInfo
 from ..logger import Logger
 
-from core.builtins.session import MessageSession, FetchedMessageSession
+from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.context import ContextManager
 from core.builtins.session.lock import ExecutionLockList
 

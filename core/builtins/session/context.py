@@ -2,7 +2,7 @@ import asyncio
 from typing import Any, Union, Optional, List
 
 from core.builtins.message.chain import MessageChain
-from core.builtins.session import SessionInfo
+from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
 from core.logger import Logger
 

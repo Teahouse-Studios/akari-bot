@@ -6,7 +6,7 @@ import orjson as json
 
 from core.builtins import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.session import SessionInfo
+from core.builtins.session.info import SessionInfo
 from core.builtins.converter import converter
 from core.builtins.message.internal import Plain, I18NContext
 from core.background_tasks import init_background_task

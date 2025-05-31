@@ -7,7 +7,7 @@ from core.exports import add_export
 from core.logger import Logger
 
 if TYPE_CHECKING:
-    from core.builtins.session import MessageSession
+    from core.builtins.session.internal import MessageSession
 
 
 class SessionTaskManager:

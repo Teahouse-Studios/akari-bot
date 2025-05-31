@@ -10,10 +10,10 @@ from bot import init_bot
 from core.builtins import PrivateAssets, Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
-from core.builtins.session import SessionInfo
+from core.builtins.session.info import SessionInfo
 from core.console.info import *
 from core.constants.path import assets_path
-from core.server import main
+from core.server.run import main
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 from core.terminate import cleanup_sessions

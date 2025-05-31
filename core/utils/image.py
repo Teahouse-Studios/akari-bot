@@ -9,7 +9,9 @@ from PIL import Image as PILImage
 from aiofile import async_open
 from jinja2 import FileSystemLoader, Environment
 
-from core.builtins import Image, MessageChain, MessageSession
+from core.builtins.message.internal import Image
+from core.builtins.message.chain import MessageChain
+from core.builtins.session.internal import MessageSession
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
 from core.constants.info import Info
 from core.constants.path import templates_path
