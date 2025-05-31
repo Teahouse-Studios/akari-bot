@@ -130,6 +130,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         emojis = emoji1.split("+", 1)
         emoji1 = emojis[0]
         emoji2 = emojis[1] if len(emojis) > 1 else None
+        if emoji1 and not emoji2:
+            emoji1, emoji2 = emoji2, emoji1
     elif emoji1 and not emoji2:
         emojis = [item['emoji'] for item in emoji.emoji_list(emoji1)]
         emoji1 = emojis[0]
