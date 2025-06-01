@@ -3,7 +3,8 @@ from typing import Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.constants.path import noto_sans_demilight_path
 from .maimaidx_apidata import get_plate
 from .maimaidx_mapping import *

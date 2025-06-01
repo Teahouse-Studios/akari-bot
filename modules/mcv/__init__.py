@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.component import module
 from .mcv import mcjv, mcbv, mcdv, mcev, mclgv
 

@@ -8,7 +8,8 @@ import orjson as json
 import webcolors
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot, Embed, EmbedField, Image as BImage, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Embed, EmbedField, Image as BImage, I18NContext
 from core.component import module
 from core.constants.path import assets_path, noto_sans_demilight_path
 

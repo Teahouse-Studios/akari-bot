@@ -1,6 +1,7 @@
 import re
 
-from core.builtins import Plain, Image, Bot
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Plain, Image
 from core.component import module
 from core.scheduler import IntervalTrigger
 

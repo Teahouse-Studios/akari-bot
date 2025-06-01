@@ -8,7 +8,8 @@ import orjson as json
 from jinja2 import FileSystemLoader, Environment
 from PIL import Image as PILImage
 
-from core.builtins import Bot, I18NContext, Image, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.component import module
 from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default

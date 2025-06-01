@@ -6,7 +6,9 @@ import orjson as json
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn
 
-from core.builtins import Bot, Image, MessageChain, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, Image
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger

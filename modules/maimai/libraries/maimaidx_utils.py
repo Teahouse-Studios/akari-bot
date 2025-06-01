@@ -3,7 +3,8 @@ from datetime import datetime
 
 import orjson as json
 
-from core.builtins import Bot, MessageChain, Plain
+from core.builtins.bot import Bot, MessageChain
+from core.builtins.message.internal import Plain
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from core.utils.random import Random

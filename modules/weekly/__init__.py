@@ -4,7 +4,8 @@ from html import unescape
 import orjson as json
 from bs4 import BeautifulSoup
 
-from core.builtins import Bot, Plain, Image, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Plain, Image, Url
 from core.component import module
 from core.i18n import Locale
 from core.utils.http import get_url

@@ -4,7 +4,7 @@ from tortoise.exceptions import DoesNotExist
 
 from core.database.models import StoredData
 if TYPE_CHECKING:
-    from core.builtins import Bot
+    from core.builtins.bot import Bot
 
 from core.exports import exports
 

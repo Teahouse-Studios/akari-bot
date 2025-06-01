@@ -1,6 +1,7 @@
 import orjson as json
 
-from core.builtins import Bot, I18NContext, Image, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.utils.http import get_url
 from modules.cytoid.database.models import CytoidBindInfo
 

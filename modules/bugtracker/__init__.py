@@ -1,6 +1,7 @@
 import re
 
-from core.builtins import Bot, Image, Url, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Image, Url, I18NContext
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 

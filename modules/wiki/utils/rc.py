@@ -1,7 +1,8 @@
 import re
 import urllib.parse
 
-from core.builtins import Url, Bot
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Url
 from core.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.time import strptime2ts

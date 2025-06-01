@@ -2,7 +2,7 @@ import traceback
 
 from apscheduler.triggers.cron import CronTrigger
 
-from core.builtins import Image as BImage
+from core.builtins.message.internal import Image as BImage, Plain
 from core.component import module
 from core.logger import Logger
 from core.utils.text import isint

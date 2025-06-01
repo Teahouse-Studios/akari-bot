@@ -4,7 +4,8 @@ from datetime import datetime
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.builtins import Bot, Plain, I18NContext, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Plain, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants import locale_url_default

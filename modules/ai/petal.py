@@ -1,7 +1,7 @@
 from decimal import Decimal
 from math import ceil
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.config import Config
 
 PREDICT_INPUT_TOKEN = 10

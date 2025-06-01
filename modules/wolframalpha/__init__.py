@@ -3,7 +3,8 @@ import urllib.parse
 
 from PIL import Image as PILImage
 
-from core.builtins import Bot, I18NContext, Image as BImage
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image as BImage
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError

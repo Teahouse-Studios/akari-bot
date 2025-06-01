@@ -1,6 +1,6 @@
 import traceback
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Url
 from core.component import module

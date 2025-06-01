@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext, Image
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
 from modules.cytoid.database.models import CytoidBindInfo

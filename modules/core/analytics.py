@@ -4,7 +4,8 @@ from datetime import datetime, timedelta, UTC
 import matplotlib.pyplot as plt
 from dateutil.relativedelta import relativedelta
 
-from core.builtins import Bot, Image, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Image, I18NContext
 from core.component import module
 from core.config import Config
 from core.database.models import AnalyticsData

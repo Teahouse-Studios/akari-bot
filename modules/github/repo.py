@@ -1,6 +1,7 @@
 import uuid
 
-from core.builtins import Bot, I18NContext, Image, Plain, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from modules.github.utils import time_diff, dirty_check, dark_check

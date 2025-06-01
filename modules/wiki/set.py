@@ -1,6 +1,7 @@
 import orjson as json
 
-from core.builtins import Bot, I18NContext, Image, Plain, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.config import Config
 from core.constants import Info, wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable

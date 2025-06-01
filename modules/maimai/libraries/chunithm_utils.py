@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.utils.image import msgchain2image
 from .chunithm_apidata import get_record
 from .chunithm_mapping import *

@@ -3,7 +3,7 @@ import re
 
 from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.text import isint

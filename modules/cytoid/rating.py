@@ -9,7 +9,8 @@ from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from gql import Client, gql
 from gql.transport.httpx import HTTPXAsyncTransport
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.config import Config
 from core.constants.path import (
     assets_path,

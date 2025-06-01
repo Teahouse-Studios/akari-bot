@@ -2,7 +2,7 @@ import random
 import re
 import traceback
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, EmbedField
 from core.component import module

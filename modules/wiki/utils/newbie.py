@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.dirty_check import check
 from modules.wiki.utils.wikilib import WikiLib
 

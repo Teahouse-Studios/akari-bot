@@ -1,4 +1,5 @@
-from core.builtins import Bot, Plain, Image as BImage
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from core.utils.text import isint

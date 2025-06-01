@@ -4,7 +4,8 @@ from typing import Optional, Union
 
 import filetype
 
-from core.builtins import Bot, confirm_command
+from core.builtins.bot import Bot
+from core.builtins.utils import confirm_command
 from core.builtins.message.internal import Plain, Image, Voice, Url
 from core.builtins.session.internal import MessageSession
 from core.component import module

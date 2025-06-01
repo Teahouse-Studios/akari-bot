@@ -1,4 +1,4 @@
-from core.builtins import command_prefix
+from core.builtins.utils import command_prefix
 from core.builtins.parser.command import CommandParser
 
 c = CommandParser(

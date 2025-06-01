@@ -4,7 +4,8 @@ from typing import List, Optional, Tuple
 import emoji
 import orjson as json
 
-from core.builtins import Bot, Image, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger

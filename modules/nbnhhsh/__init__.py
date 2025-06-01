@@ -1,6 +1,7 @@
 import orjson as json
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger

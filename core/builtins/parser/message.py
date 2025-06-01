@@ -29,7 +29,7 @@ from core.utils.message import remove_duplicate_space
 
 
 if TYPE_CHECKING:
-    from core.builtins import Bot
+    from core.builtins.bot import Bot
 
 
 qq_account = Temp().data.get("qq_account")

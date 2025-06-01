@@ -1,6 +1,6 @@
 from typing import Any, Union
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.session.info import SessionInfo

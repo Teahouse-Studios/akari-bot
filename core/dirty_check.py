@@ -14,7 +14,7 @@ import httpx
 import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.config import Config
 from core.database.local import DirtyWordCache
 from core.logger import Logger

@@ -7,7 +7,7 @@ import urllib.parse as urlparse
 from textwrap import wrap
 from typing import Dict, List, Optional, Tuple, Union
 
-from core.builtins import Url
+from core.builtins.message.internal import Url
 from . import config
 from .elements import AnchorElement, ListElement
 from .typing import OutCallback

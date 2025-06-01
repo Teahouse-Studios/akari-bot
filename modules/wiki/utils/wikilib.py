@@ -11,7 +11,7 @@ from attrs import define
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
-from core.builtins import Url
+from core.builtins.message.internal import Url
 from core.config import Config
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check

@@ -1,4 +1,5 @@
-from core.builtins import Bot, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Url
 from core.dirty_check import rickroll
 from core.utils.http import get_url
 from modules.github.utils import dirty_check, dark_check

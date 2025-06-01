@@ -1,4 +1,6 @@
-from core.builtins import MessageSession, MessageChain, I18NContext, Plain, Url
+from core.builtins.session.internal import MessageSession
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.logger import Logger
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib

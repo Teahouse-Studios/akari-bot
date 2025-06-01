@@ -6,7 +6,11 @@ from datetime import datetime
 
 import orjson as json
 
-from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp
+from core.builtins.bot import Bot
+from core.builtins.session.lock import ExecutionLockList
+from core.builtins.temp import Temp
+from core.constants import PrivateAssets
+from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.converter import converter
 from core.component import module
 from core.config import Config, CFGManager

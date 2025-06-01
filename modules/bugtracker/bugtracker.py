@@ -4,7 +4,7 @@ from io import BytesIO
 import orjson as json
 from PIL import Image as PILImage
 
-from core.builtins import I18NContext, Plain
+from core.builtins.message.internal import I18NContext, Plain
 from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import download, post_url, get_url

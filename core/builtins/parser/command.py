@@ -7,7 +7,7 @@ from typing import Dict, Optional, Union, TYPE_CHECKING
 from ...exports import exports
 
 if TYPE_CHECKING:
-    from core.builtins import Bot
+    from core.builtins.bot import Bot
 
 from core.config import Config
 from core.constants.exceptions import InvalidCommandFormatError

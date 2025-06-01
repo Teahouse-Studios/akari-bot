@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.builtins.utils import command_prefix
 from core.component import module
 

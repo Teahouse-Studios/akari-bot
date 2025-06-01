@@ -10,7 +10,7 @@ from ..exports import exports, add_export
 from ..logger import Logger
 
 if TYPE_CHECKING:
-    from core.builtins import Bot
+    from core.builtins.bot import Bot
 
 
 class JobQueueClient(JobQueueBase):

@@ -10,7 +10,8 @@ from tenacity import retry, stop_after_attempt
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw, rdMolDescriptors
 
-from core.builtins import Bot, Image, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path

@@ -8,7 +8,8 @@ import nio
 
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import *
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
+from core.builtins.message.internal import Plain, Image, Voice, I18NContext
+from core.builtins.bot import Bot, MessageSession as MessageSessionT, MessageTaskManager, \
     FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement

@@ -1,7 +1,8 @@
 import asyncio
 import re
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.dirty_check import check
 from .server import query_java_server, query_bedrock_server

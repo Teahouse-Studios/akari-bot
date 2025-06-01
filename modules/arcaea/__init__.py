@@ -1,6 +1,7 @@
 import os
 
-from core.builtins import Bot, Image as BImage, Plain, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Image as BImage, Plain, I18NContext
 from core.component import module
 from core.constants.path import assets_path
 from core.utils.http import get_url

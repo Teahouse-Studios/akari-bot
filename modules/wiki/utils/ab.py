@@ -1,4 +1,5 @@
-from core.builtins import Url, Bot
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Url
 from core.dirty_check import check
 from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib

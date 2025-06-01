@@ -5,7 +5,7 @@ from tortoise.models import Model
 from core.exports import exports
 
 if TYPE_CHECKING:
-    from core.builtins import Bot
+    from core.builtins.bot import Bot
 
 
 class DBModel(Model):

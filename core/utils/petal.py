@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, UTC
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.builtins.message.elements import I18NContextElement
 from core.config import Config
 from core.utils.storedata import get_stored_list, update_stored_list

@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext, Image as BImage, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image as BImage, Plain
 from core.component import module
 from core.config import Config
 from core.logger import Logger

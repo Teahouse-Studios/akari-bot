@@ -4,7 +4,7 @@ from typing import List, Tuple
 from openai import AsyncOpenAI
 from PIL import Image as PILImage
 
-from core.builtins import I18NContext, Image, Plain
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.config import Config
 from core.dirty_check import check
 from core.logger import Logger

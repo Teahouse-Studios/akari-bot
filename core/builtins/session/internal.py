@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from datetime import datetime, UTC as datetimeUTC
 from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine, Dict
 
@@ -16,6 +17,7 @@ from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
+from core.logger import Logger
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer
@@ -56,6 +58,7 @@ class MessageSession:
         :return: 被发送的消息链。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        Logger.debug(self.target)
         message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
@@ -418,6 +421,13 @@ class MessageSession:
         用于将消息会话对象转换为哈希值。
         """
         return hash(self.session_info.session_id)
+
+    def __getattribute__(self, item):
+        if item == "target":
+            warnings.warn('Use "session_info" instead of "target" to access session information.', DeprecationWarning)
+            return self.session_info
+
+        return super().__getattribute__(item)
 
 
 @define

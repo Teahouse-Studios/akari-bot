@@ -7,7 +7,8 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from bot import init_bot
-from core.builtins import PrivateAssets, Bot
+from core.constants import PrivateAssets
+from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo

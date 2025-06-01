@@ -1,7 +1,8 @@
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn, zh_hk, zh_tw
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 

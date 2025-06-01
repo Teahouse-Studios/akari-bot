@@ -4,7 +4,8 @@ import urllib.parse
 
 import filetype
 
-from core.builtins import Bot, I18NContext, Image, Voice
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Voice
 from core.component import module
 from core.constants.info import Info
 from core.dirty_check import check

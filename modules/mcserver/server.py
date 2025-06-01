@@ -3,7 +3,7 @@ import traceback
 
 from mcstatus import JavaServer, BedrockServer
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.config import Config
 from core.logger import Logger
 

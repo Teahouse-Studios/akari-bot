@@ -4,7 +4,7 @@ import os
 
 import orjson as json
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.converter import converter
