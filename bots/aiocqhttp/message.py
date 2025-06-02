@@ -37,7 +37,6 @@ from .client import bot
 from .info import *
 from .utils import CQCodeHandler, get_onebot_implementation
 
-enable_analytics = Config("enable_analytics", False)
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
 
 
@@ -556,7 +555,7 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
+    async def post_message(module_name, message, target_list=None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
         module_name = None if module_name == "*" else module_name
@@ -594,7 +593,7 @@ class FetchTarget(FetchTargetT):
                     await fetch_.send_direct_message(new_msgchain)
                     if _tsk:
                         _tsk = []
-                if enable_analytics and module_name:
+                if Config("enable_analytics", False) and module_name:
                     await AnalyticsData.create(target_id=fetch_.target.target_id,
                                                sender_id=fetch_.target.sender_id,
                                                command="",
@@ -637,8 +636,8 @@ class FetchTarget(FetchTargetT):
             except Exception:
                 Logger.exception()
 
-        if user_list:
-            for x in user_list:
+        if target_list:
+            for x in target_list:
                 await post_(x)
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(

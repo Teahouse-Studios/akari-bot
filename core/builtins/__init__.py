@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 from core.config import Config
 from core.constants import base_superuser_default
 from core.constants.info import Info
-from core.database.models import TargetInfo
+from core.database.models import AnalyticsData, TargetInfo
 from core.exports import add_export
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -14,6 +14,8 @@ from .message.chain import *
 from .message.internal import *
 from .temp import *
 from .utils import *
+
+enable_analytics = Config("enable_analytics", False)
 
 
 class Bot:
@@ -118,14 +120,78 @@ Bot.FetchedSession = FetchedSession
 
 class FetchTarget(FetchTarget):
     @staticmethod
+    async def fetch_target_list(target_list: list) -> List[FetchedSession]:
+        lst = []
+        for x in target_list:
+            fet = await Bot.FetchTarget.fetch_target(x)
+            if fet:
+                lst.append(fet)
+        return lst
+
+    @staticmethod
+    async def post_message(
+        module_name: str,
+        message: str,
+        target_list: Optional[List[FetchedSession]] = None,
+        i18n: bool = False,
+        **kwargs: Dict[str, Any],
+    ):
+        module_ = None if module_name == "*" else module_name
+        if target_list:
+            for x in target_list:
+                try:
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
+                        else:
+                            msgchain = MessageChain(Plain(message))
+                    msgchain = MessageChain(msgchain)
+                    await x.send_direct_message(msgchain)
+                    if enable_analytics and module_:
+                        await AnalyticsData.create(target_id=x.target.target_id,
+                                                   sender_id=x.target.sender_id,
+                                                   command="",
+                                                   module_name=module_,
+                                                   module_type="schedule")
+                except Exception:
+                    Logger.exception()
+        else:
+            get_target_id = await TargetInfo.get_target_list_by_module(
+                module_, Bot.client_name
+            )
+            for x in get_target_id:
+                fetch = await Bot.FetchTarget.fetch_target(x.target_id)
+                if fetch:
+                    if x.muted:
+                        continue
+                    try:
+                        msgchain = message
+                        if isinstance(message, str):
+                            if i18n:
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
+                            else:
+                                msgchain = MessageChain(Plain(message))
+                        msgchain = MessageChain(msgchain)
+                        await fetch.send_direct_message(msgchain)
+                        if enable_analytics and module_:
+                            await AnalyticsData.create(target_id=fetch.target.target_id,
+                                                       sender_id=fetch.target.sender_id,
+                                                       command="",
+                                                       module_name=module_,
+                                                       module_type="schedule")
+                    except Exception:
+                        Logger.exception()
+
+    @staticmethod
     async def post_global_message(
         message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+        target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any]
     ):
         await Bot.FetchTarget.post_message(
-            "*", message=message, user_list=user_list, i18n=i18n, **kwargs
+            "*", message=message, target_list=target_list, i18n=i18n, **kwargs
         )
 
 

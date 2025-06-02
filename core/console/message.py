@@ -287,14 +287,6 @@ class FetchTarget(FetchTargetT):
             await session.parent.data_init()
             return session
 
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target(f"{target_prefix}|0")
-        if i18n:
-            await fetch.send_direct_message(I18NContext(message, **kwargs))
-        else:
-            await fetch.send_direct_message(message)
-
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget

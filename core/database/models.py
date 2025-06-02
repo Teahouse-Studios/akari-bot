@@ -218,7 +218,7 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Union[str, list[str], tuple[str]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
@@ -226,7 +226,17 @@ class TargetInfo(DBModel):
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         """
-        return list(await cls.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or ""))
+        all_targets = await cls.filter(target_id__startswith=id_prefix or "")
+
+        if module_name:
+            result = []
+            for target in all_targets:
+                modules = target.modules or []
+                if any(mod in modules for mod in convert2lst(module_name)):
+                    result.append(target)
+            return result
+
+        return list(all_targets)
 
     async def edit_attr(self, key: str, value: Any) -> bool:
         setattr(self, key, value)

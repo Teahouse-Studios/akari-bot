@@ -611,7 +611,7 @@ async def _(msg: Bot.MessageSession, display_msg: str):
         raise NoReportException(str(e))
 
 
-post_ = module("post", required_superuser=True, base=True, doc=True, exclude_from=["Web", "TEST|Console"])
+post_ = module("post", required_superuser=True, base=True, doc=True)
 
 
 @post_.command("<target> <post_msg>")

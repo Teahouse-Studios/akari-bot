@@ -4,7 +4,6 @@ import os
 import platform
 import re
 import sys
-import traceback
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
@@ -63,7 +62,7 @@ JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web
 LOGIN_MAX_ATTEMPTS = Config("login_max_attempts", default=5, table_name="bot_web")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 LOGIN_BLOCK_DURATION = 3600
-MAX_LOG_HISTORY = 1000
+MAX_LOG_HISTORY = 1024
 
 web_port = find_available_port(WEB_PORT, host=WEB_HOST)
 protocol = "https" if enable_https else "http"
@@ -224,14 +223,14 @@ async def auth(request: Request, response: Response):
             httponly=True,
             secure=enable_https,
             samesite="strict",
-            expires=datetime.now(UTC) + timedelta(hours=24)
+            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
-        return {"message": "Success", "no_password": True}
+        return {"message": "Success", "no_password": False}
 
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -277,7 +276,7 @@ async def change_password(request: Request, response: Response):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -307,7 +306,7 @@ async def clear_password(request: Request, response: Response):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -366,7 +365,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
         return {"count": count, "change_rate": change_rate, "data": data}
 
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -386,7 +385,7 @@ async def get_config_list(request: Request):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -409,7 +408,7 @@ async def get_config_file(request: Request, cfg_filename: str):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -436,7 +435,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -476,7 +475,7 @@ async def get_target_list(
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -492,7 +491,7 @@ async def get_target_info(request: Request, target_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -549,7 +548,7 @@ async def edit_target_info(request: Request, target_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -566,7 +565,7 @@ async def delete_target_info(request: Request, target_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -607,7 +606,7 @@ async def get_sender_list(request: Request,
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -623,7 +622,7 @@ async def get_sender_info(request: Request, sender_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -674,7 +673,7 @@ async def edit_sender_info(request: Request, sender_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -691,7 +690,7 @@ async def delete_sender_info(request: Request, sender_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -710,7 +709,7 @@ async def get_modules_list(request: Request):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -729,7 +728,7 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -750,7 +749,7 @@ async def get_module_info(request: Request, module: str, locale: str = Query(def
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -780,7 +779,7 @@ async def websocket_chat(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await websocket.close()
     finally:
         if "web_chat_websocket" in Temp.data:
@@ -852,7 +851,7 @@ async def websocket_logs(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await websocket.close()
 
 

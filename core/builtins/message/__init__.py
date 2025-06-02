@@ -729,7 +729,7 @@ class FetchTarget:
     async def post_message(
         module_name: str,
         message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+        target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any],
     ):
@@ -738,7 +738,7 @@ class FetchTarget:
 
         :param module_name: 模块名称。
         :param message: 消息文本。
-        :param user_list: 用户列表。
+        :param target_list: 会话列表。
         :param i18n: 是否使用i18n。若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
@@ -746,7 +746,7 @@ class FetchTarget:
     @staticmethod
     async def post_global_message(
         message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+        target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any]
     ):
@@ -754,7 +754,7 @@ class FetchTarget:
         尝试向客户端内的任意对象发送一条消息。
 
         :param message: 消息文本。
-        :param user_list: 用户列表。
+        :param target_list: 用户列表。
         :param i18n: 是否使用i18n，若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
