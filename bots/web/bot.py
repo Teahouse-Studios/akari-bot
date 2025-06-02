@@ -224,9 +224,9 @@ async def auth(request: Request, response: Response):
             httponly=True,
             secure=enable_https,
             samesite="strict",
-            expires=datetime.now(UTC) + timedelta(hours=24)
+            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
-        return {"message": "Success", "no_password": True}
+        return {"message": "Success", "no_password": False}
 
     except HTTPException as e:
         raise e
