@@ -104,10 +104,12 @@ class JobQueueBase:
 
     @classmethod
     async def check_job_queue(cls, target_client: str = None):
+        # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else 'all'}")
         for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get(task_id=task_id)
             if tsk.status == "done":
                 await QueueTaskManager.set_result(task_id, tsk.result)
+        # Logger.debug([cls.name, target_client if target_client else exports['Bot'].Info.client_name])
 
         get_all = await JobQueuesTable.get_all([cls.name, target_client if target_client else exports['Bot'].Info.client_name])
 

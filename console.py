@@ -1,24 +1,24 @@
 import asyncio
 import os
-import shutil
 import traceback
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from bot import init_bot
-from core.constants import PrivateAssets
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
-from core.console.info import *
-from core.constants.path import assets_path
-from core.server.run import main
-from core.logger import Logger
-from core.queue.client import JobQueueClient
-from core.terminate import cleanup_sessions
 from core.console.context import ConsoleContextManager
+from core.console.info import *
+from core.constants import PrivateAssets
+from core.constants.path import assets_path
+from core.logger import Logger
+from core.server.run import main
+from core.terminate import cleanup_sessions
+
+from core.client import client_init
 
 Bot.register_bot(client_name=client_name,
                  dirty_word_check=True,
@@ -40,6 +40,7 @@ async def console_command():
     try:
         session = PromptSession(history=FileHistory(console_history_path))
         asyncio.create_task(main())
+        asyncio.create_task(client_init(target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list))
         while True:
             m = await asyncio.to_thread(session.prompt)
             await send_command(m)

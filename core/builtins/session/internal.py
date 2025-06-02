@@ -58,7 +58,6 @@ class MessageSession:
         :return: 被发送的消息链。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        Logger.debug(self.target)
         message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
@@ -121,14 +120,12 @@ class MessageSession:
         :param callback: 回调函数，用于在消息发送完成后回复本消息执行的函数。
         :return: 被发送的消息链。
         """
-        await self.send_message(
-            message_chain,
-            disable_secret_check=disable_secret_check,
-            quote=False,
-            enable_parse_message=enable_parse_message,
-            enable_split_image=enable_split_image,
-            callback=callback,
-        )
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        message_chain = MessageChain.assign(message_chain)
+        if not message_chain.is_safe and not disable_secret_check:
+            message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
+
+        await _queue_server.send_message_signal_to_client(self.session_info, message_chain, wait=False)
 
     def as_display(self, text_only: bool = False) -> str:
         """
@@ -421,13 +418,6 @@ class MessageSession:
         用于将消息会话对象转换为哈希值。
         """
         return hash(self.session_info.session_id)
-
-    def __getattribute__(self, item):
-        if item == "target":
-            warnings.warn('Use "session_info" instead of "target" to access session information.', DeprecationWarning)
-            return self.session_info
-
-        return super().__getattribute__(item)
 
 
 @define

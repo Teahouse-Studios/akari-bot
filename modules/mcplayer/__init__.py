@@ -1,4 +1,4 @@
-from core.builtins.bot import Bot,
+from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.component import module
 from .mojang_api import *

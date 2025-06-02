@@ -1,5 +1,6 @@
 import asyncio
 
+from apscheduler.schedulers import SchedulerAlreadyRunningError
 
 from core.constants import Info
 from core.database import init_db
@@ -26,5 +27,8 @@ async def client_init(target_prefix_list: list = None, sender_prefix_list: list 
         await JobQueueClient.send_keepalive_signal_to_server(Info.client_name,
                                                              target_prefix_list=target_prefix_list,
                                                              sender_prefix_list=sender_prefix_list)
-    Scheduler.start()
+    try:
+        Scheduler.start()
+    except SchedulerAlreadyRunningError:
+        Logger.warning("Scheduler is already running, skipping start.")
     Logger.info(f"Hello, {Info.client_name}!")
