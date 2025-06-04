@@ -27,7 +27,7 @@ from .info import *
 class FinishedSession(FinS):
     async def delete(self):
         try:
-            websocket = Temp.data.get("web_chat_websocket")
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
 
             resp = {"action": "delete", "id": self.message_id}
             if websocket:
@@ -62,7 +62,7 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        websocket = Temp.data.get("web_chat_websocket")
+        websocket: WebSocket = Temp.data.get("web_chat_websocket")
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             await self.send_direct_message(I18NContext("error.message.chain.unsafe"))
@@ -107,7 +107,7 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         try:
-            websocket = Temp.data.get("web_chat_websocket")
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
             resp = {"action": "delete", "id": [self.session.message["id"]]}
 
             if websocket:
