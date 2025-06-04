@@ -26,7 +26,7 @@ pywin32 = { version = "^308", platform = "win32" }
 # bots
 aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
-argon2-cffi = "^23.1.0"
+argon2-cffi = "^25.0.0"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 fastapi = "^0.115.0"
 ffmpy = "^0.5.0"
