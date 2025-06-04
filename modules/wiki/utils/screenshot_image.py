@@ -6,7 +6,6 @@ from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
-import httpx
 import orjson as json
 from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
@@ -14,7 +13,7 @@ from bs4 import BeautifulSoup, Comment
 from core.constants.info import Info
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.http import download
+from core.utils.http import get_url, post_url, download
 from core.utils.web_render import webrender
 from .mapping import infobox_elements
 
@@ -110,9 +109,7 @@ async def generate_screenshot_v1(
         if link[-1] != "/":
             link += "/"
         try:
-            async with httpx.AsyncClient(headers=headers) as client:
-                resp = await client.get(page_link, timeout=20)
-                html = resp.text
+            html = await get_url(page_link, 200, headers=headers, timeout=20)
         except Exception:
             Logger.exception()
             return False
@@ -331,44 +328,41 @@ async def generate_screenshot_v1(
         Logger.info("Start rendering...")
         img_lst = []
         try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    webrender(),
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                    data=json.dumps(html),
-                )
-                if resp.status_code != 200:
-                    Logger.error(f"Failed to render: {resp.text}")
-                    return False
-                imgs_data = json.loads(resp.text)
-                for img in imgs_data:
-                    b = base64.b64decode(img)
-                    bio = BytesIO(b)
-                    bimg = PILImage.open(bio)
-                    img_lst.append(bimg)
+            resp_text = await post_url(
+                url=webrender(),
+                data=json.dumps(html),
+                headers={"Content-Type": "application/json"},
+                fmt="text",
+                logging_err_resp=True,
+            )
+            imgs_data = json.loads(resp_text)
+            for img in imgs_data:
+                b = base64.b64decode(img)
+                bio = BytesIO(b)
+                bimg = PILImage.open(bio)
+                img_lst.append(bimg)
 
-        except httpx.RequestError as e:
+        except Exception as e:
             Logger.error(f"Request error: {e}")
             if use_local:
-                async with httpx.AsyncClient() as client:
-                    resp = await client.post(
-                        webrender(use_local=False),
-                        headers={
-                            "Content-Type": "application/json",
-                        },
+                try:
+                    resp_text = await post_url(
+                        url=webrender(use_local=False),
                         data=json.dumps(html),
+                        headers={"Content-Type": "application/json"},
+                        fmt="text",
+                        logging_err_resp=True,
                     )
-                    if resp.status_code != 200:
-                        Logger.error(f"Failed to render: {resp.text}")
-                        return False
-                    imgs_data = json.loads(resp.text)
+                    imgs_data = json.loads(resp_text)
                     for img in imgs_data:
                         b = base64.b64decode(img)
                         bio = BytesIO(b)
                         bimg = PILImage.open(bio)
                         img_lst.append(bimg)
+                except Exception as e:
+                    raise e
+            else:
+                raise e
 
         return img_lst
     except Exception:
