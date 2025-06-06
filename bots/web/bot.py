@@ -29,7 +29,7 @@ sys.path.append(os.getcwd())
 
 from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
-from bots.web.utils import find_available_port, generate_webui_config  # noqa: E402
+from bots.web.utils import find_available_port, generate_webui_config, get_local_ip  # noqa: E402
 from core.bot_init import init_async  # noqa: E402
 from core.builtins import PrivateAssets, Temp  # noqa: E402
 from core.config import Config  # noqa: E402
@@ -53,6 +53,7 @@ PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_https = Config("enable_https", default=False, table_name="bot_web")
+protocol = "https" if enable_https else "http"
 
 WEB_HOST = Config("web_host", "127.0.0.1", table_name="bot_web")
 WEB_PORT = Config("web_port", 6485, table_name="bot_web")
@@ -64,10 +65,6 @@ PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 LOGIN_BLOCK_DURATION = 3600
 MAX_LOG_HISTORY = 1024
 
-web_port = find_available_port(WEB_PORT, host=WEB_HOST)
-protocol = "https" if enable_https else "http"
-ALLOW_ORIGINS.append(f"{protocol}://{WEB_HOST}:{web_port}")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -77,7 +74,25 @@ async def lifespan(app: FastAPI):
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
     if os.path.exists(webui_path):
-        Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
+        if WEB_HOST == "0.0.0.0":
+            local_ip = get_local_ip()
+            network_line = f"Network: {protocol}://{local_ip}:{web_port}/webui\n" if local_ip else ""
+            message = (
+                f"\n---\n"
+                f"Visit AkariBot WebUI:\n"
+                f"Local:   {protocol}://127.0.0.1:{web_port}/webui\n"
+                f"{network_line}"
+                f"---\n"
+            )
+        else:
+            message = (
+                f"\n---\n"
+                f"Visit AkariBot WebUI:\n"
+                f"{protocol}://{WEB_HOST}:{web_port}/webui\n"
+                f"---\n"
+            )
+
+        Logger.info(message)
     yield
     await cleanup_sessions()
     sys.exit(0)
@@ -933,6 +948,6 @@ if Config("enable", True, table_name="bot_web"):
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
 
     if os.path.exists(webui_path):
-        generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
+        generate_webui_config(enable_https, default_locale)
 
     uvicorn.run(app, host=WEB_HOST, port=web_port, log_level="info")
