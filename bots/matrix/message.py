@@ -10,9 +10,9 @@ from core.builtins import (
     Plain,
     Image,
     Voice,
-    MessageSession as MessageSessionT,
     I18NContext,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )

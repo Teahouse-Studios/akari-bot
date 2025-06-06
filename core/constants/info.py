@@ -5,7 +5,8 @@ class Secret:
 
     @classmethod
     def add(cls, secret):
-        cls.list.append(secret)
+        if secret:
+            cls.list.append(secret)
 
 
 class Info:
@@ -19,7 +20,6 @@ class Info:
     :param client_name: 客户端名称。
     :param dirty_word_check: 是否启用文本过滤。
     :param web_render_status: WebRender 状态。
-    :param web_render_local_status: 本地 WebRender 状态。
     :param use_url_manager: 是否启用 URLManager。
     :param use_url_md_format: 是否启用 URL MarkDown 格式。
     """
@@ -31,6 +31,5 @@ class Info:
     client_name = ""
     dirty_word_check = False
     web_render_status = False
-    web_render_local_status = False
     use_url_manager = False
     use_url_md_format = False

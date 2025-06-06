@@ -12,7 +12,7 @@ from core.builtins import (
     Bot,
     FetchTarget as FetchTargetT,
     FetchedSession as FetchedSessionT,
-    FinishedSession as FinS,
+    FinishedSession as FinishedSessionT,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
@@ -24,7 +24,7 @@ from core.logger import Logger
 from core.types import Session, MsgInfo
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         print("(Tried to delete message, but I\'m a console so I cannot do it :< )")
 

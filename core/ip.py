@@ -1,4 +1,4 @@
-from core.constants import Secret
+from core.builtins import Secret
 from core.logger import Logger
 from core.utils.http import get_url
 

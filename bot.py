@@ -43,8 +43,8 @@ processes: list[multiprocessing.Process] = []
 
 def init_bot():
     from core.config import Config  # noqa
-    from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
+    from core.constants.version import database_version  # noqa
     from core.database.link import get_db_link  # noqa
     from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
@@ -123,8 +123,8 @@ def multiprocess_run_until_complete(func):
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+    from core.builtins import Info  # noqa
     from core.logger import Logger  # noqa
-    from core.utils.info import Info  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess

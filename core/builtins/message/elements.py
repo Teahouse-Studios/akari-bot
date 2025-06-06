@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from copy import deepcopy
 import mimetypes
 import os
 import random
@@ -15,10 +16,9 @@ from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
-from core.constants.info import Info
+from core.builtins import Info
 from core.utils.cache import random_cache_path
 
-from copy import deepcopy
 
 if TYPE_CHECKING:
     from core.builtins import MessageSession

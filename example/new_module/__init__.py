@@ -65,9 +65,9 @@ async def _(msg: Bot.MessageSession):
 
 
 @test.schedule(IntervalTrigger(seconds=30))
-async def _():
+async def _(fetch: Bot.FetchTarget):
     # Send a message to target which is enabled test module every 30 seconds
-    await Bot.FetchTarget.post_message("test", "Hello World!")
+    await fetch.post_message("test", "Hello World!")
 
 
 @test.handle("test")  # all in one handler, including command, regex and schedule
@@ -85,6 +85,6 @@ async def _(msg: Bot.MessageSession):
 
 
 @test.handle(IntervalTrigger(seconds=60))
-async def _():
+async def _(fetch: Bot.FetchTarget):
     # Send a message to target which is enabled test module every 60 seconds
-    await Bot.FetchTarget.post_message("test", "test")
+    await fetch.post_message("test", "test")

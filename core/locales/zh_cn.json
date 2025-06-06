@@ -77,7 +77,6 @@
     "config.comments.web_host": "Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。",
     "config.comments.web_port": "Web 服务的端口号，设为 0 则禁用服务。",
     "config.comments.web_render": "WebRender 服务的 URL 地址。",
-    "config.comments.web_render_local": "本地 WebRender 服务地址。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
     "config.header.line.2": "注意：TOML 不是 Python。请不要在此处使用 Python 语法。",
     "config.header.line.3": "例如：TOML 中的布尔值必须是小写。",

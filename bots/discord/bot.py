@@ -8,8 +8,7 @@ import discord
 import orjson as json
 
 from core.bot_init import init_async, load_prompt
-from core.builtins import PrivateAssets
-from core.builtins.utils import command_prefix
+from core.builtins import Info, PrivateAssets, command_prefix
 from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.path import assets_path
@@ -17,7 +16,6 @@ from core.logger import Logger
 from core.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.types import MsgInfo, Session
-from core.utils.info import Info
 from .client import client
 from .info import *
 from .message import MessageSession, FetchTarget

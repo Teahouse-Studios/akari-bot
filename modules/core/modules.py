@@ -4,6 +4,7 @@ from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
+from core.database import reload_db
 from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -235,6 +236,8 @@ async def config_modules(msg: Bot.MessageSession):
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
                 msglist.append(module_reload(module_, extra_reload_modules, base_module))
+
+        await reload_db()
 
         locale_err = load_locale_file()
         if len(locale_err) != 0:

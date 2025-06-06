@@ -31,7 +31,7 @@ from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
 from bots.web.utils import find_available_port, generate_webui_config, get_local_ip  # noqa: E402
 from core.bot_init import init_async  # noqa: E402
-from core.builtins import PrivateAssets, Temp  # noqa: E402
+from core.builtins import Info, PrivateAssets, Temp  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename  # noqa: E402
 from core.constants.path import assets_path, config_path, logs_path, webui_path  # noqa: E402
@@ -46,7 +46,6 @@ from core.queue import JobQueue  # noqa: E402
 from core.scheduler import Scheduler  # noqa: E402
 from core.terminate import cleanup_sessions  # noqa: E402
 from core.types import MsgInfo, Session  # noqa: E402
-from core.utils.info import Info  # noqa: E402
 
 started_time = datetime.now()
 PrivateAssets.set(os.path.join(assets_path, "private", "web"))
@@ -341,7 +340,6 @@ async def server_info(request: Request):
             "running_time": (datetime.now() - started_time).total_seconds(),
             "python_version": platform.python_version(),
             "version": Info.version,
-            "web_render_local_status": Info.web_render_local_status,
             "web_render_status": Info.web_render_status
         },
         "cpu": {
@@ -940,6 +938,8 @@ async def route_handler(full_path: str):
 
 if Config("enable", True, table_name="bot_web"):
     Info.client_name = client_name
+    if "subprocess" in sys.argv:
+        Info.subprocess = True
     web_port = find_available_port(WEB_PORT)
     if web_port == 0:
         Logger.error("API port is disabled.")

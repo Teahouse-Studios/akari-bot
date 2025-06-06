@@ -1,7 +1,7 @@
 import json
 import os
 
-from core.constants import modules_path, schedulers_path, bots_path
+from core.constants.path import modules_path, schedulers_path, bots_path
 
 if __name__ == "__main__":
     modules_folder_list = os.listdir(modules_path)

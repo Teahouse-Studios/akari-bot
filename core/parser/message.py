@@ -8,8 +8,7 @@ from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins import command_prefix, ExecutionLockList, MessageTaskManager, Bot, \
-    base_superuser_list, Temp, MessageChain, Plain, I18NContext
+from core.builtins import Bot, Info, Temp, ExecutionLockList, MessageTaskManager, base_superuser_list, command_prefix, MessageChain, Plain, I18NContext
 from core.builtins.message.chain import match_kecode
 from core.config import Config
 from core.constants.default import bug_report_url_default
@@ -22,10 +21,9 @@ from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.types import Module, Param
-from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
-qq_account = Temp().data.get("qq_account")
+qq_account = Temp.data.get("qq_account")
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
 
 enable_tos = Config("enable_tos", True)

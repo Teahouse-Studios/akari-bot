@@ -4,22 +4,22 @@ import os
 
 import orjson as json
 
-from core.builtins import Plain, I18NContext
+from core.builtins import Info, PrivateAssets, Secret, Plain, I18NContext
 from core.background_tasks import init_background_task
 from core.config import CFGManager
-from core.constants import PrivateAssets, Secret
 from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
-from core.utils.info import Info
 from core.database import init_db
 
 
 async def init_async(start_scheduler=True) -> None:
-    await init_db()
+    Logger.info("Initializing database...")
+    if await init_db():
+        Logger.success("Database initialized successfully.")
     returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
     if returncode == 0:
         Info.version = commit_hash
@@ -56,7 +56,8 @@ async def load_secret():
         for y in CFGManager.values[x].keys():
             if y == "secret" or y.endswith("_secret"):
                 for z in CFGManager.values[x][y].keys():
-                    Secret.add(str(CFGManager.values[x][y].get(z)).upper())
+                    if not str(CFGManager.values[x][y].get(z)).startswith("<Replace me"):
+                        Secret.add(str(CFGManager.values[x][y].get(z)).upper())
 
 
 async def load_prompt(bot) -> None:

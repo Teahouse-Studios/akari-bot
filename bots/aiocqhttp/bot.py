@@ -9,12 +9,9 @@ from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
 from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets
-from core.builtins.utils import command_prefix
-from core.builtins.temp import Temp
+from core.builtins import Info, PrivateAssets, Temp, command_prefix
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
-from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
@@ -27,9 +24,9 @@ from .info import *
 from .message import MessageSession, FetchTarget
 
 
-PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
 Info.dirty_word_check = Config("enable_dirty_check", False)
 Info.use_url_manager = Config("enable_urlmanager", False)
+PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
 enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
@@ -47,12 +44,12 @@ async def _(event: Event):
     await load_prompt(FetchTarget)
     qq_login_info = await bot.call_action("get_login_info")
     qq_account = qq_login_info.get("user_id")
-    Temp().data["qq_account"] = qq_account
-    Temp().data["qq_nickname"] = qq_login_info.get("nickname")
+    Temp.data["qq_account"] = qq_account
+    Temp.data["qq_nickname"] = qq_login_info.get("nickname")
 
 
 async def message_handler(event: Event):
-    qq_account = Temp().data.get("qq_account")
+    qq_account = Temp.data.get("qq_account")
     if event.detail_type == "private" and event.sub_type == "group" \
             and Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp"):
         return
@@ -200,7 +197,7 @@ async def _(event: Event):
 
 @bot.on_notice("group_ban")
 async def _(event: Event):
-    qq_account = Temp().data.get("qq_account")
+    qq_account = Temp.data.get("qq_account")
     if enable_tos and event.user_id == int(qq_account):
         sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_info = await SenderInfo.get_by_sender_id(sender_id)

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import orjson as json
 
-from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp
+from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
@@ -20,7 +20,7 @@ from core.tos import WARNING_COUNTS
 from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
-from core.utils.info import Info, get_all_sender_prefix, get_all_target_prefix
+from core.utils.info import get_all_sender_prefix, get_all_target_prefix
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
 
@@ -394,8 +394,8 @@ async def update_dependencies():
 
 @upd.command()
 async def _(msg: Bot.MessageSession):
-    if not Info.binary_mode:
-        if Info.version:
+    if not Bot.Info.binary_mode:
+        if Bot.Info.version:
             pull_repo_result = await pull_repo()
             if pull_repo_result:
                 await msg.send_message(Plain(pull_repo_result, disable_joke=True))
@@ -406,11 +406,11 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 
 
-rst = module("restart", required_superuser=True, base=True, doc=True, exclude_from="Web", load=Info.subprocess)
+rst = module("restart", required_superuser=True, base=True, doc=True, exclude_from="Web", load=Bot.Info.subprocess)
 
 
 def write_restart_cache(msg: Bot.MessageSession):
-    update = os.path.join(PrivateAssets.path, ".cache_restart_author")
+    update = os.path.join(Bot.PrivateAssets.path, ".cache_restart_author")
     with open(update, "wb") as write_version:
         write_version.write(json.dumps({"From": msg.target.target_from, "ID": msg.target.target_id}))
 
@@ -419,7 +419,7 @@ restart_time = []
 
 
 async def wait_for_restart(msg: Bot.MessageSession):
-    get = ExecutionLockList.get()
+    get = Bot.ExecutionLockList.get()
     if datetime.now().timestamp() - restart_time[0] < 60:
         if len(get) != 0:
             await msg.send_message(I18NContext("core.message.restart.wait", count=len(get)))
@@ -447,17 +447,17 @@ upds = module(
     base=True,
     doc=True,
     exclude_from="Web",
-    load=Info.subprocess)
+    load=Bot.Info.subprocess)
 
 
 @upds.command()
 async def _(msg: Bot.MessageSession):
-    if not Info.binary_mode:
+    if not Bot.Info.binary_mode:
         if await msg.wait_confirm(append_instruction=False):
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
             write_restart_cache(msg)
-            if Info.version:
+            if Bot.Info.version:
                 pull_repo_result = await pull_repo()
                 if pull_repo_result:
                     await msg.send_message(Plain(pull_repo_result, disable_joke=True))
@@ -482,7 +482,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish()
 
 
-git = module("git", required_superuser=True, base=True, doc=True, load=bool(Info.version))
+git = module("git", required_superuser=True, base=True, doc=True, load=bool(Bot.Info.version))
 
 
 @git.command("<command>")
@@ -500,15 +500,15 @@ resume = module("resume", required_base_superuser=True, base=True, doc=True, ava
 
 @resume.command()
 async def _(msg: Bot.MessageSession):
-    Temp.data["is_group_message_blocked"] = False
-    if targets := Temp.data["waiting_for_send_group_message"]:
+    Bot.Temp.data["is_group_message_blocked"] = False
+    if targets := Bot.Temp.data["waiting_for_send_group_message"]:
         await msg.send_message(I18NContext("core.message.resume.processing", counts=len(targets)))
         for x in targets:
             if x["i18n"]:
                 await x["fetch"].send_direct_message(I18NContext(x["message"], **x["kwargs"]))
             else:
                 await x["fetch"].send_direct_message(x["message"])
-            Temp.data["waiting_for_send_group_message"].remove(x)
+            Bot.Temp.data["waiting_for_send_group_message"].remove(x)
             await msg.sleep(30)
         await msg.finish(I18NContext("core.message.resume.done"))
     else:
@@ -517,18 +517,18 @@ async def _(msg: Bot.MessageSession):
 
 @resume.command("continue")
 async def _(msg: Bot.MessageSession):
-    if not Temp.data["waiting_for_send_group_message"]:
+    if not Bot.Temp.data["waiting_for_send_group_message"]:
         await msg.finish(I18NContext("core.message.resume.nothing"))
-    del Temp.data["waiting_for_send_group_message"][0]
-    Temp.data["is_group_message_blocked"] = False
-    if targets := Temp.data["waiting_for_send_group_message"]:
+    del Bot.Temp.data["waiting_for_send_group_message"][0]
+    Bot.Temp.data["is_group_message_blocked"] = False
+    if targets := Bot.Temp.data["waiting_for_send_group_message"]:
         await msg.send_message(I18NContext("core.message.resume.skip", counts=len(targets)))
         for x in targets:
             if x["i18n"]:
                 await x["fetch"].send_direct_message(I18NContext(x["message"]))
             else:
                 await x["fetch"].send_direct_message(x["message"])
-            Temp.data["waiting_for_send_group_message"].remove(x)
+            Bot.Temp.data["waiting_for_send_group_message"].remove(x)
             await msg.sleep(30)
         await msg.finish(I18NContext("core.message.resume.done"))
     else:
@@ -537,8 +537,8 @@ async def _(msg: Bot.MessageSession):
 
 @resume.command("clear")
 async def _(msg: Bot.MessageSession):
-    Temp.data["is_group_message_blocked"] = False
-    Temp.data["waiting_for_send_group_message"] = []
+    Bot.Temp.data["is_group_message_blocked"] = False
+    Bot.Temp.data["waiting_for_send_group_message"] = []
     await msg.finish(I18NContext("core.message.resume.clear"))
 
 forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True, available_for="QQ")
@@ -606,7 +606,7 @@ _eval = module("eval", required_superuser=True, base=True, doc=True, load=Config
 @_eval.command("<display_msg>")
 async def _(msg: Bot.MessageSession, display_msg: str):
     try:
-        await msg.finish(str(eval(display_msg, {"msg": msg})))  # skipcq
+        await msg.finish(str(eval(display_msg, {"msg": msg, "Bot": Bot})), disable_secret_check=True)  # skipcq
     except Exception as e:
         raise NoReportException(str(e))
 

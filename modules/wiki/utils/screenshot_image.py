@@ -10,7 +10,7 @@ import orjson as json
 from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
-from core.constants.info import Info
+from core.builtins import Bot
 from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import get_url, post_url, download
@@ -23,16 +23,13 @@ async def generate_screenshot_v2(
     section: str = None,
     allow_special_page=False,
     content_mode=False,
-    use_local=True,
     element=None,
 ) -> Union[List[PILImage], bool]:
     elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
-    if not Info.web_render_status:
+    if not Bot.Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
     if not section:
         if allow_special_page and content_mode:
             elements_.insert(0, ".mw-body-content")
@@ -41,7 +38,7 @@ async def generate_screenshot_v2(
         Logger.info("[WebRender] Generating element screenshot...")
         try:
             img = await download(
-                webrender("element_screenshot", use_local=use_local),
+                webrender("element_screenshot"),
                 status_code=200,
                 headers={"Content-Type": "application/json"},
                 method="POST",
@@ -51,22 +48,14 @@ async def generate_screenshot_v2(
                 request_private_ip=True,
             )
         except Exception:
-            if use_local:
-                return await generate_screenshot_v2(
-                    page_link,
-                    section,
-                    allow_special_page,
-                    content_mode,
-                    use_local=False,
-                )
-            Logger.error("[WebRender] Generation Failed.")
+            Logger.exception("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
         try:
             section = section.replace(" ", "_")
             img = await download(
-                webrender("section_screenshot", use_local=use_local),
+                webrender("section_screenshot"),
                 status_code=200,
                 headers={"Content-Type": "application/json"},
                 method="POST",
@@ -76,15 +65,7 @@ async def generate_screenshot_v2(
                 request_private_ip=True,
             )
         except Exception:
-            if use_local:
-                return await generate_screenshot_v2(
-                    page_link,
-                    section,
-                    allow_special_page,
-                    content_mode,
-                    use_local=False,
-                )
-            Logger.error("[WebRender] Generation Failed.")
+            Logger.exception("[WebRender] Generation Failed.")
             return False
     with open(img) as read:
         load_img = json.loads(read.read())
@@ -98,12 +79,10 @@ async def generate_screenshot_v2(
 
 
 async def generate_screenshot_v1(
-    link, page_link, headers, use_local=True, section=None, allow_special_page=False
+    link, page_link, headers, section=None, allow_special_page=False
 ) -> Union[List[PILImage], bool]:
-    if not Info.web_render_status:
+    if not Bot.Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
     try:
         Logger.info("Starting find infobox/section..")
         if link[-1] != "/":
@@ -344,25 +323,6 @@ async def generate_screenshot_v1(
 
         except Exception as e:
             Logger.error(f"Request error: {e}")
-            if use_local:
-                try:
-                    resp_text = await post_url(
-                        url=webrender(use_local=False),
-                        data=json.dumps(html),
-                        headers={"Content-Type": "application/json"},
-                        fmt="text",
-                        logging_err_resp=True,
-                    )
-                    imgs_data = json.loads(resp_text)
-                    for img in imgs_data:
-                        b = base64.b64decode(img)
-                        bio = BytesIO(b)
-                        bimg = PILImage.open(bio)
-                        img_lst.append(bimg)
-                except Exception as e:
-                    raise e
-            else:
-                raise e
 
         return img_lst
     except Exception:

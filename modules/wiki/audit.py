@@ -1,6 +1,5 @@
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
-from core.constants.info import Info
 from core.utils.image_table import image_table_render, ImageTable
 from .database.models import WikiAllowList, WikiBlockList
 from .utils.wikilib import WikiLib
@@ -10,7 +9,7 @@ aud = module(
     required_superuser=True,
     alias="wau",
     doc=True,
-    load=Info.use_url_manager,
+    load=Bot.Info.use_url_manager,
 )
 
 

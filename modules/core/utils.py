@@ -4,13 +4,12 @@ from datetime import datetime
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.builtins import Bot, Plain, I18NContext, Url
+from core.builtins import Bot, MessageChain, Plain, I18NContext, Url
 from core.component import module
 from core.config import Config
-from core.constants import locale_url_default
+from core.constants.default import locale_url_default
 from core.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.bash import run_sys_command
-from core.utils.info import Info
 
 
 ver = module("version", base=True, doc=True)
@@ -18,8 +17,8 @@ ver = module("version", base=True, doc=True)
 
 @ver.command("{{I18N:core.help.version}}")
 async def _(msg: Bot.MessageSession):
-    if Info.version:
-        commit = Info.version[0:6]
+    if Bot.Info.version:
+        commit = Bot.Info.version[0:6]
         send_msgs = [I18NContext("core.message.version", disable_joke=True, commit=commit)]
         if Config("enable_commit_url", True):
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
@@ -39,11 +38,11 @@ started_time = datetime.now()
 
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
-    result = [Plain("Pong!")]
+    result = MessageChain(Plain("Pong!"))
     timediff = str(datetime.now() - started_time).split(".")[0]
     if msg.check_super_user():
         boot_start = msg.ts2strftime(psutil.boot_time())
-        web_render_status = str(Info.web_render_status)
+        web_render_status = str(Bot.Info.web_render_status)
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -65,8 +64,8 @@ async def _(msg: Bot.MessageSession):
             swap_percent=swap_percent,
             disk_space=disk,
             disk_space_total=disk_total,
-            client_name=Info.client_name,
-            command_parsed=Info.command_parsed,
+            client_name=Bot.Info.client_name,
+            command_parsed=Bot.Info.command_parsed,
         ))
     else:
         disk_percent = psutil.disk_usage("/").percent

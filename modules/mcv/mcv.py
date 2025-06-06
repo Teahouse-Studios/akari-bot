@@ -5,7 +5,6 @@ import orjson as json
 from google_play_scraper import app as google_play_scraper
 
 from core.builtins import Bot
-from core.constants.info import Secret
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 
@@ -55,7 +54,7 @@ async def mcjv(msg: Bot.MessageSession):
 
 async def mcbv(msg: Bot.MessageSession):
     play_store_version = None
-    if Secret.ip_country != "China":
+    if Bot.Secret.ip_country != "China":
         try:  # play store
             play_store_version = google_play_scraper("com.mojang.minecraftpe")[
                 "version"
@@ -108,7 +107,7 @@ async def mcbv(msg: Bot.MessageSession):
             f"""{msg.locale.t("mcv.message.mcbv.play_store")}
 {play_store_version if play_store_version else msg.locale.t("mcv.message.mcbv.get_failed")}
 """
-            if Secret.ip_country != "China"
+            if Bot.Secret.ip_country != "China"
             else ""
         )
         + f"""{msg.locale.t("mcv.message.mcbv.ms_store")}

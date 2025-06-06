@@ -2,7 +2,7 @@ import orjson as json
 
 from core.builtins import Bot, I18NContext, Image, Plain, Url
 from core.config import Config
-from core.constants import Info, wiki_whitelist_url_default
+from core.constants.default import wiki_whitelist_url_default
 from core.utils.image_table import image_table_render, ImageTable
 from . import wiki
 from .database.models import WikiTargetInfo
@@ -18,7 +18,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
         in_allowlist = True
-        if Info.use_url_manager:
+        if Bot.Info.use_url_manager:
             in_allowlist = check.value.in_allowlist
             if check.value.in_blocklist and not in_allowlist:
                 await msg.finish(I18NContext("wiki.message.invalid.blocked", name=check.value.name))
@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
         if (
-            Info.use_url_manager
+            Bot.Info.use_url_manager
             and check.value.in_blocklist
             and not check.value.in_allowlist
         ):

@@ -37,7 +37,6 @@ petal_lost_limit = 0 # The maximum number of petals users can lose per day.
 petal_sign_limit = 5 # The maximum number of petals users can get from signing in per day.
 petal_sign_rate = 0.5 # The probability of getting petals by signing in, ranging from 0 to 1, with an exponential decay in the number of petals obtained.
 use_secrets_random = false # Whether to use the random number generator based on the secrets library.
-web_render_local = "<Replace me with str value>" # The local WebRender service address.
 help_url = "https://bot.teahouse.team" # Help document URL.
 donate_url = "http://afdian.com/a/teahouse" # Donate URL.
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # Module help document URL.

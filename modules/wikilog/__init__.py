@@ -5,7 +5,7 @@ import orjson as json
 from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
-from core.constants import Info, wiki_whitelist_url_default
+from core.constants.default import wiki_whitelist_url_default
 from core.logger import Logger
 from .database.models import WikiLogTargetSetInfo
 from .utils import convert_data_to_text
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
     wiki_info = WikiLib(apilink)
     status = await wiki_info.check_wiki_available()
     in_allowlist = True
-    if Info.use_url_manager:
+    if Bot.Info.use_url_manager:
         in_allowlist = status.value.in_allowlist
         if status.value.in_blocklist and not in_allowlist:
             await msg.finish(

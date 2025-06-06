@@ -6,7 +6,8 @@ import traceback
 from typing import Dict, Optional, Union, Callable
 
 from core.config import Config
-from core.constants.path import modules_path, PrivateAssets
+from core.builtins import Info, PrivateAssets
+from core.constants.path import modules_path
 from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
@@ -16,7 +17,6 @@ from core.types.module.component_meta import (
     ScheduleMeta,
     HookMeta,
 )
-from core.utils.info import Info
 from core.utils.loader import fetch_modules_list
 
 all_modules = []

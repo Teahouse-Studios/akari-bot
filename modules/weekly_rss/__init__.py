@@ -18,7 +18,7 @@ weekly_rss = module(
 async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     weekly_cn = MessageChain(ctx.args["weekly_cn"])
     weekly_tw = MessageChain(ctx.args["weekly_tw"])
-    if Bot.FetchTarget.name == "QQ":
+    if Bot.client_name == "QQ":
         weekly_cn = [
             Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))
         ] + weekly_cn.as_sendable()
@@ -63,7 +63,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
             + weekly
         )
     ]
-    if Bot.FetchTarget.name == "QQ":
+    if Bot.client_name == "QQ":
         weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
         weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
     post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}

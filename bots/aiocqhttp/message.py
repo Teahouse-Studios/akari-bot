@@ -13,16 +13,16 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.builtins import (
     Bot,
+    Temp,
     base_superuser_list,
     command_prefix,
-    I18NContext,
-    Temp,
-    MessageTaskManager,
-    FetchTarget as FetchTargetT,
-    FinishedSession as FinishedSessionT,
     Plain,
     Image,
     Voice,
+    I18NContext,
+    MessageTaskManager,
+    FetchTarget as FetchTargetT,
+    FinishedSession as FinishedSessionT,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain, match_atcode
@@ -366,8 +366,8 @@ class MessageSession(MessageSessionT):
             template = {
                 "type": "node",
                 "data": {
-                    "nickname": sender_name if sender_name else Temp().data.get("qq_nickname"),
-                    "user_id": str(Temp().data.get("qq_account")),
+                    "nickname": sender_name if sender_name else Temp.data.get("qq_nickname"),
+                    "user_id": str(Temp.data.get("qq_account")),
                     "content": content.strip()
                 }
             }

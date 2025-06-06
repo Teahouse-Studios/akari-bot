@@ -8,11 +8,11 @@ from core.logger import Logger
 from .message import (
     convert_embed,
     MessageSession as MessageSessionT,
-    FinishedSession as FinS,
+    FinishedSession as FinishedSessionT,
 )
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         """
         用于删除这条消息。

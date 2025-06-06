@@ -1,6 +1,7 @@
 import os
 
-from core.constants import modules_path, Info
+from core.builtins import Info
+from core.constants.path import modules_path
 from core.logger import Logger
 
 import orjson as json

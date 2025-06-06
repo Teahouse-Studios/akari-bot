@@ -77,7 +77,6 @@
     "config.comments.web_host": "Web 服務的主機位址，設為 0.0.0.0 則監聽所有位址。",
     "config.comments.web_port": "Web 服務的連接埠號，設為 0 則停用服務。",
     "config.comments.web_render": "WebRender 服務的 URL 位址。",
-    "config.comments.web_render_local": "本地 WebRender 服務位址。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
     "config.header.line.2": "注意：TOML 不是 Python。請不要在此處使用 Python 語法。",
     "config.header.line.3": "例如：TOML 中的布林值必須是小寫。",

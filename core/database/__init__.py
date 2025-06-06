@@ -3,8 +3,10 @@ import os
 import orjson as json
 from tortoise import Tortoise
 
+from core.builtins.temp import Temp
 from core.config import Config
-from core.constants import Info, modules_path
+from core.constants.info import Info
+from core.constants.path import modules_path
 from core.logger import Logger
 from core.utils.loader import fetch_modules_list
 from .link import get_db_link
@@ -13,7 +15,6 @@ from .local import DB_LINK
 
 def fetch_module_db():
     unloaded_modules = Config("unloaded_modules", [])
-    Logger.info("Initializing database...")
     dir_list = []
     database_list = []
     if Info.binary_mode:
@@ -43,27 +44,41 @@ def fetch_module_db():
     return database_list
 
 
-async def init_db():
-    database_list = fetch_module_db()
-    await Tortoise.init(
-        config={
-            "connections": {
-                "default": get_db_link(),
-                "local": DB_LINK,
-            },
-            "apps": {
-                "models": {
-                    "models": ["core.database.models"] + database_list,
-                    "default_connection": "default",
+async def init_db(database_list=None):
+    try:
+        if not database_list:
+            database_list = fetch_module_db()
+        await Tortoise.init(
+            config={
+                "connections": {
+                    "default": get_db_link(),
+                    "local": DB_LINK,
                 },
-                "local_models": {
-                    "models": ["core.database.local"],
-                    "default_connection": "local",
+                "apps": {
+                    "models": {
+                        "models": ["core.database.models"] + database_list,
+                        "default_connection": "default",
+                    },
+                    "local_models": {
+                        "models": ["core.database.local"],
+                        "default_connection": "local",
+                    }
                 }
             }
-        }
-    )
+        )
 
-    await Tortoise.generate_schemas(safe=True)
+        await Tortoise.generate_schemas(safe=True)
 
-    Logger.success("Database initialized successfully.")
+        Temp.data["modules_db_list"] = database_list
+        return True
+    except Exception:
+        Logger.exception()
+        return False
+
+
+async def reload_db():
+    await Tortoise.close_connections()
+    if not await init_db():
+        Logger.error("Failed to reload database, fallbacking...")
+        return await init_db(Temp.data["modules_db_list"])
+    return True

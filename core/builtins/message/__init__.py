@@ -5,10 +5,6 @@ from datetime import datetime, UTC as datetimeUTC, timedelta
 from re import Match
 from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
 
-from core.builtins.message.chain import *
-from core.builtins.message.elements import MessageElement
-from core.builtins.message.internal import *
-from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
 from core.database.models import SenderInfo, TargetInfo
@@ -17,6 +13,10 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
 from core.utils.message import parse_time_string
+from ..utils import confirm_command
+from .chain import *
+from .elements import MessageElement
+from .internal import *
 
 
 class ExecutionLockList:

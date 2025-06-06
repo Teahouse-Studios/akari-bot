@@ -37,7 +37,6 @@ petal_lost_limit = 0 # 单日失去花瓣上限。
 petal_sign_limit = 5 # 单日签到获取花瓣上限。
 petal_sign_rate = 0.5 # 签到获取花瓣概率，范围 0 到 1 之间，获取数量呈指数衰减。
 use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
-web_render_local = "<Replace me with str value>" # 本地 WebRender 服务地址。
 help_url = "https://bot.teahouse.team" # 帮助文档网址。
 donate_url = "http://afdian.com/a/teahouse" # 捐赠网址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模块帮助文档网址。

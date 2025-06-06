@@ -14,7 +14,7 @@ import httpx
 import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.builtins import Bot
+from core.builtins import Info
 from core.config import Config
 from core.database.local import DirtyWordCache
 from core.logger import Logger
@@ -73,7 +73,7 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
     access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
     text = list(text)
     text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
-    if not access_key_id or not access_key_secret or not Bot.Info.dirty_word_check:
+    if not access_key_id or not access_key_secret or not Info.dirty_word_check:
         Logger.warning("Dirty words filter was disabled, skip.")
         return [{"content": t, "status": True, "original": t} for t in text]
 

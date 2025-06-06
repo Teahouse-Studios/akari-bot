@@ -8,23 +8,23 @@ from fastapi import WebSocket
 
 from core.builtins import (
     Bot,
+    Temp,
     Plain,
     Image,
     I18NContext,
     MessageTaskManager,
-    FinishedSession as FinS,
+    MessageSession as MessageSessionT,
+    FinishedSession as FinishedSessionT,
     FetchTarget as FetchTargetT
 )
-from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
-from core.builtins.temp import Temp
 from core.logger import Logger
 from core.types import Session
 from .info import *
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         try:
             websocket: WebSocket = Temp.data.get("web_chat_websocket")

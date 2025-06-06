@@ -3,13 +3,18 @@ from __future__ import annotations
 import base64
 import html
 import re
+from cattrs import structure, unstructure
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson as json
 
-from core.builtins.message.elements import (
+from core.constants import Secret
+from core.joke import shuffle_joke as joke
+from core.logger import Logger
+from core.utils.http import url_pattern
+from .elements import (
     elements_map,
     MessageElement,
     PlainElement,
@@ -24,13 +29,6 @@ from core.builtins.message.elements import (
 
 if TYPE_CHECKING:
     from core.builtins.message import MessageSession
-
-from core.builtins.utils import Secret
-from core.joke import shuffle_joke as joke
-from core.logger import Logger
-from core.utils.http import url_pattern
-
-from cattrs import structure, unstructure
 
 
 class MessageChain:
@@ -116,8 +114,6 @@ class MessageChain:
         for v in self.value:
             if isinstance(v, PlainElement):
                 for secret in Secret.list:
-                    if secret in ["", None, True, False]:
-                        continue
                     if v.text.upper().find(secret.upper()) != -1:
                         Logger.warning(unsafeprompt("Plain", secret, v.text))
                         return False

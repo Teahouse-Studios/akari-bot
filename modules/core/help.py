@@ -11,7 +11,6 @@ from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
 from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
-from core.constants.info import Info
 from core.constants.path import templates_path
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
@@ -105,8 +104,7 @@ async def _(msg: Bot.MessageSession, module: str):
             else:
                 wiki_msg = ""
 
-            if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image and Info.web_render_status:
-                use_local = bool(Info.web_render_local_status)
+            if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image and Bot.Info.web_render_status:
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
@@ -133,7 +131,7 @@ async def _(msg: Bot.MessageSession, module: str):
                         html_ = json.dumps(d)
                         Logger.info("[WebRender] Generating help document...")
                         try:
-                            pic = await download(webrender("element_screenshot", use_local=use_local),
+                            pic = await download(webrender("element_screenshot"),
                                                  status_code=200,
                                                  headers={"Content-Type": "application/json"},
                                                  method="POST",
@@ -143,21 +141,8 @@ async def _(msg: Bot.MessageSession, module: str):
                                                  request_private_ip=True
                                                  )
                         except Exception as e:
-                            if use_local:
-                                try:
-                                    pic = await download(webrender("element_screenshot", use_local=False),
-                                                         status_code=200,
-                                                         method="POST",
-                                                         headers={"Content-Type": "application/json"},
-                                                         post_data=html_,
-                                                         request_private_ip=True
-                                                         )
-                                except Exception as e:
-                                    Logger.error("[WebRender] Generation Failed.")
-                                    raise e
-                            else:
-                                Logger.error("[WebRender] Generation Failed.")
-                                raise e
+                            Logger.exception("[WebRender] Generation Failed.")
+                            raise e
                         with open(pic, "rb") as read:
                             load_img = json.loads(read.read())
                         img_lst = []
@@ -275,18 +260,15 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
 async def help_generator(msg: Bot.MessageSession,
                          show_base_modules: bool = True,
                          show_disabled_modules: bool = False,
-                         show_dev_modules: bool = True,
-                         use_local: bool = True):
+                         show_dev_modules: bool = True):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
 
-    if not Info.web_render_status:
+    if not Bot.Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
 
     dev_module_list = []
     essential = {}
@@ -337,7 +319,7 @@ async def help_generator(msg: Bot.MessageSession,
     html_ = json.dumps(d)
     Logger.info("[WebRender] Generating module list...")
     try:
-        pic = await download(webrender("element_screenshot", use_local=use_local),
+        pic = await download(webrender("element_screenshot"),
                              status_code=200,
                              headers={"Content-Type": "application/json"},
                              method="POST",
@@ -347,21 +329,8 @@ async def help_generator(msg: Bot.MessageSession,
                              request_private_ip=True
                              )
     except Exception:
-        if use_local:
-            try:
-                pic = await download(webrender("element_screenshot", use_local=False),
-                                     status_code=200,
-                                     method="POST",
-                                     headers={"Content-Type": "application/json"},
-                                     post_data=html_,
-                                     request_private_ip=True
-                                     )
-            except Exception:
-                Logger.error("[WebRender] Generation Failed.")
-                return False
-        else:
-            Logger.error("[WebRender] Generation Failed.")
-            return False
+        Logger.exception("[WebRender] Generation Failed.")
+        return False
     with open(pic, "rb") as read:
         load_img = json.loads(read.read())
     img_lst = []

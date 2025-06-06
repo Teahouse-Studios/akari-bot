@@ -11,10 +11,10 @@ from core.builtins import (
     Bot,
     Plain,
     Image,
-    MessageSession as MessageSessionT,
     I18NContext,
     Url,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )

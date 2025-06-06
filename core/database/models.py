@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Union
 
 from tortoise import fields
 
-from core.constants import default_locale
+from core.constants.default import default_locale
 from core.utils.message import convert2lst
 from .base import DBModel
 

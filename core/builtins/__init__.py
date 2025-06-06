@@ -2,8 +2,9 @@ import asyncio
 from typing import Any, Dict, List, Optional, Union
 
 from core.config import Config
-from core.constants import base_superuser_default
-from core.constants.info import Info
+from core.constants.default import base_superuser_default
+from core.constants.info import Info, Secret
+from core.constants.path import PrivateAssets
 from core.database.models import AnalyticsData, TargetInfo
 from core.exports import add_export
 from core.loader import ModulesManager
@@ -22,10 +23,12 @@ class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
+    ExecutionLockList = ExecutionLockList
     FetchedSession = FetchedSession
     ModuleHookContext = ModuleHookContext
-    ExecutionLockList = ExecutionLockList
+    PrivateAssets = PrivateAssets
     Info = Info
+    Secret = Secret
     Temp = Temp
 
     @staticmethod
