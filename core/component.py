@@ -11,7 +11,7 @@ from core.loader import ModulesManager
 from core.parser.args import parse_template
 from core.types import Module
 from core.types.module.component_meta import *
-from core.config.config_v2 import config
+from core.config.decorator import process_class
 
 
 class Bind:
@@ -183,9 +183,16 @@ class Bind:
                 return self.schedule(*args, **kwargs)
             return self.command(*args, **kwargs)
 
-        @staticmethod
-        def config(locale:bool = False):
-            return config(locale)
+        def config(self, cls=None):
+            """
+            装饰器，声明模块配置项。
+            """
+            def wrap(cls):
+                return process_class(cls, self.bind_prefix)
+
+            if cls is None:
+                return wrap
+            return wrap(cls)
 
 
 

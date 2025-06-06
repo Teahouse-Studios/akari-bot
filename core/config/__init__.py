@@ -12,12 +12,12 @@ from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
 import core.config.update  # noqa
+from core.config.decorator import onconfig
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
 from core.exports import add_export
 from core.i18n import Locale
-
 
 ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
@@ -200,20 +200,20 @@ class CFGManager:
                 # check that value matches cfg_type type
                 if value is not None and not isinstance(value, cfg_type):
                     if (float in (cfg_type if isinstance(cfg_type, tuple)
-                                  else [cfg_type])) and isinstance(value, int):
+                    else [cfg_type])) and isinstance(value, int):
                         pass  # allow int as float
                     else:
                         expected_type = ", ".join(map(lambda t: t.__name__, cfg_type)) if isinstance(
                             cfg_type, tuple) else cfg_type.__name__
                         logger.warning(f"[Config] Config {q} has a wrong type, expected {
-                            expected_type}, got {type(value).__name__}.")
+                        expected_type}, got {type(value).__name__}.")
         elif default is not None and not isinstance(value, type(default)):
             # if cfg_type is not provided but default is given, check that value is consistent with default type
             if not (isinstance(default, float) and isinstance(value, int)):  # allow int as float
                 logger.warning(
                     f"[Config] Config {q} has a wrong type, expected {
-                        type(default).__name__}, got {
-                        type(value).__name__}.")
+                    type(default).__name__}, got {
+                    type(value).__name__}.")
 
         return value
 
@@ -406,11 +406,8 @@ CFGManager.load()
 
 
 def Config(q: str,
-           default: Union[Any,
-                          None] = None,
-           cfg_type: Union[type,
-                           tuple,
-                           None] = None,
+           default: Union[Any, None] = None,
+           cfg_type: Union[type, tuple, None] = None,
            secret: bool = False,
            table_name: Optional[str] = None,
            is_url: bool = False,
@@ -440,6 +437,45 @@ def Config(q: str,
     return v
 
 
+class Item:
+    def __init__(
+        self,
+        value: Any,
+        default: Any = None,
+        table_name: Optional[str] = None,
+        is_secret: bool = False,
+        is_url: bool = False
+    ):
+        self.value = value
+        self.default = default
+        self.table_name = table_name
+        self.is_secret = is_secret
+        self.is_url = is_url
+
+    def __repr__(self):
+        return f"Item(value={self.value}, default={self.default}, table_name={self.table_name}, is_secret={self.is_secret}, is_url={self.is_url})"
+
+
+def item(
+    value: Any,
+    default: Any = None,
+    table_name: Optional[str] = None,
+    is_secret: bool = False,
+    is_url: bool = False
+) -> Item:
+    """
+    A decorator to define a configuration item.
+    :param value: The value of the item.
+    :param default: The default value of the item.
+    :param table_name: The file where you store the config items.
+    :param is_secret: Whether the item is a secret.
+    :param is_url: Whether the item is a URL.
+    :return: An instance of Item.
+    """
+    return Item(value, default, table_name, is_secret, is_url)
+
 
 add_export(Config)
 add_export(CFGManager)
+add_export(onconfig)
+add_export(item)

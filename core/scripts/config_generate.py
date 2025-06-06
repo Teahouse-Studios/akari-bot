@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import sys
+from importlib import util as importlib_util
 from time import sleep
 
 if __name__ == "__main__":
@@ -53,23 +54,13 @@ def generate_config(dir_path, language):
                 continue
             for file in _files:
                 if file.endswith(".py"):
-                    file_path = os.path.join(root, file)
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        code = f.read()
-                        if f := match_code.finditer(code):  # Find all Config() functions in the code
-                            for m in f:
-                                left_brackets_count = 0
-                                param_text = ""
-                                for param in code[m.end(
-                                ):]:  # Get the parameters text inside the Config() function by counting brackets
-                                    if param == "(":
-                                        left_brackets_count += 1
-                                    elif param == ")":
-                                        left_brackets_count -= 1
-                                    if left_brackets_count == -1:
-                                        break
-                                    param_text += param
-                                config_code_list[param_text] = file_path
+                    module_name = file[:-3]
+                    module_path = os.path.join(_dir, file)
+
+                    spec = importlib_util.spec_from_file_location(module_name, module_path)
+                    module = importlib_util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+                    del spec
     # filtered_config_code_map = {}
     # for c in config_code_list:
     #     opt = c.split(",")[0]
@@ -80,17 +71,6 @@ def generate_config(dir_path, language):
     #             print(f"Conflict found: {filtered_config_code_map[opt]}")
     #             filtered_config_code_map[opt] = c
     # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
-    for c in config_code_list:
-        spl = c.split(",") + ["_generate=True"]  # Add _generate=True param to the end of the config function
-        for s in spl:
-            if s.strip() == "":
-                spl.remove(s)
-        try:
-            # Execute the code to generate the config file, yeah, just stupid but works
-            exec(f"Config({",".join(spl)})")  # noqa
-        except (NameError, TypeError):
-            # traceback.print_exc()
-            ...
 
     CFGManager.write("initialized", True)
 
@@ -118,68 +98,3 @@ Please input the number of the language you want to use: """)
     print("Press enter to exit.")
     input()
     sys.exit(0)
-
-
-if __name__ == "__main__":
-    import zipfile
-    import difflib
-
-    def zip_language_folders(config_store_path, config_store_packed_path):
-        for lang in os.listdir(config_store_path):
-            lang_path = os.path.join(config_store_path, lang)
-            if os.path.isdir(lang_path):
-                zip_path = os.path.join(config_store_packed_path, f"{lang}.zip")
-                with zipfile.ZipFile(zip_path, "w") as zipf:
-                    for root, _, files in os.walk(lang_path):
-                        for file in files:
-                            file_path = os.path.join(root, file)
-                            arcname = os.path.relpath(file_path, lang_path)
-                            zipf.write(file_path, arcname)
-
-    config_store_path = os.path.join(assets_path, "config_store")
-    config_store_packed_path = os.path.join(assets_path, "config_store_packed")
-    config_store_path_bak = config_store_path + "_bak"
-    if os.path.exists(config_store_path_bak):
-        shutil.rmtree(config_store_path_bak)
-    if os.path.exists(config_store_path):
-        shutil.move(config_store_path, config_store_path_bak)
-    os.makedirs(config_store_path, exist_ok=True)
-    os.makedirs(config_store_packed_path, exist_ok=True)
-    for lang in lang_list:
-        config_store_path_ = os.path.join(config_store_path, lang)
-        os.makedirs(config_store_path_, exist_ok=True)
-        generate_config(config_store_path_, lang)
-    # compare old and new config files
-    repack = False
-    for lang in lang_list:
-        config_store_path_ = os.path.join(config_store_path, lang)
-        config_store_path_bak = config_store_path + "_bak"
-        if not os.path.exists(config_store_path_bak):
-            repack = True
-            break
-        for root, _, files_ in os.walk(config_store_path_):
-            for file in files_:
-                file_path = os.path.join(root, file)
-                file_path_bak = file_path.replace(config_store_path, config_store_path_bak)
-                if not os.path.exists(file_path_bak):
-                    repack = True
-                    break
-                with open(file_path, "r", encoding="utf-8") as f:
-                    new = f.readlines()
-                with open(file_path_bak, "r", encoding="utf-8") as f:
-                    old = f.readlines()
-                diff = difflib.unified_diff(old, new, fromfile=file_path_bak, tofile=file_path)
-                for d in diff:
-
-                    if d:
-                        print(d)
-                        repack = True
-                        break
-            if repack:
-                break
-    if repack:
-        zip_language_folders(config_store_path, config_store_packed_path)
-        print("Changes detected, repacked the config files.")
-    shutil.rmtree(config_store_path + "_bak")
-
-    print("Config files generated successfully.")
