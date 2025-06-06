@@ -10,7 +10,7 @@ from PIL import Image as PILImage
 
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
-from core.config import Config
+from core.config import onconfig
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
 from core.constants.info import Info
 from core.constants.path import templates_path
@@ -22,8 +22,11 @@ from core.utils.http import download
 from core.utils.web_render import webrender
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
-help_url = Config("help_url", help_url_default)
-donate_url = Config("donate_url", donate_url_default)
+
+@onconfig(table_name=None)
+class ConfigC:
+    help_page_url: str = help_url_default
+    donate_url: str = donate_url_default
 
 hlp = module("help", base=True, doc=True)
 
@@ -96,7 +99,7 @@ async def _(msg: Bot.MessageSession, module: str):
                     devs_msg = ""
 
             if module_.doc:
-                if help_page_url := Config("help_page_url", help_page_url_default, cfg_type=str):
+                if help_page_url := ConfigC("help_page_url", help_page_url_default, cfg_type=str):
                     wiki_msg = f"[I18N:core.message.help.helpdoc.address,url={
                         help_page_url.replace("${module}", help_name)}]"
                 elif help_url:

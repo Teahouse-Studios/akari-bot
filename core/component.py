@@ -188,7 +188,7 @@ class Bind:
             装饰器，声明模块配置项。
             """
             def wrap(cls):
-                return process_class(cls, self.bind_prefix)
+                return process_class(cls, "module_" + self.bind_prefix)
 
             if cls is None:
                 return wrap

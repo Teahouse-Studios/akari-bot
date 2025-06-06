@@ -6,7 +6,7 @@ from cpuinfo import get_cpu_info
 
 from core.builtins import Bot, Plain, I18NContext, Url
 from core.component import module
-from core.config import Config
+from core.config import onconfig
 from core.constants import locale_url_default
 from core.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.bash import run_sys_command
@@ -15,13 +15,19 @@ from core.utils.info import Info
 
 ver = module("version", base=True, doc=True)
 
+@onconfig(table_name=None)
+class ConfigC:
+    enable_commit_url: bool = True
+    locale_url: str = locale_url_default
+
+
 
 @ver.command("{[I18N:core.help.version]}")
 async def _(msg: Bot.MessageSession):
     if Info.version:
         commit = Info.version[0:6]
         send_msgs = [I18NContext("core.message.version", disable_joke=True, commit=commit)]
-        if Config("enable_commit_url", True):
+        if ConfigC.enable_commit_url:
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:
                 repo_url = repo_url.strip().replace(".git", "")
@@ -161,7 +167,7 @@ async def _(msg: Bot.MessageSession):
            I18NContext("core.message.locale.set.prompt", prefix=msg.prefixes[0]),
            I18NContext("core.message.locale.langlist", langlist=avaliable_lang)]
 
-    if locale_url := Config("locale_url", locale_url_default, cfg_type=str):
+    if locale_url := ConfigC.locale_url:
         res.append(I18NContext("core.message.locale.contribute", url=locale_url))
     await msg.finish(res)
 

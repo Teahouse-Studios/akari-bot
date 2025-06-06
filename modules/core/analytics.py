@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 from core.builtins import Bot, Image, I18NContext
 from core.component import module
-from core.config import Config
+from core.config import onconfig
 from core.database.models import AnalyticsData
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -20,10 +20,14 @@ async def get_first_record(msg: Bot.MessageSession):
 
 ana = module("analytics", alias="ana", required_superuser=True, base=True, doc=True)
 
+@onconfig(table_name=None)
+class ConfigC:
+    enable_analytics = False
+
 
 @ana.command()
 async def _(msg: Bot.MessageSession):
-    if Config("enable_analytics", False):
+    if ConfigC.enable_analytics:
         try:
             first_record = await get_first_record(msg)
             get_counts = await AnalyticsData.all().count()
@@ -48,7 +52,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command("days [<module>]")
 async def _(msg: Bot.MessageSession):
-    if Config("enable_analytics", False):
+    if ConfigC.enable_analytics:
         try:
             first_record = await get_first_record(msg)
             module_ = msg.parsed_msg.get("<module>")
@@ -111,7 +115,7 @@ async def _(msg: Bot.MessageSession):
 
 @ana.command("year [<module>]")
 async def _(msg: Bot.MessageSession):
-    if Config("enable_analytics", False):
+    if ConfigC.enable_analytics:
         try:
             first_record = await get_first_record(msg)
             module_ = msg.parsed_msg.get("<module>")
@@ -175,7 +179,7 @@ async def _(msg: Bot.MessageSession):
 @ana.command("modules [<rank>]")
 async def _(msg: Bot.MessageSession, rank: int = None):
     rank = rank if rank and rank > 0 else 30
-    if Config("enable_analytics", False):
+    if ConfigC.enable_analytics:
         try:
             module_counts = await AnalyticsData.get_modules_count()
             top_modules = sorted(

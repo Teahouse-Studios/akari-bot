@@ -1,15 +1,24 @@
 from core.builtins import Bot, I18NContext, Plain
 from core.component import module
-from core.config import Config
+from core.config import item
 from core.constants.exceptions import ConfigValueError
 from core.utils.random import Random
 
-MAX_COIN_NUM = Config("coin_limit", 10000, table_name="module_coin")
-FACE_UP_WEIGHT = Config("coin_faceup_weight", 4997, table_name="module_coin")
-FACE_DOWN_WEIGHT = Config("coin_facedown_weight", 4997, table_name="module_coin")
-STAND_WEIGHT = Config("coin_stand_weight", 6, table_name="module_coin")
-
 coin = module("coin", developers=["Light-Beacon"], desc="[I18N:coin.help.desc]", doc=True)
+
+
+@coin.config
+class CoinConfig:
+    coin_limit: int = item(10000)
+    coin_faceup_weight: int = item(4997)
+    coin_facedown_weight: int = item(4997)
+    coin_stand_weight: int = item(6)
+
+
+MAX_COIN_NUM = CoinConfig.coin_limit
+FACE_UP_WEIGHT = CoinConfig.coin_faceup_weight
+FACE_DOWN_WEIGHT = CoinConfig.coin_facedown_weight
+STAND_WEIGHT = CoinConfig.coin_stand_weight
 
 
 @coin.command()

@@ -14,7 +14,6 @@ ctd = module(
     alias="ctd",
 )
 
-
 @ctd.command("profile [<username>] {[I18N:cytoid.help.profile]}")
 async def _(msg: Bot.MessageSession, username: str = None):
     await cytoid_profile(msg, username)

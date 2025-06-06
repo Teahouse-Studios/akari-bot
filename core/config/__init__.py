@@ -440,24 +440,21 @@ def Config(q: str,
 class Item:
     def __init__(
         self,
-        value: Any,
         default: Any = None,
         table_name: Optional[str] = None,
         is_secret: bool = False,
         is_url: bool = False
     ):
-        self.value = value
         self.default = default
         self.table_name = table_name
         self.is_secret = is_secret
         self.is_url = is_url
 
     def __repr__(self):
-        return f"Item(value={self.value}, default={self.default}, table_name={self.table_name}, is_secret={self.is_secret}, is_url={self.is_url})"
+        return f"Item(default={self.default}, table_name={self.table_name}, is_secret={self.is_secret}, is_url={self.is_url})"
 
 
 def item(
-    value: Any,
     default: Any = None,
     table_name: Optional[str] = None,
     is_secret: bool = False,
@@ -472,7 +469,7 @@ def item(
     :param is_url: Whether the item is a URL.
     :return: An instance of Item.
     """
-    return Item(value, default, table_name, is_secret, is_url)
+    return Item(default, table_name, is_secret, is_url)
 
 
 add_export(Config)

@@ -10,19 +10,13 @@ T = TypeVar('T')
 
 
 def process_class(cls: Type[T], table_name) -> Type[T]:
-    if not hasattr(cls, '__annotations__'):
-        raise TypeError("Config class must have type annotations")
-
-    cls_annotations = inspect.get_annotations(cls)
-
-    class_fields: Dict[str, Any] = {}
-    for key, value in cls_annotations.items():
-        if not key.startswith('__'):
-            class_fields[key] = value
+    cls_annotations = {k: v for k, v in inspect.get_annotations(cls).items() if not k.startswith("__")}
+    if not cls_annotations:
+        cls_annotations = {k: Any for k, _ in vars(cls).items() if not k.startswith("__")}
 
     def __init__(self, **kwargs):
         for field_name, field_type in cls_annotations.items():
-            default_value = class_fields.get(field_name, None)
+            default_value = cls_annotations.get(field_name, None)
             __value = kwargs.get(field_name, default_value)
 
             if __value is not None and not isinstance(__value, field_type):

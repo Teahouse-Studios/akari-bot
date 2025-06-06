@@ -2,13 +2,18 @@ from copy import deepcopy
 
 from core.builtins import Bot, I18NContext, Plain
 from core.component import module
-from core.config import Config, CFGManager
+from core.config import onconfig, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from .help import modules_list_help
+
+@onconfig(table_name=None)
+class ConfigC:
+    allow_reload_base: bool = False
+    unloaded_modules: list = []
 
 m = module(
     "module",
@@ -213,7 +218,7 @@ async def config_modules(msg: Bot.MessageSession):
             else:
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
                 if modules_[module_].base:
-                    if Config("allow_reload_base", False):
+                    if ConfigC.allow_reload_base:
                         confirm = await msg.wait_confirm(
                             I18NContext("core.message.module.reload.base.confirm"),
                             append_instruction=False,
@@ -232,7 +237,7 @@ async def config_modules(msg: Bot.MessageSession):
                     )
                     if not confirm:
                         await msg.finish()
-                unloaded_list = Config("unloaded_modules", [])
+                unloaded_list = ConfigC.unloaded_modules
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
@@ -250,7 +255,7 @@ async def config_modules(msg: Bot.MessageSession):
             if ModulesManager.load_module(module_):
                 msglist.append(I18NContext("core.message.module.load.success", module=module_)
                                )
-                unloaded_list = Config("unloaded_modules", [])
+                unloaded_list = ConfigC.unloaded_modules
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
@@ -262,7 +267,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ in err_modules:
                     if await msg.wait_confirm(I18NContext("core.message.module.unload.unavailable.confirm"),
                                               append_instruction=False):
-                        unloaded_list = Config("unloaded_modules", [])
+                        unloaded_list = ConfigC.unloaded_modules
                         if not unloaded_list:
                             unloaded_list = []
                         if module_ not in unloaded_list:
@@ -283,7 +288,7 @@ async def config_modules(msg: Bot.MessageSession):
                                       append_instruction=False):
                 if ModulesManager.unload_module(module_):
                     msglist.append(I18NContext("core.message.module.unload.success", module=module_))
-                    unloaded_list = Config("unloaded_modules", [])
+                    unloaded_list = ConfigC.unloaded_modules
                     if not unloaded_list:
                         unloaded_list = []
                     unloaded_list.append(module_)

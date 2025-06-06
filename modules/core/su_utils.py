@@ -8,7 +8,7 @@ import orjson as json
 
 from core.builtins import Bot, I18NContext, PrivateAssets, Plain, ExecutionLockList, Temp
 from core.component import module
-from core.config import Config, CFGManager
+from core.config import onconfig, CFGManager, Config
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
 from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
@@ -26,6 +26,12 @@ from core.utils.text import isfloat, isint
 
 target_list = get_all_target_prefix()
 sender_list = get_all_sender_prefix()
+
+@onconfig(table_name=None)
+class ConfigC:
+    enable_eval: bool = False
+    enable_petal: bool = False
+
 
 
 su = module("superuser", alias="su", required_superuser=True, base=True, doc=True, exclude_from=["TEST|Console"])
@@ -512,7 +518,7 @@ async def _(msg: Bot.MessageSession):
     raise TestException("{core.message.raise}")
 
 
-_eval = module("eval", required_superuser=True, base=True, doc=True, load=Config("enable_eval", False))
+_eval = module("eval", required_superuser=True, base=True, doc=True, load=ConfigC.enable_eval)
 
 
 @_eval.command("<display_msg>")
@@ -592,7 +598,7 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
     else:
         await msg.finish(I18NContext("message.failed"))
 
-petal_ = module("petal", alias="petals", base=True, doc=True, load=Config("enable_petal", False))
+petal_ = module("petal", alias="petals", base=True, doc=True, load=ConfigC.enable_petal)
 
 
 @petal_.command("{[I18N:core.help.petal]}")
