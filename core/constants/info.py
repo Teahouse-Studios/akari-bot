@@ -5,7 +5,8 @@ class Secret:
 
     @classmethod
     def add(cls, secret):
-        cls.list.append(secret)
+        if secret:
+            cls.list.append(secret)
 
 
 class Info:
