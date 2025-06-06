@@ -55,7 +55,7 @@ default_locale = Config("default_locale", cfg_type=str)
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 
 WEB_HOST = Config("web_host", "127.0.0.1", table_name="bot_web")
-WEB_PORT = Config("web_port", 8081, table_name="bot_web")
+WEB_PORT = Config("web_port", 6485, table_name="bot_web")
 
 ALLOW_ORIGINS = Config("allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
