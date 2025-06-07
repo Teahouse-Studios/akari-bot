@@ -77,7 +77,6 @@
     "config.comments.web_host": "The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.",
     "config.comments.web_port": "The port number of the Web service. Setting to 0 will disable the service.",
     "config.comments.web_render": "WebRender service URL.",
-    "config.comments.web_render_local": "The local WebRender service address.",
     "config.header.line.1": "https://toml.io/en/v1.0.0",
     "config.header.line.2": "NOTE: TOML is not like Python. Do not use Python syntax here.",
     "config.header.line.3": "EXAMPLE: Boolean values in TOML must be lowercase.",
