@@ -53,6 +53,7 @@ class SessionInfo:
     petal: Optional[int] = None
     prefixes: List[str] = []
     ctx_slot: Optional[int] = 0
+    fetch: bool = False
     tmp = {}
 
     @classmethod
@@ -67,6 +68,7 @@ class SessionInfo:
                      messages: Optional[MessageChain] = None,
                      admin: bool = False,
                      ctx_slot: int = 0,
+                     fetch: bool = False,
                      create: bool = True,
                      ) -> SessionInfo:
 
@@ -92,6 +94,8 @@ class SessionInfo:
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
         prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy()
+        if fetch:
+            ctx_slot = 999
 
         return cls(
             target_id=target_id,
@@ -118,7 +122,8 @@ class SessionInfo:
             timezone_offset=parse_time_string(_tz_offset),
             petal=sender_info.petal if sender_info else None,
             prefixes=prefixes,
-            ctx_slot=ctx_slot
+            ctx_slot=ctx_slot,
+            fetch=fetch,
         )
 
     async def refresh_info(self):

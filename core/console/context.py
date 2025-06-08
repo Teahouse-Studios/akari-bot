@@ -76,6 +76,3 @@ class ConsoleContextManager(ContextManager):
         print(
             f"(Tried to delete {str(message_id)}, but I\'m a console so I cannot do it :< )"
         )
-
-
-Bot.ContextManager = ConsoleContextManager

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from apscheduler.schedulers import SchedulerAlreadyRunningError
 
@@ -22,13 +23,11 @@ async def client_init(target_prefix_list: list = None, sender_prefix_list: list 
                                                          target_prefix_list=target_prefix_list,
                                                          sender_prefix_list=sender_prefix_list)
 
-    @Scheduler.scheduled_job(IntervalTrigger(minutes=60))
+    @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
     async def bg():
         await JobQueueClient.send_keepalive_signal_to_server(Info.client_name,
                                                              target_prefix_list=target_prefix_list,
                                                              sender_prefix_list=sender_prefix_list)
-    try:
-        Scheduler.start()
-    except SchedulerAlreadyRunningError:
-        Logger.warning("Scheduler is already running, skipping start.")
+    Scheduler.start()
+    logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
     Logger.info(f"Hello, {Info.client_name}!")

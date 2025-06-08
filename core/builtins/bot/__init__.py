@@ -92,7 +92,7 @@ class Bot:
         try:
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
-                                                      ctx_slot=cls.fetched_session_ctx_slot, create=False)
+                                                      fetch=True, create=False)
         except ValueError:
             return None
 

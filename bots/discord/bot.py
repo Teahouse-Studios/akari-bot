@@ -18,7 +18,7 @@ from core.terminate import cleanup_sessions
 from core.utils.info import Info
 from core.client import client_init
 
-from bots.discord.context import DiscordContextManager
+from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
@@ -27,6 +27,8 @@ Bot.register_bot(client_name=client_name,
                  private_assets_path=os.path.join(assets_path, "private", "discord"))
 
 ctx_id = Bot.register_context_manager(DiscordContextManager)
+
+Bot.register_context_manager(DiscordFetchedContextManager, fetch_session=True)
 
 
 count = 0

@@ -28,46 +28,46 @@ class JobQueueClient(JobQueueBase):
                            "sender_prefix_list": sender_prefix_list or []}, wait=False)
 
 
-@JobQueueClient.action("check_session_native_permission")
-async def _(tsk: JobQueuesTable, args: dict):
+def get_session(args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
     bot: "Bot" = exports["Bot"]
-    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    if not session_info.fetch:
+        ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    else:
+        ctx_manager = bot.ContextSlots[bot.fetched_session_ctx_slot]
+    return session_info, bot, ctx_manager
+
+
+@JobQueueClient.action("check_session_native_permission")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = get_session(args)
     return {"value": await ctx_manager.check_native_permission(session_info)}
 
 
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    bot: "Bot" = exports["Bot"]
-    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    session_info, bot, ctx_manager = get_session(args)
     send = await ctx_manager.send_message(session_info, converter.structure(args["message"], MessageChain), quote=args["quote"])
     return {"message_id": send}
 
 
 @JobQueueClient.action("delete_message")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    bot: "Bot" = exports["Bot"]
-    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    session_info, bot, ctx_manager = get_session(args)
     await ctx_manager.delete_message(session_info, message_id=args["message_id"])
     return {"success": True}
 
 
 @JobQueueClient.action("start_typing")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    bot: "Bot" = exports["Bot"]
-    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    session_info, bot, ctx_manager = get_session(args)
     await ctx_manager.start_typing(session_info)
     return {"success": True}
 
 
 @JobQueueClient.action("end_typing")
 async def _(tsk: JobQueuesTable, args: dict):
-    session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
-    bot: "Bot" = exports["Bot"]
-    ctx_manager = bot.ContextSlots[session_info.ctx_slot]
+    session_info, bot, ctx_manager = get_session(args)
     await ctx_manager.end_typing(session_info)
     return {"success": True}
 
