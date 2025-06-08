@@ -43,8 +43,8 @@ def fetch_module_db():
     return database_list
 
 
-async def init_db():
-    database_list = fetch_module_db()
+async def init_db(load_module_db: bool = True) -> None:
+    database_list = fetch_module_db() if load_module_db else []
     await Tortoise.init(
         config={
             "connections": {
