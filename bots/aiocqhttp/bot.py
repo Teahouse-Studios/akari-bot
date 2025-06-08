@@ -15,6 +15,7 @@ from core.constants.default import issue_url_default, ignored_sender_default, qq
 from core.constants.path import assets_path
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
+from core.logger import Logger
 from core.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.tos import tos_report
@@ -207,10 +208,13 @@ async def _(event: Event):
                                              sender_id=sender_id,
                                              action="mute",
                                              detail=str(event.duration))
+        Logger.info(f"Unfriendly action detected: mute ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True
         if result and not sender_info.superuser:
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: mute")
+            Logger.info(f"Block {target_id} by ToS: mute")
             reason = Locale(default_locale).t("tos.message.reason.mute")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
@@ -228,8 +232,12 @@ async def _(event: Event):
         target_info = await TargetInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(target_id=target_id,
                                              sender_id=sender_id,
-                                             action="kick")
+                                             action="kick",
+                                             detail="")
+        Logger.info(f"Unfriendly action detected: kick")
         if not sender_info.superuser:
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
+            Logger.info(f"Block {target_id} by ToS: kick")
             reason = Locale(default_locale).t("tos.message.reason.kick")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)

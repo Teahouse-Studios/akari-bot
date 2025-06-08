@@ -302,8 +302,7 @@ async def _(msg: Bot.MessageSession, user: str):
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
-    await sender_info.switch_identity(trust=False, enable=False)
-    if not sender_info.trusted and sender_info.blocked:
+    if await sender_info.switch_identity(trust=False, enable=True):
         await msg.finish(I18NContext("core.message.abuse.ban.success", user=user))
 
 
