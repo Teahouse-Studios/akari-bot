@@ -64,7 +64,7 @@ class Bot:
         async def _process_msg():
             ctx_manager.add_context(session_info, ctx)
             queue_client: "JobQueueClient" = exports["JobQueueClient"]
-            await queue_client.send_message_signal_to_server(session_info)
+            await queue_client.send_message_to_server(session_info)
             await asyncio.sleep(1)  # 清理上下文时等待1秒，删的太快了会报错
             ctx_manager.del_context(session_info)
 
@@ -141,7 +141,7 @@ class Bot:
                     post_message = message['default']
             else:
                 post_message = message
-            await queue_server.send_message_signal_to_client(session_, post_message)
+            await queue_server.client_send_message(session_, post_message)
 
     postMessage = post_message
     postGlobalMessage = post_global_message
@@ -154,14 +154,14 @@ class Bot:
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
         queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await queue_server.start_typing_signal_to_client(session_info)
+        await queue_server.client_start_typing_signal(session_info)
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
         queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await queue_server.end_typing_signal_to_client(session_info)
+        await queue_server.client_end_typing_signal(session_info)
 
     @classmethod
     def register_context_manager(cls, ctx_manager: Any, fetch_session: bool = False) -> int:

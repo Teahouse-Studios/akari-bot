@@ -725,3 +725,26 @@ class FetchTarget(FetchTargetT):
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
+#
+# if msg.session_info.target_from == qq_group_prefix:  # wtf onebot 11
+#     obi = await get_onebot_implementation()
+#     if obi in ["llonebot", "napcat"]:
+#         await msg.call_api("set_msg_emoji_like",
+#                            message_id=msg.session.message.message_id,
+#                            emoji_id=qq_limited_emoji)
+#     elif obi == "lagrange":
+#         await msg.call_api("set_group_reaction",
+#                            group_id=msg.session.target,
+#                            message_id=msg.session.message.message_id,
+#                            code=qq_limited_emoji,
+#                            is_add=True)
+#     elif obi == "shamrock":
+#         await msg.call_api("send_group_msg",
+#                            group_id=msg.session.target,
+#                            message=f"[CQ:touch,id={qq_account}]")
+#     elif obi == "go-cqhttp":
+#         await msg.call_api("send_group_msg",
+#                            group_id=msg.session.target,
+#                            message=f"[CQ:poke,qq={qq_account}]")
+#     else:
+#         pass

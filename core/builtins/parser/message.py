@@ -247,6 +247,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
 
 async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, modules, command_first_word, identify_str):
     time_start = datetime.now()
+    bot: "Bot" = exports["Bot"]
     try:
         await _check_target_cooldown(msg)
         if enable_tos:
@@ -268,7 +269,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
             return
 
         if module.required_base_superuser:
-            if msg.session_info.sender_id not in exports["Bot"].base_superuser_list:
+            if msg.session_info.sender_id not in bot.base_superuser_list:
                 await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                 return
         elif module.required_superuser:
@@ -308,7 +309,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
             for func in module.command_list.set:
                 if not func.help_doc:
                     if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
-                        await exports["Bot"].start_typing(msg.session_info)
+                        await bot.start_typing(msg.session_info)
                         await func.function(msg)  # 将msg传入下游模块
 
                     else:
@@ -318,7 +319,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
         await _process_send_message_failed(msg)
 
     except FinishedException as e:
-        await exports["Bot"].end_typing(msg.session_info)
+        await bot.end_typing(msg.session_info)
         time_used = datetime.now() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
                        f"Times take up: {str(time_used)}")
@@ -343,13 +344,14 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
 
 
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
+    bot: "Bot" = exports["Bot"]
     for m in modules:  # 遍历模块
         try:
             if m in msg.session_info.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
                 regex_module: Module = modules[m]
 
                 if regex_module.required_base_superuser:
-                    if msg.session_info.sender_id not in exports["Bot"].base_superuser_list:
+                    if msg.session_info.sender_id not in bot.base_superuser_list:
                         continue
                 elif regex_module.required_superuser:
                     if not msg.check_super_user():
@@ -428,14 +430,14 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 return await msg.send_message(I18NContext("parser.command.running.prompt"))
 
                             if rfunc.show_typing and not msg.sender_data.get("disable_typing", False):
-                                await exports["Bot"].start_typing(msg.session_info)
+                                await bot.start_typing(msg.session_info)
                                 await rfunc.function(msg)  # 将msg传入下游模块
 
                             else:
                                 await rfunc.function(msg)  # 将msg传入下游模块
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
-                        await exports["Bot"].end_typing(msg.session_info)
+                        await bot.end_typing(msg.session_info)
                         time_used = datetime.now() - time_start
                         if rfunc.logging:
                             Logger.success(
@@ -524,6 +526,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
 
 
 async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_word):
+    bot: "Bot" = exports["Bot"]
     try:
         command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
                                        command_prefixes=msg.session_info.prefixes)
@@ -534,7 +537,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
             Logger.debug(msg.parsed_msg)
 
             if submodule.required_base_superuser:
-                if msg.session_info.sender_id not in exports["Bot"].base_superuser_list:
+                if msg.session_info.sender_id not in bot.base_superuser_list:
                     await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                     return
             elif submodule.required_superuser:
@@ -560,7 +563,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 parsed_msg_ = msg.parsed_msg.copy()
                 no_message_session = True
                 for param_name, param_obj in func_params.items():
-                    if param_obj.annotation == exports["Bot"].MessageSession:
+                    if param_obj.annotation == bot.MessageSession:
                         kwargs[param_name] = msg
                         no_message_session = False
                     elif isinstance(param_obj.annotation, Param):
@@ -606,7 +609,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
             if not msg.session_info.target_info.target_data.get("disable_typing", False):
-                await exports["Bot"].start_typing(msg.session_info)
+                await bot.start_typing(msg.session_info)
                 await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
             else:
                 await parsed_msg[0].function(**kwargs)
@@ -643,28 +646,7 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e):
 
 
 async def _process_send_message_failed(msg: "Bot.MessageSession"):
-    if msg.session_info.target_from == qq_group_prefix:  # wtf onebot 11
-        obi = await get_onebot_implementation()
-        if obi in ["llonebot", "napcat"]:
-            await msg.call_api("set_msg_emoji_like",
-                               message_id=msg.session.message.message_id,
-                               emoji_id=qq_limited_emoji)
-        elif obi == "lagrange":
-            await msg.call_api("set_group_reaction",
-                               group_id=msg.session.target,
-                               message_id=msg.session.message.message_id,
-                               code=qq_limited_emoji,
-                               is_add=True)
-        elif obi == "shamrock":
-            await msg.call_api("send_group_msg",
-                               group_id=msg.session.target,
-                               message=f"[CQ:touch,id={qq_account}]")
-        elif obi == "go-cqhttp":
-            await msg.call_api("send_group_msg",
-                               group_id=msg.session.target,
-                               message=f"[CQ:poke,qq={qq_account}]")
-        else:
-            pass
+    await msg.handle_error_signal()
     await msg.send_message(I18NContext("error.message.limited"))
 
 
@@ -678,6 +660,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
     err_msg = msg.session_info.locale.t_str(str(e))
+    await msg.handle_error_signal()
     if "timeout" in str(e).lower().replace(" ", ""):
         timeout = True
         errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]

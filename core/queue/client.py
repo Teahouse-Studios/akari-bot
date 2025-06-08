@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class JobQueueClient(JobQueueBase):
 
     @classmethod
-    async def send_message_signal_to_server(cls, session_info: SessionInfo):
+    async def send_message_to_server(cls, session_info: SessionInfo):
         await cls.add_job("Server", "receive_message_from_client",
                           {"session_info": converter.unstructure(session_info)})
 
@@ -69,6 +69,13 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = get_session(args)
     await ctx_manager.end_typing(session_info)
+    return {"success": True}
+
+
+@JobQueueClient.action("error_signal")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = get_session(args)
+    await ctx_manager.error_signal(session_info)
     return {"success": True}
 
 

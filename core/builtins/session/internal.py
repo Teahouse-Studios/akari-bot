@@ -62,7 +62,7 @@ class MessageSession:
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
-        return_val = await _queue_server.send_message_signal_to_client(self.session_info, message_chain, quote=quote)
+        return_val = await _queue_server.client_send_message(self.session_info, message_chain, quote=quote)
 
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
@@ -125,7 +125,7 @@ class MessageSession:
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
-        await _queue_server.send_message_signal_to_client(self.session_info, message_chain, wait=False)
+        await _queue_server.client_send_message(self.session_info, message_chain, wait=False)
 
     def as_display(self, text_only: bool = False) -> str:
         """
@@ -141,14 +141,21 @@ class MessageSession:
         用于删除这条消息。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.delete_message_signal_to_client(self.session_info, self.session_info.message_id)
+        await _queue_server.client_delete_message(self.session_info, self.session_info.message_id)
 
     async def check_native_permission(self) -> bool:
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        return await _queue_server.check_session_native_permission(self.session_info)
+        return await _queue_server.client_check_native_permission(self.session_info)
+
+    async def handle_error_signal(self):
+        """
+        用于处理错误信号。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_error_signal(self.session_info)
 
     async def msgchain2nodelist(self, msg_chain_list: List[MessageChain], sender_name: Optional[str] = None,
                                 ) -> list[Dict]:
@@ -439,7 +446,7 @@ class FinishedSession:
         用于删除这条消息。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        await _queue_server.delete_message_signal_to_client(self.session, self.message_id)
+        await _queue_server.client_delete_message(self.session, self.message_id)
 
     def __str__(self):
         return f"FinishedSession(message_id={self.message_id})"

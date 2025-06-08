@@ -1,12 +1,11 @@
-import asyncio
 from typing import Union
 
+from core.builtins.parser.message import parser
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain
 from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
-from core.builtins.parser.message import parser
 from ..exports import exports, add_export
 from ..utils.alive import Alive
 
@@ -14,14 +13,14 @@ from ..utils.alive import Alive
 class JobQueueServer(JobQueueBase):
 
     @classmethod
-    async def send_message_signal_to_client(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True, wait=True):
+    async def client_send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True, wait=True):
         value = await cls.add_job(session_info.client_name, "send_message", {"session_info": converter.unstructure(session_info),
                                                                              "message": converter.unstructure(message),
                                                                              'quote': quote}, wait=wait)
         return value
 
     @classmethod
-    async def delete_message_signal_to_client(cls, session_info: SessionInfo, message_id: Union[str, list]):
+    async def client_delete_message(cls, session_info: SessionInfo, message_id: Union[str, list]):
         if isinstance(message_id, str):
             message_id = [message_id]
         value = await cls.add_job(session_info.client_name, "delete_message", {"session_info": converter.unstructure(session_info),
@@ -29,17 +28,22 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def start_typing_signal_to_client(cls, session_info: SessionInfo):
+    async def client_start_typing_signal(cls, session_info: SessionInfo):
         value = await cls.add_job(session_info.client_name, "start_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
         return value
 
     @classmethod
-    async def end_typing_signal_to_client(cls, session_info: SessionInfo):
+    async def client_end_typing_signal(cls, session_info: SessionInfo):
         value = await cls.add_job(session_info.client_name, "end_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
         return value
 
     @classmethod
-    async def check_session_native_permission(cls, session_info: SessionInfo):
+    async def client_error_signal(cls, session_info: SessionInfo):
+        value = await cls.add_job(session_info.client_name, "error_signal", {"session_info": converter.unstructure(session_info)}, wait=False)
+        return value
+
+    @classmethod
+    async def client_check_native_permission(cls, session_info: SessionInfo):
         v = await cls.add_job(session_info.client_name, "check_session_native_permission", {"session_info": converter.unstructure(session_info)})
         return v['value']
 

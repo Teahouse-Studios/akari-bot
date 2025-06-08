@@ -98,3 +98,14 @@ class ContextManager:
             del cls.typing_flags[session_info.session_id]
         # 这里可以添加结束输入状态的逻辑
         Logger.debug(f"End typing in session: {session_info.session_id}")
+
+    @classmethod
+    async def error_signal(cls, session_info: SessionInfo) -> None:
+        """
+        发送错误信号
+        :param session_info: 会话信息
+        :param args: 错误信息
+        """
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加错误处理逻辑
