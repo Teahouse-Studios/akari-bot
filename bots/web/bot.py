@@ -808,8 +808,15 @@ async def websocket_logs(websocket: WebSocket):
             expanded_history = ["\n".join(item) if isinstance(item, list) else item for item in logs_history]
             await websocket.send_text("\n".join(expanded_history))
 
+        current_date = datetime.today().strftime("%Y-%m-%d")
+
         while True:
-            today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime("%Y-%m-%d")}.log")
+            new_date = datetime.today().strftime("%Y-%m-%d")
+            if new_date != current_date:
+                last_file_line_count.clear()
+                current_date = new_date
+
+            today_logs = glob.glob(f"{logs_path}/*_{current_date}.log")
             today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
             today_logs.sort(
                 key=lambda line: (
@@ -861,6 +868,7 @@ async def websocket_logs(websocket: WebSocket):
                     last_file_line_count[log_file] = current_line_count
 
             await asyncio.sleep(0.1)
+
     except WebSocketDisconnect:
         pass
     except Exception:
@@ -936,7 +944,7 @@ async def route_handler(full_path: str):
     raise HTTPException(status_code=404, detail="Not found")
 
 
-if Config("enable", True, table_name="bot_web"):
+if Config("enable", True, table_name="bot_web") or __name__ == "__main__":
     Info.client_name = client_name
     if "subprocess" in sys.argv:
         Info.subprocess = True

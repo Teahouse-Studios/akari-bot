@@ -6,19 +6,21 @@ from uuid import uuid4
 
 import nio
 
-from core.bot_init import load_prompt, init_async
-from core.builtins import Info, PrivateAssets
-from core.config import Config
-from core.constants.default import ignored_sender_default
-from core.constants.path import assets_path
-from core.logger import Logger
-from core.parser.message import parser
-from core.terminate import cleanup_sessions
-from core.types import MsgInfo, Session
-from . import client
-from .client import bot
-from .info import *
-from .message import MessageSession, FetchTarget
+sys.path.append(os.getcwd())
+
+from bots.matrix import client  # noqa: E402
+from bots.matrix.client import bot  # noqa: E402
+from bots.matrix.info import *  # noqa: E402
+from bots.matrix.message import MessageSession, FetchTarget  # noqa: E402
+from core.bot_init import load_prompt, init_async  # noqa: E402
+from core.builtins import Info, PrivateAssets  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.constants.default import ignored_sender_default  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
+from core.logger import Logger  # noqa: E402
+from core.parser.message import parser  # noqa: E402
+from core.terminate import cleanup_sessions  # noqa: E402
+from core.types import MsgInfo, Session  # noqa: E402
 
 PrivateAssets.set(os.path.join(assets_path, "private", "matrix"))
 ignored_sender = Config("ignored_sender", ignored_sender_default)
@@ -260,7 +262,7 @@ async def start():
     await bot.set_presence("offline")
 
 
-if bot and Config("enable", False, table_name="bot_matrix"):
+if bot and Config("enable", False, table_name="bot_matrix") or __name__ == "__main__":
     loop = asyncio.new_event_loop()
     try:
         Info.client_name = client_name
