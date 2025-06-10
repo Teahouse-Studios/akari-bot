@@ -54,6 +54,7 @@ class SessionInfo:
     prefixes: List[str] = []
     ctx_slot: Optional[int] = 0
     fetch: bool = False
+    require_enable_modules: bool = True
     tmp = {}
 
     @classmethod
@@ -66,10 +67,12 @@ class SessionInfo:
                      message_id: Optional[str] = None,
                      reply_id: Optional[str] = None,
                      messages: Optional[MessageChain] = None,
+                     prefixes: Optional[List[str]] = None,
                      admin: bool = False,
                      ctx_slot: int = 0,
                      fetch: bool = False,
                      create: bool = True,
+                     require_enable_modules: bool = True
                      ) -> SessionInfo:
 
         """
@@ -93,7 +96,7 @@ class SessionInfo:
         locale = Locale(target_info.locale)
         bot_name = locale.t("bot_name")
         _tz_offset = target_info.target_data.get("tz_offset", Config("timezone_offset", "+8"))
-        prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy()
+        prefixes = target_info.target_data.get("command_prefix", []) + command_prefix.copy() + (prefixes or [])
         if fetch:
             ctx_slot = 999
 
@@ -124,6 +127,7 @@ class SessionInfo:
             prefixes=prefixes,
             ctx_slot=ctx_slot,
             fetch=fetch,
+            require_enable_modules=require_enable_modules,
         )
 
     async def refresh_info(self):

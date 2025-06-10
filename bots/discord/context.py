@@ -9,54 +9,13 @@ from discord import Message
 
 from bots.discord.client import client
 from bots.discord.info import client_name, target_channel_prefix
+from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
 from core.builtins.session.info import SessionInfo
 from bots.discord.features import Features
 from core.builtins.session.context import ContextManager
 from core.logger import Logger
-
-
-def get_channel_id(session_info: SessionInfo) -> str:
-    return session_info.target_id.split(session_info.target_from + "|")[1]
-
-
-def get_sender_id(session_info: SessionInfo) -> str:
-    return session_info.sender_id.split(session_info.sender_from + "|")[1]
-
-
-async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
-    if isinstance(embed, EmbedElement):
-        files = []
-        embeds = discord.Embed(
-            title=session_info.locale.t_str(embed.title) if embed.title else None,
-            description=session_info.locale.t_str(embed.description) if embed.description else None,
-            color=embed.color if embed.color else None,
-            url=embed.url if embed.url else None,
-            timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
-        )
-        if embed.image:
-            upload = discord.File(await embed.image.get(), filename="image.png")
-            files.append(upload)
-            embeds.set_image(url="attachment://image.png")
-        if embed.thumbnail:
-            upload = discord.File(await embed.thumbnail.get(), filename="thumbnail.png")
-            files.append(upload)
-            embeds.set_thumbnail(url="attachment://thumbnail.png")
-        if embed.author:
-            embeds.set_author(name=session_info.locale.t_str(embed.author))
-        if embed.footer:
-            embeds.set_footer(text=session_info.locale.t_str(embed.footer))
-        if embed.fields:
-            for field in embed.fields:
-                embeds.add_field(
-                    name=session_info.locale.t_str(field.name),
-                    value=session_info.locale.t_str(field.value),
-                    inline=field.inline
-                )
-        return embeds, files
-    else:
-        raise TypeError("Embed must be an instance of EmbedElement")
 
 
 class DiscordContextManager(ContextManager):
@@ -104,7 +63,7 @@ class DiscordContextManager(ContextManager):
         return False
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: Union[MessageChain, str], quote: bool = True,):
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,):
         """
         发送消息到指定的会话。
         :param session_info: 会话信息
@@ -112,11 +71,6 @@ class DiscordContextManager(ContextManager):
         :param quote: 是否引用消息
         :return: 消息 ID 列表
         """
-        if isinstance(message, str):
-            message = MessageChain.assign(message)
-        if not isinstance(message, MessageChain):
-            raise TypeError("Message must be a MessageChain or str")
-
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx = cls.context.get(session_info.session_id)
@@ -206,8 +160,8 @@ class DiscordContextManager(ContextManager):
         if not isinstance(message_id, list):
             raise TypeError("Message ID must be a list or str")
 
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
 
         for msg_id in message_id:
             try:

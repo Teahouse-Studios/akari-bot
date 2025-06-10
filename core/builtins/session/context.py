@@ -34,7 +34,7 @@ class ContextManager:
         raise NotImplementedError
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: Union[MessageChain, str], quote: bool = True,) -> List[str]:
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,) -> List[str]:
         """
         发送消息到指定的会话。
         :param session_info: 会话信息

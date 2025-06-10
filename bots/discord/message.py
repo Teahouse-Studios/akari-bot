@@ -8,6 +8,7 @@ import filetype
 
 from bots.discord.client import client
 from bots.discord.info import *
+from bots.discord.utils import convert_embed
 from core.builtins import (
     Bot,
     Plain,
