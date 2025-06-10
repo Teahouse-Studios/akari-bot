@@ -116,7 +116,7 @@ class Bot:
     @classmethod
     async def post_message(cls,
                            module_name: str,
-                           message: Union[str, MessageChain, dict[str, MessageChain]],
+                           message: Chainable,
                            session_list: Optional[List[FetchedSessionInfo]] = None,
                            **kwargs: Dict[str, Any],
                            ):
@@ -129,11 +129,9 @@ class Bot:
         """
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
-        if isinstance(message, str):
-            message = MessageChain.assign(message)
         for session_ in session_list:
             queue_server: "JobQueueServer" = exports["JobQueueServer"]
-
+            message = get_message_chain(session_, message)
             if isinstance(message, dict):
                 if session_.client_name in message:
                     post_message = message[session_.client_name]
@@ -201,7 +199,7 @@ class Bot:
     @classmethod
     async def send_direct_message(cls,
                                   target: SessionInfo,
-                                  msg: Union[MessageChain, list],
+                                  message: Chainable,
                                   disable_secret_check: bool = False,
                                   enable_parse_message: bool = True,
                                   enable_split_image: bool = True,
@@ -214,10 +212,9 @@ class Bot:
             ...
         if not target:
             raise ValueError("Target not found.")
-        if isinstance(msg, list):
-            msg = MessageChain.assign(msg)
+        message = get_message_chain(target.session_info, message)
         await target.send_direct_message(
-            message_chain=msg,
+            message_chain=message,
             disable_secret_check=disable_secret_check,
             enable_parse_message=enable_parse_message,
             enable_split_image=enable_split_image,

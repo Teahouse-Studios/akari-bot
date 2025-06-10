@@ -11,6 +11,7 @@ from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.message.internal import Image
 from core.builtins.message.chain import MessageChain
+from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
 from core.constants.info import Info
@@ -49,7 +50,7 @@ save_source = True
 
 
 async def msgchain2image(message_chain: Union[List, MessageChain],
-                         msg: Optional[MessageSession] = None,
+                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None,
                          use_local: bool = True) -> Union[List[PILImage.Image], bool]:
     """使用WebRender将消息链转换为图片。
 
@@ -65,8 +66,10 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
         message_chain = MessageChain.assign(message_chain)
 
     lst = []
+    if isinstance(session, MessageSession):
+        session = session.session_info
 
-    for m in message_chain.as_sendable(msg=msg, embed=False):
+    for m in message_chain.as_sendable(session):
         if isinstance(m, PlainElement):
             lst.append("<div>" + m.text.replace("\n", "<br>") + "</div>")
         elif isinstance(m, ImageElement):

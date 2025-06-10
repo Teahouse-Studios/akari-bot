@@ -7,7 +7,7 @@ from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coro
 
 from attrs import define
 
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, get_message_chain, Chainable
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList
@@ -39,7 +39,7 @@ class MessageSession:
 
     async def send_message(
         self,
-        message_chain: Union[MessageChain, str, list, MessageElement],
+        message_chain: Chainable,
         quote: bool = True,
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
@@ -58,7 +58,7 @@ class MessageSession:
         :return: 被发送的消息链。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        message_chain = MessageChain.assign(message_chain)
+        message_chain = get_message_chain(self.session_info, chain=message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
@@ -71,7 +71,7 @@ class MessageSession:
 
     async def finish(
         self,
-        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        message_chain: Optional[Chainable] = None,
         quote: bool = True,
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
@@ -104,7 +104,7 @@ class MessageSession:
 
     async def send_direct_message(
         self,
-        message_chain: Union[MessageChain, str, list, MessageElement],
+        message_chain: Union[Chainable],
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
@@ -121,7 +121,7 @@ class MessageSession:
         :return: 被发送的消息链。
         """
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        message_chain = MessageChain.assign(message_chain)
+        message_chain = get_message_chain(session=self.session_info, chain=message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
@@ -183,7 +183,7 @@ class MessageSession:
 
     async def wait_confirm(
         self,
-        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        message_chain: Optional[Chainable] = None,
         quote: bool = True,
         delete: bool = True,
         timeout: Optional[float] = 120,
@@ -204,7 +204,7 @@ class MessageSession:
         if Config("no_confirm", False):
             return True
         if message_chain:
-            message_chain = MessageChain.assign(message_chain)
+            message_chain = get_message_chain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain, quote)
@@ -228,7 +228,7 @@ class MessageSession:
 
     async def wait_next_message(
         self,
-        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        message_chain: Optional[Chainable] = None,
         quote: bool = True,
         delete: bool = False,
         timeout: Optional[float] = 120,
@@ -247,7 +247,7 @@ class MessageSession:
         send = None
         ExecutionLockList.remove(self)
         if message_chain:
-            message_chain = MessageChain.assign(message_chain)
+            message_chain = get_message_chain(message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
@@ -269,7 +269,7 @@ class MessageSession:
 
     async def wait_reply(
         self,
-        message_chain: Union[MessageChain, str, list, MessageElement],
+        message_chain: Union[Chainable],
         quote: bool = True,
         delete: bool = False,
         timeout: Optional[float] = 120,
@@ -290,7 +290,7 @@ class MessageSession:
         self.session_info.tmp["enforce_send_by_master_client"] = True
         send = None
         ExecutionLockList.remove(self)
-        message_chain = MessageChain.assign(message_chain)
+        message_chain = get_message_chain(message_chain)
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
@@ -314,7 +314,7 @@ class MessageSession:
 
     async def wait_anyone(
         self,
-        message_chain: Optional[Union[MessageChain, str, list, MessageElement]] = None,
+        message_chain: Optional[Chainable] = None,
         quote: bool = False,
         delete: bool = False,
         timeout: Optional[float] = 120,
@@ -331,7 +331,7 @@ class MessageSession:
         send = None
         ExecutionLockList.remove(self)
         if message_chain:
-            message_chain = MessageChain.assign(message_chain)
+            message_chain = get_message_chain(self.session_info, message_chain)
             send = await self.send_message(message_chain, quote)
         await asyncio.sleep(0.1)
         flag = asyncio.Event()

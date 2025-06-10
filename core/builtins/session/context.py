@@ -42,10 +42,6 @@ class ContextManager:
         :param quote: 是否引用消息
         :return: 消息 ID 列表
         """
-        if isinstance(message, str):
-            message = MessageChain.assign(message)
-        if not isinstance(message, MessageChain):
-            raise TypeError("Message must be a MessageChain or str")
 
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")

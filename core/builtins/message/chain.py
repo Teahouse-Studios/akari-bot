@@ -341,6 +341,24 @@ class PlatformMessageChain:
         return cls(values=deepcopy(values))
 
 
+Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain, str, list[MessageElement], MessageElement]
+
+
+def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
+    if isinstance(chain, PlatformMessageChain):
+        chain = chain.values.get(session.target_from, chain.values.get("default", MessageChain.assign("")))
+    if isinstance(chain, I18NMessageChain):
+        chain = chain.values.get(session.locale.locale, chain.values.get("default", MessageChain.assign("")))
+    if isinstance(chain, (str, list, MessageElement)):
+        chain = MessageChain.assign(chain)
+    if isinstance(chain, MessageChain):
+        return chain
+    else:
+        raise TypeError(
+            f"Unsupported chain type: {
+                type(chain).__name__}, expected MessageChain, I18NMessageChain, or PlatformMessageChain.")
+
+
 def match_kecode(text: str,
                  disable_joke: bool = False) -> List[Union[PlainElement,
                                                            ImageElement,
@@ -451,4 +469,4 @@ converter.register_structure_hook(
 )
 
 
-__all__ = ["MessageChain", "I18NMessageChain", "PlatformMessageChain"]
+__all__ = ["MessageChain", "I18NMessageChain", "PlatformMessageChain", "Chainable", "get_message_chain"]
