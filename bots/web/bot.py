@@ -803,27 +803,19 @@ async def websocket_chat(websocket: WebSocket):
 async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
+    current_date = datetime.today().strftime("%Y-%m-%d")
+    prev_logs_len = 0
     try:
-        if logs_history:
-            expanded_history = ["\n".join(item) if isinstance(item, list) else item for item in logs_history]
-            await websocket.send_text("\n".join(expanded_history))
-
-        current_date = datetime.today().strftime("%Y-%m-%d")
-
         while True:
             new_date = datetime.today().strftime("%Y-%m-%d")
             if new_date != current_date:
                 last_file_line_count.clear()
                 current_date = new_date
 
+            new_lines_total = []
+
             today_logs = glob.glob(f"{logs_path}/*_{current_date}.log")
             today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
-            today_logs.sort(
-                key=lambda line: (
-                    extract_timestamp(
-                        line[0]) if isinstance(
-                        line,
-                        list) else extract_timestamp(line)) or datetime.min)
             if today_logs:
                 for log_file in today_logs:
                     current_line_count = 0
@@ -836,14 +828,16 @@ async def websocket_logs(websocket: WebSocket):
                                     new_lines.append(line.rstrip())
                             current_line_count = i + 1
 
+                    last_file_line_count[log_file] = current_line_count
+
                     if new_lines:
                         processed_lines = []
                         for line in new_lines:
-                            if is_log_line_valid(line):
+                            if _log_line_valid(line):
                                 logs_history.append(line)
                             else:
                                 if logs_history and isinstance(
-                                        logs_history[-1], str) and is_log_line_valid(logs_history[-1]):
+                                        logs_history[-1], str) and _log_line_valid(logs_history[-1]):
                                     logs_history.append([logs_history.pop(), line])
                                 elif logs_history and isinstance(logs_history[-1], list):
                                     logs_history[-1].append(line)
@@ -851,24 +845,26 @@ async def websocket_logs(websocket: WebSocket):
                                     logs_history.append(line)
                             processed_lines.append(line)
 
-                        logs_history.sort(
-                            key=lambda line: (
-                                extract_timestamp(
-                                    line[0]) if isinstance(
-                                    line,
-                                    list) else extract_timestamp(line)) or datetime.min)
-                        expanded_logs = [
-                            "\n".join(item) if isinstance(
-                                item, list) else item for item in processed_lines]
-                        await websocket.send_text("\n".join(expanded_logs))
+                        new_lines_total.extend(processed_lines)
 
-                        while len(logs_history) > MAX_LOG_HISTORY:
-                            logs_history.pop(0)
+                logs_history.sort(
+                    key=lambda line: (
+                        _extract_timestamp(
+                            line[0]) if isinstance(
+                            line,
+                            list) else _extract_timestamp(line)) or datetime.min)
 
-                    last_file_line_count[log_file] = current_line_count
+                expanded_logs = []
+                if len(logs_history) > prev_logs_len:
+                    logs_history_diff = logs_history[prev_logs_len:]
+                    expanded_logs = ["\n".join(item) if isinstance(item, list) else item for item in logs_history_diff]
+                await websocket.send_text("\n".join(expanded_logs))
+                prev_logs_len = len(logs_history)
 
-            await asyncio.sleep(0.1)
+                while len(logs_history) > MAX_LOG_HISTORY:
+                    logs_history.pop(0)
 
+            await asyncio.sleep(0.5)
     except WebSocketDisconnect:
         pass
     except Exception:
@@ -876,12 +872,12 @@ async def websocket_logs(websocket: WebSocket):
         await websocket.close()
 
 
-def is_log_line_valid(line: str) -> bool:
+def _log_line_valid(line: str) -> bool:
     log_pattern = r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"
     return bool(re.match(log_pattern, line))
 
 
-def extract_timestamp(log_line: str):
+def _extract_timestamp(log_line: str):
     log_time_pattern = r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]"
     match = re.search(log_time_pattern, log_line)
     if match:
