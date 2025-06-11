@@ -25,7 +25,7 @@ ai = module("ai",
 async def _(msg: Bot.MessageSession, question: str):
     get_llm = msg.parsed_msg.get("--llm", False)
     llm = get_llm["<llm>"].lower() if get_llm else None
-    target_llm = msg.target_data.get("ai_default_llm")
+    target_llm = msg.session_info.target_info.target_data.get("ai_default_llm")
     is_superuser = msg.check_super_user()
 
     avaliable_llms = llm_list + (llm_su_list if is_superuser else [])

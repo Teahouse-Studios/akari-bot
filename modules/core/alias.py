@@ -18,7 +18,7 @@ ali = module("alias", required_admin=True, base=True, doc=True)
     options_desc={"--legacy": "[I18N:help.option.legacy]"},
 )
 async def _(msg: Bot.MessageSession):
-    aliases = msg.target_data.get("command_alias")
+    aliases = msg.session_info.target_info.target_data.get("command_alias")
     alias = msg.parsed_msg.get("<alias>", False)
     command = msg.parsed_msg.get("<command>", False)
     if not aliases:

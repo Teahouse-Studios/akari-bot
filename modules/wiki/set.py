@@ -220,7 +220,7 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("redlink {[I18N:wiki.help.redlink]}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    redlink_state = msg.target_data.get("wiki_redlink")
+    redlink_state = msg.session_info.target_info.target_data.get("wiki_redlink")
 
     if redlink_state:
         await msg.session_info.target_info.edit_target_data("wiki_redlink", False)

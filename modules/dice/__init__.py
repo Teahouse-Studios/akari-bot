@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, sides: int):
 
 @dice.command("rule {[I18N:dice.help.rule]}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    dc_rule = msg.target_data.get("dice_dc_reversed")
+    dc_rule = msg.session_info.target_info.target_data.get("dice_dc_reversed")
 
     if dc_rule:
         await msg.session_info.target_info.edit_target_data("dice_dc_reversed", False)

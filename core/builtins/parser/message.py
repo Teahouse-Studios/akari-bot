@@ -135,7 +135,7 @@ async def parser(msg: "Bot.MessageSession",
 
 
 def _transform_alias(msg, command: str):
-    aliases = dict(msg.target_data.get("command_alias", {}).items())
+    aliases = dict(msg.session_info.target_info.target_data.get("command_alias", {}).items())
     command_split = msg.trigger_msg.split(" ")  # 切割消息
     for pattern, replacement in aliases.items():
         if re.search(r"\${[^}]*}", pattern):
@@ -401,7 +401,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 match_hash_cache[msg.session_info.target_id] = {}
                             if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id] and \
                                     datetime.now().timestamp() - match_hash_cache[msg.session_info.target_id][
-                                    matched_hash] < int((msg.target_data.get("cooldown_time", 0)) or 3):
+                                    matched_hash] < int((msg.session_info.target_info.target_data.get("cooldown_time", 0)) or 3):
                                 Logger.warning("Match loop detected, skipping...")
                                 continue
                             match_hash_cache[msg.session_info.target_id][matched_hash] = datetime.now().timestamp()
@@ -429,7 +429,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             else:
                                 return await msg.send_message(I18NContext("parser.command.running.prompt"))
 
-                            if rfunc.show_typing and not msg.sender_data.get("disable_typing", False):
+                            if rfunc.show_typing and not msg.session_info.sender_info.sender_data.get(
+                                    "disable_typing", False):
                                 await bot.start_typing(msg.session_info)
                                 await rfunc.function(msg)  # 将msg传入下游模块
 
@@ -618,7 +619,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
             await msg.send_message(I18NContext("parser.command.format.invalid",
                                                module=command_first_word,
                                                prefix=msg.session_info.prefixes[0]))
-            """if msg.target_data.get("typo_check", True):  # 判断是否开启错字检查
+            """if msg.session_info.target_info.target_data.get("typo_check", True):  # 判断是否开启错字检查
                 nmsg, command_first_word, command_split = await _typo_check(msg,
                                                                             display_prefix,
                                                                             modules,

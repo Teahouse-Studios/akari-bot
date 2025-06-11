@@ -10,7 +10,7 @@ AB_LIMIT = 5
 async def ab(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     query = await wiki.get_json(action="query", list="abuselog", aflprop="user|title|action|result|filter|timestamp",
-                                _no_login=not msg.target_data.get("use_bot_account", False))
+                                _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
     d = []
     for x in query["query"]["abuselog"][:AB_LIMIT]:

@@ -13,7 +13,7 @@ p = module("prefix", required_admin=True, base=True, doc=True)
     "list {[I18N:core.help.prefix.list]}",
 )
 async def _(msg: Bot.MessageSession):
-    prefixes = msg.target_data.get("command_prefix")
+    prefixes = msg.session_info.target_info.target_data.get("command_prefix")
     prefix = msg.parsed_msg.get("<prefix>", False)
     if not prefixes:
         prefixes = []

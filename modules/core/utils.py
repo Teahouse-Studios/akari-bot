@@ -124,7 +124,7 @@ async def _(msg: Bot.MessageSession):
     "ban list {[I18N:core.help.admin.ban.list]}",
 )
 async def _(msg: Bot.MessageSession):
-    admin_ban_list = msg.target_data.get("ban", [])
+    admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
         if admin_ban_list:
             await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(admin_ban_list))])
@@ -208,7 +208,7 @@ setup = module(
 
 @setup.command("typing {[I18N:core.help.setup.typing]}")
 async def _(msg: Bot.MessageSession):
-    if not msg.sender_data.get("disable_typing", False):
+    if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
         await msg.session_info.sender_info.edit_sender_data("disable_typing", True)
         await msg.finish(I18NContext("core.message.setup.typing.disable"))
     else:
@@ -219,7 +219,7 @@ async def _(msg: Bot.MessageSession):
 """
 @setup.command("check {[I18N:core.help.setup.check]}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    if not msg.sender_data.get("typo_check", False):
+    if not msg.session_info.sender_info.sender_data.get("typo_check", False):
         await msg.session_info.sender_info.edit_sender_data("typo_check", True)
         await msg.finish(I18NContext("core.message.setup.check.disable"))
     else:
