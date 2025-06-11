@@ -168,6 +168,8 @@ def run_bot():
     envs["PYTHONPATH"] = os.path.abspath(".")
     lst = bots_and_required_configs.keys()
 
+    # run the client processes
+
     for t in CFGManager.values:
         if t.startswith("bot_") and not t.endswith("_secret"):
             if "enable" in CFGManager.values[t][t]:
@@ -195,9 +197,14 @@ def run_bot():
         )
         p.start()
         processes.append(p)
+
+    # run the server process
     server_process = multiprocessing.Process(target=server_run_async, name="server", daemon=True)
     server_process.start()
     processes.append(server_process)
+
+    # keep track of the processes
+
     while True:
         for p in processes:
             if p.is_alive():

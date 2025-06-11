@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections import Counter
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 from decimal import Decimal
 from typing import Any, List, Optional, Union
 
@@ -11,6 +11,7 @@ from tortoise import fields
 from core.constants import default_locale
 from core.utils.list import convert2lst
 from .base import DBModel
+from ..logger import Logger
 
 
 class SenderInfo(DBModel):
@@ -381,13 +382,14 @@ class JobQueuesTable(DBModel):
         return True
 
     @classmethod
-    async def clear_task(cls, time=43200) -> bool:
-        now_timestamp = datetime.now().timestamp()
+    async def clear_task(cls, time=3600) -> bool:
+        timestamp = datetime.now(UTC) - timedelta(seconds=time)
+        Logger.debug(f'Clearing tasks older than {timestamp}...')
 
-        queries = await cls.all()
+        queries = await cls.filter(timestamp__lt=timestamp)
+
         for q in queries:
-            if now_timestamp - q.timestamp.timestamp() > time:
-                await q.delete()
+            await q.delete()
 
         return True
 

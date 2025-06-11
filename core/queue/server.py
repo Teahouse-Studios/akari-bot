@@ -50,12 +50,9 @@ class JobQueueServer(JobQueueBase):
 
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
-    try:
-        await parser(await exports["Bot"].MessageSession.from_session_info(
-            converter.structure(args['session_info'], SessionInfo)))
-        return {"success": True}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+    await parser(await exports["Bot"].MessageSession.from_session_info(
+        converter.structure(args['session_info'], SessionInfo)))
+    return {"success": True}
 
 
 @JobQueueServer.action("client_keepalive")

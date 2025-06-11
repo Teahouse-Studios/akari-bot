@@ -6,11 +6,13 @@ from core.constants.path import cache_path
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list
+from core.database.models import JobQueuesTable
 
 
 @Scheduler.scheduled_job(IntervalTrigger(minutes=60))
 async def bg():
     await SessionTaskManager.bg_check()
+    await JobQueuesTable.clear_task()
 
 
 @Scheduler.scheduled_job(CronTrigger.from_crontab("0 0 * * *"))

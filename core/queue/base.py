@@ -76,21 +76,20 @@ class JobQueueBase:
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
                 Logger.warning(f"Task {tsk.task_id} timeout, skip.")
-                await tsk.return_val({}, status="timeout")
+                await cls.return_val(tsk, {}, status="timeout")
             elif tsk.action in cls.queue_actions:
                 returns: dict = await cls.queue_actions[tsk.action](tsk, tsk.args)
-                if returns is not None:
-                    await tsk.return_val(returns, status="done")
+                await cls.return_val(tsk, returns if returns else {}, status="done")
             else:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
-                await tsk.return_val({}, status="failed")
+                await cls.return_val(tsk, {}, status="failed")
         except QueueFinished:
             Logger.debug(f"Task {tsk.action}({tsk.task_id}) finished.")
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
             try:
-                await tsk.return_val({"traceback": f}, status="failed")
+                await cls.return_val(tsk, {"traceback": f}, status="failed")
             except QueueFinished:
                 pass
             try:

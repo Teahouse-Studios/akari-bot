@@ -9,7 +9,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.converter import converter
 from core.builtins.message.internal import Plain, I18NContext
-from core.background_tasks import init_background_task
+from .background_tasks import init_background_task
 from core.config import CFGManager
 from core.constants import PrivateAssets, Secret
 from core.loader import load_modules, ModulesManager
@@ -18,6 +18,7 @@ from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
 from core.utils.info import Info
 from core.database import init_db
+from ..database.models import JobQueuesTable
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -29,6 +30,7 @@ async def init_async(start_scheduler=True) -> None:
     Info.client_name = 'Server'
     Info.subprocess = True
     await init_db()
+    await JobQueuesTable.clear_task()
 
     load_modules()
     gather_list = []
