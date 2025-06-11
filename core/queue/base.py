@@ -66,7 +66,7 @@ class JobQueueBase:
 
     @staticmethod
     async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
-        await tsk.return_val(value, status)
+        await tsk.set_val(value, status)
         raise QueueFinished
 
     @classmethod
@@ -85,6 +85,7 @@ class JobQueueBase:
                 await cls.return_val(tsk, {}, status="failed")
         except QueueFinished:
             Logger.debug(f"Task {tsk.action}({tsk.task_id}) finished.")
+            return
         except Exception:
             f = traceback.format_exc()
             Logger.error(f)
@@ -100,13 +101,18 @@ class JobQueueBase:
                                                      enable_parse_message=False, disable_secret_check=True)
             except Exception:
                 Logger.error(traceback.format_exc())
+            return
+
+        # The code below should not be reached if the task is processed correctly.
+        Logger.error(f"Task {tsk.action}({tsk.task_id}) seems not finished properly, bug in code?")
+        await tsk.set_status('failed')
 
     @classmethod
     async def check_job_queue(cls, target_client: str = None):
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else 'all'}")
         for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get(task_id=task_id)
-            if tsk.status == "done":
+            if tsk.status not in ['pending', 'processing']:
                 await QueueTaskManager.set_result(task_id, tsk.result)
         # Logger.debug([cls.name, target_client if target_client else exports['Bot'].Info.client_name])
 

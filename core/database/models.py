@@ -370,7 +370,7 @@ class JobQueuesTable(DBModel):
         )
         return task_id
 
-    async def return_val(self, value, status) -> bool:
+    async def set_val(self, value, status) -> bool:
         self.result = value
         self.status = status
         await self.save()
