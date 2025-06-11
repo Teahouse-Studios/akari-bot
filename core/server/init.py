@@ -19,6 +19,8 @@ from core.utils.bash import run_sys_command
 from core.utils.info import Info
 from core.database import init_db
 from ..database.models import JobQueuesTable
+from ..utils.ip import append_ip, fetch_ip_info
+from ..utils.web_render import check_web_render
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -46,9 +48,9 @@ async def init_async(start_scheduler=True) -> None:
                 )
     await asyncio.gather(*gather_list)
     init_background_task()
+    append_ip(await fetch_ip_info())
+    Info.web_render_status, Info.web_render_status = await check_web_render()
     if start_scheduler:
-        # await JobQueue.secret_append_ip()
-        # await JobQueue.web_render_status()
         Scheduler.start()
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
     await load_secret()

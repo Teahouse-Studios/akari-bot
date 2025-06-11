@@ -18,19 +18,19 @@ from .teahouse import get_rss as get_teahouse_rss
 async def get_weekly(with_img=False, zh_tw=False):
     locale = Locale("zh_cn" if not zh_tw else "zh_tw")
     result = json.loads(await get_url(
-        "https://zh.minecraft.wiki/api.php?action=parse&page=Minecraft_Wiki&prop=text|revid|images&format=json" +
+        "https://zh.minecraft.wiki/api.php?action=parse&page=Template:Mainpage_section_featured_article&prop=text|revid|images&format=json" +
         ("&variant=zh-tw" if zh_tw else ""),
         200))
     b_result = BeautifulSoup(result["parse"]["text"]["*"], "html.parser")
-    html = b_result.find("div", id="fp-section-weekly")
-
-    content = html.find("div", class_="weekly-content")
+    html = b_result.find("div", class_="mp-section")
+    el = html.find("div").find_all('div')
+    content = el[1]
     text = re.sub(r"<p>", "\n", str(content))  # 分段
     text = re.sub(r"<(.*?)>", "", text, flags=re.DOTALL)  # 移除所有 HTML 标签
     text = re.sub(r"\n\n\n", "\n\n", text)  # 移除不必要的空行
     text = re.sub(r"\n*$", "", text)
     text = unescape(text)
-    img = html.find("div", class_="weekly-image").find("a")
+    img = el[0].find("a")
 
     img_filename = re.match(r"/w/(.*)", img.attrs["href"]) if img else None
     page = re.findall(r"(?<=<b><a href=\").*?(?=\")", str(content))

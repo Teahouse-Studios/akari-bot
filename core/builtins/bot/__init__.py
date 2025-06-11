@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from core.builtins.message.chain import *
@@ -14,6 +15,7 @@ from core.constants.path import PrivateAssets
 from core.database.models import TargetInfo
 from core.exports import add_export, exports
 from core.loader import ModulesManager
+from core.logger import Logger
 from core.types.message import ModuleHookContext
 
 if TYPE_CHECKING:
@@ -84,24 +86,25 @@ class Bot:
     @classmethod
     async def fetch_target(cls,
                            target_id: str, sender_id: Optional[Union[int, str]] = None
-                           ) -> Union[FetchedMessageSession, None]:
+                           ) -> Union[FetchedSessionInfo, None]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         # todo
         try:
+            Logger.debug(f"Fetching target {target_id} with sender {sender_id}")
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
                                                       fetch=True, create=False)
-        except ValueError:
+        except Exception:
             return None
 
-        return await FetchedMessageSession.from_session_info(session)
+        return session
 
     @classmethod
     async def fetch_target_list(cls,
                                 target_list: List[Union[int, str]]
-                                ) -> List[FetchedMessageSession]:
+                                ) -> List[FetchedSessionInfo]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
@@ -110,7 +113,7 @@ class Bot:
             if isinstance(x, str):
                 x = await cls.fetch_target(x)
             if isinstance(x, FetchedSessionInfo):
-                fetched.append(await FetchedMessageSession.from_session_info(x))
+                fetched.append(x)
         return fetched
 
     @classmethod
@@ -225,7 +228,7 @@ class Bot:
         lst = await TargetInfo.get_target_list_by_module(module)
         fetched = []
         for x in lst:
-            x = cls.fetch_target(x.target_id)
+            x = await cls.fetch_target(x.target_id)
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched
