@@ -356,7 +356,7 @@ class MessageSession(MessageSessionT):
         node_list = []
         for message in msg_chain_list:
             content = ""
-            msgchain = message.as_sendable()
+            msgchain = message.as_sendable(self)
             for x in msgchain:
                 if isinstance(x, PlainElement):
                     content += x.text + "\n"

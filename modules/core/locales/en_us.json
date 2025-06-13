@@ -183,7 +183,7 @@
     "core.message.purge.empty": "The cache directory is empty.",
     "core.message.purge.success": "Successfully purged caches.",
     "core.message.raise": "Test exception",
-    "core.message.restart.prompt": "Since the bot is restarting or shutting down, your command execution have been forcibly cancelled.\nPlease re-execute the command later.",
+    "core.message.restart.prompt": "Since the bot is restarting, your command execution have been forcibly cancelled.\nPlease re-execute the command later.",
     "core.message.restart.restarting": "Restarting...",
     "core.message.restart.timeout": "Waiting timeout, force restarting...",
     "core.message.restart.wait": "There are ${count} command(s) being executed. The bot will restart after the execution.",

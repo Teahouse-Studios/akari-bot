@@ -160,7 +160,7 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, msg: MessageSession = None, embed: bool = True) -> list:
+    def as_sendable(self, msg: Optional[MessageSession] = None, embed: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """
@@ -184,14 +184,14 @@ class MessageChain:
                 else:
                     value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
-                for k, v in x.kwargs.items():
-                    if isinstance(v, str):
-                        x.kwargs[k] = msg.locale.t_str(v)
-                t_value = msg.locale.t(x.key, **x.kwargs)
-                if isinstance(t_value, str):
+                if msg:
+                    for k, v in x.kwargs.items():
+                        if isinstance(v, str):
+                            x.kwargs[k] = msg.locale.t_str(v)
+                    t_value = msg.locale.t(x.key, **x.kwargs)
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
-                    value += MessageChain(t_value).as_sendable(msg)
+                    value.append(PlainElement.assign(f"{{I18N:{x.key}}}", disable_joke=x.disable_joke))
             elif isinstance(x, URLElement):
                 value.append(PlainElement.assign(x.url, disable_joke=True))
             else:

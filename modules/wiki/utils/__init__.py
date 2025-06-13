@@ -1,5 +1,7 @@
 import re
 
+from aiocqhttp.exceptions import NetworkError
+
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
@@ -17,7 +19,7 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 @rc_.command()
 @rc_.command("[--legacy] {{I18N:wiki.help.rc}}",
              options_desc={"--legacy": "{help.option.legacy}"},
-             available_for=["QQ|Group"]
+             available_for=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
@@ -37,14 +39,15 @@ async def _(msg: Bot.MessageSession):
                 )
                 nodelist = await rc_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
-            except ValueError:
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
-            except Exception:
+                legacy = False
+            except NetworkError:
+                legacy = False
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
                 )
-            finally:
-                legacy = False
+            except Exception:
+                Logger.exception()
+                await msg.send_message(msg.locale.t("wiki.message.rollback"))
         else:
             try:
                 nodelist = await rc_qq(msg, start_wiki, headers)
@@ -62,7 +65,9 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
-@rc_.command("{{I18N:wiki.help.rc}}", exclude_from=["QQ|Group"])
+@rc_.command("{{I18N:wiki.help.rc}}",
+             exclude_from=["QQ|Group", "QQ|Private"]
+            )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
@@ -83,7 +88,7 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 @ab_.command()
 @ab_.command("[--legacy] {{I18N:wiki.help.ab}}",
              options_desc={"--legacy": "{help.option.legacy}"},
-             available_for=["QQ|Group"]
+             available_for=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
@@ -103,14 +108,15 @@ async def _(msg: Bot.MessageSession):
                 )
                 nodelist = await ab_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
-            except ValueError:
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
-            except Exception:
+                legacy = False
+            except NetworkError:
+                legacy = False
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
                 )
-            finally:
-                legacy = False
+            except Exception:
+                Logger.exception()
+                await msg.send_message(msg.locale.t("wiki.message.rollback"))
         else:
             try:
                 nodelist = await ab_qq(msg, start_wiki, headers)
@@ -128,7 +134,9 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
-@ab_.command("{{I18N:wiki.help.ab}}", exclude_from=["QQ|Group"])
+@ab_.command("{{I18N:wiki.help.ab}}",
+             exclude_from=["QQ|Group", "QQ|Private"]
+            )
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
