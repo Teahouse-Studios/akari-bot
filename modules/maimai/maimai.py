@@ -587,11 +587,11 @@ async def query_process(msg, level, goal, username):
     output, get_img = await get_level_process(msg, payload, level, goal, use_cache)
 
     if get_img:
-        imgs = await msgchain2image(Plain(output), msg)
+        imgs = await msgchain2image(output, msg)
         if imgs:
             imgchain = []
             for img in imgs:
-                imgchain.append(img)
+                imgchain.append(BImage(img))
             await msg.finish(imgchain)
         else:
             await msg.finish(output)

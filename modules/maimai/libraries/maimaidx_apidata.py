@@ -55,7 +55,7 @@ async def update_alias() -> bool:
                 fmt_data = {
                     "song_id": song["SongID"],
                     "name": song["Name"],
-                    "alias": [a for a in song["Alias"] if a != song["Name"]]
+                    "alias": [a for a in song["Alias"] if a.lower() != song["Name"].lower()]  # 删除与标题相同的别名
                 }
                 alias_data.append(fmt_data)
 
