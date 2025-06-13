@@ -20,6 +20,9 @@ def webrender(
     :param url: 若 method 为 source，则指定请求的 URL。
     :returns: 生成的 WebRender URL。
     """
+    if _ignore_status and not web_render:
+        return ""
+
     if method == "source":
         if Info.web_render_status or _ignore_status:
             return f"{web_render}source?url={quote(url)}"

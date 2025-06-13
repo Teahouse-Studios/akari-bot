@@ -15,7 +15,7 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 
 
 @rc_.command()
-@rc_.command("[--legacy] {{wiki.help.rc}}",
+@rc_.command("[--legacy] {{I18N:wiki.help.rc}}",
              options_desc={"--legacy": "{help.option.legacy}"},
              available_for=["QQ|Group"]
              )
@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
-@rc_.command("{{wiki.help.rc}}", exclude_from=["QQ|Group"])
+@rc_.command("{{I18N:wiki.help.rc}}", exclude_from=["QQ|Group"])
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
@@ -81,7 +81,7 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
 
 
 @ab_.command()
-@ab_.command("[--legacy] {{wiki.help.ab}}",
+@ab_.command("[--legacy] {{I18N:wiki.help.ab}}",
              options_desc={"--legacy": "{help.option.legacy}"},
              available_for=["QQ|Group"]
              )
@@ -128,7 +128,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
 
 
-@ab_.command("{{wiki.help.ab}}", exclude_from=["QQ|Group"])
+@ab_.command("{{I18N:wiki.help.ab}}", exclude_from=["QQ|Group"])
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
@@ -146,7 +146,7 @@ async def _(msg: Bot.MessageSession):
 new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
-@new.command("{{wiki.help.newbie}}")
+@new.command("{{I18N:wiki.help.newbie}}")
 async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
@@ -164,7 +164,7 @@ async def _(msg: Bot.MessageSession):
 usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
-@usr.command("<username> {{wiki.help.user}}")
+@usr.command("<username> {{I18N:wiki.help.user}}")
 async def _(msg: Bot.MessageSession, username: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link

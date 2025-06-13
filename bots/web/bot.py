@@ -4,7 +4,7 @@ import os
 import platform
 import re
 import sys
-from collections import defaultdict
+from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
 
@@ -62,7 +62,13 @@ JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web
 LOGIN_MAX_ATTEMPTS = Config("login_max_attempts", default=5, table_name="bot_web")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 LOGIN_BLOCK_DURATION = 3600
+
 MAX_LOG_HISTORY = 1024
+LOG_HEAD_PATTERN = re.compile(
+    r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:")
+LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
+
+login_failed_attempts = defaultdict(list)
 
 
 @asynccontextmanager
@@ -99,10 +105,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
-
-login_failed_attempts = defaultdict(list)
-last_file_line_count = {}
-logs_history = []
 
 
 async def verify_csrf_token(request: Request):
@@ -804,67 +806,69 @@ async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
     current_date = datetime.today().strftime("%Y-%m-%d")
-    prev_logs_len = 0
+    last_file_pos = defaultdict(int)    # 日志文件当前位置
+    last_file_size = defaultdict(int)  # 日志文件大小
+    logs_history = deque(maxlen=MAX_LOG_HISTORY)  # 日志缓存历史
     try:
         while True:
             new_date = datetime.today().strftime("%Y-%m-%d")
-            if new_date != current_date:
-                last_file_line_count.clear()
+
+            if new_date != current_date:  # 处理跨日期
+                last_file_pos.clear()
+                last_file_size.clear()
                 current_date = new_date
 
-            new_lines_total = []
+            today_logs = [
+                p for p in glob.glob(f"{logs_path}/*_{current_date}.log")
+                if "console" not in os.path.basename(p)
+            ]
 
-            today_logs = glob.glob(f"{logs_path}/*_{current_date}.log")
-            today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
-            if today_logs:
-                for log_file in today_logs:
-                    current_line_count = 0
-                    new_lines = []
+            new_loglines = []  # 打包后的日志行
+            for log_file in today_logs:
+                try:
+                    # 比较文件大小，当相同时跳过
+                    current_size = os.path.getsize(log_file)
+                    if log_file in last_file_size and current_size == last_file_size[log_file]:
+                        continue
+                    last_file_size[log_file] = current_size
+
+                    if log_file not in last_file_pos:  # 初始化
+                        last_file_pos[log_file] = 0
 
                     with open(log_file, "r", encoding="utf-8") as f:
-                        for i, line in enumerate(f):
-                            if i >= last_file_line_count.get(log_file, 0):
-                                if line:
-                                    new_lines.append(line.rstrip())
-                            current_line_count = i + 1
+                        f.seek(last_file_pos[log_file])
+                        new_data = f.read()  # 读取新数据
+                        last_file_pos[log_file] = f.tell()
 
-                    last_file_line_count[log_file] = current_line_count
+                    new_loglines_raw = [line.rstrip() for line in new_data.splitlines() if line.strip()]  # 未打包的新日志行
+                except Exception:
+                    continue
 
-                    if new_lines:
-                        processed_lines = []
-                        for line in new_lines:
-                            if _log_line_valid(line):
-                                logs_history.append(line)
-                            else:
-                                if logs_history and isinstance(
-                                        logs_history[-1], str) and _log_line_valid(logs_history[-1]):
-                                    logs_history.append([logs_history.pop(), line])
-                                elif logs_history and isinstance(logs_history[-1], list):
-                                    logs_history[-1].append(line)
-                                else:
-                                    logs_history.append(line)
-                            processed_lines.append(line)
+                for line in new_loglines_raw:
+                    if _log_line_valid(line):  # 日志头
+                        new_loglines.append(line)
+                    elif new_loglines:
+                        last = new_loglines.pop()
+                        if isinstance(last, list):  # 添加到多行日志中
+                            last.append(line)
+                            new_loglines.append(last)
+                        elif isinstance(last, str) and _log_line_valid(last):  # 与日志头拼接为多行日志
+                            new_loglines.append([last, line])
 
-                        new_lines_total.extend(processed_lines)
+            if new_loglines:
+                new_loglines.sort(
+                    key=lambda item: _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
+                )  # 按时间排序
 
-                logs_history.sort(
-                    key=lambda line: (
-                        _extract_timestamp(
-                            line[0]) if isinstance(
-                            line,
-                            list) else _extract_timestamp(line)) or datetime.min)
+                payload = "\n".join(
+                    "\n".join(item) if isinstance(item, list) else item
+                    for item in new_loglines
+                )
+                await websocket.send_text(payload)  # 发送
+                logs_history.extend(new_loglines)  # 添加到历史
 
-                expanded_logs = []
-                if len(logs_history) > prev_logs_len:
-                    logs_history_diff = logs_history[prev_logs_len:]
-                    expanded_logs = ["\n".join(item) if isinstance(item, list) else item for item in logs_history_diff]
-                await websocket.send_text("\n".join(expanded_logs))
-                prev_logs_len = len(logs_history)
+            await asyncio.sleep(1)
 
-                while len(logs_history) > MAX_LOG_HISTORY:
-                    logs_history.pop(0)
-
-            await asyncio.sleep(0.5)
     except WebSocketDisconnect:
         pass
     except Exception:
@@ -873,13 +877,11 @@ async def websocket_logs(websocket: WebSocket):
 
 
 def _log_line_valid(line: str) -> bool:
-    log_pattern = r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"
-    return bool(re.match(log_pattern, line))
+    return bool(re.match(LOG_HEAD_PATTERN, line))
 
 
-def _extract_timestamp(log_line: str):
-    log_time_pattern = r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]"
-    match = re.search(log_time_pattern, log_line)
+def _extract_timestamp(line: str):
+    match = LOG_TIME_PATTERN.search(line)
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None

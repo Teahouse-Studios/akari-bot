@@ -64,6 +64,7 @@ class LoggingLogger:
         self.log.add(
             sink=os.path.join(logs_path, f"{name}_debug_{{time:YYYY-MM-DD}}.log"),
             format=basic_logger_format(name),
+            rotation="00:00",
             retention="1 day",
             level="DEBUG",
             filter=lambda r: r["level"].name == "DEBUG",
@@ -72,6 +73,7 @@ class LoggingLogger:
         self.log.add(
             sink=os.path.join(logs_path, f"{name}_{{time:YYYY-MM-DD}}.log"),
             format=basic_logger_format(name),
+            rotation="00:00",
             retention="10 days",
             level="INFO",
             encoding="utf8",
