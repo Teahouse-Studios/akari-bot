@@ -98,7 +98,7 @@
     "error.config.invalid": "The config is invalid or not found. Please check the config file.",
     "error.config.secret.not_found": "The secret key is not found. Please check the config file.",
     "error.config.webrender.invalid": "No WebRender configured. This command cannot be used.",
-    "error.i18n.fallback": "(If you're seeing this strange string, it means something we've messed up! Please send the issue back so that we can fix it in time.)",
+    "error.i18n.fallback": "(If you see this placeholder, it means something we've messed up! Please send the issue back so that we can fix it in time.)",
     "error.message.chain.empty": "The bot attempted to send an empty message chain. Please contact the bot owner to resolve this issue.",
     "error.message.chain.invalid": "The bot attempted to send an invalid message chain. Please contact the bot owner to resolve this issue.",
     "error.message.chain.plain.empty": "The bot attempted to send an empty text message. Please contact the bot owner to resolve this issue.",
