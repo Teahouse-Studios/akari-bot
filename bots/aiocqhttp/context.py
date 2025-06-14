@@ -1,0 +1,366 @@
+import asyncio
+import datetime
+import re
+import traceback
+from pathlib import Path
+from typing import Any, Optional, List
+
+import aiocqhttp
+from aiocqhttp import Event, MessageSegment
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, client_name
+from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
+from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
+from core.builtins.message.internal import I18NContext, Image
+from core.builtins.session.context import ContextManager
+from core.builtins.session.features import Features
+from core.builtins.session.info import SessionInfo
+from core.builtins.temp import Temp
+from core.config import Config
+from core.logger import Logger
+from core.utils.image import msgchain2image
+
+qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
+qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
+last_send_typing_time = {}
+qq_account = Temp.data.get("qq_account")
+
+
+async def fake_forward_msg(session_info: SessionInfo, nodelist):
+    if session_info.target_from == target_group_prefix:
+        await bot.call_action(
+            "send_group_forward_msg",
+            group_id=int(session_info.get_common_target_id()),
+            messages=nodelist,
+        )
+    elif session_info.target_from == target_private_prefix:
+        await bot.call_action(
+            "send_private_forward_msg",
+            user_id=int(session_info.get_common_sender_id()),
+            messages=nodelist
+        )
+
+
+async def convert_msg_nodes(
+    session_info: SessionInfo,
+    msg_node: MessageNodes,
+    sender_name: Optional[str] = None,
+) -> List[dict]:
+    node_list = []
+    for message in msg_node.values:
+        content = ""
+        msgchain = message.as_sendable(session_info=session_info)
+        for x in msgchain:
+            if isinstance(x, PlainElement):
+                content += x.text + "\n"
+            elif isinstance(x, ImageElement):
+                content += f"[CQ:image,file=base64://{x.get_base64()}]\n"
+
+        template = {
+            "type": "node",
+            "data": {
+                "nickname": sender_name if sender_name else Temp.data.get("qq_nickname"),
+                "user_id": str(Temp.data.get("qq_account")),
+                "content": content.strip()
+            }
+        }
+        node_list.append(template)
+    return node_list
+
+
+class AIOCQContextManager(ContextManager):
+    context: dict[str, Any] = {}
+    features: Optional[Features] = Features
+    typing_flags: dict[str, Event] = {}
+
+    @classmethod
+    def add_context(cls, session_info: SessionInfo, context: Event):
+        cls.context[session_info.session_id] = context
+
+    @classmethod
+    def del_context(cls, session_info: SessionInfo):
+        if session_info.session_id in cls.context:
+            del cls.context[session_info.session_id]
+
+    @classmethod
+    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+        """
+        检查会话权限。
+        :param session_info: 会话信息
+        :return: 是否有权限
+        """
+        # 这里可以添加权限检查的逻辑
+
+        @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+        async def _check():
+            if session_info.target_from == target_private_prefix:
+                return True
+            if session_info.target_from == target_group_prefix:
+                get_member_info = await bot.call_action(
+                    "get_group_member_info",
+                    group_id=session_info.get_common_target_id(),
+                    user_id=session_info.get_common_target_id(),
+                )
+                if get_member_info["role"] in ["owner", "admin"]:
+                    return True
+            return False
+
+        return await _check()
+
+    @classmethod
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True, enable_parse_message=True,
+                           enable_split_image=True,) -> List[str]:
+
+        #
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
+
+        #
+        # ctx = cls.context.get(session_info.session_id)
+        send = None
+
+        message_chain_assendable = message.as_sendable(session_info)
+
+        convert_msg_segments = MessageSegment.text("")
+        if (
+            quote
+            and session_info.target_from == target_group_prefix
+            and session_info.messages
+        ):
+            convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
+
+        count = 0
+        for x in message_chain_assendable:
+            if isinstance(x, PlainElement):
+                if enable_parse_message:
+                    parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
+                    parts = [part for part in parts if part]
+                    previous_was_cq = False
+                    # CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
+                    for i, part in enumerate(parts):
+                        if re.match(r"\[CQ:[^\]]+\]", part):
+                            try:
+                                cq_data = CQCodeHandler.parse_cq(part)
+                                if cq_data:
+                                    if previous_was_cq:
+                                        convert_msg_segments = (
+                                            convert_msg_segments
+                                            + MessageSegment.text("\u200B")
+                                        )
+                                    convert_msg_segments = (
+                                        convert_msg_segments
+                                        + MessageSegment.text(
+                                            "\n" if (count != 0 and i == 0) else ""
+                                        )
+                                        + MessageSegment(
+                                            type_=cq_data["type"], data=cq_data["data"]
+                                        )
+                                    )
+                                else:
+                                    if previous_was_cq:
+                                        convert_msg_segments = (
+                                            convert_msg_segments
+                                            + MessageSegment.text("\u200B")
+                                        )
+                                    convert_msg_segments = (
+                                        convert_msg_segments
+                                        + MessageSegment.text(
+                                            ("\n" if (count != 0 and i == 0) else "")
+                                            + part
+                                        )
+                                    )
+                            except Exception:
+                                if previous_was_cq:
+                                    convert_msg_segments = (
+                                        convert_msg_segments
+                                        + MessageSegment.text("\u200B")
+                                    )
+                                convert_msg_segments = (
+                                    convert_msg_segments
+                                    + MessageSegment.text(
+                                        ("\n" if (count != 0 and i == 0) else "") + part
+                                    )
+                                )
+                            finally:
+                                previous_was_cq = True
+                        else:
+                            convert_msg_segments = (
+                                convert_msg_segments
+                                + MessageSegment.text(
+                                    ("\n" if count != 0 else "") + part
+                                )
+                            )
+                            previous_was_cq = False
+                else:
+                    convert_msg_segments = convert_msg_segments + MessageSegment.text(
+                        ("\n" if count != 0 else "") + x.text
+                    )
+                count += 1
+            elif isinstance(x, ImageElement):
+                convert_msg_segments = convert_msg_segments + MessageSegment.image(
+                    "base64://" + await x.get_base64()
+                )
+                count += 1
+            elif isinstance(x, VoiceElement):
+                convert_msg_segments = convert_msg_segments + MessageSegment.record(
+                    file=Path(x.path).as_uri()
+                )
+                count += 1
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and session_info.target_from == target_group_prefix:
+                    convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
+                else:
+                    convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
+                count += 1
+
+        Logger.info(f"[Bot] -> [{session_info.target_id}]: {message_chain_assendable}")
+        if session_info.target_from == target_group_prefix:
+            try:
+                send = await bot.send_group_msg(
+                    group_id=session_info.get_common_target_id(), message=convert_msg_segments
+                )
+            except aiocqhttp.exceptions.NetworkError:
+                send = await bot.send_group_msg(
+                    group_id=session_info.get_common_target_id(),
+                    message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
+                )
+            except aiocqhttp.exceptions.ActionFailed:
+                img_chain = message.copy()
+                img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                imgs = await msgchain2image(img_chain, session_info)
+                msgsgm = MessageSegment.text("")
+                if imgs:
+                    for img in imgs:
+                        im = Image(img)
+                        msgsgm = msgsgm + MessageSegment.image(
+                            "base64://" + await im.get_base64()
+                        )
+                    try:
+                        send = await bot.send_group_msg(
+                            group_id=session_info.get_common_target_id(), message=msgsgm
+                        )
+                    except aiocqhttp.exceptions.ActionFailed as e:
+                        Logger.error(f"Failed to send message: {traceback.format_exc()}")
+
+        else:
+            try:
+                send = await bot.send_private_msg(
+                    user_id=session_info.get_common_target_id(), message=convert_msg_segments
+                )
+            except aiocqhttp.exceptions.ActionFailed as e:
+                Logger.error(f"Failed to send message: {traceback.format_exc()}")
+        if send:
+            return [send["message_id"]]
+        else:
+            return []
+
+    @classmethod
+    async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
+        """
+        删除指定会话中的消息。
+        :param session_info: 会话信息
+        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
+        """
+
+        if session_info.target_from in [target_private_prefix, target_group_prefix]:
+            try:
+                for x in message_id:
+                    await bot.call_action("delete_msg", message_id=x)
+            except Exception:
+                Logger.error(traceback.format_exc())
+
+    @classmethod
+    async def start_typing(cls, session_info: SessionInfo) -> None:
+        """
+        开始输入状态
+        :param session_info: 会话信息
+        """
+        async def _typing():
+            if session_info.session_id not in cls.context:
+                raise ValueError("Session not found in context")
+            # 这里可以添加开始输入状态的逻辑
+            Logger.debug(f"Start typing in session: {session_info.session_id}")
+
+            if session_info.target_from == target_group_prefix:  # wtf onebot 11
+                obi = await get_onebot_implementation()
+                if obi in ["llonebot", "napcat"]:
+                    await bot.call_action(
+                        "set_msg_emoji_like",
+                        message_id=session_info.message_id,
+                        emoji_id=qq_typing_emoji)
+                elif obi == "lagrange":
+                    await bot.call_action(
+                        "set_group_reaction",
+                        group_id=session_info.get_common_target_id(),
+                        message_id=session_info.message_id,
+                        code=qq_typing_emoji,
+                        is_add=True)
+                else:
+                    if session_info.sender_id in last_send_typing_time:
+                        if datetime.datetime.now().timestamp() - last_send_typing_time[session_info.sender_id] <= 3600:
+                            return
+                    last_send_typing_time[session_info.sender_id] = datetime.datetime.now().timestamp()
+                    if obi == "shamrock":
+                        await bot.send_group_msg(
+                            group_id=session_info.get_common_target_id(),
+                            message=f"[CQ:touch,id={session_info.get_common_sender_id()}]")
+                    elif obi == "go-cqhttp":
+                        await bot.send_group_msg(
+                            group_id=session_info.get_common_target_id(),
+                            message=f"[CQ:poke,qq={session_info.get_common_sender_id()}]")
+                    else:
+                        pass
+            flag = asyncio.Event()
+            cls.typing_flags[session_info.session_id] = flag
+            await flag.wait()
+        asyncio.create_task(_typing())
+
+    @classmethod
+    async def end_typing(cls, session_info: SessionInfo) -> None:
+        """
+        结束输入状态
+        :param session_info: 会话信息
+        """
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        if session_info.session_id in cls.typing_flags:
+            cls.typing_flags[session_info.session_id].set()
+            del cls.typing_flags[session_info.session_id]
+        # 这里可以添加结束输入状态的逻辑
+        Logger.debug(f"End typing in session: {session_info.session_id}")
+
+    @classmethod
+    async def error_signal(cls, session_info: SessionInfo) -> None:
+        """
+        发送错误信号
+        :param session_info: 会话信息
+        """
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加错误处理逻辑
+
+        if session_info.target_from == target_group_prefix:  # wtf onebot 11
+            obi = await get_onebot_implementation()
+            if obi in ["llonebot", "napcat"]:
+                await bot.call_api("set_msg_emoji_like",
+                                   message_id=session_info.message_id,
+                                   emoji_id=qq_limited_emoji)
+            elif obi == "lagrange":
+                await bot.call_api("set_group_reaction",
+                                   group_id=session_info.get_common_target_id(),
+                                   message_id=session_info.message_id,
+                                   code=qq_limited_emoji,
+                                   is_add=True)
+            elif obi == "shamrock":
+                await bot.call_api("send_group_msg",
+                                   group_id=session_info.get_common_target_id(),
+                                   message=f"[CQ:touch,id={qq_account}]")
+            elif obi == "go-cqhttp":
+                await bot.call_api("send_group_msg",
+                                   group_id=session_info.get_common_target_id(),
+                                   message=f"[CQ:poke,qq={qq_account}]")
+            else:
+                pass

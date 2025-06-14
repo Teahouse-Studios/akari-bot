@@ -10,7 +10,7 @@ from aiofile import async_open
 from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.message.internal import Image
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, EmbedElement
@@ -47,6 +47,17 @@ def get_fontsize(font, text):
 
 
 save_source = True
+
+
+async def msgnode2image(message_node: MessageNodes,
+                        session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None,
+                        use_local: bool = True):
+    new_chain_list = []
+    for m in message_node.values:
+        for x in m.as_sendable(session):
+            new_chain_list.append(x)
+    message_chain = MessageChain.assign(new_chain_list)
+    return await msgchain2image(message_chain, session, use_local=use_local)
 
 
 async def msgchain2image(message_chain: Union[List, MessageChain],

@@ -446,22 +446,6 @@ class EmbedElement(BaseElement):
         return str(self.to_message_chain())
 
 
-@define
-class NodeElement:
-    """
-    节点列表。
-
-    """
-    values: List["MessageChain"]
-
-    @classmethod
-    def assign(cls, values: List["MessageChain"]):
-        """
-        :param values: 节点列表。
-        """
-        return deepcopy(cls(values=values))
-
-
 __all__ = [
     "BaseElement",
     "PlainElement",

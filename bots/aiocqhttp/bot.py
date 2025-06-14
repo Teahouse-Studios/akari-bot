@@ -9,10 +9,12 @@ from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
 from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.context import AIOCQContextManager
 from bots.aiocqhttp.info import *
-from bots.aiocqhttp.message import MessageSession, FetchTarget
+from bots.aiocqhttp.utils import to_message_chain
+from core.builtins.bot import Bot
+from core.builtins.session.info import SessionInfo
 from core.server.init import load_prompt, init_async
-from core.builtins import PrivateAssets
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
 from core.config import Config
@@ -24,12 +26,17 @@ from core.i18n import Locale
 from core.builtins.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.tos import tos_report
-from core.types import MsgInfo, Session
 
 
-PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
-Info.dirty_word_check = Config("enable_dirty_check", False)
-Info.use_url_manager = Config("enable_urlmanager", False)
+Bot.register_bot(client_name=client_name,
+                 private_assets_path=os.path.join(assets_path, "private", "aiocqhttp"),
+                 )
+
+ctx_id = Bot.register_context_manager(AIOCQContextManager)
+
+
+dirty_word_check = Config("enable_dirty_check", False)
+use_url_manager = Config("enable_urlmanager", False)
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
 enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
@@ -44,11 +51,10 @@ async def startup():
 
 @bot.on_websocket_connection
 async def _(event: Event):
-    await load_prompt(FetchTarget)
     qq_login_info = await bot.call_action("get_login_info")
     qq_account = qq_login_info.get("user_id")
-    Temp().data["qq_account"] = qq_account
-    Temp().data["qq_nickname"] = qq_login_info.get("nickname")
+    Temp.data["qq_account"] = qq_account
+    Temp.data["qq_nickname"] = qq_login_info.get("nickname")
 
 
 async def message_handler(event: Event):
@@ -111,21 +117,21 @@ async def message_handler(event: Event):
             else:
                 return
 
-    msg = MessageSession(
-        MsgInfo(
-            target_id=target_id,
-            sender_id=sender_id,
-            target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
-            sender_from=sender_prefix,
-            sender_name=event.sender["nickname"],
-            client_name=client_name,
-            message_id=event.message_id,
-            reply_id=reply_id),
-        Session(
-            message=event,
-            target=event.group_id if event.detail_type == "group" else event.user_id,
-            sender=event.user_id))
-    await parser(msg, running_mention=True, prefix=prefix)
+    msg_chain = await to_message_chain(event.message)
+
+    session_info = await SessionInfo.assign(target_id=target_id, sender_id=sender_id,
+                                            target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
+                                            sender_from=sender_prefix,
+                                            sender_name=event.sender["nickname"], client_name=client_name,
+                                            message_id=str(event.message_id),
+                                            reply_id=str(reply_id),
+                                            messages=msg_chain,
+                                            ctx_slot=ctx_id,
+                                            use_url_manager=use_url_manager,
+                                            require_check_dirty_words=dirty_word_check
+                                            )
+
+    await Bot.process_message(session_info, event)
 
 
 if enable_listening_self_message:
@@ -137,39 +143,6 @@ if enable_listening_self_message:
 @bot.on_message("group", "private")
 async def _(event: Event):
     await message_handler(event)
-
-
-class GuildAccountInfo:
-    tiny_id = None
-
-
-@bot.on_message("guild")
-async def _(event):
-    if not GuildAccountInfo.tiny_id:
-        profile = await bot.call_action("get_guild_service_profile")
-        GuildAccountInfo.tiny_id = profile["tiny_id"]
-    target_id = f"{target_guild_prefix}|{event.guild_id}|{event.channel_id}"
-    sender_id = f"{sender_tiny_prefix}|{event.user_id}"
-    if sender_id in ignored_sender:
-        return
-    if event.user_id == GuildAccountInfo.tiny_id:
-        return
-    reply_id = None
-    match_reply = re.match(r"^\[CQ:reply,id=(-?\d+).*\].*", event.message)
-    if match_reply:
-        reply_id = int(match_reply.group(1))
-    msg = MessageSession(MsgInfo(target_id=target_id,
-                                 sender_id=sender_id,
-                                 target_from=target_guild_prefix,
-                                 sender_from=sender_tiny_prefix,
-                                 sender_name=event.sender["nickname"],
-                                 client_name=client_name,
-                                 message_id=event.message_id,
-                                 reply_id=reply_id),
-                         Session(message=event,
-                                 target=f"{event.guild_id}|{event.channel_id}",
-                                 sender=event.user_id))
-    await parser(msg, running_mention=True)
 
 
 @bot.on("request.friend")

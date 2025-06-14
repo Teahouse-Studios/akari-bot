@@ -55,7 +55,10 @@ class SessionInfo:
     ctx_slot: Optional[int] = 0
     fetch: bool = False
     require_enable_modules: bool = True
-    tmp = {}
+    require_check_dirty_words: bool = False
+    use_url_manager: bool = False
+    use_url_md_format: bool = False
+    tmp: dict[str, str] = {}
 
     @classmethod
     async def assign(cls, target_id: str,
@@ -68,11 +71,14 @@ class SessionInfo:
                      reply_id: Optional[str] = None,
                      messages: Optional[MessageChain] = None,
                      prefixes: Optional[List[str]] = None,
-                     admin: bool = False,
                      ctx_slot: int = 0,
                      fetch: bool = False,
                      create: bool = True,
-                     require_enable_modules: bool = True
+                     require_enable_modules: bool = True,
+                     require_check_dirty_words: bool = False,
+                     use_url_manager: bool = False,
+                     use_url_md_format: bool = False,
+                     tmp: Optional[dict[str, str]] = None
                      ) -> SessionInfo:
 
         """
@@ -110,8 +116,6 @@ class SessionInfo:
             message_id=message_id,
             reply_id=reply_id,
             messages=messages,
-            admin=admin,
-            superuser=sender_info.superuser if sender_info else False,
             custom_admins=target_info.custom_admins if target_info else [],
             timestamp=timestamp,
             session_id=session_id,
@@ -128,11 +132,22 @@ class SessionInfo:
             ctx_slot=ctx_slot,
             fetch=fetch,
             require_enable_modules=require_enable_modules,
+            require_check_dirty_words=require_check_dirty_words,
+            use_url_manager=use_url_manager,
+            use_url_md_format=use_url_md_format,
+            tmp=tmp,
+
         )
 
     async def refresh_info(self):
         self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id)
         self.target_info = await TargetInfo.get_by_target_id(self.target_id)
+
+    def get_common_target_id(cls) -> str:
+        return cls.target_id.split(cls.target_from + "|")[1]
+
+    def get_common_sender_id(cls) -> str:
+        return cls.sender_id.split(cls.sender_from + "|")[1]
 
 
 @define

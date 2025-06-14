@@ -341,7 +341,24 @@ class PlatformMessageChain:
         return cls(values=deepcopy(values))
 
 
-Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain, str, list[MessageElement], MessageElement]
+@define
+class MessageNodes:
+    """
+    消息节点列表。
+
+    """
+    values: List[MessageChain]
+
+    @classmethod
+    def assign(cls, values: List[MessageChain]):
+        """
+        :param values: 节点列表。
+        """
+        return cls(values=values)
+
+
+Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain,
+                  str, list[MessageElement], MessageElement, MessageNodes]
 
 
 def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
@@ -351,12 +368,12 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
         chain = chain.values.get(session.locale.locale, chain.values.get("default", MessageChain.assign("")))
     if isinstance(chain, (str, list, MessageElement)):
         chain = MessageChain.assign(chain)
-    if isinstance(chain, MessageChain):
+    if isinstance(chain, (MessageChain, MessageNodes)):
         return chain
     else:
         raise TypeError(
             f"Unsupported chain type: {
-                type(chain).__name__}, expected MessageChain, I18NMessageChain, or PlatformMessageChain.")
+                type(chain).__name__}, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain.")
 
 
 def match_kecode(text: str,

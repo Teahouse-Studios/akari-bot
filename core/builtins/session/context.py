@@ -34,12 +34,19 @@ class ContextManager:
         raise NotImplementedError
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,) -> List[str]:
+    async def send_message(cls, session_info: SessionInfo,
+                           message: MessageChain,
+                           quote: bool = True,
+                           enable_parse_message: bool = True,
+                           enable_split_image: bool = True,
+                           ) -> List[str]:
         """
         发送消息到指定的会话。
         :param session_info: 会话信息
         :param message: 消息内容，可以是 MessageChain 或字符串
         :param quote: 是否引用消息
+        :param enable_parse_message: 是否允许解析消息。（此参数作接口兼容用，仅QQ平台使用，默认为True）
+        :param enable_split_image: 是否允许拆分图片发送。（此参数作接口兼容用，仅Telegram平台使用，默认为True）
         :return: 消息 ID 列表
         """
 

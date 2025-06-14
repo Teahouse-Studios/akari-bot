@@ -33,14 +33,9 @@ class DiscordSlashContextManager(DiscordContextManager):
             del cls.context[session_info.session_id]
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,):
-        """
-        发送消息到指定的会话。
-        :param session_info: 会话信息
-        :param message: 消息内容，可以是 MessageChain 或字符串
-        :param quote: 是否引用消息
-        :return: 消息 ID 列表
-        """
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,
+                           enable_parse_message: bool = True,
+                           enable_split_image: bool = True,):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         ctx = cls.context.get(session_info.session_id)

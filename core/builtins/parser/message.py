@@ -32,8 +32,6 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 
-qq_account = Temp().data.get("qq_account")
-qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 enable_tos = Config("enable_tos", True)

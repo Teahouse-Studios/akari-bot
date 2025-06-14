@@ -62,7 +62,10 @@ class MessageSession:
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
-        return_val = await _queue_server.client_send_message(self.session_info, message_chain, quote=quote)
+        return_val = await _queue_server.client_send_message(self.session_info, message_chain,
+                                                             quote=quote,
+                                                             enable_parse_message=enable_parse_message,
+                                                             enable_split_image=enable_split_image)
 
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
@@ -125,7 +128,11 @@ class MessageSession:
         if not message_chain.is_safe and not disable_secret_check:
             message_chain = MessageChain.assign(I18NContext("error.message.chain.unsafe"))
 
-        await _queue_server.client_send_message(self.session_info, message_chain, wait=False)
+        return_val = await _queue_server.client_send_message(self.session_info, message_chain, wait=False,
+                                                             enable_parse_message=enable_parse_message,
+                                                             enable_split_image=enable_split_image)
+        if callback:
+            SessionTaskManager.add_callback(return_val["message_id"], callback)
 
     def as_display(self, text_only: bool = False) -> str:
         """
@@ -204,7 +211,7 @@ class MessageSession:
         if Config("no_confirm", False):
             return True
         if message_chain:
-            message_chain = get_message_chain(message_chain)
+            message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.confirm"))
             send = await self.send_message(message_chain, quote)
@@ -247,7 +254,7 @@ class MessageSession:
         send = None
         ExecutionLockList.remove(self)
         if message_chain:
-            message_chain = get_message_chain(message_chain)
+            message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
@@ -287,10 +294,9 @@ class MessageSession:
         :param append_instruction: 是否在发送的消息中附加提示。
         :return: 回复消息的MessageChain对象。
         """
-        self.session_info.tmp["enforce_send_by_master_client"] = True
         send = None
         ExecutionLockList.remove(self)
-        message_chain = get_message_chain(message_chain)
+        message_chain = get_message_chain(self.session_info, message_chain)
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
