@@ -50,7 +50,8 @@ async def _(msg: Bot.MessageSession):
 
 
 @arc.command(
-    "rank free {{I18N:arcaea.help.rank.free}}", "rank paid {{I18N:arcaea.help.rank.paid}}"
+    "rank free {{I18N:arcaea.help.rank.free}}",
+    "rank paid {{I18N:arcaea.help.rank.paid}}"
 )
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("free", False):

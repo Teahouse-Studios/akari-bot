@@ -182,4 +182,4 @@ async def _(msg: Bot.MessageSession):
         if wikis:
             await msg.finish(wikis)
         else:
-            await msg.finish(msg.locale.t("wiki.message.wiki_audit.list.none"))
+            await msg.finish(I18NContext("wiki.message.wiki_audit.list.none"))

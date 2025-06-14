@@ -11,6 +11,7 @@ from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
 import httpx
+import orjson as json
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
@@ -52,6 +53,12 @@ class PlainElement(MessageElement):
         disable_joke = bool(disable_joke)
         return deepcopy(cls(text=text, disable_joke=disable_joke))
 
+    def kecode(self):
+        return f"[KE:plain,text={self.text}]"
+
+    def __str__(self):
+        return self.text
+
 
 @define
 class URLElement(MessageElement):
@@ -79,6 +86,11 @@ class URLElement(MessageElement):
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
         return deepcopy(cls(url=url))
+
+    def kecode(self):
+        if self.md_format:
+            return f"[KE:plain,text=[{self.url}]({self.url})]"
+        return f"[KE:plain,text={self.url}]"
 
     def __str__(self):
         if self.md_format:
@@ -124,8 +136,34 @@ class FormattedTimeElement(MessageElement):
                 datetime.fromtimestamp(self.timestamp, tz=UTC)
                 + msg.timezone_offset
             ).strftime(" ".join(ftime_template))
-        ftime_template.append("%Y-%m-%d %H:%M:%S")
-        return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+        else:
+            if self.date:
+                ftime_template.append("%Y-%m-%d")
+            if self.time:
+                if self.seconds:
+                    ftime_template.append("%H:%M:%S")
+                else:
+                    ftime_template.append("%H:%M")
+            if self.timezone:
+                tz_template = "(UTC)"
+                offset = datetime.now().astimezone().utcoffset()
+                if offset:
+                    total_min = int(offset.total_seconds() // 60)
+                    sign = "+" if total_min >= 0 else "-"
+                    abs_min = abs(total_min)
+                    hours = abs_min // 60
+                    mins = abs_min % 60
+
+                    if mins == 0:
+                        tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
+                    else:
+                        tz_template = f"(UTC{sign}{hours}:{mins:02d})"
+
+                ftime_template.append(tz_template)
+            return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+
+    def kecode(self):
+        return f"[KE:plain,text={self.to_str()}]"
 
     def __str__(self):
         return self.to_str()
@@ -178,6 +216,18 @@ class I18NContextElement(MessageElement):
         """
         return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))
 
+    def kecode(self):
+        if self.kwargs:
+            params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
+            return f"[KE:i18n,i18nkey={self.key},{params}]"
+        return f"[KE:i18n,i18nkey={self.key}]"
+
+    def __str__(self):
+        if self.kwargs:
+            params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
+            return f"{{I18N:{self.key},{params}}}"
+        return f"{{I18N:{self.key}}}"
+
 
 @define
 class ImageElement(MessageElement):
@@ -185,6 +235,7 @@ class ImageElement(MessageElement):
     图片消息。
 
     :param path: 图片路径。
+    :param headers: 获取图片时的请求头。
     """
 
     path: str
@@ -231,7 +282,7 @@ class ImageElement(MessageElement):
         """
         url = self.path
         async with httpx.AsyncClient() as client:
-            resp = await client.get(url, timeout=20.0)
+            resp = await client.get(url, timeout=20.0, headers=self.headers)
             raw = resp.content
             ft = filetype.match(raw).extension
             img_path = f"{random_cache_path()}.{ft}"
@@ -267,6 +318,12 @@ class ImageElement(MessageElement):
         image.save(save)
         return ImageElement.assign(save)
 
+    def kecode(self):
+        if self.headers:
+            headers_b64 = base64.b64encode(json.dumps(self.headers)).decode("utf-8")
+            return f"[KE:image,path={self.path},headers={headers_b64}]"
+        return f"[KE:image,path={self.path}]"
+
 
 @define
 class VoiceElement(MessageElement):
@@ -284,6 +341,9 @@ class VoiceElement(MessageElement):
         :param path: 语音路径。
         """
         return deepcopy(cls(path))
+
+    def kecode(self):
+        return f"[KE:voice,path={self.path}]"
 
 
 @define
@@ -304,6 +364,12 @@ class MentionElement(MessageElement):
         :param user_id: 用户id。
         """
         return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
+
+    def kecode(self):
+        return f"[KE:mention,userid={self.client}|{self.id}]"
+
+    def __str__(self):
+        return f"<AT:{self.client}|{self.id}>"
 
 
 @define

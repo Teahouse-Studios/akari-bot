@@ -70,7 +70,7 @@ async def _(msg: Bot.MessageSession, module: str):
                 pass
             else:
                 if regex_list:
-                    mdocs.append("{I18N:core.help.regex.note}")
+                    mdocs.append(str(I18NContext("core.help.regex.note")))
                     for regex in regex_list:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -81,24 +81,31 @@ async def _(msg: Bot.MessageSession, module: str):
                             rdesc = regex.desc
                             if rdesc:
                                 rdesc = msg.locale.t_str(rdesc)
-                                mdocs.append(f"{pattern} {f"{{I18N:core.message.help.regex.detail,msg={rdesc}}}"}")
+                                mdocs.append(
+                                    f"{pattern} {str(I18NContext("I18N:core.message.help.regex.detail", msg=rdesc))}")
                             else:
-                                mdocs.append(f"{pattern} {"{I18N:core.message.help.regex.no_information}"}")
+                                mdocs.append(
+                                    f"{pattern} {str(I18NContext("I18N:core.message.help.regex.no_information"))}")
 
                 if module_.alias:
                     for a in module_.alias:
                         malias.append(f"{a} -> {module_.alias[a]}")
                 if module_.developers and not module_.base:
-                    devs_msg = "{I18N:core.help.author}" + "{I18N:message.delimiter}".join(module_.developers)
+                    devs_msg = str(I18NContext("core.help.author")) + \
+                        "{I18N:message.delimiter}".join(module_.developers)
                 else:
                     devs_msg = ""
 
             if module_.doc:
                 if help_page_url := Config("help_page_url", help_page_url_default, cfg_type=str):
-                    wiki_msg = f"{{I18N:core.message.help.helpdoc.address,url={
-                        help_page_url.replace("${module}", help_name)}}}"
+                    wiki_msg = str(
+                        I18NContext(
+                            "core.message.help.helpdoc.address",
+                            url=help_page_url.replace(
+                                "${module}",
+                                help_name)))
                 elif help_url:
-                    wiki_msg = f"{{I18N:core.message.help.helpdoc.address,url={help_url + help_name}}}"
+                    wiki_msg = str(I18NContext("core.message.help.helpdoc.address", url=help_url + help_name))
                 else:
                     wiki_msg = ""
             else:

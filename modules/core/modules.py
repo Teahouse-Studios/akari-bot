@@ -194,17 +194,21 @@ async def config_modules(msg: Bot.MessageSession):
             if base_module and reload_count >= 1:
                 return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
-                return Plain(f"{{I18N:core.message.module.reload.success,module={module}}}"
-                             + ("\n" if len(extra_modules) != 0 else "")
-                             + "\n".join(extra_modules)
-                             + "\n"
-                             + f"{{I18N:core.message.module.reload.with,reload_count={reload_count - 1}}}")
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.with", reload_count=reload_count - 1))
+                )
             if reload_count == 1:
-                return Plain(f"{{I18N:core.message.module.reload.success,module={module}}}"
-                             + ("\n" if len(extra_modules) != 0 else "")
-                             + "\n".join(extra_modules)
-                             + "\n"
-                             + "{I18N:core.message.module.reload.no_more}")
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.no_more"))
+                )
             return I18NContext("core.message.module.reload.failed")
 
         for module_ in wait_config_list:

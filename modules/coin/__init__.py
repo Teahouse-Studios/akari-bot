@@ -69,15 +69,15 @@ async def flip_coins(count: int):
         prompt.append(I18NContext("coin.message.mix.prompt", count=count))
         output = ""
         if face_up and face_down:
-            output += f"{{I18N:coin.message.mix.head_and_tail,head={face_up},tail={face_down}}}"
+            output += str(I18NContext("coin.message.mix.head_and_tail", head=face_up, tail=face_down))
         elif face_up:
-            output += f"{{I18N:coin.message.mix.head,head={face_up}}}"
+            output += str(I18NContext("coin.message.mix.head", head=face_up))
         elif face_down:
-            output += f"{{I18N:coin.message.mix.tail,tail={face_down}}}"
+            output += str(I18NContext("coin.message.mix.tail", tail=face_down))
         if stand:
-            output += f"{{I18N:coin.message.mix.stand,stand={stand}}}"
+            output += str(I18NContext("coin.message.mix.stand", stand=stand))
         else:
-            output += "{{I18N:message.end]"
+            output += str(I18NContext("message.end"))
         prompt.append(Plain(output))
 
     return prompt

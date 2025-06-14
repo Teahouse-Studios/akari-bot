@@ -19,7 +19,7 @@ ver = module("version", base=True, doc=True)
 async def _(msg: Bot.MessageSession):
     if Bot.Info.version:
         commit = Bot.Info.version[0:6]
-        send_msgs = [I18NContext("core.message.version", disable_joke=True, commit=commit)]
+        send_msgs = MessageChain([I18NContext("core.message.version", disable_joke=True, commit=commit)])
         if Config("enable_commit_url", True):
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:

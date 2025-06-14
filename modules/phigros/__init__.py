@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await PhigrosBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
-    await msg.finish(msg.locale.t("phigros.message.unbind.success"))
+    await msg.finish(I18NContext("phigros.message.unbind.success"))
 
 
 @phi.command("b19 {{I18N:phigros.help.b19}}")
@@ -102,12 +102,12 @@ async def _(msg: Bot.MessageSession):
             )
         except Exception as e:
             Logger.exception()
-            await msg.finish(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
+            await msg.finish(I18NContext("phigros.message.b19.get_failed", err=str(e)))
 
 
 @phi.command("update", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_assets():
-        await msg.finish(msg.locale.t("message.success"))
+        await msg.finish(I18NContext("message.success"))
     else:
-        await msg.finish(msg.locale.t("message.failed"))
+        await msg.finish(I18NContext("message.failed"))

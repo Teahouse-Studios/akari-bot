@@ -4,7 +4,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .rc import convert_rc_to_detailed_format
 
 
-async def rc_qq(msg: MessageSession, wiki_url, headers=None):
+async def get_rc_qq(msg: MessageSession, wiki_url, headers=None):
     wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(
         action="query",
@@ -21,9 +21,7 @@ async def rc_qq(msg: MessageSession, wiki_url, headers=None):
     ]
     if wiki.wiki_info.in_allowlist:
         msgchain_lst.append(MessageChain([I18NContext("wiki.message.rc.qq.link.prompt")]))
-    rclist = await convert_rc_to_detailed_format(
-        query["query"]["recentchanges"], wiki_info, msg
-    )
+    rclist = await convert_rc_to_detailed_format(msg, query["query"]["recentchanges"], wiki_info)
 
     for x in rclist:
         msgchain_lst.append(MessageChain([Plain(x)]))

@@ -4,7 +4,7 @@ from datetime import datetime
 import orjson as json
 from google_play_scraper import app as google_play_scraper
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 
@@ -87,7 +87,7 @@ async def mcbv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     beta = []
     preview = []
     release = []
@@ -125,7 +125,7 @@ async def mcdv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:
@@ -143,7 +143,7 @@ async def mcev(msg: Bot.MessageSession):
         version = re.search(r"(?<=\[)(.*?)(?=])", data)[0]
         Logger.debug(version)
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     return msg.locale.t("mcv.message.mcev", version=version)
 
 
@@ -155,7 +155,7 @@ async def mclgv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:

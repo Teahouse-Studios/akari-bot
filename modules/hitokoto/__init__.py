@@ -1,7 +1,7 @@
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_tw
 
-from core.builtins import Bot, Plain, Url
+from core.builtins import Bot, I18NContext, Plain, Url
 from core.component import module
 from core.utils.http import get_url
 
@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         if msg_type in msg_types:
             url += "?c=" + msg_type
         else:
-            await msg.finish(msg.locale.t("hitokoto.message.invalid"))
+            await msg.finish(I18NContext("hitokoto.message.invalid"))
 
     data = await get_url(url, 200, fmt="json")
     if msg.locale.locale == "zh_tw":

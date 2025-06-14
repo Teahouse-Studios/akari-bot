@@ -2,7 +2,7 @@ import re
 
 import orjson as json
 
-from core.builtins import Bot, Plain
+from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
@@ -32,7 +32,7 @@ async def _(msg: Bot.MessageSession):
     else:
         sid_list = await search_by_alias(name)
         if len(sid_list) == 0:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+            await msg.finish(I18NContext("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
             res = msg.locale.t("maimai.message.disambiguation") + "\n"
             for sid in sorted(sid_list, key=int):
@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
     if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        await msg.finish(I18NContext("maimai.message.music_not_found"))
 
     if int(sid) > 100000:
         res = []
@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession):
                     level=level, diff=[get_diff(res.groups()[1])], type=tp
                 )
             if len(music_data) == 0:
-                await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+                await msg.finish(I18NContext("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
                 await msg.finish(
@@ -144,7 +144,7 @@ async def _(msg: Bot.MessageSession):
                     )
                 )
         except ValueError:
-            await msg.finish(msg.locale.t("maimai.message.random.failed"))
+            await msg.finish(I18NContext("maimai.message.random.failed"))
 
 
 @mai_regex.regex(r"(.+)\s?段位(?:[认認]定)?列?表", desc="{I18N:maimai.help.maimai_regex.grade}")

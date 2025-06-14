@@ -36,7 +36,7 @@ async def get_video_info(
     time = msg.ts2strftime(view["ctime"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
-        pages = f"{{I18N:message.brackets,msg={len(view["pages"])}P}}"
+        pages = str(I18NContext("message.brackets", msg=f"{len(view["pages"])}P"))
     else:
         pages = ""
 
@@ -57,7 +57,7 @@ async def get_video_info(
             title=f"{title}{pages}",
             description=desc,
             url=video_url,
-            author=f"{owner}{f"{{I18N:message.brackets,msg={fans}}}"}",
+            author=f"{owner}{str(I18NContext("message.brackets", msg=fans))}",
             footer="Bilibili",
             image=Image(pic),
             thumbnail=Image(avatar),

@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 import filetype
 
-from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.builtins import Bot, I18NContext, Plain, Image, Voice, Url, confirm_command
 from core.builtins import MessageSession
 from core.component import module
 from core.constants.exceptions import AbuseWarning
@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession, pageid: str):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
     if not isint(pageid):
-        await msg.finish(msg.locale.t("wiki.message.id.invalid"))
+        await msg.finish(I18NContext("wiki.message.id.invalid"))
     get_lang = msg.parsed_msg.get("-l", False)
     if get_lang:
         lang = get_lang["<lang>"]

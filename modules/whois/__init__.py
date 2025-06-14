@@ -46,7 +46,7 @@ async def get_whois(msg, domain):
         registrant_postal_code = info.get("registrant_postal_code")
 
         if not domain_name:
-            await msg.finish(msg.locale.t("whois.message.get_failed"))
+            await msg.finish(I18NContext("whois.message.get_failed"))
 
         if whois_server:
             whois_server = whois_server.lower()
@@ -83,4 +83,4 @@ async def get_whois(msg, domain):
 
         return "\n".join([x for x in res if x])
     except Exception:
-        await msg.finish(msg.locale.t("whois.message.get_failed"))
+        await msg.finish(I18NContext("whois.message.get_failed"))

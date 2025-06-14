@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     legacy = True
 
     if song_count == 0:
-        await msg.finish(msg.locale.t("ncmusic.message.search.not_found"))
+        await msg.finish(I18NContext("ncmusic.message.search.not_found"))
 
     songs = result["result"]["songs"][:SEARCH_LIMIT]
 
@@ -193,4 +193,4 @@ async def info(msg: Bot.MessageSession, sid: int):
             ]
         )
     else:
-        await msg.finish(msg.locale.t("ncmusic.message.info.not_found"))
+        await msg.finish(I18NContext("ncmusic.message.info.not_found"))

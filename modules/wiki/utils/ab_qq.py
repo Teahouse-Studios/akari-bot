@@ -4,7 +4,7 @@ from modules.wiki.utils.wikilib import WikiLib
 from .ab import convert_ab_to_detailed_format
 
 
-async def ab_qq(msg: MessageSession, wiki_url, headers=None):
+async def get_ab_qq(msg: MessageSession, wiki_url, headers=None):
     wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(
         action="query",
@@ -15,7 +15,7 @@ async def ab_qq(msg: MessageSession, wiki_url, headers=None):
     )
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
     msgchain_lst = [MessageChain([I18NContext("wiki.message.ab.qq.title"), Url(pageurl)])]
-    ablist = await convert_ab_to_detailed_format(query["query"]["abuselog"], msg)
+    ablist = await convert_ab_to_detailed_format(msg, query["query"]["abuselog"])
     for x in ablist:
         msgchain_lst.append(MessageChain([Plain(x)]))
     nodelist = await msg.msgchain2nodelist(msgchain_lst)

@@ -1,7 +1,7 @@
 # https://github.com/XeroAlpha/caidlist/blob/master/backend/API.md
 import urllib.parse
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.utils.http import get_url
 
@@ -30,4 +30,4 @@ async def _(msg: Bot.MessageSession, query: str):
             plain_texts.append(f"https://ca.projectxero.top/idlist/{resp["data"]["hash"]}")
         await msg.finish(plain_texts)
     else:
-        await msg.finish(msg.locale.t("idlist.message.none"))
+        await msg.finish(I18NContext("idlist.message.none"))

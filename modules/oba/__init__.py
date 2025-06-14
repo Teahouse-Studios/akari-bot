@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.utils.http import get_url
 
@@ -76,7 +76,7 @@ async def _(msg: Bot.MessageSession):
 @oba.command("node [<rank>] {{I18N:oba.help.rank}}")
 async def _(msg: Bot.MessageSession, rank: int = 1):
     if rank < 1:
-        await msg.finish(msg.locale.t("oba.message.node.invalid"))
+        await msg.finish(I18NContext("oba.message.node.invalid"))
     rank_list = await get_url(f"{API}/metric/rank", fmt="json")
     node = rank_list[rank - 1]
     status = "🟩" if node.get("isEnabled") else "🟥"
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
             node_list.append(msg.locale.t("message.collapse", amount=TOP_LIMIT))
         await msg.finish(node_list)
     else:
-        await msg.finish(msg.locale.t("oba.message.search.not_found"))
+        await msg.finish(I18NContext("oba.message.search.not_found"))
 
 
 @oba.command("sponsor {{I18N:oba.help.sponsor}}")

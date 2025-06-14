@@ -1,7 +1,7 @@
 import re
 import urllib.parse
 
-from core.builtins import Url, Bot
+from core.builtins import Bot, MessageChain, I18NContext, Plain, Url
 from core.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.utils import strptime2ts
@@ -10,7 +10,7 @@ from modules.wiki.utils.wikilib import WikiLib, WikiInfo
 RC_LIMIT = 10
 
 
-async def rc(msg: Bot.MessageSession, wiki_url, headers=None):
+async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
     wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(action="query", list="recentchanges",
                                 rcprop="title|user|timestamp|loginfo|comment|sizes",
@@ -29,22 +29,22 @@ async def rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 count = f"+{str(count)}"
             else:
                 count = str(count)
-            d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True,
-                                         timezone=False)} - {title} .. ({count}) .. {user}")
+            d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]),
+                     iso=True, timezone=False)} - {title} .. ({count}) .. {user}")
             if x["comment"]:
-                comment = msg.locale.t("message.brackets", msg=replace_brackets(x["comment"]))
+                comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
         if x["type"] == "log":
             if x["logtype"] == x["logaction"]:
-                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
+                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}",
+                                   user=user,
+                                   title=title)
             else:
                 log = msg.locale.t(
-                    f"wiki.message.rc.action.{
-                        x["logtype"]}.{
-                        x["logaction"]}",
+                    f"wiki.message.rc.action.{x["logtype"]}.{x["logaction"]}",
                     user=user,
                     title=title)
-            if log.find("{") != -1 and log.find("}") != -1:
+            if log.find("{I18N:") != -1 and log.find("}") != -1:
                 if x["logaction"] == x["logtype"]:
                     log = f"{user} {x["logtype"]} {title}"
                 else:
@@ -52,7 +52,7 @@ async def rc(msg: Bot.MessageSession, wiki_url, headers=None):
             d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True, timezone=False)} - {log}")
             params = x["logparams"]
             if "suppressredirect" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.suppress_redirect"))
+                d.append(str(I18NContext("wiki.message.rc.params.suppress_redirect")))
             if "oldgroups" and "newgroups" in params:
                 d.append(compare_groups(params["oldgroups"], params["newgroups"]))
             if "oldmodel" and "newmodel" in params:
@@ -60,34 +60,37 @@ async def rc(msg: Bot.MessageSession, wiki_url, headers=None):
             if "description" in params:
                 d.append(params["description"])
             if "duration" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.duration") + params["duration"])
+                d.append(str(I18NContext("wiki.message.rc.params.duration") + params["duration"]))
             if "flags" in params:
                 d.append(", ".join(params["flags"]))
             if "tag" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.tag") + params["tag"])
+                d.append(str(I18NContext("wiki.message.rc.params.tag") + params["tag"]))
             if "target_title" in params:
-                d.append(msg.locale.t("wiki.message.rc.params.target_title") + params["target_title"])
+                d.append(str(I18NContext("wiki.message.rc.params.target_title") + params["target_title"]))
             if x["comment"]:
-                comment = msg.locale.t("message.brackets", msg=replace_brackets(x["comment"]))
+                comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
-    y = await check(*d)
-    yy = "\n".join(z["content"] for z in y)
+    y = await check(d)
+
+    g = MessageChain([Url(pageurl)])
+    g += MessageChain([Plain(z["content"]) for z in y])
+    g.append(I18NContext("message.collapse", amount=RC_LIMIT))
+
     st = True
     for z in y:
         if not z["status"]:
             st = False
             break
     if not st:
-        return f"{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}\n{
-            msg.locale.t("wiki.message.utils.redacted")}"
-    return f"{str(Url(pageurl))}\n{yy}\n{msg.locale.t("message.collapse", amount=RC_LIMIT)}"
+        g.append(I18NContext("wiki.message.utils.redacted"))
+    return g
 
 
 def compare_groups(old_groups, new_groups):
     added_groups = [group for group in new_groups if group not in old_groups]
     removed_groups = [group for group in old_groups if group not in new_groups]
-    added = "+" + ",".join(map(str, added_groups)) if added_groups else ""
-    removed = "-" + ",".join(map(str, removed_groups)) if removed_groups else ""
+    added = "+" + ", ".join(map(str, added_groups)) if added_groups else ""
+    removed = "-" + ", ".join(map(str, removed_groups)) if removed_groups else ""
     return f"{added} {removed}" if added and removed else f"{added}{removed}"
 
 
@@ -98,7 +101,7 @@ def replace_brackets(comment):
     return comment
 
 
-async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.MessageSession):
+async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_info: WikiInfo):
     rclist = []
     userlist = []
     titlelist = []
@@ -114,7 +117,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
     userlist = list(set(userlist))
     titlelist = list(set(titlelist))
     commentlist = list(set(commentlist))
-    checked_userlist = await check(*userlist)
+    checked_userlist = await check(userlist)
     user_checked_map = {}
     text_status = True
     for u in checked_userlist:
@@ -122,14 +125,14 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
         if not u["status"]:
             text_status = False
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(*titlelist)
+    checked_titlelist = await check(titlelist)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]
         if not t["status"]:
             text_status = False
         title_checked_map[t["original"]] = title_checked
-    checked_commentlist = await check(*commentlist)
+    checked_commentlist = await check(commentlist)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c["content"]
@@ -159,8 +162,10 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
                     "$1",
                     f"{urllib.parse.quote(title)}?oldid={x["old_revid"]}&diff={x["revid"]}"))
         if x["type"] == "new":
-            r = msg.locale.t("message.brackets", msg=msg.locale.t(
-                "wiki.message.rc.new_redirect")) if "redirect" in x else ""
+            r = str(
+                I18NContext(
+                    "message.brackets",
+                    msg="{I18N:wiki.message.rc.new_redirect}")) if "redirect" in x else ""
             t.append(f"{title}{r} .. (+{x["newlen"]}) .. {user}")
             if comment:
                 t.append(comment)
@@ -169,12 +174,10 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
                 log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
             else:
                 log = msg.locale.t(
-                    f"wiki.message.rc.action.{
-                        x["logtype"]}.{
-                        x["logaction"]}",
+                    f"wiki.message.rc.action.{x["logtype"]}.{x["logaction"]}",
                     user=user,
                     title=title)
-            if log.find("{") != -1 and log.find("}") != -1:
+            if log.find("{I18N:") != -1 and log.find("}") != -1:
                 if x["logtype"] == x["logaction"]:
                     log = f"{user} {x["logtype"]} {title}"
                 else:
@@ -182,7 +185,7 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             t.append(log)
             params = x["logparams"]
             if "suppressredirect" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.suppress_redirect"))
+                t.append(str(I18NContext("wiki.message.rc.params.suppress_redirect")))
             if "oldgroups" and "newgroups" in params:
                 t.append(compare_groups(params["oldgroups"], params["newgroups"]))
             if "oldmodel" and "newmodel" in params:
@@ -190,13 +193,13 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             if "description" in params:
                 t.append(params["description"])
             if "duration" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.duration") + params["duration"])
+                t.append(str(I18NContext("wiki.message.rc.params.duration")) + params["duration"])
             if "flags" in params:
                 t.append(", ".join(params["flags"]))
             if "tag" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.tag") + params["tag"])
+                t.append(str(I18NContext("wiki.message.rc.params.tag")) + params["tag"])
             if "target_title" in params:
-                t.append(msg.locale.t("wiki.message.rc.params.target_title") + params["target_title"])
+                t.append(str(I18NContext("wiki.message.rc.params.target_title")) + params["target_title"])
             if comment:
                 t.append(comment)
             if x["revid"] != 0:
@@ -208,6 +211,6 @@ async def convert_rc_to_detailed_format(rc: list, wiki_info: WikiInfo, msg: Bot.
             if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \
                 (original_user in user_checked_map and user_checked_map[original_user] != original_user) or \
                     (comment and comment_checked_map[replace_brackets(x["comment"])] != replace_brackets(x["comment"])):
-                t.append(msg.locale.t("wiki.message.utils.redacted"))
+                t.append(str(I18NContext("wiki.message.utils.redacted")))
         rclist.append("\n".join(t))
     return rclist

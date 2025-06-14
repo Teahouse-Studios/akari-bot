@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     result = await target.config_interwikis(interwiki)
     if result:
-        await msg.finish(msg.locale.t("wiki.message.iw.remove.success", iw=interwiki))
+        await msg.finish(I18NContext("wiki.message.iw.remove.success", iw=interwiki))
 
 
 @wiki.command(
@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession, headers: str):
             )
         )
     else:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.failed"))
+        await msg.finish(I18NContext("wiki.message.headers.add.failed"))
 
 
 @wiki.command(
@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     reset = await target.config_headers()
     if reset:
-        await msg.finish(msg.locale.t("wiki.message.headers.reset.success"))
+        await msg.finish(I18NContext("wiki.message.headers.reset.success"))
 
 
 @wiki.command("prefix set <prefix> {{I18N:wiki.help.prefix.set}}", required_admin=True)
@@ -212,7 +212,7 @@ async def _(msg: Bot.MessageSession):
     target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     set_prefix = await target.config_prefix()
     if set_prefix:
-        await msg.finish(msg.locale.t("wiki.message.prefix.reset.success"))
+        await msg.finish(I18NContext("wiki.message.prefix.reset.success"))
 
 
 @wiki.command("redlink {{I18N:wiki.help.redlink}}", required_admin=True)
@@ -221,7 +221,7 @@ async def _(msg: Bot.MessageSession):
 
     if redlink_state:
         await msg.target_info.edit_target_data("wiki_redlink", False)
-        await msg.finish(msg.locale.t("wiki.message.redlink.disable"))
+        await msg.finish(I18NContext("wiki.message.redlink.disable"))
     else:
         await msg.target_info.edit_target_data("wiki_redlink", True)
-        await msg.finish(msg.locale.t("wiki.message.redlink.enable"))
+        await msg.finish(I18NContext("wiki.message.redlink.enable"))
