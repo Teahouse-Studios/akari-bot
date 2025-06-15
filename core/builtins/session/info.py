@@ -58,7 +58,7 @@ class SessionInfo:
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
     use_url_md_format: bool = False
-    tmp: dict[str, str] = {}
+    tmp: Optional[dict[str, str]] = {}
 
     @classmethod
     async def assign(cls, target_id: str,

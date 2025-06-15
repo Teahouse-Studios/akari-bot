@@ -100,7 +100,7 @@ async def query_pages(
     if not start_wiki:
         if isinstance(session, Bot.MessageSession):
             await session.finish(
-                session.locale.t("wiki.message.set.not_set", prefix=session.prefixes[0])
+                session.session_info.locale.t("wiki.message.set.not_set", prefix=session.session_info.prefixes[0])
             )
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]

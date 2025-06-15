@@ -63,4 +63,4 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
 
         for target_ in report_targets:
             if f := await Bot.fetch_target(target_):
-                await f.send_direct_message(warn_template)
+                await Bot.send_direct_message(f, warn_template)

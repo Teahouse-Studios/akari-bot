@@ -22,7 +22,7 @@ ascii_art = r"""
 encode = "UTF-8"
 
 bots_and_required_configs = {
-    # "aiocqhttp": ["qq_host"],
+    "aiocqhttp": ["qq_host"],
     "discord": ["discord_token"],
     # "aiogram": ["telegram_token"],
     # "kook": ["kook_token"],

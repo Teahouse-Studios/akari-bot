@@ -102,7 +102,7 @@ class AIOCQContextManager(ContextManager):
                 get_member_info = await bot.call_action(
                     "get_group_member_info",
                     group_id=session_info.get_common_target_id(),
-                    user_id=session_info.get_common_target_id(),
+                    user_id=session_info.get_common_sender_id(),
                 )
                 if get_member_info["role"] in ["owner", "admin"]:
                     return True
@@ -345,22 +345,22 @@ class AIOCQContextManager(ContextManager):
         if session_info.target_from == target_group_prefix:  # wtf onebot 11
             obi = await get_onebot_implementation()
             if obi in ["llonebot", "napcat"]:
-                await bot.call_api("set_msg_emoji_like",
-                                   message_id=session_info.message_id,
-                                   emoji_id=qq_limited_emoji)
+                await bot.call_action("set_msg_emoji_like",
+                                      message_id=session_info.message_id,
+                                      emoji_id=qq_limited_emoji)
             elif obi == "lagrange":
-                await bot.call_api("set_group_reaction",
-                                   group_id=session_info.get_common_target_id(),
-                                   message_id=session_info.message_id,
-                                   code=qq_limited_emoji,
-                                   is_add=True)
+                await bot.call_action("set_group_reaction",
+                                      group_id=session_info.get_common_target_id(),
+                                      message_id=session_info.message_id,
+                                      code=qq_limited_emoji,
+                                      is_add=True)
             elif obi == "shamrock":
-                await bot.call_api("send_group_msg",
-                                   group_id=session_info.get_common_target_id(),
-                                   message=f"[CQ:touch,id={qq_account}]")
+                await bot.call_action("send_group_msg",
+                                      group_id=session_info.get_common_target_id(),
+                                      message=f"[CQ:touch,id={qq_account}]")
             elif obi == "go-cqhttp":
-                await bot.call_api("send_group_msg",
-                                   group_id=session_info.get_common_target_id(),
-                                   message=f"[CQ:poke,qq={qq_account}]")
+                await bot.call_action("send_group_msg",
+                                      group_id=session_info.get_common_target_id(),
+                                      message=f"[CQ:poke,qq={qq_account}]")
             else:
                 pass

@@ -14,16 +14,15 @@ from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import to_message_chain
 from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
-from core.server.init import load_prompt, init_async
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
+from core.client import client_init
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
-from core.builtins.parser.message import parser
 from core.terminate import cleanup_sessions
 from core.tos import tos_report
 
@@ -45,7 +44,7 @@ default_locale = Config("default_locale", cfg_type=str)
 
 @bot.on_startup
 async def startup():
-    await init_async()
+    await client_init(target_prefix_list, sender_prefix_list)
     bot.logger.setLevel(logging.WARNING)
 
 
@@ -155,6 +154,7 @@ async def _(event: Event):
         if sender_info.blocked:
             return {"approve": False}
         return {"approve": True}
+    return {"approve": False}
 
 
 @bot.on("request.group.invite")
@@ -169,6 +169,7 @@ async def _(event: Event):
         if target_info.blocked:
             return {"approve": False}
         return {"approve": True}
+    return {"approve": False}
 
 
 @bot.on_notice("group_ban")
