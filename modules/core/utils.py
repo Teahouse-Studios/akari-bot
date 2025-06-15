@@ -4,7 +4,7 @@ from datetime import datetime
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.builtins import Bot, MessageChain, Plain, I18NContext, Url
+from core.builtins import Bot, MessageChain, Plain, FormattedTime, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants.default import locale_url_default
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
     result = MessageChain(Plain("Pong!"))
     timediff = str(datetime.now() - started_time).split(".")[0]
     if msg.check_super_user():
-        boot_start = msg.ts2strftime(psutil.boot_time())
+        boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
         web_render_status = str(Bot.Info.web_render_status)
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))

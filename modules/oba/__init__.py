@@ -67,7 +67,7 @@ async def _(msg: Bot.MessageSession):
     msg_list.append(
         msg.locale.t(
             "oba.message.query_time",
-            query_time=msg.ts2strftime(
+            query_time=msg.format_time(
                 datetime.now().timestamp(),
                 timezone=False)))
     await msg.finish(msg_list)
@@ -89,7 +89,7 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     msg_list.append(
         msg.locale.t(
             "oba.message.query_time",
-            query_time=msg.ts2strftime(
+            query_time=msg.format_time(
                 datetime.now().timestamp(),
                 timezone=False)))
 

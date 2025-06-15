@@ -30,8 +30,8 @@ async def mcjv(msg: Bot.MessageSession):
             "mcv.message.mcv.launcher",
             release=data["latest"]["release"],
             snapshot=data["latest"]["snapshot"],
-            release_time=msg.ts2strftime(time_release),
-            snapshot_time=msg.ts2strftime(time_snapshot),
+            release_time=msg.format_time(time_release),
+            snapshot_time=msg.format_time(time_snapshot),
         )
     except Exception:  # Probably...
         message1 = msg.locale.t("mcv.message.mcv.launcher.failed")

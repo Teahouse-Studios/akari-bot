@@ -4,15 +4,13 @@ import os
 import re
 import traceback
 from collections.abc import MutableMapping
-from decimal import Decimal, ROUND_HALF_UP
 from string import Template
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import orjson as json
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
-from core.utils.message import isint
 
 # Load all locale files into memory
 
@@ -217,65 +215,6 @@ class Locale:
             text = re.sub(r"\{I18N:([^\s,{}]+)(?:,([^\{\}]*))?\}", match_i18ncode, text)
 
         return text
-
-    def num(
-        self,
-        number: Union[Decimal, int, str],
-        precision: int = 0,
-        fallback_failed_prompt: bool = False,
-    ) -> str:
-        """
-        格式化数字。
-
-        :param number: 数字。
-        :param precision: 保留小数点位数。
-        :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
-        :returns: 本地化后的数字。
-        """
-        if isint(number):
-            number = int(number)
-        else:
-            return str(number)
-
-        if self.locale in ["zh_cn", "zh_tw"]:
-            unit_info = self._get_cjk_unit(Decimal(number))
-        else:
-            unit_info = self._get_unit(Decimal(number))
-
-        if not unit_info:
-            return str(number)
-
-        unit, scale = unit_info
-        fmted_num = self._fmt_num(number / scale, precision)
-        return self.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", fallback_failed_prompt)
-
-    @staticmethod
-    def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal("10e11"):
-            return 3, Decimal("10e11")
-        if number >= Decimal("10e7"):
-            return 2, Decimal("10e7")
-        if number >= Decimal("10e3"):
-            return 1, Decimal("10e3")
-        return None
-
-    @staticmethod
-    def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal("10e8"):
-            return 3, Decimal("10e8")
-        if number >= Decimal("10e5"):
-            return 2, Decimal("10e5")
-        if number >= Decimal("10e2"):
-            return 1, Decimal("10e2")
-        return None
-
-    @staticmethod
-    def _fmt_num(number: Decimal, precision: int) -> str:
-        number = number.quantize(
-            Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
-        )
-        num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
-        return num_str if precision > 0 else str(int(number))
 
 
 load_locale_file()

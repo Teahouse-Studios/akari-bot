@@ -19,7 +19,7 @@ async def get_ab(msg: Bot.MessageSession, wiki_url, headers=None):
         d.append(f"•{str(I18NContext("wiki.message.ab.slice",
                                      title=title,
                                      user=user,
-                                     time=msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True, timezone=False),
+                                     time=msg.format_time(strptime2ts(x["timestamp"]), iso=True, timezone=False),
                                      action=x["action"],
                                      filter_name=x["filter"],
                                      result=result))}")
@@ -76,7 +76,7 @@ async def convert_ab_to_detailed_format(msg: Bot.MessageSession, abl: list):
                                      action=x["action"],
                                      filter_name=x["filter"],
                                      result=result)))
-            time = msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True)
+            time = msg.format_time(strptime2ts(x["timestamp"]), iso=True)
             t.append(time)
             if not text_status:
                 if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \

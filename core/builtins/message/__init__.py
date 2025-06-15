@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, UTC as datetimeUTC, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from re import Match
 from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
 
@@ -12,7 +13,7 @@ from core.exports import add_export
 from core.i18n import Locale
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
-from core.utils.message import parse_time_string
+from core.utils.message import isint, parse_time_string
 from ..utils import confirm_command
 from .chain import *
 from .elements import MessageElement
@@ -588,7 +589,7 @@ class MessageSession:
     toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
-    def ts2strftime(
+    def format_time(
         self,
         timestamp: float,
         date: bool = True,
@@ -627,6 +628,61 @@ class MessageSession:
         return (
             datetime.fromtimestamp(timestamp, datetimeUTC) + self.timezone_offset
         ).strftime(" ".join(ftime_template))
+
+    def format_num(
+        self,
+        number: Union[Decimal, int, str],
+        precision: int = 0
+    ) -> str:
+        """
+        格式化数字。
+
+        :param number: 数字。
+        :param precision: 保留小数点位数。
+        :returns: 本地化后的数字。
+        """
+
+        def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
+            if number >= Decimal("10e11"):
+                return 3, Decimal("10e11")
+            if number >= Decimal("10e7"):
+                return 2, Decimal("10e7")
+            if number >= Decimal("10e3"):
+                return 1, Decimal("10e3")
+            return None
+
+        def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
+            if number >= Decimal("10e8"):
+                return 3, Decimal("10e8")
+            if number >= Decimal("10e5"):
+                return 2, Decimal("10e5")
+            if number >= Decimal("10e2"):
+                return 1, Decimal("10e2")
+            return None
+
+        def _fmt_num(number: Decimal, precision: int) -> str:
+            number = number.quantize(
+                Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
+            )
+            num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
+            return num_str if precision > 0 else str(int(number))
+
+        if isint(number):
+            number = int(number)
+        else:
+            return str(number)
+
+        if self.locale in ["zh_cn", "zh_tw"]:
+            unit_info = _get_cjk_unit(Decimal(number))
+        else:
+            unit_info = _get_unit(Decimal(number))
+
+        if not unit_info:
+            return str(number)
+
+        unit, scale = unit_info
+        fmted_num = _fmt_num(number / scale, precision)
+        return self.locale.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", fallback_failed_prompt=True)
 
     class Feature:
         """

@@ -71,7 +71,7 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
 
     data["registration_time"] = base_user_info.get("registration")
     data["registration_time"] = (
-        msg.ts2strftime(strptime2ts(data["registration_time"]))
+        msg.format_time(strptime2ts(data["registration_time"]))
         if data["registration_time"]
         else "{I18N:message.unknown}"
     )
@@ -89,14 +89,14 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
         data["blocked_by"] = base_user_info.get("blockedby")
         data["blocked_time"] = base_user_info.get("blockedtimestamp")
         data["blocked_time"] = (
-            msg.ts2strftime(strptime2ts(data["blocked_time"]))
+            msg.format_time(strptime2ts(data["blocked_time"]))
             if data["blocked_time"]
             else "{I18N:message.unknown}"
         )
         data["blocked_expires"] = base_user_info.get("blockexpiry")
         if data["blocked_expires"]:
             if data["blocked_expires"] != "infinite":
-                data["blocked_expires"] = msg.ts2strftime(
+                data["blocked_expires"] = msg.format_time(
                     strptime2ts(data["blocked_expires"])
                 )
         else:

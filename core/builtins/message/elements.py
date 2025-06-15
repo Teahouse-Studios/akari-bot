@@ -138,7 +138,10 @@ class FormattedTimeElement(MessageElement):
             ).strftime(" ".join(ftime_template))
         else:
             if self.date:
-                ftime_template.append("%Y-%m-%d")
+                if self.iso:
+                    ftime_template.append("%Y-%m-%d")
+                else:
+                    ftime_template.append("%B %d, %Y")
             if self.time:
                 if self.seconds:
                     ftime_template.append("%H:%M:%S")

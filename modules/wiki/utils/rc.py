@@ -29,7 +29,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 count = f"+{str(count)}"
             else:
                 count = str(count)
-            d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]),
+            d.append(f"•{msg.format_time(strptime2ts(x["timestamp"]),
                      iso=True, timezone=False)} - {title} .. ({count}) .. {user}")
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
@@ -49,7 +49,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                     log = f"{user} {x["logtype"]} {title}"
                 else:
                     log = f"{user} {x["logaction"]} {x["logtype"]} {title}"
-            d.append(f"•{msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True, timezone=False)} - {log}")
+            d.append(f"•{msg.format_time(strptime2ts(x["timestamp"]), iso=True, timezone=False)} - {log}")
             params = x["logparams"]
             if "suppressredirect" in params:
                 d.append(str(I18NContext("wiki.message.rc.params.suppress_redirect")))
@@ -205,7 +205,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
             if x["revid"] != 0:
                 t.append(wiki_info.articlepath.replace(
                     "$1", f"{urllib.parse.quote(title_checked_map[x["title"]])}"))
-        time = msg.ts2strftime(strptime2ts(x["timestamp"]), iso=True)
+        time = msg.format_time(strptime2ts(x["timestamp"]), iso=True)
         t.append(time)
         if not text_status:
             if (original_title in title_checked_map and title_checked_map[original_title] != original_title) or \

@@ -124,7 +124,7 @@ async def _(msg: Bot.MessageSession):
     if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
         send_msgs = []
         allow_columns = [
-            [x['api_link'], msg.ts2strftime(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            [x['api_link'], msg.format_time(x['timestamp'].timestamp(), iso=True, timezone=False)]
             for x in allow_list
         ]
 
@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession):
                     for im in allow_image:
                         send_msgs.append(Image(im))
         block_columns = [
-            [x['api_link'], msg.ts2strftime(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            [x['api_link'], msg.format_time(x['timestamp'].timestamp(), iso=True, timezone=False)]
             for x in block_list
         ]
         if block_columns:
@@ -173,7 +173,7 @@ async def _(msg: Bot.MessageSession):
             wikis.append(msg.locale.t("wiki.message.wiki_audit.list.allowlist"))
             for al in allow_list:
                 wikis.append(
-                    f"{al[0]} ({msg.ts2strftime(al[1].timestamp(), iso=True, timezone=False)})"
+                    f"{al[0]} ({msg.format_time(al[1].timestamp(), iso=True, timezone=False)})"
                 )
         if block_list:
             wikis.append(msg.locale.t("wiki.message.wiki_audit.list.blocklist"))
