@@ -842,6 +842,7 @@ async def websocket_logs(websocket: WebSocket):
 
                     new_loglines_raw = [line.rstrip() for line in new_data.splitlines() if line.strip()]  # 未打包的新日志行
                 except Exception:
+                    Logger.exception()
                     continue
 
                 for line in new_loglines_raw:

@@ -4,7 +4,7 @@ from html import unescape
 import orjson as json
 from bs4 import BeautifulSoup
 
-from core.builtins import Bot, Plain, Image, Url
+from core.builtins import Bot, MessageChain, Plain, Image, Url
 from core.component import module
 from core.i18n import Locale
 from core.utils.http import get_url
@@ -34,9 +34,9 @@ async def get_weekly(with_img=False, zh_tw=False):
     img_filename = re.match(r"/w/(.*)", img.attrs["href"]) if img else None
     page = re.findall(r"(?<=<b><a href=\").*?(?=\")", str(content))
     if (page and page[0] == "/w/%E7%8E%BB%E7%92%83"):
-        msg_list = [Plain(locale.t("weekly.message.expired"))]
+        msg_list = MessageChain([Plain(locale.t("weekly.message.expired"))])
     else:
-        msg_list = [Plain(locale.t("weekly.message.prompt", text=text))]
+        msg_list = MessageChain([Plain(locale.t("weekly.message.prompt", text=text))])
     imglink = None
     if img_filename:
         get_image = await (WikiLib("https://zh.minecraft.wiki/")).parse_page_info(img_filename.group(1))

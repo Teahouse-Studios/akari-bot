@@ -12,6 +12,7 @@ from core.logger import Logger
 from core.types.message import MsgInfo, Session, ModuleHookContext
 from .message import *
 from .message.chain import *
+from .message.elements import MessageElement
 from .message.internal import *
 from .temp import *
 from .utils import *
@@ -111,7 +112,7 @@ class FetchedSession(FetchedSession):
             target_from=target_from,
             sender_from=sender_from,
             sender_name="",
-            client_name=Bot.client_name,
+            client_name=Bot.Info.client_name,
             message_id=0,
         )
         self.session = Session(message=False, target=target_id, sender=sender_id)
@@ -134,7 +135,7 @@ class FetchTarget(FetchTarget):
     @staticmethod
     async def post_message(
         module_name: str,
-        message: str,
+        message: Union[str, list, dict, MessageChain, MessageElement],
         target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any],
@@ -143,6 +144,9 @@ class FetchTarget(FetchTarget):
         if target_list:
             for x in target_list:
                 try:
+                    if isinstance(message, dict) and i18n:  # 提取字典语言映射
+                        message = message.get(x.parent.locale, message.get("fallback", ""))
+
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
@@ -161,7 +165,7 @@ class FetchTarget(FetchTarget):
                     Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
-                module_, Bot.client_name
+                module_, Bot.Info.client_name
             )
             for x in get_target_id:
                 fetch = await Bot.FetchTarget.fetch_target(x.target_id)
@@ -169,6 +173,9 @@ class FetchTarget(FetchTarget):
                     if x.muted:
                         continue
                     try:
+                        if isinstance(message, dict) and i18n:  # 提取字典语言映射
+                            message = message.get(fetch.parent.locale, message.get("fallback", ""))
+
                         msgchain = message
                         if isinstance(message, str):
                             if i18n:

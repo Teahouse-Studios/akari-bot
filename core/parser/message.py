@@ -178,7 +178,7 @@ def _get_prefixes(msg: Bot.MessageSession, prefix):
             break
     if in_prefix_list or disable_prefix:  # 检查消息前缀
         if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == "~~":  # 排除 ~~xxx~~ 的情况
-            return
+            return None, None, None
         if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
             msg.prefixes.remove(display_prefix)
             msg.prefixes.insert(0, display_prefix)
