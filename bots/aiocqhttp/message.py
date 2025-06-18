@@ -560,7 +560,7 @@ class FetchTarget(FetchTargetT):
         blocked = False
         module_name = None if module_name == "*" else module_name
 
-        async def post_(fetch_: Bot.FetchedSession):
+        async def post_(fetch_: Bot.FetchedSession, message, i18n=False, **kwargs):
             nonlocal _tsk
             nonlocal blocked
             try:
@@ -577,6 +577,9 @@ class FetchTarget(FetchTargetT):
                         }
                     )
                 else:
+                    if isinstance(message, dict) and i18n:  # 提取字典语言映射
+                        message = message.get(fetch_.parent.locale, message.get("fallback", ""))
+
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
@@ -638,7 +641,7 @@ class FetchTarget(FetchTargetT):
 
         if target_list:
             for x in target_list:
-                await post_(x)
+                await post_(x, message, i18n, **kwargs)
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
@@ -690,13 +693,13 @@ class FetchTarget(FetchTargetT):
                         target_private_prefix,
                         target_guild_prefix,
                     ]:
-                        in_whitelist.append(post_(fetch))
+                        in_whitelist.append(post_(fetch, message, i18n, **kwargs))
                     else:
                         load_options: dict = x.target_data
                         if load_options.get("in_post_whitelist", False):
-                            in_whitelist.append(post_(fetch))
+                            in_whitelist.append(post_(fetch, message, i18n, **kwargs))
                         else:
-                            else_.append(post_(fetch))
+                            else_.append(post_(fetch, message, i18n, **kwargs))
 
             async def post_in_whitelist(lst):
                 for f in lst:

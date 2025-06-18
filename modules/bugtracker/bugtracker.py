@@ -48,24 +48,22 @@ async def make_screenshot(page_link):
 async def bugtracker_get(msg, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
+
+    get_json = await post_url(
+        "https://bugs.mojang.com/api/jql-search-post",
+        f"""{{
+            "advanced": true,
+            "project": "{id_.split("-", 1)[0]}",
+            "search": "key = {id_}",
+            "maxResults": 1
+        }}""",
+        201,
+        headers={"Content-Type": "application/json"},
+    )
     try:
-        json_url = "https://bugs.mojang.com/api/jql-search-post"
-        get_json = (await post_url(
-            json_url,
-            f"""{{
-                "advanced": true,
-                "project": "{id_.split("-", 1)[0]}",
-                "search": "key = {id_}",
-                "maxResults": 1
-            }}""",
-            201,
-            headers={"Content-Type": "application/json"},
-        ))
         load_json = json.loads(get_json).get("issues")[0]
-    except ValueError as e:
-        if str(e).startswith("500"):
-            return I18NContext("bugtracker.message.get_failed"), None
-        raise e
+    except IndexError:
+        return I18NContext("bugtracker.message.get_failed"), None
     if mojira_id not in spx_cache:
         get_spx = await get_url(
             "https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json", 200

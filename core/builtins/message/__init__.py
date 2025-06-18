@@ -784,7 +784,7 @@ class FetchTarget:
     @staticmethod
     async def post_message(
         module_name: str,
-        message: str,
+        message: Union[str, list, dict, MessageChain, MessageElement],
         target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any],
