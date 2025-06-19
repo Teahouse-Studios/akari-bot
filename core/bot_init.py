@@ -56,8 +56,12 @@ async def load_secret():
         for y in CFGManager.values[x].keys():
             if y == "secret" or y.endswith("_secret"):
                 for z in CFGManager.values[x][y].keys():
-                    if not str(CFGManager.values[x][y].get(z)).startswith("<Replace me"):
-                        Secret.add(str(CFGManager.values[x][y].get(z)).upper())
+                    w = CFGManager.values[x][y].get(z)
+                    if not str(w).startswith("<Replace me"):
+                        if isinstance(w, str):
+                            Secret.add(w)
+                        elif isinstance(w, list):
+                            Secret.update(w)
 
 
 async def load_prompt(bot) -> None:

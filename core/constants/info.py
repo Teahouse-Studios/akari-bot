@@ -1,12 +1,32 @@
+from typing import Iterable, Optional, Set, Union
+
+
 class Secret:
-    list = []
-    ip_address = None
-    ip_country = None
+    data: Set[str] = set()
+    ip_address: Optional[str] = None
+    ip_country: Optional[str] = None
 
     @classmethod
-    def add(cls, secret):
+    def add(cls, secret: str):
         if secret:
-            cls.list.append(secret)
+            cls.data.add(secret.upper())
+
+    @classmethod
+    def check(cls, text: str) -> Union[str, bool]:
+        for secret in cls.data:
+            if secret in text.upper():
+                return secret
+        return False
+
+    @classmethod
+    def remove(cls, secret: str):
+        if secret and cls.check(secret):
+            cls.data.discard(secret.upper())
+
+    @classmethod
+    def update(cls, secret: Iterable):
+        if secret:
+            cls.data.union({s.upper() for s in secret})
 
 
 class Info:

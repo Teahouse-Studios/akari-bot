@@ -113,47 +113,44 @@ class MessageChain:
 
         for v in self.value:
             if isinstance(v, PlainElement):
-                for secret in Secret.list:
-                    if v.text.upper().find(secret.upper()) != -1:
-                        Logger.warning(unsafeprompt("Plain", secret, v.text))
-                        return False
+                if secret := Secret.check(v.text):
+                    Logger.warning(unsafeprompt("Plain", secret, v.text))
+                    return False
             elif isinstance(v, EmbedElement):
-                for secret in Secret.list:
-                    if secret in ["", None, True, False]:
-                        continue
-                    if v.title:
-                        if v.title.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.title", secret, v.title))
-                            return False
-                    if v.description:
-                        if v.description.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.description", secret, v.description)
-                            )
-                            return False
-                    if v.footer:
-                        if v.footer.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.footer", secret, v.footer)
-                            )
-                            return False
-                    if v.author:
-                        if v.author.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.author", secret, v.author)
-                            )
-                            return False
-                    if v.url:
-                        if v.url.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.url", secret, v.url))
-                            return False
+                if v.title:
+                    if secret := Secret.check(v.title):
+                        Logger.warning(unsafeprompt("Embed.title", secret, v.title))
+                        return False
+                if v.description:
+                    if secret := Secret.check(v.description):
+                        Logger.warning(
+                            unsafeprompt("Embed.description", secret, v.description)
+                        )
+                        return False
+                if v.footer:
+                    if secret := Secret.check(v.footer):
+                        Logger.warning(
+                            unsafeprompt("Embed.footer", secret, v.footer)
+                        )
+                        return False
+                if v.author:
+                    if secret := Secret.check(v.author):
+                        Logger.warning(
+                            unsafeprompt("Embed.author", secret, v.author)
+                        )
+                        return False
+                if v.url:
+                    if secret := Secret.check(v.url):
+                        Logger.warning(unsafeprompt("Embed.url", secret, v.url))
+                        return False
+                if v.fields:
                     for f in v.fields:
-                        if f.name.upper().find(secret.upper()) != -1:
+                        if secret := Secret.check(f.name):
                             Logger.warning(
                                 unsafeprompt("Embed.field.name", secret, f.name)
                             )
                             return False
-                        if f.value.upper().find(secret.upper()) != -1:
+                        if secret := Secret.check(f.value):
                             Logger.warning(
                                 unsafeprompt("Embed.field.value", secret, f.value)
                             )
