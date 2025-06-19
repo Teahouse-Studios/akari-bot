@@ -199,7 +199,7 @@ class Locale:
             if params_str:
                 params_str = self.t_str(params_str, fallback_failed_prompt=fallback_failed_prompt)
 
-                param_pairs = re.findall(r'(\w+)=([^\s,]+)', params_str)
+                param_pairs = re.findall(r'(\w+)=([^,]+)', params_str)
                 for k, v in param_pairs:
                     local_kwargs[html.unescape(k)] = html.unescape(v)
 

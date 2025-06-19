@@ -178,7 +178,7 @@ def rickroll() -> str:
 
     :returns: Rickroll消息。
     """
-    if Config("enable_rickroll", True):
-        rickroll_msg = Config("rickroll_msg", cfg_type=str)
+    rickroll_msg = Config("rickroll_msg", cfg_type=str)
+    if Config("enable_rickroll", True) and rickroll_msg:
         return rickroll_msg
     return "{I18N:error.message.chain.unsafe}"

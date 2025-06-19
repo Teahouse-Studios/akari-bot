@@ -66,10 +66,9 @@ async def _(msg: Bot.MessageSession):
     for video in matched:
         if video != "":
             query = await parse_shorturl(f"https://b23.tv/{video}")
-            if not query:
-                return
-            output = await get_video_info(msg, query)
-            await msg.send_message(output)
+            if query:
+                output = await get_video_info(msg, query)
+                await msg.send_message(output)
 
 
 async def parse_shorturl(shorturl):
