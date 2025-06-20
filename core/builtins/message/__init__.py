@@ -672,7 +672,7 @@ class MessageSession:
         else:
             return str(number)
 
-        if self.locale in ["zh_cn", "zh_tw"]:
+        if self.locale.locale in ["zh_cn", "zh_tw"]:
             unit_info = _get_cjk_unit(Decimal(number))
         else:
             unit_info = _get_unit(Decimal(number))
