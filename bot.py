@@ -10,6 +10,7 @@ from time import sleep
 from loguru import logger as loggerFallback
 from tortoise import Tortoise, run_async
 
+import asyncio
 
 ascii_art = r"""
            _              _   ____        _
@@ -130,10 +131,57 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
         sys.exit(1)
 
 
-def run_bot():
+async def run_bot():
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
+
+    enable_console = Config("enable_console", default=False, cfg_type=bool)
+
+    console_command = None
+
+    if enable_console:
+        from prompt_toolkit import PromptSession
+        from prompt_toolkit.history import FileHistory
+
+        from core.builtins.bot import Bot
+        from core.builtins.message.chain import MessageChain
+        from core.builtins.message.internal import Plain
+        from core.builtins.session.info import SessionInfo
+        from core.console.context import ConsoleContextManager
+        from core.console.info import client_name, target_prefix_list, sender_prefix_list, target_prefix, sender_prefix
+        from core.client import client_init
+
+        from core.constants import PrivateAssets
+
+        Bot.register_bot(client_name=client_name,
+                         dirty_word_check=True)
+
+        asyncio.create_task(client_init(target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list))
+        console_history_path = os.path.join(PrivateAssets.path, ".console_history")
+        if os.path.exists(console_history_path):
+            os.remove(console_history_path)
+
+        ctx_id = Bot.register_context_manager(ConsoleContextManager)
+        prompt_session = PromptSession(history=FileHistory(console_history_path))
+
+        async def console_command():
+            while True:
+                m = await asyncio.to_thread(prompt_session.prompt)
+
+                Logger.info("-------Start-------")
+                session_data = await SessionInfo.assign(
+                    target_id=f"{target_prefix}|0",
+                    sender_id=f"{sender_prefix}|0",
+                    sender_name="Console",
+                    target_from=target_prefix,
+                    sender_from=sender_prefix,
+                    client_name=client_name,
+                    message_id='0',
+                    messages=MessageChain.assign([Plain(m), ]),
+                    ctx_slot=ctx_id)
+                await Bot.process_message(session_data, '')
+                Logger.info("----Process end----")
 
     def restart_process(bot_name: str):
         if (
@@ -205,29 +253,36 @@ def run_bot():
 
     # keep track of the processes
 
-    while True:
-        for p in processes:
-            if p.is_alive():
-                continue
-            if p.exitcode == 233:
-                Logger.warning(
-                    f"{p.pid} ({p.name}) exited with code 233, restart all bots."
+    async def tracking():
+        while True:
+            for p in processes:
+                if p.is_alive():
+                    continue
+                if p.exitcode == 233:
+                    Logger.warning(
+                        f"{p.pid} ({p.name}) exited with code 233, restart all bots."
+                    )
+                    raise RestartBot
+                Logger.critical(
+                    f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
                 )
-                raise RestartBot
-            Logger.critical(
-                f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
-            )
-            processes.remove(p)
-            p.terminate()
-            p.join()
-            p.close()
-            restart_process(p.name)
-            break
+                processes.remove(p)
+                p.terminate()
+                p.join()
+                p.close()
+                restart_process(p.name)
+                break
+            if not processes:
+                break
+            await asyncio.sleep(1)
+        Logger.critical("All bots exited unexpectedly, please check the output.")
 
-        if not processes:
-            break
-        sleep(1)
-    Logger.critical("All bots exited unexpectedly, please check the output.")
+    asyncio.create_task(tracking())
+    while True:
+
+        if console_command:
+            await console_command()
+        await asyncio.sleep(1)
 
 
 def terminate_process(process: multiprocessing.Process, timeout=5):
@@ -241,11 +296,13 @@ def terminate_process(process: multiprocessing.Process, timeout=5):
 
 if __name__ == "__main__":
     import core.scripts.config_generate  # noqa
+    loop = asyncio.new_event_loop()
     try:
         while True:
             try:
                 multiprocess_run_until_complete(init_bot)
-                run_bot()  # Process will block here so
+
+                loop.run_until_complete(run_bot())  # Process will block here so
                 break
             except RestartBot:
                 for ps in processes:
@@ -261,3 +318,7 @@ if __name__ == "__main__":
         for ps in processes:
             terminate_process(ps)
         processes.clear()
+        print("Exited.")
+    finally:
+        loop.run_until_complete(Tortoise.close_connections())
+        loop.close()

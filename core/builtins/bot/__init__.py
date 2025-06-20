@@ -1,4 +1,5 @@
 import asyncio
+import os
 import traceback
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
@@ -11,7 +12,7 @@ from core.builtins.temp import *
 from core.config import Config
 from core.constants import base_superuser_default
 from core.constants.info import Info
-from core.constants.path import PrivateAssets
+from core.constants.path import PrivateAssets, assets_path
 from core.database.models import TargetInfo
 from core.exports import add_export, exports
 from core.loader import ModulesManager
@@ -193,7 +194,9 @@ class Bot:
         :return: None
         """
         if private_assets_path:
-            cls.PrivateAssets = PrivateAssets.set(private_assets_path)
+            PrivateAssets.set(private_assets_path)
+        else:
+            PrivateAssets.set(os.path.join(assets_path, "private", client_name))
         Info.dirty_word_check = dirty_word_check
         Info.client_name = client_name
         Info.use_url_manager = use_url_manager

@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 
+from apscheduler.schedulers import SchedulerAlreadyRunningError
 import orjson as json
 
 from core.builtins.bot import Bot
@@ -51,7 +52,10 @@ async def init_async(start_scheduler=True) -> None:
     append_ip(await fetch_ip_info())
     Info.web_render_status, Info.web_render_status = await check_web_render()
     if start_scheduler:
-        Scheduler.start()
+        try:
+            Scheduler.start()
+        except SchedulerAlreadyRunningError:
+            pass
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
     await load_secret()
     Logger.info(f"Hello, {Info.client_name}!")

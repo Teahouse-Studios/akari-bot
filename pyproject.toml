@@ -96,6 +96,7 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
+coverage = "^7.9.1"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"

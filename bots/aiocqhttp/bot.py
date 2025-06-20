@@ -1,3 +1,4 @@
+import asyncio
 import html
 import logging
 import os
@@ -11,7 +12,7 @@ from hypercorn import Config as HyperConfig
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.context import AIOCQContextManager
 from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import to_message_chain
+from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
@@ -41,6 +42,8 @@ enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
 
+onebot_impl = ''
+
 
 @bot.on_startup
 async def startup():
@@ -54,6 +57,8 @@ async def _(event: Event):
     qq_account = qq_login_info.get("user_id")
     Temp.data["qq_account"] = qq_account
     Temp.data["qq_nickname"] = qq_login_info.get("nickname")
+    global onebot_impl
+    onebot_impl = await get_onebot_implementation()
 
 
 async def message_handler(event: Event):
@@ -127,7 +132,9 @@ async def message_handler(event: Event):
                                             messages=msg_chain,
                                             ctx_slot=ctx_id,
                                             use_url_manager=use_url_manager,
-                                            require_check_dirty_words=dirty_word_check
+                                            require_check_dirty_words=dirty_word_check,
+                                            prefixes=prefix,
+                                            tmp={'onebot_impl': onebot_impl}
                                             )
 
     await Bot.process_message(session_info, event)

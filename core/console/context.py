@@ -37,7 +37,12 @@ class ConsoleContextManager(ContextManager):
         return True
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: Union[MessageChain, str], quote: bool = True, ):
+    async def send_message(cls, session_info: SessionInfo,
+                           message: Union[MessageChain, str],
+                           quote: bool = True,
+                           enable_parse_message: bool = True,
+                           enable_split_image: bool = True,
+                           ) -> list[str]:
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
