@@ -7,7 +7,10 @@ from core.builtins.session.features import Features
 from core.logger import Logger
 
 
-class ContextManager:
+from abc import ABC, abstractmethod
+
+
+class ContextManager(ABC):
     context: dict[str, Any] = {}
     features: Optional[Features] = Features
     typing_flags: dict[str, asyncio.Event] = {}
@@ -22,6 +25,7 @@ class ContextManager:
             del cls.context[session_info.session_id]
 
     @classmethod
+    @abstractmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         """
         检查会话权限。
@@ -34,6 +38,7 @@ class ContextManager:
         raise NotImplementedError
 
     @classmethod
+    @abstractmethod
     async def send_message(cls, session_info: SessionInfo,
                            message: MessageChain,
                            quote: bool = True,
@@ -56,6 +61,7 @@ class ContextManager:
         raise NotImplementedError        # 请继承 class 后实现方法
 
     @classmethod
+    @abstractmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
         """
         删除指定会话中的消息。
@@ -73,6 +79,7 @@ class ContextManager:
         raise NotImplementedError        # 请继承 class 后实现方法
 
     @classmethod
+    @abstractmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
         """
         开始输入状态
@@ -89,6 +96,7 @@ class ContextManager:
         asyncio.create_task(_typing())
 
     @classmethod
+    @abstractmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         """
         结束输入状态
@@ -103,6 +111,7 @@ class ContextManager:
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod
+    @abstractmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
         """
         发送错误信号

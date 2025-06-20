@@ -205,6 +205,10 @@ class DiscordContextManager(ContextManager):
         # 这里可以添加结束输入状态的逻辑
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
+    @classmethod
+    async def error_signal(cls, session_info: SessionInfo) -> None:
+        pass
+
 
 class DiscordFetchedContextManager(DiscordContextManager):
     pass
