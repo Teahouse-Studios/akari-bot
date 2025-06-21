@@ -1,9 +1,9 @@
 import traceback
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from .base import JobQueueBase
 from ..builtins.converter import converter
-from ..builtins.message.chain import MessageChain
+from ..builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
@@ -47,7 +47,9 @@ async def _(tsk: JobQueuesTable, args: dict):
 @JobQueueClient.action("send_message")
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = get_session(args)
-    send = await ctx_manager.send_message(session_info, converter.structure(args["message"], MessageChain), quote=args["quote"],
+    send = await ctx_manager.send_message(session_info,
+                                          converter.structure(args["message"], Union[MessageChain, MessageNodes]),
+                                          quote=args["quote"],
                                           enable_parse_message=args['enable_parse_message'],
                                           enable_split_image=args['enable_split_image'])
     return {"message_id": send}

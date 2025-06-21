@@ -10,7 +10,7 @@ from discord import Message
 from bots.discord.client import client
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
 from core.builtins.session.info import SessionInfo
 from bots.discord.features import Features
@@ -63,9 +63,10 @@ class DiscordContextManager(ContextManager):
         return False
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
                            enable_parse_message: bool = True,
-                           enable_split_image: bool = True,):
+                           enable_split_image: bool = True,) -> List[str]:
+
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         ctx = cls.context.get(session_info.session_id)
@@ -73,75 +74,142 @@ class DiscordContextManager(ContextManager):
             channel = ctx.channel
         else:
             channel = await client.fetch_channel(get_channel_id(session_info))
-
-        count = 0
         msg_ids = []
-        for x in message.as_sendable(session_info):
-            send_ = None
-            if isinstance(x, PlainElement):
-                send_ = await channel.send(
-                    x.text,
-                    reference=(
-                        ctx
-                        if quote and count == 0 and ctx
-                        else None
-                    ),
-                )
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-            elif isinstance(x, ImageElement):
-                send_ = await channel.send(
-                    file=discord.File(await x.get()),
-                    reference=(ctx
-                               if quote and count == 0 and ctx
-                               else None
-                               ),
-                )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x.__dict__)}"
-                )
-            elif isinstance(x, VoiceElement):
-                send_ = await channel.send(
-                    file=discord.File(x.path),
-                    reference=(
-                        ctx
-                        if quote and count == 0 and ctx
-                        else None
-                    ),
-                )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
-                )
-            elif isinstance(x, MentionElement):
-                if x.client == client_name and session_info.target_from == target_channel_prefix:
+
+        if isinstance(message, MessageNodes):
+            ...
+            # if channel.type == discord.ChannelType.text:
+            #     try:
+            #         thread = await channel.create_thread(
+            #             name=message.name,
+            #             message=ctx if quote and ctx else None,
+            #         )
+            #         Logger.info(f"Created thread {thread.name} in channel {channel.id}")
+            #         Logger.info(f"Sending {len(message.values)} messages in thread {thread.id}...")
+            #         for msg_chain in message.values:
+            #             for x in msg_chain.values:
+            #                 send_ = None
+            #                 if isinstance(x, PlainElement):
+            #                     send_ = await thread.send(
+            #                         x.text,
+            #                     )
+            #                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+            #                 elif isinstance(x, ImageElement):
+            #                     send_ = await thread.send(
+            #                         file=discord.File(await x.get()),
+            #                     )
+            #                     Logger.info(
+            #                         f"[Bot] -> [{session_info.target_id}]: Image: {str(x.__dict__)}"
+            #                     )
+            #                 elif isinstance(x, VoiceElement):
+            #                     send_ = await thread.send(
+            #                         file=discord.File(x.path),
+            #                     )
+            #                     Logger.info(
+            #                         f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
+            #                     )
+            #                 elif isinstance(x, MentionElement):
+            #                     if x.client == client_name and session_info.target_from == target_channel_prefix:
+            #                         send_ = await thread.send(
+            #                             f"<@{x.id}>",
+            #                         )
+            #                         Logger.info(
+            #                             f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
+            #                         )
+            #                 elif isinstance(x, EmbedElement):
+            #                     embeds, files = await convert_embed(x, session_info)
+            #                     send_ = await thread.send(
+            #                         embed=embeds,
+            #                         files=files,
+            #                     )
+            #                     Logger.info(
+            #                         f"[Bot] -> [{session_info.target_id}]: Embed: {str(x.__dict__)}"
+            #                     )
+            #
+            #                 if send_:
+            #                     msg_ids.append(str(send_.id))
+            #         return msg_ids
+            #     except discord.HTTPException:
+            #         Logger.warning(f"Failed to create thread in channel {channel.id}, maybe permission denied?")
+            #         send_ = await channel.send(session_info.locale.t("error.message.discord.thread.permission.denied"))
+            #         if send_:
+            #             msg_ids.append(str(send_.id))
+            #         return msg_ids
+            # else:
+            #     send_ = await channel.send(session_info.locale.t("error.message.discord.dm.cannot.send"))
+            #     if send_:
+            #         msg_ids.append(str(send_.id))
+            #     return msg_ids
+        else:
+
+            count = 0
+
+            for x in message.as_sendable(session_info):
+                send_ = None
+                if isinstance(x, PlainElement):
                     send_ = await channel.send(
-                        f"<@{x.id}>",
+                        x.text,
+                        reference=(
+                            ctx
+                            if quote and count == 0 and ctx
+                            else None
+                        ),
+                    )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+                elif isinstance(x, ImageElement):
+                    send_ = await channel.send(
+                        file=discord.File(await x.get()),
                         reference=(ctx
                                    if quote and count == 0 and ctx
                                    else None
                                    ),
                     )
                     Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
+                        f"[Bot] -> [{session_info.target_id}]: Image: {str(x.__dict__)}"
                     )
-            elif isinstance(x, EmbedElement):
-                embeds, files = await convert_embed(x, session_info)
-                send_ = await channel.send(
-                    embed=embeds,
-                    reference=(
-                        ctx
-                        if quote and count == 0 and ctx
-                        else None
-                    ),
-                    files=files,
-                )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x.__dict__)}"
-                )
+                elif isinstance(x, VoiceElement):
+                    send_ = await channel.send(
+                        file=discord.File(x.path),
+                        reference=(
+                            ctx
+                            if quote and count == 0 and ctx
+                            else None
+                        ),
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
+                    )
+                elif isinstance(x, MentionElement):
+                    if x.client == client_name and session_info.target_from == target_channel_prefix:
+                        send_ = await channel.send(
+                            f"<@{x.id}>",
+                            reference=(ctx
+                                       if quote and count == 0 and ctx
+                                       else None
+                                       ),
+                        )
+                        Logger.info(
+                            f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
+                        )
+                elif isinstance(x, EmbedElement):
+                    embeds, files = await convert_embed(x, session_info)
+                    send_ = await channel.send(
+                        embed=embeds,
+                        reference=(
+                            ctx
+                            if quote and count == 0 and ctx
+                            else None
+                        ),
+                        files=files,
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{session_info.target_id}]: Embed: {str(x.__dict__)}"
+                    )
 
-            if send_:
-                msg_ids.append(str(send_.id))
-            count += 1
-        return msg_ids
+                if send_:
+                    msg_ids.append(str(send_.id))
+                count += 1
+            return msg_ids
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:

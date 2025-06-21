@@ -21,6 +21,8 @@ from core.utils.info import Info
 from core.client import client_init
 import orjson as json
 
+import logging
+
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
@@ -42,6 +44,7 @@ async def on_ready():
     if count == 0:
         await client_init(target_prefix_list, sender_prefix_list)
         count += 1
+        logging.getLogger("discord").setLevel(logging.INFO)
 
 slash_load_dir = os.path.abspath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), "slash")

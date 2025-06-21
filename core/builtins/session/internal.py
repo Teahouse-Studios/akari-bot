@@ -164,30 +164,6 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_error_signal(self.session_info)
 
-    async def msgchain2nodelist(self, msg_chain_list: List[MessageChain], sender_name: Optional[str] = None,
-                                ) -> list[Dict]:
-        """
-        用于将消息链列表转换为节点列表（QQ）。
-        :param msg_chain_list: 消息链列表。
-        :param sender_name: 用于指定发送者名称。
-        """
-        raise NotImplementedError
-
-    class Typing:
-        def __init__(self, msg: MessageSession):
-            """
-            :param msg: 本条消息，由于此class需要被一同传入下游方便调用，所以作为子class存在，将来可能会有其他的解决办法。
-            """
-
-        async def __aenter__(self):
-            pass
-
-        async def __aexit__(self, exc_type, exc_val, exc_tb):
-            pass
-
-    async def call_api(self, action, **params):
-        raise NotImplementedError
-
     async def wait_confirm(
         self,
         message_chain: Optional[Chainable] = None,

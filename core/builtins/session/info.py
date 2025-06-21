@@ -106,6 +106,8 @@ class SessionInfo:
         if fetch:
             ctx_slot = 999
 
+        tmp = tmp or {}
+
         return cls(
             target_id=target_id,
             target_from=target_from,

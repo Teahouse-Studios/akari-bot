@@ -3,7 +3,7 @@ from typing import Union
 from core.builtins.parser.message import parser
 from .base import JobQueueBase
 from ..builtins.converter import converter
-from ..builtins.message.chain import MessageChain
+from ..builtins.message.chain import MessageChain, MessageNodes
 from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
@@ -13,11 +13,11 @@ from ..utils.alive import Alive
 class JobQueueServer(JobQueueBase):
 
     @classmethod
-    async def client_send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True, wait=True,
+    async def client_send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True, wait=True,
                                   enable_parse_message: bool = True,
                                   enable_split_image: bool = True):
         value = await cls.add_job(session_info.client_name, "send_message", {"session_info": converter.unstructure(session_info),
-                                                                             "message": converter.unstructure(message),
+                                                                             "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
                                                                              'quote': quote,
                                                                              'enable_parse_message': enable_parse_message,
                                                                              'enable_split_image': enable_split_image

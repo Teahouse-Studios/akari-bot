@@ -27,16 +27,13 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.session_info.locale.t("wiki.message.not_set"))
     legacy = True
     if not msg.parsed_msg and msg.session_info.support_forward:
-        from bots.aiocqhttp.utils import get_onebot_implementation
-
-        obi = await get_onebot_implementation()
-        if obi in ["napcat", "llonebot"]:
+        if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
                     msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await rc_qq(msg, start_wiki)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
             except ValueError:
                 await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
             except Exception:
@@ -47,7 +44,7 @@ async def _(msg: Bot.MessageSession):
         else:
             try:
                 nodelist = await rc_qq(msg, start_wiki)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except Exception:
                 Logger.error(traceback.format_exc())
@@ -90,16 +87,13 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.session_info.locale.t("wiki.message.not_set"))
     legacy = True
     if not msg.parsed_msg and msg.session_info.support_forward:
-        from bots.aiocqhttp.utils import get_onebot_implementation
-
-        obi = await get_onebot_implementation()
-        if obi in ["napcat", "llonebot"]:
+        if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
                     msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await ab_qq(msg, start_wiki)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
             except ValueError:
                 await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
             except Exception:
@@ -110,7 +104,7 @@ async def _(msg: Bot.MessageSession):
         else:
             try:
                 nodelist = await ab_qq(msg, start_wiki)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except Exception:
                 Logger.error(traceback.format_exc())

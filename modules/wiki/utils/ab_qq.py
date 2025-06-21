@@ -1,7 +1,6 @@
 from core.builtins.session.internal import MessageSession
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import I18NContext, Plain, Url
-from core.logger import Logger
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
 
@@ -20,6 +19,5 @@ async def ab_qq(msg: MessageSession, wiki_url):
     ablist = await convert_ab_to_detailed_format(query["query"]["abuselog"], msg)
     for x in ablist:
         msgchain_lst.append(MessageChain.assign([Plain(x)]))
-    nodelist = await msg.msgchain2nodelist(msgchain_lst)
-    Logger.debug(nodelist)
+    nodelist = MessageNodes.assign(msgchain_lst, name=msg.session_info.locale.t("wiki.message.ab.qq.title"))
     return nodelist

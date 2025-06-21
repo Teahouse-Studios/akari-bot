@@ -4,15 +4,13 @@ import os
 import re
 import traceback
 from collections.abc import MutableMapping
-from decimal import Decimal, ROUND_HALF_UP
 from string import Template
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import orjson as json
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
-from .utils.text import isint
 
 # Load all locale files into memory
 
@@ -83,7 +81,7 @@ def load_locale_file() -> List[str]:
     locales = os.listdir(locales_path)
     try:
         for loc in locales:
-            with open(os.path.join(locales_path, loc), "r", encoding="utf-8") as f:
+            with open(os.path.join(locales_path, loc), "rb") as f:
                 locale_dict[loc.removesuffix(".json")] = flatten(json.loads(f.read()))
     except Exception as e:
         traceback.print_exc()
@@ -94,7 +92,7 @@ def load_locale_file() -> List[str]:
             locales_m = os.listdir(modules_locales_file)
             for lang_file in locales_m:
                 lang_file_path = os.path.join(modules_locales_file, lang_file)
-                with open(lang_file_path, "r", encoding="utf-8") as f:
+                with open(lang_file_path, "rb") as f:
                     try:
                         if lang_file.removesuffix(".json") in locale_dict:
                             locale_dict[lang_file.removesuffix(".json")].update(
@@ -158,10 +156,10 @@ class Locale:
                         node.value
                     )  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f"{{{key}}}" + self.t(
+            return f"{{I18N:{key}}}" + self.t(
                 "error.i18n.fallback", fallback_failed_prompt=False
             )
-        return key
+        return f"{{I18N:{key}}}"
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
     def t(
@@ -183,9 +181,7 @@ class Locale:
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(**kwargs)
 
-    def t_str(
-        self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]
-    ) -> str:
+    def t_str(self, text: str, fallback_failed_prompt: bool = False, **kwargs: Dict[str, Any]) -> str:
         """
         替换字符串中的本地化键名。
 
@@ -193,91 +189,34 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
-        split_all = re.split(r"(\[I18N:.*?])", text)
-        split_all = [x for x in split_all if x]
-        msgs = []
-        kwargs = {}
+        def match_i18ncode(match):
+            full = match.group(0)
+            key = html.unescape(match.group(1))
+            params_str = match.group(2)
 
-        for e in split_all:
-            match = re.match(r"\[I18N:([^\s,\]]+)(?:,([^\]]+))?\]", e)
-            if not match:
-                msgs.append(e)
-            else:
-                i18nkey = html.unescape(match.group(1))
+            local_kwargs = {}
 
-                if match.group(2):
-                    params = match.group(2).split(",")
-                    params = [x for x in params if x]
-                    for a in params:
-                        ma = re.match(r"(.*?)=(.*)", a)
-                        if ma:
-                            kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
-                t_value = self.t(i18nkey, **kwargs)
-                msgs.append(t_value if isinstance(t_value, str) else match.group(0))
+            if params_str:
+                params_str = self.t_str(params_str, fallback_failed_prompt=fallback_failed_prompt)
 
-        return "".join(msgs)
+                param_pairs = re.findall(r'(\w+)=([^,]+)', params_str)
+                for k, v in param_pairs:
+                    local_kwargs[html.unescape(k)] = html.unescape(v)
 
-    def num(
-        self,
-        number: Union[Decimal, int, str],
-        precision: int = 0,
-        fallback_failed_prompt: bool = False,
-    ) -> str:
-        """
-        格式化数字。
+            all_kwargs = {**kwargs, **local_kwargs}
 
-        :param number: 数字。
-        :param precision: 保留小数点位数。
-        :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
-        :returns: 本地化后的数字。
-        """
-        if isint(number):
-            number = int(number)
-        else:
-            return str(number)
+            t_value = self.t(key, fallback_failed_prompt=fallback_failed_prompt, **all_kwargs)
 
-        if self.locale in ["zh_cn", "zh_tw"]:
-            unit_info = self._get_cjk_unit(Decimal(number))
-        else:
-            unit_info = self._get_unit(Decimal(number))
+            return t_value if isinstance(t_value, str) else full
 
-        if not unit_info:
-            return str(number)
+        prev_text = None
+        while prev_text != text:
+            prev_text = text
+            text = re.sub(r"\{I18N:([^\s,{}]+)(?:,([^\{\}]*))?\}", match_i18ncode, text)
 
-        unit, scale = unit_info
-        fmted_num = self._fmt_num(number / scale, precision)
-        return self.t_str(f"{fmted_num} {{i18n.unit.{unit}}}", fallback_failed_prompt)
-
-    @staticmethod
-    def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal("10e11"):
-            return 3, Decimal("10e11")
-        if number >= Decimal("10e7"):
-            return 2, Decimal("10e7")
-        if number >= Decimal("10e3"):
-            return 1, Decimal("10e3")
-        return None
-
-    @staticmethod
-    def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal("10e8"):
-            return 3, Decimal("10e8")
-        if number >= Decimal("10e5"):
-            return 2, Decimal("10e5")
-        if number >= Decimal("10e2"):
-            return 1, Decimal("10e2")
-        return None
-
-    @staticmethod
-    def _fmt_num(number: Decimal, precision: int) -> str:
-        number = number.quantize(
-            Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
-        )
-        num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
-        return num_str if precision > 0 else str(int(number))
+        return text
 
 
-locale_loaded_err = load_locale_file()
+load_locale_file()
 
-
-__all__ = ["Locale", "load_locale_file", "get_available_locales", "locale_loaded_err"]
+__all__ = ["Locale", "load_locale_file", "get_available_locales"]

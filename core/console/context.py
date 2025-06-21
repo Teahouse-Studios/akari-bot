@@ -1,13 +1,22 @@
-from typing import Any, Union
+from typing import Any
 
 from PIL import Image as PILImage
 
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from .features import Features
+
+
+class MsgIdGenerator:
+    value = 0
+
+    @classmethod
+    def next(cls) -> str:
+        cls.value += 1
+        return str(cls.value)
 
 
 class ConsoleContextManager(ContextManager):
@@ -37,7 +46,7 @@ class ConsoleContextManager(ContextManager):
 
     @classmethod
     async def send_message(cls, session_info: SessionInfo,
-                           message: Union[MessageChain, str],
+                           message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True,
@@ -46,17 +55,26 @@ class ConsoleContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
-        for x in message.as_sendable(session_info):
-            if isinstance(x, PlainElement):
-                print(x.text)
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-            elif isinstance(x, ImageElement):
-                image_path = await x.get()
-                img = PILImage.open(image_path)
-                img.show()
-                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {image_path}")
-
-        return ['0']
+        async def send_message_chain(message_chain: MessageChain) -> list[str]:
+            msg_ids = []
+            for x in message.as_sendable(session_info):
+                if isinstance(x, PlainElement):
+                    print(x.text)
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+                elif isinstance(x, ImageElement):
+                    image_path = await x.get()
+                    img = PILImage.open(image_path)
+                    img.show()
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {image_path}")
+                msg_ids.append(MsgIdGenerator.next())
+            return msg_ids
+        msg_ids = []
+        if isinstance(message, MessageNodes):
+            for message in message.values:
+                msg_ids.extend(await send_message_chain(message))
+        else:
+            msg_ids.extend(await send_message_chain(message))
+        return msg_ids
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:

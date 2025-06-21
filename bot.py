@@ -42,7 +42,7 @@ disabled_bots = []
 processes: list[multiprocessing.Process] = []
 
 
-def init_bot():
+def pre_init():
     from core.constants.path import cache_path  # noqa
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
@@ -276,6 +276,7 @@ async def run_bot():
                 break
             await asyncio.sleep(1)
         Logger.critical("All bots exited unexpectedly, please check the output.")
+        sys.exit(1)
 
     asyncio.create_task(tracking())
     while True:
@@ -294,13 +295,13 @@ def terminate_process(process: multiprocessing.Process, timeout=5):
     process.close()
 
 
-if __name__ == "__main__":
+def main():
     import core.scripts.config_generate  # noqa
     loop = asyncio.new_event_loop()
     try:
         while True:
             try:
-                multiprocess_run_until_complete(init_bot)
+                multiprocess_run_until_complete(pre_init)
 
                 loop.run_until_complete(run_bot())  # Process will block here so
                 break
@@ -322,3 +323,7 @@ if __name__ == "__main__":
     finally:
         loop.run_until_complete(Tortoise.close_connections())
         loop.close()
+
+
+if __name__ == "__main__":
+    main()

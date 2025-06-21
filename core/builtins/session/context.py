@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Union, Optional, List
 
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
 from core.logger import Logger
@@ -40,7 +40,7 @@ class ContextManager(ABC):
     @classmethod
     @abstractmethod
     async def send_message(cls, session_info: SessionInfo,
-                           message: MessageChain,
+                           message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True,

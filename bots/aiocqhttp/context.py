@@ -16,7 +16,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.context import ContextManager
-from core.builtins.session.features import Features
+from .features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.config import Config
@@ -31,23 +31,22 @@ qq_account = Temp.data.get("qq_account")
 
 async def fake_forward_msg(session_info: SessionInfo, nodelist):
     if session_info.target_from == target_group_prefix:
-        await bot.call_action(
+        return await bot.call_action(
             "send_group_forward_msg",
             group_id=int(session_info.get_common_target_id()),
             messages=nodelist,
         )
     elif session_info.target_from == target_private_prefix:
-        await bot.call_action(
+        return await bot.call_action(
             "send_private_forward_msg",
             user_id=int(session_info.get_common_sender_id()),
             messages=nodelist
         )
 
 
-async def convert_msg_nodes(
+def convert_msg_nodes(
     session_info: SessionInfo,
     msg_node: MessageNodes,
-    sender_name: Optional[str] = None,
 ) -> List[dict]:
     node_list = []
     for message in msg_node.values:
@@ -62,7 +61,7 @@ async def convert_msg_nodes(
         template = {
             "type": "node",
             "data": {
-                "nickname": sender_name if sender_name else Temp.data.get("qq_nickname"),
+                "nickname": Temp.data.get("qq_nickname"),
                 "user_id": str(Temp.data.get("qq_account")),
                 "content": content.strip()
             }
@@ -111,7 +110,9 @@ class AIOCQContextManager(ContextManager):
         return await _check()
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True, enable_parse_message=True,
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
+                           quote: bool = True,
+                           enable_parse_message=True,
                            enable_split_image=True,) -> List[str]:
 
         #
@@ -121,30 +122,62 @@ class AIOCQContextManager(ContextManager):
         #
         # ctx = cls.context.get(session_info.session_id)
         send = None
+        if isinstance(message, MessageNodes):
+            send = await fake_forward_msg(session_info, convert_msg_nodes(session_info, message))
 
-        message_chain_assendable = message.as_sendable(session_info)
+        else:
 
-        convert_msg_segments = MessageSegment.text("")
-        if (
-            quote
-            and session_info.target_from == target_group_prefix
-            and session_info.messages
-        ):
-            convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
+            message_chain_assendable = message.as_sendable(session_info)
 
-        count = 0
-        for x in message_chain_assendable:
-            if isinstance(x, PlainElement):
-                if enable_parse_message:
-                    parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
-                    parts = [part for part in parts if part]
-                    previous_was_cq = False
-                    # CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
-                    for i, part in enumerate(parts):
-                        if re.match(r"\[CQ:[^\]]+\]", part):
-                            try:
-                                cq_data = CQCodeHandler.parse_cq(part)
-                                if cq_data:
+            convert_msg_segments = MessageSegment.text("")
+            if (
+                quote
+                and session_info.target_from == target_group_prefix
+                and session_info.messages
+            ):
+                convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
+
+            count = 0
+            for x in message_chain_assendable:
+                if isinstance(x, PlainElement):
+                    if enable_parse_message:
+                        parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
+                        parts = [part for part in parts if part]
+                        previous_was_cq = False
+                        # CQ码消息段相连会导致自动转义，故使用零宽字符`\u200B`隔开
+                        for i, part in enumerate(parts):
+                            if re.match(r"\[CQ:[^\]]+\]", part):
+                                try:
+                                    cq_data = CQCodeHandler.parse_cq(part)
+                                    if cq_data:
+                                        if previous_was_cq:
+                                            convert_msg_segments = (
+                                                convert_msg_segments
+                                                + MessageSegment.text("\u200B")
+                                            )
+                                        convert_msg_segments = (
+                                            convert_msg_segments
+                                            + MessageSegment.text(
+                                                "\n" if (count != 0 and i == 0) else ""
+                                            )
+                                            + MessageSegment(
+                                                type_=cq_data["type"], data=cq_data["data"]
+                                            )
+                                        )
+                                    else:
+                                        if previous_was_cq:
+                                            convert_msg_segments = (
+                                                convert_msg_segments
+                                                + MessageSegment.text("\u200B")
+                                            )
+                                        convert_msg_segments = (
+                                            convert_msg_segments
+                                            + MessageSegment.text(
+                                                ("\n" if (count != 0 and i == 0) else "")
+                                                + part
+                                            )
+                                        )
+                                except Exception:
                                     if previous_was_cq:
                                         convert_msg_segments = (
                                             convert_msg_segments
@@ -153,107 +186,79 @@ class AIOCQContextManager(ContextManager):
                                     convert_msg_segments = (
                                         convert_msg_segments
                                         + MessageSegment.text(
-                                            "\n" if (count != 0 and i == 0) else ""
-                                        )
-                                        + MessageSegment(
-                                            type_=cq_data["type"], data=cq_data["data"]
+                                            ("\n" if (count != 0 and i == 0) else "") + part
                                         )
                                     )
-                                else:
-                                    if previous_was_cq:
-                                        convert_msg_segments = (
-                                            convert_msg_segments
-                                            + MessageSegment.text("\u200B")
-                                        )
-                                    convert_msg_segments = (
-                                        convert_msg_segments
-                                        + MessageSegment.text(
-                                            ("\n" if (count != 0 and i == 0) else "")
-                                            + part
-                                        )
-                                    )
-                            except Exception:
-                                if previous_was_cq:
-                                    convert_msg_segments = (
-                                        convert_msg_segments
-                                        + MessageSegment.text("\u200B")
-                                    )
+                                finally:
+                                    previous_was_cq = True
+                            else:
                                 convert_msg_segments = (
                                     convert_msg_segments
                                     + MessageSegment.text(
-                                        ("\n" if (count != 0 and i == 0) else "") + part
+                                        ("\n" if count != 0 else "") + part
                                     )
                                 )
-                            finally:
-                                previous_was_cq = True
-                        else:
-                            convert_msg_segments = (
-                                convert_msg_segments
-                                + MessageSegment.text(
-                                    ("\n" if count != 0 else "") + part
-                                )
-                            )
-                            previous_was_cq = False
-                else:
-                    convert_msg_segments = convert_msg_segments + MessageSegment.text(
-                        ("\n" if count != 0 else "") + x.text
+                                previous_was_cq = False
+                    else:
+                        convert_msg_segments = convert_msg_segments + MessageSegment.text(
+                            ("\n" if count != 0 else "") + x.text
+                        )
+                    count += 1
+                elif isinstance(x, ImageElement):
+                    convert_msg_segments = convert_msg_segments + MessageSegment.image(
+                        "base64://" + await x.get_base64()
                     )
-                count += 1
-            elif isinstance(x, ImageElement):
-                convert_msg_segments = convert_msg_segments + MessageSegment.image(
-                    "base64://" + await x.get_base64()
-                )
-                count += 1
-            elif isinstance(x, VoiceElement):
-                convert_msg_segments = convert_msg_segments + MessageSegment.record(
-                    file=Path(x.path).as_uri()
-                )
-                count += 1
-            elif isinstance(x, MentionElement):
-                if x.client == client_name and session_info.target_from == target_group_prefix:
-                    convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
-                else:
-                    convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
-                count += 1
+                    count += 1
+                elif isinstance(x, VoiceElement):
+                    convert_msg_segments = convert_msg_segments + MessageSegment.record(
+                        file=Path(x.path).as_uri()
+                    )
+                    count += 1
+                elif isinstance(x, MentionElement):
+                    if x.client == client_name and session_info.target_from == target_group_prefix:
+                        convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
+                    else:
+                        convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
+                    count += 1
 
-        Logger.info(f"[Bot] -> [{session_info.target_id}]: {message_chain_assendable}")
-        if session_info.target_from == target_group_prefix:
-            try:
-                send = await bot.send_group_msg(
-                    group_id=session_info.get_common_target_id(), message=convert_msg_segments
-                )
-            except aiocqhttp.exceptions.NetworkError:
-                send = await bot.send_group_msg(
-                    group_id=session_info.get_common_target_id(),
-                    message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
-                )
-            except aiocqhttp.exceptions.ActionFailed:
-                img_chain = message.copy()
-                img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
-                imgs = await msgchain2image(img_chain, session_info)
-                msgsgm = MessageSegment.text("")
-                if imgs:
-                    for img in imgs:
-                        im = Image(img)
-                        msgsgm = msgsgm + MessageSegment.image(
-                            "base64://" + await im.get_base64()
-                        )
-                    try:
-                        send = await bot.send_group_msg(
-                            group_id=session_info.get_common_target_id(), message=msgsgm
-                        )
-                    except aiocqhttp.exceptions.ActionFailed as e:
-                        Logger.error(f"Failed to send message: {traceback.format_exc()}")
+            Logger.info(f"[Bot] -> [{session_info.target_id}]: {message_chain_assendable}")
+            if session_info.target_from == target_group_prefix:
+                try:
+                    send = await bot.send_group_msg(
+                        group_id=session_info.get_common_target_id(), message=convert_msg_segments
+                    )
+                except aiocqhttp.exceptions.NetworkError:
+                    send = await bot.send_group_msg(
+                        group_id=session_info.get_common_target_id(),
+                        message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
+                    )
+                except aiocqhttp.exceptions.ActionFailed:
+                    img_chain = message.copy()
+                    img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                    imgs = await msgchain2image(img_chain, session_info)
+                    msgsgm = MessageSegment.text("")
+                    if imgs:
+                        for img in imgs:
+                            im = Image(img)
+                            msgsgm = msgsgm + MessageSegment.image(
+                                "base64://" + await im.get_base64()
+                            )
+                        try:
+                            send = await bot.send_group_msg(
+                                group_id=session_info.get_common_target_id(), message=msgsgm
+                            )
+                        except aiocqhttp.exceptions.ActionFailed as e:
+                            Logger.error(f"Failed to send message: {traceback.format_exc()}")
 
-        else:
-            try:
-                send = await bot.send_private_msg(
-                    user_id=session_info.get_common_target_id(), message=convert_msg_segments
-                )
-            except aiocqhttp.exceptions.ActionFailed as e:
-                Logger.error(f"Failed to send message: {traceback.format_exc()}")
+            else:
+                try:
+                    send = await bot.send_private_msg(
+                        user_id=session_info.get_common_target_id(), message=convert_msg_segments
+                    )
+                except aiocqhttp.exceptions.ActionFailed as e:
+                    Logger.error(f"Failed to send message: {traceback.format_exc()}")
         if send:
-            return [send["message_id"]]
+            return [str(send["message_id"])]
         else:
             return []
 

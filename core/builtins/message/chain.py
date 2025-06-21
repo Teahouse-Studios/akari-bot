@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import html
+import random
 import re
 from copy import deepcopy
 from typing import List, Optional, Tuple, Union, Any
@@ -347,14 +348,29 @@ class MessageNodes:
     消息节点列表。
 
     """
+
     values: List[MessageChain]
+    name: str = ''
 
     @classmethod
-    def assign(cls, values: List[MessageChain]):
+    def assign(cls, values: List[MessageChain], name: Optional[str] = None):
         """
         :param values: 节点列表。
         """
-        return cls(values=values)
+        if not name:
+            name = "Message" + random.sample('abcdefghijklmnopqrstuvwxyz', 5)
+
+        return cls(values=values, name=name)
+
+    @property
+    def is_safe(self) -> bool:
+        """
+        检查消息节点列表是否安全。
+        """
+        for chain in self.values:
+            if not chain.is_safe:
+                return False
+        return True
 
 
 Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain,
@@ -480,10 +496,18 @@ add_export(I18NMessageChain)
 converter.register_unstructure_hook(Union[MessageChain, I18NMessageChain],
                                     lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
 
+converter.register_unstructure_hook(Union[MessageChain, MessageNodes],
+                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
+
 converter.register_structure_hook(
     Union[MessageChain, I18NMessageChain],
     lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain)
 )
 
 
-__all__ = ["MessageChain", "I18NMessageChain", "PlatformMessageChain", "Chainable", "get_message_chain"]
+converter.register_structure_hook(
+    Union[MessageChain, MessageNodes],
+    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else MessageNodes)
+)
+
+__all__ = ["MessageChain", "I18NMessageChain", "PlatformMessageChain", "Chainable", "get_message_chain", "MessageNodes"]
