@@ -1,14 +1,13 @@
 from typing import Any, Union
 
-from core.builtins.bot import Bot
+from PIL import Image as PILImage
+
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
-from core.builtins.session.info import SessionInfo
 from core.builtins.session.context import ContextManager
+from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from .features import Features
-
-from PIL import Image as PILImage
 
 
 class ConsoleContextManager(ContextManager):
@@ -77,3 +76,15 @@ class ConsoleContextManager(ContextManager):
         print(
             f"(Tried to delete {str(message_id)}, but I\'m a console so I cannot do it :< )"
         )
+
+    @classmethod
+    async def start_typing(cls, session_info: SessionInfo) -> None:
+        pass
+
+    @classmethod
+    async def end_typing(cls, session_info: SessionInfo) -> None:
+        pass
+
+    @classmethod
+    async def error_signal(cls, session_info: SessionInfo) -> None:
+        pass
