@@ -369,3 +369,7 @@ class AIOCQContextManager(ContextManager):
                                       message=f"[CQ:poke,qq={qq_account}]")
             else:
                 pass
+
+
+class AIOCQFetchedContextManager(AIOCQContextManager):
+    pass

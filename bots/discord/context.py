@@ -279,4 +279,4 @@ class DiscordContextManager(ContextManager):
 
 
 class DiscordFetchedContextManager(DiscordContextManager):
-    pass
+    pass  # 由于 DiscordContextManager 已具备无 ctx 时主动获取的特性，因此不需要额外实现，此处继承为后续可能的扩展备用
