@@ -372,4 +372,4 @@ class AIOCQContextManager(ContextManager):
 
 
 class AIOCQFetchedContextManager(AIOCQContextManager):
-    pass
+    pass  # todo 实现主动推送限速
