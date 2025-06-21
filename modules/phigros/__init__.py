@@ -1,6 +1,6 @@
 import shutil
 
-from core.builtins import Bot, Image
+from core.builtins import Bot, Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
