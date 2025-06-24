@@ -34,12 +34,12 @@ class JobQueueServer(JobQueueBase):
 
     @classmethod
     async def client_start_typing_signal(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "start_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
+        value = await cls.add_job(session_info.client_name, "start_typing", {"session_info": converter.unstructure(session_info)})
         return value
 
     @classmethod
     async def client_end_typing_signal(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "end_typing", {"session_info": converter.unstructure(session_info)}, wait=False)
+        value = await cls.add_job(session_info.client_name, "end_typing", {"session_info": converter.unstructure(session_info)})
         return value
 
     @classmethod
