@@ -86,7 +86,7 @@ async def parser(msg: "Bot.MessageSession",
 
     try:
         await SessionTaskManager.check(msg)
-        modules = ModulesManager.return_modules_list(msg.session_info.target_from)
+        modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
 
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:

@@ -11,6 +11,7 @@ def fetch_modules_list() -> list:
     获取模块列表。
     :return: 模块列表
     """
+    dir_list = []
     if not Info.binary_mode:
         dir_list = os.listdir(modules_path)
     else:

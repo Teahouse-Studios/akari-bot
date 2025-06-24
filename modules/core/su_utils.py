@@ -94,8 +94,14 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish()
         target_info = await TargetInfo.create(target_id=target)
     if "enable" in msg.parsed_msg:
-        modules = [m for m in [msg.parsed_msg["<modules>"]] + msg.parsed_msg.get("...", [])
-                   if m in ModulesManager.return_modules_list(msg.session_info.target_from)]
+        modules = [
+            m for m in [
+                msg.parsed_msg["<modules>"]] +
+            msg.parsed_msg.get(
+                "...",
+                []) if m in ModulesManager.return_modules_list(
+                msg.session_info.target_from,
+                client_name=msg.session_info.client_name)]
         await target_info.config_module(modules, True)
         if modules:
             await msg.finish(I18NContext("core.message.set.module.enable.success", modules=", ".join(modules)))

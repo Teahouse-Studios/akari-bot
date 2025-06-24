@@ -172,17 +172,20 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, target_from: Optional[str] = None) -> Dict[str, Module]:
+    def return_modules_list(cls, target_from: Optional[str] = None,
+                            client_name: Optional[str] = None) -> Dict[str, Module]:
+        if target_from and target_from in cls._return_cache:
+            return cls._return_cache[target_from]
         modules = {
             bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)
         }
+
         if target_from:
-            if "|" in target_from:
-                client_name = target_from.split("|")[0]
-            else:
-                client_name = target_from
-            if target_from in cls._return_cache:
-                return cls._return_cache[target_from]
+            if not client_name:
+                if "|" in target_from:
+                    client_name = target_from.split("|")[0]
+                else:
+                    client_name = target_from
             returns = {}
             for m in modules:
                 if isinstance(modules[m], Module):

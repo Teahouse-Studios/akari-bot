@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
-        target_from=msg.session_info.target_from)
+        target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
     alias = ModulesManager.modules_aliases
 
     if msg.parsed_msg:
@@ -210,7 +210,7 @@ async def _(msg: Bot.MessageSession):
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
         module_list = ModulesManager.return_modules_list(
-            target_from=msg.session_info.target_from)
+            target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
         target_enabled_list = msg.session_info.enabled_modules
         help_msg = [I18NContext("core.message.help.legacy.base")]
         essential = []
@@ -255,7 +255,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
             await msg.finish(imgchain + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
-            target_from=msg.session_info.target_from)
+            target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
         module_ = []
         for x in module_list:
             if x[0] == "_":
@@ -282,7 +282,7 @@ async def help_generator(msg: Bot.MessageSession,
     is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
-        target_from=msg.session_info.target_from)
+        target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
     target_enabled_list = msg.session_info.enabled_modules
 
     if not Info.web_render_status:

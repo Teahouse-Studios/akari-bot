@@ -68,7 +68,9 @@ async def _(msg: Bot.MessageSession):
 async def config_modules(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     alias = ModulesManager.modules_aliases
-    modules_ = ModulesManager.return_modules_list(target_from=msg.session_info.target_from)
+    modules_ = ModulesManager.return_modules_list(
+        target_from=msg.session_info.target_from,
+        client_name=msg.session_info.client_name)
     enabled_modules_list = deepcopy(msg.session_info.target_info.modules)
     wait_config = [msg.parsed_msg.get("<module>")] + msg.parsed_msg.get("...", [])
     wait_config_list = []

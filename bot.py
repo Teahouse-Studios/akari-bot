@@ -7,6 +7,7 @@ import traceback
 from datetime import datetime
 from time import sleep
 
+import tortoise
 from loguru import logger as loggerFallback
 from tortoise import Tortoise, run_async
 
@@ -146,6 +147,7 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
 async def run_prompt():
     from prompt_toolkit import PromptSession  # noqa
     from prompt_toolkit.history import FileHistory  # noqa
+    from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
     from core.constants import PrivateAssets  # noqa
     from core.builtins.bot import Bot  # noqa
     from core.console.info import client_name, target_prefix_list, sender_prefix_list  # noqa
@@ -162,30 +164,34 @@ async def run_prompt():
     console_history_path = os.path.join(PrivateAssets.path, ".console_history")
     if os.path.exists(console_history_path):
         os.remove(console_history_path)
+    try:
+        prompt_session = PromptSession(history=FileHistory(console_history_path))
 
-    prompt_session = PromptSession(history=FileHistory(console_history_path))
+        async def console_command(command: str):
+            if console_ctx_id is not None and Bot is not None:
+                from core.builtins.session.info import SessionInfo
+                from core.builtins.message.chain import MessageChain
+                from core.console.info import target_prefix, sender_prefix, client_name
+                from core.builtins.message.internal import Plain
+                session_data = await SessionInfo.assign(
+                    target_id=f"{target_prefix}|0",
+                    sender_id=f"{sender_prefix}|0",
+                    sender_name="Console",
+                    target_from=target_prefix,
+                    sender_from=sender_prefix,
+                    client_name=client_name,
+                    message_id='0',
+                    messages=MessageChain.assign([Plain(command), ]),
+                    ctx_slot=console_ctx_id)
+                await Bot.process_message(session_data, '')
 
-    async def console_command(command: str):
-        if console_ctx_id is not None and Bot is not None:
-            from core.builtins.session.info import SessionInfo
-            from core.builtins.message.chain import MessageChain
-            from core.console.info import target_prefix, sender_prefix, client_name
-            from core.builtins.message.internal import Plain
-            session_data = await SessionInfo.assign(
-                target_id=f"{target_prefix}|0",
-                sender_id=f"{sender_prefix}|0",
-                sender_name="Console",
-                target_from=target_prefix,
-                sender_from=sender_prefix,
-                client_name=client_name,
-                message_id='0',
-                messages=MessageChain.assign([Plain(command), ]),
-                ctx_slot=console_ctx_id)
-            await Bot.process_message(session_data, '')
+        while True:
+            m = await prompt_session.prompt_async()
+            asyncio.create_task(console_command(m))
 
-    while True:
-        m = await prompt_session.prompt_async()
-        asyncio.create_task(console_command(m))
+    except NoConsoleScreenBufferError:
+        loggerFallback.error("No console screen buffer found, please run this script in a console. "
+                             "(If you are using pycharm, please enable the console emulation in the run configuration.)")
 
 
 async def cleanup_tasks():
@@ -197,8 +203,6 @@ async def run_bot(console_only: bool = False):
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
-
-    enable_console = Config("enable_console", default=False, cfg_type=bool)
 
     def restart_process(bot_name: str):
         if (
@@ -317,7 +321,10 @@ async def main_async(console_only: bool = False):
             loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
             terminate_process(ps)
         processes.clear()
-        await Tortoise.close_connections()
+        try:
+            await Tortoise.close_connections()
+        except tortoise.exceptions.ConfigurationError:
+            pass
         raise e
 
     except (KeyboardInterrupt, SystemExit) as e:
@@ -330,7 +337,10 @@ async def main_async(console_only: bool = False):
         traceback.print_exc()
         raise e
     finally:
-        await Tortoise.close_connections()
+        try:
+            await Tortoise.close_connections()
+        except tortoise.exceptions.ConfigurationError:
+            pass
 
 
 def main(console_only: bool = False):
