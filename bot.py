@@ -1,8 +1,8 @@
+import sys
 import importlib
 import multiprocessing
 import os
 import shutil
-import sys
 import traceback
 from datetime import datetime
 from time import sleep
@@ -11,6 +11,12 @@ from loguru import logger as loggerFallback
 from tortoise import Tortoise, run_async
 
 import asyncio
+
+from core.config import Config
+from core.constants import config_path, config_filename
+
+base_import_lists = list(sys.modules)
+
 
 ascii_art = r"""
            _              _   ____        _
@@ -97,6 +103,12 @@ def pre_init():
     run_async(update_db())
 
 
+def clear_import_cache():
+    for m in list(sys.modules):
+        if m not in base_import_lists:
+            del sys.modules[m]
+
+
 def multiprocess_run_until_complete(func):
     p = multiprocessing.Process(
         target=func,
@@ -131,57 +143,62 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
         sys.exit(1)
 
 
-async def run_bot():
+async def run_prompt():
+    from prompt_toolkit import PromptSession  # noqa
+    from prompt_toolkit.history import FileHistory  # noqa
+    from core.constants import PrivateAssets  # noqa
+    from core.builtins.bot import Bot  # noqa
+    from core.console.info import client_name, target_prefix_list, sender_prefix_list  # noqa
+    from core.console.context import ConsoleContextManager  # noqa
+    from core.client.init import client_init  # noqa
+
+    Bot.register_bot(client_name=client_name,
+                     dirty_word_check=True)
+
+    console_ctx_id = Bot.register_context_manager(ConsoleContextManager)
+
+    asyncio.create_task(client_init(target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list))
+
+    console_history_path = os.path.join(PrivateAssets.path, ".console_history")
+    if os.path.exists(console_history_path):
+        os.remove(console_history_path)
+
+    prompt_session = PromptSession(history=FileHistory(console_history_path))
+
+    async def console_command(command: str):
+        if console_ctx_id is not None and Bot is not None:
+            from core.builtins.session.info import SessionInfo
+            from core.builtins.message.chain import MessageChain
+            from core.console.info import target_prefix, sender_prefix, client_name
+            from core.builtins.message.internal import Plain
+            session_data = await SessionInfo.assign(
+                target_id=f"{target_prefix}|0",
+                sender_id=f"{sender_prefix}|0",
+                sender_name="Console",
+                target_from=target_prefix,
+                sender_from=sender_prefix,
+                client_name=client_name,
+                message_id='0',
+                messages=MessageChain.assign([Plain(command), ]),
+                ctx_slot=console_ctx_id)
+            await Bot.process_message(session_data, '')
+
+    while True:
+        m = await prompt_session.prompt_async()
+        asyncio.create_task(console_command(m))
+
+
+async def cleanup_tasks():
+    loop = asyncio.get_event_loop()
+    asyncio.all_tasks(loop=loop)
+
+
+async def run_bot(console_only: bool = False):
     from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
 
     enable_console = Config("enable_console", default=False, cfg_type=bool)
-
-    console_command = None
-
-    if enable_console:
-        from prompt_toolkit import PromptSession
-        from prompt_toolkit.history import FileHistory
-
-        from core.builtins.bot import Bot
-        from core.builtins.message.chain import MessageChain
-        from core.builtins.message.internal import Plain
-        from core.builtins.session.info import SessionInfo
-        from core.console.context import ConsoleContextManager
-        from core.console.info import client_name, target_prefix_list, sender_prefix_list, target_prefix, sender_prefix
-        from core.client import client_init
-
-        from core.constants import PrivateAssets
-
-        Bot.register_bot(client_name=client_name,
-                         dirty_word_check=True)
-
-        asyncio.create_task(client_init(target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list))
-        console_history_path = os.path.join(PrivateAssets.path, ".console_history")
-        if os.path.exists(console_history_path):
-            os.remove(console_history_path)
-
-        ctx_id = Bot.register_context_manager(ConsoleContextManager)
-        prompt_session = PromptSession(history=FileHistory(console_history_path))
-
-        async def console_command():
-            while True:
-                m = await asyncio.to_thread(prompt_session.prompt)
-
-                Logger.info("-------Start-------")
-                session_data = await SessionInfo.assign(
-                    target_id=f"{target_prefix}|0",
-                    sender_id=f"{sender_prefix}|0",
-                    sender_name="Console",
-                    target_from=target_prefix,
-                    sender_from=sender_prefix,
-                    client_name=client_name,
-                    message_id='0',
-                    messages=MessageChain.assign([Plain(m), ]),
-                    ctx_slot=ctx_id)
-                await Bot.process_message(session_data, '')
-                Logger.info("----Process end----")
 
     def restart_process(bot_name: str):
         if (
@@ -217,73 +234,63 @@ async def run_bot():
     lst = bots_and_required_configs.keys()
 
     # run the client processes
+    if not console_only:
+        for t in CFGManager.values:
+            if t.startswith("bot_") and not t.endswith("_secret"):
+                if "enable" in CFGManager.values[t][t]:
+                    if not CFGManager.values[t][t]["enable"]:
+                        disabled_bots.append(t[4:])
+                else:
+                    Logger.warning(f"Bot {t} cannot found config \"enable\".")
 
-    for t in CFGManager.values:
-        if t.startswith("bot_") and not t.endswith("_secret"):
-            if "enable" in CFGManager.values[t][t]:
-                if not CFGManager.values[t][t]["enable"]:
-                    disabled_bots.append(t[4:])
-            else:
-                Logger.warning(f"Bot {t} cannot found config \"enable\".")
-
-    for bl in lst:
-        if bl in disabled_bots:
-            continue
-        if bl in bots_and_required_configs:
-            abort = False
-            for c in bots_and_required_configs[bl]:
-                if not Config(c, _global=True):
-                    Logger.error(
-                        f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
-                    )
-                    abort = True
-                    break
-            if abort:
+        for bl in lst:
+            if bl in disabled_bots:
                 continue
-        p = multiprocessing.Process(
-            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
-        )
-        p.start()
-        processes.append(p)
+            if bl in bots_and_required_configs:
+                abort = False
+                for c in bots_and_required_configs[bl]:
+                    if not Config(c, _global=True):
+                        Logger.error(
+                            f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
+                        )
+                        abort = True
+                        break
+                if abort:
+                    continue
+            p = multiprocessing.Process(
+                target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
+            )
+            p.start()
+            processes.append(p)
 
     # run the server process
     server_process = multiprocessing.Process(target=server_run_async, name="server", daemon=True)
     server_process.start()
     processes.append(server_process)
 
-    # keep track of the processes
-
-    async def tracking():
-        while True:
-            for p in processes:
-                if p.is_alive():
-                    continue
-                if p.exitcode == 233:
-                    Logger.warning(
-                        f"{p.pid} ({p.name}) exited with code 233, restart all bots."
-                    )
-                    raise RestartBot
-                Logger.critical(
-                    f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
-                )
-                processes.remove(p)
-                p.terminate()
-                p.join()
-                p.close()
-                restart_process(p.name)
-                break
-            if not processes:
-                break
-            await asyncio.sleep(1)
-        Logger.critical("All bots exited unexpectedly, please check the output.")
-        sys.exit(1)
-
-    asyncio.create_task(tracking())
     while True:
-
-        if console_command:
-            await console_command()
+        for p in processes:
+            if p.is_alive():
+                continue
+            if p.exitcode == 233:
+                Logger.warning(
+                    f"{p.pid} ({p.name}) exited with code 233, restart all bots."
+                )
+                raise RestartBot
+            Logger.critical(
+                f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
+            )
+            processes.remove(p)
+            p.terminate()
+            p.join()
+            p.close()
+            restart_process(p.name)
+            break
+        if not processes:
+            break
         await asyncio.sleep(1)
+    Logger.critical("All bots exited unexpectedly, please check the output.")
+    sys.exit(1)
 
 
 def terminate_process(process: multiprocessing.Process, timeout=5):
@@ -295,34 +302,47 @@ def terminate_process(process: multiprocessing.Process, timeout=5):
     process.close()
 
 
-def main():
-    import core.scripts.config_generate  # noqa
-    loop = asyncio.new_event_loop()
-    try:
-        while True:
-            try:
-                multiprocess_run_until_complete(pre_init)
+async def main_async(console_only: bool = False):
+    if not os.path.exists(os.path.join(config_path, config_filename)):
+        import core.scripts.config_generate  # noqa
 
-                loop.run_until_complete(run_bot())  # Process will block here so
-                break
-            except RestartBot:
-                for ps in processes:
-                    loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
-                    terminate_process(ps)
-                processes.clear()
-                continue
-            except Exception:
-                loggerFallback.critical("An error occurred, please check the output.")
-                traceback.print_exc()
-                break
-    except (KeyboardInterrupt, SystemExit):
+    enable_console = Config("enable_console", default=False, cfg_type=bool)
+    if enable_console or console_only:
+        asyncio.create_task(run_prompt())
+    try:
+        multiprocess_run_until_complete(pre_init)
+        await run_bot(console_only)  # Process will block here so
+    except RestartBot as e:
+        for ps in processes:
+            loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
+            terminate_process(ps)
+        processes.clear()
+        await Tortoise.close_connections()
+        raise e
+
+    except (KeyboardInterrupt, SystemExit) as e:
         for ps in processes:
             terminate_process(ps)
         processes.clear()
-        print("Exited.")
+        raise e
+    except Exception as e:
+        loggerFallback.critical("An error occurred, please check the output.")
+        traceback.print_exc()
+        raise e
     finally:
-        loop.run_until_complete(Tortoise.close_connections())
-        loop.close()
+        await Tortoise.close_connections()
+
+
+def main(console_only: bool = False):
+    while True:
+        try:
+            asyncio.run(main_async(console_only))
+        except RestartBot:
+            clear_import_cache()
+            continue
+        except (KeyboardInterrupt, SystemExit):
+            print("Exited.")
+            break
 
 
 if __name__ == "__main__":

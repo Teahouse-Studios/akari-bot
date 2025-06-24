@@ -18,7 +18,7 @@ from core.constants.path import assets_path
 from core.logger import Logger
 from core.terminate import cleanup_sessions
 from core.utils.info import Info
-from core.client import client_init
+from core.client.init import client_init
 import orjson as json
 
 import logging

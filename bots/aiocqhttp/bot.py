@@ -17,7 +17,7 @@ from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
-from core.client import client_init
+from core.client.init import client_init
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
