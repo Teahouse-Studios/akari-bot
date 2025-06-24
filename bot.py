@@ -190,7 +190,7 @@ async def run_prompt():
             asyncio.create_task(console_command(m))
 
     except NoConsoleScreenBufferError:
-        loggerFallback.error("No console screen buffer found, please run this script in a console. "
+        loggerFallback.error("No console screen buffer found, please run this script in a console.\n"
                              "(If you are using pycharm, please enable the console emulation in the run configuration.)")
 
 
