@@ -298,10 +298,11 @@ async def run_bot(console_only: bool = False):
 
 
 def terminate_process(process: multiprocessing.Process, timeout=5):
-    process.terminate()
-    process.join(timeout=timeout)
-    if process.is_alive():
-        process.kill()
+    process.kill()
+    # process.terminate()
+    # process.join(timeout=timeout)
+    # if process.is_alive():
+    #     process.kill()
     process.join()
     process.close()
 

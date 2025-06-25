@@ -91,10 +91,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(s)
 
@@ -141,10 +138,7 @@ async def _(msg: Bot.MessageSession, level: str):
         s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(s)
 
@@ -181,10 +175,7 @@ async def _(msg: Bot.MessageSession):
         s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(s)
 
@@ -221,10 +212,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
         s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(s)
 
@@ -546,10 +534,7 @@ async def query_plate(msg, plate, username, get_list=False):
         if get_img:
             imgs = await msgchain2image([Plain(output)], msg)
             if imgs:
-                imgchain = []
-                for img in imgs:
-                    imgchain.append(BImage(img))
-                await msg.finish(imgchain)
+                await msg.finish(imgs)
             else:
                 await msg.finish(output.strip())
         else:
@@ -588,10 +573,7 @@ async def query_process(msg, level, goal, username):
     if get_img:
         imgs = await msgchain2image([Plain(output)], msg)
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(output.strip())
     else:
@@ -650,10 +632,7 @@ async def _(msg: Bot.MessageSession, level: str):
     if get_img:
         imgs = await msgchain2image([Plain(output)], msg)
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(output.strip())
     else:

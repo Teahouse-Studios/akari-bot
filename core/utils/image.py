@@ -19,7 +19,7 @@ from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
 
@@ -46,6 +46,23 @@ def get_fontsize(font, text):
     return right - left, bottom - top
 
 
+def cb64imglst(b64imglst: List[str], bot_img=False) -> List[Union[PILImage.Image, Image]]:
+    """转换base64编码的图片列表。
+
+    :param b64imglst: base64编码的图片列表。
+    :return: PIL Image 或机器人 Image 对象列表。
+    """
+    img_lst = []
+    for x in b64imglst:
+        b = base64.b64decode(x)
+        bio = BytesIO(b)
+        bimg = PILImage.open(bio)
+        if bot_img:
+            bimg = Image(bimg)
+        img_lst.append(bimg)
+    return img_lst
+
+
 save_source = True
 
 
@@ -57,22 +74,18 @@ async def msgnode2image(message_node: MessageNodes,
         for x in m.as_sendable(session):
             new_chain_list.append(x)
     message_chain = MessageChain.assign(new_chain_list)
-    return await msgchain2image(message_chain, session, use_local=use_local)
+    return await msgchain2image(message_chain, session)
 
 
 async def msgchain2image(message_chain: Union[List, MessageChain],
-                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None,
-                         use_local: bool = True) -> Union[List[PILImage.Image], bool]:
+                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None) -> Union[List[Image], bool]:
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
     :param use_local: 是否使用本地WebRender渲染。
-    :return: 图片的PIL对象列表。
+    :return: 机器人 Image 对象。
     """
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
+
     if isinstance(message_chain, List):
         message_chain = MessageChain.assign(message_chain)
 
@@ -102,62 +115,22 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    d = {"content": html_content, "element": ".botbox"}
-    html_ = json.dumps(d)
-
     Logger.info("[WebRender] Converting message chain...")
-    try:
-        pic = await download(webrender("element_screenshot", use_local=use_local),
-                             status_code=200,
-                             headers={"Content-Type": "application/json"},
-                             method="POST",
-                             post_data=html_,
-                             attempt=1,
-                             timeout=30,
-                             request_private_ip=True
-                             )
-    except Exception:
-        if use_local:
-            try:
-                pic = await download(webrender("element_screenshot", use_local=False),
-                                     status_code=200,
-                                     headers={"Content-Type": "application/json"},
-                                     method="POST",
-                                     post_data=html_,
-                                     attempt=1,
-                                     timeout=30,
-                                     request_private_ip=True
-                                     )
-            except Exception:
-                Logger.error("[WebRender] Generation Failed.")
-                return False
-        else:
-            Logger.error("[WebRender] Generation Failed.")
-            return False
+    pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
+    if not pic_list:
+        Logger.error("[WebRender] Generation Failed.")
+        return False
 
-    with open(pic, "rb") as read:
-        load_img = json.loads(read.read())
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(bimg)
-
-    return img_lst
+    return cb64imglst(pic_list, bot_img=True)
 
 
-async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILImage.Image], bool]:
+async def svg_render(file_path: str, use_local: bool = True) -> Union[List[Image], bool]:
     """使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。
     :param use_local: 是否使用本地WebRender渲染。
-    :return: 图片的PIL对象。
+    :return: 机器人 Image 对象。
     """
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
 
     with open(file_path, "r", encoding="utf-8") as file:
         svg_content = file.read()
@@ -168,46 +141,9 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILIm
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    d = {"content": html_content, "element": ".botbox", "counttime": False}
-    html_ = json.dumps(d)
+    pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"], counttime=False))
+    if not pic_list:
+        Logger.error("[WebRender] Generation Failed.")
+        return False
 
-    try:
-        pic = await download(webrender("element_screenshot", use_local=use_local),
-                             status_code=200,
-                             headers={"Content-Type": "application/json"},
-                             method="POST",
-                             post_data=html_,
-                             attempt=1,
-                             timeout=30,
-                             request_private_ip=True
-                             )
-    except Exception:
-        if use_local:
-            try:
-                pic = await download(webrender("element_screenshot", use_local=False),
-                                     status_code=200,
-                                     headers={"Content-Type": "application/json"},
-                                     method="POST",
-                                     post_data=html_,
-                                     attempt=1,
-                                     timeout=30,
-                                     request_private_ip=True
-                                     )
-            except Exception:
-                Logger.error("[WebRender] Generation Failed.")
-                return False
-        else:
-            Logger.error("[WebRender] Generation Failed.")
-            return False
-
-    with open(pic, "rb") as read:
-        load_img = json.loads(read.read())
-
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(bimg)
-
-    return img_lst
+    return cb64imglst(pic_list, bot_img=True)

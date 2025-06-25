@@ -34,13 +34,12 @@ def basic_logger_format(bot_name: str):
 class LoggingLogger:
     def __init__(self, name):
         self.log = logger
-        self.log.remove()
-        self.debug = logger.debug
-        self.info = logger.info
-        self.success = logger.success
-        self.warning = logger.warning
-        self.error = logger.error
-        self.critical = logger.critical
+        self.debug = self.log.debug
+        self.info = self.log.info
+        self.success = self.log.success
+        self.warning = self.log.warning
+        self.error = self.log.error
+        self.critical = self.log.critical
 
         self.rename(name)
 
@@ -49,11 +48,13 @@ class LoggingLogger:
 
     def rename(self, name):
         self.log.remove()
+        self.log = logger.bind(name=name)
         self.log.add(
             sys.stderr,
             format=basic_logger_format(name),
             level="DEBUG" if debug else "INFO",
             colorize=True,
+            filter=lambda record: record["extra"].get("name") == name
         )
 
         log_file_path = os.path.join(logs_path, f"{name}_{{time:YYYY-MM-DD}}.log")
@@ -62,6 +63,7 @@ class LoggingLogger:
             format=basic_logger_format(name),
             retention="10 days",
             encoding="utf8",
+            filter=lambda record: record["extra"].get("name") == name
         )
         self.debug = self.log.debug
         self.info = self.log.info

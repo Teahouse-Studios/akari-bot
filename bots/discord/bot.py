@@ -16,7 +16,6 @@ from core.builtins.utils import command_prefix
 from core.config import Config
 from core.constants.path import assets_path
 from core.logger import Logger
-from core.terminate import cleanup_sessions
 from core.utils.info import Info
 from core.client.init import client_init
 import orjson as json
@@ -133,10 +132,7 @@ async def on_message(message: discord.Message):
 
 if Config("enable", False, table_name="bot_discord"):
     loop = asyncio.new_event_loop()
-    try:
-        Info.client_name = client_name
-        if "subprocess" in sys.argv:
-            Info.subprocess = True
-        loop.run_until_complete(client.start(dc_token))
-    except (KeyboardInterrupt, SystemExit):
-        loop.run_until_complete(cleanup_sessions())
+    Info.client_name = client_name
+    if "subprocess" in sys.argv:
+        Info.subprocess = True
+    loop.run_until_complete(client.start(dc_token))

@@ -10,7 +10,7 @@ from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render
 
 import orjson as json
 
@@ -122,7 +122,7 @@ async def feedback_news():
                 ]
     for section in sections:
         try:
-            alist = await get_stored_list(Bot, "mcfeedbacknews")
+            alist = await get_stored_list(Bot.Info.client_name, "mcfeedbacknews")
             get = await get_url(
                 section["url"],
                 200,
@@ -151,7 +151,7 @@ async def feedback_news():
                         ),
                     )
                     alist.append(name)
-                    await update_stored_list(Bot, "mcfeedbacknews", alist)
+                    await update_stored_list(Bot.Info.client_name, "mcfeedbacknews", alist)
         except Exception:
             if Config("debug", False):
                 Logger.error(traceback.format_exc())

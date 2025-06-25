@@ -14,7 +14,8 @@ from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.web_render import webrender
+from core.utils.image import cb64imglst
+from core.utils.web_render import web_render, LegacyScreenshotOptions
 
 
 class ImageTable:
@@ -43,11 +44,6 @@ async def image_table_render(
     :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象。
     """
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
-    pic = False
 
     try:
         tblst = []
@@ -85,52 +81,15 @@ async def image_table_render(
               padding: 15px;
               text-align: left;
             }</style>"""
-        html = {"content": tblst + css, "width": w, "mw": False}
         if save_source:
             fname = f"{random_cache_path()}.html"
             with open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
-
-        try:
-            pic = await download(
-                webrender(use_local=use_local),
-                method="POST",
-                post_data=json.dumps(html),
-                request_private_ip=True,
-                headers={
-                    "Content-Type": "application/json",
-                },
-            )
-        except Exception:
-            if use_local:
-                try:
-                    pic = await download(
-                        webrender(use_local=False),
-                        method="POST",
-                        post_data=json.dumps(html),
-                        request_private_ip=True,
-                        headers={
-                            "Content-Type": "application/json",
-                        },
-                    )
-                except Exception:
-                    Logger.error("Generation failed.")
-                    return False
-            else:
-                Logger.error("Generation failed.")
-                return False
+        image_list = await web_render.legacy_screenshot(LegacyScreenshotOptions(content=tblst + css, width=w, mw=False))
     except Exception:
         Logger.error(traceback.format_exc())
         return False
-    with open(pic, "rb") as read:
-        load_img = json.loads(read.read())
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(bimg)
-    return img_lst
+    return cb64imglst(image_list)
 
 
 __all__ = ["ImageTable", "image_table_render"]

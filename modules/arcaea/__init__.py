@@ -5,7 +5,9 @@ from core.builtins.message.internal import Image as BImage, Plain, I18NContext
 from core.component import module
 from core.constants.path import assets_path
 from core.utils.http import get_url
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render, SourceOptions
+
+import orjson as json
 
 arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 
@@ -22,11 +24,10 @@ arc = module(
 @arc.command("download {[I18N:arcaea.help.download]}")
 async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/"
-    resp = await get_url(
-        webrender("source", url), 200, fmt="json", request_private_ip=True
-    )
+    resp = await web_render.source(SourceOptions(url=url, raw_text=True))
     if resp:
-        url = resp.get("value", {}).get("url")
+        load_json = json.loads(resp)
+        url = load_json.get("value", {}).get("url")
     if url:
         await msg.finish(I18NContext("arcaea.message.download", version=resp["value"]["version"], url=url))
     else:
@@ -36,11 +37,10 @@ async def _(msg: Bot.MessageSession):
 @arc.command("random {[I18N:arcaea.help.random]}")
 async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/song/showcase/"
-    resp = await get_url(
-        webrender("source", url), 200, fmt="json", request_private_ip=True
-    )
+    resp = await web_render.source(SourceOptions(url=url, raw_text=True))
     if resp:
-        value = resp["value"][0]
+        load_json = json.loads(resp)
+        value = load_json["value"][0]
         image = os.path.join(arc_assets_path, "jacket", f"{value["song_id"]}.jpg")
         result = [Plain(value["title"]["en"])]
         if os.path.exists(image):
@@ -56,18 +56,15 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("free", False):
         url = "https://webapi.lowiro.com/webapi/song/rank/free/"
-        resp = await get_url(
-            webrender("source", url), 200, fmt="json", request_private_ip=True
-        )
+
     else:
         url = "https://webapi.lowiro.com/webapi/song/rank/paid/"
-        resp = await get_url(
-            webrender("source", url), 200, fmt="json", request_private_ip=True
-        )
+    resp = await web_render.source(SourceOptions(url=url, raw_text=True))
     if resp:
+        load_json = json.loads(resp)
         r = []
         rank = 0
-        for x in resp["value"]:
+        for x in load_json["value"]:
             rank += 1
             r.append(f"{rank}. {x["title"]["en"]} ({x["status"]})")
         await msg.finish(r)

@@ -20,7 +20,8 @@ from core.logger import Logger
 from core.builtins.parser.command import CommandParser
 from core.utils.cache import random_cache_path
 from core.utils.http import download
-from core.utils.web_render import webrender
+from core.utils.image import cb64imglst
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
 help_url = Config("help_url", help_url_default)
@@ -108,7 +109,6 @@ async def _(msg: Bot.MessageSession, module: str):
                 wiki_msg = ""
 
             if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image and Info.web_render_status:
-                use_local = bool(Info.web_render_local_status)
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
@@ -127,48 +127,12 @@ async def _(msg: Bot.MessageSession, module: str):
                                                                                 str=str,
                                                                                 repattern=re.Pattern)
 
-                        fname = f"{random_cache_path()}.html"
-                        with open(fname, "w", encoding="utf-8") as fi:
-                            fi.write(html_content)
+                        # fname = f"{random_cache_path()}.html"
+                        # with open(fname, "w", encoding="utf-8") as fi:
+                        #     fi.write(html_content)
 
-                        d = {"content": html_content, "element": ".botbox"}
-                        html_ = json.dumps(d)
-                        Logger.info("[WebRender] Generating help document...")
-                        try:
-                            pic = await download(webrender("element_screenshot", use_local=use_local),
-                                                 status_code=200,
-                                                 headers={"Content-Type": "application/json"},
-                                                 method="POST",
-                                                 post_data=html_,
-                                                 attempt=1,
-                                                 timeout=30,
-                                                 request_private_ip=True
-                                                 )
-                        except Exception as e:
-                            if use_local:
-                                try:
-                                    pic = await download(webrender("element_screenshot", use_local=False),
-                                                         status_code=200,
-                                                         method="POST",
-                                                         headers={"Content-Type": "application/json"},
-                                                         post_data=html_,
-                                                         request_private_ip=True
-                                                         )
-                                except Exception as e:
-                                    Logger.error("[WebRender] Generation Failed.")
-                                    raise e
-                            else:
-                                Logger.error("[WebRender] Generation Failed.")
-                                raise e
-                        with open(pic, "rb") as read:
-                            load_img = json.loads(read.read())
-                        img_lst = []
-                        for x in load_img:
-                            b = base64.b64decode(x)
-                            bio = BytesIO(b)
-                            bimg = PILImage.open(bio)
-                            img_lst.append(Image(bimg))
-                        await msg.finish(img_lst + [Plain(wiki_msg.strip())])
+                        images = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
+                        await msg.finish(cb64imglst(images, bot_img=True) + [Plain(wiki_msg.strip())])
                     except Exception:
                         Logger.error(traceback.format_exc())
 
@@ -195,9 +159,6 @@ async def _(msg: Bot.MessageSession):
         imgs = await help_generator(msg)
         if imgs:
             legacy_help = False
-            imgchain = []
-            for img in imgs:
-                imgchain.append(Image(img))
 
             help_msg_list = [I18NContext("core.message.help.all_modules",
                                          prefix=msg.session_info.prefixes[0])]
@@ -205,7 +166,7 @@ async def _(msg: Bot.MessageSession):
                 help_msg_list.append(I18NContext("core.message.help.document", url=help_url))
             if donate_url:
                 help_msg_list.append(I18NContext("core.message.help.donate", url=donate_url))
-            await msg.finish(imgchain + help_msg_list)
+            await msg.finish(imgs + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.session_info.sender_id in Bot.base_superuser_list
         is_superuser = msg.check_super_user()
@@ -244,15 +205,11 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
-            imgchain = []
-            for img in imgs:
-                imgchain.append(Image(img))
-
             help_msg = []
             if help_url:
                 help_msg.append(I18NContext(
                     "core.message.help.document", url=help_url))
-            await msg.finish(imgchain + help_msg)
+            await msg.finish(imgs + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
@@ -284,11 +241,6 @@ async def help_generator(msg: Bot.MessageSession,
     module_list = ModulesManager.return_modules_list(
         target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
     target_enabled_list = msg.session_info.enabled_modules
-
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
 
     dev_module_list = []
     essential = {}
@@ -335,41 +287,6 @@ async def help_generator(msg: Bot.MessageSession,
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    d = {"content": html_content, "element": ".botbox"}
-    html_ = json.dumps(d)
-    Logger.info("[WebRender] Generating module list...")
-    try:
-        pic = await download(webrender("element_screenshot", use_local=use_local),
-                             status_code=200,
-                             headers={"Content-Type": "application/json"},
-                             method="POST",
-                             post_data=html_,
-                             attempt=1,
-                             timeout=30,
-                             request_private_ip=True
-                             )
-    except Exception:
-        if use_local:
-            try:
-                pic = await download(webrender("element_screenshot", use_local=False),
-                                     status_code=200,
-                                     method="POST",
-                                     headers={"Content-Type": "application/json"},
-                                     post_data=html_,
-                                     request_private_ip=True
-                                     )
-            except Exception:
-                Logger.error("[WebRender] Generation Failed.")
-                return False
-        else:
-            Logger.error("[WebRender] Generation Failed.")
-            return False
-    with open(pic, "rb") as read:
-        load_img = json.loads(read.read())
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(bimg)
-    return img_lst
+    images = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
+
+    return cb64imglst(images, bot_img=True)

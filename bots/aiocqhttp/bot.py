@@ -24,7 +24,6 @@ from core.constants.info import Info
 from core.constants.path import assets_path
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
-from core.terminate import cleanup_sessions
 from core.tos import tos_report
 
 
@@ -229,11 +228,6 @@ async def _(event: Event):
                 res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)
             await bot.send(event=event, message=res)
             await bot.call_action("set_group_leave", group_id=event.group_id)
-
-
-@bot.server_app.after_serving
-async def _():
-    await cleanup_sessions()
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")

@@ -5,10 +5,10 @@ import orjson as json
 from PIL import Image as PILImage
 
 from core.builtins.message.internal import I18NContext, Plain
-from core.constants.info import Info
 from core.logger import Logger
-from core.utils.http import download, post_url, get_url
-from core.utils.web_render import webrender
+from core.utils.http import post_url, get_url
+from core.utils.image import cb64imglst
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 elements = ["div[class^='MuiContainer-root']"]
 
@@ -17,37 +17,13 @@ spx_cache = {}
 
 async def make_screenshot(page_link, use_local=True):
     elements_ = elements.copy()
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
     Logger.info("[WebRender] Generating element screenshot...")
     try:
-        img = await download(
-            webrender("element_screenshot", use_local=use_local),
-            status_code=200,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-            post_data=json.dumps({"url": page_link, "element": elements_}),
-            attempt=1,
-            timeout=30,
-            request_private_ip=True,
-        )
-        if img:
-            with open(img) as read:
-                load_img = json.loads(read.read())
-            img_lst = []
-            for x in load_img:
-                b = base64.b64decode(x)
-                bio = BytesIO(b)
-                bimg = PILImage.open(bio)
-                img_lst.append(bimg)
-            return img_lst
-        Logger.error("[WebRender] Generation Failed.")
+        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_))
+        if imgs:
+            return cb64imglst(imgs, bot_img=True)
         return False
     except Exception:
-        if use_local:
-            return await make_screenshot(page_link, use_local=False)
         Logger.error("[WebRender] Generation Failed.")
         return False
 

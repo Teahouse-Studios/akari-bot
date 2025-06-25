@@ -17,10 +17,7 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
     if result[1]:
         screenshot = await make_screenshot(result[1])
         if screenshot:
-            img_chain = []
-            for scr in screenshot:
-                img_chain.append(Image(scr))
-            await msg.send_message(img_chain)
+            await msg.send_message(screenshot)
 
 
 @bug.command("<mojiraid> {[I18N:bugtracker.help]}")

@@ -10,13 +10,15 @@ from urllib.parse import urljoin
 import httpx
 import orjson as json
 from PIL import Image as PILImage
+from akari_bot_webrender.functions.options import SectionScreenshotOptions, LegacyScreenshotOptions
 from bs4 import BeautifulSoup, Comment
 
 from core.constants.info import Info
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.http import download
-from core.utils.web_render import webrender
+from core.utils.image import cb64imglst
+from core.utils.web_render import ElementScreenshotOptions
+from core.utils.web_render import web_render
 from .mapping import infobox_elements
 
 
@@ -31,81 +33,28 @@ async def generate_screenshot_v2(
     elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
     if not section:
         if allow_special_page and content_mode:
             elements_.insert(0, ".mw-body-content")
         if allow_special_page and not content_mode:
             elements_.insert(0, ".diff")
         Logger.info("[WebRender] Generating element screenshot...")
-        try:
-            img = await download(
-                webrender("element_screenshot", use_local=use_local),
-                status_code=200,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-                post_data=json.dumps({"url": page_link, "element": elements_}),
-                attempt=1,
-                timeout=30,
-                request_private_ip=True,
-            )
-        except Exception:
-            if use_local:
-                return await generate_screenshot_v2(
-                    page_link,
-                    section,
-                    allow_special_page,
-                    content_mode,
-                    use_local=False,
-                )
+        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_))
+        if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
-        try:
-            section = section.replace(" ", "_")
-            img = await download(
-                webrender("section_screenshot", use_local=use_local),
-                status_code=200,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-                post_data=json.dumps({"url": page_link, "section": section}),
-                attempt=1,
-                timeout=30,
-                request_private_ip=True,
-            )
-        except Exception:
-            if use_local:
-                return await generate_screenshot_v2(
-                    page_link,
-                    section,
-                    allow_special_page,
-                    content_mode,
-                    use_local=False,
-                )
+        imgs = await web_render.section_screenshot(SectionScreenshotOptions(url=page_link, section=section))
+        if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False
-    with open(img) as read:
-        load_img = json.loads(read.read())
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(bimg)
-    return img_lst
+    return cb64imglst(imgs)
 
 
 async def generate_screenshot_v1(
     link, page_link, headers, use_local=True, section=None, allow_special_page=False
 ) -> Union[List[PILImage], bool]:
-    if not Info.web_render_status:
-        return False
-    if not Info.web_render_local_status:
-        use_local = False
     try:
         Logger.info("Starting find infobox/section..")
         if link[-1] != "/":
@@ -331,47 +280,8 @@ async def generate_screenshot_v1(
 
         Logger.info("Start rendering...")
         img_lst = []
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    webrender(),
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                    data=json.dumps(html),
-                )
-                if resp.status_code != 200:
-                    Logger.error(f"Failed to render: {resp.text}")
-                    return False
-                imgs_data = json.loads(resp.text)
-                for img in imgs_data:
-                    b = base64.b64decode(img)
-                    bio = BytesIO(b)
-                    bimg = PILImage.open(bio)
-                    img_lst.append(bimg)
-
-        except httpx.RequestError as e:
-            Logger.error(f"Request error: {e}")
-            if use_local:
-                async with httpx.AsyncClient() as client:
-                    resp = await client.post(
-                        webrender(use_local=False),
-                        headers={
-                            "Content-Type": "application/json",
-                        },
-                        data=json.dumps(html),
-                    )
-                    if resp.status_code != 200:
-                        Logger.error(f"Failed to render: {resp.text}")
-                        return False
-                    imgs_data = json.loads(resp.text)
-                    for img in imgs_data:
-                        b = base64.b64decode(img)
-                        bio = BytesIO(b)
-                        bimg = PILImage.open(bio)
-                        img_lst.append(bimg)
-
-        return img_lst
+        imgs_data = await web_render.legacy_screenshot(LegacyScreenshotOptions(**html))
+        return cb64imglst(imgs_data)
     except Exception:
         Logger.error(traceback.format_exc())
         return False

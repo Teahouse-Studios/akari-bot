@@ -239,9 +239,8 @@ class AIOCQContextManager(ContextManager):
                     msgsgm = MessageSegment.text("")
                     if imgs:
                         for img in imgs:
-                            im = Image(img)
                             msgsgm = msgsgm + MessageSegment.image(
-                                "base64://" + await im.get_base64()
+                                "base64://" + await img.get_base64()
                             )
                         try:
                             send = await bot.send_group_msg(

@@ -1,7 +1,9 @@
+import orjson as json
+
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
 from core.utils.http import get_url
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100
 
@@ -13,16 +15,15 @@ async def get_video_info(
         use_embed = True
     try:
         url = f"https://api.bilibili.com/x/web-interface/view/detail{query}"
-        res = await get_url(
-            webrender("source", url), 200, fmt="json", request_private_ip=True
-        )
-        if res["code"] != 0:
-            if res["code"] == -400:
+        res = await web_render.source(SourceOptions(url=url, raw_text=True))
+        load_json = json.loads(res)
+        if load_json["code"] != 0:
+            if load_json["code"] == -400:
                 return I18NContext("bilibili.message.invalid")
             return I18NContext("bilibili.message.not_found")
     except ValueError as e:
-        if str(e).startswith("412"):
-            return I18NContext("bilibili.message.error.rejected")
+        # if str(e).startswith("412"):
+        #     return I18NContext("bilibili.message.error.rejected")
         raise e
 
     view = res["data"]["View"]

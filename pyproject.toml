@@ -3,7 +3,7 @@ name = "akari-bot"
 version = "0.1.0"
 description = ""
 authors = [
-    "OasisAkari <oasisakari@teahou.se>",
+    "OasisAkari <oasisakari@gmail.com>",
     "Dianliang233 <dianliang@teahou.se>",
     "DoroWolf <dorowolf@tehou.se>",
     "nullcat <null@teahou.se>",
@@ -49,6 +49,7 @@ filetype = "^1.2.0"
 orjson = "^3.10.9"
 Pillow = "^11.0.0"
 tenacity = "^9.0.0"
+akari-bot-webrender = "0.1.8"
 
 # core.config
 tomlkit = "^0.13.2"

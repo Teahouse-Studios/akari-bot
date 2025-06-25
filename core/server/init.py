@@ -21,7 +21,7 @@ from core.utils.info import Info
 from core.database import init_db
 from ..database.models import JobQueuesTable
 from ..utils.ip import append_ip, fetch_ip_info
-from ..utils.web_render import check_web_render
+from ..utils.web_render import init_web_render
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -50,7 +50,8 @@ async def init_async(start_scheduler=True) -> None:
     await asyncio.gather(*gather_list)
     init_background_task()
     append_ip(await fetch_ip_info())
-    Info.web_render_status, Info.web_render_status = await check_web_render()
+    Logger.info("Starting WebRender...")
+    Info.web_render_status = await init_web_render()
     if start_scheduler:
         try:
             Scheduler.start()

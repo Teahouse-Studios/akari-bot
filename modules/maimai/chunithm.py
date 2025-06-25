@@ -86,10 +86,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(s)
 
@@ -134,10 +131,7 @@ async def _(msg: Bot.MessageSession, level: str):
         s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image([Plain(s)])
         if imgs:
-            imgchain = []
-            for img in imgs:
-                imgchain.append(BImage(img))
-            await msg.finish(imgchain)
+            await msg.finish(imgs)
         else:
             await msg.finish(s)
 
@@ -173,10 +167,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
             )
             imgs = await msgchain2image([Plain(s)])
             if imgs:
-                imgchain = []
-                for img in imgs:
-                    imgchain.append(BImage(img))
-                await msg.finish(imgchain)
+                await msg.finish(imgs)
 
 
 @chu.command("b30 [<username>] {[I18N:chunithm.help.b30]}")
@@ -198,10 +189,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         use_cache = False
 
     imgs = await generate_best30_text(msg, payload, use_cache)
-    imgchain = []
-    for img in imgs:
-        imgchain.append(BImage(img))
-    await msg.finish(imgchain)
+    await msg.finish(imgs)
 
 
 @chu.command("chart <song> {[I18N:maimai.help.chart]}")

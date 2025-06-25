@@ -15,7 +15,7 @@ from core.constants import Secret
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render, SourceOptions
 from core.scheduler import IntervalTrigger
 from google_play_scraper import app as google_play_scraper
 
@@ -123,23 +123,19 @@ async def get_article(version):
         )
 
     try:
-        html = await get_url(
-            webrender("source", link),
-            attempt=1,
-            request_private_ip=True,
-            logging_err_resp=False,
-        )
+        if link:
+            html = await web_render.source(SourceOptions(url=str(link)))
 
-        soup = BeautifulSoup(html, "html.parser")
+            soup = BeautifulSoup(html, "html.parser")
 
-        title = soup.find("h1")
-        if title.text == "WE’RE SSSSSSSORRY":
-            return "", ""
-        return link, title.text
+            title = soup.find("h1")
+            if title.text == "WE’RE SSSSSSSORRY":
+                return "", ""
+            return link, title.text
     except Exception:
         if Config("debug", False):
             Logger.error(traceback.format_exc())
-        return "", ""
+    return "", ""
 
 
 trigger_times = 60 if not Config("slower_schedule", False) else 180

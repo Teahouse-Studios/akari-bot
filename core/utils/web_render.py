@@ -1,68 +1,41 @@
 import traceback
-from typing import Tuple, Optional
-from urllib.parse import quote
+
+from akari_bot_webrender.functions.main import WebRender
+from akari_bot_webrender.functions.options import ElementScreenshotOptions, PageScreenshotOptions, SourceOptions, SectionScreenshotOptions, LegacyScreenshotOptions
 
 from core.config import Config
-from core.constants.info import Info
-from core.logger import Logger
-from core.utils.http import get_url
 
-web_render = Config("web_render", cfg_type=str, secret=True, get_url=True)
-web_render_local = Config("web_render_local", cfg_type=str, get_url=True)
+enable_web_render = Config("enable_webrender", False)
 
+remote_web_render_url = Config("remote_web_render_url", "", get_url=True)
 
-def webrender(
-    method: str = "",
-    url: Optional[str] = None,
-    use_local: bool = True,
-    _ignore_status=False,
-) -> str:
-    """根据请求方法生成 WebRender URL。
-
-    :param method: API 方法。
-    :param url: 若 method 为 source，则指定请求的 URL。
-    :param use_local: 是否使用本地 WebRender。
-    :returns: 生成的 WebRender URL。
-    """
-    if use_local and (not Info.web_render_local_status or _ignore_status):
-        use_local = False
-    if method == "source":
-        url = "" if not url else url
-        if Info.web_render_status or _ignore_status:
-            return f"{(web_render_local if use_local else web_render)}source?url={quote(url)}"
-    else:
-        url = ""
-        if Info.web_render_status or _ignore_status:
-            return (web_render_local if use_local else web_render) + method
-    return url
+web_render = WebRender(debug=False, remote_webrender_url=remote_web_render_url)
 
 
-async def check_web_render() -> Tuple[bool, bool]:
-    web_render_status = False
-    web_render_local_status = False
-    if not web_render_local:
-        if not web_render:
-            Logger.warning("[WebRender] WebRender is not configured.")
-        else:
-            web_render_status = True
-    else:
-        web_render_status = True
-        web_render_local_status = True
-    ping_url = "http://www.bing.com"
-    if web_render_status:
+async def init_web_render():
+    if enable_web_render:
         try:
-            Logger.info("[WebRender] Checking WebRender status...")
-            await get_url(
-                webrender("source", ping_url, _ignore_status=True),
-                200,
-                request_private_ip=True,
-            )
-            Logger.success("[WebRender] WebRender is working as expected.")
-        except Exception:
-            Logger.error("[WebRender] WebRender is not working as expected.")
-            Logger.error(traceback.format_exc())
-            web_render_status = False
-    return web_render_status, web_render_local_status
+            await web_render.browser_init()
+            return True
+        except Exception as e:
+            print(f"WebRender initialization failed: {e}")
+            traceback.print_exc()
+    else:
+        print("WebRender is disabled in the configuration.")
+    return False
 
 
-__all__ = ["webrender", "check_web_render"]
+async def close_web_render():
+    if enable_web_render:
+        await web_render.browser_close()
+
+
+__all__ = [
+    "web_render",
+    "init_web_render",
+    "close_web_render",
+    ElementScreenshotOptions,
+    PageScreenshotOptions,
+    SourceOptions,
+    SectionScreenshotOptions,
+    LegacyScreenshotOptions]

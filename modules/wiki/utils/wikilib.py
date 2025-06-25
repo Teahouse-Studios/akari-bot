@@ -18,10 +18,11 @@ from core.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.web_render import webrender
 from .bot import BotAccount
 from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
 from .mapping import *
+
+from core.utils.web_render import web_render, SourceOptions
 
 
 default_locale = Config("default_locale", cfg_type=str)
@@ -126,22 +127,24 @@ class WikiLib:
             Logger.debug(api)
         else:
             raise ValueError("kwargs is None")
-        request_local = False
+        request_by_webrender = False
         for x in request_by_web_render_list:
             if x.match(api):
-                api = webrender("source", api)
-                request_local = True
-                break
+                request_by_webrender = True
 
         try:
-            return await get_url(
-                api,
-                status_code=200,
-                headers=self.headers,
-                fmt="json",
-                request_private_ip=request_local,
-                cookies=cookies,
-            )
+            if not request_by_webrender:
+                return await get_url(
+                    api,
+                    status_code=200,
+                    headers=self.headers,
+                    fmt="json",
+                    request_private_ip=False,
+                    cookies=cookies,
+                )
+            else:
+                req = await web_render.source(SourceOptions(url=api, raw_text=True))
+                return json.loads(req)
 
         except Exception as e:
             if api.find("moegirl.org.cn") != -1:
