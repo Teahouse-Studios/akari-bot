@@ -76,6 +76,7 @@
     "config.comments.use_secrets_random": "是否使用基于 secrets 库的随机数生成器。",
     "config.comments.enable_webrender": "是否启用 WebRender。",
     "config.comments.remote_web_render_url": "远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。",
+    "config.comments.web_render_browser": "WebRender 使用的浏览器。",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
     "config.header.line.2": "注意：TOML 不是 Python。请不要在此处使用 Python 语法。",
     "config.header.line.3": "例如：TOML 中的布尔值必须是小写。",

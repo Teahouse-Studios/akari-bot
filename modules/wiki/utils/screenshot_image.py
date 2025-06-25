@@ -27,8 +27,8 @@ async def generate_screenshot_v2(
     section: str = None,
     allow_special_page=False,
     content_mode=False,
-    use_local=True,
     element=None,
+    locale: str = "zh_cn",
 ) -> Union[List[PILImage], bool]:
     elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
@@ -39,13 +39,13 @@ async def generate_screenshot_v2(
         if allow_special_page and not content_mode:
             elements_.insert(0, ".diff")
         Logger.info("[WebRender] Generating element screenshot...")
-        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_))
+        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_, locale=locale))
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
-        imgs = await web_render.section_screenshot(SectionScreenshotOptions(url=page_link, section=section))
+        imgs = await web_render.section_screenshot(SectionScreenshotOptions(url=page_link, section=section, locale=locale))
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False

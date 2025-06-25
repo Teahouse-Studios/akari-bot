@@ -203,6 +203,7 @@ async def _(msg: Bot.MessageSession):
                                         qq,
                                         allow_special_page=(q[qq].in_allowlist or not Info.use_url_manager),
                                         content_mode=content_mode,
+                                        locale=msg.session_info.locale.locale
                                     )
                                     if get_infobox:
                                         imgs = []
@@ -354,7 +355,7 @@ async def _(msg: Bot.MessageSession):
                                     )
                                 else:
                                     get_section = await generate_screenshot_v2(
-                                        qq, section=s
+                                        qq, section=s, locale=msg.session_info.locale.locale
                                     )
                                 if get_section:
                                     imgs = []

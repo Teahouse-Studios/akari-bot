@@ -557,6 +557,7 @@ async def query_pages(
                                 ii,
                                 allow_special_page=i[ii]["in_allowlist"],
                                 content_mode=i[ii]["content_mode"],
+                                locale=session.session_info.locale.locale
                             )
                             if get_infobox:
                                 for img in get_infobox:
@@ -582,7 +583,8 @@ async def query_pages(
                         if i[ii]["in_allowlist"]:
                             if i[ii]["url"] not in generate_screenshot_v2_blocklist:
                                 get_section = await generate_screenshot_v2(
-                                    ii, section=i[ii]["section"]
+                                    ii, section=i[ii]["section"],
+                                    locale=session.session_info.locale.locale
                                 )
                                 if get_section:
                                     for img in get_section:
