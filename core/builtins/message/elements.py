@@ -199,6 +199,7 @@ class ImageElement(BaseElement):
     path: str
     need_get: bool = False
     headers: Optional[Dict[str, Any]] = None
+    cached_b64: Optional[str] = None
 
     @classmethod
     def assign(
@@ -259,6 +260,7 @@ class ImageElement(BaseElement):
             if not mime_type:
                 mime_type = 'application/octet-stream'
             return f"data:{mime_type};base64,{img_b64}"
+        self.cached_b64 = img_b64
         return img_b64
 
     async def add_random_noise(self) -> "ImageElement":

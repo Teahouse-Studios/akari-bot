@@ -72,7 +72,7 @@ def convert_msg_nodes(
 
 
 class AIOCQContextManager(ContextManager):
-    context: dict[str, Any] = {}
+    context: dict[str, Event] = {}
     features: Optional[Features] = Features
 
     @classmethod

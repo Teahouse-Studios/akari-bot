@@ -23,7 +23,7 @@ from core.utils.http import download
 from core.utils.image import cb64imglst
 from core.utils.web_render import web_render, ElementScreenshotOptions
 
-env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
+env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 help_url = Config("help_url", help_url_default)
 donate_url = Config("donate_url", donate_url_default)
 
@@ -117,15 +117,15 @@ async def _(msg: Bot.MessageSession, module: str):
                     pass
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
-                        html_content = env.get_template("help_doc.html").render(msg=msg,
-                                                                                module=module_,
-                                                                                help=help_,
-                                                                                help_name=help_name,
-                                                                                regex_list=regex_list,
-                                                                                escape=escape,
-                                                                                isinstance=isinstance,
-                                                                                str=str,
-                                                                                repattern=re.Pattern)
+                        html_content = await env.get_template("help_doc.html").render_async(msg=msg,
+                                                                                            module=module_,
+                                                                                            help=help_,
+                                                                                            help_name=help_name,
+                                                                                            regex_list=regex_list,
+                                                                                            escape=escape,
+                                                                                            isinstance=isinstance,
+                                                                                            str=str,
+                                                                                            repattern=re.Pattern)
 
                         # fname = f"{random_cache_path()}.html"
                         # with open(fname, "w", encoding="utf-8") as fi:
@@ -274,7 +274,7 @@ async def help_generator(msg: Bot.MessageSession,
     if not show_dev_modules:
         module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
 
-    html_content = env.get_template("module_list.html").render(
+    html_content = await env.get_template("module_list.html").render_async(
         CommandParser=CommandParser,
         is_base_superuser=is_base_superuser,
         is_superuser=is_superuser,

@@ -21,7 +21,7 @@ from core.utils.cache import random_cache_path
 from core.utils.http import download
 from core.utils.web_render import web_render, ElementScreenshotOptions
 
-env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
+env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 
 
 async def image_split(i: ImageElement) -> List[ImageElement]:
@@ -82,35 +82,26 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
-    :param use_local: 是否使用本地WebRender渲染。
     :return: 机器人 Image 对象。
     """
 
     if isinstance(message_chain, List):
         message_chain = MessageChain.assign(message_chain)
 
-    lst = []
     if isinstance(session, MessageSession):
         session = session.session_info
-
-    for m in message_chain.as_sendable(session):
-        if isinstance(m, PlainElement):
-            lst.append("<div>" + m.text.replace("\n", "<br>") + "</div>")
-        elif isinstance(m, ImageElement):
-            async with async_open(await m.get(), "rb") as fi:
-                data = await fi.read()
-                try:
-                    ftt = ft.match(data)
-                    lst.append(f"<img src=\"data:{ftt.mime};base64,{
-                               (base64.encodebytes(data)).decode("utf-8")}\" width=\"720\" />")
-                except Exception:
-                    Logger.error(traceback.format_exc())
-        elif isinstance(m, VoiceElement):
-            lst.append("<div>[Voice]</div>")
+    message_list = message_chain.as_sendable(session)
+    for m in message_list:
+        if isinstance(m, ImageElement):
+            await m.get_base64(mime=True)
         elif isinstance(m, EmbedElement):
-            lst.append("<div>[Embed]</div>")
+            if m.image is not None:
+                await m.image.get_base64(mime=True)
+    title = 'Message List'
+    if session:
+        title = session.locale.t("message.list")
 
-    html_content = env.get_template("msgchain_to_image.html").render(content="\n".join(lst))
+    html_content = await env.get_template("msgchain_to_image.html").render_async(title=title, message_list=message_list, isinstance=isinstance, PlainElement=PlainElement, ImageElement=ImageElement, EmbedElement=EmbedElement)
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
