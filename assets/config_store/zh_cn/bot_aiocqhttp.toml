@@ -12,7 +12,7 @@ qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket 主服务器的地址。（Oneb
 enable = false # 是否启用此平台。
 qq_typing_emoji = 181 # 使用 QQ 相关协议端时，正在处理消息时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
 qq_limited_emoji = 10060 # 使用 QQ 相关协议端时，消息处理失败时向消息挂上的回应表情 ID，需协议端支持。ID 详见：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
-qq_initiative_msg_cooldown = 10 # {I18N:config.comments.qq_initiative_msg_cooldown}
+qq_initiative_msg_cooldown = 10 # 限制 Aiocqhttp 主动消息发送的冷却时间，单位为秒。
 
 [bot_aiocqhttp_secret]
 # 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。

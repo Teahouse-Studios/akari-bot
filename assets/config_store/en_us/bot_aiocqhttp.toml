@@ -12,7 +12,7 @@ qq_host = "127.0.0.1:8080" # The address of Aiocqhttp WebSocket main server. (Th
 enable = false # Whether to enable this platform.
 qq_typing_emoji = 181 # When using QQ related protocol terminals, the response emoji ID attached to the message when processing the message. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
 qq_limited_emoji = 10060 # When using QQ related protocol terminals, the response emoji ID attached to the message when the message processing fails. It needs to be supported by the protocol terminal. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji
-qq_initiative_msg_cooldown = 10 # {I18N:config.comments.qq_initiative_msg_cooldown}
+qq_initiative_msg_cooldown = 10 # 限制 Aiocqhttp 主动消息发送的冷却时间，单位为秒。
 
 [bot_aiocqhttp_secret]
 # The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
