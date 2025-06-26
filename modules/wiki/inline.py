@@ -362,6 +362,7 @@ async def _(msg: Bot.MessageSession):
                                     for img in get_section:
                                         imgs.append(Image(img))
                                     await msg.send_message(imgs, quote=False)
-
+        await msg.release()
+    await msg.hold()
     asyncio.create_task(bgtask())
     # await bgtask()

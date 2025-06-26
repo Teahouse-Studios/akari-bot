@@ -21,16 +21,6 @@ from core.logger import Logger
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
     features: Optional[Features] = Features
-    typing_flags: dict[str, asyncio.Event] = {}
-
-    @classmethod
-    def add_context(cls, session_info: SessionInfo, context: Message):
-        cls.context[session_info.session_id] = context
-
-    @classmethod
-    def del_context(cls, session_info: SessionInfo):
-        if session_info.session_id in cls.context:
-            del cls.context[session_info.session_id]
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

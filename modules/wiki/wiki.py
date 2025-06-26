@@ -717,10 +717,14 @@ async def query_pages(
                         lang=lang,
                     )
 
-        asyncio.create_task(infobox())
-        asyncio.create_task(section())
-        asyncio.create_task(image_and_voice())
-        asyncio.create_task(wait_confirm())
+        await session.hold()
+
+        async def _bgtask():
+            await asyncio.gather(image_and_voice(), wait_confirm(), infobox(), section())
+            await session.release()
+
+        asyncio.create_task(_bgtask())
+
     else:
         return {
             "msg_list": msg_list,

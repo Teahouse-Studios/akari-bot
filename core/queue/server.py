@@ -52,6 +52,16 @@ class JobQueueServer(JobQueueBase):
         v = await cls.add_job(session_info.client_name, "check_session_native_permission", {"session_info": converter.unstructure(session_info)})
         return v['value']
 
+    @classmethod
+    async def client_hold_context(cls, session_info: SessionInfo):
+        value = await cls.add_job(session_info.client_name, "hold_context", {"session_info": converter.unstructure(session_info)})
+        return value
+
+    @classmethod
+    async def client_release_context(cls, session_info: SessionInfo):
+        value = await cls.add_job(session_info.client_name, "release_context", {"session_info": converter.unstructure(session_info)})
+        return value
+
 
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):

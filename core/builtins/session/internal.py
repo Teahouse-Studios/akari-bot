@@ -167,6 +167,20 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_error_signal(self.session_info)
 
+    async def hold(self):
+        """
+        用于持久化会话上下文，用于手动控制会话的生命周期，避免会话结束后资源被释放。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_hold_context(self.session_info)
+
+    async def release(self):
+        """
+        用于手动释放持久化的会话。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_release_context(self.session_info)
+
     async def wait_confirm(
         self,
         message_chain: Optional[Chainable] = None,

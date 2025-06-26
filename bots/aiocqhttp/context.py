@@ -73,16 +73,6 @@ def convert_msg_nodes(
 class AIOCQContextManager(ContextManager):
     context: dict[str, Any] = {}
     features: Optional[Features] = Features
-    typing_flags: dict[str, Event] = {}
-
-    @classmethod
-    def add_context(cls, session_info: SessionInfo, context: Event):
-        cls.context[session_info.session_id] = context
-
-    @classmethod
-    def del_context(cls, session_info: SessionInfo):
-        if session_info.session_id in cls.context:
-            del cls.context[session_info.session_id]
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:

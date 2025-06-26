@@ -24,15 +24,6 @@ class ConsoleContextManager(ContextManager):
     features = Features
 
     @classmethod
-    def add_context(cls, session_info: SessionInfo, context: Any):
-        cls.context[session_info.session_id] = context
-
-    @classmethod
-    def del_context(cls, session_info: SessionInfo):
-        if session_info.session_id in cls.context:
-            del cls.context[session_info.session_id]
-
-    @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         """
         检查会话权限。

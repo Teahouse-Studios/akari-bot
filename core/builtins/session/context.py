@@ -14,6 +14,7 @@ class ContextManager(ABC):
     context: dict[str, Any] = {}
     features: Optional[Features] = Features
     typing_flags: dict[str, asyncio.Event] = {}
+    context_marks_hold: list[str] = []
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: Any):
@@ -21,8 +22,32 @@ class ContextManager(ABC):
 
     @classmethod
     def del_context(cls, session_info: SessionInfo):
-        if session_info.session_id in cls.context:
+        if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
             del cls.context[session_info.session_id]
+            Logger.debug(f"Context for session {session_info.session_id} deleted.")
+        if session_info.session_id in cls.context_marks_hold:
+            Logger.debug(f"Context for session {session_info.session_id} is held, skipping deletion.")
+
+    @classmethod
+    def hold_context(cls, session_info: SessionInfo):
+        """
+        Hold the context for a session.
+        """
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        cls.context_marks_hold.append(session_info.session_id)
+        Logger.debug(f"Context for session {session_info.session_id} is now held.")
+
+    @classmethod
+    def release_context(cls, session_info: SessionInfo):
+        """
+        Release the held context for a session.
+        """
+        if session_info.session_id in cls.context_marks_hold:
+            cls.context_marks_hold.remove(session_info.session_id)
+            if session_info.session_id in cls.context:
+                del cls.context[session_info.session_id]
+                Logger.debug(f"Context for session {session_info.session_id} is released.")
 
     @classmethod
     @abstractmethod

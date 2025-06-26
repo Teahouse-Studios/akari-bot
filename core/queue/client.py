@@ -83,4 +83,18 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
+@JobQueueClient.action("hold_context")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = get_session(args)
+    ctx_manager.hold_context(session_info)
+    return {"success": True}
+
+
+@JobQueueClient.action("release_context")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = get_session(args)
+    ctx_manager.release_context(session_info)
+    return {"success": True}
+
+
 add_export(JobQueueClient)
