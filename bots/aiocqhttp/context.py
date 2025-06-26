@@ -25,6 +25,7 @@ from core.utils.image import msgchain2image
 
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
+qq_initiative_msg_cooldown = Config("qq_initiative_msg_cooldown", 10, int, table_name="bot_aiocqhttp")
 last_send_typing_time = {}
 qq_account = Temp.data.get("qq_account")
 
@@ -336,7 +337,7 @@ class AIOCQContextManager(ContextManager):
             raise ValueError("Session not found in context")
         # 这里可以添加错误处理逻辑
 
-        if session_info.target_from == target_group_prefix:  # wtf onebot 11
+        if session_info.target_from == target_group_prefix:
             obi = await get_onebot_implementation()
             if obi in ["llonebot", "napcat"]:
                 await bot.call_action("set_msg_emoji_like",
@@ -360,5 +361,30 @@ class AIOCQContextManager(ContextManager):
                 pass
 
 
+_tasks = []
+
+
 class AIOCQFetchedContextManager(AIOCQContextManager):
-    pass  # todo 实现主动推送限速
+
+    @classmethod
+    async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
+                           quote: bool = True,
+                           enable_parse_message=True,
+                           enable_split_image=True,) -> None:
+        _tasks.append(
+            super().send_message(
+                session_info,
+                message,
+                quote=quote,
+                enable_parse_message=enable_parse_message,
+            ))
+
+    @staticmethod
+    async def process_tasks():
+        while True:
+            if _tasks:
+                task = _tasks.pop(0)
+                await task
+                Logger.info(f"Processed a task in AIOCQFetchedContextManager, waiting cooldown for {
+                            qq_initiative_msg_cooldown}s...")
+            await asyncio.sleep(qq_initiative_msg_cooldown)

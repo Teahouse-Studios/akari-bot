@@ -10,7 +10,7 @@ from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
 from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.context import AIOCQContextManager
+from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
@@ -32,6 +32,7 @@ Bot.register_bot(client_name=client_name,
                  )
 
 ctx_id = Bot.register_context_manager(AIOCQContextManager)
+Bot.register_context_manager(AIOCQFetchedContextManager, fetch_session=True)
 
 
 dirty_word_check = Config("enable_dirty_check", False)
@@ -45,6 +46,7 @@ default_locale = Config("default_locale", cfg_type=str)
 @bot.on_startup
 async def startup():
     await client_init(target_prefix_list, sender_prefix_list)
+    asyncio.create_task(AIOCQFetchedContextManager.process_tasks())
     bot.logger.setLevel(logging.WARNING)
 
 
