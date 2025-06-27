@@ -1,7 +1,7 @@
 # https://github.com/XeroAlpha/caidlist/blob/master/backend/API.md
 import urllib.parse
 
-from core.builtins.bot import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.utils.http import get_url
 
@@ -11,7 +11,7 @@ SEARCH_LIMIT = 5
 i = module("idlist", doc=True, support_languages=["zh_cn"])
 
 
-@i.command("<query> {[I18N:idlist.help]}")
+@i.command("<query> {{I18N:idlist.help}}")
 async def _(msg: Bot.MessageSession, query: str):
     query_options = {"q": query, "limit": f"{SEARCH_LIMIT + 1}"}
     query_url = f"{API}?{urllib.parse.urlencode(query_options)}"
@@ -30,4 +30,4 @@ async def _(msg: Bot.MessageSession, query: str):
             plain_texts.append(f"https://ca.projectxero.top/idlist/{resp["data"]["hash"]}")
         await msg.finish(plain_texts)
     else:
-        await msg.finish(msg.session_info.locale.t("idlist.message.none"))
+        await msg.finish(I18NContext("idlist.message.none"))

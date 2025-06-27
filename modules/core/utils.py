@@ -8,20 +8,19 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import Plain, I18NContext, Url
 from core.component import module
 from core.config import Config
-from core.constants import locale_url_default
+from core.constants.default import locale_url_default
 from core.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.bash import run_sys_command
-from core.utils.info import Info
 
 
 ver = module("version", base=True, doc=True)
 
 
-@ver.command("{[I18N:core.help.version]}")
+@ver.command("{{I18N:core.help.version}}")
 async def _(msg: Bot.MessageSession):
-    if Info.version:
-        commit = Info.version[0:6]
-        send_msgs = [I18NContext("core.message.version", disable_joke=True, commit=commit)]
+    if Bot.Info.version:
+        commit = Bot.Info.version[0:6]
+        send_msgs = MessageChain([I18NContext("core.message.version", disable_joke=True, commit=commit)])
         if Config("enable_commit_url", True):
             returncode, repo_url, _ = await run_sys_command(["git", "config", "--get", "remote.origin.url"])
             if returncode == 0:
@@ -38,13 +37,13 @@ ping = module("ping", base=True, doc=True)
 started_time = datetime.now()
 
 
-@ping.command("{[I18N:core.help.ping]}")
+@ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
-    result = [Plain("Pong!")]
+    result = MessageChain(Plain("Pong!"))
     timediff = str(datetime.now() - started_time).split(".")[0]
     if msg.check_super_user():
-        boot_start = msg.ts2strftime(psutil.boot_time())
-        web_render_status = str(Info.web_render_status)
+        boot_start = str(FormattedTime(psutil.boot_time(), iso=True))
+        web_render_status = str(Bot.Info.web_render_status)
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -66,8 +65,8 @@ async def _(msg: Bot.MessageSession):
             swap_percent=swap_percent,
             disk_space=disk,
             disk_space_total=disk_total,
-            client_name=Info.client_name,
-            command_parsed=Info.command_parsed,
+            client_name=Bot.Info.client_name,
+            command_parsed=Bot.Info.command_parsed,
         ))
     else:
         disk_percent = psutil.disk_usage("/").percent
@@ -84,16 +83,16 @@ admin = module(
     base=True,
     required_admin=True,
     alias={"ban": "admin ban", "unban": "admin unban", "ban list": "admin ban list"},
-    desc="[I18N:core.help.admin.desc]",
+    desc="{I18N:core.help.admin.desc}",
     doc=True,
     exclude_from=["TEST|Console"],
 )
 
 
 @admin.command(
-    "add <user> {[I18N:core.help.admin.add]}",
-    "remove <user> {[I18N:core.help.admin.remove]}",
-    "list {[I18N:core.help.admin.list]}")
+    "add <user> {{I18N:core.help.admin.add}}",
+    "remove <user> {{I18N:core.help.admin.remove}}",
+    "list {{I18N:core.help.admin.list}}")
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
         if msg.custom_admins:
@@ -104,30 +103,28 @@ async def _(msg: Bot.MessageSession):
     if not user.startswith(f"{msg.session_info.sender_from}|"):
         await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from, prefix=msg.session_info.prefixes[0]))
     if "add" in msg.parsed_msg:
-        if user and user not in msg.custom_admins:
-            if await msg.session_info.target_info.config_custom_admin(user):
-                await msg.finish(I18NContext("core.message.admin.add.success", user=user))
-        else:
-            await msg.finish(I18NContext("core.message.admin.already"))
+        if await msg.check_permission():
+            await msg.finish(I18NContext("core.message.admin.add.already"))
+        if await msg.session_info.target_info.config_custom_admin(user):
+            await msg.finish(I18NContext("core.message.admin.add.success", user=user))
     if "remove" in msg.parsed_msg:
         if user == msg.session_info.sender_id:
-            confirm = await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm"))
-            if not confirm:
+            if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
                 await msg.finish()
-        elif user and msg.session_info.target_info.config_custom_admin(user, enable=False):
+        if await msg.session_info.target_info.config_custom_admin(user, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", user=user))
 
 
 @admin.command(
-    "ban <user> {[I18N:core.help.admin.ban]}",
-    "unban <user> {[I18N:core.help.admin.unban]}",
-    "ban list {[I18N:core.help.admin.ban.list]}",
+    "ban <user> {{I18N:core.help.admin.ban}}",
+    "unban <user> {{I18N:core.help.admin.unban}}",
+    "ban list {{I18N:core.help.admin.ban.list}}",
 )
 async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
-        if admin_ban_list:
-            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(admin_ban_list))])
+        if msg.banned_users:
+            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.custom_admins))])
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -151,14 +148,14 @@ async def _(msg: Bot.MessageSession):
 
 
 locale = module(
-    "locale", base=True, desc="[I18N:core.help.locale.desc]", alias="lang", doc=True
+    "locale", base=True, desc="{I18N:core.help.locale.desc}", alias="lang", doc=True
 )
 
 
 @locale.command()
 async def _(msg: Bot.MessageSession):
-    avaliable_lang = "[I18N:message.delimiter]".join(get_available_locales())
-    res = [I18NContext("core.message.locale.prompt", lang="[I18N:language]"),
+    avaliable_lang = "{I18N:message.delimiter}".join(get_available_locales())
+    res = [I18NContext("core.message.locale.prompt", lang="{I18N:language}"),
            I18NContext("core.message.locale.set.prompt", prefix=msg.session_info.prefixes[0]),
            I18NContext("core.message.locale.langlist", langlist=avaliable_lang)]
 
@@ -167,12 +164,12 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(res)
 
 
-@locale.command("[<lang>] {[I18N:core.help.locale.set]}", required_admin=True)
+@locale.command("[<lang>] {{I18N:core.help.locale.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and await msg.session_info.target_info.edit_attr("locale", lang):
         await msg.finish(Locale(lang).t("message.success"))
     else:
-        avaliable_lang = "[I18N:message.delimiter]".join(get_available_locales())
+        avaliable_lang = "{I18N:message.delimiter}".join(get_available_locales())
         await msg.finish([I18NContext("core.message.locale.set.invalid"),
                           I18NContext("core.message.locale.langlist", langlist=avaliable_lang)])
 
@@ -189,7 +186,7 @@ async def _(msg: Bot.MessageSession):
 whoami = module("whoami", base=True, doc=True)
 
 
-@whoami.command("{[I18N:core.help.whoami]}")
+@whoami.command("{{I18N:core.help.whoami}}")
 async def _(msg: Bot.MessageSession):
     perm = []
     if await msg.check_native_permission():
@@ -202,11 +199,11 @@ async def _(msg: Bot.MessageSession):
 
 
 setup = module(
-    "setup", base=True, desc="[I18N:core.help.setup.desc]", doc=True, alias="toggle"
+    "setup", base=True, desc="{I18N:core.help.setup.desc}", doc=True, alias="toggle"
 )
 
 
-@setup.command("typing {[I18N:core.help.setup.typing]}")
+@setup.command("typing {{I18N:core.help.setup.typing}}")
 async def _(msg: Bot.MessageSession):
     if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
         await msg.session_info.sender_info.edit_sender_data("disable_typing", True)
@@ -217,7 +214,7 @@ async def _(msg: Bot.MessageSession):
 
 
 """
-@setup.command("check {[I18N:core.help.setup.check]}", required_admin=True)
+@setup.command("check {{I18N:core.help.setup.check}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
     if not msg.session_info.sender_info.sender_data.get("typo_check", False):
         await msg.session_info.sender_info.edit_sender_data("typo_check", True)
@@ -228,8 +225,20 @@ async def _(msg: Bot.MessageSession):
 """
 
 
+@setup.command("sign {{I18N:core.help.setup.sign}}",
+               required_admin=True,
+               load=Config("enable_petal", False))
+async def _(msg: Bot.MessageSession):
+    if not msg.target_data.get("disable_sign", False):
+        await msg.target_info.edit_target_data("disable_sign", True)
+        await msg.finish(I18NContext("core.message.setup.sign.disable"))
+    else:
+        await msg.target_info.edit_target_data("disable_sign", False)
+        await msg.finish(I18NContext("core.message.setup.sign.enable"))
+
+
 @setup.command(
-    "timeoffset <offset> {[I18N:core.help.setup.timeoffset]}", required_admin=True
+    "timeoffset <offset> {{I18N:core.help.setup.timeoffset}}", required_admin=True
 )
 async def _(msg: Bot.MessageSession, offset: str):
     try:
@@ -246,7 +255,7 @@ async def _(msg: Bot.MessageSession, offset: str):
                                  offset="" if offset == "+0" else offset))
 
 
-@setup.command("cooldown <second> {[I18N:core.help.setup.cooldown]}", required_admin=True)
+@setup.command("cooldown <second> {{I18N:core.help.setup.cooldown}}", required_admin=True)
 async def _(msg: Bot.MessageSession, second: int):
     second = 0 if second < 0 else second
     await msg.session_info.target_info.edit_target_data("cooldown_time", second)
@@ -258,7 +267,7 @@ mute = module(
 )
 
 
-@mute.command("{[I18N:core.help.mute]}")
+@mute.command("{{I18N:core.help.mute}}")
 async def _(msg: Bot.MessageSession):
     state = await msg.session_info.target_info.switch_mute()
     if state:
@@ -277,10 +286,9 @@ leave = module(
 )
 
 
-@leave.command("{[I18N:core.help.leave]}")
+@leave.command("{{I18N:core.help.leave}}")
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(I18NContext("core.message.leave.confirm"))
-    if confirm:
+    if await msg.wait_confirm(I18NContext("core.message.leave.confirm")):
         await msg.send_message(I18NContext("core.message.leave.success"))
         await msg.call_api("set_group_leave", group_id=msg.session.target)
     else:

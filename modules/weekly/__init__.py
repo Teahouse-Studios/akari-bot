@@ -4,8 +4,7 @@ from html import unescape
 import orjson as json
 from bs4 import BeautifulSoup
 
-from core.builtins.bot import Bot
-from core.builtins.message.internal import Plain, Image, Url
+from core.builtins import Bot, MessageChain, Plain, Image, Url
 from core.component import module
 from core.i18n import Locale
 from core.utils.http import get_url
@@ -35,9 +34,9 @@ async def get_weekly(with_img=False, zh_tw=False):
     img_filename = re.match(r"/w/(.*)", img.attrs["href"]) if img else None
     page = re.findall(r"(?<=<b><a href=\").*?(?=\")", str(content))
     if (page and page[0] == "/w/%E7%8E%BB%E7%92%83"):
-        msg_list = [Plain(locale.t("weekly.message.expired"))]
+        msg_list = MessageChain([Plain(locale.t("weekly.message.expired"))])
     else:
-        msg_list = [Plain(locale.t("weekly.message.prompt", text=text))]
+        msg_list = MessageChain([Plain(locale.t("weekly.message.prompt", text=text))])
     imglink = None
     if img_filename:
         get_image = await (WikiLib("https://zh.minecraft.wiki/")).parse_page_info(img_filename.group(1))
@@ -60,8 +59,9 @@ async def get_weekly(with_img=False, zh_tw=False):
 
 async def get_weekly_img(with_img=False, zh_tw=False):
     # locale = Locale("zh_cn" if not zh_tw else "zh_tw")
-    img = await generate_screenshot_v2("https://zh.minecraft.wiki/wiki/Minecraft_Wiki/", content_mode=False, allow_special_page=True,
-                                       element=["div#fp-section-weekly"], locale="zh_tw" if zh_tw else "zh_cn")
+    img = await generate_screenshot_v2("https://zh.minecraft.wiki/w/Template:Mainpage_section_featured_article" +
+                                       ("?variant=zh-tw" if zh_tw else ""), content_mode=False, allow_special_page=True,
+                                       element=["div.mp-section"])
     msg_ = []
     if img:
         for i in img:
@@ -82,26 +82,29 @@ async def get_weekly_img(with_img=False, zh_tw=False):
 wky = module("weekly", developers=["Dianliang233"], support_languages=["zh_cn", "zh_tw"], doc=True)
 
 
-@wky.command("{[I18N:weekly.help]}")
+@wky.command("{{I18N:weekly.help}}")
 async def _(msg: Bot.MessageSession):
     weekly = await get_weekly(msg.session_info.client_name in ["QQ", "TEST"],
                               zh_tw=msg.session_info.locale.locale == "zh_tw")
     await msg.finish(weekly)
 
 
-@wky.command("image {[I18N:weekly.help.image]}")
+@wky.command("image {{I18N:weekly.help.image}}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(await get_weekly_img(msg.session_info.client_name in ["QQ", "TEST"],
                                           zh_tw=msg.session_info.locale.locale == "zh_tw"))
 
 
-@wky.command("teahouse {[I18N:weekly.help.teahouse]}")
+@wky.command("teahouse {{I18N:weekly.help.teahouse}}")
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     await msg.finish(weekly)
 
 
-@wky.command("teahouse image {[I18N:weekly.help.teahouse]}")
+@wky.command("teahouse image {{I18N:weekly.help.teahouse}}")
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
-    await msg.finish(await msgchain2image([Plain(weekly)], msg))
+    imgchain = []
+    for img in await msgchain2image(Plain(weekly), msg):
+        imgchain.append(Image(img))
+    await msg.finish(imgchain)

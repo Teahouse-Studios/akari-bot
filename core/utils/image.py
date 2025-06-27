@@ -1,5 +1,4 @@
 import base64
-import traceback
 from io import BytesIO
 from typing import List, Optional, Union
 
@@ -109,7 +108,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     Logger.info("[WebRender] Converting message chain...")
     pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
     if not pic_list:
-        Logger.error("[WebRender] Generation Failed.")
+        Logger.exception("[WebRender] Generation Failed.")
         return False
 
     return cb64imglst(pic_list, bot_img=True)
@@ -134,7 +133,7 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[Image
 
     pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"], counttime=False))
     if not pic_list:
-        Logger.error("[WebRender] Generation Failed.")
+        Logger.exception("[WebRender] Generation Failed.")
         return False
 
     return cb64imglst(pic_list, bot_img=True)

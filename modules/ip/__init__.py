@@ -2,7 +2,7 @@ import ipaddress
 import socket
 from typing import Any, Dict
 
-from core.builtins.bot import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.http import get_url
@@ -10,14 +10,14 @@ from core.utils.http import get_url
 ip = module("ip", developers=["Dianliang233"], doc=True)
 
 
-@ip.command("<ip_address> {[I18N:ip.help]}")
+@ip.command("<ip_address> {{I18N:ip.help}}")
 async def _(msg: Bot.MessageSession, ip_address: str):
     try:
         ip = ipaddress.ip_address(ip_address)
         if isinstance(ip, ipaddress.IPv6Address) and "::" in ip_address:
             ip_address = ip.exploded
     except Exception:
-        await msg.finish(msg.session_info.locale.t("ip.message.invalid"))
+        await msg.finish(I18NContext("ip.message.invalid"))
     res = await check_ip(ip_address)
     await msg.finish(await format_ip(msg, res), disable_secret_check=True)
 

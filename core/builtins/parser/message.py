@@ -9,6 +9,7 @@ from typing import Optional, TYPE_CHECKING
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
 from core.builtins.temp import Temp
+from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
@@ -22,9 +23,8 @@ from core.exports import exports
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.builtins.parser.command import CommandParser
-from core.tos import warn_target
+from core.tos import _abuse_warn_target
 from core.types import Module, Param
-from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
 
@@ -77,8 +77,7 @@ async def parser(msg: "Bot.MessageSession",
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行。
     """
     await msg.session_info.refresh_info()
-    identify_str = f"[{msg.session_info.sender_id}{
-        f" ({msg.session_info.target_id})" if msg.session_info.target_from != msg.session_info.sender_from else ""}]"
+    identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
 
     if msg.session_info.sender_id in ignored_sender:
@@ -127,7 +126,7 @@ async def parser(msg: "Bot.MessageSession",
         Logger.warning("Waiting task cancelled by user.")
 
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
     finally:
         ExecutionLockList.remove(msg)
 
@@ -330,12 +329,10 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
                                        module_type="normal")
 
     except AbuseWarning as e:
-        await _process_tos_abuse_warning(msg, str(e))
+        await _process_tos_abuse_warning(msg, e)
 
     except NoReportException as e:
-        Logger.error(traceback.format_exc())
-        err_msg = msg.session_info.locale.t_str(str(e))
-        await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
+        await _process_noreport_exception(msg, e)
 
     except Exception as e:
         await _process_exception(msg, e)
@@ -456,7 +453,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                         await _process_noreport_exception(msg, e)
 
                     except AbuseWarning as e:
-                        await _process_tos_abuse_warning(msg, str(e))
+                        await _process_tos_abuse_warning(msg, e)
 
                     except Exception as e:
                         await _process_exception(msg, e)
@@ -501,7 +498,7 @@ async def _check_temp_ban(msg: "Bot.MessageSession"):
                 is_temp_banned["count"] += 1
                 await msg.finish(I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning("{tos.message.reason.ignore}")
+                raise AbuseWarning("{I18N:tos.message.reason.ignore}")
 
 
 async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
@@ -513,7 +510,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
     else:
         same["count"] += 1
         if same["count"] > 10:
-            raise AbuseWarning("{tos.message.reason.cooldown}")
+            raise AbuseWarning("{I18N:tos.message.reason.cooldown}")
     all_ = counter_all.get(msg.session_info.sender_id)
     if not all_ or datetime.now().timestamp() - all_["ts"] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.session_info.sender_id] = {"count": 1,
@@ -521,7 +518,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
     else:
         all_["count"] += 1
         if all_["count"] > 20:
-            raise AbuseWarning("{tos.message.reason.abuse}")
+            raise AbuseWarning("{I18N:tos.message.reason.abuse}")
 
 
 async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_word):
@@ -629,19 +626,21 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 await _execute_submodule(msg, command_first_word, command_split)"""
             return
     except InvalidHelpDocTypeError:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await msg.send_message(I18NContext("error.module.helpdoc.invalid", module=command_first_word))
         return
 
 
-async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e):
+async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
-        await warn_target(msg, str(e))
+        await _abuse_warn_target(msg, str(e))
         temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
                                                         "ts": datetime.now().timestamp()}
     else:
-        reason = msg.session_info.locale.t_str(str(e))
-        await msg.send_message(I18NContext("error.prompt.noreport", detail=reason))
+        errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
+        errmsgchain.append(Plain(msg.session_info.locale.t_str(str(e))))
+        errmsgchain.append(I18NContext("error.message.prompt.noreport"))
+        await msg.send_message(errmsgchain)
 
 
 async def _process_send_message_failed(msg: "Bot.MessageSession"):
@@ -650,25 +649,30 @@ async def _process_send_message_failed(msg: "Bot.MessageSession"):
 
 
 async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportException):
-    Logger.error(traceback.format_exc())
+    Logger.exception()
+    errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    await msg.send_message(I18NContext("error.prompt.noreport", detail=err_msg))
+    errmsgchain += match_kecode(err_msg)
+    errmsgchain.append(I18NContext("error.message.prompt.noreport"))
+    await msg.send_message(errmsgchain)
 
 
 async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     tb = traceback.format_exc()
     Logger.error(tb)
+    errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
+    errmsgchain += match_kecode(err_msg)
     await msg.handle_error_signal()
-    if "timeout" in str(e).lower().replace(" ", ""):
+    if "timeout" in err_msg.lower().replace(" ", ""):
         timeout = True
-        errmsgchain = [I18NContext("error.prompt.timeout", detail=err_msg)]
+        errmsgchain.append(I18NContext("error.message.prompt.timeout"))
     else:
         timeout = False
-        errmsgchain = [I18NContext("error.prompt.report", detail=err_msg)]
+        errmsgchain.append(I18NContext("error.message.prompt.report"))
 
     if bug_report_url:
-        errmsgchain.append(I18NContext("error.prompt.address", url=bug_report_url))
+        errmsgchain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
     await msg.send_message(errmsgchain)
 
     if not timeout and report_targets:

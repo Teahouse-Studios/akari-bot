@@ -1,15 +1,14 @@
 import re
 from datetime import datetime
 
-from core.builtins.bot import Bot
-from core.builtins.message.internal import Plain, Image
+from core.builtins import Bot, I18NContext, Image, Plain
 from core.component import module
 from core.utils.http import get_url
 
 API = "https://bd.bangbang93.com/openbmclapi"
 TOP_LIMIT = 10
 
-oba = module("oba", desc="[I18N:oba.help.desc]", developers="WorldHim")
+oba = module("oba", desc="{I18N:oba.help.desc}", developers="WorldHim")
 
 
 def size_convert(value):
@@ -43,7 +42,7 @@ def search_cluster(clusterList: dict, key: str, value: str):
 
 
 @oba.command()
-@oba.command("status {[I18N:oba.help.status]}")
+@oba.command("status {{I18N:oba.help.status}}")
 async def _(msg: Bot.MessageSession):
     dashboard = await get_url(f"{API}/metric/dashboard", fmt="json")
 
@@ -68,16 +67,16 @@ async def _(msg: Bot.MessageSession):
     msg_list.append(
         msg.session_info.locale.t(
             "oba.message.query_time",
-            query_time=msg.ts2strftime(
+            query_time=msg.format_time(
                 datetime.now().timestamp(),
                 timezone=False)))
     await msg.finish(msg_list)
 
 
-@oba.command("node [<rank>] {[I18N:oba.help.rank]}")
+@oba.command("node [<rank>] {{I18N:oba.help.rank}}")
 async def _(msg: Bot.MessageSession, rank: int = 1):
     if rank < 1:
-        await msg.finish(msg.session_info.locale.t("oba.message.node.invalid"))
+        await msg.finish(I18NContext("oba.message.node.invalid"))
     rank_list = await get_url(f"{API}/metric/rank", fmt="json")
     node = rank_list[rank - 1]
     status = "🟩" if node.get("isEnabled") else "🟥"
@@ -90,7 +89,7 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     msg_list.append(
         msg.session_info.locale.t(
             "oba.message.query_time",
-            query_time=msg.ts2strftime(
+            query_time=msg.format_time(
                 datetime.now().timestamp(),
                 timezone=False)))
 
@@ -111,7 +110,7 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
             await msg.finish(send_msg)
 
 
-@oba.command("top [<rank>] {[I18N:oba.help.top]}")
+@oba.command("top [<rank>] {{I18N:oba.help.top}}")
 async def _(msg: Bot.MessageSession, rank: int = 1):
     rankList = await get_url(f"{API}/metric/rank", fmt="json")
     rank = 1 if rank <= 0 else rank
@@ -145,7 +144,7 @@ async def _(msg: Bot.MessageSession, rank: int = 1):
     await msg.finish(node_list)
 
 
-@oba.command("search <keyword> {[I18N:oba.help.search]}")
+@oba.command("search <keyword> {{I18N:oba.help.search}}")
 async def _(msg: Bot.MessageSession, keyword: str):
     rank_list = await get_url(f"{API}/metric/rank", fmt="json")
 
@@ -181,10 +180,10 @@ async def _(msg: Bot.MessageSession, keyword: str):
             node_list.append(msg.session_info.locale.t("message.collapse", amount=TOP_LIMIT))
         await msg.finish(node_list)
     else:
-        await msg.finish(msg.session_info.locale.t("oba.message.search.not_found"))
+        await msg.finish(I18NContext("oba.message.search.not_found"))
 
 
-@oba.command("sponsor {[I18N:oba.help.sponsor]}")
+@oba.command("sponsor {{I18N:oba.help.sponsor}}")
 async def _(msg: Bot.MessageSession):
     sponsor = await get_url(f"{API}/sponsor", fmt="json")
     cluster = await get_url(f"{API}/sponsor/{str(sponsor["_id"])}", fmt="json")

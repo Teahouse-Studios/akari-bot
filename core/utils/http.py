@@ -58,7 +58,7 @@ async def get_url(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
-) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
+) -> Any:
     """利用httpx获取指定URL的内容。
 
     :param url: 需要获取的URL。
@@ -107,7 +107,7 @@ async def get_url(
                     if not logging_resp and logging_err_resp:
                         Logger.error(resp.text)
                     raise ValueError(
-                        f"{str(resp.status_code)}[Ke:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
                     )
                 if fmt:
                     if hasattr(resp, fmt):
@@ -138,7 +138,7 @@ async def post_url(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
-) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
+) -> Any:
     """利用httpx发送POST请求。
 
     :param url: 需要发送的URL。
@@ -186,7 +186,7 @@ async def post_url(
                     if not logging_resp and logging_err_resp:
                         Logger.error(resp.text)
                     raise ValueError(
-                        f"{str(resp.status_code)}[Ke:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
                     )
                 if fmt:
                     if hasattr(resp, fmt):

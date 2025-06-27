@@ -1,8 +1,7 @@
 import mimetypes
 import os
 import re
-import traceback
-from typing import List, Union
+from typing import Union
 
 import nio
 
@@ -11,14 +10,12 @@ from bots.matrix.info import *
 from core.builtins.message.internal import Plain, Image, Voice, I18NContext
 from core.builtins.bot import Bot, MessageSession as MessageSessionT, MessageTaskManager, \
     FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
-from core.config import Config
-from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import image_split
-
-enable_analytics = Config("enable_analytics", False)
+from .client import bot, homeserver_host
+from .info import *
 
 
 class FinishedSession(FinishedSessionT):
@@ -27,7 +24,7 @@ class FinishedSession(FinishedSessionT):
             for x in self.message_id:
                 await bot.room_redact(str(self.result), x)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -55,7 +52,8 @@ class MessageSession(MessageSessionT):
     ) -> FinishedSession:
         message_chain = MessageChain.assign(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message((I18NContext("error.message.chain.unsafe", locale=self.locale.locale)))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
+
         self.sent.append(message_chain)
         sentMessages: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(self, embed=False):
@@ -132,6 +130,7 @@ class MessageSession(MessageSessionT):
                 reply_to_user = None
 
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "{uid}")
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
                 await sendMsg(content)
@@ -310,7 +309,7 @@ class MessageSession(MessageSessionT):
             await bot.room_redact(self.session.target, self.session.message["event_id"])
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -371,7 +370,7 @@ class FetchedSession(Bot.FetchedSession):
 Bot.FetchedSession = FetchedSession
 
 
-class FetchTarget(FetchedTargetT):
+class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod

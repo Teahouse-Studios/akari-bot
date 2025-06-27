@@ -1,31 +1,26 @@
 import re
-import traceback
-from typing import List, Union
+from typing import Union
 
 from aiogram.types import FSInputFile
 
-from bots.aiogram.client import bot, token
-from bots.aiogram.info import *
 from core.builtins import (
     Bot,
     Plain,
     Image,
     Voice,
-    MessageSession as MessageSessionT,
     I18NContext,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
-from core.config import Config
-from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import image_split
-
-enable_analytics = Config("enable_analytics", False)
+from .client import bot, token
+from .info import *
 
 
 class FinishedSession(FinishedSessionT):
@@ -34,7 +29,7 @@ class FinishedSession(FinishedSessionT):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -68,6 +63,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "<a href=\"tg://user?id={uid}\">@{uid}</a>")
                 send_ = await bot.send_message(
                     self.session.target,
                     x.text,
@@ -75,7 +71,7 @@ class MessageSession(MessageSessionT):
                         self.session.message.message_id
                         if quote and count == 0 and self.session.message
                         else None
-                    ),
+                    ), parse_mode="HTML"
                 )
                 Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
                 send.append(send_)
@@ -201,7 +197,7 @@ class MessageSession(MessageSessionT):
                 await x.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message

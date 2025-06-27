@@ -11,18 +11,18 @@ bili = module(
     "bilibili",
     alias="bili",
     developers=["DoroWolf"],
-    desc="[I18N:bilibili.help.desc]",
+    desc="{I18N:bilibili.help.desc}",
     doc=True,
     support_languages=["zh_cn"],
 )
 
 
 @bili.command(
-    "<bid> [-i] {[I18N:bilibili.help]}",
-    options_desc={"-i": "[I18N:bilibili.help.option.i]"},
+    "<bid> [-i] {{I18N:bilibili.help}}",
+    options_desc={"-i": "{I18N:bilibili.help.option.i}"},
     exclude_from=["Discord|Channel"],
 )
-@bili.command("<bid> {[I18N:bilibili.help]}", available_for=["Discord|Channel"])
+@bili.command("<bid> {{I18N:bilibili.help}}", available_for=["Discord|Channel"])
 async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     if msg.parsed_msg.get("-i", False):
         get_detail = True
@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     await msg.finish(output)
 
 
-@bili.regex(r"av(\d+)\b", flags=re.I, mode="A", desc="[I18N:bilibili.help.regex.av]")
+@bili.regex(r"av(\d+)\b", flags=re.I, mode="A", desc="{I18N:bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
             await msg.send_message(output)
 
 
-@bili.regex(r"BV[a-zA-Z0-9]{10}", mode="A", desc="[I18N:bilibili.help.regex.bv]")
+@bili.regex(r"BV[a-zA-Z0-9]{10}", mode="A", desc="{I18N:bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession):
 
 @bili.regex(r"(?:http[s]?:\/\/)?(?:bili(?:22|33|2233)\.cn|b23\.tv)\/([A-Za-z0-9]{7})(?:\/.*?|)",
             mode="A",
-            desc="[I18N:bilibili.help.regex.url]",
+            desc="{I18N:bilibili.help.regex.url}",
             show_typing=False,
             text_only=False
             )
@@ -67,10 +67,9 @@ async def _(msg: Bot.MessageSession):
     for video in matched:
         if video != "":
             query = await parse_shorturl(f"https://b23.tv/{video}")
-            if not query:
-                return
-            output = await get_video_info(msg, query)
-            await msg.send_message(output)
+            if query:
+                output = await get_video_info(msg, query)
+                await msg.send_message(output)
 
 
 async def parse_shorturl(shorturl):

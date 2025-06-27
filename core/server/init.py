@@ -12,15 +12,14 @@ from core.builtins.converter import converter
 from core.builtins.message.internal import Plain, I18NContext
 from .background_tasks import init_background_task
 from core.config import CFGManager
-from core.constants import PrivateAssets, Secret
+from core.constants import Info, PrivateAssets, Secret
+from core.ip import append_ip, fetch_ip_info
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
-from core.utils.info import Info
 from core.database import init_db
 from ..database.models import JobQueuesTable
-from ..utils.ip import append_ip, fetch_ip_info
 from ..utils.web_render import init_web_render
 
 
@@ -32,7 +31,9 @@ async def init_async(start_scheduler=True) -> None:
         Logger.warning("Failed to get Git commit hash, is it a Git repository?")
     Info.client_name = 'Server'
     Info.subprocess = True
-    await init_db()
+    Logger.info("Initializing database...")
+    if await init_db():
+        Logger.success("Database initialized successfully.")
     await JobQueuesTable.clear_task()
 
     load_modules()
@@ -68,7 +69,12 @@ async def load_secret():
         for y in CFGManager.values[x].keys():
             if y == "secret" or y.endswith("_secret"):
                 for z in CFGManager.values[x][y].keys():
-                    Secret.add(str(CFGManager.values[x][y].get(z)).upper())
+                    w = CFGManager.values[x][y].get(z)
+                    if not str(w).startswith("<Replace me"):
+                        if isinstance(w, str):
+                            Secret.add(w)
+                        elif isinstance(w, list):
+                            Secret.update(w)
 
 
 async def load_prompt() -> None:

@@ -6,9 +6,7 @@ from akari_bot_webrender.functions.options import ElementScreenshotOptions, Page
 from core.config import Config
 
 enable_web_render = Config("enable_webrender", False)
-
 remote_web_render_url = Config("remote_web_render_url", "", get_url=True)
-
 web_render_browser = Config("web_render_browser", "chrome", False)
 
 web_render = WebRender(debug=False, remote_webrender_url=remote_web_render_url)

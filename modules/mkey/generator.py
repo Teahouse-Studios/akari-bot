@@ -30,7 +30,7 @@ from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
 from core.constants.path import assets_path
-from core.utils.text import isint
+from core.utils.message import isint
 
 
 class MkeyGenerator:

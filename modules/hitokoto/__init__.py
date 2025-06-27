@@ -1,8 +1,7 @@
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_tw
 
-from core.builtins.bot import Bot
-from core.builtins.message.internal import Plain, Url
+from core.builtins import Bot, I18NContext, Plain, Url
 from core.component import module
 from core.utils.http import get_url
 
@@ -11,7 +10,7 @@ msg_types = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
 hitokoto = module(
     "hitokoto",
     developers=["bugungu", "DoroWolf"],
-    desc="[I18N:hitokoto.help.desc]",
+    desc="{I18N:hitokoto.help.desc}",
     doc=True,
     alias=["htkt", "yiyan"],
     support_languages=["zh_cn", "zh_tw"],
@@ -19,14 +18,14 @@ hitokoto = module(
 
 
 @hitokoto.command()
-@hitokoto.command("[<msg_type>] {[I18N:hitokoto.help.type]}")
+@hitokoto.command("[<msg_type>] {{I18N:hitokoto.help.type}}")
 async def _(msg: Bot.MessageSession, msg_type: str = None):
     url = "https://v1.hitokoto.cn/"
     if msg_type:
         if msg_type in msg_types:
             url += "?c=" + msg_type
         else:
-            await msg.finish(msg.session_info.locale.t("hitokoto.message.invalid"))
+            await msg.finish(I18NContext("hitokoto.message.invalid"))
 
     data = await get_url(url, 200, fmt="json")
     if msg.session_info.locale.locale == "zh_tw":

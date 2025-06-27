@@ -7,8 +7,8 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal, lost_petal
+from core.utils.message import isint
 from core.utils.random import Random
-from core.utils.text import isint
 
 no_solution_lst = [
     "无解",
@@ -121,13 +121,13 @@ def contains_all_numbers(expr, numbers):
 tf = module(
     "twenty_four",
     alias=["twentyfour", "24"],
-    desc="[I18N:twenty_four.help.desc]",
+    desc="{I18N:twenty_four.help.desc}",
     developers=["DoroWolf"],
     doc=True,
 )
 
 
-@tf.command("{[I18N:twenty_four.help]}")
+@tf.command("{{I18N:twenty_four.help}}")
 async def _(msg: Bot.MessageSession):
     play_state = PlayState("twenty_four", msg)
     if play_state.check():
@@ -170,7 +170,7 @@ async def _(msg: Bot.MessageSession):
             await answer.finish(I18NContext("twenty_four.message.incorrect.invalid"))
 
 
-@tf.command("stop {[I18N:game.help.stop]}")
+@tf.command("stop {{I18N:game.help.stop}}")
 async def s(msg: Bot.MessageSession):
     play_state = PlayState("twenty_four", msg)
     if play_state.check():

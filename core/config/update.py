@@ -6,11 +6,12 @@ from loguru import logger
 from tomlkit import parse as toml_parser, dumps as toml_dumps, document as toml_document, comment as toml_comment, nl
 from tomlkit.exceptions import KeyAlreadyPresent
 
-from core.constants import config_filename, config_version
+from core.constants import config_filename
 from core.constants.exceptions import ConfigFileNotFound
 from core.constants.path import config_path
+from core.constants.version import config_version
 from core.i18n import Locale
-from core.utils.text import isint, isfloat
+from core.utils.message import isint, isfloat
 
 cfg_file_path = os.path.join(config_path, config_filename)
 old_cfg_file_path = os.path.join(config_path, "config.cfg")

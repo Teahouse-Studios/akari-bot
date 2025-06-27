@@ -8,8 +8,8 @@ from typing import Any, List, Optional, Union
 
 from tortoise import fields
 
-from core.constants import default_locale
-from core.utils.list import convert2lst
+from core.constants.default import default_locale
+from core.utils.message import convert2lst
 from .base import DBModel
 from ..logger import Logger
 
@@ -71,8 +71,7 @@ class SenderInfo(DBModel):
 
         :param amount: 要添加或减少的花瓣数量。
         """
-        petal = self.petal + int(amount)
-        self.petal = petal
+        self.petal += int(amount)
         await self.save()
         return True
 
@@ -116,6 +115,7 @@ class TargetInfo(DBModel):
     :param locale: 会话语言。
     :param modules: 会话内可用模块。
     :param custom_admins: 会话内自定义管理员列表。
+    :param ban_user: 会话内已限制用户。
     :param target_data: 会话数据。
     """
     target_id = fields.CharField(max_length=512, pk=True)
@@ -124,6 +124,7 @@ class TargetInfo(DBModel):
     locale = fields.CharField(max_length=32, default=default_locale)
     modules = fields.JSONField(default=[])
     custom_admins = fields.JSONField(default=[])
+    banned_users = fields.JSONField(default=[])
     target_data = fields.JSONField(default={})
 
     class Meta:
@@ -185,14 +186,40 @@ class TargetInfo(DBModel):
         if enable:
             if sender_id not in custom_admins:
                 custom_admins.append(sender_id)
+            else:
+                return False
+        elif sender_id in custom_admins:
+            custom_admins.remove(sender_id)
+
+        self.custom_admins = custom_admins
+        await self.save()
+        return True
+
+    async def config_banned_user(self, sender_id: str, enable: bool = True) -> bool:
+        """
+        设置会话内被限制用户。
+
+        :param sender_id: 指定的用户 ID。
+        :param enable: 是否要设置会话内用户限制使用机器人，若 False 则取消限制。
+        """
+        banned_users = self.banned_users
+        if enable:
+            if sender_id not in banned_users:
+                banned_users.append(sender_id)
+            else:
+                return False
         else:
-            if sender_id in custom_admins:
-                custom_admins.remove(sender_id)
+            if sender_id in banned_users:
+                banned_users.remove(sender_id)
+            else:
+                return False
+
+        self.banned_users = banned_users
         await self.save()
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Union[str, list[str], tuple[str]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
@@ -200,7 +227,17 @@ class TargetInfo(DBModel):
         :param id_prefix: 指定的 ID 前缀。
         :return: 符合要求的会话 ID 列表。
         """
-        return list(await cls.filter(modules__contains=convert2lst(module_name), target_id__startswith=id_prefix or ""))
+        all_targets = await cls.filter(target_id__startswith=id_prefix or "")
+
+        if module_name:
+            result = []
+            for target in all_targets:
+                modules = target.modules or []
+                if any(mod in modules for mod in convert2lst(module_name)):
+                    result.append(target)
+            return result
+
+        return list(all_targets)
 
     async def edit_attr(self, key: str, value: Any) -> bool:
         setattr(self, key, value)
@@ -433,15 +470,3 @@ class MaliciousLoginRecords(DBModel):
         return await cls.filter(
             ip_address=ip_address, blocked_until__gt=datetime.now(UTC)
         ).exists()
-
-
-__all__ = [
-    "SenderInfo",
-    "TargetInfo",
-    "StoredData",
-    "AnalyticsData",
-    "DBVersion",
-    "UnfriendlyActionRecords",
-    "JobQueuesTable",
-    "MaliciousLoginRecords"
-]

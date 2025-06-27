@@ -1,7 +1,6 @@
 import asyncio
 import io
 import re
-import traceback
 from datetime import datetime
 from typing import Optional
 from PIL import Image as PImage
@@ -192,7 +191,7 @@ async def search_pubchem(id: Optional[int] = None):
 ccode = module(
     "chemical_code",
     developers=["OasisAkari", "DoroWolf"],
-    desc="[I18N:chemical_code.help.desc]",
+    desc="{I18N:chemical_code.help.desc}",
     doc=True,
     alias={
         "cc": "chemical_code",
@@ -206,17 +205,17 @@ ccode = module(
 )
 
 
-@ccode.command("{[I18N:chemical_code.help]}")
+@ccode.command("{{I18N:chemical_code.help}}")
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg)
 
 
-@ccode.command("captcha {[I18N:chemical_code.help.captcha]}")
+@ccode.command("captcha {{I18N:chemical_code.help.captcha}}")
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@ccode.command("stop {[I18N:game.help.stop]}")
+@ccode.command("stop {{I18N:game.help.stop}}")
 async def _(msg: Bot.MessageSession):
     play_state = PlayState("chemical_code", msg)
     if play_state.check():
@@ -228,7 +227,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("game.message.stop.none"))
 
 
-@ccode.command("<pcid> {[I18N:chemical_code.help.pcid]}")
+@ccode.command("<pcid> {{I18N:chemical_code.help.pcid}}")
 async def _(msg: Bot.MessageSession, pcid: int):
     if int(pcid) < 0:
         await msg.finish(I18NContext("chemical_code.message.pcid.invalid"))
@@ -249,7 +248,7 @@ async def chemical_code(
     try:
         csr = await search_pubchem(id)
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         play_state.disable()
         await msg.finish(I18NContext("chemical_code.message.error"))
     play_state.update(**csr)  # 储存并获取不同用户所需的信息
@@ -321,10 +320,10 @@ async def chemical_code(
                                         break
 
                                 if incorrect_list:
-                                    incorrect_elements = "[I18N:message.delimiter]".join(incorrect_list)
+                                    incorrect_elements = "{I18N:message.delimiter}".join(incorrect_list)
                                     await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2", elements=incorrect_elements))
                     except ValueError:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                 Logger.info(f"{wait_text} != {play_state.get("answer")}")
                 return await ans(wait, random_mode)

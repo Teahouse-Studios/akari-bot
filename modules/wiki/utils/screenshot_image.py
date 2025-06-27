@@ -1,24 +1,21 @@
 import base64
 import os
 import re
-import traceback
 import uuid
 from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
-import httpx
 import orjson as json
 from PIL import Image as PILImage
 from akari_bot_webrender.functions.options import SectionScreenshotOptions, LegacyScreenshotOptions
 from bs4 import BeautifulSoup, Comment
 
-from core.constants.info import Info
+from core.builtins import Bot
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.image import cb64imglst
-from core.utils.web_render import ElementScreenshotOptions
-from core.utils.web_render import web_render
+from core.utils.http import get_url, post_url, download
+from core.utils.web_render import webrender
 from .mapping import infobox_elements
 
 
@@ -33,38 +30,61 @@ async def generate_screenshot_v2(
     elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
+    if not Bot.Info.web_render_status:
+        return False
     if not section:
         if allow_special_page and content_mode:
             elements_.insert(0, ".mw-body-content")
         if allow_special_page and not content_mode:
             elements_.insert(0, ".diff")
         Logger.info("[WebRender] Generating element screenshot...")
-        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_, locale=locale))
-        if not imgs:
-            Logger.error("[WebRender] Generation Failed.")
+        try:
+            img = await download(
+                webrender("element_screenshot"),
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+                post_data=json.dumps({"url": page_link, "element": elements_}),
+                attempt=1,
+                timeout=30,
+                request_private_ip=True,
+            )
+        except Exception:
+            Logger.exception("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
-        imgs = await web_render.section_screenshot(SectionScreenshotOptions(url=page_link, section=section, locale=locale))
-        if not imgs:
-            Logger.error("[WebRender] Generation Failed.")
+        try:
+            section = section.replace(" ", "_")
+            img = await download(
+                webrender("section_screenshot"),
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+                post_data=json.dumps({"url": page_link, "section": section}),
+                attempt=1,
+                timeout=30,
+                request_private_ip=True,
+            )
+        except Exception:
+            Logger.exception("[WebRender] Generation Failed.")
             return False
     return cb64imglst(imgs)
 
 
 async def generate_screenshot_v1(
-    link, page_link, headers, use_local=True, section=None, allow_special_page=False
+    link, page_link, headers, section=None, allow_special_page=False
 ) -> Union[List[PILImage], bool]:
+    if not Bot.Info.web_render_status:
+        return False
     try:
         Logger.info("Starting find infobox/section..")
         if link[-1] != "/":
             link += "/"
         try:
-            async with httpx.AsyncClient(headers=headers) as client:
-                resp = await client.get(page_link, timeout=20)
-                html = resp.text
+            html = await get_url(page_link, 200, headers=headers, timeout=20)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
         soup = BeautifulSoup(html, "html.parser")
         pagename = uuid.uuid4()
@@ -280,8 +300,25 @@ async def generate_screenshot_v1(
 
         Logger.info("Start rendering...")
         img_lst = []
-        imgs_data = await web_render.legacy_screenshot(LegacyScreenshotOptions(**html))
-        return cb64imglst(imgs_data)
+        try:
+            resp_text = await post_url(
+                url=webrender(),
+                data=json.dumps(html),
+                headers={"Content-Type": "application/json"},
+                fmt="text",
+                logging_err_resp=True,
+            )
+            imgs_data = json.loads(resp_text)
+            for img in imgs_data:
+                b = base64.b64decode(img)
+                bio = BytesIO(b)
+                bimg = PILImage.open(bio)
+                img_lst.append(bimg)
+
+        except Exception as e:
+            Logger.error(f"Request error: {e}")
+
+        return img_lst
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False

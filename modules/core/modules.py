@@ -5,6 +5,7 @@ from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
+from core.database import reload_db
 from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -34,25 +35,25 @@ m = module(
     required_superuser=True,
 )
 @m.command(
-    ["enable <module>... {[I18N:core.help.module.enable]}",
-     "enable all {[I18N:core.help.module.enable_all]}",
-     "disable <module>... {[I18N:core.help.module.disable]}",
-     "disable all {[I18N:core.help.module.disable_all]}",
-     "list [--legacy] {[I18N:core.help.module.list]}",
+    ["enable <module>... {{I18N:core.help.module.enable}}",
+     "enable all {{I18N:core.help.module.enable_all}}",
+     "disable <module>... {{I18N:core.help.module.disable}}",
+     "disable all {{I18N:core.help.module.disable_all}}",
+     "list [--legacy] {{I18N:core.help.module.list}}",
      ],
-    options_desc={"--legacy": "[I18N:help.option.legacy]"},
+    options_desc={"--legacy": "{I18N:help.option.legacy}"},
     exclude_from=["QQ|Guild"],
 )
 @m.command(
-    ["enable [-g] <module> ... {[I18N:core.help.module.enable]}",
-     "enable all [-g] {[I18N:core.help.module.enable_all]}",
-     "disable [-g] <module> ... {[I18N:core.help.module.disable]}",
-     "disable all [-g] {[I18N:core.help.module.disable_all]}",
-     "list [--legacy] {[I18N:core.help.module.list]}",
+    ["enable [-g] <module> ... {{I18N:core.help.module.enable}}",
+     "enable all [-g] {{I18N:core.help.module.enable_all}}",
+     "disable [-g] <module> ... {{I18N:core.help.module.disable}}",
+     "disable all [-g] {{I18N:core.help.module.disable_all}}",
+     "list [--legacy] {{I18N:core.help.module.list}}",
      ],
     options_desc={
-        "-g": "[I18N:core.help.option.module.g]",
-        "--legacy": "[I18N:help.option.legacy]",
+        "-g": "{I18N:core.help.option.module.g}",
+        "--legacy": "{I18N:help.option.legacy}",
     },
     available_for=["QQ|Guild"],
 )
@@ -121,7 +122,7 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.session_info.target_from}|{x}"))[0]
+                target_info = await TargetInfo.get_by_target_id(f"{msg.session_info.target_from}|{x}")
                 await target_info.config_module(enable_list, True)
             for x in enable_list:
                 msglist.append(I18NContext("core.message.module.enable.qqchannel_global.success", module=x))
@@ -178,7 +179,7 @@ async def config_modules(msg: Bot.MessageSession):
         if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                target_info = (await TargetInfo.get_or_create(target_id=f"{msg.session_info.target_from}|{x}"))[0]
+                target_info = await TargetInfo.get_by_target_id(f"{msg.session_info.target_from}|{x}")
                 await target_info.config_module(disable_list, False)
             for x in disable_list:
                 msglist.append(I18NContext("core.message.module.disable.qqchannel_global.success", module=x))
@@ -196,17 +197,21 @@ async def config_modules(msg: Bot.MessageSession):
             if base_module and reload_count >= 1:
                 return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
-                return Plain(f"[I18N:core.message.module.reload.success,module={module}]"
-                             + ("\n" if len(extra_modules) != 0 else "")
-                             + "\n".join(extra_modules)
-                             + "\n"
-                             + f"[I18N:core.message.module.reload.with,reload_count={reload_count - 1}]")
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.with", reload_count=reload_count - 1))
+                )
             if reload_count == 1:
-                return Plain(f"[I18N:core.message.module.reload.success,module={module}]"
-                             + ("\n" if len(extra_modules) != 0 else "")
-                             + "\n".join(extra_modules)
-                             + "\n"
-                             + "[I18N:core.message.module.reload.no_more]")
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.no_more"))
+                )
             return I18NContext("core.message.module.reload.failed")
 
         for module_ in wait_config_list:
@@ -217,11 +222,10 @@ async def config_modules(msg: Bot.MessageSession):
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
                 if modules_[module_].base:
                     if Config("allow_reload_base", False):
-                        confirm = await msg.wait_confirm(
+                        if await msg.wait_confirm(
                             I18NContext("core.message.module.reload.base.confirm"),
                             append_instruction=False,
-                        )
-                        if confirm:
+                        ):
                             base_module = True
                         else:
                             await msg.finish()
@@ -229,17 +233,18 @@ async def config_modules(msg: Bot.MessageSession):
                         await msg.finish(I18NContext("core.message.module.reload.base.failed", module=module_))
 
                 elif extra_reload_modules:
-                    confirm = await msg.wait_confirm(
+                    if not await msg.wait_confirm(
                         I18NContext("core.message.module.reload.confirm", modules="\n".join(extra_reload_modules)),
                         append_instruction=False,
-                    )
-                    if not confirm:
+                    ):
                         await msg.finish()
                 unloaded_list = Config("unloaded_modules", [])
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
                 msglist.append(module_reload(module_, extra_reload_modules, base_module))
+
+        await reload_db()
 
         locale_err = load_locale_file()
         if len(locale_err) != 0:
@@ -300,8 +305,7 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             await msg.send_message(msglist)
     if recommend_modules_help_doc_list and not ("-g" in msg.parsed_msg and msg.parsed_msg["-g"]):
-        confirm = await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")] + recommend_modules_help_doc_list)
-        if confirm:
+        if await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")] + recommend_modules_help_doc_list):
             if await msg.session_info.target_info.config_module(recommend_modules_list, True):
                 msglist = []
                 for x in recommend_modules_list:

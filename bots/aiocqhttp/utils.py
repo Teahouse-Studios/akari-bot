@@ -1,6 +1,6 @@
 import html
 import re
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, Optional, Union
 
 import orjson as json
 
@@ -9,6 +9,7 @@ from bots.aiocqhttp.info import sender_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice, Mention
 from core.logger import Logger
+from .client import bot
 
 
 async def get_onebot_implementation() -> Optional[str]:

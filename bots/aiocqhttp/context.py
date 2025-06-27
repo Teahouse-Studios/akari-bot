@@ -12,7 +12,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, client_name
 from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
-from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.context import ContextManager
@@ -131,6 +131,7 @@ class AIOCQContextManager(ContextManager):
             count = 0
             for x in message_chain_assendable:
                 if isinstance(x, PlainElement):
+                    x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                     if enable_parse_message:
                         parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                         parts = [part for part in parts if part]

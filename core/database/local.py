@@ -3,10 +3,10 @@ import hashlib
 import os
 import secrets
 
-from tortoise.models import Model
 from tortoise import fields
 
 from core.constants.path import database_path
+from .base import DBModel
 
 
 os.makedirs(database_path, exist_ok=True)
@@ -15,7 +15,7 @@ CSRF_TOKEN_EXPIRY = 3600
 DB_LINK = "sqlite://database/local.db"
 
 
-class CSRFTokenRecords(Model):
+class CSRFTokenRecords(DBModel):
     csrf_token = fields.CharField(pk=True, max_length=128, unique=True)
     device_token = fields.CharField(max_length=512)
     timestamp = fields.DatetimeField(auto_now_add=True)
@@ -37,7 +37,7 @@ class CSRFTokenRecords(Model):
         return csrf_token
 
 
-class DirtyWordCache(Model):
+class DirtyWordCache(DBModel):
     desc = fields.TextField(pk=True)
     result = fields.JSONField(default={})
     timestamp = fields.DatetimeField(auto_now=True)
@@ -55,7 +55,7 @@ class DirtyWordCache(Model):
         return query
 
 
-class CrowdinActivityRecords(Model):
+class CrowdinActivityRecords(DBModel):
     hash_id = fields.TextField(pk=True)
 
     class Meta:
@@ -71,9 +71,3 @@ class CrowdinActivityRecords(Model):
             await query.save()
             return False
         return True
-
-
-__all__ = [
-    "DirtyWordCache",
-    "CrowdinActivityRecords",
-]

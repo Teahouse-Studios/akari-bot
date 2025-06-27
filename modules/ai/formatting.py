@@ -10,7 +10,7 @@ from core.utils.image_table import ImageTable, image_table_render
 
 
 def parse_markdown(md: str) -> List[Dict[str, str]]:
-    code_block_pattern = r"```(\w+)?\n([\s\S]*?)\n```"  # 代码块
+    code_block_pattern = r"```(\w*)\n([\s\S]*?)\n```"  # 代码块
     block_latex_pattern = r"\$\$([\s\S]*?)\$\$"  # 块级 LaTeX
     inline_latex_pattern = r"(?<!\$)`?\$([^\n\$]+?)\$`?(?!\$)"  # 行内 LaTeX
     table_pattern = r"(?:\|.*\|\n)+\|(?:[-:| ]+)\|\n(?:\|.*\|\n)+"  # Markdown 表格
@@ -83,18 +83,17 @@ def generate_latex(formula: str):
 
 async def generate_code_snippet(code: str, language: str):
     return await post_url(
-        url="https://sourcecodeshots.com/api/image",
+        url="https://carbonara.solopov.dev/api/cook",
         data=json.dumps(
             {
                 "code": code,
-                "settings": {
-                    "language": language,
-                    "theme": "night-owl",
-                },
+                "backgroundColor": "rgba(255, 255, 255, 0)",
+                "language": language,
+                "theme": "night-owl",
             }
         ),
         headers={"content-type": "application/json"},
-        fmt="content",
+        fmt="content"
     )
 
 

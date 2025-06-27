@@ -4,9 +4,7 @@ import os
 import platform
 import re
 import sys
-import traceback
-import uuid
-from collections import defaultdict
+from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
 
@@ -21,7 +19,8 @@ from fastapi import Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
-from flask import Flask, send_from_directory
+from flask import Flask, abort, send_from_directory
+from jwt.exceptions import ExpiredSignatureError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from tortoise.expressions import Q
@@ -30,9 +29,9 @@ sys.path.append(os.getcwd())
 
 from bots.web.info import *  # noqa: E402
 from bots.web.message import MessageSession  # noqa: E402
-from bots.web.utils import find_available_port, generate_webui_config  # noqa: E402
+from bots.web.utils import find_available_port, generate_webui_config, get_local_ip  # noqa: E402
 from core.server.init import init_async  # noqa: E402
-from core.builtins import PrivateAssets, Temp  # noqa: E402
+from core.builtins import Info, PrivateAssets, Temp  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename  # noqa: E402
 from core.constants.path import assets_path, config_path, logs_path, webui_path  # noqa: E402
@@ -47,27 +46,29 @@ from core.queue_ import JobQueue  # noqa: E402
 from core.scheduler import Scheduler  # noqa: E402
 from core.terminate import cleanup_sessions  # noqa: E402
 from core.types import MsgInfo, Session  # noqa: E402
-from core.utils.info import Info  # noqa: E402
 
 started_time = datetime.now()
 PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_https = Config("enable_https", default=False, table_name="bot_web")
+protocol = "https" if enable_https else "http"
 
 WEB_HOST = Config("web_host", "127.0.0.1", table_name="bot_web")
-WEB_PORT = Config("web_port", 8081, table_name="bot_web")
+WEB_PORT = Config("web_port", 6485, table_name="bot_web")
 
 ALLOW_ORIGINS = Config("allow_origins", default=[], secret=True, table_name="bot_web")
 JWT_SECRET = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 LOGIN_MAX_ATTEMPTS = Config("login_max_attempts", default=5, table_name="bot_web")
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 LOGIN_BLOCK_DURATION = 3600
-MAX_LOG_HISTORY = 1000
 
-web_port = find_available_port(WEB_PORT, host=WEB_HOST)
-protocol = "https" if enable_https else "http"
-ALLOW_ORIGINS.append(f"{protocol}://{WEB_HOST}:{web_port}")
+MAX_LOG_HISTORY = 1024
+LOG_HEAD_PATTERN = re.compile(
+    r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:")
+LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
+
+login_failed_attempts = defaultdict(list)
 
 
 @asynccontextmanager
@@ -77,18 +78,33 @@ async def lifespan(app: FastAPI):
     Scheduler.start()
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
-    Logger.info(f"Visit AkariBot WebUI: {protocol}://{WEB_HOST}:{web_port}/webui")
+    if os.path.exists(webui_path):
+        if WEB_HOST == "0.0.0.0":
+            local_ip = get_local_ip()
+            network_line = f"Network: {protocol}://{local_ip}:{web_port}/webui\n" if local_ip else ""
+            message = (
+                f"\n---\n"
+                f"Visit AkariBot WebUI:\n"
+                f"Local:   {protocol}://127.0.0.1:{web_port}/webui\n"
+                f"{network_line}"
+                f"---\n"
+            )
+        else:
+            message = (
+                f"\n---\n"
+                f"Visit AkariBot WebUI:\n"
+                f"{protocol}://{WEB_HOST}:{web_port}/webui\n"
+                f"---\n"
+            )
+
+        Logger.info(message)
     yield
     await cleanup_sessions()
-    sys.exit()
+    sys.exit(0)
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
-
-login_failed_attempts = defaultdict(list)
-last_file_line_count = {}
-logs_history = []
 
 
 async def verify_csrf_token(request: Request):
@@ -115,11 +131,16 @@ def verify_jwt(request: Request):
 
     try:
         payload = jwt.decode(auth_token, JWT_SECRET, algorithms=["HS256"])
-        if payload.get("iat") > datetime.now(UTC).timestamp():
-            raise HTTPException(status_code=400, detail="Invalid token")
+        if os.path.exists(PASSWORD_PATH):
+            with open(PASSWORD_PATH, "rb") as f:
+                last_updated = json.loads(f.read()).get("last_updated")
+
+            if last_updated and payload["iat"] < last_updated:
+                raise ExpiredSignatureError
+
         return {"message": "Success", "payload": payload}
 
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid token")
@@ -166,7 +187,6 @@ async def auth(request: Request, response: Response):
     try:
         if not os.path.exists(PASSWORD_PATH):
             payload = {
-                "device_id": str(uuid.uuid4()),
                 "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
                 "iat": datetime.now(UTC),  # 签发时间
                 "iss": "auth-api"  # 签发者
@@ -187,11 +207,11 @@ async def auth(request: Request, response: Response):
         password = body.get("password", "")
         remember = body.get("remember", False)
 
-        with open(PASSWORD_PATH, "r") as file:
-            stored_password = file.read().strip()
+        with open(PASSWORD_PATH, "rb") as file:
+            password_data = json.loads(file.read())
 
         try:
-            ph.verify(stored_password, password)
+            ph.verify(password_data.get("password", ""), password)
         except Exception:
             now = datetime.now(UTC)
             login_failed_attempts[ip] = [t for t in login_failed_attempts[ip] if (now - t).total_seconds() < 600]
@@ -207,7 +227,6 @@ async def auth(request: Request, response: Response):
         login_failed_attempts.pop(ip, None)
 
         payload = {
-            "device_id": str(uuid.uuid4()),
             "exp": datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24)),
             "iat": datetime.now(UTC),
             "iss": "auth-api"
@@ -220,14 +239,14 @@ async def auth(request: Request, response: Response):
             httponly=True,
             secure=enable_https,
             samesite="strict",
-            expires=datetime.now(UTC) + timedelta(hours=24)
+            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
-        return {"message": "Success", "no_password": True}
+        return {"message": "Success", "no_password": False}
 
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -244,29 +263,36 @@ async def change_password(request: Request, response: Response):
         if not os.path.exists(PASSWORD_PATH):
             if new_password == "":
                 raise HTTPException(status_code=400, detail="New password required")
-            new_password_hashed = ph.hash(new_password)
-            with open(PASSWORD_PATH, "w") as file:
-                file.write(new_password_hashed)
+
+            password_data = {
+                "password": ph.hash(new_password),
+                "last_updated": datetime.now().timestamp()
+            }
+            with open(PASSWORD_PATH, "wb") as file:
+                file.write(json.dumps(password_data))
             response.delete_cookie("deviceToken")
             return {"message": "Success"}
 
-        with open(PASSWORD_PATH, "r") as file:
-            stored_password = file.read().strip()
+        with open(PASSWORD_PATH, "rb") as file:
+            password_data = json.loads(file.read())
 
         try:
-            ph.verify(stored_password, password)
+            ph.verify(password_data.get("password", ""), password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        new_password_hashed = ph.hash(new_password)
-        with open(PASSWORD_PATH, "w") as file:
-            file.write(new_password_hashed)
+        password_data["password"] = ph.hash(new_password)
+        password_data["last_updated"] = datetime.now().timestamp()
+
+        with open(PASSWORD_PATH, "wb") as file:
+            file.write(json.dumps(password_data))
+
         response.delete_cookie("deviceToken")
         return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -282,11 +308,11 @@ async def clear_password(request: Request, response: Response):
         if not os.path.exists(PASSWORD_PATH):
             raise HTTPException(status_code=404, detail="Password not set")
 
-        with open(PASSWORD_PATH, "r") as file:
-            stored_password = file.read().strip()
+        with open(PASSWORD_PATH, "rb") as file:
+            password_data = json.loads(file.read())
 
         try:
-            ph.verify(stored_password, password)
+            ph.verify(password_data.get("password", ""), password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
@@ -296,7 +322,7 @@ async def clear_password(request: Request, response: Response):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -316,7 +342,6 @@ async def server_info(request: Request):
             "running_time": (datetime.now() - started_time).total_seconds(),
             "python_version": platform.python_version(),
             "version": Info.version,
-            "web_render_local_status": Info.web_render_local_status,
             "web_render_status": Info.web_render_status
         },
         "cpu": {
@@ -355,7 +380,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
         return {"count": count, "change_rate": change_rate, "data": data}
 
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -375,7 +400,7 @@ async def get_config_list(request: Request):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -398,7 +423,7 @@ async def get_config_file(request: Request, cfg_filename: str):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -425,7 +450,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -465,7 +490,7 @@ async def get_target_list(
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -474,14 +499,14 @@ async def get_target_list(
 async def get_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if not target_info:
             raise HTTPException(status_code=404, detail="Not found")
         return {"message": "Success", "target_info": target_info}
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -492,7 +517,7 @@ async def edit_target_info(request: Request, target_id: str):
         verify_jwt(request)
         await verify_csrf_token(request)
 
-        target_info = (await TargetInfo.get_or_create(target_id=target_id))[0]
+        target_info = await TargetInfo.get_by_target_id(target_id)
         body = await request.json()
         blocked = body.get("blocked")
         muted = body.get("muted")
@@ -500,20 +525,23 @@ async def edit_target_info(request: Request, target_id: str):
         blocked = body.get("blocked")
         modules = body.get("modules")
         custom_admins = body.get("custom_admins")
+        banned_users = body.get("banned_users")
         target_data = body.get("target_data")
 
         if blocked is not None and not isinstance(blocked, bool):
-            raise HTTPException(status_code=400, detail="'blocked' must be bool")
+            raise HTTPException(status_code=400, detail="\"blocked\" must be bool")
         if muted is not None and not isinstance(muted, bool):
-            raise HTTPException(status_code=400, detail="'muted' must be bool")
+            raise HTTPException(status_code=400, detail="\"muted\" must be bool")
         if locale is not None and not isinstance(locale, str):
-            raise HTTPException(status_code=400, detail="'locale' must be str")
+            raise HTTPException(status_code=400, detail="\"locale\" must be str")
         if modules is not None and not isinstance(modules, list):
-            raise HTTPException(status_code=400, detail="'modules' must be list")
+            raise HTTPException(status_code=400, detail="\"modules\" must be list")
         if custom_admins is not None and not isinstance(custom_admins, list):
-            raise HTTPException(status_code=400, detail="'custom_admins' must be list")
+            raise HTTPException(status_code=400, detail="\"custom_admins\" must be list")
+        if banned_users is not None and not isinstance(banned_users, list):
+            raise HTTPException(status_code=400, detail="\"banned_users\" must be list")
         if target_data is not None and not isinstance(target_data, dict):
-            raise HTTPException(status_code=400, detail="'target_data' must be dict")
+            raise HTTPException(status_code=400, detail="\"target_data\" must be dict")
 
         if blocked is not None:
             target_info.blocked = blocked
@@ -525,6 +553,8 @@ async def edit_target_info(request: Request, target_id: str):
             target_info.modules = modules
         if custom_admins is not None:
             target_info.custom_admins = custom_admins
+        if banned_users is not None:
+            target_info.banned_users = banned_users
         if target_data is not None:
             target_info.target_data = target_data
         await target_info.save()
@@ -533,7 +563,7 @@ async def edit_target_info(request: Request, target_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -543,14 +573,14 @@ async def delete_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
         await verify_csrf_token(request)
-        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info:
             await target_info.delete()
         return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -591,7 +621,7 @@ async def get_sender_list(request: Request,
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -600,14 +630,14 @@ async def get_sender_list(request: Request,
 async def get_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        sender_info = await SenderInfo.get_or_none(sender_id=sender_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if not sender_info:
             raise HTTPException(status_code=404, detail="Not found")
         return {"message": "Success", "sender_info": sender_info}
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -618,7 +648,7 @@ async def edit_sender_info(request: Request, sender_id: str):
         verify_jwt(request)
         await verify_csrf_token(request)
 
-        sender_info = (await SenderInfo.get_or_create(sender_id=sender_id))[0]
+        sender_info = await SenderInfo.get_by_sender_id(sender_id)
         body = await request.json()
         superuser = body.get("superuser")
         trusted = body.get("trusted")
@@ -628,17 +658,17 @@ async def edit_sender_info(request: Request, sender_id: str):
         sender_data = body.get("sender_data")
 
         if superuser is not None and not isinstance(superuser, bool):
-            raise HTTPException(status_code=400, detail="'superuser' must be bool")
+            raise HTTPException(status_code=400, detail="\"superuser\" must be bool")
         if trusted is not None and not isinstance(trusted, bool):
-            raise HTTPException(status_code=400, detail="'trusted' must be bool")
+            raise HTTPException(status_code=400, detail="\"trusted\" must be bool")
         if blocked is not None and not isinstance(blocked, bool):
-            raise HTTPException(status_code=400, detail="'blocked' must be bool")
+            raise HTTPException(status_code=400, detail="\"blocked\" must be bool")
         if warns is not None and not isinstance(warns, int):
-            raise HTTPException(status_code=400, detail="'warns' must be int")
+            raise HTTPException(status_code=400, detail="\"warns\" must be int")
         if petal is not None and not isinstance(petal, int):
-            raise HTTPException(status_code=400, detail="'petal' must be int")
+            raise HTTPException(status_code=400, detail="\"petal\" must be int")
         if sender_data is not None and not isinstance(sender_data, dict):
-            raise HTTPException(status_code=400, detail="'sender_data' must be dict")
+            raise HTTPException(status_code=400, detail="\"sender_data\" must be dict")
 
         if superuser is not None:
             sender_info.superuser = superuser
@@ -658,7 +688,7 @@ async def edit_sender_info(request: Request, sender_id: str):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -668,14 +698,14 @@ async def delete_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
         await verify_csrf_token(request)
-        sender_info = await SenderInfo.get_or_none(sender_id=sender_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if sender_info:
             await sender_info.delete()
         return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -685,7 +715,7 @@ async def get_modules_list(request: Request):
     try:
         verify_jwt(request)
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
         modules_list = []
         for module in modules.values():
@@ -694,7 +724,7 @@ async def get_modules_list(request: Request):
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -704,16 +734,16 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
     try:
         verify_jwt(request)
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
         for module in modules.values():
-            if 'desc' in module and module.get('desc'):
-                module['desc'] = Locale(locale).t_str(module['desc'])
+            if "desc" in module and module.get("desc"):
+                module["desc"] = Locale(locale).t_str(module["desc"])
         return {"message": "Success", "modules": modules}
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
@@ -723,23 +753,25 @@ async def get_module_info(request: Request, module: str, locale: str = Query(def
     try:
         verify_jwt(request)
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get('load', True) and not v.get('base', False)}
+        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
         for m in modules.values():
             if module == m["bind_prefix"]:
+                if "desc" in m and m.get("desc"):
+                    m["desc"] = Locale(locale).t_str(m["desc"])
                 return {"message": "Success", "modules": m}
         raise HTTPException(status_code=404, detail="Not found")
     except HTTPException as e:
         raise e
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
-    Temp.data['web_chat_websocket'] = websocket
+    Temp.data["web_chat_websocket"] = websocket
     try:
         while True:
             rmessage = await websocket.receive_text()
@@ -762,90 +794,95 @@ async def websocket_chat(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await websocket.close()
     finally:
-        if 'web_chat_websocket' in Temp.data:
-            del Temp.data['web_chat_websocket']
+        if "web_chat_websocket" in Temp.data:
+            del Temp.data["web_chat_websocket"]
 
 
 @app.websocket("/ws/logs")
 async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
+    current_date = datetime.today().strftime("%Y-%m-%d")
+    last_file_pos = defaultdict(int)    # 日志文件当前位置
+    last_file_size = defaultdict(int)  # 日志文件大小
+    logs_history = deque(maxlen=MAX_LOG_HISTORY)  # 日志缓存历史
     try:
-        if logs_history:
-            expanded_history = ["\n".join(item) if isinstance(item, list) else item for item in logs_history]
-            await websocket.send_text("\n".join(expanded_history))
-
         while True:
-            today_logs = glob.glob(f"{logs_path}/*_{datetime.today().strftime("%Y-%m-%d")}.log")
-            today_logs = [log for log in today_logs if "console" not in os.path.basename(log)]
-            today_logs.sort(
-                key=lambda line: (
-                    extract_timestamp(
-                        line[0]) if isinstance(
-                        line,
-                        list) else extract_timestamp(line)) or datetime.min)
-            if today_logs:
-                for log_file in today_logs:
-                    current_line_count = 0
-                    new_lines = []
+            new_date = datetime.today().strftime("%Y-%m-%d")
+
+            if new_date != current_date:  # 处理跨日期
+                last_file_pos.clear()
+                last_file_size.clear()
+                current_date = new_date
+
+            today_logs = [
+                p for p in glob.glob(f"{logs_path}/*_{current_date}.log")
+                if "console" not in os.path.basename(p)
+            ]
+
+            new_loglines = []  # 打包后的日志行
+            for log_file in today_logs:
+                try:
+                    # 比较文件大小，当相同时跳过
+                    current_size = os.path.getsize(log_file)
+                    if log_file in last_file_size and current_size == last_file_size[log_file]:
+                        continue
+                    last_file_size[log_file] = current_size
+
+                    if log_file not in last_file_pos:  # 初始化
+                        last_file_pos[log_file] = 0
 
                     with open(log_file, "r", encoding="utf-8") as f:
-                        for i, line in enumerate(f):
-                            if i >= last_file_line_count.get(log_file, 0):
-                                if line:
-                                    new_lines.append(line.rstrip())
-                            current_line_count = i + 1
+                        f.seek(last_file_pos[log_file])
+                        new_data = f.read()  # 读取新数据
+                        last_file_pos[log_file] = f.tell()
 
-                    if new_lines:
-                        processed_lines = []
-                        for line in new_lines:
-                            if is_log_line_valid(line):
-                                logs_history.append(line)
-                            else:
-                                if logs_history and isinstance(
-                                        logs_history[-1], str) and is_log_line_valid(logs_history[-1]):
-                                    logs_history.append([logs_history.pop(), line])
-                                elif logs_history and isinstance(logs_history[-1], list):
-                                    logs_history[-1].append(line)
-                                else:
-                                    logs_history.append(line)
-                            processed_lines.append(line)
+                    new_loglines_raw = [line.rstrip() for line in new_data.splitlines() if line.strip()]  # 未打包的新日志行
+                except Exception:
+                    Logger.exception()
+                    continue
 
-                        logs_history.sort(
-                            key=lambda line: (
-                                extract_timestamp(
-                                    line[0]) if isinstance(
-                                    line,
-                                    list) else extract_timestamp(line)) or datetime.min)
-                        expanded_logs = [
-                            "\n".join(item) if isinstance(
-                                item, list) else item for item in processed_lines]
-                        await websocket.send_text("\n".join(expanded_logs))
+                for line in new_loglines_raw:
+                    if _log_line_valid(line):  # 日志头
+                        new_loglines.append(line)
+                    elif new_loglines:
+                        last = new_loglines.pop()
+                        if isinstance(last, list):  # 添加到多行日志中
+                            last.append(line)
+                            new_loglines.append(last)
+                        elif isinstance(last, str) and _log_line_valid(last):  # 与日志头拼接为多行日志
+                            new_loglines.append([last, line])
 
-                        while len(logs_history) > MAX_LOG_HISTORY:
-                            logs_history.pop(0)
+            if new_loglines:
+                new_loglines.sort(
+                    key=lambda item: _extract_timestamp(item[0]) if isinstance(item, list) else _extract_timestamp(item)
+                )  # 按时间排序
 
-                    last_file_line_count[log_file] = current_line_count
+                payload = "\n".join(
+                    "\n".join(item) if isinstance(item, list) else item
+                    for item in new_loglines
+                )
+                await websocket.send_text(payload)  # 发送
+                logs_history.extend(new_loglines)  # 添加到历史
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(1)
+
     except WebSocketDisconnect:
         pass
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         await websocket.close()
 
 
-def is_log_line_valid(line: str) -> bool:
-    log_pattern = r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:"
-    return bool(re.match(log_pattern, line))
+def _log_line_valid(line: str) -> bool:
+    return bool(re.match(LOG_HEAD_PATTERN, line))
 
 
-def extract_timestamp(log_line: str):
-    log_time_pattern = r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]"
-    match = re.search(log_time_pattern, log_line)
+def _extract_timestamp(line: str):
+    match = LOG_TIME_PATTERN.search(line)
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
@@ -865,43 +902,59 @@ async def restart():
     await cleanup_sessions()
     os._exit(233)
 
-flask_app = Flask(__name__)
+
+if os.path.exists(webui_path):
+    flask_app = Flask(__name__)
+
+    @flask_app.route("/")
+    @flask_app.route("/<path:path>")
+    def serve_webui(path=None):
+        if path and "/" in path:
+            abort(404)
+        return send_from_directory(webui_path, "index.html")
+
+    app.mount("/webui", WSGIMiddleware(flask_app))
+
+    @app.get("/")
+    async def redirect_to_webui():
+        return RedirectResponse(url="/webui/")
+
+else:
+    @app.get("/")
+    async def redirect_to_api():
+        return RedirectResponse(url="/api")
 
 
-@flask_app.route("/")
-@flask_app.route("/<path:path>")
-def static_files(path=None):
-    return send_from_directory(webui_path, "index.html")
+@app.get("/{full_path:path}")
+async def route_handler(full_path: str):
+    if os.path.exists(webui_path):
+        if full_path == "webui":
+            return RedirectResponse(url="/webui/")
+
+        static_file = os.path.normpath(os.path.join(webui_path, full_path))
+        if os.path.commonpath([webui_path, static_file]) != webui_path:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        if os.path.exists(static_file):
+            return FileResponse(static_file)
+    else:
+        favicon_file = os.path.join(assets_path, "favicon.ico")
+        if full_path == "favicon.ico" and os.path.exists(favicon_file):
+            return FileResponse(favicon_file)
+    raise HTTPException(status_code=404, detail="Not found")
 
 
-app.mount("/webui", WSGIMiddleware(flask_app))
-
-
-@app.get("/webui")
-async def redirect_webui():
-    return RedirectResponse(url="/webui/")
-
-
-@app.get("/{path:path}")
-async def redirect_root(path=None):
-    if not path:
-        return RedirectResponse(url="/webui")
-    if path.startswith("/api") or path.startswith("/webui"):
-        return RedirectResponse(url=path)
-    static_path = os.path.join(webui_path, path)
-    if not os.path.exists(static_path):
-        raise HTTPException(status_code=404, detail="Not found")
-    return FileResponse(static_path)
-
-
-if Config("enable", True, table_name="bot_web"):
+if Config("enable", True, table_name="bot_web") or __name__ == "__main__":
     Info.client_name = client_name
+    if "subprocess" in sys.argv:
+        Info.subprocess = True
     web_port = find_available_port(WEB_PORT)
     if web_port == 0:
-        Logger.warning(f"API port is disabled, abort to run.")
+        Logger.error("API port is disabled.")
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
-    generate_webui_config(web_port, WEB_HOST, enable_https, default_locale)
+
+    if os.path.exists(webui_path):
+        generate_webui_config(enable_https, default_locale)
 
     uvicorn.run(app, host=WEB_HOST, port=web_port, log_level="info")

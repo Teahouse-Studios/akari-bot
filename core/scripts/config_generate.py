@@ -8,10 +8,13 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
 from core.constants import *
+from core.i18n import Locale, load_locale_file
+from core.utils.message import isint
 
 
 def generate_config(dir_path, language):
-    from core.i18n import Locale  # noqa: E402
+    load_locale_file()
+
     config_code_list = {}
     os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
@@ -95,7 +98,7 @@ def generate_config(dir_path, language):
 
 
 if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ != "__main__":
-    from core.utils.text import isint  # noqa: E402
+    from core.utils.message import isint  # noqa: E402
 
     while True:
         i = 1

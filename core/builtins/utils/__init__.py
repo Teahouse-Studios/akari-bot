@@ -1,5 +1,5 @@
 from core.config import Config
-from core.constants import (
+from core.constants.default import (
     confirm_command_default,
     command_prefix_default,
 )

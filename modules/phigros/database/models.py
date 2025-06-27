@@ -1,10 +1,11 @@
-from tortoise.models import Model
 from tortoise import fields
+
+from core.database.base import DBModel
 
 table_prefix = "module_phigros_"
 
 
-class PhigrosBindInfo(Model):
+class PhigrosBindInfo(DBModel):
     """
     Phigros 用户绑定信息表
 

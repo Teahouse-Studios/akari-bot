@@ -115,6 +115,7 @@ sync_mapping = {
 }
 
 diff_list = ["Basic", "Advanced", "Expert", "Master", "Re:MASTER"]
+diff_list_zh = ["初级", "高级", "专家", "大师", "宗师"]
 diff_list_abbr = ["bas", "adv", "exp", "mas", "rem"]
 diff_list_zhs = ["绿", "黄", "红", "紫", "白"]
 diff_list_zht = ["綠", "黃", "紅", "紫", "白"]
@@ -165,6 +166,7 @@ goal_list = [
     "FC+",
     "AP",
     "AP+",
+    "SYNC",
     "FS",
     "FS+",
     "FDX",
@@ -181,68 +183,69 @@ genre_i18n_mapping = {
     "舞萌": "maimai",
     "音击&中二节奏": "ONGEKI & CHUNITHM",
     "オンゲキCHUNITHM": "ONGEKI & CHUNITHM",
+    "宴会场": "宴會場"
 }
 
 mai_plate_remaster_required = [
-    17,
-    22,
-    23,
-    24,
-    58,
-    61,
-    62,
-    65,
-    66,
-    70,
-    71,
-    80,
-    81,
-    100,
-    107,
-    143,
-    145,
-    198,
-    200,
-    204,
-    226,
-    227,
-    247,
-    255,
-    256,
-    265,
-    266,
-    282,
-    295,
-    296,
-    299,
-    301,
-    310,
-    312,
-    365,
-    414,
-    496,
-    513,
-    532,
-    589,
-    741,
-    756,
-    759,
-    763,
-    777,
-    793,
-    799,
-    803,
-    806,
-    809,
-    812,
-    816,
-    818,
-    820,
-    825,
-    830,
-    833,
-    834,
-    838,
+    "17",
+    "22",
+    "23",
+    "24",
+    "58",
+    "61",
+    "62",
+    "65",
+    "66",
+    "70",
+    "71",
+    "80",
+    "81",
+    "100",
+    "107",
+    "143",
+    "145",
+    "198",
+    "200",
+    "204",
+    "226",
+    "227",
+    "247",
+    "255",
+    "256",
+    "265",
+    "266",
+    "282",
+    "295",
+    "296",
+    "299",
+    "301",
+    "310",
+    "312",
+    "365",
+    "414",
+    "496",
+    "513",
+    "532",
+    "589",
+    "741",
+    "756",
+    "759",
+    "763",
+    "777",
+    "793",
+    "799",
+    "803",
+    "806",
+    "809",
+    "812",
+    "816",
+    "818",
+    "820",
+    "825",
+    "830",
+    "833",
+    "834",
+    "838",
 ]
 
 versions = [
@@ -264,6 +267,7 @@ versions = [
     "maimai でらっくす UNiVERSE",
     "maimai でらっくす FESTiVAL",
     "maimai でらっくす BUDDiES",
+    "maimai でらっくす PRiSM",
 ]
 
 sd_plate_mapping = {
@@ -293,12 +297,25 @@ dx_plate_mapping = {
     "祝": "maimai でらっくす FESTiVAL",
     "双": "maimai でらっくす BUDDiES",
     "宴": "maimai でらっくす BUDDiES",
+    "鏡": "maimai でらっくす PRiSM",
 }
 
 plate_mapping = sd_plate_mapping | dx_plate_mapping
 
-plate_version_ts_mapping = {"霸": "覇", "晓": "暁", "樱": "櫻", "堇": "菫", "辉": "輝", "华": "華", "雙": "双"}
-plate_goal_ts_mapping = {"將": "将", "极": "極"}
+plate_version_ts_mapping = {
+    "霸": "覇",
+    "晓": "暁",
+    "樱": "櫻",
+    "堇": "菫",
+    "辉": "輝",
+    "华": "華",
+    "雙": "双",
+    "镜": "鏡",
+}
+plate_goal_ts_mapping = {
+    "將": "将",
+    "极": "極"
+}
 
 grade_mapping = {
     "初段": "grade1",
@@ -330,53 +347,78 @@ grade_mapping = {
     "裏皆傳": "tgrade12",
     "EXPERT初級": "expert1",
     "EXPERT初级": "expert1",
+    "专家初级": "expert1",
     "EXPERT中級": "expert2",
     "EXPERT中级": "expert2",
+    "专家中级": "expert2",
     "EXPERT上級": "expert3",
     "EXPERT上级": "expert3",
+    "专家上级": "expert3",
     "EXPERT超上級": "expert4",
     "EXPERT超上级": "expert4",
+    "专家超上级": "expert4",
     "MASTER初級": "master1",
     "MASTER初级": "master1",
+    "大师初级": "master1",
     "MASTER中級": "master2",
     "MASTER中级": "master2",
+    "大师中级": "master2",
     "MASTER上級": "master3",
     "MASTER上级": "master3",
+    "大师上级": "master3",
     "MASTER超上級": "master4",
     "MASTER超上级": "master4",
+    "大师超上级": "master4",
 }
 
 
 def mai_plate_song_expect(version):
     match version:
         case "真":
-            song_expect = [70, 146]
+            song_expect = ["44", "70", "146"]
         case "超":
-            song_expect = [185, 189, 190]
+            song_expect = ["185", "189", "190"]
         case "檄":
-            song_expect = [341]
+            song_expect = ["341"]
         case "暁":
-            song_expect = [419]
+            song_expect = ["419"]
         case "桃":
-            song_expect = [451, 455, 460]
+            song_expect = ["451", "455", "460"]
         case "櫻":
-            song_expect = [524]
+            song_expect = ["524"]
         case "菫":
-            song_expect = [853]
+            song_expect = ["853"]
         case "白":
-            song_expect = [687, 688, 712]
+            song_expect = ["687", "688", "712"]
         case "雪":
-            song_expect = [731]
+            song_expect = ["731"]
         case "輝":
-            song_expect = [792]
+            song_expect = ["792"]
         case "覇" | "舞":
-            song_expect = [146, 185, 189, 190, 341, 419, 451, 455, 460, 524, 687, 688, 712, 731, 792, 853]
+            song_expect = [
+                "44",
+                "146",
+                "185",
+                "189",
+                "190",
+                "341",
+                "419",
+                "451",
+                "455",
+                "460",
+                "524",
+                "687",
+                "688",
+                "712",
+                "731",
+                "792",
+                "853"]
         case "熊" | "華":
-            song_expect = [10146]
+            song_expect = ["10146"]
         case "爽" | "煌":
-            song_expect = [11213]
+            song_expect = ["11213"]
         case "宙" | "星":
-            song_expect = [11253, 11267]
+            song_expect = ["11253", "11267"]
         case _:
             song_expect = []
     return song_expect

@@ -17,7 +17,7 @@ package-mode = false
 python = "^3.12.0"
 
 # lib
-cryptography = "^44.0.0"
+cryptography = "^45.0.0"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
@@ -26,7 +26,7 @@ pywin32 = { version = "^308", platform = "win32" }
 # bots
 aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
-argon2-cffi = "^23.1.0"
+argon2-cffi = "^25.0.0"
 botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 fastapi = "^0.115.0"
 ffmpy = "^0.5.0"
@@ -55,7 +55,7 @@ akari-bot-webrender = "^0.1.9"
 tomlkit = "^0.13.2"
 
 # core.database
-tortoise-orm = {extras = ["asyncmy"], version = "^0.24.2"}
+tortoise-orm = {extras = ["asyncmy"], version = "^0.25.0"}
 
 # core.http
 aiofile = "^3.8.1"
@@ -85,13 +85,13 @@ feedparser = "^6.0.10"
 google-play-scraper = "^1.2.2"
 gql = "^3.4.0"
 langconv = {git = "https://github.com/OasisAkari/langconv.py.git"}
-mcstatus = "^11.1.1"
-numpy = "<2.2.5"
+mcstatus = "^12.0.0"
+numpy = "<2.2.7"
 openai = "^1.6.1"
 pandas = "^2.2.0"
 pint = "^0.24.0"
 python-whois = "^0.9.0"
-rdkit = "^2024.9.5"
+rdkit = "^2025.0.0"
 simpleeval = "^1.0.0"
 webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
@@ -101,7 +101,7 @@ coverage = "^7.9.1"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
-pycodestyle = "2.12.1"
+pycodestyle = "2.13.0"
 
 [build-system]
 requires = ["poetry-core"]

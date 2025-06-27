@@ -82,7 +82,9 @@ class DrawPlateList:
             case "祭" | "祝":
                 color = (184, 123, 191)
             case "双" | "宴":
-                color = (255, 172, 62)
+                color = (255, 186, 95)
+            case "鏡":
+                color = (221, 255, 241)
             case _:
                 color = (0, 0, 0)
         return color
@@ -178,7 +180,7 @@ class DrawPlateList:
                     fill=vcolor,
                 )
 
-                if int(sid) in self.remaster_required:
+                if sid in self.remaster_required:
                     mark_count = 5
                 else:
                     mark_count = 4
@@ -232,14 +234,14 @@ class DrawPlateList:
     def update_cover_marks(self):
         for cover_id, diff in self.song_complete:
             for _, elements in self.song_list.items():
-                if str(cover_id) in elements:
-                    if str(cover_id) not in self.cover_marks:
-                        if int(cover_id) in self.remaster_required:
-                            self.cover_marks[str(cover_id)] = [False, False, False, False, False]
+                if cover_id in elements:
+                    if cover_id not in self.cover_marks:
+                        if cover_id in self.remaster_required:
+                            self.cover_marks[cover_id] = [False, False, False, False, False]
                         else:
-                            self.cover_marks[str(cover_id)] = [False, False, False, False]
+                            self.cover_marks[cover_id] = [False, False, False, False]
                     try:
-                        self.cover_marks[str(cover_id)][diff] = True
+                        self.cover_marks[cover_id][diff] = True
                     except IndexError:
                         pass
 
@@ -247,7 +249,7 @@ class DrawPlateList:
         return self.img
 
 
-async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[Dict[str, List[str]], List[tuple[str, int]]]:
+async def _get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[Dict[str, List[str]], List[tuple[str, int]]]:
     song_complete_basic = []
     song_complete_advanced = []
     song_complete_expert = []
@@ -267,60 +269,60 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
         await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
 
     res = await get_plate(msg, payload, version, use_cache)
-    verlist = res["verlist"]
+    verlist: list = res["verlist"]
 
     if goal in ["将", "者"]:
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
             if song["level_index"] == 0 and song["achievements"] >= (100.0 if goal == "将" else 80.0):
-                song_complete_basic.append((song["id"], song["level_index"]))
+                song_complete_basic.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 1 and song["achievements"] >= (100.0 if goal == "将" else 80.0):
-                song_complete_advanced.append((song["id"], song["level_index"]))
+                song_complete_advanced.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 2 and song["achievements"] >= (100.0 if goal == "将" else 80.0):
-                song_complete_expert.append((song["id"], song["level_index"]))
+                song_complete_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["achievements"] >= (100.0 if goal == "将" else 80.0):
-                song_complete_master.append((song["id"], song["level_index"]))
-            if version in ["覇", "舞"] and int(song["id"]) in mai_plate_remaster_required and \
+                song_complete_master.append((str(song["id"]), song["level_index"]))
+            if version in ["覇", "舞"] and str(song["id"]) in mai_plate_remaster_required and \
                song["level_index"] == 4 and song["achievements"] >= (100.0 if goal == "将" else 80.0):
-                song_complete_remaster.append((song["id"], song["level_index"]))  # 霸者和舞牌需要Re:MASTER难度
+                song_complete_remaster.append((str(song["id"]), song["level_index"]))  # 霸者和舞牌需要Re:MASTER难度
     elif goal == "極":
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
             if song["level_index"] == 0 and song["fc"]:
-                song_complete_basic.append((song["id"], song["level_index"]))
+                song_complete_basic.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 1 and song["fc"]:
-                song_complete_advanced.append((song["id"], song["level_index"]))
+                song_complete_advanced.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 2 and song["fc"]:
-                song_complete_expert.append((song["id"], song["level_index"]))
+                song_complete_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["fc"]:
-                song_complete_master.append((song["id"], song["level_index"]))
-            if version == "舞" and int(song["id"]) in mai_plate_remaster_required and \
+                song_complete_master.append((str(song["id"]), song["level_index"]))
+            if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
                     song["level_index"] == 4 and song["fc"]:
-                song_complete_remaster.append((song["id"], song["level_index"]))
+                song_complete_remaster.append((str(song["id"]), song["level_index"]))
     elif goal == "舞舞":
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
             if song["level_index"] == 0 and song["fs"] in ["fsd", "fsdp"]:
-                song_complete_basic.append((song["id"], song["level_index"]))
+                song_complete_basic.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 1 and song["fs"] in ["fsd", "fsdp"]:
-                song_complete_advanced.append((song["id"], song["level_index"]))
+                song_complete_advanced.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 2 and song["fs"] in ["fsd", "fsdp"]:
-                song_complete_expert.append((song["id"], song["level_index"]))
+                song_complete_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["fs"] in ["fsd", "fsdp"]:
-                song_complete_master.append((song["id"], song["level_index"]))
-            if version == "舞" and int(song["id"]) in mai_plate_remaster_required and \
+                song_complete_master.append((str(song["id"]), song["level_index"]))
+            if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
                song["level_index"] == 4 and song["fs"] in ["fsd", "fsdp"]:
-                song_complete_remaster.append((song["id"], song["level_index"]))
+                song_complete_remaster.append((str(song["id"]), song["level_index"]))
     elif goal == "神":
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
             if song["level_index"] == 0 and song["fc"] in ["ap", "app"]:
-                song_complete_basic.append((song["id"], song["level_index"]))
+                song_complete_basic.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 1 and song["fc"] in ["ap", "app"]:
-                song_complete_advanced.append((song["id"], song["level_index"]))
+                song_complete_advanced.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 2 and song["fc"] in ["ap", "app"]:
-                song_complete_expert.append((song["id"], song["level_index"]))
+                song_complete_expert.append((str(song["id"]), song["level_index"]))
             if song["level_index"] == 3 and song["fc"] in ["ap", "app"]:
-                song_complete_master.append((song["id"], song["level_index"]))
-            if version == "舞" and int(song["id"]) in mai_plate_remaster_required and \
+                song_complete_master.append((str(song["id"]), song["level_index"]))
+            if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
                song["level_index"] == 4 and song["fc"] in ["ap", "app"]:
-                song_complete_remaster.append((song["id"], song["level_index"]))
+                song_complete_remaster.append((str(song["id"]), song["level_index"]))
     else:
         await msg.finish(I18NContext("maimai.message.plate.plate_not_found"))
 
@@ -351,10 +353,10 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
         "1": [],
     }
     for music in (await total_list.get()):  # 将未游玩歌曲ID加入目标列表
-        if music["basic_info"]["from"] in payload["version"] and int(
-                music.id) not in song_expect and int(music.id) < 100000:  # 过滤宴谱
-            levels = music.level if version in ["覇", "舞"] and int(
-                music.id) in mai_plate_remaster_required else music.level[:4]
+        if music["basic_info"]["from"] in payload["version"] \
+                and music.id not in song_expect and int(music.id) < 100000:  # 过滤宴谱
+            levels = music.level if version in ["覇", "舞"] and \
+                music.id in mai_plate_remaster_required else music.level[:4]
             sorted_levels = sorted(levels, key=lambda x: (
                 int(x[:-1]) if x[-1] == "+" else int(x), x[-1] == "+"), reverse=True)
             song_list[sorted_levels[0]].append(music.id)
@@ -380,7 +382,7 @@ async def generate(msg: Bot.MessageSession, payload: dict, plate: str, use_cache
         goal = plate_goal_ts_mapping[goal]
     plate = version + goal
 
-    song_list, song_complete = await get_plate_process(msg, payload, plate, use_cache)
+    song_list, song_complete = await _get_plate_process(msg, payload, plate, use_cache)
     remaster_required = mai_plate_remaster_required if version in ["覇", "舞"] else []
 
     pic = DrawPlateList(plate, song_list, song_complete, remaster_required).get_dir()

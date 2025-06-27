@@ -56,13 +56,15 @@ def pre_init():
     os.makedirs(cache_path, exist_ok=True)
 
     from core.config import Config  # noqa
-    from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
+    from core.constants.version import database_version  # noqa
     from core.database.link import get_db_link  # noqa
     from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)
+    if Config("debug", False):
+        Logger.debug("Debug mode is enabled.")
 
     async def update_db():
         await Tortoise.init(
@@ -121,14 +123,12 @@ def multiprocess_run_until_complete(func):
         if not p.is_alive():
             break
         sleep(1)
-    p.terminate()
-    p.join()
-    p.close()
+    terminate_process(p)
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+    from core.builtins import Info  # noqa
     from core.logger import Logger  # noqa
-    from core.utils.info import Info  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
@@ -138,8 +138,7 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
     try:
         importlib.import_module(f"bots.{bot_name}.bot")
     except ModuleNotFoundError:
-        traceback.format_exc()
-        Logger.error(f"[{bot_name}] ???, entry not found.")
+        Logger.exception(f"[{bot_name}] ???, entry not found.")
 
         sys.exit(1)
 
@@ -204,7 +203,7 @@ async def run_bot(console_only: bool = False):
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
 
-    def restart_process(bot_name: str):
+    def restart_bot_process(bot_name: str):
         if (
             bot_name not in failed_to_start_attempts
             or datetime.now().timestamp()
@@ -276,6 +275,13 @@ async def run_bot(console_only: bool = False):
         for p in processes:
             if p.is_alive():
                 continue
+            if p.exitcode == 0:
+                Logger.warning(
+                    f"{p.pid} ({p.name}) exited with code 0, abort to restart."
+                )
+                processes.remove(p)
+                terminate_process(p)
+                break
             if p.exitcode == 233:
                 Logger.warning(
                     f"{p.pid} ({p.name}) exited with code 233, restart all bots."
@@ -285,10 +291,8 @@ async def run_bot(console_only: bool = False):
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
             processes.remove(p)
-            p.terminate()
-            p.join()
-            p.close()
-            restart_process(p.name)
+            terminate_process(p)
+            restart_bot_process(p.name)
             break
         if not processes:
             break

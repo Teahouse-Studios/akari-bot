@@ -4,7 +4,7 @@ import discord
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.utils.message import convert_discord_embed
+from core.utils.element import convert_discord_embed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
@@ -86,7 +86,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported."
 e = module("nintendo_err", alias=["err"], developers=["OasisAkari", "kurisu"], doc=True)
 
 
-@e.command("<err_code> {[I18N:nintendo_err.help]}")
+@e.command("<err_code> {{I18N:nintendo_err.help}}")
 async def _(msg: Bot.MessageSession, err_code: str):
     results = Results()
     err = results.fixup_input(err_code)

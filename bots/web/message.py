@@ -1,6 +1,5 @@
 import asyncio
 import re
-import traceback
 import uuid
 from typing import Union
 
@@ -9,31 +8,32 @@ from fastapi import WebSocket
 
 from core.builtins import (
     Bot,
+    Temp,
     Plain,
     Image,
     I18NContext,
     MessageTaskManager,
-    FinishedSession as FinS,
+    MessageSession as MessageSessionT,
+    FinishedSession as FinishedSessionT,
     FetchTarget as FetchTargetT
 )
-from bots.web.info import *
-from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
-from core.builtins.temp import Temp
 from core.logger import Logger
 from core.types import Session
+from .info import *
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         try:
-            websocket: WebSocket = Temp.data["web_chat_websocket"]
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
 
             resp = {"action": "delete", "id": self.message_id}
-            await websocket.send_text(json.dumps(resp).decode())
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -62,25 +62,32 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        websocket: WebSocket = Temp.data["web_chat_websocket"]
+        websocket: WebSocket = Temp.data.get("web_chat_websocket")
         message_chain = MessageChain.assign(message_chain)
+        if not message_chain.is_safe and not disable_secret_check:
+            await self.send_direct_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         sends = []
+        sends_display = []
+
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
                 sends.append({"type": "text", "content": x.text})
+                sends_display.append({"type": "text", "content": x.text})
                 Logger.info(f"[Bot] -> [{self.session_info.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 img_b64 = await x.get_base64(mime=True)
                 sends.append({"type": "image", "content": img_b64})
+                sends_display.append({"type": "image", "content": f"{img_b64[:50]}..."})
                 Logger.info(f"[Bot] -> [{self.session_info.target_id}]: Image: {img_b64[:50]}...")
 
         resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
-        await websocket.send_text(json.dumps(resp).decode())
+        if websocket:
+            await websocket.send_text(json.dumps(resp).decode())
 
         if callback:
             MessageTaskManager.add_callback(resp["id"], callback)
-        return FinishedSession(self, resp["id"], sends)
+        return FinishedSession(self, resp["id"], sends_display)
 
     def as_display(self, text_only=False):
         msgs = []
@@ -100,12 +107,15 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         try:
-            websocket: WebSocket = Temp.data["web_chat_websocket"]
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
             resp = {"action": "delete", "id": [self.session.message["id"]]}
-            await websocket.send_text(json.dumps(resp).decode())
-            return True
+
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+                return True
+            return False
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     async def check_permission(self):
@@ -150,14 +160,6 @@ class FetchTarget(FetchTargetT):
             session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
             await session.parent.data_init()
             return session
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target(f"{target_prefix}|0")
-        if i18n:
-            await fetch.send_direct_message(I18NContext(message, **kwargs))
-        else:
-            await fetch.send_direct_message(message)
 
 
 Bot.MessageSession = MessageSession

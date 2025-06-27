@@ -20,7 +20,7 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
             await msg.send_message(screenshot)
 
 
-@bug.command("<mojiraid> {[I18N:bugtracker.help]}")
+@bug.command("<mojiraid> {{I18N:bugtracker.help}}")
 async def _(msg: Bot.MessageSession, mojiraid: str):
     if mojiraid:
         q = re.match(r"(.*-\d*)", mojiraid)
@@ -34,7 +34,7 @@ async def _(msg: Bot.MessageSession, mojiraid: str):
     r"((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)",
     mode="A",
     flags=re.I,
-    desc="[I18N:bugtracker.help.regex.desc]",
+    desc="{I18N:bugtracker.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
 

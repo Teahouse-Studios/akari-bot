@@ -1,15 +1,15 @@
 import asyncio
 import re
 
-from core.builtins.bot import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
 from core.utils.http import get_url
-from core.utils.text import isint
+from core.utils.message import isint
 
 mod_dl = module(
     bind_prefix="mod_dl",
-    desc="[I18N:mod_dl.help.desc]", doc=True,
+    desc="{I18N:mod_dl.help.desc}", doc=True,
     developers=["HornCopper", "OasisAkari", "z0z0r4"],
     recommend_modules=["mcmod"],
     alias="moddl")
@@ -18,7 +18,7 @@ x_api_key = Config("curseforge_api_key", cfg_type=str, secret=True, table_name="
 enable_mirror = bool(not x_api_key)  # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
 
 
-@mod_dl.command("<mod_name> [<version>] {[I18N:mod_dl.help]}")
+@mod_dl.command("<mod_name> [<version>] {{I18N:mod_dl.help}}")
 async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
     ver = version
     if version:
@@ -108,7 +108,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
     cache_result = []
     if not result[0] and not result[1]:
-        await msg.finish(msg.session_info.locale.t("mod_dl.message.not_found"))
+        await msg.finish(I18NContext("mod_dl.message.not_found"))
     else:
         # 合并搜索结果
         reply_text, count = [], 0
@@ -138,11 +138,11 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
         if isint(replied):
             replied = int(replied)
             if not replied or replied > len(cache_result):
-                await msg.finish(msg.session_info.locale.t("mod_dl.message.invalid.out_of_range"))
+                await msg.finish(I18NContext("mod_dl.message.invalid.out_of_range"))
             else:
                 mod_info = cache_result[replied - 1]
         else:
-            await msg.finish(msg.session_info.locale.t("mod_dl.message.invalid.non_digital"))
+            await msg.finish(I18NContext("mod_dl.message.invalid.non_digital"))
 
         if mod_info[0] == "modrinth":  # modrinth mod
             if not ver:
@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 else:
                     await msg.finish()
             elif ver not in mod_info[3]:
-                await msg.finish(msg.session_info.locale.t("mod_dl.message.version.not_found"))
+                await msg.finish(I18NContext("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
                 if version_info:
@@ -176,7 +176,7 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
                                                   f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}", delete=True)
                     ver = reply2.as_display(text_only=True)
                 elif ver not in ver_list:
-                    await msg.finish(msg.session_info.locale.t("mod_dl.message.version.not_found"))
+                    await msg.finish(I18NContext("mod_dl.message.version.not_found"))
 
                 if ver in ver_list:
                     file_info = await get_curseforge_mod_file(mod_info[2], ver)
@@ -185,4 +185,4 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
                                          \n{msg.session_info.locale.t("mod_dl.message.download_url")}{file_info["downloadUrl"]} \
                                          \n{msg.session_info.locale.t("mod_dl.message.filename")}{file_info["fileName"]}")
                 else:
-                    await msg.finish(msg.session_info.locale.t("mod_dl.message.version.not_found"))
+                    await msg.finish(I18NContext("mod_dl.message.version.not_found"))

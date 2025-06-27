@@ -9,27 +9,26 @@ from core.builtins.message.internal import I18NContext, Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.utils.http import download, get_url
-from core.utils.image import cb64imglst
-from core.utils.text import isint
-from core.utils.web_render import web_render, ElementScreenshotOptions
+from core.utils.message import isint
+from core.utils.web_render import webrender
 
 t = module(
     "tweet",
     developers=["Dianliang233"],
-    desc="[I18N:tweet.help.desc]",
+    desc="{I18N:tweet.help.desc}",
     doc=True,
     alias=["x"],
 )
 
 
-@t.command("<tweet> {[I18N:tweet.help]}")
+@t.command("<tweet> {{I18N:tweet.help}}")
 async def _(msg: Bot.MessageSession, tweet: int):
     await get_tweet(msg, tweet)
 
 
 @t.regex(r"(?:http[s]?:\/\/)?(?:www\.)?(?:twitter|x)\.com\/\S+\/status\/(\d+)",
          mode="M",
-         desc="[I18N:tweet.help.regex.url]",
+         desc="{I18N:tweet.help.regex.url}",
          show_typing=False,
          text_only=False
          )
@@ -50,11 +49,7 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
             raise e
 
     res_json = json.loads(res)
-    if await check_bool(
-        res_json["data"]["text"],
-        res_json["data"]["user"]["name"],
-        res_json["data"]["user"]["screen_name"],
-    ):
+    if await check_bool("\n".join([res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]])):
         await msg.finish(rickroll())
 
     css = """

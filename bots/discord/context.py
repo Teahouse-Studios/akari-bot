@@ -10,7 +10,7 @@ from discord import Message
 from bots.discord.client import client
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
-from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
 from core.builtins.session.info import SessionInfo
 from bots.discord.features import Features
@@ -137,6 +137,7 @@ class DiscordContextManager(ContextManager):
             for x in message.as_sendable(session_info):
                 send_ = None
                 if isinstance(x, PlainElement):
+                    x.text = match_atcode(x.text, client_name, "<@{uid}>")
                     send_ = await channel.send(
                         x.text,
                         reference=(

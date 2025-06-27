@@ -12,7 +12,7 @@ from core.builtins import (
     Bot,
     FetchTarget as FetchTargetT,
     FetchedSession as FetchedSessionT,
-    FinishedSession as FinS,
+    FinishedSession as FinishedSessionT,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
@@ -24,7 +24,7 @@ from core.logger import Logger
 from core.types import Session, MsgInfo
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         print("(Tried to delete message, but I\'m a console so I cannot do it :< )")
 
@@ -67,9 +67,11 @@ class MessageSession(MessageSessionT):
             return True
         if message_chain:
             message_chain = MessageChain.assign(message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.prompt.confirm"))
-            send = await self.send_message(message_chain)
+        else:
+            message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
+        if append_instruction:
+            message_chain.append(I18NContext("message.wait.prompt.confirm"))
+        send = await self.send_message(message_chain)
         try:
             if timeout:
                 c = inputimeout("Confirm: ", timeout=timeout)
@@ -271,14 +273,6 @@ class FetchTarget(FetchTargetT):
             session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
             await session.parent.data_init()
             return session
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target(f"{target_prefix}|0")
-        if i18n:
-            await fetch.send_direct_message(I18NContext(message, **kwargs))
-        else:
-            await fetch.send_direct_message(message)
 
 
 Bot.MessageSession = MessageSession

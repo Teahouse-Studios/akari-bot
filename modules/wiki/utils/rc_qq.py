@@ -2,12 +2,12 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.internal import MessageSession
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.logger import Logger
-from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
+from .rc import convert_rc_to_detailed_format
 
 
-async def rc_qq(msg: MessageSession, wiki_url):
-    wiki = WikiLib(wiki_url)
+async def get_rc_qq(msg: MessageSession, wiki_url, headers=None):
+    wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(
         action="query",
         list="recentchanges",
@@ -22,10 +22,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
         MessageChain.assign([I18NContext("wiki.message.rc.qq.title"), Url(pageurl)])
     ]
     if wiki.wiki_info.in_allowlist:
-        msgchain_lst.append(MessageChain.assign([I18NContext("wiki.message.rc.qq.link.prompt")]))
-    rclist = await convert_rc_to_detailed_format(
-        query["query"]["recentchanges"], wiki_info, msg
-    )
+        msgchain_lst.append(MessageChain([I18NContext("wiki.message.rc.qq.link.prompt")]))
+    rclist = await convert_rc_to_detailed_format(msg, query["query"]["recentchanges"], wiki_info)
 
     for x in rclist:
         msgchain_lst.append(MessageChain.assign([Plain(x)]))

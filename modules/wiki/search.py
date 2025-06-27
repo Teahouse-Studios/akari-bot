@@ -5,13 +5,13 @@ from typing import Union
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.logger import Logger
-from core.utils.text import isint
-from modules.wiki.database.models import WikiTargetInfo
-from modules.wiki.utils.wikilib import WikiLib
+from core.utils.message import isint
 from .wiki import wiki, query_pages
+from .database.models import WikiTargetInfo
+from .utils.wikilib import WikiLib
 
 
-@wiki.command("search <pagename> {[I18N:wiki.help.search]}")
+@wiki.command("search <pagename> {{I18N:wiki.help.search}}")
 async def _(msg: Bot.MessageSession, pagename: str):
     await search_pages(msg, pagename)
 
@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession, pagename: str):
 async def search_pages(
     msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix: bool = True
 ):
-    target = (await WikiTargetInfo.get_or_create(target_id=msg.session_info.target_id))[0]
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
     start_wiki = target.api_link
     interwiki_list = target.interwikis
     headers = target.headers
@@ -75,7 +75,7 @@ async def search_pages(
         msg_list.append(I18NContext("wiki.message.search.prompt"))
     else:
         await msg.finish(I18NContext("wiki.message.search.not_found"))
-    reply = await msg.wait_reply(msg_list)
+    reply = await msg.wait_reply(msg_list, delete=True)
     if isint(reply.as_display(text_only=True)):
         reply_number = max(0, int(reply.as_display(text_only=True)) - 1)
         await query_pages(reply, wait_msg_list[reply_number])

@@ -5,6 +5,7 @@ import html
 import random
 import re
 from copy import deepcopy
+from cattrs import structure, unstructure
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -117,49 +118,44 @@ class MessageChain:
 
         for v in self.values:
             if isinstance(v, PlainElement):
-                for secret in Secret.list:
-                    if secret in ["", None, True, False]:
-                        continue
-                    if v.text.upper().find(secret.upper()) != -1:
-                        Logger.warning(unsafeprompt("Plain", secret, v.text))
-                        return False
+                if secret := Secret.check(v.text):
+                    Logger.warning(unsafeprompt("Plain", secret, v.text))
+                    return False
             elif isinstance(v, EmbedElement):
-                for secret in Secret.list:
-                    if secret in ["", None, True, False]:
-                        continue
-                    if v.title:
-                        if v.title.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.title", secret, v.title))
-                            return False
-                    if v.description:
-                        if v.description.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.description", secret, v.description)
-                            )
-                            return False
-                    if v.footer:
-                        if v.footer.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.footer", secret, v.footer)
-                            )
-                            return False
-                    if v.author:
-                        if v.author.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.author", secret, v.author)
-                            )
-                            return False
-                    if v.url:
-                        if v.url.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.url", secret, v.url))
-                            return False
+                if v.title:
+                    if secret := Secret.check(v.title):
+                        Logger.warning(unsafeprompt("Embed.title", secret, v.title))
+                        return False
+                if v.description:
+                    if secret := Secret.check(v.description):
+                        Logger.warning(
+                            unsafeprompt("Embed.description", secret, v.description)
+                        )
+                        return False
+                if v.footer:
+                    if secret := Secret.check(v.footer):
+                        Logger.warning(
+                            unsafeprompt("Embed.footer", secret, v.footer)
+                        )
+                        return False
+                if v.author:
+                    if secret := Secret.check(v.author):
+                        Logger.warning(
+                            unsafeprompt("Embed.author", secret, v.author)
+                        )
+                        return False
+                if v.url:
+                    if secret := Secret.check(v.url):
+                        Logger.warning(unsafeprompt("Embed.url", secret, v.url))
+                        return False
+                if v.fields:
                     for f in v.fields:
-                        if f.name.upper().find(secret.upper()) != -1:
+                        if secret := Secret.check(f.name):
                             Logger.warning(
                                 unsafeprompt("Embed.field.name", secret, f.name)
                             )
                             return False
-                        if f.value.upper().find(secret.upper()) != -1:
+                        if secret := Secret.check(f.value):
                             Logger.warning(
                                 unsafeprompt("Embed.field.value", secret, f.value)
                             )
@@ -392,27 +388,70 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
                 type(chain).__name__}, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain.")
 
 
+def _extract_kecode_blocks(text):
+    result = []
+    i = 0
+    while i < len(text):
+        if text.startswith("[KE:", i):
+            start = i
+            i += 4  # Skip "[KE:"
+            depth = 1
+            while i < len(text):
+                if text.startswith("[KE:", i):
+                    break
+                if text[i] == "]" and depth == 1:
+                    i += 1
+                    result.append(text[start:i])
+                    break
+                if text[i] == "]":
+                    depth -= 1
+                    i += 1
+                else:
+                    i += 1
+            else:
+                result.append(text[start:])
+                break
+        else:
+            start = i
+            while i < len(text) and not text.startswith("[KE:", i):
+                i += 1
+            result.append(text[start:i])
+    return result
+
+
 def match_kecode(text: str,
-                 disable_joke: bool = False) -> List[Union[PlainElement,
-                                                           ImageElement,
-                                                           VoiceElement,
-                                                           I18NContextElement]]:
-    split_all = re.split(r"(\[Ke:.*?])", text)
+                 disable_joke: bool = False) -> List[Union[
+                     PlainElement, ImageElement, VoiceElement,
+                     I18NContextElement, MentionElement]]:
+    split_all = _extract_kecode_blocks(text)
     split_all = [x for x in split_all if x]
     elements = []
-    params = []
 
     for e in split_all:
-        match = re.match(r"\[Ke:([^\s,\]]+)(?:,([^\]]+))?\]", e)
+        match = re.match(r"\[KE:([^\s,\]]+)(?:,(.*))?\]$", e, re.DOTALL)
         if not match:
             if e != "":
                 elements.append(PlainElement.assign(e, disable_joke=disable_joke))
         else:
             element_type = match.group(1).lower()
+            param_str = match.group(2) or ""
 
-            if match.group(2):
-                params = match.group(2).split(",")
-                params = [x for x in params if x]
+            params = []
+            buf = ""
+            stack = []
+            for ch in param_str:
+                if ch == "," and not stack:
+                    params.append(buf)
+                    buf = ""
+                else:
+                    buf += ch
+                    if ch in "[{(<":
+                        stack.append(ch)
+                    elif ch in "]})>":
+                        if stack:
+                            stack.pop()
+            if buf:
+                params.append(buf)
 
             if element_type == "plain":
                 for a in params:
@@ -427,6 +466,7 @@ def match_kecode(text: str,
                     else:
                         a = html.unescape(a)
                         elements.append(PlainElement.assign(a, disable_joke=disable_joke))
+
             elif element_type == "image":
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -446,6 +486,7 @@ def match_kecode(text: str,
                     else:
                         a = html.unescape(a)
                         elements.append(ImageElement.assign(a))
+
             elif element_type == "voice":
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -460,6 +501,7 @@ def match_kecode(text: str,
                     else:
                         a = html.unescape(a)
                         elements.append(VoiceElement.assign(a))
+
             elif element_type == "i18n":
                 i18nkey = None
                 kwargs = {}
@@ -472,6 +514,7 @@ def match_kecode(text: str,
                             kwargs[ma.group(1)] = html.unescape(ma.group(2))
                 if i18nkey:
                     elements.append(I18NContextElement.assign(i18nkey, disable_joke, **kwargs))
+
             elif element_type == "mention":
                 for a in params:
                     ma = re.match(r"(.*?)=(.*)", a)
@@ -487,6 +530,17 @@ def match_kecode(text: str,
                         elements.append(MentionElement.assign(a))
 
     return elements
+
+
+def match_atcode(text: str, client: str, pattern: str) -> str:
+    def _replacer(match):
+        match_client = match.group(1)
+        user_id = match.group(2)
+        if match_client == client:
+            return pattern.replace("{uid}", user_id)
+        return match.group(0)
+
+    return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
 add_export(MessageChain)

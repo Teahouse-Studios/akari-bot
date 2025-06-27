@@ -1,28 +1,28 @@
 import asyncio
 import importlib
+import logging
 import os
 import re
 import sys
-import traceback
 
 import discord
 
-from bots.discord.client import client
-from bots.discord.info import *
-from core.builtins.bot import Bot
-from core.builtins.session.info import SessionInfo
-from core.builtins.message.chain import MessageChain
-from core.builtins.utils import command_prefix
-from core.config import Config
-from core.constants.path import assets_path
-from core.logger import Logger
-from core.utils.info import Info
-from core.client.init import client_init
-import orjson as json
+sys.path.append(os.getcwd())
 
-import logging
+from bots.discord.client import client  # noqa: E402
+from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager  # noqa: E402
+from bots.discord.info import *  # noqa: E402
+from core.builtins.bot import Bot  # noqa: E402
+from core.builtins.session.info import SessionInfo  # noqa: E402
+from core.builtins.message.chain import MessageChain  # noqa: E402
+from core.builtins.utils import command_prefix  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
+from core.logger import Logger  # noqa: E402
+from core.utils.info import Info  # noqa: E402
+from core.client.init import client_init  # noqa: E402
+import orjson as json  # noqa: E402
 
-from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
@@ -61,7 +61,7 @@ def load_slashcommands():
                 "Binary mode detected, trying to load pre-built slash list..."
             )
             js = "assets/discord_slash_list.json"
-            with open(js, "r", encoding="utf-8") as f:
+            with open(js, "rb") as f:
                 dir_list = json.loads(f.read())
         except Exception:
             Logger.error("Failed to load pre-built slash list, using default list.")
@@ -86,11 +86,9 @@ def load_slashcommands():
                 Logger.info(f"Loading slash.{fun_file}...")
                 modules = "bots.discord.slash." + fun_file
                 importlib.import_module(modules)
-                Logger.success(f"Succeeded loaded bots.discord.slash.{fun_file}!")
+                Logger.success(f"Successfully loaded bots.discord.slash.{fun_file}!")
         except Exception:
-            tb = traceback.format_exc()
-            errmsg = f"Failed to load bots.discord.slash.{fun_file}: \n{tb}"
-            Logger.error(errmsg)
+            Logger.exception(f"Failed to load bots.discord.slash.{fun_file}: ")
 
 
 load_slashcommands()
@@ -130,7 +128,7 @@ async def on_message(message: discord.Message):
     await Bot.process_message(session, message)
 
 
-if Config("enable", False, table_name="bot_discord"):
+if Config("enable", False, table_name="bot_discord") or __name__ == "__main__":
     loop = asyncio.new_event_loop()
     Info.client_name = client_name
     if "subprocess" in sys.argv:

@@ -4,10 +4,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.logger import Logger
-from core.queue.client import JobQueueClient
-from modules.wiki.database.models import WikiBotAccountList
-from .utils.bot import BotAccount, LoginFailed
+from .database.models import WikiBotAccountList
 from .utils.wikilib import WikiLib
+from .utils.bot import BotAccount, LoginFailed
 
 from core.scheduler import DateTrigger, IntervalTrigger
 

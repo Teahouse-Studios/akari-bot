@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import re
-import traceback
 import urllib.parse
 from copy import deepcopy
 from typing import Union, Dict, List
@@ -18,7 +17,8 @@ from core.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from .bot import BotAccount
+from core.utils.web_render import webrender
+from modules.wiki.utils.bot import BotAccount
 from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
 from .mapping import *
 
@@ -178,7 +178,7 @@ class WikiLib:
                 if "*" in ns and "canonical" in ns:
                     namespaces_local.update({ns["*"]: ns["canonical"]})
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
         for x in info["query"]["namespacealiases"]:
             if "*" in x:
                 namespaces[x["*"]] = x["id"]
@@ -251,7 +251,7 @@ class WikiLib:
                 )
             except Exception as e:
                 if Config("debug", False):
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
                 if str(e).startswith("403"):
                     message = self.locale.t(
                         "wiki.message.utils.wikilib.get_failed.forbidden"
@@ -290,7 +290,7 @@ class WikiLib:
             )
         except Exception as e:
             if Config("debug", False):
-                Logger.error(traceback.format_exc())
+                Logger.exception()
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(
                 e
             )
@@ -380,7 +380,7 @@ class WikiLib:
                     )
                 desc = desc_end[0]
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             desc = ""
         if desc in ["...", "…"]:
             desc = ""
@@ -432,7 +432,7 @@ class WikiLib:
             )
             desc = load_desc["parse"]["wikitext"]["*"]
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             desc = ""
         return desc
 
@@ -571,7 +571,7 @@ class WikiLib:
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if _tried > 5 and enable_tos:
-            raise AbuseWarning("{tos.message.reason.too_many_redirects}")
+            raise AbuseWarning("{I18N:tos.message.reason.too_many_redirects}")
         selected_section = None
         query_props = ["info", "imageinfo", "langlinks", "templates"]
         if self.wiki_info.api.find("moegirl.org.cn") != -1:
@@ -784,7 +784,7 @@ class WikiLib:
                                         return research
                                     except Exception:
                                         if Config("debug", False):
-                                            Logger.error(traceback.format_exc())
+                                            Logger.exception()
                                         return None, False
 
                                 searches = []
@@ -831,7 +831,7 @@ class WikiLib:
                                         page_info.is_forum_topic = True
                                         break
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                     templates = page_info.templates = [
                         t["title"] for t in page_raw.get("templates", [])
@@ -1099,7 +1099,7 @@ class WikiLib:
                 checklist.append(page_info.before_title)
             if page_info.desc:
                 checklist.append(page_info.desc)
-            chk = await check(*checklist)
+            chk = await check(checklist)
             for x in chk:
                 if not x["status"]:
                     ban = True

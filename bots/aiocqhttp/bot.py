@@ -9,23 +9,24 @@ import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
-from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager
-from bots.aiocqhttp.info import *
-from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
-from core.builtins.bot import Bot
-from core.builtins.session.info import SessionInfo
-from core.builtins.utils import command_prefix
-from core.builtins.temp import Temp
-from core.client.init import client_init
-from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
-from core.constants.info import Info
-from core.constants.path import assets_path
-from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
-from core.i18n import Locale
-from core.tos import tos_report
+sys.path.append(os.getcwd())
 
+from bots.aiocqhttp.client import bot  # noqa: E402
+from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager  # noqa: E402
+from bots.aiocqhttp.info import *  # noqa: E402
+from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation  # noqa: E402
+from core.builtins.bot import Bot  # noqa: E402
+from core.builtins.session.info import SessionInfo  # noqa: E402
+from core.builtins.utils import command_prefix  # noqa: E402
+from core.builtins.temp import Temp  # noqa: E402
+from core.client.init import client_init  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default  # noqa: E402
+from core.constants.info import Info  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
+from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords  # noqa: E402
+from core.i18n import Locale  # noqa: E402
+from core.tos import tos_report  # noqa: E402
 
 Bot.register_bot(client_name=client_name,
                  private_assets_path=os.path.join(assets_path, "private", "aiocqhttp"),
@@ -60,7 +61,7 @@ async def _(event: Event):
 
 
 async def message_handler(event: Event):
-    qq_account = Temp().data.get("qq_account")
+    qq_account = Temp.data.get("qq_account")
     if event.detail_type == "private" and event.sub_type == "group" \
             and Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp"):
         return
@@ -152,7 +153,7 @@ async def _(event: Event):
 @bot.on("request.friend")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
-    sender_info = await SenderInfo.get(sender_id=sender_id)
+    sender_info = await SenderInfo.get_by_sender_id(sender_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
     if Config("qq_allow_approve_friend", False, table_name="bot_aiocqhttp"):
@@ -165,9 +166,9 @@ async def _(event: Event):
 @bot.on("request.group.invite")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
-    sender_info = await SenderInfo.get(sender_id=sender_id)
+    sender_info = await SenderInfo.get_by_sender_id(sender_id)
     target_id = f"{target_group_prefix}|{event.group_id}"
-    target_info = await TargetInfo.get(target_id=target_id)
+    target_info = await TargetInfo.get_by_target_id(target_id)
     if sender_info.superuser or sender_info.trusted:
         return {"approve": True}
     if Config("qq_allow_approve_group_invite", False, table_name="bot_aiocqhttp"):
@@ -179,20 +180,23 @@ async def _(event: Event):
 
 @bot.on_notice("group_ban")
 async def _(event: Event):
-    qq_account = Temp().data.get("qq_account")
+    qq_account = Temp.data.get("qq_account")
     if enable_tos and event.user_id == int(qq_account):
         sender_id = f"{sender_prefix}|{event.operator_id}"
-        sender_info = await SenderInfo.get(sender_id=sender_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(target_id=target_id,
                                              sender_id=sender_id,
                                              action="mute",
                                              detail=str(event.duration))
+        Logger.info(f"Unfriendly action detected: mute ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True
         if result and not sender_info.superuser:
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: mute")
+            Logger.info(f"Block {target_id} by ToS: mute")
             reason = Locale(default_locale).t("tos.message.reason.mute")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
@@ -205,13 +209,17 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos and event.sub_type == "kick_me":
         sender_id = f"{sender_prefix}|{event.operator_id}"
-        sender_info = await SenderInfo.get(sender_id=sender_id)
+        sender_info = await SenderInfo.get_by_sender_id(sender_id)
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(target_id=target_id,
                                              sender_id=sender_id,
-                                             action="kick")
+                                             action="kick",
+                                             detail="")
+        Logger.info(f"Unfriendly action detected: kick")
         if not sender_info.superuser:
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
+            Logger.info(f"Block {target_id} by ToS: kick")
             reason = Locale(default_locale).t("tos.message.reason.kick")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
@@ -223,7 +231,7 @@ async def _(event: Event):
 async def _(event: Event):
     if enable_tos:
         target_id = f"{target_group_prefix}|{event.group_id}"
-        target_info = await TargetInfo.get_or_none(target_id=target_id)
+        target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info and target_info.blocked:
             res = Locale(default_locale).t("tos.message.in_group_blocklist")
             if issue_url := Config("issue_url", issue_url_default):
@@ -233,7 +241,7 @@ async def _(event: Event):
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
-if qq_host and Config("enable", False, table_name="bot_aiocqhttp"):
+if qq_host and (Config("enable", False, table_name="bot_aiocqhttp") or __name__ == "__main__"):
     argv = sys.argv
     Info.client_name = client_name
     HyperConfig.startup_timeout = 120

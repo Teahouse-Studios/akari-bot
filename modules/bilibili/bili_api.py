@@ -35,65 +35,65 @@ async def get_video_info(
     tname = view["tname"]
     desc = view["desc"]
     desc = (desc[:100] + "...") if len(desc) > 100 else desc
-    time = msg.ts2strftime(view["ctime"], iso=True, timezone=False)
+    time = msg.format_time(view["ctime"], iso=True, timezone=False)
 
     if len(view["pages"]) > 1:
-        pages = f"[I18N:message.brackets,msg={len(view["pages"])}P]"
+        pages = str(I18NContext("message.brackets", msg=f"{len(view["pages"])}P"))
     else:
         pages = ""
 
-    stat_view = msg.session_info.locale.num(stat["view"], 1)
-    stat_danmaku = msg.session_info.locale.num(stat["danmaku"], 1)
-    stat_reply = msg.session_info.locale.num(stat["reply"], 1)
-    stat_favorite = msg.session_info.locale.num(stat["favorite"], 1)
-    stat_coin = msg.session_info.locale.num(stat["coin"], 1)
-    stat_share = msg.session_info.locale.num(stat["share"], 1)
-    stat_like = msg.session_info.locale.num(stat["like"], 1)
+    stat_view = msg.format_num(stat["view"], 1)
+    stat_danmaku = msg.format_num(stat["danmaku"], 1)
+    stat_reply = msg.format_num(stat["reply"], 1)
+    stat_favorite = msg.format_num(stat["favorite"], 1)
+    stat_coin = msg.format_num(stat["coin"], 1)
+    stat_share = msg.format_num(stat["share"], 1)
+    stat_like = msg.format_num(stat["like"], 1)
 
     owner = view["owner"]["name"]
     avatar = view["owner"]["face"]
-    fans = msg.session_info.locale.num(res["data"]["Card"]["card"]["fans"], 1)
+    fans = msg.format_num(res["data"]["Card"]["card"]["fans"], 1)
 
     if use_embed:
         return Embed(
             title=f"{title}{pages}",
             description=desc,
             url=video_url,
-            author=f"{owner}{f"[I18N:message.brackets,msg={fans}]"}",
+            author=f"{owner}{str(I18NContext("message.brackets", msg=fans))}",
             footer="Bilibili",
             image=Image(pic),
             thumbnail=Image(avatar),
             fields=[
-                EmbedField("[I18N:bilibili.message.embed.type]", tname),
-                EmbedField("[I18N:bilibili.message.embed.view]",
+                EmbedField("{I18N:bilibili.message.embed.type}", tname),
+                EmbedField("{I18N:bilibili.message.embed.view}",
                            stat_view,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.danmaku]",
+                EmbedField("{I18N:bilibili.message.embed.danmaku}",
                            stat_danmaku,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.reply]",
+                EmbedField("{I18N:bilibili.message.embed.reply}",
                            stat_reply,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.like]",
+                EmbedField("{I18N:bilibili.message.embed.like}",
                            stat_like,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.coin]",
+                EmbedField("{I18N:bilibili.message.embed.coin}",
                            stat_coin,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.favorite]",
+                EmbedField("{I18N:bilibili.message.embed.favorite}",
                            stat_favorite,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.share]",
+                EmbedField("{I18N:bilibili.message.embed.share}",
                            stat_share,
                            inline=True,
                            ),
-                EmbedField("[I18N:bilibili.message.embed.time]", time),
+                EmbedField("{I18N:bilibili.message.embed.time}", time),
             ],
         )
 

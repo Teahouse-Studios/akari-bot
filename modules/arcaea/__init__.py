@@ -15,13 +15,13 @@ arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 arc = module(
     "arcaea",
     developers=["OasisAkari"],
-    desc="[I18N:arcaea.help.desc]",
+    desc="{I18N:arcaea.help.desc}",
     doc=True,
     alias=["a", "arc"],
 )
 
 
-@arc.command("download {[I18N:arcaea.help.download]}")
+@arc.command("download {{I18N:arcaea.help.download}}")
 async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
@@ -34,7 +34,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("arcaea.message.get_failed"))
 
 
-@arc.command("random {[I18N:arcaea.help.random]}")
+@arc.command("random {{I18N:arcaea.help.random}}")
 async def _(msg: Bot.MessageSession):
     url = "https://webapi.lowiro.com/webapi/song/showcase/"
     resp = await web_render.source(SourceOptions(url=url, raw_text=True))
@@ -51,7 +51,8 @@ async def _(msg: Bot.MessageSession):
 
 
 @arc.command(
-    "rank free {[I18N:arcaea.help.rank.free]}", "rank paid {[I18N:arcaea.help.rank.paid]}"
+    "rank free {{I18N:arcaea.help.rank.free}}",
+    "rank paid {{I18N:arcaea.help.rank.paid}}"
 )
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("free", False):
@@ -72,7 +73,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("arcaea.message.get_failed"))
 
 
-@arc.command("calc <score> <rating> {[I18N:arcaea.help.calc]}")
+@arc.command("calc <score> <rating> {{I18N:arcaea.help.calc}}")
 async def _(msg: Bot.MessageSession, score: int, rating: float):
     if score >= 10000000:
         ptt = rating + 2

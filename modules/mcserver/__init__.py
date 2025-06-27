@@ -16,9 +16,9 @@ s = module(
 
 
 @s.command(
-    "<address:port> [-r] [-p] {[I18N:server.help]}",
-    options_desc={"-r": "[I18N:server.help.option.r]",
-                  "-p": "[I18N:server.help.option.p]"}
+    "<address:port> [-r] [-p] {{I18N:server.help}}",
+    options_desc={"-r": "{I18N:server.help.option.r}",
+                  "-p": "{I18N:server.help.option.p}"}
 )
 async def _(msg: Bot.MessageSession):
     server_address = msg.parsed_msg["<address:port>"]
@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("server.message.not_found"))
     else:
         sendmsg = "\n".join(sendmsg).split("\n")
-        sendmsg = await check(*sendmsg)
+        sendmsg = await check(sendmsg)
         t = "\n".join(x["content"] for x in sendmsg)
         await msg.finish(t.strip())
 

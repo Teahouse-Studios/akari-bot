@@ -1,6 +1,5 @@
 import base64
 import re
-import traceback
 from html import escape
 from io import BytesIO
 from typing import Any, List, Union
@@ -9,7 +8,7 @@ import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate
 
-from core.constants.info import Info
+from core.constants import Info
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -34,17 +33,14 @@ class ImageTable:
 async def image_table_render(
     table: Union[ImageTable, List[ImageTable]],
     save_source: bool = True,
-    use_local: bool = True,
 ) -> Union[List[PILImage.Image], bool]:
     """
     使用WebRender渲染图片表格。
 
     :param table: 要渲染的表格。
     :param save_source: 是否保存源文件。
-    :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象。
     """
-
     try:
         tblst = []
         if isinstance(table, ImageTable):
@@ -87,7 +83,7 @@ async def image_table_render(
                 fi.write(tblst + css)
         image_list = await web_render.legacy_screenshot(LegacyScreenshotOptions(content=tblst + css, width=w, mw=False))
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False
     return cb64imglst(image_list)
 

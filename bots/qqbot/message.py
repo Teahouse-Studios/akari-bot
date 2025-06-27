@@ -1,5 +1,5 @@
 import re
-import traceback
+import html
 from typing import List, Union
 
 import filetype
@@ -7,28 +7,25 @@ from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.errors import ServerError
 from botpy.types.message import Reference
 
-from bots.qqbot.info import *
 from core.builtins import (
     Bot,
     Plain,
     Image,
-    MessageSession as MessageSessionT,
     I18NContext,
     Url,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
 from core.config import Config
-from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.http import download, url_pattern
 from core.utils.image import msgchain2image
+from .info import *
 
-
-enable_analytics = Config("enable_analytics", False)
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
 
 
@@ -51,7 +48,7 @@ class FinishedSession(FinishedSessionT):
                         message_id=x,
                     )
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -86,6 +83,8 @@ class MessageSession(MessageSessionT):
 
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = html.unescape(x.text)
+                x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 plains.append(x)
             elif isinstance(x, ImageElement):
                 images.append(x)
@@ -323,7 +322,7 @@ class MessageSession(MessageSessionT):
         if self.session_info.target_from in [target_guild_prefix, target_direct_prefix]:
             msg = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", msg)
         else:
-            msg = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", msg)
+            msg = re.sub(r"<@(\d+)>", rf"{sender_prefix}|\1", msg)
         return msg
 
     async def delete(self):
@@ -336,7 +335,7 @@ class MessageSession(MessageSessionT):
                 )
                 return True
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 return False
         else:
             return False

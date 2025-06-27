@@ -14,7 +14,10 @@ import httpx
 import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.builtins.bot import Bot
+from core.constants import Info
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext
+from core.builtins.types import MessageElement
 from core.config import Config
 from core.database.local import DirtyWordCache
 from core.logger import Logger
@@ -43,17 +46,17 @@ def parse_data(result: dict, additional_text=None) -> Dict:
                         if "positions" in itemContext:
                             for pos in itemContext["positions"]:
                                 filter_words_length = pos["endPos"] - pos["startPos"]
-                                reason = f"[I18N:check.redacted,reason={itemDetail["label"]}]"
+                                reason = str(I18NContext("check.redacted", reason=itemDetail["label"]))
                                 content = (content[: pos["startPos"] + _offset] +
                                            reason + content[pos["endPos"] + _offset:])
                                 if additional_text:
                                     content += "\n" + additional_text + "\n"
                                 _offset += len(reason) - filter_words_length
                         else:
-                            content = f"[I18N:check.redacted,reason={itemDetail["label"]}]"
+                            content = str(I18NContext("check.redacted", reason=itemDetail["label"]))
                         status = False
                 else:
-                    content = f"[I18N:check.redacted.all,reason={itemDetail["label"]}]"
+                    content = str(I18NContext("check.redacted.all", reason=itemDetail["label"]))
 
                     if additional_text:
                         content += "\n" + additional_text + "\n"
@@ -62,7 +65,7 @@ def parse_data(result: dict, additional_text=None) -> Dict:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict]:
+async def check(text: Union[str, List[str], List[MessageElement], MessageElement, MessageChain], additional_text=None) -> List[Dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
@@ -71,9 +74,15 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
     """
     access_key_id = Config("check_access_key_id", cfg_type=str, secret=True)
     access_key_secret = Config("check_access_key_secret", cfg_type=str, secret=True)
-    text = list(text)
-    text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
-    if not access_key_id or not access_key_secret or not Bot.Info.dirty_word_check:
+
+    if isinstance(text, str):
+        text = [text]
+    if isinstance(text, MessageElement):
+        text = [str(text)]
+    if isinstance(text, list) or isinstance(text, MessageChain):
+        text = [str(x) for x in text]
+
+    if not access_key_id or not access_key_secret or not Info.dirty_word_check:
         Logger.warning("Dirty words filter was disabled, skip.")
         return [{"content": t, "status": True, "original": t} for t in text]
 
@@ -153,13 +162,13 @@ async def check(*text: Union[str, List[str]], additional_text=None) -> List[Dict
     return results
 
 
-async def check_bool(*text: Union[str, List[str]]) -> bool:
+async def check_bool(text: Union[str, List[str], List[MessageElement], MessageElement, MessageChain]) -> bool:
     """检查字符串是否合规。
 
     :param text: 字符串（List/Union）。
     :returns: 字符串是否合规。
     """
-    chk = await check(*text)
+    chk = await check(text)
     for x in chk:
         if not x["status"]:
             return True
@@ -171,6 +180,7 @@ def rickroll() -> str:
 
     :returns: Rickroll消息。
     """
-    if rickroll_msg := Config("rickroll_msg", cfg_type=str) and Config("enable_rickroll", True):
+    rickroll_msg = Config("rickroll_msg", cfg_type=str)
+    if Config("enable_rickroll", True) and rickroll_msg:
         return rickroll_msg
-    return "[I18N:error.message.chain.unsafe]"
+    return "{I18N:error.message.chain.unsafe}"

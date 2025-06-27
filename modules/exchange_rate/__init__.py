@@ -7,20 +7,20 @@ from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
-from core.utils.text import isfloat
+from core.utils.message import isfloat
 
 api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True, table_name="module_exchange_rate")
 
 excr = module(
     "exchange_rate",
-    desc="[I18N:exchange_rate.help.desc]",
+    desc="{I18N:exchange_rate.help.desc}",
     doc=True,
     alias=["exchangerate", "exchange", "excr"],
     developers=["DoroWolf"],
 )
 
 
-@excr.command("<base> <target> {[I18N:exchange_rate.help]}")
+@excr.command("<base> <target> {{I18N:exchange_rate.help}}")
 async def _(msg: Bot.MessageSession, base: str, target: str):
     base = base.upper()
     target = target.upper()
@@ -29,7 +29,7 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
     base_currency = base[-3:]
 
     if not api_key:
-        raise ConfigValueError("[I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{{I18N:error.config.secret.not_found]")
 
     try:
         amount = amount if amount else 1
@@ -61,7 +61,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
-    time = msg.ts2strftime(
+    time = msg.format_time(
         datetime.datetime.now().timestamp(), time=False, timezone=False
     )
     if data and data["result"] == "success":
@@ -81,7 +81,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
     r"(\d+(?:\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})",
     mode="M",
     flags=re.I,
-    desc="[I18N:exchange_rate.help.regex.desc]",
+    desc="{I18N:exchange_rate.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg

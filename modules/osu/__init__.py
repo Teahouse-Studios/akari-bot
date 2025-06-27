@@ -8,18 +8,18 @@ from .utils import get_profile_name
 
 api_key = Config("osu_api_key", cfg_type=str, secret=True, table_name="module_osu")
 
-osu = module("osu", developers=["DoroWolf"], desc="[I18N:osu.help.desc]", doc=True)
+osu = module("osu", developers=["DoroWolf"], desc="{I18N:osu.help.desc}", doc=True)
 
 
 @osu.command(
-    "profile [<username>] [-t <mode>] {[I18N:osu.help.profile]}",
-    options_desc={"-t": "[I18N:osu.help.option.t]"},
+    "profile [<username>] [-t <mode>] {{I18N:osu.help.profile}}",
+    options_desc={"-t": "{I18N:osu.help.option.t}"},
 )
 async def _(msg: Bot.MessageSession, username: str = None):
     if username:
         query_id = username.lower()
     else:
-        bind_info = await OsuBindInfo.get_or_none(sender_id=msg.session_info.sender_id)
+        bind_info = await OsuBindInfo.get_by_sender_id(msg, create=False)
         if not bind_info:
             await msg.finish(I18NContext("osu.message.user_unbound", prefix=msg.session_info.prefixes[0]))
         query_id = bind_info.username
@@ -28,10 +28,10 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await osu_profile(msg, query_id, mode, api_key)
 
 
-@osu.command("bind <username> {[I18N:osu.help.bind]}")
+@osu.command("bind <username> {{I18N:osu.help.bind}}")
 async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
-    getcode = await get_profile_name(msg, code, api_key)
+    getcode = await get_profile_name(code, api_key)
     if getcode:
         await OsuBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=getcode[0])
         if getcode[1]:
@@ -43,7 +43,7 @@ async def _(msg: Bot.MessageSession, username: str):
         await msg.finish(I18NContext("osu.message.bind.failed"))
 
 
-@osu.command("unbind {[I18N:osu.help.unbind]}")
+@osu.command("unbind {{I18N:osu.help.unbind}}")
 async def _(msg: Bot.MessageSession):
     await OsuBindInfo.remove_bind_info(msg.session_info.sender_id)
     await msg.finish(I18NContext("osu.message.unbind.success"))

@@ -11,7 +11,7 @@ from modules.weekly import get_weekly, get_teahouse_rss
 
 weekly_rss = module(
     "weekly_rss",
-    desc="[I18N:weekly_rss.help.desc]",
+    desc="{I18N:weekly_rss.help.desc}",
     developers=["Dianliang233"],
     alias="weeklyrss",
     doc=True,
@@ -19,9 +19,27 @@ weekly_rss = module(
 )
 
 
+@weekly_rss.hook()
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+    weekly_cn = MessageChain(ctx.args["weekly_cn"])
+    weekly_tw = MessageChain(ctx.args["weekly_tw"])
+    if Bot.Info.client_name == "QQ":
+        weekly_cn = [
+            Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))
+        ] + weekly_cn.as_sendable()
+        weekly_tw = [
+            Plain(Locale("zh_tw").t("weekly_rss.message", prefix=command_prefix[0]))
+        ] + weekly_tw.as_sendable()
+        weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
+        weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
+    post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
+    await fetch.post_message("weekly_rss", message=post_msg, i18n=True)
+    Logger.success("Weekly checked.")
+
+
 teahouse_weekly_rss = module(
     "teahouse_weekly_rss",
-    desc="[I18N:weekly_rss.help.teahouse_weekly_rss.desc]",
+    desc="{I18N:weekly_rss.help.teahouse_weekly_rss.desc}",
     developers=["OasisAkari"],
     alias=["teahouseweeklyrss", "teahouserss"],
     doc=True,
@@ -78,12 +96,9 @@ async def teahouse_weekly_rss():
             + weekly
         )
     ]
-    weekly_cn = MessageChain.assign(weekly_cn)
-    weekly_tw = MessageChain.assign(weekly_tw)
-    weekly_cn_qq = MessageChain.assign(await msgchain2image(weekly_cn))
-    weekly_tw_qq = MessageChain.assign(await msgchain2image(weekly_tw))
-    post_msg = I18NMessageChain.assign({"zh_cn": weekly_cn, "zh_tw": weekly_tw, "default": weekly_cn})
-    post_msg_qq = I18NMessageChain.assign({"zh_cn": weekly_cn_qq, "zh_tw": weekly_tw_qq, "default": weekly_cn_qq})
-    await Bot.post_message("teahouse_weekly_rss", PlatformMessageChain.assign(
-                           {'QQ': post_msg_qq, 'default': post_msg}))
+    if Bot.Info.client_name == "QQ":
+        weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
+        weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
+    post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
+    await fetch.post_message("teahouse_weekly_rss", message=post_msg, i18n=True)
     Logger.success("Teahouse Weekly checked.")

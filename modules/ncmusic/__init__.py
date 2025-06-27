@@ -5,7 +5,7 @@ from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.text import isint
+from core.utils.message import isint
 
 API = Config("ncmusic_api", cfg_type=str, secret=True, table_name="module_ncmusic")
 SEARCH_LIMIT = 10
@@ -13,26 +13,26 @@ SEARCH_LIMIT = 10
 ncmusic = module(
     "ncmusic",
     developers=["bugungu"],
-    desc="[I18N:ncmusic.help.desc]",
+    desc="{I18N:ncmusic.help.desc}",
     doc=True,
     support_languages=["zh_cn"],
 )
 
 
 @ncmusic.command(
-    "search [--legacy] <keyword> {[I18N:ncmusic.help.search]}",
-    options_desc={"--legacy": "[I18N:help.option.legacy]"},
+    "search [--legacy] <keyword> {{I18N:ncmusic.help.search}}",
+    options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
 async def _(msg: Bot.MessageSession, keyword: str):
     if not API:
-        raise ConfigValueError("[I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
     url = f"{API}/search?keywords={keyword}"
     result = await get_url(url, 200, fmt="json")
     song_count = result["result"]["songCount"]
     legacy = True
 
     if song_count == 0:
-        await msg.finish(msg.session_info.locale.t("ncmusic.message.search.not_found"))
+        await msg.finish(I18NContext("ncmusic.message.search.not_found"))
 
     songs = result["result"]["songs"][:SEARCH_LIMIT]
 
@@ -82,8 +82,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
         if song_count == 1:
             send_msg.append(I18NContext("ncmusic.message.search.confirm"))
-            query = await msg.wait_confirm(send_msg, delete=False)
-            if query:
+            if await msg.wait_confirm(send_msg, delete=False):
                 sid = result["result"]["songs"][0]["id"]
             else:
                 await msg.finish()
@@ -127,9 +126,8 @@ async def _(msg: Bot.MessageSession, keyword: str):
             send_msg += msg.session_info.locale.t("message.collapse", amount=SEARCH_LIMIT)
 
         if song_count == 1:
-            send_msg += "\n" + msg.session_info.locale.t("ncmusic.message.search.confirm")
-            query = await msg.wait_confirm(send_msg, delete=False)
-            if query:
+            send_msg += "\n" + msg.locale.t("ncmusic.message.search.confirm")
+            if await msg.wait_confirm(send_msg, delete=False):
                 sid = result["result"]["songs"][0]["id"]
             else:
                 await msg.finish()
@@ -157,7 +155,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await info(msg, sid)
 
 
-@ncmusic.command("<sid> {[I18N:ncmusic.help]}", available_for=["QQ|Group", "QQ|Private"])
+@ncmusic.command("<sid> {{I18N:ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])
 async def _(msg: Bot.MessageSession, sid: int):
     if Config("ncmusic_enable_card", False, table_name="module_ncmusic"):
         await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
@@ -165,14 +163,14 @@ async def _(msg: Bot.MessageSession, sid: int):
         await info(msg, sid)
 
 
-@ncmusic.command("info <sid> {[I18N:ncmusic.help.info]}")
+@ncmusic.command("info <sid> {{I18N:ncmusic.help.info}}")
 async def _(msg: Bot.MessageSession, sid: int):
     await info(msg, sid)
 
 
 async def info(msg: Bot.MessageSession, sid: int):
     if not API:
-        raise ConfigValueError("[I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
     url = f"{API}/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt="json")
 
@@ -196,4 +194,4 @@ async def info(msg: Bot.MessageSession, sid: int):
             ]
         )
     else:
-        await msg.finish(msg.session_info.locale.t("ncmusic.message.info.not_found"))
+        await msg.finish(I18NContext("ncmusic.message.info.not_found"))

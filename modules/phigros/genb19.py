@@ -1,5 +1,4 @@
 import os
-import traceback
 
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
@@ -151,7 +150,7 @@ def drawb19(username, rks_acc, b19data):
             fname += 1
             s += 1
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             break
     if __name__ == "__main__":
         b19img.show()
