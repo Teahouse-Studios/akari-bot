@@ -21,7 +21,6 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.builtins.parser.message import check_temp_ban, remove_temp_ban
 from core.server.terminate import restart
-from core.tos import pardon_user, warn_user
 from core.types import Param
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
@@ -686,50 +685,6 @@ async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish(I18NContext("message.failed"))
-
-petal_ = module("petal", alias="petals", base=True, doc=True, load=Config("enable_petal", False))
-
-
-@petal_.command("{[I18N:core.help.petal]}")
-async def _(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
-
-
-@petal_.command('[<sender>]', required_superuser=True, exclude_from=['TEST|Console'])
-async def _(msg: Bot.MessageSession, sender: str = None):
-    if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
-        await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
-    sender_info = await SenderInfo.get(sender_id=sender)
-    await msg.finish(I18NContext("core.message.petal", sender=sender, petal=sender_info.petal))
-
-
-@petal_.command("modify <petal>", available_for=["TEST|Console"])
-@petal_.command("modify <petal> [<sender>]", required_superuser=True, exclude_from=["TEST|Console"])
-async def _(msg: Bot.MessageSession, petal: int, sender: str = None):
-    if sender:
-        if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
-            await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
-        sender_info = await SenderInfo.get(sender_id=sender)
-        await sender_info.modify_petal(petal)
-        await msg.finish(I18NContext("core.message.petal.modify", sender=sender, add_petal=petal, petal=sender_info.petal))
-    else:
-        sender_info = await SenderInfo.get(sender_id=msg.session_info.sender_id)
-        await sender_info.modify_petal(petal)
-        await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=sender_info.petal))
-
-
-@petal_.command("clear", required_superuser=True, available_for=["TEST|Console"])
-@petal_.command("clear [<sender>]", required_superuser=True, exclude_from=["TEST|Console"])
-async def _(msg: Bot.MessageSession, sender: str = None):
-    if sender:
-        if not any(sender.startswith(f"{sender_from}|") for sender_from in sender_list):
-            await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
-        sender_info = await SenderInfo.get(sender_id=sender)
-        await sender_info.clear_petal()
-        await msg.finish(I18NContext("core.message.petal.clear", sender=sender))
-    else:
-        await msg.session_info.sender_info.clear_petal()
-        await msg.finish(I18NContext("core.message.petal.clear.self"))
 
 
 jobqueue = module("jobqueue", required_superuser=True, base=True)
