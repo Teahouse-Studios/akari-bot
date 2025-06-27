@@ -2,7 +2,8 @@ import re
 
 from aiocqhttp.exceptions import NetworkError
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.logger import Logger
 from modules.wiki.database.models import WikiTargetInfo

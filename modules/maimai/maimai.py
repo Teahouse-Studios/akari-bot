@@ -1,4 +1,4 @@
-from core.builtins import Image as BImage, I18NContext
+from core.builtins.message.internal import Image as BImage, I18NContext
 from core.component import module
 from core.utils.message import isint
 from .database.models import DivingProberBindInfo

@@ -127,7 +127,7 @@ def multiprocess_run_until_complete(func):
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
-    from core.builtins import Info  # noqa
+    from core.constants import Info  # noqa
     from core.logger import Logger  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")

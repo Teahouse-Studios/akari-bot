@@ -2,7 +2,8 @@ import re
 
 import orjson as json
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *

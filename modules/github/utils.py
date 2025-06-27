@@ -1,6 +1,6 @@
 import datetime
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.dirty_check import check_bool
 
 

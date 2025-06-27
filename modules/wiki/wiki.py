@@ -4,7 +4,9 @@ from typing import Optional, Union
 
 import filetype
 
-from core.builtins import Bot, I18NContext, Plain, Image, Voice, Url, confirm_command
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
+from core.builtins.utils import confirm_command
 from core.builtins import MessageSession
 from core.component import module
 from core.constants.exceptions import AbuseWarning
@@ -101,7 +103,7 @@ async def query_pages(
         raise TypeError("Session must be Bot.MessageSession or QueryInfo.")
 
     if not start_wiki:
-        if isinstance(session, Bot.MessageSession):
+        if isinstance(session, MessageSession):
             await session.finish(
                 session.session_info.locale.t("wiki.message.set.not_set", prefix=session.session_info.prefixes[0])
             )

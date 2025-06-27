@@ -4,7 +4,9 @@ from typing import List, Optional, Tuple
 import emoji
 import orjson as json
 
-from core.builtins import Bot, MessageChain, Image, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
@@ -166,21 +168,21 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
         if supported_emojis:
-            send_msgs = MessageChain(I18NContext("emojimix.message.combine_supported", emoji=emoji))
+            send_msgs = MessageChain.assign(I18NContext("emojimix.message.combine_supported", emoji=emoji))
             if Bot.Info.client_name == "Discord":
-                send_msgs += MessageChain([Plain("".join(supported_emojis[i:i + 200]))
-                                           for i in range(0, len(supported_emojis), 200)])
+                send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
+                                                  for i in range(0, len(supported_emojis), 200)])
             else:
                 send_msgs.append(Plain("".join(supported_emojis)))
             await msg.finish(send_msgs)
         else:
             await msg.finish(I18NContext("emojimix.message.unsupported", emoji=emoji))
     else:
-        send_msgs = MessageChain(I18NContext("emojimix.message.all_supported"))
+        send_msgs = MessageChain.assign(I18NContext("emojimix.message.all_supported"))
         if supported_emojis:
-            if msg.target.client_name == "Discord":
-                send_msgs += MessageChain([Plain("".join(supported_emojis[i:i + 200]))
-                                           for i in range(0, len(supported_emojis), 200)])
+            if Bot.Info.client_name == "Discord":
+                send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
+                                                  for i in range(0, len(supported_emojis), 200)])
             else:
                 send_msgs.append(Plain("".join(supported_emojis)))
         await msg.finish(send_msgs)

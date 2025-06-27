@@ -11,7 +11,7 @@ from PIL import Image as PILImage
 from akari_bot_webrender.functions.options import SectionScreenshotOptions, LegacyScreenshotOptions
 from bs4 import BeautifulSoup, Comment
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import get_url, post_url, download

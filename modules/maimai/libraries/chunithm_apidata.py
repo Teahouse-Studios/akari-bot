@@ -2,7 +2,9 @@ from typing import Optional
 
 import orjson as json
 
-from core.builtins import Bot, MessageChain, I18NContext, Image, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import post_url

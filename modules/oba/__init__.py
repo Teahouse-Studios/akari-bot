@@ -1,7 +1,8 @@
 import re
 from datetime import datetime
 
-from core.builtins import Bot, I18NContext, Image, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.component import module
 from core.utils.http import get_url
 
