@@ -18,6 +18,7 @@ from core.constants.default import bug_report_url_default, ignored_sender_defaul
 from core.constants.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, \
     InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
+from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.exports import exports
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
