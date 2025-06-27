@@ -1,4 +1,5 @@
-from core.builtins import MessageChain, Plain, I18NContext, Url
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check
 from modules.wiki.utils.wikilib import WikiLib
 

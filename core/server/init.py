@@ -34,7 +34,6 @@ async def init_async(start_scheduler=True) -> None:
     Logger.info("Initializing database...")
     if await init_db():
         Logger.success("Database initialized successfully.")
-    await JobQueuesTable.clear_task()
 
     load_modules()
     gather_list = []

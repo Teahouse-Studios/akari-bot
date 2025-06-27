@@ -6,8 +6,8 @@ import filetype
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain, Image, Voice, Url
+from core.builtins.session.internal import MessageSession
 from core.builtins.utils import confirm_command
-from core.builtins import MessageSession
 from core.component import module
 from core.constants.exceptions import AbuseWarning
 from core.logger import Logger

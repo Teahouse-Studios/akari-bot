@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 import numpy as np
 
-from core.builtins import I18NContext
+from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.utils.message import isint
 from core.utils.random import Random

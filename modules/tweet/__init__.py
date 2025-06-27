@@ -9,8 +9,9 @@ from core.builtins.message.internal import I18NContext, Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.utils.http import download, get_url
+from core.utils.image import cb64imglst
 from core.utils.message import isint
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 t = module(
     "tweet",
