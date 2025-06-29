@@ -147,7 +147,7 @@ class MessageSession(MessageSessionT):
                                     if previous_was_cq:
                                         convert_msg_segments = (
                                             convert_msg_segments
-                                            + MessageSegment.text("\u200B")
+                                            + MessageSegment.text("\u200b")
                                         )
                                     convert_msg_segments = (
                                         convert_msg_segments
@@ -162,7 +162,7 @@ class MessageSession(MessageSessionT):
                                     if previous_was_cq:
                                         convert_msg_segments = (
                                             convert_msg_segments
-                                            + MessageSegment.text("\u200B")
+                                            + MessageSegment.text("\u200b")
                                         )
                                     convert_msg_segments = (
                                         convert_msg_segments
@@ -175,7 +175,7 @@ class MessageSession(MessageSessionT):
                                 if previous_was_cq:
                                     convert_msg_segments = (
                                         convert_msg_segments
-                                        + MessageSegment.text("\u200B")
+                                        + MessageSegment.text("\u200b")
                                     )
                                 convert_msg_segments = (
                                     convert_msg_segments
