@@ -12,4 +12,5 @@ enable = true # Whether to enable this platform.
 
 [bot_web_secret]
 # The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+allow_origins = [] # The API service allows CORS sources list.
 jwt_secret = "<Replace me with str value>" # The authentication key for the built-in API, for signing and verifying validity.

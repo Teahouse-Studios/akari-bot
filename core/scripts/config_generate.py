@@ -2,6 +2,7 @@ import ast
 import os
 import shutil
 import sys
+import traceback
 from time import sleep
 
 if __name__ == "__main__":
@@ -92,8 +93,6 @@ def generate_config(dir_path, language):
                     fallback_failed_prompt=False)}\n")
         f.write("initialized = false\n")
         f.close()
-
-    from core.config import Config, CFGManager  # noqa
 
     from core.config import config, CFGManager  # noqa
     CFGManager.switch_config_path(dir_path)
