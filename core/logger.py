@@ -34,7 +34,6 @@ def basic_logger_format(bot_name: str):
 class LoggingLogger:
     def __init__(self, name):
         self.log = logger
-        self.log.remove()
         self.trace = logger.trace
         """跟踪信息，用于细粒度调试。启用debug配置项后在控制台显示，不会被记录到日志中。不建议在正式环境中使用。"""
         self.debug = logger.debug
@@ -54,11 +53,13 @@ class LoggingLogger:
 
     def rename(self, name):
         self.log.remove()
+        self.log = logger.bind(name=name)
         self.log.add(
             sys.stderr,
             format=basic_logger_format(name),
             level="TRACE" if Config("debug", False) else "INFO",
             colorize=True,
+            filter=lambda record: record["extra"].get("name") == name
         )
 
         self.log.add(
@@ -67,7 +68,7 @@ class LoggingLogger:
             rotation="00:00",
             retention="1 day",
             level="DEBUG",
-            filter=lambda r: r["level"].name == "DEBUG",
+            filter=lambda record: record["level"].name == "DEBUG" and record["extra"].get("name") == name,
             encoding="utf8",
         )
         self.log.add(
@@ -77,14 +78,15 @@ class LoggingLogger:
             retention="10 days",
             level="INFO",
             encoding="utf8",
+            filter=lambda record: record["extra"].get("name") == name
         )
-        self.trace = logger.trace
-        self.debug = logger.debug
-        self.info = logger.info
-        self.success = logger.success
-        self.warning = logger.warning
-        self.error = logger.error
-        self.critical = logger.critical
+        self.trace = self.log.trace
+        self.debug = self.log.debug
+        self.info = self.log.info
+        self.success = self.log.success
+        self.warning = self.log.warning
+        self.error = self.log.error
+        self.critical = self.log.critical
 
     def exception(self, message: Optional[str] = None):
         """自带 traceback 的错误日志，用于记录与跟踪异常信息。"""

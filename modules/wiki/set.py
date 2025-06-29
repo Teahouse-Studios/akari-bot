@@ -15,7 +15,7 @@ wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, ta
 
 @wiki.command("set <wikiurl> {{I18N:wiki.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, wikiurl: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
         in_allowlist = True
@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
 
 @wiki.command("iw add <interwiki> <wikiurl> {{I18N:wiki.help.iw.add}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     check = await WikiLib(wikiurl, headers=target.headers).check_wiki_available()
     if check.available:
         if (
@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
 
 @wiki.command("iw remove <interwiki> {{I18N:wiki.help.iw.remove}}", required_admin=True)
 async def _(msg: Bot.MessageSession, interwiki: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     result = await target.config_interwikis(interwiki)
     if result:
         await msg.finish(I18NContext("wiki.message.iw.remove.success", iw=interwiki))
@@ -93,7 +93,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
 )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     query = target.interwikis
     start_wiki = target.api_link
     base_interwiki_link = None
@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("iw get <interwiki> {{I18N:wiki.help.iw.get}}")
 async def _(msg: Bot.MessageSession, interwiki: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     query = target.interwikis
     if query != {}:
         if interwiki in query:
@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession, interwiki: str):
 
 @wiki.command("headers show {{I18N:wiki.help.headers.show}}")
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     headers = target.headers
     prompt = msg.session_info.locale.t(
         "wiki.message.headers.show",
@@ -164,7 +164,7 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("headers add <headers> {{I18N:wiki.help.headers.add}}", required_admin=True)
 async def _(msg: Bot.MessageSession, headers: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     add = await target.config_headers(headers)
     if add:
         await msg.finish(
@@ -181,7 +181,7 @@ async def _(msg: Bot.MessageSession, headers: str):
     "headers remove <headerkey> {{I18N:wiki.help.headers.remove}}", required_admin=True
 )
 async def _(msg: Bot.MessageSession, headerkey: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     delete = await target.config_headers(headerkey, add=False)
     if delete:
         await msg.finish(
@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession, headerkey: str):
 
 @wiki.command("headers reset {{I18N:wiki.help.headers.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     reset = await target.config_headers()
     if reset:
         await msg.finish(I18NContext("wiki.message.headers.reset.success"))
@@ -202,7 +202,7 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("prefix set <prefix> {{I18N:wiki.help.prefix.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, prefix: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     set_prefix = await target.config_prefix(prefix)
     if set_prefix:
         await msg.finish(
@@ -212,7 +212,7 @@ async def _(msg: Bot.MessageSession, prefix: str):
 
 @wiki.command("prefix reset {{I18N:wiki.help.prefix.reset}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     set_prefix = await target.config_prefix()
     if set_prefix:
         await msg.finish(I18NContext("wiki.message.prefix.reset.success"))

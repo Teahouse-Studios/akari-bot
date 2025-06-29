@@ -17,7 +17,7 @@ async def _abuse_warn_target(msg: Bot.MessageSession, reason: str):
                                              I18NContext("tos.message.reason", reason=reason)])
 
         # Logs
-        identify_str = f"[{msg.target.sender_id} ({msg.target.target_id})]"
+        identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
         if msg.sender_info.warns <= WARNING_COUNTS:
             Logger.info(f"Warn {identify_str} by ToS: abuse ({msg.sender_info.warns}/{WARNING_COUNTS})")
         elif msg.sender_info.warns > WARNING_COUNTS:
@@ -27,7 +27,7 @@ async def _abuse_warn_target(msg: Bot.MessageSession, reason: str):
 
         # Send warns
         if msg.sender_info.warns < WARNING_COUNTS or msg.sender_info.trusted:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))
             if not msg.sender_info.trusted:
                 warn_template.append(I18NContext("tos.message.warning.prompt", warn_counts=WARNING_COUNTS))

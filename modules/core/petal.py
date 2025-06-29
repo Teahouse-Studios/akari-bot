@@ -41,9 +41,9 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, petal: int, user: str):
     if petal <= 0:
         await msg.finish(I18NContext("petal.message.count.invalid"))
-    if not user.startswith(f"{msg.target.client_name}|"):
-        await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
-    if user == msg.target.sender_id:
+    if not user.startswith(f"{msg.session_info.client_name}|"):
+        await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
+    if user == msg.session_info.sender_id:
         await msg.finish(I18NContext("core.message.petal.give.self"))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -71,7 +71,7 @@ async def _(msg: Bot.MessageSession):
         petal = msg.parsed_msg.get("<petal>", False)
         if user:
             if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
-                await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
+                await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user)
             await sender_info.modify_petal(petal)
             await msg.finish(I18NContext("core.message.petal.modify", sender=user, add_petal=petal, petal=sender_info.petal))
@@ -81,7 +81,7 @@ async def _(msg: Bot.MessageSession):
     elif msg.parsed_msg.get("clear", False):
         if user:
             if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
-                await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
+                await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user, create=False)
             if not sender_info:
                 if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
@@ -95,7 +95,7 @@ async def _(msg: Bot.MessageSession):
     else:
         if user:
             if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
-                await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
+                await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user, create=False)
             if not sender_info:
                 if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):

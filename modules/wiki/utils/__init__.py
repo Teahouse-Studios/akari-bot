@@ -23,7 +23,7 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
              available_for=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -67,7 +67,7 @@ async def _(msg: Bot.MessageSession):
              exclude_from=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -89,7 +89,7 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
              available_for=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -133,7 +133,7 @@ async def _(msg: Bot.MessageSession):
              exclude_from=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -151,7 +151,7 @@ new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=
 
 @new.command("{{I18N:wiki.help.newbie}}")
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -169,7 +169,7 @@ usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=Tr
 
 @usr.command("<username> {{I18N:wiki.help.user}}")
 async def _(msg: Bot.MessageSession, username: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if start_wiki:

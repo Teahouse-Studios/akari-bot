@@ -9,6 +9,8 @@ import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
+from core.logger import Logger
+
 sys.path.append(os.getcwd())
 
 from bots.aiocqhttp.client import bot  # noqa: E402

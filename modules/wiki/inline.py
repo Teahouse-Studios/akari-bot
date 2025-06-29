@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
 
     async def bgtask():
         query_list = []
-        target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+        target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
         headers = target.headers
         for x in match_msg:
             wiki_ = WikiLib(x)

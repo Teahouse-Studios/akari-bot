@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
 
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await PhigrosBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
+    await PhigrosBindInfo.remove_bind_info(sender_id=msg.session_info.sender_id)
     await msg.finish(I18NContext("phigros.message.unbind.success"))
 
 

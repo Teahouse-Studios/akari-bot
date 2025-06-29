@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession, target: str):
               "sender data delete <user> <k>")
 async def _(msg: Bot.MessageSession, user: str):
     if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
-        await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.target.sender_from))
+        await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
