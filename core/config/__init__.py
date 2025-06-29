@@ -178,6 +178,9 @@ class CFGManager:
             if default is not None:
                 if isinstance(default, dict):
                     default = json.dumps(default).decode()  # if the default value is dict, convert to json str
+                elif isinstance(default, tuple):  # if the default value is tuple, convert to list
+                    default = list(default)
+                    cfg_type = cfg_type if cfg_type else list
                 elif not isinstance(default, ALLOWED_TYPES):
                     logger.error(f"[Config] Config {q} has an unsupported default type {type(default).__name__}.")
                     return None
@@ -199,6 +202,8 @@ class CFGManager:
                     return None
                 # check that value matches cfg_type type
                 if value is not None and not isinstance(value, cfg_type):
+                    if list in (cfg_type if isinstance(cfg_type, tuple) else [cfg_type]) and isinstance(value, tuple):
+                        value = list(value)  # allow tuple as list
                     if (float in (cfg_type if isinstance(cfg_type, tuple)
                                   else [cfg_type])) and isinstance(value, int):
                         pass  # allow int as float
@@ -440,5 +445,6 @@ def Config(q: str,
     return v
 
 
+config = Config
 add_export(Config)
 add_export(CFGManager)
