@@ -1,6 +1,5 @@
 import ast
 import os
-import re
 import shutil
 import sys
 import traceback  # noqa
@@ -18,31 +17,50 @@ TYPE_MAPPING = {
     "float": float,
     "str": str,
     "bool": bool,
-    "list": list,
+    "list": list
 }
 
 
-def safe_literal_eval(node):
+def safe_literal_eval(node, globals_dict=None):
     """ 安全解析 AST 节点 """
-    if isinstance(node, ast.Str):  # 字符串类型
+    if not globals_dict:
+        globals_dict = globals()
+
+    if isinstance(node, ast.Str):
         return node.s
-    elif isinstance(node, ast.Num):  # 数字类型
+    if isinstance(node, ast.Num):
         return node.n
-    elif isinstance(node, ast.NameConstant):  # 常量类型 (True, False, None)
+    if isinstance(node, ast.NameConstant):
         return node.value
-    elif isinstance(node, ast.Tuple):  # 元组类型
+    if isinstance(node, ast.Tuple):
         # 对元组元素进行递归解析，对于 type 类型的元素保持原样
         return tuple(safe_literal_eval(el) if not isinstance(el, ast.Name)
                      or el.id != 'type' else el for el in node.elts)
-    elif isinstance(node, ast.List):  # 列表类型
-        return tuple(safe_literal_eval(el) for el in node.elts)  # 转换成元组
-    elif isinstance(node, ast.Dict):  # 字典类型
+    if isinstance(node, ast.List):
+        return tuple(safe_literal_eval(el) for el in node.elts)
+    if isinstance(node, ast.Dict):
         return frozenset((safe_literal_eval(k), safe_literal_eval(v))
-                         for k, v in zip(node.keys, node.values))  # 转换成 frozenset
-    elif isinstance(node, ast.Name):  # 变量名类型
-        return TYPE_MAPPING.get(node.id, node.id)  # 尝试在映射表中查找
+                         for k, v in zip(node.keys, node.values))
+    if isinstance(node, ast.Name):
+        if node.id in TYPE_MAPPING:
+            return TYPE_MAPPING[node.id]
+        if node.id in globals_dict:
+            return globals_dict[node.id]
+        return node.id
+    return None
+
+
+def make_hashable(obj):
+    if isinstance(obj, dict):
+        return frozenset((make_hashable(k), make_hashable(v)) for k, v in obj.items())
+    elif isinstance(obj, list):
+        return tuple(make_hashable(i) for i in obj)
+    elif isinstance(obj, set):
+        return frozenset(make_hashable(i) for i in obj)
+    elif isinstance(obj, tuple):
+        return tuple(make_hashable(i) for i in obj)
     else:
-        return None  # 对于其他不支持的类型返回 None 或进行其他处理
+        return obj
 
 
 def generate_config(dir_path, language):
@@ -52,7 +70,6 @@ def generate_config(dir_path, language):
 
     dir_list = ['bots', 'core', 'modules', 'schedulers']
     exclude_dir_list = [os.path.join('core', 'config'), os.path.join('core', 'scripts')]
-
 
     # create empty config.toml
     locale = Locale(language)
@@ -74,7 +91,7 @@ def generate_config(dir_path, language):
                     fallback_failed_prompt=False)}\n')
         f.write('initialized = false\n')
 
-    from core.config import Config, CFGManager  # noqa
+    from core.config import config, CFGManager  # noqa
     CFGManager.switch_config_path(dir_path)
 
     for _dir in dir_list:
@@ -97,27 +114,26 @@ def generate_config(dir_path, language):
                                 args = []
                                 kwargs = {}
 
-                                # 提取位置参数
                                 for arg in node.args:
-                                    args.append(safe_literal_eval(arg))
+                                    args.append(safe_literal_eval(arg, globals()))
 
-                                # 提取关键字参数
                                 for kwarg in node.keywords:
-                                    kwargs[kwarg.arg] = safe_literal_eval(kwarg.value)
+                                    kwargs[kwarg.arg] = safe_literal_eval(kwarg.value, globals())
 
-                                # 在参数列表中加上 _generate=True
                                 kwargs['_generate'] = True
 
-                                # 存储参数：使用元组作为键，`args` 和 `kwargs` 分开
-                                config_code_list[(tuple(args), frozenset(kwargs.items()))] = file_path
+                                key = (make_hashable(args), make_hashable(kwargs))
+                                config_code_list[key] = file_path
 
-    # 调用 Config 函数
+    seen_configs = set()
     for (args, kwargs) in config_code_list:
+        key = (args, kwargs)
+        if key in seen_configs:
+            continue
+
+        seen_configs.add(key)
         try:
-            # 安全地调用 Config 函数
-            print(str(args))
-            print(str(kwargs))
-            Config(*args, **dict(kwargs))
+            config(*args, **dict(kwargs))
         except Exception:
             traceback.print_exc()
 
