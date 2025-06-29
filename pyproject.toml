@@ -98,6 +98,7 @@ wolframalpha = "^5.0.0"
 
 # uncategorized
 coverage = "^7.9.1"
+deprecated = "^1.2.18"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"

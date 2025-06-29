@@ -7,6 +7,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine, Dict
 
 from attrs import define
+from deprecated import deprecated
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable
 from core.builtins.message.internal import I18NContext
@@ -32,6 +33,11 @@ class MessageSession:
     trigger_msg: Optional[str] = ''
     matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
     parsed_msg: Optional[dict] = None
+
+    @property
+    @deprecated(reason='Use `session_info` instead.')
+    def target(self) -> SessionInfo:
+        return self.session_info
 
     @classmethod
     async def from_session_info(cls, session: SessionInfo):

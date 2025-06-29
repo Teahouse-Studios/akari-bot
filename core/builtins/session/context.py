@@ -141,7 +141,6 @@ class ContextManager(ABC):
         """
         发送错误信号
         :param session_info: 会话信息
-        :param args: 错误信息
         """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
