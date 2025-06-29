@@ -27,10 +27,10 @@ def webrender(
         if Info.web_render_status or _ignore_status:
             return f"{web_render}source?url={quote(url)}"
         return url
-    else:
-        if Info.web_render_status or _ignore_status:
-            return f"{web_render}{method}"
-        return ""
+    
+    if Info.web_render_status or _ignore_status:
+        return f"{web_render}{method}"
+    return ""
 
 
 async def check_web_render() -> bool:

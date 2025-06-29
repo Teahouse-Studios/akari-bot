@@ -53,14 +53,13 @@ def safe_literal_eval(node, globals_dict=None):
 def make_hashable(obj):
     if isinstance(obj, dict):
         return frozenset((make_hashable(k), make_hashable(v)) for k, v in obj.items())
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return tuple(make_hashable(i) for i in obj)
-    elif isinstance(obj, set):
+    if isinstance(obj, set):
         return frozenset(make_hashable(i) for i in obj)
-    elif isinstance(obj, tuple):
+    if isinstance(obj, tuple):
         return tuple(make_hashable(i) for i in obj)
-    else:
-        return obj
+    return obj
 
 
 def generate_config(dir_path, language):

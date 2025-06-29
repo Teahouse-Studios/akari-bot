@@ -235,7 +235,7 @@ async def _(event: Event):
                                              sender_id=sender_id,
                                              action="kick",
                                              detail="")
-        Logger.info(f"Unfriendly action detected: kick")
+        Logger.info("Unfriendly action detected: kick")
         if not sender_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
             Logger.info(f"Block {target_id} by ToS: kick")

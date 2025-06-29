@@ -136,34 +136,34 @@ class FormattedTimeElement(MessageElement):
                 datetime.fromtimestamp(self.timestamp, tz=UTC)
                 + msg.timezone_offset
             ).strftime(" ".join(ftime_template))
-        else:
-            if self.date:
-                if self.iso:
-                    ftime_template.append("%Y-%m-%d")
-                else:
-                    ftime_template.append("%B %d, %Y")
-            if self.time:
-                if self.seconds:
-                    ftime_template.append("%H:%M:%S")
-                else:
-                    ftime_template.append("%H:%M")
-            if self.timezone:
-                tz_template = "(UTC)"
-                offset = datetime.now().astimezone().utcoffset()
-                if offset:
-                    total_min = int(offset.total_seconds() // 60)
-                    sign = "+" if total_min >= 0 else "-"
-                    abs_min = abs(total_min)
-                    hours = abs_min // 60
-                    mins = abs_min % 60
 
-                    if mins == 0:
-                        tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
-                    else:
-                        tz_template = f"(UTC{sign}{hours}:{mins:02d})"
+        if self.date:
+            if self.iso:
+                ftime_template.append("%Y-%m-%d")
+            else:
+                ftime_template.append("%B %d, %Y")
+        if self.time:
+            if self.seconds:
+                ftime_template.append("%H:%M:%S")
+            else:
+                ftime_template.append("%H:%M")
+        if self.timezone:
+            tz_template = "(UTC)"
+            offset = datetime.now().astimezone().utcoffset()
+            if offset:
+                total_min = int(offset.total_seconds() // 60)
+                sign = "+" if total_min >= 0 else "-"
+                abs_min = abs(total_min)
+                hours = abs_min // 60
+                mins = abs_min % 60
 
-                ftime_template.append(tz_template)
-            return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+                if mins == 0:
+                    tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
+                else:
+                    tz_template = f"(UTC{sign}{hours}:{mins:02d})"
+
+            ftime_template.append(tz_template)
+        return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
 
     def kecode(self):
         return f"[KE:plain,text={self.to_str()}]"
