@@ -6,7 +6,7 @@
     "mcv.help.mcv": "Get the latest version of Minecraft: Java Edition in the launcher.",
     "mcv.message.error.server": "Server error.",
     "mcv.message.mcbv": "The latest version recorded on Mojira:\n${jira_ver}\n(The latest version in the stores shall prevail, Mojira is only for previewing the version)",
-    "mcv.message.mcbv.get_failed": "Failed to fetch.",
+    "mcv.message.mcbv.get_failed": "Failed to fetch",
     "mcv.message.mcbv.ms_store": "The latest version in Microsoft Store currently: ",
     "mcv.message.mcbv.play_store": "The latest version in Google Play Store currently: ",
     "mcv.message.mcdv": "The latest version: ${version}\n(The data from Mojira may be earlier than the official release. Information is for reference purposes only).",

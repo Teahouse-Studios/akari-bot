@@ -1,7 +1,5 @@
 from core.config import Config
-from core.constants import (
-    PrivateAssets,
-    Secret,
+from core.constants.default import (
     confirm_command_default,
     command_prefix_default,
 )
@@ -16,4 +14,4 @@ command_prefix = list(
 )  # 消息前缀
 
 
-__all__ = ["confirm_command", "command_prefix", "PrivateAssets", "Secret"]
+__all__ = ["confirm_command", "command_prefix"]

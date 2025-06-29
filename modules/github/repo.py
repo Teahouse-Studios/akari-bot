@@ -1,14 +1,14 @@
 import uuid
 
-from core.builtins import Bot, Image, Plain, Url
+from core.builtins import Bot, I18NContext, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import download, get_url
 from modules.github.utils import time_diff, dirty_check, dark_check
 
 
-async def repo(msg: Bot.MessageSession, name: str):
+async def repo(msg: Bot.MessageSession, name: str, pat: str):
     try:
-        result = await get_url("https://api.github.com/repos/" + name, 200, fmt="json")
+        result = await get_url("https://api.github.com/repos/" + name, 200, fmt="json", headers=[("Authorization", f"Bearer {pat}")] if pat else [])
         rlicense = "Unknown"
         if "license" in result and result["license"]:
             if "spdx_id" in result["license"]:
@@ -22,7 +22,7 @@ async def repo(msg: Bot.MessageSession, name: str):
             website = ""
 
         if result["mirror_url"]:
-            mirror = f' (This is a mirror of {str(Url(result["mirror_url"]))} )'
+            mirror = f" (This is a mirror of {str(Url(result["mirror_url"]))} )"
         else:
             mirror = ""
 
@@ -36,12 +36,12 @@ async def repo(msg: Bot.MessageSession, name: str):
         else:
             desc = "\n" + result["description"]
 
-        message = f"""{result['full_name']} ({result['id']}){desc}
-Language · {result['language']} | Fork · {result['forks_count']}
-                                             | Star · {result['stargazers_count']} | Watch · {result['watchers_count']}
+        message = f"""{result["full_name"]} ({result["id"]}){desc}
+Language · {result["language"]} | Fork · {result["forks_count"]}
+                                             | Star · {result["stargazers_count"]} | Watch · {result["watchers_count"]}
 License: {rlicense}
-Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updated_at'])} ago
-{website}{str(Url(result['html_url']))}"""
+Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updated_at"])} ago
+{website}{str(Url(result["html_url"]))}"""
 
         if mirror:
             message += "\n" + mirror
@@ -53,13 +53,13 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             message
         )
         if is_dirty:
-            await msg.finish(rickroll(msg))
+            await msg.finish(rickroll())
         else:
             await msg.send_message([Plain(message)])
 
         repo_hash = str(uuid.uuid4())
         download_pic = await download(
-            url=f'https://opengraph.githubassets.com/{repo_hash}/{result["full_name"]}',
+            url=f"https://opengraph.githubassets.com/{repo_hash}/{result["full_name"]}",
             filename=f"{repo_hash}.png",
         )
         if download_pic:
@@ -67,6 +67,6 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
     except ValueError as e:
         if str(e).startswith("404"):
-            await msg.finish(msg.locale.t("github.message.repo.not_found"))
+            await msg.finish(I18NContext("github.message.repo.not_found"))
         else:
             raise e

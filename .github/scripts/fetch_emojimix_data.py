@@ -8,8 +8,7 @@ def get_data_from_api(api_url):
     response = requests.get(api_url)
     if response.status_code == 200:
         return response.json()
-    else:
-        raise ValueError(f"Failed to fetch data from API: {response.status_code}")
+    raise ValueError(f"Failed to fetch data from API: {response.status_code}")
 
 
 def compress_json(input_data):
@@ -24,9 +23,9 @@ def compress_json(input_data):
 
     unique_dates = set()
 
-    for emoji_codepoint, emoji_info in data.items():
+    for _, emoji_info in data.items():
         combinations = emoji_info["combinations"]
-        for left_codepoint, entries in combinations.items():
+        for _, entries in combinations.items():
             for entry in entries:
                 date = entry["date"]
                 unique_dates.add(date)
@@ -35,9 +34,9 @@ def compress_json(input_data):
 
     date_index_map = {date: idx for idx, date in enumerate(sorted_dates)}
 
-    for emoji_codepoint, emoji_info in data.items():
+    for _, emoji_info in data.items():
         combinations = emoji_info["combinations"]
-        for left_codepoint, entries in combinations.items():
+        for _, entries in combinations.items():
             entries.sort(key=lambda x: x["date"])
 
             latest_entry = entries[-1]
@@ -45,7 +44,7 @@ def compress_json(input_data):
             right = latest_entry["rightEmojiCodepoint"]
             date = latest_entry["date"]
 
-            key = f'({left}, {right})'
+            key = f"({left}, {right})"
             compressed_data["data"][key] = date_index_map[date]
 
     compressed_data["date"] = sorted_dates
@@ -58,5 +57,5 @@ if __name__ == "__main__":
     input_data = get_data_from_api(api_url)
     compressed_data = compress_json(input_data)
 
-    with open('output.json', "w", encoding="utf-8") as f:
+    with open("output.json", "w", encoding="utf-8") as f:
         json.dump(compressed_data, f, ensure_ascii=False, indent=2)

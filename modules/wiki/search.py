@@ -2,15 +2,15 @@ import asyncio
 import re
 from typing import Union
 
-from core.builtins import Bot, Plain
+from core.builtins import Bot, I18NContext
 from core.logger import Logger
-from core.utils.text import isint
-from modules.wiki.utils.dbutils import WikiTargetInfo
-from modules.wiki.utils.wikilib import WikiLib
+from core.utils.message import isint
 from .wiki import wiki, query_pages
+from .database.models import WikiTargetInfo
+from .utils.wikilib import WikiLib
 
 
-@wiki.command("search <pagename> {{wiki.help.search}}")
+@wiki.command("search <pagename> {{I18N:wiki.help.search}}")
 async def _(msg: Bot.MessageSession, pagename: str):
     await search_pages(msg, pagename)
 
@@ -18,15 +18,13 @@ async def _(msg: Bot.MessageSession, pagename: str):
 async def search_pages(
     msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix: bool = True
 ):
-    target = WikiTargetInfo(msg)
-    start_wiki = target.get_start_wiki()
-    interwiki_list = target.get_interwikis()
-    headers = target.get_headers()
-    prefix = target.get_prefix()
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    interwiki_list = target.interwikis
+    headers = target.headers
+    prefix = target.prefix
     if not start_wiki:
-        await msg.finish(
-            msg.locale.t("wiki.message.set.not_set", prefix=msg.prefixes[0])
-        )
+        await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.prefixes[0]))
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
@@ -67,16 +65,16 @@ async def search_pages(
             for r in result:
                 wait_msg_list.append(iw_prefix + r)
     if len(wait_msg_list) != 0:
-        msg_list.append(msg.locale.t("wiki.message.search"))
+        msg_list.append(I18NContext("wiki.message.search"))
         i = 0
         for w in wait_msg_list:
             i += 1
             w = f"{i}. {w}"
             msg_list.append(w)
-        msg_list.append(msg.locale.t("wiki.message.search.prompt"))
+        msg_list.append(I18NContext("wiki.message.search.prompt"))
     else:
-        await msg.finish(msg.locale.t("wiki.message.search.not_found"))
-    reply = await msg.wait_reply(Plain("\n".join(msg_list)))
+        await msg.finish(I18NContext("wiki.message.search.not_found"))
+    reply = await msg.wait_reply(msg_list, delete=True)
     if isint(reply.as_display(text_only=True)):
         reply_number = max(0, int(reply.as_display(text_only=True)) - 1)
         await query_pages(reply, wait_msg_list[reply_number])

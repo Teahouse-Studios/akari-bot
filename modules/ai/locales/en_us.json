@@ -1,0 +1,18 @@
+{
+    "ai.help": "Answer your question via LLMs.",
+    "ai.help.desc": "Ask AkariBot anything!",
+    "ai.help.list": "See the list of supported LLMs.",
+    "ai.help.option.llm": "Specify the LLM to use.",
+    "ai.help.set": "Set the default LLM in session.",
+    "ai.message.list.none": "Cannot find any available LLMs. Please contact the bot owner to add one.",
+    "ai.message.list": "The following are the available LLM(s):",
+    "ai.message.list.prompt": "Use \"${prefix}ai set <LLM>\" to switch LLMs.",
+    "ai.message.llm.invalid": "Invalid LLM.",
+    "ai.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into the image:\n${text}) ",
+    "config.comments.ai_default_llm": "The LLM used by default.",
+    "config.comments.llm_frequency_penalty": "The frequency penalty of the LLM, ranging from -2 to 2.",
+    "config.comments.llm_max_tokens": "Limit the maximum number of tokens for LLMs.",
+    "config.comments.llm_presence_penalty": "The presence penalty of the LLM, ranging from -2 to 2.",
+    "config.comments.llm_temperature": "The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.",
+    "config.comments.llm_top_p": "The nucleus sampling of the LLM, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature."
+}

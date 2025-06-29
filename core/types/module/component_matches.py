@@ -30,6 +30,10 @@ class CommandMatches(BaseMatches):
         show_required_base_superuser: bool = False,
     ) -> List[CommandMeta]:
         metas = []
+        if "|" in target_from:
+            client_name = target_from.split("|")[0]
+        else:
+            client_name = target_from
         for meta in self.set:
             if not show_required_base_superuser and meta.required_base_superuser:
                 continue
@@ -37,9 +41,9 @@ class CommandMatches(BaseMatches):
                 continue
             if not meta.load:
                 continue
-            if target_from in meta.exclude_from:
+            if target_from in meta.exclude_from or client_name in meta.exclude_from:
                 continue
-            if target_from in meta.available_for or "*" in meta.available_for:
+            if target_from in meta.available_for or client_name in meta.available_for or "*" in meta.available_for:
                 metas.append(meta)
         return metas
 

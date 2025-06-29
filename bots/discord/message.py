@@ -1,51 +1,43 @@
 import datetime
 import re
-import traceback
-from typing import List, Union
+from typing import Union
 
 import discord
 import filetype
 
-from bots.discord.client import client
-from bots.discord.info import *
 from core.builtins import (
     Bot,
     Plain,
     Image,
-    MessageSession as MessageSessionT,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
-from core.builtins.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import (
     PlainElement,
     ImageElement,
     VoiceElement,
+    MentionElement,
     EmbedElement,
 )
 from core.builtins.message.internal import I18NContext, Voice
-from core.config import Config
-from core.database import BotDBUtil
 from core.logger import Logger
 from core.utils.http import download
+from .client import client
+from .info import *
 
-enable_analytics = Config("enable_analytics", False)
 
-
-async def convert_embed(embed: EmbedElement):
+async def convert_embed(embed: EmbedElement, msg: MessageSessionT):
     if isinstance(embed, EmbedElement):
         files = []
         embeds = discord.Embed(
-            title=embed.title if embed.title else None,
-            description=embed.description if embed.description else None,
+            title=msg.locale.t_str(embed.title) if embed.title else None,
+            description=msg.locale.t_str(embed.description) if embed.description else None,
             color=embed.color if embed.color else None,
             url=embed.url if embed.url else None,
-            timestamp=(
-                datetime.datetime.fromtimestamp(embed.timestamp)
-                if embed.timestamp
-                else None
-            ),
+            timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp else None
         )
         if embed.image:
             upload = discord.File(await embed.image.get(), filename="image.png")
@@ -56,13 +48,15 @@ async def convert_embed(embed: EmbedElement):
             files.append(upload)
             embeds.set_thumbnail(url="attachment://thumbnail.png")
         if embed.author:
-            embeds.set_author(name=embed.author)
+            embeds.set_author(name=msg.locale.t_str(embed.author))
         if embed.footer:
-            embeds.set_footer(text=embed.footer)
+            embeds.set_footer(text=msg.locale.t_str(embed.footer))
         if embed.fields:
             for field in embed.fields:
                 embeds.add_field(
-                    name=field.name, value=field.value, inline=field.inline
+                    name=msg.locale.t_str(field.name),
+                    value=msg.locale.t_str(field.value),
+                    inline=field.inline
                 )
         return embeds, files
 
@@ -73,13 +67,14 @@ class FinishedSession(FinishedSessionT):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = True
         forward = False
         delete = True
@@ -106,6 +101,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 send_ = await self.session.target.send(
                     x.text,
                     reference=(
@@ -139,9 +135,21 @@ class MessageSession(MessageSessionT):
                 Logger.info(
                     f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
                 )
-
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from == target_channel_prefix:
+                    send_ = await self.session.target.send(
+                        f"<@{x.id}>",
+                        reference=(
+                            self.session.message
+                            if quote and count == 0 and self.session.message
+                            else None
+                        ),
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
+                    )
             elif isinstance(x, EmbedElement):
-                embeds, files = await convert_embed(x)
+                embeds, files = await convert_embed(x, self)
                 send_ = await self.session.target.send(
                     embed=embeds,
                     reference=(
@@ -180,7 +188,7 @@ class MessageSession(MessageSessionT):
             ):
                 return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         return False
 
     async def to_message_chain(self):
@@ -196,7 +204,7 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         msg = self.session.message.content
-        msg = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", msg)
+        msg = re.sub(r"<@(\d+)>", rf"{sender_prefix}|\1", msg)
         return msg
 
     async def delete(self):
@@ -204,7 +212,7 @@ class MessageSession(MessageSessionT):
             await self.session.message.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -236,7 +244,7 @@ class FetchedSession(Bot.FetchedSession):
         try:
             get_channel = await client.fetch_channel(self.session.target)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
         self.session.target = self.session.sender = self.parent.session.target = (
             self.parent.session.sender
@@ -257,8 +265,9 @@ class FetchTarget(FetchTargetT):
         target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(rf"^({target_pattern})\|(.*)", target_id)
         if match_target:
-            target_from = sender_from = match_target.group(1)
+            target_from = match_target.group(1)
             target_id = match_target.group(2)
+            sender_from = None
             if sender_id:
                 sender_pattern = r"|".join(
                     re.escape(item) for item in sender_prefix_list
@@ -267,64 +276,9 @@ class FetchTarget(FetchTargetT):
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
-            else:
-                sender_id = target_id
-
-            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
-
-    @staticmethod
-    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
-        lst = []
-        for x in target_list:
-            fet = await FetchTarget.fetch_target(x)
-            if fet:
-                lst.append(fet)
-        return lst
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        module_name = None if module_name == "*" else module_name
-        if user_list:
-            for x in user_list:
-                try:
-                    msgchain = message
-                    if isinstance(message, str):
-                        if i18n:
-                            msgchain = MessageChain(
-                                [Plain(x.parent.locale.t(message, **kwargs))]
-                            )
-                        else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
-                    await x.send_direct_message(msgchain)
-                    if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
-                except Exception:
-                    Logger.error(traceback.format_exc())
-        else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(
-                module_name, client_name
-            )
-            for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
-                if fetch:
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
-                        continue
-                    try:
-                        msgchain = message
-                        if isinstance(message, str):
-                            if i18n:
-                                msgchain = MessageChain(
-                                    [Plain(fetch.parent.locale.t(message, **kwargs))]
-                                )
-                            else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
-                        await fetch.send_direct_message(msgchain)
-                        if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
-                    except Exception:
-                        Logger.error(traceback.format_exc())
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
+            return session
 
 
 Bot.MessageSession = MessageSession

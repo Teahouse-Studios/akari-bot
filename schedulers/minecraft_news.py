@@ -1,6 +1,3 @@
-import traceback
-from urllib.parse import quote
-
 import orjson as json
 
 from core.builtins import Url, I18NContext, MessageChain
@@ -14,10 +11,10 @@ from core.utils.web_render import webrender
 
 """class Article:
     count = 10
-    tags = ['minecraft:article/news', 'minecraft:article/insider', 'minecraft:article/culture',
-            'minecraft:article/merch', 'minecraft:stockholm/news', 'minecraft:stockholm/guides',
-            'minecraft:stockholm/deep-dives', 'minecraft:stockholm/merch', 'minecraft:stockholm/events',
-            'minecraft:stockholm/minecraft-builds', 'minecraft:stockholm/marketplace']
+    tags = ["minecraft:article/news", "minecraft:article/insider", "minecraft:article/culture",
+            "minecraft:article/merch", "minecraft:stockholm/news", "minecraft:stockholm/guides",
+            "minecraft:stockholm/deep-dives", "minecraft:stockholm/merch", "minecraft:stockholm/events",
+            "minecraft:stockholm/minecraft-builds", "minecraft:stockholm/marketplace"]
 
     @staticmethod
     def random_tags():
@@ -45,7 +42,7 @@ async def start_check_news():
     baseurl = "https://www.minecraft.net"
     url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json"
     try:
-        get_webrender = webrender("source", quote(url))
+        get_webrender = webrender("source", url)
         if get_webrender == url:
             Logger.debug("WebRender is not working, skip check minecraft news.")
             return
@@ -57,7 +54,7 @@ async def start_check_news():
             logging_err_resp=False,
         )
         if getpage:
-            alist = get_stored_list("scheduler", "mcnews")
+            alist = await get_stored_list("scheduler", "mcnews")
             o_json = json.loads(getpage)
             o_nws = o_json["article_grid"]
             for o_article in o_nws:
@@ -80,27 +77,24 @@ async def start_check_news():
                         ),
                     )
                     alist.append(title)
-                    update_stored_list("scheduler", "mcnews", alist)
+                    await update_stored_list("scheduler", "mcnews", alist)
     except Exception:
         if Config("debug", False):
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=300))
 async def feedback_news():
-    sections = [
-        {
-            "name": "beta",
-            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
-        },
-        {
-            "name": "article",
-            "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
-        },
-    ]
+    sections = [{"name": "beta",
+                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
+                 },
+                {"name": "article",
+                 "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5",
+                 },
+                ]
     for section in sections:
         try:
-            alist = get_stored_list("scheduler", "mcfeedbacknews")
+            alist = await get_stored_list("scheduler", "mcfeedbacknews")
             get = await get_url(
                 section["url"],
                 200,
@@ -130,7 +124,7 @@ async def feedback_news():
                         ),
                     )
                     alist.append(name)
-                    update_stored_list("scheduler", "mcfeedbacknews", alist)
+                    await update_stored_list("scheduler", "mcfeedbacknews", alist)
         except Exception:
             if Config("debug", False):
-                Logger.error(traceback.format_exc())
+                Logger.exception()

@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.dirty_check import check
 from .server import query_java_server, query_bedrock_server
@@ -15,16 +15,17 @@ s = module(
 
 
 @s.command(
-    "<address:port> [-r] [-p] {{server.help}}",
-    options_desc={"-r": "{server.help.option.r}", "-p": "{server.help.option.p}"},
+    "<address:port> [-r] [-p] {{I18N:server.help}}",
+    options_desc={"-r": "{I18N:server.help.option.r}",
+                  "-p": "{I18N:server.help.option.p}"}
 )
-async def main(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     server_address = msg.parsed_msg["<address:port>"]
     raw = msg.parsed_msg.get("-r", False)
     showplayer = msg.parsed_msg.get("-p", False)
 
     if check_local_address(server_address):
-        await msg.finish(msg.locale.t("server.message.local_address"))
+        await msg.finish(I18NContext("server.message.local_address"))
 
     java_info, bedrock_info = await asyncio.gather(
         query_java_server(msg, server_address, raw, showplayer),
@@ -33,10 +34,10 @@ async def main(msg: Bot.MessageSession):
 
     sendmsg = [java_info, bedrock_info]
     if sendmsg == ["", ""]:
-        await msg.finish(msg.locale.t("server.message.not_found"))
+        await msg.finish(I18NContext("server.message.not_found"))
     else:
         sendmsg = "\n".join(sendmsg).split("\n")
-        sendmsg = await check(*sendmsg, msg=msg)
+        sendmsg = await check(sendmsg)
         t = "\n".join(x["content"] for x in sendmsg)
         await msg.finish(t.strip())
 

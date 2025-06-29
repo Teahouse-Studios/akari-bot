@@ -1,0 +1,706 @@
+{
+    "grade": {
+        "grade1": {
+            "charts": [
+                {
+                    "level_index": 0,
+                    "id": "11558"
+                },
+                {
+                    "level_index": 0,
+                    "id": "11086"
+                },
+                {
+                    "level_index": 0,
+                    "id": "404"
+                },
+                {
+                    "level_index": 0,
+                    "id": "628"
+                }
+            ],
+            "condition": [
+                "-0",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": "350"
+        },
+        "grade2": {
+            "charts": [
+                {
+                    "level_index": 1,
+                    "id": "11115"
+                },
+                {
+                    "level_index": 1,
+                    "id": "11437"
+                },
+                {
+                    "level_index": 1,
+                    "id": "11447"
+                },
+                {
+                    "level_index": 1,
+                    "id": "11185"
+                }
+            ],
+            "condition": [
+                "-0",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": "350"
+        },
+        "grade3": {
+            "charts": [
+                {
+                    "level_index": 1,
+                    "id": "11325"
+                },
+                {
+                    "level_index": 1,
+                    "id": "647"
+                },
+                {
+                    "level_index": 1,
+                    "id": "11578"
+                },
+                {
+                    "level_index": 1,
+                    "id": "11472"
+                }
+            ],
+            "condition": [
+                "-1",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "600"
+        },
+        "grade4": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "id": "11188"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11558"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11137"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11488"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "700"
+        },
+        "grade5": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "id": "418"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11608"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11333"
+                },
+                {
+                    "level_index": 2,
+                    "id": "548"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "700"
+        },
+        "grade6": {
+            "charts": [
+                {
+                    "level_index": 2,
+                    "id": "11591"
+                },
+                {
+                    "level_index": 2,
+                    "id": "681"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11596"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11272"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "700"
+        },
+        "grade7": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11271"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11009"
+                },
+                {
+                    "level_index": 3,
+                    "id": "782"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11609"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "700"
+        },
+        "grade8": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11161"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11499"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11465"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11447"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": "700"
+        },
+        "grade9": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11383"
+                },
+                {
+                    "level_index": 3,
+                    "id": "464"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11514"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11455"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+30"
+            ],
+            "life": "800"
+        },
+        "grade10": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "840"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11541"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11575"
+                },
+                {
+                    "level_index": 3,
+                    "id": "379"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+30"
+            ],
+            "life": "900"
+        }
+    },
+    "tgrade": {
+        "tgrade1": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11010"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11008"
+                },
+                {
+                    "level_index": 3,
+                    "id": "586"
+                },
+                {
+                    "level_index": 2,
+                    "id": "136"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade2": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "791"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11572"
+                },
+                {
+                    "level_index": 2,
+                    "id": "11472"
+                },
+                {
+                    "level_index": 3,
+                    "id": "832"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade3": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11500"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11226"
+                },
+                {
+                    "level_index": 2,
+                    "id": "239"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11608"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade4": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11435"
+                },
+                {
+                    "level_index": 2,
+                    "id": "581"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11555"
+                },
+                {
+                    "level_index": 3,
+                    "id": "453"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade5": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11427"
+                },
+                {
+                    "level_index": 3,
+                    "id": "218"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11214"
+                },
+                {
+                    "level_index": 3,
+                    "id": "299"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade6": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "800"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11616"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11204"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11296"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade7": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11211"
+                },
+                {
+                    "level_index": 3,
+                    "id": "701"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11140"
+                },
+                {
+                    "level_index": 3,
+                    "id": "740"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade8": {
+            "charts": [
+                {
+                    "level_index": 4,
+                    "id": "24"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11509"
+                },
+                {
+                    "level_index": 3,
+                    "id": "446"
+                },
+                {
+                    "level_index": 3,
+                    "id": "803"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade9": {
+            "charts": [
+                {
+                    "level_index": 4,
+                    "id": "301"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11386"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11300"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11378"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade10": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "365"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11307"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11374"
+                },
+                {
+                    "level_index": 3,
+                    "id": "643"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+10"
+            ],
+            "life": "50"
+        },
+        "tgrade11": {
+            "charts": [
+                {
+                    "level_index": 3,
+                    "id": "11165"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11537"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11394"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11379"
+                }
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+5"
+            ],
+            "life": "50"
+        },
+        "tgrade12": {
+            "charts": [
+                {
+                    "level_index": 4,
+                    "id": "834"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11612"
+                },
+                {
+                    "level_index": 3,
+                    "id": "11662"
+                },
+                {
+                    "level_index": 4,
+                    "id": "11663"
+                }
+            ],
+            "condition": [
+                "-1",
+                "-3",
+                "-10",
+                "+0"
+            ],
+            "life": "10"
+        }
+    },
+    "rgrade": {
+        "expert1": {
+            "base": [
+                7.0,
+                9.6
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "700"
+        },
+        "expert2": {
+            "base": [
+                9.7,
+                11.6
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "600"
+        },
+        "expert3": {
+            "base": [
+                11.7,
+                12.6
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "500"
+        },
+        "expert4": {
+            "base": [
+                12.7,
+                13.9
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "400"
+        },
+        "master1": {
+            "base": [
+                10.0,
+                11.9
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "700"
+        },
+        "master2": {
+            "base": [
+                12.0,
+                13.2
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+50"
+            ],
+            "life": "500"
+        },
+        "master3": {
+            "base": [
+                13.3,
+                14.4
+            ],
+            "condition": [
+                "-2",
+                "-2",
+                "-5",
+                "+20"
+            ],
+            "life": "300"
+        },
+        "master4": {
+            "base": [
+                14.5,
+                14.9
+            ],
+            "condition": [
+                "-2",
+                "-3",
+                "-5",
+                "+20"
+            ],
+            "life": "100"
+        }
+    }
+}

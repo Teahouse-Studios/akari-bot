@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, UTC as datetimeUTC
-from typing import Any, Coroutine, Dict, List, Optional, Union
+from datetime import datetime, UTC as datetimeUTC, timedelta
+from decimal import Decimal, ROUND_HALF_UP
+from re import Match
+from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
 
-from core.builtins.message.chain import *
-from core.builtins.message.elements import MessageElement
-from core.builtins.message.internal import *
-from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants.exceptions import WaitCancelException, FinishedException
-from core.exports import exports
+from core.database.models import SenderInfo, TargetInfo
+from core.exports import add_export
+from core.i18n import Locale
 from core.logger import Logger
 from core.types.message import MsgInfo, Session
-from core.utils.i18n import Locale
-from core.utils.text import parse_time_string
+from core.utils.message import isint, parse_time_string
+from ..utils import confirm_command
+from .chain import *
+from .elements import MessageElement
+from .internal import *
 
 
 class ExecutionLockList:
@@ -194,23 +197,46 @@ class MessageSession:
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
-        self.trigger_msg: Optional[str] = None
-        self.parsed_msg: Optional[dict] = None
+        self.trigger_msg: str = None
+        self.matched_msg: Union[Match[str], Tuple[Any]] = None
+        self.parsed_msg: dict = None
         self.prefixes: List[str] = []
-        self.data = exports.get("BotDBUtil").TargetInfo(self.target.target_id)
-        self.info = exports.get("BotDBUtil").SenderInfo(self.target.sender_id)
-        self.muted = self.data.is_muted
-        self.options = self.data.options
-        self.custom_admins = self.data.custom_admins
-        self.enabled_modules = self.data.enabled_modules
-        self.locale = Locale(self.data.locale)
-        self.name = self.locale.t("bot_name")
-        self.petal = self.info.petal
+        self.target_info: TargetInfo = None
+        self.sender_info: SenderInfo = None
+        self.muted: bool = None
+        self.sender_data: dict = None
+        self.target_data: dict = None
+        self.banned_users: list = None
+        self.custom_admins: list = None
+        self.enabled_modules: dict = None
+        self.locale: Locale = None
+        self.name: str = None
+        self._tz_offset = None
+        self.timezone_offset: timedelta = None
+        self.petal: int = None
+
         self.tmp = {}
-        self._tz_offset = self.options.get(
+        asyncio.create_task(self.data_init())
+
+    async def data_init(self):
+        get_target_info: TargetInfo = await TargetInfo.get_by_target_id(self.target.target_id)
+        self.target_info = get_target_info
+        self.muted = self.target_info.muted
+        self.target_data = self.target_info.target_data
+        self.banned_users = self.target_info.banned_users
+        self.custom_admins = self.target_info.custom_admins
+        self.enabled_modules = self.target_info.modules
+        self.locale = Locale(self.target_info.locale)
+        self.name = self.locale.t("bot_name")
+        self._tz_offset = self.target_data.get(
             "timezone_offset", Config("timezone_offset", "+8")
         )
         self.timezone_offset = parse_time_string(self._tz_offset)
+        if self.target.sender_id:
+            get_sender_info: SenderInfo = await SenderInfo.get_by_sender_id(self.target.sender_id)
+            self.sender_info = get_sender_info
+            self.petal = self.sender_info.petal
+            self.sender_data = self.sender_info.sender_data
 
     async def send_message(
         self,
@@ -331,6 +357,15 @@ class MessageSession:
         """
         raise NotImplementedError
 
+    async def msgchain2nodelist(self, msg_chain_list: List[MessageChain], sender_name: Optional[str] = None,
+                                ) -> list[Dict]:
+        """
+        用于将消息链列表转换为节点列表（QQ）。
+        :param msg_chain_list: 消息链列表。
+        :param sender_name: 用于指定发送者名称。
+        """
+        raise NotImplementedError
+
     async def get_text_channel_list(self) -> List[str]:
         """
         用于获取子文字频道列表（QQ）。
@@ -376,9 +411,12 @@ class MessageSession:
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)
-            if append_instruction:
-                message_chain.append(I18NContext("message.wait.prompt.confirm"))
-            send = await self.send_message(message_chain, quote)
+        else:
+            message_chain = MessageChain(I18NContext("core.message.confirm"))
+        if append_instruction:
+            message_chain.append(I18NContext("message.wait.prompt.confirm"))
+        send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -421,6 +459,7 @@ class MessageSession:
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.prompt.next_message"))
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
@@ -463,6 +502,7 @@ class MessageSession:
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
         send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(
             self, flag, reply=send.message_id, all_=all_, timeout=timeout
@@ -501,6 +541,7 @@ class MessageSession:
         if message_chain:
             message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain, quote)
+        await asyncio.sleep(0.1)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:
@@ -526,13 +567,13 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
-        return bool(self.info.is_super_user)
+        return bool(self.sender_info.superuser)
 
     async def check_permission(self) -> bool:
         """
         用于检查消息发送者在对话内的权限。
         """
-        if self.target.sender_id in self.custom_admins or self.info.is_super_user:
+        if self.target.sender_id in self.custom_admins or self.sender_info.superuser:
             return True
         return await self.check_native_permission()
 
@@ -548,7 +589,7 @@ class MessageSession:
     toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
-    def ts2strftime(
+    def format_time(
         self,
         timestamp: float,
         date: bool = True,
@@ -588,6 +629,61 @@ class MessageSession:
             datetime.fromtimestamp(timestamp, datetimeUTC) + self.timezone_offset
         ).strftime(" ".join(ftime_template))
 
+    def format_num(
+        self,
+        number: Union[Decimal, int, str],
+        precision: int = 0
+    ) -> str:
+        """
+        格式化数字。
+
+        :param number: 数字。
+        :param precision: 保留小数点位数。
+        :returns: 本地化后的数字。
+        """
+
+        def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
+            if number >= Decimal("10e11"):
+                return 3, Decimal("10e11")
+            if number >= Decimal("10e7"):
+                return 2, Decimal("10e7")
+            if number >= Decimal("10e3"):
+                return 1, Decimal("10e3")
+            return None
+
+        def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
+            if number >= Decimal("10e8"):
+                return 3, Decimal("10e8")
+            if number >= Decimal("10e5"):
+                return 2, Decimal("10e5")
+            if number >= Decimal("10e2"):
+                return 1, Decimal("10e2")
+            return None
+
+        def _fmt_num(number: Decimal, precision: int) -> str:
+            number = number.quantize(
+                Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
+            )
+            num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
+            return num_str if precision > 0 else str(int(number))
+
+        if isint(number):
+            number = int(number)
+        else:
+            return str(number)
+
+        if self.locale.locale in ["zh_cn", "zh_tw"]:
+            unit_info = _get_cjk_unit(Decimal(number))
+        else:
+            unit_info = _get_unit(Decimal(number))
+
+        if not unit_info:
+            return str(number)
+
+        unit, scale = unit_info
+        fmted_num = _fmt_num(number / scale, precision)
+        return self.locale.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", fallback_failed_prompt=True)
+
     class Feature:
         """
         此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断。
@@ -595,6 +691,7 @@ class MessageSession:
 
         image = False
         voice = False
+        mention = False
         embed = False
         forward = False
         delete = False
@@ -614,19 +711,19 @@ class FetchedSession:
         self,
         target_from: str,
         target_id: Union[str, int],
-        sender_from: Optional[str] = None,
-        sender_id: Optional[Union[str, int]] = None,
+        sender_from: Optional[str],
+        sender_id: Optional[Union[str, int]],
     ):
-        if not sender_from:
-            sender_from = target_from
-        if not sender_id:
-            sender_id = target_id
+        target_id_ = f"{target_from}|{target_id}"
+        sender_id_ = None
+        if sender_from and sender_id:
+            sender_id_ = f"{sender_from}|{sender_id}"
         self.target = MsgInfo(
-            target_id=f"{target_from}|{target_id}",
-            sender_id=f"{sender_from}|{sender_id}",
+            target_id=target_id_,
+            sender_id=sender_id_,
             target_from=target_from,
             sender_from=sender_from,
-            sender_prefix="",
+            sender_name="",
             client_name="",
             message_id=0,
         )
@@ -687,8 +784,8 @@ class FetchTarget:
     @staticmethod
     async def post_message(
         module_name: str,
-        message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+        message: Union[str, list, dict, MessageChain, MessageElement],
+        target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any],
     ):
@@ -697,7 +794,7 @@ class FetchTarget:
 
         :param module_name: 模块名称。
         :param message: 消息文本。
-        :param user_list: 用户列表。
+        :param target_list: 会话列表。
         :param i18n: 是否使用i18n。若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
@@ -705,21 +802,29 @@ class FetchTarget:
     @staticmethod
     async def post_global_message(
         message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+        target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
-        **kwargs,
+        **kwargs: Dict[str, Any]
     ):
         """
         尝试向客户端内的任意对象发送一条消息。
 
         :param message: 消息文本。
-        :param user_list: 用户列表。
+        :param target_list: 用户列表。
         :param i18n: 是否使用i18n，若为True则`message`为本地化键名。（或为指定语言的dict映射表（k=语言，v=文本））
         """
         raise NotImplementedError
 
     postMessage = post_message
     postGlobalMessage = post_global_message
+
+
+add_export(MessageSession)
+add_export(ExecutionLockList)
+add_export(MessageTaskManager)
+add_export(FetchTarget)
+add_export(FetchedSession)
+add_export(FinishedSession)
 
 
 __all__ = [

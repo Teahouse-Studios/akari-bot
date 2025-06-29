@@ -24,20 +24,16 @@ async def name_to_uuid(name):
 
 async def uuid_to_skin_and_cape(uuid):
     try:
-        render = await download(
-            "https://crafatar.com/renders/body/" + uuid + "?overlay"
-        )
-        skin = await download("https://crafatar.com/skins/" + uuid)
+        render = await download(f"https://crafatar.com/renders/body/{uuid}?overlay")
+        skin = await download(f"https://crafatar.com/skins/{uuid}")
         is_cape = True
         try:
-            await get_url(
-                "https://crafatar.com/capes/" + uuid, 200, logging_err_resp=False
-            )
+            await get_url(f"https://crafatar.com/capes/{uuid}", 200, logging_err_resp=False)
         except ValueError:
             is_cape = False
         path = None
         if is_cape:
-            cape = PILImage.open(await download("https://crafatar.com/capes/" + uuid))
+            cape = PILImage.open(await download(f"https://crafatar.com/capes/{uuid}"))
             cape.crop((0, 0, 10, 16))
             path = os.path.join(cache_path, f"{uuid}_fixed.png")
             cape.save(path)

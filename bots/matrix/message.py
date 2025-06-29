@@ -1,23 +1,27 @@
 import mimetypes
 import os
 import re
-import traceback
-from typing import List, Union
+from typing import Union
 
 import nio
 
-from bots.matrix.client import bot, homeserver_host
-from bots.matrix.info import *
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, I18NContext, MessageTaskManager, \
-    FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
-from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
-from core.config import Config
-from core.database import BotDBUtil
+from core.builtins import (
+    Bot,
+    Plain,
+    Image,
+    Voice,
+    I18NContext,
+    MessageTaskManager,
+    MessageSession as MessageSessionT,
+    FetchTarget as FetchTargetT,
+    FinishedSession as FinishedSessionT,
+)
+from core.builtins.message.chain import MessageChain, match_atcode
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.logger import Logger
 from core.utils.image import image_split
-
-enable_analytics = Config("enable_analytics", False)
+from .client import bot, homeserver_host
+from .info import *
 
 
 class FinishedSession(FinishedSessionT):
@@ -26,13 +30,14 @@ class FinishedSession(FinishedSessionT):
             for x in self.message_id:
                 await bot.room_redact(str(self.result), x)
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = False
         forward = False
         delete = True
@@ -53,7 +58,8 @@ class MessageSession(MessageSessionT):
     ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message((I18NContext("error.message.chain.unsafe", locale=self.locale.locale)))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
+
         self.sent.append(message_chain)
         sentMessages: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(self, embed=False):
@@ -74,8 +80,8 @@ class MessageSession(MessageSessionT):
                         # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                         # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                         reply_to_type = self.session.message["content"]["msgtype"]
-                        content["body"] = (f">{' *' if reply_to_type == 'm.emote' else ''} <{self.session.sender}> {
-                            self.session.message['content']['body']}\n\n{x.text}")
+                        content["body"] = (f">{" *" if reply_to_type == "m.emote" else ""} <{self.session.sender}> {
+                                           self.session.message["content"]["body"]}\n\n{x.text}")
                         content["format"] = "org.matrix.custom.html"
                         html_text = x.text
                         html_text = html_text.replace("<", "&lt;").replace(">", "&gt;")
@@ -83,10 +89,10 @@ class MessageSession(MessageSessionT):
                         content["formatted_body"] = (
                             f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{
                                 self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{
-                                ' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{
+                                " *" if reply_to_type == "m.emote" else ""} <a href=\"https://matrix.to/#/{
                                 self.session.sender}\">{
                                 self.session.sender}</a><br/>{
-                                self.session.message['content']['body']}</blockquote></mx-reply>{html_text}")
+                                self.session.message["content"]["body"]}</blockquote></mx-reply>{html_text}")
 
                 if (
                     self.session.message
@@ -130,6 +136,7 @@ class MessageSession(MessageSessionT):
                 reply_to_user = None
 
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "{uid}")
                 content = {"msgtype": "m.notice", "body": x.text}
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
                 await sendMsg(content)
@@ -234,6 +241,11 @@ class MessageSession(MessageSessionT):
                     f"[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}"
                 )
                 await sendMsg(content)
+            elif isinstance(x, MentionElement):
+                if x.client == client_name:
+                    content = {"msgtype": "m.notice", "body": x.id}
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{x.id}")
+                    await sendMsg(content)
         if callback:
             for x in sentMessages:
                 MessageTaskManager.add_callback(x.event_id, callback)
@@ -287,7 +299,7 @@ class MessageSession(MessageSessionT):
                 url = str(content["url"])
             elif "file" in content:
                 # todo: decrypt image
-                # url = str(content['file']['url'])
+                # url = str(content["file"]["url"])
                 return MessageChain([])
             else:
                 Logger.error(f"Got invalid m.image message from {self.session.target}")
@@ -303,7 +315,7 @@ class MessageSession(MessageSessionT):
             await bot.room_redact(self.session.target, self.session.message["event_id"])
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -364,75 +376,27 @@ class FetchedSession(Bot.FetchedSession):
 Bot.FetchedSession = FetchedSession
 
 
-class FetchTarget(FetchedTargetT):
+class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        target_pattern = r'|'.join(re.escape(item) for item in target_prefix_list)
+        target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(fr"^({target_pattern})\|(.*)", target_id)
         if match_target:
-            target_from = sender_from = match_target.group(1)
+            target_from = match_target.group(1)
             target_id = match_target.group(2)
+            sender_from = None
             if sender_id:
-                sender_pattern = r'|'.join(re.escape(item) for item in sender_prefix_list)
+                sender_pattern = r"|".join(re.escape(item) for item in sender_prefix_list)
                 match_sender = re.match(fr"^({sender_pattern})\|(.*)", sender_id)
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
-            else:
-                sender_id = target_id
             session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
             await session._resolve_matrix_room_()
             return session
-
-    @staticmethod
-    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
-        lst = []
-        for x in target_list:
-            fet = await FetchTarget.fetch_target(x)
-            if fet:
-                lst.append(fet)
-        return lst
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        module_name = None if module_name == '*' else module_name
-        if user_list:
-            for x in user_list:
-                try:
-                    msgchain = message
-                    if isinstance(message, str):
-                        if i18n:
-                            msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
-                        else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
-                    await x.send_direct_message(msgchain)
-                    if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
-                except Exception:
-                    Logger.error(traceback.format_exc())
-        else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(module_name, client_name)
-            for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
-                if fetch:
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
-                        continue
-                    try:
-                        msgchain = message
-                        if isinstance(message, str):
-                            if i18n:
-                                msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
-                            else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
-                        await fetch.send_direct_message(msgchain)
-                        if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
-                    except Exception:
-                        Logger.error(traceback.format_exc())
 
 
 Bot.MessageSession = MessageSession

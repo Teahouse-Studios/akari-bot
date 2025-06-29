@@ -1,4 +1,3 @@
-import traceback
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
@@ -161,7 +160,7 @@ class TotalList:
             self.total_list = total_list
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     @staticmethod
@@ -171,12 +170,12 @@ class TotalList:
             data = await get_url(url, 200, fmt="json")
             if data:
                 with open(chu_song_info_path, "wb") as f:
-                    f.write(json.dumps(data))
+                    f.write(json.dumps(data, option=json.OPT_INDENT_2))
             return data
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             try:
-                with open(chu_song_info_path, "r", encoding="utf-8") as f:
+                with open(chu_song_info_path, "rb") as f:
                     data = json.loads(f.read())
                 return data
             except Exception:

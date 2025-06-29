@@ -1,4 +1,8 @@
-import asyncio.exceptions
+"""基于`httpx`的互联网请求工具，用于让机器人请求外部网站。
+
+请勿在模块中导入`request`库，否则会导致阻塞问题。
+"""
+
 import os
 import re
 import socket
@@ -7,10 +11,9 @@ import uuid
 from http.cookies import SimpleCookie
 from typing import Any, Dict, Optional, Union
 
-import aiohttp
 import filetype as ft
+import httpx
 from aiofile import async_open
-from aiohttp import TCPConnector
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.config import Config
@@ -19,11 +22,10 @@ from core.logger import Logger
 
 logging_resp = False
 debug = Config("debug", False)
-if not (proxy := Config("proxy", cfg_type=str, secret=True)):
-    proxy = ""
+proxy = Config("proxy", cfg_type=str, secret=True)
 
 url_pattern = re.compile(
-    r"\b(?:http[s]?://)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:/[a-zA-Z0-9-._~:/?#[\]@!$&\'()*+,;=%]*)?\b"
+    r"\b(?:http[s]?:\/\/)?(?:[a-zA-Z0-9\-\:_@]+\.)+[a-zA-Z]{2,}(?:\/[a-zA-Z0-9-._~:\/?#[\]@!$&\'()*+,;=%]*)?\b"
 )
 
 _matcher_private_ips = re.compile(
@@ -47,7 +49,7 @@ def private_ip_check(url: str):
 
 async def get_url(
     url: str,
-    status_code: int = 200,
+    status_code: Optional[int] = 200,
     headers: Optional[Dict[str, Any]] = None,
     params: Optional[Dict[str, Any]] = None,
     fmt: Optional[str] = None,
@@ -56,8 +58,8 @@ async def get_url(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
-) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
-    """利用AioHttp获取指定URL的内容。
+) -> Any:
+    """利用httpx获取指定URL的内容。
 
     :param url: 需要获取的URL。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
@@ -79,39 +81,43 @@ async def get_url(
         if not Config("allow_request_private_ip", False) and not request_private_ip:
             private_ip_check(url)
 
-        async with aiohttp.ClientSession(
+        async with httpx.AsyncClient(
             headers=headers,
-            connector=TCPConnector(verify_ssl=False) if debug else None,
-        ) as session:
+            proxy=proxy,
+            verify=not debug
+        ) as client:
             if cookies:
                 ck = SimpleCookie()
                 ck.load(cookies)
-                session.cookie_jar.update_cookies(ck)
-                Logger.debug(f"Using cookies: {ck}")
+                cookies_dict = {key: morsel.value for key, morsel in ck.items()}
+                client.cookies.update(cookies_dict)
+                Logger.debug(f"Using cookies: {cookies_dict}")
             try:
-                async with session.get(
+                resp = await client.get(
                     url,
-                    timeout=aiohttp.ClientTimeout(total=timeout),
+                    timeout=timeout,
                     headers=headers,
-                    proxy=proxy,
                     params=params,
-                ) as req:
-                    Logger.debug(f"[{req.status}] {url}")
-                    if logging_resp:
-                        Logger.debug(await req.read())
-                    if status_code and req.status != status_code:
-                        if not logging_resp and logging_err_resp:
-                            Logger.error(await req.read())
-                        raise ValueError(
-                            f"{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]"
-                        )
-                    if fmt:
-                        if hasattr(req, fmt):
-                            return await getattr(req, fmt)()
-                        raise ValueError(f"NoSuchMethod: {fmt}")
-                    text = await req.text()
-                    return text
-            except asyncio.exceptions.TimeoutError:
+                    follow_redirects=True,
+                )
+                Logger.debug(f"[{resp.status_code}] {url}")
+                if logging_resp:
+                    Logger.debug(resp.text)
+                if status_code and resp.status_code != status_code:
+                    if not logging_resp and logging_err_resp:
+                        Logger.error(resp.text)
+                    raise ValueError(
+                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                    )
+                if fmt:
+                    if hasattr(resp, fmt):
+                        attr = getattr(resp, fmt)
+                        if callable(attr):
+                            return attr()
+                        return attr
+                    raise ValueError(f"NoSuchMethod: {fmt}")
+                return resp.text
+            except (httpx.ConnectError, httpx.TimeoutException):
                 raise ValueError("Request timeout")
             except Exception as e:
                 if logging_err_resp:
@@ -124,7 +130,7 @@ async def get_url(
 async def post_url(
     url: str,
     data: Any = None,
-    status_code: int = 200,
+    status_code: Optional[int] = 200,
     headers: Optional[Dict[str, Any]] = None,
     fmt: Optional[str] = None,
     timeout: Optional[float] = 20,
@@ -132,8 +138,8 @@ async def post_url(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
-) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
-    """利用AioHttp发送POST请求。
+) -> Any:
+    """利用httpx发送POST请求。
 
     :param url: 需要发送的URL。
     :param data: 需要发送的数据。
@@ -154,39 +160,43 @@ async def post_url(
         if not Config("allow_request_private_ip", False) and not request_private_ip:
             private_ip_check(url)
 
-        async with aiohttp.ClientSession(
+        async with httpx.AsyncClient(
             headers=headers,
-            connector=TCPConnector(verify_ssl=False) if debug else None,
-        ) as session:
+            proxy=proxy,
+            verify=not debug
+        ) as client:
             if cookies:
                 ck = SimpleCookie()
                 ck.load(cookies)
-                session.cookie_jar.update_cookies(ck)
-                Logger.debug(f"Using cookies: {ck}")
+                cookies_dict = {key: morsel.value for key, morsel in ck.items()}
+                client.cookies.update(cookies_dict)
+                Logger.debug(f"Using cookies: {cookies_dict}")
             try:
-                async with session.post(
+                resp = await client.post(
                     url,
                     data=data,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=timeout),
-                    proxy=proxy,
-                ) as req:
-                    Logger.debug(f"[{req.status}] {url}")
-                    if logging_resp:
-                        Logger.debug(await req.read())
-                    if status_code and req.status != status_code:
-                        if not logging_resp and logging_err_resp:
-                            Logger.error(await req.read())
-                        raise ValueError(
-                            f"{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]"
-                        )
-                    if fmt:
-                        if hasattr(req, fmt):
-                            return await getattr(req, fmt)()
-                        raise ValueError(f"NoSuchMethod: {fmt}")
-                    text = await req.text()
-                    return text
-            except asyncio.exceptions.TimeoutError:
+                    timeout=timeout,
+                    follow_redirects=True,
+                )
+                Logger.debug(f"[{resp.status_code}] {url}")
+                if logging_resp:
+                    Logger.debug(resp.text)
+                if status_code and resp.status_code != status_code:
+                    if not logging_resp and logging_err_resp:
+                        Logger.error(resp.text)
+                    raise ValueError(
+                        f"{str(resp.status_code)}[KE:Image,path=https://http.cat/{str(resp.status_code)}.jpg]"
+                    )
+                if fmt:
+                    if hasattr(resp, fmt):
+                        attr = getattr(resp, fmt)
+                        if callable(attr):
+                            return attr()
+                        return attr
+                    raise ValueError(f"NoSuchMethod: {fmt}")
+                return resp.text
+            except (httpx.ConnectError, httpx.TimeoutException):
                 raise ValueError("Request timeout")
             except Exception as e:
                 if logging_err_resp:
@@ -200,7 +210,7 @@ async def download(
     url: str,
     filename: Optional[str] = None,
     path: Optional[str] = None,
-    status_code: int = 200,
+    status_code: Optional[int] = 200,
     method: str = "GET",
     post_data: Any = None,
     headers: Optional[Dict[str, Any]] = None,
@@ -209,7 +219,7 @@ async def download(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
 ) -> Union[str, bool]:
-    """利用AioHttp下载指定url的内容，并保存到指定目录。
+    """利用httpx下载指定url的内容，并保存到指定目录。
 
     :param url: 需要获取的URL。
     :param filename: 指定保存的文件名，默认为随机文件名。

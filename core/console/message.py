@@ -1,4 +1,5 @@
 import asyncio
+import re
 from typing import Union
 
 from PIL import Image as PILImage
@@ -11,7 +12,7 @@ from core.builtins import (
     Bot,
     FetchTarget as FetchTargetT,
     FetchedSession as FetchedSessionT,
-    FinishedSession as FinS,
+    FinishedSession as FinishedSessionT,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
@@ -23,9 +24,9 @@ from core.logger import Logger
 from core.types import Session, MsgInfo
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
-        print("(Tried to delete message, but I'm a console so I cannot do it :< )")
+        print("(Tried to delete message, but I\'m a console so I cannot do it :< )")
 
 
 class MessageSession(MessageSessionT):
@@ -34,6 +35,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = False
+        mention = False
         embed = False
         forward = False
         delete = False
@@ -78,9 +80,11 @@ class MessageSession(MessageSessionT):
             return True
         if message_chain:
             message_chain = MessageChain(message_chain)
-            if append_instruction:
-                print(self.locale.t("message.wait.prompt.confirm"))
-            send = await self.send_message(message_chain)
+        else:
+            message_chain = MessageChain(I18NContext("core.message.confirm"))
+        if append_instruction:
+            message_chain.append(I18NContext("message.wait.prompt.confirm"))
+        send = await self.send_message(message_chain)
         try:
             if timeout:
                 c = inputimeout("Confirm: ", timeout=timeout)
@@ -152,7 +156,7 @@ class MessageSession(MessageSessionT):
             target=MsgInfo(
                 target_id=f"{target_prefix}|0",
                 sender_id=f"{sender_prefix}|0",
-                sender_prefix="Console",
+                sender_name="Console",
                 target_from=target_prefix,
                 sender_from=sender_prefix,
                 client_name=client_name,
@@ -192,7 +196,7 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         print(
-            f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )"
+            f"(Tried to delete {self.session.message}, but I\'m a console so I cannot do it :< )"
         )
         return True
 
@@ -239,7 +243,10 @@ class MessageSession(MessageSessionT):
 
 class FetchedSession(FetchedSessionT):
 
-    async def send_message(self, message_chain, disable_secret_check=False):
+    async def send_direct_message(self, message_chain,
+                                  disable_secret_check=False,
+                                  enable_parse_message=True,
+                                  enable_split_image=True):
         """
         用于向获取对象发送消息。
 
@@ -247,8 +254,13 @@ class FetchedSession(FetchedSessionT):
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
         """
+        await self.parent.data_init()
         return await self.parent.send_message(
-            message_chain, disable_secret_check=disable_secret_check, quote=False
+            message_chain,
+            quote=False,
+            disable_secret_check=disable_secret_check,
+            enable_parse_message=enable_parse_message,
+            enable_split_image=enable_split_image
         )
 
 
@@ -256,21 +268,24 @@ class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
-        return FetchedSession(
-            target_from=target_prefix,
-            target_id="0",
-            sender_from=sender_prefix,
-            sender_id="0",
-        )
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target("0")
-        if i18n:
-            await fetch.send_message(fetch.parent.locale.t(message, **kwargs))
-        else:
-            await fetch.send_message(message)
+    async def fetch_target(target_id, sender_id=None):
+        target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
+        match_target = re.match(rf"^({target_pattern})\|(.*)", target_id)
+        if match_target:
+            target_from = match_target.group(1)
+            target_id = match_target.group(2)
+            sender_from = None
+            if sender_id:
+                sender_pattern = r"|".join(
+                    re.escape(item) for item in sender_prefix_list
+                )
+                match_sender = re.match(rf"^({sender_pattern})\|(.*)", sender_id)
+                if match_sender:
+                    sender_from = match_sender.group(1)
+                    sender_id = match_sender.group(2)
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
+            return session
 
 
 Bot.MessageSession = MessageSession

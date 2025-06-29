@@ -1,30 +1,27 @@
 import base64
 from io import BytesIO
 
-import aiohttp
 import orjson as json
 from PIL import Image as PILImage
 
-from core.constants.info import Info
+from core.builtins import Info, I18NContext, Plain
 from core.logger import Logger
-from core.utils.http import download, get_url
+from core.utils.http import download, post_url, get_url
 from core.utils.web_render import webrender
 
-elements = ["div#descriptionmodule"]
+elements = ["div[class^='MuiContainer-root']"]
 
 spx_cache = {}
 
 
-async def make_screenshot(page_link, use_local=True):
+async def make_screenshot(page_link):
     elements_ = elements.copy()
     if not Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
     Logger.info("[WebRender] Generating element screenshot...")
     try:
         img = await download(
-            webrender("element_screenshot", use_local=use_local),
+            webrender("element_screenshot"),
             status_code=200,
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -43,27 +40,30 @@ async def make_screenshot(page_link, use_local=True):
                 bimg = PILImage.open(bio)
                 img_lst.append(bimg)
             return img_lst
-        Logger.info("[WebRender] Generation Failed.")
-        return False
-    except aiohttp.ClientConnectorError:
-        if use_local:
-            return await make_screenshot(page_link, use_local=False)
-        return False
-    except ValueError:
-        Logger.info("[WebRender] Generation Failed.")
+    except Exception:
+        Logger.exception("[WebRender] Generation Failed.")
         return False
 
 
 async def bugtracker_get(msg, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
+
+    get_json = await post_url(
+        "https://bugs.mojang.com/api/jql-search-post",
+        f"""{{
+            "advanced": true,
+            "project": "{id_.split("-", 1)[0]}",
+            "search": "key = {id_}",
+            "maxResults": 1
+        }}""",
+        201,
+        headers={"Content-Type": "application/json"},
+    )
     try:
-        json_url = "https://bugs.mojang.com/rest/api/2/issue/" + id_
-        get_json = await get_url(json_url, 200)
-    except ValueError as e:
-        if str(e).startswith("401"):
-            return msg.locale.t("bugtracker.message.get_failed"), None
-        raise e
+        load_json = json.loads(get_json).get("issues")[0]
+    except IndexError:
+        return I18NContext("bugtracker.message.get_failed"), None
     if mojira_id not in spx_cache:
         get_spx = await get_url(
             "https://spxx-db.teahouse.team/crowdin/zh-CN/zh_CN.json", 200
@@ -73,14 +73,13 @@ async def bugtracker_get(msg, mojira_id: str):
     if id_ in spx_cache and msg.locale.locale == "zh_cn":
         data["translation"] = spx_cache[id_]
     if get_json:
-        load_json = json.loads(get_json)
         errmsg = ""
         if "errorMessages" in load_json:
             for msgs in load_json["errorMessages"]:
                 errmsg += "\n" + msgs
         else:
             if "key" in load_json:
-                data["title"] = f'[{load_json["key"]}] '
+                data["title"] = f"[{load_json["key"]}] "
             if "fields" in load_json:
                 fields = load_json["fields"]
                 if "summary" in fields:
@@ -88,7 +87,7 @@ async def bugtracker_get(msg, mojira_id: str):
                         data["title"]
                         + fields["summary"]
                         + (
-                            f' (spx: {data["translation"]})'
+                            f" (spx: {data["translation"]})"
                             if data.get("translation", False)
                             else ""
                         )
@@ -116,7 +115,7 @@ async def bugtracker_get(msg, mojira_id: str):
                         data["version"] = (
                             "Versions: " + verlist[0] + " ~ " + verlist[-1]
                         )
-                data["link"] = "https://bugs.mojang.com/browse/" + id_
+                data["link"] = f"https://bugs.mojang.com/browse/{id_.split("-", 1)[0]}/issues/" + id_
                 if "customfield_12200" in fields:
                     if fields["customfield_12200"]:
                         data["priority"] = (
@@ -160,4 +159,4 @@ async def bugtracker_get(msg, mojira_id: str):
             msglist.append(version)
         if link := data.get("link", False):
             issue_link = link
-    return "\n".join(msglist), issue_link
+    return Plain("\n".join(msglist)), issue_link

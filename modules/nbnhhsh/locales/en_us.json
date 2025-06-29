@@ -1,0 +1,6 @@
+{
+    "nbnhhsh.help.desc": "NBNHHSH? Pinyin acronym converter.",
+    "nbnhhsh.help": "Enter the pinyin acronym to get its original meaning.",
+    "nbnhhsh.message.guess": "may refer to: ${term}",
+    "nbnhhsh.message.not_found": "No pinyin acronyms matched."
+}

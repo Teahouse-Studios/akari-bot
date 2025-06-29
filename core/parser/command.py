@@ -5,12 +5,12 @@ import traceback
 from typing import Dict, Optional, Union
 
 from core.builtins import base_superuser_list, MessageSession
+from core.config import Config
 from core.constants.exceptions import InvalidCommandFormatError
+from core.i18n import Locale
+from core.logger import Logger
 from core.types import Module
-from core.utils.i18n import Locale
 from .args import parse_argv, Template, templates_to_str, DescPattern
-from ..config import Config
-from ..logger import Logger
 
 default_locale = Config("default_locale", cfg_type=str)
 
@@ -78,7 +78,7 @@ class CommandParser:
                 x = self.lang.t_str(x, fallback_failed_prompt=False)
                 options_desc_localed.append(x)
             options_desc_localed = list(set(options_desc_localed))  # 移除重复内容
-            args += f'\n{self.lang.t("core.help.options")}\n' + "\n".join(
+            args += f"\n{self.lang.t("core.help.options")}\n" + "\n".join(
                 options_desc_localed
             )
         return args
@@ -86,8 +86,7 @@ class CommandParser:
     def parse(self, command):
         if not self.args:
             return None
-        command = re.sub(r"[“”]", '"', command)
-        command = command.replace("'", "'").replace('"', '"')
+        command = re.sub(r"[“”]", "\"", command)
         try:
             split_command = shlex.split(command)
         except ValueError:

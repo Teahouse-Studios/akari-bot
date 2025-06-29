@@ -1,4 +1,5 @@
 import re
+from attrs import define, field
 from typing import Callable, Union, List
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
@@ -7,9 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.parser.args import Template
-
-from attrs import define, field
-from .utils import convert2lst
+from core.utils.message import convert2lst
 
 
 class ModuleMeta:
@@ -43,8 +42,9 @@ class RegexMeta(ModuleMeta):
     exclude_from: list = field(default=[], converter=convert2lst)
     flags: re.RegexFlag = 0
     load: bool = True
-    show_typing: bool = True
     logging: bool = True
+    show_typing: bool = True
+    text_only: bool = True
 
 
 @define

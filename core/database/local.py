@@ -1,110 +1,73 @@
-import datetime
+from datetime import datetime, timedelta, UTC
 import hashlib
 import os
+import secrets
 
-import orjson as json
-from sqlalchemy import create_engine, Column, Text, TIMESTAMP, text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from tenacity import retry, stop_after_attempt
+from tortoise import fields
 
 from core.constants.path import database_path
+from .base import DBModel
 
-Base = declarative_base()
 
 os.makedirs(database_path, exist_ok=True)
 
-DB_LINK = "sqlite:///database/local.db"
+CSRF_TOKEN_EXPIRY = 3600
+DB_LINK = "sqlite://database/local.db"
 
 
-class DirtyFilterTable(Base):
-    __tablename__ = "filter_cache"
-    desc = Column(Text, primary_key=True)
-    result = Column(Text)
-    timestamp = Column(TIMESTAMP, default=text("CURRENT_TIMESTAMP"))
+class CSRFTokenRecords(DBModel):
+    csrf_token = fields.CharField(pk=True, max_length=128, unique=True)
+    device_token = fields.CharField(max_length=512)
+    timestamp = fields.DatetimeField(auto_now_add=True)
 
+    class Meta:
+        table = "csrf_token_records"
 
-class CrowdinActivityRecordsTable(Base):
-    __tablename__ = "crowdin_activity_records"
-    hash_id = Column(Text, primary_key=True)
+    @classmethod
+    async def generate_csrf_token(cls, device_token: str) -> str:
+        csrf_token = secrets.token_hex(32)
 
+        expiry_time = datetime.now(UTC) - timedelta(seconds=CSRF_TOKEN_EXPIRY)
+        await cls.filter(timestamp__lt=expiry_time).delete()
 
-class LocalDBSession:
-    def __init__(self):
-        self.engine = engine = create_engine(DB_LINK)
-        Base.metadata.create_all(bind=engine, checkfirst=True)
-        self.Session = sessionmaker()
-        self.Session.configure(bind=self.engine)
-
-    @property
-    def session(self):
-        return self.Session()
-
-
-session = LocalDBSession().session
-
-
-def auto_rollback_error(func):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            session.rollback()
-            raise e
-
-    return wrapper
-
-
-class DirtyWordCache:
-    @retry(stop=stop_after_attempt(3))
-    @auto_rollback_error
-    def __init__(self, query_word):
-        self.query_word = query_word
-        self.query = (
-            session.query(DirtyFilterTable).filter_by(desc=self.query_word).first()
+        await cls.create(
+            csrf_token=csrf_token,
+            device_token=device_token,
         )
-        self.need_insert = False
-        if not self.query:
-            self.need_insert = True
-        if (
-            self.query
-            and datetime.datetime.now().timestamp() - self.query.timestamp.timestamp()
-            > 86400
-        ):
-            session.delete(self.query)
-            session.commit()
-            self.need_insert = True
-
-    @retry(stop=stop_after_attempt(3))
-    @auto_rollback_error
-    def update(self, result: dict):
-        session.add_all(
-            [DirtyFilterTable(desc=self.query_word, result=json.dumps(result).decode())]
-        )
-        session.commit()
-
-    def get(self):
-        if not self.need_insert:
-            return json.loads(self.query.result)
-        return False
+        return csrf_token
 
 
-class CrowdinActivityRecords:
+class DirtyWordCache(DBModel):
+    desc = fields.TextField(pk=True)
+    result = fields.JSONField(default={})
+    timestamp = fields.DatetimeField(auto_now=True)
 
-    @staticmethod
-    @retry(stop=stop_after_attempt(3))
-    @auto_rollback_error
-    def check(txt: str):
-        query_hash = hashlib.md5(
-            txt.encode(encoding="UTF-8"), usedforsecurity=False
-        ).hexdigest()
-        query = (
-            session.query(CrowdinActivityRecordsTable)
-            .filter_by(hash_id=query_hash)
-            .first()
-        )
+    class Meta:
+        table = "dirty_word_cache"
+
+    @classmethod
+    async def check(cls, query_word):
+        query = await cls.filter(desc=query_word).first()
+
+        if query and datetime.now().timestamp() - query.timestamp.timestamp() > 86400:
+            await query.delete()
+
+        return query
+
+
+class CrowdinActivityRecords(DBModel):
+    hash_id = fields.TextField(pk=True)
+
+    class Meta:
+        table = "crowdin_activity_records"
+
+    @classmethod
+    async def check(cls, txt: str):
+        query_hash = hashlib.sha256(txt.encode(encoding="UTF-8")).hexdigest()
+
+        query = await cls.filter(hash_id=query_hash).first()
         if not query:
-            session.add_all([CrowdinActivityRecordsTable(hash_id=query_hash)])
-            session.commit()
+            query = await cls.create(hash_id=query_hash)
+            await query.save()
             return False
         return True

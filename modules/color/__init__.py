@@ -8,7 +8,7 @@ import orjson as json
 import webcolors
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot, Embed, EmbedField, Image as BImage
+from core.builtins import Bot, Embed, EmbedField, Image as BImage, I18NContext
 from core.component import module
 from core.constants.path import assets_path, noto_sans_demilight_path
 
@@ -16,14 +16,14 @@ c = module(
     "color",
     alias="colour",
     developers=["Dianliang233"],
-    desc="{color.help.desc}",
+    desc="{I18N:color.help.desc}",
     doc=True,
 )
 
-md_color_path = os.path.join(assets_path, "color", "material_colors.json")
+md_color_path = os.path.join(assets_path, "modules", "color", "material_colors.json")
 
 font = ImageFont.truetype(noto_sans_demilight_path, 40)
-with open(md_color_path, "r", encoding="utf-8") as f:
+with open(md_color_path, "rb") as f:
     material_colors = material_colors_names_to_hex = json.loads(f.read())
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 
@@ -39,7 +39,7 @@ css_hex_to_names = {
 
 
 @c.command()
-@c.command("[<color>] {{color.help}}")
+@c.command("[<color>] {{I18N:color.help}}")
 async def _(msg: Bot.MessageSession, color: str = None):
     if not color:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
@@ -79,16 +79,12 @@ async def _(msg: Bot.MessageSession, color: str = None):
         )
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     else:
-        await msg.finish(msg.locale.t("color.message.invalid"))
+        await msg.finish(I18NContext("color.message.invalid"))
 
-    color_hex = "#%02x%02x%02x" % color
-    color_rgb = "rgb(%d, %d, %d)" % color
+    color_hex = f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}"
+    color_rgb = f"rgb({color[0]}, {color[1]}, {color[2]})"
     color_hsl = colorsys.rgb_to_hls(color[0] / 255, color[1] / 255, color[2] / 255)
-    color_hsl = "hsl(%d, %d%%, %d%%)" % (
-        color_hsl[0] * 360,
-        color_hsl[2] * 100,
-        color_hsl[1] * 100,
-    )
+    color_hsl = f"hsl({color_hsl[0] * 360:.0f}, {color_hsl[2] * 100:.0f}%, {color_hsl[1] * 100:.0f}%)"
     luminance = get_luminance(color)
 
     contrast = (0, 0, 0) if luminance > 140 else (255, 255, 255)
@@ -100,20 +96,20 @@ async def _(msg: Bot.MessageSession, color: str = None):
     css_color_name = ""
     css_color_name_short = ""
     if css_color_name_raw[1]:
-        css_color_name = msg.locale.t("color.message.embed.css")
+        css_color_name = str(I18NContext("color.message.embed.css"))
         if css_color_name_raw[0] != "black" and css_color_name_raw[0] != "white":
             css_color_name_short = f"{css_color_name_raw[0]}\n"
     elif css_color_name_raw[0]:
-        css_color_name = msg.locale.t("color.message.embed.css.approximate")
+        css_color_name = str(I18NContext("color.message.embed.css.approximate"))
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ""
     material_color_name_short = ""
     if material_color_name_raw[1]:
-        material_color_name = msg.locale.t("color.message.embed.md")
+        material_color_name = str(I18NContext("color.message.embed.md"))
         material_color_name_short = f"{material_color_name_raw[0]}\n"
     elif material_color_name_raw[0]:
-        material_color_name = msg.locale.t("color.message.embed.md.approximate")
+        material_color_name = str(I18NContext("color.message.embed.md.approximate"))
 
     draw.multiline_text(
         (250, 250),

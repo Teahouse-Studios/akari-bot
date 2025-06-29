@@ -2,27 +2,34 @@ import asyncio
 from typing import Any, Dict, List, Optional, Union
 
 from core.config import Config
-from core.constants.info import Info
-from core.exports import exports
+from core.constants.default import base_superuser_default
+from core.constants.info import Info, Secret
+from core.constants.path import PrivateAssets
+from core.database.models import AnalyticsData, TargetInfo
+from core.exports import add_export
 from core.loader import ModulesManager
+from core.logger import Logger
 from core.types.message import MsgInfo, Session, ModuleHookContext
 from .message import *
 from .message.chain import *
+from .message.elements import MessageElement
 from .message.internal import *
 from .temp import *
 from .utils import *
-from ..constants import base_superuser_default
-from ..logger import Logger
+
+enable_analytics = Config("enable_analytics", False)
 
 
 class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
+    ExecutionLockList = ExecutionLockList
     FetchedSession = FetchedSession
     ModuleHookContext = ModuleHookContext
-    ExecutionLockList = ExecutionLockList
+    PrivateAssets = PrivateAssets
     Info = Info
+    Secret = Secret
     Temp = Temp
 
     @staticmethod
@@ -35,8 +42,6 @@ class Bot:
     ):
         if isinstance(target, str):
             target = await Bot.FetchTarget.fetch_target(target)
-            if not target:
-                raise ValueError("Target not found")
         if isinstance(msg, list):
             msg = MessageChain(msg)
         Logger.info(target.__dict__)
@@ -53,10 +58,10 @@ class Bot:
 
     @staticmethod
     async def get_enabled_this_module(module: str) -> List[FetchedSession]:
-        lst = exports.get("BotDBUtil").TargetInfo.get_target_list(module)
+        lst = await TargetInfo.get_target_list_by_module(module)
         fetched = []
         for x in lst:
-            x = Bot.FetchTarget.fetch_target(x)
+            x = Bot.FetchTarget.fetch_target(x.target_id)
             if isinstance(x, FetchedSession):
                 fetched.append(x)
         return fetched
@@ -94,28 +99,24 @@ class FetchedSession(FetchedSession):
         self,
         target_from: str,
         target_id: Union[int, str],
-        sender_from: Optional[str] = None,
-        sender_id: Optional[Union[int, str]] = None,
+        sender_from: Optional[str],
+        sender_id: Optional[Union[str, int]],
     ):
-        if not sender_from:
-            sender_from = target_from
-        if not sender_id:
-            sender_id = target_id
+        target_id_ = f"{target_from}|{target_id}"
+        sender_id_ = None
+        if sender_from and sender_id:
+            sender_id_ = f"{sender_from}|{sender_id}"
         self.target = MsgInfo(
-            target_id=f"{target_from}|{target_id}",
-            sender_id=f"{sender_from}|{sender_id}",
+            target_id=target_id_,
+            sender_id=sender_id_,
             target_from=target_from,
             sender_from=sender_from,
-            sender_prefix="",
-            client_name=Bot.client_name,
+            sender_name="",
+            client_name=Bot.Info.client_name,
             message_id=0,
         )
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
-        if sender_id:
-            self.parent.target.sender_id = exports.get("BotDBUtil").SenderInfo(
-                f"{sender_from}|{sender_id}"
-            )
 
 
 Bot.FetchedSession = FetchedSession
@@ -123,14 +124,84 @@ Bot.FetchedSession = FetchedSession
 
 class FetchTarget(FetchTarget):
     @staticmethod
-    async def post_global_message(
-        message: str,
-        user_list: Optional[List[FetchedSession]] = None,
+    async def fetch_target_list(target_list: list) -> List[FetchedSession]:
+        lst = []
+        for x in target_list:
+            fet = await Bot.FetchTarget.fetch_target(x)
+            if fet:
+                lst.append(fet)
+        return lst
+
+    @staticmethod
+    async def post_message(
+        module_name: str,
+        message: Union[str, list, dict, MessageChain, MessageElement],
+        target_list: Optional[List[FetchedSession]] = None,
         i18n: bool = False,
         **kwargs: Dict[str, Any],
     ):
+        module_ = None if module_name == "*" else module_name
+        if target_list:
+            for x in target_list:
+                try:
+                    if isinstance(message, dict) and i18n:  # 提取字典语言映射
+                        message = message.get(x.parent.locale, message.get("fallback", ""))
+
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain(I18NContext(message, **kwargs))
+                        else:
+                            msgchain = MessageChain(Plain(message))
+                    msgchain = MessageChain(msgchain)
+                    await x.send_direct_message(msgchain)
+                    if enable_analytics and module_:
+                        await AnalyticsData.create(target_id=x.target.target_id,
+                                                   sender_id=x.target.sender_id,
+                                                   command="",
+                                                   module_name=module_,
+                                                   module_type="schedule")
+                except Exception:
+                    Logger.exception()
+        else:
+            get_target_id = await TargetInfo.get_target_list_by_module(
+                module_, Bot.Info.client_name
+            )
+            for x in get_target_id:
+                fetch = await Bot.FetchTarget.fetch_target(x.target_id)
+                if fetch:
+                    if x.muted:
+                        continue
+                    try:
+                        if isinstance(message, dict) and i18n:  # 提取字典语言映射
+                            message = message.get(fetch.parent.locale, message.get("fallback", ""))
+
+                        msgchain = message
+                        if isinstance(message, str):
+                            if i18n:
+                                msgchain = MessageChain(I18NContext(message, **kwargs))
+                            else:
+                                msgchain = MessageChain(Plain(message))
+                        msgchain = MessageChain(msgchain)
+                        await fetch.send_direct_message(msgchain)
+                        if enable_analytics and module_:
+                            await AnalyticsData.create(target_id=fetch.target.target_id,
+                                                       sender_id=fetch.target.sender_id,
+                                                       command="",
+                                                       module_name=module_,
+                                                       module_type="schedule")
+                    except Exception:
+                        Logger.exception()
+
+    @staticmethod
+    async def post_global_message(
+        message: str,
+        target_list: Optional[List[FetchedSession]] = None,
+        i18n: bool = False,
+        **kwargs: Dict[str, Any]
+    ):
         await Bot.FetchTarget.post_message(
-            "*", message=message, user_list=user_list, i18n=i18n, **kwargs
+            "*", message=message, target_list=target_list, i18n=i18n, **kwargs
         )
 
 
@@ -142,3 +213,6 @@ base_superuser_list = Config(
 
 if isinstance(base_superuser_list, str):
     base_superuser_list = [base_superuser_list]
+
+
+add_export(Bot)

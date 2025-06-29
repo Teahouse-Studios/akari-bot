@@ -1,21 +1,19 @@
 import base64
 import os
 import re
-import traceback
 import uuid
 from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
-import aiohttp
 import orjson as json
 from PIL import Image as PILImage
 from bs4 import BeautifulSoup, Comment
 
-from core.constants.info import Info
+from core.builtins import Bot
 from core.constants.path import cache_path
 from core.logger import Logger
-from core.utils.http import download
+from core.utils.http import get_url, post_url, download
 from core.utils.web_render import webrender
 from .mapping import infobox_elements
 
@@ -25,16 +23,13 @@ async def generate_screenshot_v2(
     section: str = None,
     allow_special_page=False,
     content_mode=False,
-    use_local=True,
     element=None,
 ) -> Union[List[PILImage], bool]:
     elements_ = infobox_elements.copy()
     if element and isinstance(element, List):
         elements_ += element
-    if not Info.web_render_status:
+    if not Bot.Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
     if not section:
         if allow_special_page and content_mode:
             elements_.insert(0, ".mw-body-content")
@@ -43,7 +38,7 @@ async def generate_screenshot_v2(
         Logger.info("[WebRender] Generating element screenshot...")
         try:
             img = await download(
-                webrender("element_screenshot", use_local=use_local),
+                webrender("element_screenshot"),
                 status_code=200,
                 headers={"Content-Type": "application/json"},
                 method="POST",
@@ -52,25 +47,15 @@ async def generate_screenshot_v2(
                 timeout=30,
                 request_private_ip=True,
             )
-        except aiohttp.ClientConnectorError:
-            if use_local:
-                return await generate_screenshot_v2(
-                    page_link,
-                    section,
-                    allow_special_page,
-                    content_mode,
-                    use_local=False,
-                )
-            return False
-        except ValueError:
-            Logger.info("[WebRender] Generation Failed.")
+        except Exception:
+            Logger.exception("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
         try:
             section = section.replace(" ", "_")
             img = await download(
-                webrender("section_screenshot", use_local=use_local),
+                webrender("section_screenshot"),
                 status_code=200,
                 headers={"Content-Type": "application/json"},
                 method="POST",
@@ -79,18 +64,8 @@ async def generate_screenshot_v2(
                 timeout=30,
                 request_private_ip=True,
             )
-        except aiohttp.ClientConnectorError:
-            if use_local:
-                return await generate_screenshot_v2(
-                    page_link,
-                    section,
-                    allow_special_page,
-                    content_mode,
-                    use_local=False,
-                )
-            return False
-        except ValueError:
-            Logger.info("[WebRender] Generation Failed.")
+        except Exception:
+            Logger.exception("[WebRender] Generation Failed.")
             return False
     with open(img) as read:
         load_img = json.loads(read.read())
@@ -104,23 +79,18 @@ async def generate_screenshot_v2(
 
 
 async def generate_screenshot_v1(
-    link, page_link, headers, use_local=True, section=None, allow_special_page=False
+    link, page_link, headers, section=None, allow_special_page=False
 ) -> Union[List[PILImage], bool]:
-    if not Info.web_render_status:
+    if not Bot.Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
     try:
         Logger.info("Starting find infobox/section..")
         if link[-1] != "/":
             link += "/"
         try:
-            async with aiohttp.ClientSession(headers=headers) as session, session.get(
-                page_link, timeout=aiohttp.ClientTimeout(total=20)
-            ) as req:
-                html = await req.read()
-        except BaseException:
-            Logger.error(traceback.format_exc())
+            html = await get_url(page_link, 200, headers=headers, timeout=20)
+        except Exception:
+            Logger.exception()
             return False
         soup = BeautifulSoup(html, "html.parser")
         pagename = uuid.uuid4()
@@ -128,8 +98,6 @@ async def generate_screenshot_v1(
         if os.path.exists(url):
             os.remove(url)
         Logger.info("Downloaded raw.")
-
-        timeless_fix = False
 
         def join_url(base, target):
             target = target.split(" ")
@@ -149,17 +117,15 @@ async def generate_screenshot_v1(
                 fl = []
                 for f in x.attrs:
                     if isinstance(x.attrs[f], str):
-                        fl.append(f'{f}="{x.attrs[f]}"')
+                        fl.append(f"{f}=\"{x.attrs[f]}\"")
                     elif isinstance(x.attrs[f], list):
-                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                open_file.write(f'<html {" ".join(fl)}>')
+                        fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                open_file.write(f"<html {" ".join(fl)}>")
 
             open_file.write("<head>\n")
             for x in soup.find_all(rel="stylesheet"):
                 if x.has_attr("href"):
                     get_herf = x.get("href")
-                    if get_herf.find("timeless") != -1:
-                        timeless_fix = True
                     x.attrs["href"] = re.sub(";", "&", urljoin(link, get_herf))
                 open_file.write(str(x))
 
@@ -180,7 +146,7 @@ async def generate_screenshot_v1(
                         for x in soup.find_all("body"):
                             if x.has_attr("class"):
                                 open_file.write(
-                                    f'<body class="{" ".join(x.get("class"))}">'
+                                    f"<body class=\"{" ".join(x.get("class"))}\">"
                                 )
 
                         for x in soup.find_all("div"):
@@ -188,20 +154,20 @@ async def generate_screenshot_v1(
                                 fl = []
                                 for f in x.attrs:
                                     if isinstance(x.attrs[f], str):
-                                        fl.append(f'{f}="{x.attrs[f]}"')
+                                        fl.append(f"{f}=\"{x.attrs[f]}\"")
                                     elif isinstance(x.attrs[f], list):
-                                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                                open_file.write(f'<div {" ".join(fl)}>')
-                        open_file.write('<div class="mw-parser-output">')
+                                        fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                                open_file.write(f"<div {" ".join(fl)}>")
+                        open_file.write("<div class=\"mw-parser-output\">")
 
                         for x in soup.find_all("main"):
                             fl = []
                             for f in x.attrs:
                                 if isinstance(x.attrs[f], str):
-                                    fl.append(f'{f}="{x.attrs[f]}"')
+                                    fl.append(f"{f}=\"{x.attrs[f]}\"")
                                 elif isinstance(x.attrs[f], list):
-                                    fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                            open_file.write(f'<main {" ".join(fl)}>')
+                                    fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                            open_file.write(f"<main {" ".join(fl)}>")
                         open_file.write(str(find_diff))
                         w = 2000
                 if not find_diff:
@@ -233,12 +199,7 @@ async def generate_screenshot_v1(
                             x.attrs["class"] = "image"
                             x.attrs["src"] = x.attrs["data-src"]
 
-                    for x in find_infobox.find_all(class_="lazyload"):
-                        if x.has_attr("class") and x.has_attr("data-src"):
-                            x.attrs["class"] = "image"
-                            x.attrs["src"] = x.attrs["data-src"]
-
-                    open_file.write('<div class="mw-parser-output">')
+                    open_file.write("<div class=\"mw-parser-output\">")
 
                     open_file.write(str(find_infobox))
                     w = 500
@@ -246,28 +207,28 @@ async def generate_screenshot_v1(
             else:
                 for x in soup.find_all("body"):
                     if x.has_attr("class"):
-                        open_file.write(f'<body class="{" ".join(x.get("class"))}">')
+                        open_file.write(f"<body class=\"{" ".join(x.get("class"))}\">")
 
                 for x in soup.find_all("div"):
                     if x.get("id") in ["content", "mw-content-text"]:
                         fl = []
                         for f in x.attrs:
                             if isinstance(x.attrs[f], str):
-                                fl.append(f'{f}="{x.attrs[f]}"')
+                                fl.append(f"{f}=\"{x.attrs[f]}\"")
                             elif isinstance(x.attrs[f], list):
-                                fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                        open_file.write(f'<div {" ".join(fl)}>')
+                                fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                        open_file.write(f"<div {" ".join(fl)}>")
 
-                open_file.write('<div class="mw-parser-output">')
+                open_file.write("<div class=\"mw-parser-output\">")
 
                 for x in soup.find_all("main"):
                     fl = []
                     for f in x.attrs:
                         if isinstance(x.attrs[f], str):
-                            fl.append(f'{f}="{x.attrs[f]}"')
+                            fl.append(f"{f}=\"{x.attrs[f]}\"")
                         elif isinstance(x.attrs[f], list):
-                            fl.append(f'{f}="{" ".join(x.attrs[f])}"')
-                    open_file.write(f'<main {" ".join(fl)}>')
+                            fl.append(f"{f}=\"{" ".join(x.attrs[f])}\"")
+                    open_file.write(f"<main {" ".join(fl)}>")
 
                 def is_comment(e):
                     return isinstance(e, Comment)
@@ -291,7 +252,7 @@ async def generate_screenshot_v1(
                         if selected:
                             break
                 if not selected:
-                    Logger.info("Found nothing...")
+                    Logger.info("Nothing found.")
                     return False
                 Logger.info("Found section...")
                 open_file.write(str(x))
@@ -346,43 +307,24 @@ async def generate_screenshot_v1(
         Logger.info("Start rendering...")
         img_lst = []
         try:
-            async with aiohttp.ClientSession() as session, session.post(
-                webrender(),
-                headers={
-                    "Content-Type": "application/json",
-                },
+            resp_text = await post_url(
+                url=webrender(),
                 data=json.dumps(html),
-            ) as resp:
-                if resp.status != 200:
-                    Logger.info(f"Failed to render: {await resp.text()}")
-                    return False
-                imgs_data = json.loads(await resp.read())
-                for img in imgs_data:
-                    b = base64.b64decode(img)
-                    bio = BytesIO(b)
-                    bimg = PILImage.open(bio)
-                    img_lst.append(bimg)
+                headers={"Content-Type": "application/json"},
+                fmt="text",
+                logging_err_resp=True,
+            )
+            imgs_data = json.loads(resp_text)
+            for img in imgs_data:
+                b = base64.b64decode(img)
+                bio = BytesIO(b)
+                bimg = PILImage.open(bio)
+                img_lst.append(bimg)
 
-        except aiohttp.ClientConnectorError:
-            if use_local:
-                async with aiohttp.ClientSession() as session, session.post(
-                    webrender(use_local=False),
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                    data=json.dumps(html),
-                ) as resp:
-                    if resp.status != 200:
-                        Logger.info(f"Failed to render: {await resp.text()}")
-                        return False
-                    imgs_data = json.loads(await resp.read())
-                    for img in imgs_data:
-                        b = base64.b64decode(img)
-                        bio = BytesIO(b)
-                        bimg = PILImage.open(bio)
-                        img_lst.append(bimg)
+        except Exception as e:
+            Logger.error(f"Request error: {e}")
 
         return img_lst
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.exception()
         return False

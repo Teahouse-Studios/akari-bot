@@ -1,31 +1,31 @@
 import re
-import traceback
+import html
 from typing import List, Union
 
 import filetype
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
+from botpy.errors import ServerError
 from botpy.types.message import Reference
 
-from bots.qqbot.info import *
 from core.builtins import (
     Bot,
     Plain,
     Image,
-    MessageSession as MessageSessionT,
     I18NContext,
     Url,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
-from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement
+from core.builtins.message.chain import MessageChain, match_atcode
+from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
 from core.config import Config
-from core.database import BotDBUtil
 from core.logger import Logger
 from core.utils.http import download, url_pattern
+from core.utils.image import msgchain2image
+from .info import *
 
-enable_analytics = Config("enable_analytics", False)
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
 
 
@@ -48,13 +48,14 @@ class FinishedSession(FinishedSessionT):
                         message_id=x,
                     )
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = False
+        mention = True
         embed = False
         forward = False
         delete = True
@@ -82,9 +83,14 @@ class MessageSession(MessageSessionT):
 
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = html.unescape(x.text)
+                x.text = match_atcode(x.text, client_name, "<@{uid}>")
                 plains.append(x)
             elif isinstance(x, ImageElement):
                 images.append(x)
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from == target_guild_prefix:
+                    plains.append(PlainElement(text=f"<@{x.id}>"))
         sends = []
         if len(plains + images) != 0:
             msg = "\n".join([x.text for x in plains]).strip()
@@ -118,6 +124,7 @@ class MessageSession(MessageSessionT):
                 )
                 if not msg_quote and quote:
                     msg = f"<@{self.session.message.author.id}> \n" + msg
+                msg = "" if not msg else msg
                 send = await self.session.message.reply(
                     content=msg, file_image=send_img, message_reference=msg_quote
                 )
@@ -149,6 +156,7 @@ class MessageSession(MessageSessionT):
                     if quote and not send_img
                     else None
                 )
+                msg = "" if not msg else msg
                 send = await self.session.message.reply(
                     content=msg, file_image=send_img, message_reference=msg_quote
                 )
@@ -181,20 +189,31 @@ class MessageSession(MessageSessionT):
                     )
                 if msg and self.session.message.id:
                     msg = "\n" + msg
-                send = await self.session.message.reply(
-                    content=msg,
-                    msg_type=7 if send_img else 0,
-                    media=send_img,
-                    msg_seq=seq,
-                )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
-                if image_1:
-                    Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                msg = "" if not msg else msg
+                try:
+                    send = await self.session.message.reply(
+                        content=msg,
+                        msg_type=7 if send_img else 0,
+                        media=send_img,
+                        msg_seq=seq,
                     )
-                if send:
-                    sends.append(send)
-                    seq += 1
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
+                    if image_1:
+                        Logger.info(
+                            f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                        )
+                    if send:
+                        sends.append(send)
+                        seq += 1
+                except ServerError:
+                    img_chain = filtered_msg
+                    img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                    if image_1:
+                        img_chain.append(image_1)
+                    imgs = await msgchain2image(img_chain, self)
+                    if imgs:
+                        imgs = [Image(img) for img in imgs]
+                        images = imgs + images
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_group_file(
@@ -224,20 +243,31 @@ class MessageSession(MessageSessionT):
                         file_type=1,
                         file_data=await image_1.get_base64(),
                     )
-                send = await self.session.message.reply(
-                    content=msg,
-                    msg_type=7 if send_img else 0,
-                    media=send_img,
-                    msg_seq=seq,
-                )
-                Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
-                if image_1:
-                    Logger.info(
-                        f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                msg = "" if not msg else msg
+                try:
+                    send = await self.session.message.reply(
+                        content=msg,
+                        msg_type=7 if send_img else 0,
+                        media=send_img,
+                        msg_seq=seq,
                     )
-                if send:
-                    sends.append(send)
-                    seq += 1
+                    Logger.info(f"[Bot] -> [{self.target.target_id}]: {msg.strip()}")
+                    if image_1:
+                        Logger.info(
+                            f"[Bot] -> [{self.target.target_id}]: Image: {str(image_1.__dict__)}"
+                        )
+                    if send:
+                        sends.append(send)
+                        seq += 1
+                except ServerError:
+                    img_chain = filtered_msg
+                    img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
+                    if image_1:
+                        img_chain.append(image_1)
+                    imgs = await msgchain2image(img_chain, self)
+                    if imgs:
+                        imgs = [Image(img) for img in imgs]
+                        images = imgs + images
                 if images:
                     for img in images:
                         send_img = await self.session.message._api.post_c2c_file(
@@ -290,9 +320,9 @@ class MessageSession(MessageSessionT):
     def as_display(self, text_only=False):
         msg = self.session.message.content
         if self.target.target_from in [target_guild_prefix, target_direct_prefix]:
-            msg = re.sub(r"<@(.*?)>", rf"{sender_tiny_prefix}|\1", msg)
+            msg = re.sub(r"<@(\d+)>", rf"{sender_tiny_prefix}|\1", msg)
         else:
-            msg = re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", msg)
+            msg = re.sub(r"<@(\d+)>", rf"{sender_prefix}|\1", msg)
         return msg
 
     async def delete(self):
@@ -305,7 +335,7 @@ class MessageSession(MessageSessionT):
                 )
                 return True
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 return False
         else:
             return False
@@ -390,8 +420,9 @@ class FetchTarget(FetchTargetT):
         target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(rf"^({target_pattern})\|(.*)", target_id)
         if match_target:
-            target_from = sender_from = match_target.group(1)
+            target_from = match_target.group(1)
             target_id = match_target.group(2)
+            sender_from = None
             if sender_id:
                 sender_pattern = r"|".join(
                     re.escape(item) for item in sender_prefix_list
@@ -400,64 +431,9 @@ class FetchTarget(FetchTargetT):
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
-            else:
-                sender_id = target_id
-
-            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
-
-    @staticmethod
-    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
-        lst = []
-        for x in target_list:
-            fet = await FetchTarget.fetch_target(x)
-            if fet:
-                lst.append(fet)
-        return lst
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        module_name = None if module_name == "*" else module_name
-        if user_list:
-            for x in user_list:
-                try:
-                    msgchain = message
-                    if isinstance(message, str):
-                        if i18n:
-                            msgchain = MessageChain(
-                                [Plain(x.parent.locale.t(message, **kwargs))]
-                            )
-                        else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
-                    await x.send_direct_message(msgchain)
-                    if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
-                except Exception:
-                    Logger.error(traceback.format_exc())
-        else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(
-                module_name, client_name
-            )
-            for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
-                if fetch:
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
-                        continue
-                    try:
-                        msgchain = message
-                        if isinstance(message, str):
-                            if i18n:
-                                msgchain = MessageChain(
-                                    [Plain(fetch.parent.locale.t(message, **kwargs))]
-                                )
-                            else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
-                        await fetch.send_direct_message(msgchain)
-                        if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
-                    except Exception:
-                        Logger.error(traceback.format_exc())
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
+            return session
 
 
 Bot.MessageSession = MessageSession

@@ -1,63 +1,31 @@
-from core.builtins import MessageSession
-from core.config import Config
+from core.builtins import MessageSession, MessageChain, I18NContext, Plain, Url
 from core.logger import Logger
-from modules.wiki.utils.rc import convert_rc_to_detailed_format
 from modules.wiki.utils.wikilib import WikiLib
+from .rc import convert_rc_to_detailed_format
 
 
-async def rc_qq(msg: MessageSession, wiki_url):
-    wiki = WikiLib(wiki_url)
-    qq_account = Config("qq_account", cfg_type=(int, str), table_name="bot_aiocqhttp")
+async def get_rc_qq(msg: MessageSession, wiki_url, headers=None):
+    wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(
         action="query",
         list="recentchanges",
         rcprop="title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids",
         rclimit=99,
         rctype="edit|new|log",
-        _no_login=not msg.options.get("use_bot_account", False),
+        _no_login=not msg.target_data.get("use_bot_account", False),
     )
     wiki_info = wiki.wiki_info
-
-    nodelist = [
-        {
-            "type": "node",
-            "data": {
-                "name": msg.locale.t("wiki.message.rc.qq.link.title"),
-                "uin": int(qq_account),
-                "content": [
-                    {
-                        "type": "text",
-                        "data": {
-                            "text": wiki_info.articlepath.replace(
-                                "$1", "Special:RecentChanges"
-                            )
-                            + (
-                                "\n" + msg.locale.t("wiki.message.rc.qq.link.prompt")
-                                if wiki.wiki_info.in_allowlist
-                                else ""
-                            )
-                        },
-                    }
-                ],
-            },
-        }
+    pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
+    msgchain_lst = [
+        MessageChain([I18NContext("wiki.message.rc.qq.title"), Url(pageurl)])
     ]
-
-    rclist = await convert_rc_to_detailed_format(
-        query["query"]["recentchanges"], wiki_info, msg
-    )
+    if wiki.wiki_info.in_allowlist:
+        msgchain_lst.append(MessageChain([I18NContext("wiki.message.rc.qq.link.prompt")]))
+    rclist = await convert_rc_to_detailed_format(msg, query["query"]["recentchanges"], wiki_info)
 
     for x in rclist:
-        nodelist.append(
-            {
-                "type": "node",
-                "data": {
-                    "name": msg.locale.t("wiki.message.rc.qq.title"),
-                    "uin": int(qq_account),
-                    "content": [{"type": "text", "data": {"text": x}}],
-                },
-            }
-        )
+        msgchain_lst.append(MessageChain([Plain(x)]))
+    nodelist = await msg.msgchain2nodelist(msgchain_lst)
     Logger.debug(nodelist)
     return nodelist
 

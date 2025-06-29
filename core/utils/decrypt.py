@@ -11,11 +11,11 @@ def decrypt_string(text):
     c = FF3Cipher.withCustomAlphabet(
         key,
         tweak,
-        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
+        "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~",
     )
     d = []
     for i in range(0, len(text), 28):
-        d.append(text[i : i + 28])
+        d.append(text[i: i + 28])
     dec_text = "".join([c.decrypt(i) for i in d])
     if m := re.match(r"^.{2}:(.*?):.{2}.*?$", dec_text):
         return m.group(1)

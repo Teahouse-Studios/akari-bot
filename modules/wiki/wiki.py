@@ -4,19 +4,19 @@ from typing import Optional, Union
 
 import filetype
 
-from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.builtins import Bot, I18NContext, Plain, Image, Voice, Url, confirm_command
 from core.builtins import MessageSession
 from core.component import module
 from core.constants.exceptions import AbuseWarning
-from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import download
 from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
-from core.utils.text import isint
-from .utils.dbutils import WikiTargetInfo
+from core.utils.message import isint
+from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
+from .utils.utils import check_svg
 from .utils.wikilib import WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = module(
@@ -34,8 +34,14 @@ wiki = module(
 )
 
 
+@wiki.command()
+async def _(msg: Bot.MessageSession):
+    await query_pages(msg)
+
+
 @wiki.command(
-    "<pagename> [-l <lang>] {{wiki.help}}", options_desc={"-l": "{wiki.help.option.l}"}
+    "<pagename> [-l <lang>] {{I18N:wiki.help}}",
+    options_desc={"-l": "{I18N:wiki.help.option.l}"}
 )
 async def _(msg: Bot.MessageSession, pagename: str):
     get_lang = msg.parsed_msg.get("-l", False)
@@ -47,8 +53,8 @@ async def _(msg: Bot.MessageSession, pagename: str):
 
 
 @wiki.command(
-    "id <pageid> [-l <lang>] {{wiki.help.id}}",
-    options_desc={"-l": "{wiki.help.option.l}"},
+    "id <pageid> [-l <lang>] {{I18N:wiki.help.id}}",
+    options_desc={"-l": "{I18N:wiki.help.option.l}"},
 )
 async def _(msg: Bot.MessageSession, pageid: str):
     iw = None
@@ -56,7 +62,7 @@ async def _(msg: Bot.MessageSession, pageid: str):
         iw = match_iw.group(1)
         pageid = match_iw.group(2)
     if not isint(pageid):
-        await msg.finish(msg.locale.t("wiki.message.id.invalid"))
+        await msg.finish(I18NContext("wiki.message.id.invalid"))
     get_lang = msg.parsed_msg.get("-l", False)
     if get_lang:
         lang = get_lang["<lang>"]
@@ -79,13 +85,13 @@ async def query_pages(
     inline_mode: bool = False,
 ):
     if isinstance(session, MessageSession):
-        target = WikiTargetInfo(session)
-        start_wiki = target.get_start_wiki()
+        target = await WikiTargetInfo.get_by_target_id(session.target.target_id)
+        start_wiki = target.api_link
         if start_wiki_api:
             start_wiki = start_wiki_api
-        interwiki_list = target.get_interwikis()
-        headers = target.get_headers()
-        prefix = target.get_prefix()
+        interwiki_list = target.interwikis
+        headers = target.headers
+        prefix = target.prefix
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
@@ -106,7 +112,7 @@ async def query_pages(
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
-            raise AbuseWarning("{tos.message.reason.wiki_abuse}")
+            raise AbuseWarning("{I18N:tos.message.reason.wiki_abuse}")
         query_task = {start_wiki: {"query": [], "iw_prefix": ""}}
         for t in title:
             if prefix and use_prefix:
@@ -149,9 +155,15 @@ async def query_pages(
                         }
                     }
                 else:
-                    raise ValueError(f'iw_prefix "{iw}" not found.')
+                    raise ValueError(f"iw_prefix \"{iw}\" not found.")
     else:
-        raise ValueError("Title or pageid must be specified.")
+        get_wiki_info = WikiLib(start_wiki)
+        query = await get_wiki_info.get_json(
+            action="query",
+            meta="siteinfo",
+            siprop="general"
+        )
+        query_task = {start_wiki: {"query": [query["query"]["general"]["mainpage"]], "iw_prefix": ""}}
     Logger.debug(query_task)
     msg_list = []
     wait_msg_list = []
@@ -233,16 +245,16 @@ async def query_pages(
                     if (
                         r.link
                         and r.selected_section
-                        and r.info.in_allowlist
+                        and (r.info.in_allowlist or not Bot.Info.use_url_manager)
                         and not r.invalid_section
-                        and Info.web_render_status
+                        and Bot.Info.web_render_status
                     ):
                         render_section_list.append(
                             {
                                 r.link: {
                                     "url": r.info.realurl,
                                     "section": r.selected_section,
-                                    "in_allowlist": r.info.in_allowlist,
+                                    "in_allowlist": r.info.in_allowlist or not Bot.Info.use_url_manager,
                                 }
                             }
                         )
@@ -255,7 +267,7 @@ async def query_pages(
 
                     if r.link:
                         plain_slice.append(
-                            str(Url(r.link, use_mm=not r.info.in_allowlist))
+                            str(Url(r.link, use_mm=not r.info.in_allowlist or not Bot.Info.use_url_manager))
                         )
 
                     if r.file:
@@ -269,7 +281,7 @@ async def query_pages(
                                 {
                                     r.link: {
                                         "url": r.info.realurl,
-                                        "in_allowlist": r.info.in_allowlist,
+                                        "in_allowlist": r.info.in_allowlist or not Bot.Info.use_url_manager,
                                         "content_mode": r.has_template_doc
                                         or r.title.split(":")[0] in ["User"]
                                         or (
@@ -286,8 +298,8 @@ async def query_pages(
                             )
                     if plain_slice:
                         msg_list.append(Plain("\n".join(plain_slice)))
-                    if Info.web_render_status:
-                        if (r.invalid_section and r.info.in_allowlist) or (
+                    if Bot.Info.web_render_status:
+                        if (r.invalid_section and (r.info.in_allowlist or not Bot.Info.use_url_manager)) or (
                             r.is_talk_page and not r.selected_section
                         ):
                             if (
@@ -304,7 +316,7 @@ async def query_pages(
                                     Plain(
                                         session.locale.t(
                                             "wiki.message.invalid_section.prompt"
-                                            if r.invalid_section and r.info.in_allowlist
+                                            if r.invalid_section and (r.info.in_allowlist or not Bot.Info.use_url_manager)
                                             else "wiki.message.talk_page.prompt"
                                         )
                                     )
@@ -354,7 +366,7 @@ async def query_pages(
                                     i_msg_lst, callback=_callback
                                 )
                             else:
-                                if r.invalid_section and r.info.in_allowlist:
+                                if r.invalid_section and (r.info.in_allowlist or not Bot.Info.use_url_manager):
                                     msg_list.append(
                                         Plain(
                                             session.locale.t(
@@ -423,7 +435,7 @@ async def query_pages(
                             isinstance(session, Bot.MessageSession)
                             and session.Feature.wait
                         ):
-                            if not session.options.get("wiki_redlink", False):
+                            if not session.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
                                         session.locale.t(
@@ -611,14 +623,6 @@ async def query_pages(
                     await session.send_message(section_msg_list, quote=False)
 
         async def image_and_voice():
-            def check_svg(file_path):
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        check = file.read(1024)
-                        return "<svg" in check
-                except Exception:
-                    return False
-
             if dl_list:
                 for f in dl_list:
                     dl = await download(f)

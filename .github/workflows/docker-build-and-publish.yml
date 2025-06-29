@@ -1,9 +1,9 @@
-name: Docker Build and Publish
+name: "Docker Build and Publish (3:00, UTC+8)"
 
 on:
-  push:
-    branches: [master]
-
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest

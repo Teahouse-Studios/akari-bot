@@ -4,41 +4,41 @@ import traceback
 
 import orjson as json
 
-from core.constants.path import schedulars_path
-from core.database import BotDBUtil
+from core.builtins import Info
+from core.constants.path import schedulers_path
+from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
-from core.utils.info import Info
 
 
 def load_extra_schedulers():
     @Scheduler.scheduled_job(IntervalTrigger(hours=12))
     async def clear_queue():
         Logger.info("Clearing job queue...")
-        BotDBUtil.JobQueue.clear()
+        await JobQueuesTable.clear_task()
         Logger.info("Job queue cleared.")
 
     fun_file = None
     Logger.info("Attempting to load schedulers...")
     if not Info.binary_mode:
-        dir_list = os.listdir(schedulars_path)
+        dir_list = os.listdir(schedulers_path)
     else:
         try:
             Logger.warning(
                 "Binary mode detected, trying to load pre-built schedulers list..."
             )
             js = "assets/schedulers_list.json"
-            with open(js, "r", encoding="utf-8") as f:
+            with open(js, "rb") as f:
                 dir_list = json.loads(f.read())
         except Exception:
             Logger.error(
                 "Failed to load pre-built schedulers list, using default list."
             )
-            dir_list = os.listdir(schedulars_path)
+            dir_list = os.listdir(schedulers_path)
 
     for file_name in dir_list:
         try:
-            file_path = os.path.join(schedulars_path, file_name)
+            file_path = os.path.join(schedulers_path, file_name)
             fun_file = None
             if not Info.binary_mode:
                 if os.path.isdir(file_path):
@@ -61,4 +61,4 @@ def load_extra_schedulers():
             tb = traceback.format_exc()
             errmsg = f"Failed to load schedulers.{fun_file}: \n{tb}"
             Logger.error(errmsg)
-    Logger.info("All schedulers loaded.")
+    Logger.success("All schedulers loaded.")

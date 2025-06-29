@@ -1,3 +1,8 @@
+"""
+机器人内置的随机生成工具。在配置文件中将`use_secrets_random`设为`true`时使用`secrets`库，否则默认使用`random`库。
+
+请在模块中使用此库进行随机生成，避免导入`random`或`secrets`库。
+"""
 import random
 import secrets
 from typing import Sequence, List, MutableSequence, Optional, TypeVar
@@ -9,10 +14,7 @@ T = TypeVar("T")
 
 
 class Random:
-    """
-    机器人内置的随机数生成器。在配置文件中将`use_secrets_random`设为`true`时使用`secret`库，否则默认使用`random`库。
-    """
-
+    """随机生成工具。"""
     use_secrets = Config("use_secrets_random", False)
 
     @classmethod

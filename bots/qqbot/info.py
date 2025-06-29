@@ -1,4 +1,4 @@
-client_name = "QQ|Bot"
+client_name = "QQBot"
 
 sender_prefix = client_name
 sender_tiny_prefix = f"{client_name}|Tiny"

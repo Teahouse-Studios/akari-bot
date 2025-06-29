@@ -136,7 +136,7 @@ class HTML2Text(html.parser.HTMLParser):
         config.UNIFIABLE["nbsp"] = "&nbsp_place_holder;"
 
     def feed(self, data: str) -> None:
-        data = data.replace("</' + 'script>", "</ignore>")
+        data = data.replace("</script>", "</ignore>")
         super().feed(data)
 
     def handle(self, data: str) -> str:
@@ -452,10 +452,9 @@ class HTML2Text(html.parser.HTMLParser):
                 self.o(self.close_quote)
             self.quote = not self.quote
 
-        def link_url(self: HTML2Text, link: str, title: str = "") -> None:
+        def link_url(self: HTML2Text, link: str) -> None:
             url = str(Url(urlparse.urljoin(self.baseurl, link)))
-            # title = ' "{}"'.format(title) if title.strip() else ""
-            self.o("]({url})".format(url=escape_md(url)))
+            self.o(f"]({escape_md(url)})")
 
         if tag == "a" and not self.ignore_links:
             if start:
@@ -484,7 +483,7 @@ class HTML2Text(html.parser.HTMLParser):
                         if self.inline_links:
                             title = a.get("title") or ""
                             title = escape_md(title)
-                            link_url(self, a["href"], title)
+                            link_url(self, a["href"])
                         else:
                             i = self.previousIndex(a)
                             if i is not None:
@@ -506,13 +505,13 @@ class HTML2Text(html.parser.HTMLParser):
                 if self.images_as_html or (
                     self.images_with_size and ("width" in attrs or "height" in attrs)
                 ):
-                    self.o("<img src='" + attrs["src"] + "' ")
+                    self.o(f"<img src=\'{attrs["src"]}\' ")
                     if "width" in attrs:
-                        self.o("width='" + attrs["width"] + "' ")
+                        self.o(f"width=\'{attrs["width"]}\' ")
                     if "height" in attrs:
-                        self.o("height='" + attrs["height"] + "' ")
+                        self.o(f"height=\'{attrs["height"]}\' ")
                     if alt:
-                        self.o("alt='" + alt + "' ")
+                        self.o(f"alt=\'{alt}\' ")
                     self.o("/>")
                     return
 
@@ -618,14 +617,14 @@ class HTML2Text(html.parser.HTMLParser):
                     self.soft_br()
                 if tag in ["td", "th"]:
                     if start:
-                        self.o("<{}>\n\n".format(tag))
+                        self.o(f"<{tag}>\n\n")
                     else:
-                        self.o("\n</{}>".format(tag))
+                        self.o(f"\n</{tag}>")
                 else:
                     if start:
-                        self.o("<{}>".format(tag))
+                        self.o(f"<{tag}>")
                     else:
-                        self.o("</{}>".format(tag))
+                        self.o(f"</{tag}>")
 
             else:
                 if tag == "table":
@@ -692,8 +691,8 @@ class HTML2Text(html.parser.HTMLParser):
 
         if not self.quiet:
             if self.google_doc:
-                # prevent white space immediately after 'begin emphasis'
-                # marks ('**' and '_')
+                # prevent white space immediately after "begin emphasis"
+                # marks ("**" and "_")
                 lstripped_data = data.lstrip()
                 if self.drop_white_space and not (self.pre or self.code):
                     data = lstripped_data

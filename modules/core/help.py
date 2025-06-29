@@ -1,19 +1,16 @@
 import base64
 import re
-import traceback
 from html import escape
 from io import BytesIO
 
-import aiohttp
 import orjson as json
-from PIL import Image as PILImage
 from jinja2 import FileSystemLoader, Environment
+from PIL import Image as PILImage
 
 from core.builtins import Bot, I18NContext, Image, Plain, base_superuser_list
 from core.component import module
 from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
-from core.constants.info import Info
 from core.constants.path import templates_path
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
@@ -23,14 +20,15 @@ from core.utils.http import download
 from core.utils.web_render import webrender
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
+help_url = Config("help_url", help_url_default)
+donate_url = Config("donate_url", donate_url_default)
+
+hlp = module("help", base=True, doc=True)
 
 
-hlp = module('help', base=True, doc=True)
-
-
-@hlp.command('<module> [--legacy] {{core.help.help.detail}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
-async def bot_help(msg: Bot.MessageSession, module: str):
+@hlp.command("<module> [--legacy] {{I18N:core.help.help.detail}}",
+             options_desc={"--legacy": "{I18N:help.option.legacy}"})
+async def _(msg: Bot.MessageSession, module: str):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
@@ -43,9 +41,9 @@ async def bot_help(msg: Bot.MessageSession, module: str):
 
         help_name = alias[module].split()[0] if module in alias else module.split()[0]
         if help_name in current_unloaded_modules:
-            await msg.finish(msg.locale.t("parser.module.unloaded", module=help_name))
+            await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
         elif help_name in err_modules:
-            await msg.finish(msg.locale.t("error.module.unloaded", module=help_name))
+            await msg.finish(I18NContext("error.module.unloaded", module=help_name))
         elif help_name in module_list:
             module_ = module_list[help_name]
 
@@ -64,8 +62,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 show_required_superuser=is_superuser,
                 show_required_base_superuser=is_base_superuser)
 
-            doc = ''
-            devs_msg = ''
+            devs_msg = ""
             if (module_.required_superuser and not is_superuser) or \
                (module_.required_base_superuser and not is_base_superuser):
                 pass
@@ -73,7 +70,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                 pass
             else:
                 if regex_list:
-                    mdocs.append(msg.locale.t("core.help.regex.note"))
+                    mdocs.append(str(I18NContext("core.help.regex.note")))
                     for regex in regex_list:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -84,35 +81,37 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                             rdesc = regex.desc
                             if rdesc:
                                 rdesc = msg.locale.t_str(rdesc)
-                                mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.detail",
-                                                                       msg=rdesc)}')
+                                mdocs.append(
+                                    f"{pattern} {str(I18NContext("I18N:core.message.help.regex.detail", msg=rdesc))}")
                             else:
-                                mdocs.append(f'{pattern} {msg.locale.t("core.message.help.regex.no_information")}')
-                doc = '\n'.join(mdocs)
+                                mdocs.append(
+                                    f"{pattern} {str(I18NContext("I18N:core.message.help.regex.no_information"))}")
 
                 if module_.alias:
                     for a in module_.alias:
-                        malias.append(f'{a} -> {module_.alias[a]}')
+                        malias.append(f"{a} -> {module_.alias[a]}")
                 if module_.developers and not module_.base:
-                    devs = msg.locale.t('message.delimiter').join(module_.developers)
-                    devs_msg = '\n' + msg.locale.t("core.help.author") + devs
+                    devs_msg = str(I18NContext("core.help.author")) + \
+                        "{I18N:message.delimiter}".join(module_.developers)
                 else:
-                    devs_msg = ''
+                    devs_msg = ""
 
             if module_.doc:
-                if help_page_url := Config('help_page_url', help_page_url_default, cfg_type=str):
-                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=help_page_url.replace('${module}', help_name))
-                elif help_url := Config('help_url', help_url_default, get_url=True):
-                    wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                                   url=(help_url + help_name))
+                if help_page_url := Config("help_page_url", help_page_url_default, cfg_type=str):
+                    wiki_msg = str(
+                        I18NContext(
+                            "core.message.help.helpdoc.address",
+                            url=help_page_url.replace(
+                                "${module}",
+                                help_name)))
+                elif help_url:
+                    wiki_msg = str(I18NContext("core.message.help.helpdoc.address", url=help_url + help_name))
                 else:
-                    wiki_msg = ''
+                    wiki_msg = ""
             else:
-                wiki_msg = ''
+                wiki_msg = ""
 
-            if not msg.parsed_msg.get('--legacy', False) and msg.Feature.image and Info.web_render_status:
-                use_local = bool(Info.web_render_local_status)
+            if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image and Bot.Info.web_render_status:
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
@@ -121,7 +120,7 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                     pass
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
-                        html_content = env.get_template('help_doc.html').render(msg=msg,
+                        html_content = env.get_template("help_doc.html").render(msg=msg,
                                                                                 module=module_,
                                                                                 help=help_,
                                                                                 help_name=help_name,
@@ -131,40 +130,27 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                                                                                 str=str,
                                                                                 repattern=re.Pattern)
 
-                        fname = f'{random_cache_path()}.html'
-                        with open(fname, 'w', encoding='utf-8') as fi:
+                        fname = f"{random_cache_path()}.html"
+                        with open(fname, "w", encoding="utf-8") as fi:
                             fi.write(html_content)
 
-                        d = {'content': html_content, 'element': '.botbox'}
+                        d = {"content": html_content, "element": ".botbox"}
                         html_ = json.dumps(d)
-
+                        Logger.info("[WebRender] Generating help document...")
                         try:
-                            pic = await download(webrender('element_screenshot', use_local=use_local),
+                            pic = await download(webrender("element_screenshot"),
                                                  status_code=200,
-                                                 headers={'Content-Type': 'application/json'},
+                                                 headers={"Content-Type": "application/json"},
                                                  method="POST",
                                                  post_data=html_,
                                                  attempt=1,
                                                  timeout=30,
                                                  request_private_ip=True
                                                  )
-                        except aiohttp.ClientConnectorError:
-                            if use_local:
-                                try:
-                                    pic = await download(webrender('element_screenshot', use_local=False),
-                                                         status_code=200,
-                                                         method='POST',
-                                                         headers={'Content-Type': 'application/json'},
-                                                         post_data=html_,
-                                                         request_private_ip=True
-                                                         )
-                                except aiohttp.ClientConnectorError:
-                                    Logger.info('[WebRender] Generation Failed.')
-                                    raise
-                            else:
-                                Logger.info('[WebRender] Generation Failed.')
-                                raise
-                        with open(pic) as read:
+                        except Exception as e:
+                            Logger.exception("[WebRender] Generation Failed.")
+                            raise e
+                        with open(pic, "rb") as read:
                             load_img = json.loads(read.read())
                         img_lst = []
                         for x in load_img:
@@ -174,25 +160,25 @@ async def bot_help(msg: Bot.MessageSession, module: str):
                             img_lst.append(Image(bimg))
                         await msg.finish(img_lst + [Plain(wiki_msg.strip())])
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                 if wiki_msg:
                     await msg.finish(wiki_msg.strip())
                 else:
-                    await msg.finish(msg.locale.t("core.help.info.none"))
+                    await msg.finish(I18NContext("core.help.info.none"))
 
-            doc_msg = (doc + devs_msg + wiki_msg).strip()
+            doc_msg = mdocs + [devs_msg, wiki_msg]
             if doc_msg:
                 await msg.finish(doc_msg)
             else:
-                await msg.finish(msg.locale.t("core.help.info.none"))
+                await msg.finish(I18NContext("core.help.info.none"))
         else:
-            await msg.finish(msg.locale.t("core.message.help.not_found"))
+            await msg.finish(I18NContext("core.message.help.not_found"))
 
 
 @hlp.command()
-@hlp.command('[--legacy] {{core.help.help}}',
-             options_desc={'--legacy': '{help.option.legacy}'})
+@hlp.command("[--legacy] {{I18N:core.help.help}}",
+             options_desc={"--legacy": "{I18N:help.option.legacy}"})
 async def _(msg: Bot.MessageSession):
     legacy_help = True
     if not msg.parsed_msg and msg.Feature.image:
@@ -205,12 +191,10 @@ async def _(msg: Bot.MessageSession):
 
             help_msg_list = [I18NContext("core.message.help.all_modules",
                                          prefix=msg.prefixes[0])]
-            if Config('help_url', help_url_default, cfg_type=str):
-                help_msg_list.append(I18NContext("core.message.help.document",
-                                                 url=Config('help_url', help_url_default, cfg_type=str)))
-            if Config('donate_url', donate_url_default, cfg_type=str):
-                help_msg_list.append(I18NContext("core.message.help.donate",
-                                                 url=Config('donate_url', donate_url_default, cfg_type=str)))
+            if help_url:
+                help_msg_list.append(I18NContext("core.message.help.document", url=help_url))
+            if donate_url:
+                help_msg_list.append(I18NContext("core.message.help.donate", url=donate_url))
             await msg.finish(imgchain + help_msg_list)
     if legacy_help:
         is_base_superuser = msg.target.sender_id in base_superuser_list
@@ -218,14 +202,14 @@ async def _(msg: Bot.MessageSession):
         module_list = ModulesManager.return_modules_list(
             target_from=msg.target.target_from)
         target_enabled_list = msg.enabled_modules
-        help_msg = [msg.locale.t("core.message.help.legacy.base")]
+        help_msg = [I18NContext("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
             if module_list[x].base and not module_list[x].hidden or \
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(essential))
+        help_msg.append(Plain(" | ".join(essential)))
         module_ = []
         for x in module_list:
             if x in target_enabled_list and not module_list[x].hidden or \
@@ -233,26 +217,14 @@ async def _(msg: Bot.MessageSession):
                     not is_base_superuser and module_list[x].required_base_superuser:
                 module_.append(x)
         if module_:
-            help_msg.append(msg.locale.t("core.message.help.legacy.external"))
-            help_msg.append(' | '.join(module_))
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.detail",
-                prefix=msg.prefixes[0]))
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.all_modules",
-                prefix=msg.prefixes[0]))
-        if Config('help_url', help_url_default, cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.document",
-                    url=Config('help_url', help_url_default, cfg_type=str)))
-        if Config('donate_url', donate_url_default, cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.donate",
-                    url=Config('donate_url', donate_url_default, cfg_type=str)))
+            help_msg.append(I18NContext("core.message.help.legacy.external"))
+            help_msg.append(Plain(" | ".join(module_)))
+        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.prefixes[0]))
+        help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.prefixes[0]))
+        if help_url:
+            help_msg.append(I18NContext("core.message.help.document", url=help_url))
+        if donate_url:
+            help_msg.append(I18NContext("core.message.help.donate", url=donate_url))
         await msg.finish(help_msg)
 
 
@@ -267,54 +239,43 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
                 imgchain.append(Image(img))
 
             help_msg = []
-            if Config('help_url', help_url_default, cfg_type=str):
+            if help_url:
                 help_msg.append(I18NContext(
-                    "core.message.help.document",
-                                url=Config('help_url', help_url_default, cfg_type=str)))
+                    "core.message.help.document", url=help_url))
             await msg.finish(imgchain + help_msg)
     if legacy_help:
         module_list = ModulesManager.return_modules_list(
             target_from=msg.target.target_from)
         module_ = []
         for x in module_list:
-            if x[0] == '_':
+            if x[0] == "_":
                 continue
             if module_list[x].base or module_list[x].hidden or \
                     module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
         if module_:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables")]
-            help_msg.append(' | '.join(module_))
+            help_msg = [I18NContext("core.message.help.legacy.availables"), Plain(" | ".join(module_))]
         else:
-            help_msg = [msg.locale.t("core.message.help.legacy.availables.none")]
-        help_msg.append(
-            msg.locale.t(
-                "core.message.help.detail",
-                prefix=msg.prefixes[0]))
-        if Config('help_url', help_url_default, cfg_type=str):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.document",
-                    url=Config('help_url', help_url_default, cfg_type=str)))
+            help_msg = [I18NContext("core.message.help.legacy.availables.none")]
+        help_msg.append(I18NContext("core.message.help.detail", prefix=msg.prefixes[0]))
+        if help_url:
+            help_msg.append(I18NContext("core.message.help.document", url=help_url))
         await msg.finish(help_msg)
 
 
 async def help_generator(msg: Bot.MessageSession,
                          show_base_modules: bool = True,
                          show_disabled_modules: bool = False,
-                         show_dev_modules: bool = True,
-                         use_local: bool = True):
+                         show_dev_modules: bool = True):
     is_base_superuser = msg.target.sender_id in base_superuser_list
     is_superuser = msg.check_super_user()
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
 
-    if not Info.web_render_status:
+    if not Bot.Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
 
     dev_module_list = []
     essential = {}
@@ -348,7 +309,7 @@ async def help_generator(msg: Bot.MessageSession,
     if not show_dev_modules:
         module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
 
-    html_content = env.get_template('module_list.html').render(
+    html_content = env.get_template("module_list.html").render(
         CommandParser=CommandParser,
         is_base_superuser=is_base_superuser,
         is_superuser=is_superuser,
@@ -357,36 +318,27 @@ async def help_generator(msg: Bot.MessageSession,
         msg=msg,
         show_disabled_modules=show_disabled_modules,
         target_enabled_list=target_enabled_list)
-    fname = f'{random_cache_path()}.html'
-    with open(fname, 'w', encoding='utf-8') as fi:
+    fname = f"{random_cache_path()}.html"
+    with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    d = {'content': html_content, 'element': '.botbox'}
+    d = {"content": html_content, "element": ".botbox"}
     html_ = json.dumps(d)
-
+    Logger.info("[WebRender] Generating module list...")
     try:
-        pic = await download(webrender('element_screenshot', use_local=use_local),
+        pic = await download(webrender("element_screenshot"),
                              status_code=200,
-                             headers={'Content-Type': 'application/json'},
+                             headers={"Content-Type": "application/json"},
                              method="POST",
                              post_data=html_,
                              attempt=1,
                              timeout=30,
                              request_private_ip=True
                              )
-    except aiohttp.ClientConnectorError:
-        if use_local:
-            pic = await download(webrender('element_screenshot', use_local=False),
-                                 status_code=200,
-                                 method='POST',
-                                 headers={'Content-Type': 'application/json'},
-                                 post_data=html_,
-                                 request_private_ip=True
-                                 )
-        else:
-            Logger.info('[WebRender] Generation Failed.')
-            return False
-    with open(pic) as read:
+    except Exception:
+        Logger.exception("[WebRender] Generation Failed.")
+        return False
+    with open(pic, "rb") as read:
         load_img = json.loads(read.read())
     img_lst = []
     for x in load_img:

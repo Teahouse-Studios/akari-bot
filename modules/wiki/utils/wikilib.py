@@ -1,12 +1,12 @@
 import asyncio
 import datetime
 import re
-import traceback
 import urllib.parse
 from copy import deepcopy
 from typing import Union, Dict, List
 
 import orjson as json
+from attrs import define
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
@@ -14,33 +14,20 @@ from core.builtins import Url
 from core.config import Config
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
+from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.i18n import Locale
 from core.utils.web_render import webrender
-from .bot import BotAccount
-from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
+from modules.wiki.utils.bot import BotAccount
+from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
 from .mapping import *
 
-from attrs import define
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config("enable_tos", True)
 
 
-class InvalidPageIDError(Exception):
-    pass
-
-
 class InvalidWikiError(Exception):
-    pass
-
-
-class DangerousContentError(Exception):
-    pass
-
-
-class PageNotFound(Exception):
     pass
 
 
@@ -134,14 +121,14 @@ class WikiLib:
         if api in redirect_list:
             api = redirect_list[api]
         if kwargs:
-            api = api + "?" + urllib.parse.urlencode(kwargs) + "&format=json"
+            api = f"{api}?{urllib.parse.urlencode(kwargs)}&format=json"
             Logger.debug(api)
         else:
             raise ValueError("kwargs is None")
         request_local = False
         for x in request_by_web_render_list:
             if x.match(api):
-                api = webrender("source", urllib.parse.quote(api))
+                api = webrender("source", api)
                 request_local = True
                 break
 
@@ -162,7 +149,7 @@ class WikiLib:
                 )
             raise NoReportException(str(e))
 
-    def rearrange_siteinfo(
+    async def rearrange_siteinfo(
         self, info: Union[dict, str, bytes], wiki_api_link
     ) -> WikiInfo:
         if isinstance(info, (str, bytes)):
@@ -187,7 +174,7 @@ class WikiLib:
                 if "*" in ns and "canonical" in ns:
                     namespaces_local.update({ns["*"]: ns["canonical"]})
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
         for x in info["query"]["namespacealiases"]:
             if "*" in x:
                 namespaces[x["*"]] = x["id"]
@@ -196,20 +183,18 @@ class WikiLib:
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki["prefix"]] = interwiki["url"]
-        api_url = wiki_api_link
-        audit = Audit(api_url)
         return WikiInfo(
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
             name=info["query"]["general"]["sitename"],
             realurl=real_url,
-            api=api_url,
+            api=wiki_api_link,
             namespaces=namespaces,
             namespaces_local=namespaces_local,
             namespacealiases=namespacealiases,
             interwiki=interwiki_dict,
-            in_allowlist=audit.inAllowList,
-            in_blocklist=audit.inBlockList,
+            in_allowlist=await WikiAllowList.check(wiki_api_link),
+            in_blocklist=await WikiBlockList.check(wiki_api_link),
             script=real_url + info["query"]["general"]["script"],
             logo_url=info["query"]["general"].get("logo"),
         )
@@ -226,11 +211,8 @@ class WikiLib:
             wiki_api_link = api_match.group(1)
         except Exception:
             try:
-                get_page = await get_url(self.url, fmt="text", headers=self.headers)
-                if (
-                    get_page.find("<title>Attention Required! | Cloudflare</title>")
-                    != -1
-                ):
+                get_page = await get_url(self.url, status_code=None, fmt="text", headers=self.headers)
+                if get_page.find("<title>Attention Required! | Cloudflare</title>") != -1:
                     return WikiStatus(
                         available=False,
                         value=False,
@@ -239,7 +221,7 @@ class WikiLib:
                         ),
                     )
                 m = re.findall(
-                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/?\s*>',
+                    r"(?im)<\s*link\s*rel=\"EditURI\"\s*type=\"application/rsd\+xml\"\s*href=\"([^>]+?)\?action=rsd\"\s*/?\s*>",
                     get_page,
                 )
                 api_match = m[0]
@@ -265,8 +247,8 @@ class WikiLib:
                 )
             except Exception as e:
                 if Config("debug", False):
-                    Logger.error(traceback.format_exc())
-                if e.args == (403,):
+                    Logger.exception()
+                if str(e).startswith("403"):
                     message = self.locale.t(
                         "wiki.message.utils.wikilib.get_failed.forbidden"
                     )
@@ -285,17 +267,16 @@ class WikiLib:
                 return WikiStatus(available=False, value=False, message=message)
         if wiki_api_link in redirect_list:
             wiki_api_link = redirect_list[wiki_api_link]
-        get_cache_info = DBSiteInfo(wiki_api_link).get()
-        if (
-            get_cache_info
-            and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp()
-            < 43200
-        ):
-            return WikiStatus(
-                available=True,
-                value=self.rearrange_siteinfo(get_cache_info[0], wiki_api_link),
-                message="",
-            )
+        get_cache_info = await WikiSiteInfo.get_or_none(api_link=wiki_api_link)
+        if get_cache_info:
+            if get_cache_info.site_info and datetime.datetime.now().timestamp() - get_cache_info.timestamp.timestamp() < 43200:
+                return WikiStatus(
+                    available=True,
+                    value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
+                    message="",
+                )
+        else:
+            get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         try:
             get_json = await self.get_json_from_api(
                 wiki_api_link,
@@ -305,7 +286,7 @@ class WikiLib:
             )
         except Exception as e:
             if Config("debug", False):
-                Logger.error(traceback.format_exc())
+                Logger.exception()
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(
                 e
             )
@@ -314,8 +295,9 @@ class WikiLib:
                     "wiki.message.utils.wikilib.get_failed.moegirl"
                 )
             return WikiStatus(available=False, value=False, message=message)
-        DBSiteInfo(wiki_api_link).update(get_json)
-        info = self.rearrange_siteinfo(get_json, wiki_api_link)
+        get_cache_info.site_info = get_json
+        await get_cache_info.save()
+        info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(
             available=True,
             value=info,
@@ -329,14 +311,14 @@ class WikiLib:
     async def check_wiki_info_from_database_cache(self):
         """检查wiki信息是否已记录在数据库缓存（由于部分wiki通过path区分语言，此处仅模糊查询域名部分，返回结果可能不准确）"""
         parse_url = urllib.parse.urlparse(self.url)
-        get = DBSiteInfo.get_like_this(parse_url.netloc)
+        get = await WikiSiteInfo.get_like_this(parse_url.netloc)
         if get:
-            api_link = get.apiLink
+            api_link = get.api_link
             if api_link in redirect_list:
                 api_link = redirect_list[api_link]
             return WikiStatus(
                 available=True,
-                value=self.rearrange_siteinfo(get.siteInfo, api_link),
+                value=await self.rearrange_siteinfo(get.site_info, api_link),
                 message="",
             )
         return WikiStatus(available=False, value=False, message="")
@@ -394,7 +376,7 @@ class WikiLib:
                     )
                 desc = desc_end[0]
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             desc = ""
         if desc in ["...", "…"]:
             desc = ""
@@ -446,7 +428,7 @@ class WikiLib:
             )
             desc = load_desc["parse"]["wikitext"]["*"]
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             desc = ""
         return desc
 
@@ -585,7 +567,7 @@ class WikiLib:
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if _tried > 5 and enable_tos:
-            raise AbuseWarning("{tos.message.reason.too_many_redirects}")
+            raise AbuseWarning("{I18N:tos.message.reason.too_many_redirects}")
         selected_section = None
         query_props = ["info", "imageinfo", "langlinks", "templates"]
         if self.wiki_info.api.find("moegirl.org.cn") != -1:
@@ -707,7 +689,7 @@ class WikiLib:
                 if "editurl" in page_raw:
                     page_info.edit_link = page_raw["editurl"]
                 if "invalid" in page_raw:
-                    match = re.search(r'"(.)"', page_raw["invalidreason"])
+                    match = re.search(r"\"(.)\"", page_raw["invalidreason"])
                     if match:
                         rs = self.locale.t(
                             "wiki.message.utils.wikilib.invalid.invalid_character",
@@ -798,7 +780,7 @@ class WikiLib:
                                         return research
                                     except Exception:
                                         if Config("debug", False):
-                                            Logger.error(traceback.format_exc())
+                                            Logger.exception()
                                         return None, False
 
                                 searches = []
@@ -845,7 +827,7 @@ class WikiLib:
                                         page_info.is_forum_topic = True
                                         break
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
                     templates = page_info.templates = [
                         t["title"] for t in page_raw.get("templates", [])
@@ -888,7 +870,7 @@ class WikiLib:
                         query_langlinks = False
                         if lang:
                             langlinks_ = {}
-                            for x in page_raw["langlinks"]:
+                            for x in page_raw.get("langlinks", []):
                                 langlinks_[x["lang"]] = x["url"]
                             if lang in langlinks_:
                                 query_wiki = WikiLib(
@@ -1113,7 +1095,7 @@ class WikiLib:
                 checklist.append(page_info.before_title)
             if page_info.desc:
                 checklist.append(page_info.desc)
-            chk = await check(*checklist)
+            chk = await check(checklist)
             for x in chk:
                 if not x["status"]:
                     ban = True

@@ -8,6 +8,7 @@ from datetime import datetime
 from time import sleep
 
 from loguru import logger as loggerFallback
+from tortoise import Tortoise, run_async
 
 
 ascii_art = r"""
@@ -21,13 +22,13 @@ ascii_art = r"""
 encode = "UTF-8"
 
 bots_and_required_configs = {
-    "aiocqhttp": ["qq_host", "qq_account"],
+    "aiocqhttp": ["qq_host"],
     "discord": ["discord_token"],
     "aiogram": ["telegram_token"],
     "kook": ["kook_token"],
     "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    "api": [],
     "qqbot": ["qq_bot_appid", "qq_bot_secret"],
+    "web": ["jwt_secret"],
 }
 
 
@@ -37,55 +38,80 @@ class RestartBot(Exception):
 
 failed_to_start_attempts = {}
 disabled_bots = []
-processes = []
+processes: list[multiprocessing.Process] = []
 
 
 def init_bot():
-    import core.scripts.config_generate  # noqa
-    from core.config import Config, CFGManager  # noqa
+    from core.config import Config  # noqa
     from core.constants.default import base_superuser_default  # noqa
-    from core.database import BotDBUtil, session, DBVersion  # noqa
+    from core.constants.version import database_version  # noqa
+    from core.database.link import get_db_link  # noqa
+    from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
-    query_dbver = session.query(DBVersion).first()
-    if not query_dbver:
-        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
-        session.commit()
-        query_dbver = session.query(DBVersion).first()
-    if (current_ver := int(query_dbver.value)) < (
-        target_ver := BotDBUtil.database_version
-    ):
-        Logger.info(f"Updating database from {current_ver} to {target_ver}...")
-        from core.database.update import update_database
+    Logger.info(ascii_art)
+    if Config("debug", False):
+        Logger.debug("Debug mode is enabled.")
 
-        update_database()
-        Logger.info("Database updated successfully!")
-    print(ascii_art)
-    base_superuser = Config(
-        "base_superuser", base_superuser_default, cfg_type=(str, list)
-    )
-    if base_superuser:
-        if isinstance(base_superuser, str):
-            base_superuser = [base_superuser]
-        for bu in base_superuser:
-            BotDBUtil.SenderInfo(bu).init()
-            BotDBUtil.SenderInfo(bu).edit("isSuperUser", True)
-    else:
-        Logger.warning(
-            "The base superuser was not found, please setup it in the config file."
+    async def update_db():
+        await Tortoise.init(
+            db_url=get_db_link(),
+            modules={"models": ["core.database.models"]}
         )
+        await Tortoise.generate_schemas(safe=True)
 
-    disabled_bots.clear()
-    for t in CFGManager.values:
-        if t.startswith("bot_") and not t.endswith("_secret"):
-            if "enable" in CFGManager.values[t][t]:
-                if not CFGManager.values[t][t]["enable"]:
-                    disabled_bots.append(t[4:])
+        query_dbver = await DBVersion.all().first()
+        if not query_dbver:
+            from core.scripts.convert_database import convert_database
+
+            await Tortoise.close_connections()
+            await convert_database()
+            Logger.success("Database converted successfully!")
+        elif (current_ver := query_dbver.version) < (target_ver := database_version):
+            Logger.info(f"Updating database from {current_ver} to {target_ver}...")
+            from core.database.update import update_database
+
+            await Tortoise.close_connections()
+            await update_database()
+            Logger.success("Database updated successfully!")
+        else:
+            await Tortoise.close_connections()
+
+        base_superuser = Config(
+            "base_superuser", base_superuser_default, cfg_type=(str, list)
+        )
+        if base_superuser:
+            if isinstance(base_superuser, str):
+                base_superuser = [base_superuser]
+            for bu in base_superuser:
+                await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=bu)
+        else:
+            Logger.warning(
+                "The base superuser is not found, please setup it in the config file."
+            )
+
+    run_async(update_db())
+
+
+def clear_import_cache():
+    for pymod in list(sys.modules):
+        if pymod.startswith("bots.") or pymod.startswith("core."):
+            del sys.modules[pymod]
+
+
+def terminate_process(process: multiprocessing.Process, timeout=5):
+    process.terminate()
+    process.join(timeout=timeout)
+    if process.is_alive():
+        process.kill()
+    process.join()
+    process.close()
 
 
 def multiprocess_run_until_complete(func):
     p = multiprocessing.Process(
         target=func,
+        daemon=True
     )
     p.start()
 
@@ -93,14 +119,12 @@ def multiprocess_run_until_complete(func):
         if not p.is_alive():
             break
         sleep(1)
-    p.terminate()
-    p.join()
-    p.close()
+    terminate_process(p)
 
 
-def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False):
+def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+    from core.builtins import Info  # noqa
     from core.logger import Logger  # noqa
-    from core.utils.info import Info  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
@@ -110,17 +134,17 @@ def go(bot_name: str = None, subprocess: bool = False, binary_mode: bool = False
     try:
         importlib.import_module(f"bots.{bot_name}.bot")
     except ModuleNotFoundError:
-        Logger.error(f"[{bot_name}] ???, entry not found.")
+        Logger.exception(f"[{bot_name}] ???, entry not found.")
 
         sys.exit(1)
 
 
 def run_bot():
     from core.constants.path import cache_path  # noqa
-    from core.config import Config  # noqa
+    from core.config import Config, CFGManager  # noqa
     from core.logger import Logger  # noqa
 
-    def restart_process(bot_name: str):
+    def restart_bot_process(bot_name: str):
         if (
             bot_name not in failed_to_start_attempts
             or datetime.now().timestamp()
@@ -143,6 +167,7 @@ def run_bot():
             target=go,
             args=(bot_name, True, bool(not sys.argv[0].endswith(".py"))),
             name=bot_name,
+            daemon=True
         )
         p.start()
         processes.append(p)
@@ -155,6 +180,14 @@ def run_bot():
     envs["PYTHONPATH"] = os.path.abspath(".")
     lst = bots_and_required_configs.keys()
 
+    for t in CFGManager.values:
+        if t.startswith("bot_") and not t.endswith("_secret"):
+            if "enable" in CFGManager.values[t][t]:
+                if not CFGManager.values[t][t]["enable"]:
+                    disabled_bots.append(t[4:])
+            else:
+                Logger.warning(f"Bot {t} cannot found config \"enable\".")
+
     for bl in lst:
         if bl in disabled_bots:
             continue
@@ -163,14 +196,14 @@ def run_bot():
             for c in bots_and_required_configs[bl]:
                 if not Config(c, _global=True):
                     Logger.error(
-                        f"Bot {bl} requires config {c} but not found, abort to launch."
+                        f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
                     )
                     abort = True
                     break
             if abort:
                 continue
         p = multiprocessing.Process(
-            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl
+            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
         )
         p.start()
         processes.append(p)
@@ -178,6 +211,13 @@ def run_bot():
         for p in processes:
             if p.is_alive():
                 continue
+            if p.exitcode == 0:
+                Logger.warning(
+                    f"{p.pid} ({p.name}) exited with code 0, abort to restart."
+                )
+                processes.remove(p)
+                terminate_process(p)
+                break
             if p.exitcode == 233:
                 Logger.warning(
                     f"{p.pid} ({p.name}) exited with code 233, restart all bots."
@@ -187,10 +227,8 @@ def run_bot():
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
             processes.remove(p)
-            p.terminate()
-            p.join()
-            p.close()
-            restart_process(p.name)
+            terminate_process(p)
+            restart_bot_process(p.name)
             break
 
         if not processes:
@@ -200,18 +238,19 @@ def run_bot():
 
 
 if __name__ == "__main__":
+    import core.scripts.config_generate  # noqa
     try:
         while True:
             try:
                 multiprocess_run_until_complete(init_bot)
-                run_bot()  # Process will block here so
+                run_bot()  # Process will block here
                 break
             except RestartBot:
                 for ps in processes:
-                    ps.terminate()
-                    ps.join()
-                    ps.close()
+                    loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
+                    terminate_process(ps)
                 processes.clear()
+                clear_import_cache()
                 continue
             except Exception:
                 loggerFallback.critical("An error occurred, please check the output.")
@@ -219,7 +258,5 @@ if __name__ == "__main__":
                 break
     except (KeyboardInterrupt, SystemExit):
         for ps in processes:
-            ps.terminate()
-            ps.join()
-            ps.close()
+            terminate_process(ps)
         processes.clear()

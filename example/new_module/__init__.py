@@ -37,26 +37,25 @@ async def _(msg: Bot.MessageSession):
     #  <<< Are you sure?
     #  >>> Yes
     #  <<< OK!
-    s = await msg.wait_confirm("Are you sure?")
-    if s:
-        await s.send_message("OK!")
+    if await msg.wait_confirm("Are you sure?"):
+        await msg.send_message("OK!")
 
 
 @test.command("image")
 async def _(msg: Bot.MessageSession):
     #  >>> ~test image
-    #  <<< A picture: Image(url='https://http.cat/100.jpg')
+    #  <<< A picture: Image(url="https://http.cat/100.jpg")
     await msg.send_message([Plain("A picture:"), Image("https://http.cat/100.jpg")])
 
 
-@test.regex(re.compile(r"\{\{(.*)}}"), mode="M")  # re.match
+@test.regex(r"\{\{(.*)}}", mode="M")  # re.match
 async def _(msg: Bot.MessageSession):
     #  >>> {{Hello World!}}
     #  <<< Hello World!
     await msg.finish(msg.matched_msg.group(1))
 
 
-@test.regex(re.compile(r"\[\[(.*)]]"), mode="A")  # re.findall
+@test.regex(r"\[\[(.*)]]", mode="A")  # re.findall
 async def _(msg: Bot.MessageSession):
     #  >>> [[Hello]] [[World]]
     #  <<< Hello
@@ -66,9 +65,9 @@ async def _(msg: Bot.MessageSession):
 
 
 @test.schedule(IntervalTrigger(seconds=30))
-async def _():
+async def _(fetch: Bot.FetchTarget):
     # Send a message to target which is enabled test module every 30 seconds
-    await Bot.FetchTarget.post_message("test", "Hello World!")
+    await fetch.post_message("test", "Hello World!")
 
 
 @test.handle("test")  # all in one handler, including command, regex and schedule
@@ -86,6 +85,6 @@ async def _(msg: Bot.MessageSession):
 
 
 @test.handle(IntervalTrigger(seconds=60))
-async def _():
+async def _(fetch: Bot.FetchTarget):
     # Send a message to target which is enabled test module every 60 seconds
-    await Bot.FetchTarget.post_message("test", "test")
+    await fetch.post_message("test", "test")

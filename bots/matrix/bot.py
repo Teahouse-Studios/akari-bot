@@ -6,19 +6,21 @@ from uuid import uuid4
 
 import nio
 
-from bots.matrix import client
-from bots.matrix.client import bot
-from bots.matrix.info import *
-from bots.matrix.message import MessageSession, FetchTarget
-from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets
-from core.config import Config
-from core.constants.default import ignored_sender_default
-from core.constants.path import assets_path
-from core.logger import Logger
-from core.parser.message import parser
-from core.types import MsgInfo, Session
-from core.utils.info import Info
+sys.path.append(os.getcwd())
+
+from bots.matrix import client  # noqa: E402
+from bots.matrix.client import bot  # noqa: E402
+from bots.matrix.info import *  # noqa: E402
+from bots.matrix.message import MessageSession, FetchTarget  # noqa: E402
+from core.bot_init import load_prompt, init_async  # noqa: E402
+from core.builtins import Info, PrivateAssets  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.constants.default import ignored_sender_default  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
+from core.logger import Logger  # noqa: E402
+from core.parser.message import parser  # noqa: E402
+from core.terminate import cleanup_sessions  # noqa: E402
+from core.types import MsgInfo, Session  # noqa: E402
 
 PrivateAssets.set(os.path.join(assets_path, "private", "matrix"))
 ignored_sender = Config("ignored_sender", ignored_sender_default)
@@ -41,11 +43,11 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     Logger.info(
         f"Received m.room.member, {event.sender}: {event.prev_membership} -> {event.membership}"
     )
-    # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == 'invite'
+    # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == "invite"
     # if not is_direct:
-    #     resp = await bot.room_get_state_event(room.room_id, 'm.room.member', client.user)
-    #     if 'prev_content' in resp.__dict__ and 'is_direct' in resp.__dict__[
-    #             'prev_content'] and resp.__dict__['prev_content']['is_direct']:
+    #     resp = await bot.room_get_state_event(room.room_id, "m.room.member", client.user)
+    #     if "prev_content" in resp.__dict__ and "is_direct" in resp.__dict__[
+    #             "prev_content"] and resp.__dict__["prev_content"]["is_direct"]:
     #         is_direct = True
     if room.member_count == 1 and event.membership == "leave":
         resp = await bot.room_leave(room.room_id)
@@ -96,7 +98,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
             sender_id=sender_id,
             target_from=target_prefix,
             sender_from=sender_prefix,
-            sender_prefix=resp.displayname,
+            sender_name=resp.displayname,
             client_name=client_name,
             message_id=event.event_id,
             reply_id=reply_id,
@@ -185,8 +187,7 @@ async def start():
                 and "already exists." in resp.message
             ):
                 Logger.warning(
-                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}"
-                )
+                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}")
                 keys = 0
                 while True:
                     resp = await bot.keys_claim({client.user: [client.device_id]})
@@ -196,7 +197,7 @@ async def start():
                     keys += 1
                     resp = await bot.keys_upload()
                     if not isinstance(resp, nio.KeysUploadError):
-                        Logger.info(
+                        Logger.success(
                             f"Successfully uploaded matrix OTK keys after {keys} claims."
                         )
                         break
@@ -224,7 +225,7 @@ async def start():
 
     # sync joined room state
     Logger.info("Starting sync room full state...")
-    # bot.upload_filter(presence={'limit':1},room={'timeline':{'limit':1}})
+    # bot.upload_filter(presence={"limit":1},room={"timeline":{"limit":1}})
     resp = await bot.sync(
         timeout=10000, since=bot.next_batch, full_state=True, set_presence="unavailable"
     )
@@ -261,8 +262,12 @@ async def start():
     await bot.set_presence("offline")
 
 
-if bot and Config("enable", False, table_name="bot_matrix"):
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
-    asyncio.run(start())
+if bot and Config("enable", False, table_name="bot_matrix") or __name__ == "__main__":
+    loop = asyncio.new_event_loop()
+    try:
+        Info.client_name = client_name
+        if "subprocess" in sys.argv:
+            Info.subprocess = True
+        loop.run_until_complete(start())
+    except (KeyboardInterrupt, SystemExit):
+        loop.run_until_complete(cleanup_sessions())

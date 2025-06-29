@@ -1,28 +1,28 @@
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
-from core.database import BotDBUtil
 from core.logger import Logger
-from modules.wiki.utils.bot import BotAccount, LoginFailed
-from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
-from modules.wiki.utils.wikilib import WikiLib
+from .database.models import WikiBotAccountList
+from .utils.wikilib import WikiLib
+from .utils.bot import BotAccount, LoginFailed
+
 
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
 
 
-@wb.handle("login <apilink> <account> <password>")
+@wb.command("login <apilink> <account> <password>")
 async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
     check = await WikiLib(apilink).check_wiki_available()
     if check.available:
         try:
             login = await BotAccount._login(check.value.api, account, password)
-            BotAccountDB.add(check.value.api, account, password)
-            BotAccount.cookies[check.value.api] = login
-            await msg.finish(msg.locale.t("wiki.message.wiki_bot.login.success"))
+            if await WikiBotAccountList.add(check.value.api, account, password):
+                BotAccount.cookies[check.value.api] = login
+                await msg.finish(I18NContext("wiki.message.wiki_bot.login.success"))
+            else:
+                await msg.finish(I18NContext("wiki.message.wiki_bot.login.already"))
         except LoginFailed as e:
             Logger.error(f"Login failed: {e}")
-            await msg.finish(
-                msg.locale.t("wiki.message.wiki_bot.login.failed", detail=e)
-            )
+            await msg.finish(I18NContext("wiki.message.wiki_bot.login.failed", detail=e))
     else:
         result = msg.locale.t("wiki.message.error.query") + (
             "\n" + msg.locale.t("wiki.message.error.info") + check.message
@@ -32,22 +32,26 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
         await msg.finish(result)
 
 
-@wb.handle("logout <apilink>")
+@wb.command("logout <apilink>")
 async def _(msg: Bot.MessageSession, apilink: str):
-    BotAccountDB.remove(apilink)
-    await msg.finish(msg.locale.t("message.success"))
-
-
-@wb.handle("toggle")
-async def _(msg: Bot.MessageSession):
-    target_data = BotDBUtil.TargetInfo(msg)
-    use_bot_account = target_data.options.get("use_bot_account")
-    if use_bot_account:
-        target_data.edit_option("use_bot_account", False)
-        await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.disable"))
+    check = await WikiLib(apilink).check_wiki_info_from_database_cache()
+    if check.available:
+        apilink = check.value.api
+    if await WikiBotAccountList.remove(apilink):
+        await msg.finish(I18NContext("message.success"))
     else:
-        target_data.edit_option("use_bot_account", True)
-        await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.enable"))
+        await msg.finish(I18NContext("message.failed"))
+
+
+@wb.command("toggle")
+async def _(msg: Bot.MessageSession):
+    use_bot_account = msg.target_info.target_data.get("use_bot_account")
+    if use_bot_account:
+        await msg.target_info.edit_target_data("use_bot_account", False)
+        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.disable"))
+    else:
+        await msg.target_info.edit_target_data("use_bot_account", True)
+        await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.enable"))
 
 
 @wb.hook("login_wiki_bots")

@@ -8,10 +8,10 @@ from attrs import define
 @define
 class MsgInfo:
     target_id: str
-    sender_id: str
-    sender_prefix: str
+    sender_id: Optional[str]
+    sender_name: Optional[str]
     target_from: str
-    sender_from: str
+    sender_from: Optional[str]
     client_name: str
     message_id: Union[int, str]
     reply_id: Optional[Union[int, str]] = None

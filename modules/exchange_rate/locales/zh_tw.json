@@ -3,7 +3,7 @@
     "exchange_rate.help.desc": "匯率轉換工具。",
     "exchange_rate.help.regex.desc": "[<acount>] <base>(兌|換)<target> 轉換貨幣價格。",
     "exchange_rate.message": "${amount} ${base} = ${exchange_rate} ${target}\n（${time}，仅供參考）",
-    "exchange_rate.message.invalid.unit": "無效的貨幣單位：",
+    "exchange_rate.message.invalid.unit": "無效的貨幣單位：${unit}",
     "exchange_rate.message.invalid.non_digital": "無效的金額，必須為數字。",
     "exchange_rate.message.invalid.non_positive": "金額必須為正數。",
     "config.comments.exchange_rate_api_key": "ExchangeRate-API 的 API Key。（用於 exchange_rate 模組與計算匯率用）"

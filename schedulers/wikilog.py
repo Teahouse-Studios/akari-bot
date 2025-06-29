@@ -1,12 +1,11 @@
 import re
-import traceback
 
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.templist import TempList
-from modules.wiki import WikiLib
-from modules.wikilog.dbutils import WikiLogUtil
+from modules.wiki.utils.wikilib import WikiLib
+from modules.wikilog.database.models import WikiLogTargetSetInfo
 from modules.wikilog.utils import convert_data_to_text
 
 fetch_cache = {}
@@ -14,7 +13,7 @@ fetch_cache = {}
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60))
 async def wiki_log():
-    fetches = WikiLogUtil.return_all_data()
+    fetches = await WikiLogTargetSetInfo.return_all_data()
     matched_logs = {}
     Logger.debug(fetches)
     for id_ in fetches:
@@ -71,7 +70,7 @@ async def wiki_log():
                                     if matched_f:
                                         matched_logs[id_][wiki]["AbuseLog"].append(y)
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
             if fetches[id_][wiki]["RecentChanges"]["enable"]:
                 try:
                     query = await query_wiki.get_json(
@@ -117,5 +116,5 @@ async def wiki_log():
                                             y
                                         )
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
     await JobQueue.trigger_hook_all("wikilog.matched", matched_logs=matched_logs)

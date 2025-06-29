@@ -1,0 +1,7 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[module_osu_secret]
+# The secret config section of the module. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
+osu_api_key = "<Replace me with str value>" # Osu! API Key (for osu module)

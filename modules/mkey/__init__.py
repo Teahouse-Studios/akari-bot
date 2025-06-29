@@ -1,14 +1,14 @@
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from .generator import get_mkey
 
 mk = module(
-    "mkey", desc="{mkey.help.desc}", doc=True, developers=["OasisAkari", "Kurisu"]
+    "mkey", desc="{I18N:mkey.help.desc}", doc=True, developers=["OasisAkari", "Kurisu"]
 )
 
 
 @mk.command("<device> <month> <day> <inquiry_num> [<device_id>]")
-async def mkey(
+async def _(
     msg: Bot.MessageSession,
     device: str,
     month: int,
@@ -26,16 +26,16 @@ async def mkey(
     }
 
     if month < 1 or month > 12:
-        await msg.finish(msg.locale.t("mkey.message.error.date.month"))
+        await msg.finish(I18NContext("mkey.message.error.date.month"))
     if day < 1 or day > 31:
-        await msg.finish(msg.locale.t("mkey.message.error.date.day"))
+        await msg.finish(I18NContext("mkey.message.error.date.day"))
     if device.lower() not in device_codes:
-        await msg.finish(msg.locale.t("mkey.message.error.device"))
+        await msg.finish(I18NContext("mkey.message.error.device"))
     if len(inquiry_num) not in [6, 8, 10]:
-        await msg.finish(msg.locale.t("mkey.message.error.inquiry_num"))
+        await msg.finish(I18NContext("mkey.message.error.inquiry_num"))
     device_code = device_codes[device.lower()]
     if not device_id and device_code == "HAC":
-        await msg.finish(msg.locale.t("mkey.message.error.hal"))
+        await msg.finish(I18NContext("mkey.message.error.hal"))
 
     result = get_mkey(inquiry_num, month, day, device_id, device_code)
-    await msg.finish(msg.locale.t("mkey.message.result", result=result))
+    await msg.finish(I18NContext("mkey.message.result", result=result))

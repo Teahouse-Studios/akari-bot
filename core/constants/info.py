@@ -1,11 +1,32 @@
+from typing import Iterable, Optional, Set, Union
+
+
 class Secret:
-    list = []
-    ip_address = None
-    ip_country = None
+    data: Set[str] = set()
+    ip_address: Optional[str] = None
+    ip_country: Optional[str] = None
 
     @classmethod
-    def add(cls, secret):
-        cls.list.append(secret)
+    def add(cls, secret: str):
+        if secret:
+            cls.data.add(secret.upper())
+
+    @classmethod
+    def check(cls, text: str) -> Union[str, bool]:
+        for secret in cls.data:
+            if secret in text.upper():
+                return secret
+        return False
+
+    @classmethod
+    def remove(cls, secret: str):
+        if secret and cls.check(secret):
+            cls.data.discard(secret.upper())
+
+    @classmethod
+    def update(cls, secret: Iterable):
+        if secret:
+            cls.data.union({s.upper() for s in secret})
 
 
 class Info:
@@ -19,7 +40,6 @@ class Info:
     :param client_name: 客户端名称。
     :param dirty_word_check: 是否启用文本过滤。
     :param web_render_status: WebRender 状态。
-    :param web_render_local_status: 本地 WebRender 状态。
     :param use_url_manager: 是否启用 URLManager。
     :param use_url_md_format: 是否启用 URL MarkDown 格式。
     """
@@ -31,6 +51,5 @@ class Info:
     client_name = ""
     dirty_word_check = False
     web_render_status = False
-    web_render_local_status = False
     use_url_manager = False
     use_url_md_format = False

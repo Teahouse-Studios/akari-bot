@@ -10,7 +10,7 @@ class ArgumentPattern:
         self.name = name
 
     def __str__(self):
-        return 'ArgumentPattern("{}")'.format(self.name)
+        return f"ArgumentPattern(\"{self.name}\")"
 
     def __repr__(self):
         return self.__str__()
@@ -21,7 +21,7 @@ class DescPattern:
         self.text = text
 
     def __str__(self):
-        return 'DescPattern("{}")'.format(self.text)
+        return f"DescPattern(\"{self.text}\")"
 
     def __repr__(self):
         return self.__str__()
@@ -41,7 +41,7 @@ class Template:
         return self.args_
 
     def __str__(self):
-        return "Template({})".format(self.args)
+        return f"Template({self.args})"
 
     def __repr__(self):
         return self.__str__()
@@ -53,7 +53,7 @@ class OptionalPattern:
         self.args = args
 
     def __str__(self):
-        return 'OptionalPattern("{}", {})'.format(self.flag, self.args)
+        return f"OptionalPattern(\"{self.flag}\", {self.args})"
 
     def __repr__(self):
         return self.__str__()
@@ -77,7 +77,7 @@ class MatchedResult:
         self.priority = priority
 
     def __str__(self):
-        return "MatchedResult({}, {})".format(self.args, self.priority)
+        return f"MatchedResult({self.args}, {self.priority})"
 
     def __repr__(self):
         return self.__str__()
@@ -236,13 +236,13 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                             if len(argv_copy[index_flag:]) >= len_t_args:
 
                                 sub_argv = argv_copy[
-                                    index_flag + 1 : index_flag + len_t_args + 1
+                                    index_flag + 1: index_flag + len_t_args + 1
                                 ]
 
                                 parsed_argv[a.flag] = Optional(
                                     parse_argv(sub_argv, a.args).args, flagged=True
                                 )
-                                del argv_copy[index_flag : index_flag + len_t_args + 1]
+                                del argv_copy[index_flag: index_flag + len_t_args + 1]
             for a in args:
                 if isinstance(a, ArgumentPattern):
                     if a.name.startswith("<"):

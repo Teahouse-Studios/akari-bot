@@ -1,0 +1,1709 @@
+{
+  "100018": {
+    "artist": "Q;indivi [cover]",
+    "bpm": 135,
+    "charts": [
+      {
+        "notes": [
+          268,
+          44,
+          30,
+          0,
+          6
+        ]
+      }
+    ],
+    "comment": "リア充専用譜面だよ！リア充向けだってば！",
+    "id": "100018",
+    "level": [
+      "12?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        2
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi PLUS",
+    "title": "[協]Love You",
+    "type": "SD"
+  },
+  "100022": {
+    "artist": "Hiro「Crackin’DJ」",
+    "bpm": 140,
+    "charts": [
+      {
+        "notes": [
+          824,
+          0,
+          110,
+          0,
+          9
+        ]
+      }
+    ],
+    "comment": "チャンさんは今日もアクセル全開",
+    "id": "100022",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai FiNALE",
+    "title": "[蔵]In Chaos",
+    "type": "SD"
+  },
+  "100199": {
+    "artist": "ARM＋夕野ヨシミ(IOSYS)feat. miko",
+    "bpm": 175,
+    "charts": [
+      {
+        "notes": [
+          58,
+          217,
+          27,
+          0,
+          7
+        ]
+      }
+    ],
+    "comment": "パーフェクトホールド教室",
+    "id": "100199",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[蛸]チルノのパーフェクトさんすう教室",
+    "type": "SD"
+  },
+  "100206": {
+    "artist": "SOUND HOLIC feat. Nana Takahashi",
+    "bpm": 140,
+    "charts": [
+      {
+        "notes": [
+          405,
+          54,
+          81,
+          0,
+          34
+        ]
+      }
+    ],
+    "comment": "☆TAP大作戦☆",
+    "id": "100206",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi PLUS",
+    "title": "[星]しゅわスパ大作戦☆",
+    "type": "SD"
+  },
+  "100220": {
+    "artist": "Hiro",
+    "bpm": 148,
+    "charts": [
+      {
+        "notes": [
+          904,
+          0,
+          2,
+          0,
+          44
+        ]
+      }
+    ],
+    "comment": "回転タップ検定起動音",
+    "id": "100220",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai FiNALE",
+    "title": "[宴]セガサターン起動音[H.][Remix]",
+    "type": "SD"
+  },
+  "100227": {
+    "artist": "t+pazolite",
+    "bpm": 256,
+    "charts": [
+      {
+        "notes": [
+          659,
+          52,
+          202,
+          0,
+          20
+        ]
+      }
+    ],
+    "comment": "はっぴーの若干ストイック気味版",
+    "id": "100227",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": " [は]Garakuta Doll Play",
+    "type": "SD"
+  },
+  "100230": {
+    "artist": "Masayoshi Minoshima feat. 綾倉盟",
+    "bpm": 135,
+    "charts": [
+      {
+        "notes": [
+          357,
+          0,
+          361,
+          0,
+          62
+        ]
+      }
+    ],
+    "comment": "いつもより多く回っております",
+    "id": "100230",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[宴]CYCLES",
+    "type": "SD"
+  },
+  "100259": {
+    "artist": " ",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          659,
+          141,
+          56,
+          0,
+          12
+        ]
+      }
+    ],
+    "comment": "ぽ・っぴ・っぽー",
+    "id": "100259",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        3
+      ]
+    },
+    "release_ver_code": "maimai MiLK PLUS",
+    "title": "[協]ぽっぴっぽー",
+    "type": "SD"
+  },
+  "100327": {
+    "artist": "ビートまりお + ARM feat. 高橋名人",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          682,
+          564,
+          3,
+          0,
+          3
+        ]
+      }
+    ],
+    "comment": "名人マンよくばりセット",
+    "id": "100327",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai FiNALE",
+    "title": "[狂]タカハせ！名人マン",
+    "type": "SD"
+  },
+  "100363": {
+    "artist": "t+pazolite",
+    "bpm": 190,
+    "charts": [
+      {
+        "notes": [
+          87,
+          36,
+          132,
+          0,
+          35
+        ]
+      }
+    ],
+    "comment": "Let's Party Night !",
+    "id": "100363",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[宴]Oshama Scramble!",
+    "type": "SD"
+  },
+  "100456": {
+    "artist": "xi",
+    "bpm": 225,
+    "charts": [
+      {
+        "notes": [
+          1192,
+          15,
+          56,
+          0,
+          19
+        ]
+      }
+    ],
+    "comment": "チャンさんの初稿シリーズ～王～",
+    "id": "100456",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai FiNALE",
+    "title": "[蔵]Glorious Crown",
+    "type": "DX"
+  },
+  "100508": {
+    "artist": "40mP",
+    "bpm": 134,
+    "charts": [
+      {
+        "notes": [
+          607,
+          160,
+          56,
+          0,
+          32
+        ]
+      }
+    ],
+    "comment": "リア充向け譜面　～爆発しろ～",
+    "id": "100508",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        2
+      ]
+    },
+    "release_ver_code": "maimai MiLK",
+    "title": "[協]恋愛裁判",
+    "type": "SD"
+  },
+  "100517": {
+    "artist": "out of service",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          146,
+          46,
+          154,
+          0,
+          12
+        ]
+      }
+    ],
+    "comment": "なぞる順番を覚えるゲーム(初級編)",
+    "id": "100517",
+    "level": [
+      "12?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi PLUS",
+    "title": "[覚]東京リアルワールド",
+    "type": "SD"
+  },
+  "100524": {
+    "artist": "livetune",
+    "bpm": 128,
+    "charts": [
+      {
+        "notes": [
+          983,
+          165,
+          84,
+          0,
+          55
+        ]
+      }
+    ],
+    "comment": "Hand in Hand in Hand in Hand",
+    "id": "100524",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        8
+      ]
+    },
+    "release_ver_code": "maimai FiNALE",
+    "title": "[協]Hand in Hand",
+    "type": "SD"
+  },
+  "100548": {
+    "artist": "箱部 なる(CV:M・A・O)",
+    "bpm": 140,
+    "charts": [
+      {
+        "notes": [
+          475,
+          16,
+          150,
+          0,
+          22
+        ]
+      }
+    ],
+    "comment": "スライドの発射タイミング 速度がデタラメ",
+    "id": "100548",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi PLUS",
+    "title": "[疑]DETARAME ROCK&ROLL THEORY",
+    "type": "SD"
+  },
+  "100700": {
+    "artist": "ビートまりお（COOL&CREATE）",
+    "bpm": 195,
+    "charts": [
+      {
+        "notes": [
+          1092,
+          220,
+          2,
+          0,
+          51
+        ]
+      }
+    ],
+    "comment": "なりきれ！プリズムリバー三姉妹",
+    "id": "100700",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        3
+      ]
+    },
+    "release_ver_code": "maimai MiLK",
+    "title": "[協]疾走あんさんぶる",
+    "type": "SD"
+  },
+  "100998": {
+    "artist": "Cranky",
+    "bpm": 190,
+    "charts": [
+      {
+        "notes": [
+          849,
+          66,
+          210,
+          0,
+          76
+        ]
+      }
+    ],
+    "comment": "ぼくらのかんがえたさいきょうのまいまい",
+    "id": "100998",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai FiNALE",
+    "title": "[宴]Oshama Scramble! (Cranky Remix)",
+    "type": "SD"
+  },
+  "110114": {
+    "artist": "佐野 信義「スペースハリアー」",
+    "bpm": 125,
+    "charts": [
+      {
+        "notes": [
+          1476,
+          0,
+          7,
+          0,
+          7
+        ]
+      }
+    ],
+    "comment": "HOLDがSQUILLAに！？",
+    "id": "110114",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[耐]Space Harrier Main Theme [Reborn]",
+    "type": "DX"
+  },
+  "110227": {
+    "artist": "t+pazolite",
+    "bpm": 256,
+    "charts": [
+      {
+        "notes": [
+          718,
+          6,
+          134,
+          0,
+          19
+        ]
+      }
+    ],
+    "comment": "Jackの現代風アレンジ版",
+    "id": "110227",
+    "level": [
+      "14？"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[J]Garakuta Doll Play",
+    "type": "SD"
+  },
+  "110281": {
+    "artist": "アゴアニキ",
+    "bpm": 138,
+    "charts": [
+      {
+        "notes": [
+          557,
+          20,
+          55,
+          0,
+          21
+        ]
+      },
+      {
+        "notes": [
+          557,
+          20,
+          55,
+          0,
+          21
+        ]
+      }
+    ],
+    "comment": "今から振り回しますので離れていてください",
+    "id": "110281",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[回]ダブルラリアット",
+    "type": "DX"
+  },
+  "110417": {
+    "artist": "n-buna",
+    "bpm": 120,
+    "charts": [
+      {
+        "notes": [
+          549,
+          7,
+          109,
+          0,
+          1
+        ]
+      }
+    ],
+    "comment": "ウミユリ練習譚",
+    "id": "110417",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[習]ウミユリ海底譚",
+    "type": "DX"
+  },
+  "110532": {
+    "artist": "ゆりん・柿チョコ×Neru",
+    "bpm": 125,
+    "charts": [
+      {
+        "notes": [
+          516,
+          47,
+          72,
+          0,
+          9
+        ]
+      },
+      {
+        "notes": [
+          653,
+          63,
+          52,
+          0,
+          9
+        ]
+      }
+    ],
+    "comment": "知ってた？元祖デュエット譜面",
+    "id": "110532",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[奏]洗脳",
+    "type": "SD"
+  },
+  "110553": {
+    "artist": "和田たけあき(くらげP)",
+    "bpm": 220,
+    "charts": [
+      {
+        "notes": [
+          514,
+          44,
+          156,
+          40,
+          24
+        ]
+      },
+      {
+        "notes": [
+          490,
+          21,
+          115,
+          90,
+          69
+        ]
+      }
+    ],
+    "comment": "生き残るのはどっちだッ？？？",
+    "id": "110553",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[奏]チュルリラ・チュルリラ・ダッダッダ！",
+    "type": "DX"
+  },
+  "110579": {
+    "artist": "ONIGAWARA",
+    "bpm": 135,
+    "charts": [
+      {
+        "notes": [
+          241,
+          47,
+          101,
+          8,
+          12
+        ]
+      }
+    ],
+    "comment": "ポップミュージックは僕たちのもの",
+    "id": "110579",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        2
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[協]ポップミュージックは僕のもの",
+    "type": "DX"
+  },
+  "110606": {
+    "artist": "Sampling Masters MEGA",
+    "bpm": 200,
+    "charts": [
+      {
+        "notes": [
+          603,
+          20,
+          185,
+          0,
+          20
+        ]
+      }
+    ],
+    "comment": "インド人含め右に",
+    "id": "110606",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[右]The wheel to the right",
+    "type": "DX"
+  },
+  "110631": {
+    "artist": "A-One",
+    "bpm": 176,
+    "charts": [
+      {
+        "notes": [
+          777,
+          24,
+          138,
+          0,
+          96
+        ]
+      }
+    ],
+    "comment": "お前がBACKするんかーーーい!!",
+    "id": "110631",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[逆]KING is BACK!!",
+    "type": "SD"
+  },
+  "110647": {
+    "artist": "ナユタン星人",
+    "bpm": 152,
+    "charts": [
+      {
+        "notes": [
+          378,
+          165,
+          56,
+          55,
+          86
+        ]
+      },
+      {
+        "notes": [
+          344,
+          175,
+          59,
+          54,
+          85
+        ]
+      }
+    ],
+    "comment": "中央で踊るダンサー、急募。",
+    "id": "110647",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_clamp",
+      "player": [
+        1,
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[協]エイリアンエイリアン",
+    "type": "DX"
+  },
+  "110793": {
+    "artist": "みきとP",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          459,
+          20,
+          150,
+          0,
+          40
+        ]
+      }
+    ],
+    "comment": "デタラメのロックンロール",
+    "id": "110793",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[疑]ロキ",
+    "type": "SD"
+  },
+  "111069": {
+    "artist": "ナユタン星人",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          243,
+          15,
+          52,
+          20,
+          56
+        ]
+      }
+    ],
+    "comment": "一緒にデスコ",
+    "id": "111069",
+    "level": [
+      "11+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        2
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[協]太陽系デスコ",
+    "type": "DX"
+  },
+  "111156": {
+    "artist": "キノシタ feat. そらみこ (ホロライブ ときのそら＆さくらみこ)",
+    "bpm": 183,
+    "charts": [
+      {
+        "notes": [
+          505,
+          49,
+          123,
+          35,
+          49
+        ]
+      },
+      {
+        "notes": [
+          482,
+          54,
+          93,
+          34,
+          66
+        ]
+      }
+    ],
+    "comment": "一緒に！舞舞タイム！",
+    "id": "111156",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[奏]マイオドレ！舞舞タイム",
+    "type": "DX"
+  },
+  "111222": {
+    "artist": "HiTECH NINJA vs Cranky",
+    "bpm": 165,
+    "charts": [
+      {
+        "notes": [
+          0,
+          5,
+          0,
+          60,
+          1039
+        ]
+      }
+    ],
+    "comment": "BREaK! BREaK! BREaK! BREaK! BREaK! BREaK!",
+    "id": "111222",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[光]BREaK! BREaK! BREaK!",
+    "type": "DX"
+  },
+  "111234": {
+    "artist": "奏音",
+    "bpm": 200,
+    "charts": [
+      {
+        "notes": [
+          1127,
+          0,
+          69,
+          0,
+          26
+        ]
+      }
+    ],
+    "comment": "ほしだけスペクタクル",
+    "id": "111234",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[星]ほしぞらスペクタクル",
+    "type": "DX"
+  },
+  "111325": {
+    "artist": "すりぃ",
+    "bpm": 182,
+    "charts": [
+      {
+        "notes": [
+          474,
+          61,
+          59,
+          28,
+          15
+        ]
+      },
+      {
+        "notes": [
+          470,
+          59,
+          59,
+          28,
+          15
+        ]
+      }
+    ],
+    "comment": "誰か一緒に舞わないか？",
+    "id": "111325",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[奏]テレキャスタービーボーイ",
+    "type": "DX"
+  },
+  "111355": {
+    "artist": "稲葉曇",
+    "bpm": 147,
+    "charts": [
+      {
+        "notes": [
+          183,
+          76,
+          53,
+          164,
+          173
+        ]
+      },
+      {
+        "notes": [
+          172,
+          63,
+          53,
+          102,
+          216
+        ]
+      }
+    ],
+    "comment": "＼みんなでラグトレイン再現チャレンジ／",
+    "id": "111355",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        2,
+        2
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[協]ラグトレイン",
+    "type": "DX"
+  },
+  "111359": {
+    "artist": "Last Note.",
+    "bpm": 125,
+    "charts": [
+      {
+        "notes": [
+          618,
+          56,
+          49,
+          73,
+          13
+        ]
+      },
+      {
+        "notes": [
+          603,
+          65,
+          51,
+          70,
+          13
+        ]
+      }
+    ],
+    "comment": "ライバル譜面",
+    "id": "111359",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[奏]アカツキアライヴァル",
+    "type": "DX"
+  },
+  "111363": {
+    "artist": "Unlucky Morpheus",
+    "bpm": 155,
+    "charts": [
+      {
+        "notes": [
+          955,
+          57,
+          45,
+          1,
+          33
+        ]
+      }
+    ],
+    "comment": "神々が恋したトリル郷",
+    "id": "111363",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[片]神々が恋した幻想郷",
+    "type": "DX"
+  },
+  "111365": {
+    "artist": "すりぃ×相沢",
+    "bpm": 187,
+    "charts": [
+      {
+        "notes": [
+          558,
+          52,
+          206,
+          51,
+          17
+        ]
+      },
+      {
+        "notes": [
+          566,
+          51,
+          198,
+          51,
+          18
+        ]
+      }
+    ],
+    "comment": "アンビバレンスな私なの",
+    "id": "111365",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[奏]アンビバレンス",
+    "type": "DX"
+  },
+  "111429": {
+    "artist": "Hommarju",
+    "bpm": 202,
+    "charts": [
+      {
+        "notes": [
+          337,
+          115,
+          8,
+          391,
+          491
+        ]
+      }
+    ],
+    "comment": "爆発は好きか！？",
+    "id": "111429",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[爆]Love's Theme of BADASS ～バッド・アス 愛のテーマ～",
+    "type": "DX"
+  },
+  "111433": {
+    "artist": "HIMEHINA",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          543,
+          85,
+          97,
+          18,
+          61
+        ]
+      },
+      {
+        "notes": [
+          519,
+          94,
+          111,
+          22,
+          60
+        ]
+      }
+    ],
+    "comment": "ココロを叫べ!",
+    "id": "111433",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[奏]ヒトガタ",
+    "type": "DX"
+  },
+  "111437": {
+    "artist": "森羅万象",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          724,
+          251,
+          71,
+          25,
+          211
+        ]
+      }
+    ],
+    "comment": "君たちが三妖精だ！！！",
+    "id": "111437",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        3
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[協]三妖精SAY YA!!!",
+    "type": "DX"
+  },
+  "111488": {
+    "artist": "七条レタスグループ",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          99,
+          4,
+          34,
+          80,
+          17
+        ]
+      },
+      {
+        "notes": [
+          83,
+          4,
+          34,
+          90,
+          17
+        ]
+      }
+    ],
+    "comment": "隣を見てなぞる順番を覚えるゲーム（初級）",
+    "id": "111488",
+    "level": [
+      "12?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[覚]スカーレット警察のゲットーパトロール24時",
+    "type": "DX"
+  },
+  "111513": {
+    "artist": "Orangestar",
+    "bpm": 120,
+    "charts": [
+      {
+        "notes": [
+          0,
+          0,
+          32,
+          221,
+          1
+        ]
+      }
+    ],
+    "comment": "くるくる回る、お星さま。",
+    "id": "111513",
+    "level": [
+      "11?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[回]回る空うさぎ",
+    "type": "DX"
+  },
+  "111516": {
+    "artist": "Silentroom vs Frums",
+    "bpm": 234,
+    "charts": [
+      {
+        "notes": [
+          987,
+          106,
+          42,
+          61,
+          73
+        ]
+      }
+    ],
+    "comment": "and in that light, I find deliverance.",
+    "id": "111516",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[蔵]Aegleseeker",
+    "type": "DX"
+  },
+  "111557": {
+    "artist": "HIMEHINA",
+    "bpm": 195,
+    "charts": [
+      {
+        "notes": [
+          467,
+          130,
+          16,
+          18,
+          62
+        ]
+      }
+    ],
+    "comment": "秘密を握った　真実を　魅せてあげる",
+    "id": "111557",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[蛸]不機嫌なスリーカード",
+    "type": "DX"
+  },
+  "111577": {
+    "artist": "三枝明那",
+    "bpm": 124,
+    "charts": [
+      {
+        "notes": [
+          354,
+          42,
+          64,
+          37,
+          12
+        ]
+      }
+    ],
+    "comment": "もう一人じゃないから",
+    "id": "111577",
+    "level": [
+      "12?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[両]はんぶんこ",
+    "type": "DX"
+  },
+  "111597": {
+    "artist": "ピノキオピー",
+    "bpm": 148,
+    "charts": [
+      {
+        "notes": [
+          803,
+          89,
+          15,
+          1,
+          17
+        ]
+      }
+    ],
+    "comment": "息が詰まる息が詰まる息が詰まる息が詰まる",
+    "id": "111597",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[息]ノンブレス・オブリージュ",
+    "type": "DX"
+  },
+  "111634": {
+    "artist": "結束バンド",
+    "bpm": 120,
+    "charts": [
+      {
+        "notes": [
+          1435,
+          111,
+          11,
+          77,
+          145
+        ]
+      },
+      {
+        "notes": [
+          1421,
+          221,
+          20,
+          68,
+          60
+        ]
+      }
+    ],
+    "comment": "バンドメンバーを集めて挑め！（ヒーロー級）",
+    "id": "111634",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        2,
+        2
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[協]青春コンプレックス",
+    "type": "DX"
+  },
+  "111636": {
+    "artist": "さくゆい",
+    "bpm": 160,
+    "charts": [
+      {
+        "notes": [
+          390,
+          139,
+          58,
+          49,
+          71
+        ]
+      },
+      {
+        "notes": [
+          405,
+          129,
+          63,
+          50,
+          61
+        ]
+      }
+    ],
+    "comment": "2人合わせてさくゆいたいそう",
+    "id": "111636",
+    "level": [
+      "12+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES PLUS",
+    "title": "[奏]さくゆいたいそう",
+    "type": "DX"
+  },
+  "111715": {
+    "artist": "マサラダ",
+    "bpm": 170,
+    "charts": [
+      {
+        "notes": [
+          157,
+          0,
+          158,
+          0,
+          47
+        ]
+      }
+    ],
+    "comment": "嘘に踊れ",
+    "id": "111715",
+    "level": [
+      "12+"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[嘘]ライアーダンサー",
+    "type": "DX"
+  },
+  "111772": {
+    "artist": "原口沙輔 feat.重音テト",
+    "bpm": 150,
+    "charts": [
+      {
+        "notes": [
+          362,
+          47,
+          76,
+          230,
+          86
+        ]
+      }
+    ],
+    "comment": "人（の初見姿観察推奨）マニア",
+    "id": "111772",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM",
+    "title": "[宴]人マニア",
+    "type": "DX"
+  },
+  "120227": {
+    "artist": "t+pazolite",
+    "bpm": 256,
+    "charts": [
+      {
+        "notes": [
+          769,
+          34,
+          177,
+          0,
+          19
+        ]
+      }
+    ],
+    "comment": "rioNのスライド筋マシマシ版",
+    "id": "120227",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[r]Garakuta Doll Play",
+    "type": "SD"
+  },
+  "121634": {
+    "artist": "結束バンド",
+    "bpm": 120,
+    "charts": [
+      {
+        "notes": [
+          1197,
+          105,
+          4,
+          13,
+          130
+        ]
+      },
+      {
+        "notes": [
+          978,
+          219,
+          26,
+          13,
+          71
+        ]
+      }
+    ],
+    "comment": "バンドメンバーを集めて楽しもう！（入門編）",
+    "id": "121634",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        2,
+        2
+      ]
+    },
+    "release_ver_code": "maimai でらっくす BUDDiES",
+    "title": "[協]青春コンプレックス",
+    "type": "DX"
+  },
+  "130227": {
+    "artist": "t+pazolite",
+    "bpm": 256,
+    "charts": [
+      {
+        "notes": [
+          660,
+          31,
+          126,
+          0,
+          253
+        ]
+      }
+    ],
+    "comment": "玉子豆腐のチュウニリスペクト版",
+    "id": "130227",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[玉]Garakuta Doll Play",
+    "type": "SD"
+  },
+  "140227": {
+    "artist": "t+pazolite",
+    "bpm": 256,
+    "charts": [
+      {
+        "notes": [
+          699,
+          44,
+          120,
+          0,
+          341
+        ]
+      }
+    ],
+    "comment": "パリピS氏のやべーやつ版",
+    "id": "140227",
+    "level": [
+      "14+?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai MURASAKi",
+    "title": "[某]Garakuta Doll Play",
+    "type": "SD"
+  }
+}

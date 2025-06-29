@@ -2,11 +2,11 @@ from typing import Union
 
 import discord
 
-from bots.discord.info import *
-from bots.discord.slash_message import MessageSession
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
+from .info import *
+from .slash_message import MessageSession
 
 
 def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext]):
@@ -26,7 +26,7 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
         target=MsgInfo(
             target_id=target_id,
             sender_id=sender_id,
-            sender_prefix=(
+            sender_name=(
                 ctx.author.name
                 if isinstance(ctx, discord.ApplicationContext)
                 else ctx.interaction.user.name
@@ -55,6 +55,6 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
 async def slash_parser(ctx: discord.ApplicationContext, command: str):
     await ctx.defer()
     session = ctx_to_session(ctx)
-    session.command = f'/{str(ctx.command).split(" ")[0]} {command}'
+    session.command = f"/{str(ctx.command).split(" ")[0]} {command}"
     Logger.info("Parsing...")
     await parser(session, prefix=["~", "/"], require_enable_modules=False)

@@ -4,7 +4,7 @@ from core.constants.path import assets_path
 
 SONGS_PER_PAGE = 30
 
-mai_assets_path = os.path.join(assets_path, "maimai")
+mai_assets_path = os.path.join(assets_path, "modules", "maimai")
 chu_cover_path = os.path.join(mai_assets_path, "static", "chu", "cover")
 chu_song_info_path = os.path.join(mai_assets_path, "chu_song_info.json")
 

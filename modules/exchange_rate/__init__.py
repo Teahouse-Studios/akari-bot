@@ -1,52 +1,50 @@
 import datetime
+import re
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
 from core.utils.http import get_url
+from core.utils.message import isfloat
 
-api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True)
+api_key = Config("exchange_rate_api_key", cfg_type=str, secret=True, table_name="module_exchange_rate")
 
 excr = module(
     "exchange_rate",
-    desc="{exchange_rate.help.desc}",
+    desc="{I18N:exchange_rate.help.desc}",
     doc=True,
     alias=["exchangerate", "exchange", "excr"],
     developers=["DoroWolf"],
 )
 
 
-@excr.command("<base> <target> {{exchange_rate.help}}")
+@excr.command("<base> <target> {{I18N:exchange_rate.help}}")
 async def _(msg: Bot.MessageSession, base: str, target: str):
     base = base.upper()
     target = target.upper()
 
-    amount_str = base[:-3]
+    amount = base[:-3]
     base_currency = base[-3:]
 
     if not api_key:
-        raise ConfigValueError(msg.locale.t("error.config.secret.not_found"))
+        raise ConfigValueError("{{I18N:error.config.secret.not_found]")
 
     try:
-        if amount_str:
-            amount = float(amount_str)
-        else:
-            amount = 1.0
-
-        if amount <= 0:
-            await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_positive"))
+        amount = amount if amount else 1
+        if float(amount) <= 0:
+            await msg.finish(I18NContext("exchange_rate.message.invalid.non_positive"))
     except ValueError:
-        await msg.finish(msg.locale.t("exchange_rate.message.invalid.non_digital"))
-    await msg.finish(await exchange(base_currency, target, amount, msg))
+        await msg.finish(I18NContext("exchange_rate.message.invalid.non_digital"))
+    await exchange(msg, base_currency, target, amount)
 
 
-async def exchange(base_currency, target_currency, amount: float, msg):
+async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amount):
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/codes"
     data = await get_url(url, 200, fmt="json")
     supported_currencies = data["supported_codes"]
     unsupported_currencies = []
-    if data["result"] == "success":
+    if data and data["result"] == "success":
         for currencie_names in supported_currencies:
             if base_currency in currencie_names:
                 break
@@ -58,41 +56,36 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         else:
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
-            await msg.finish(
-                f"{msg.locale.t('exchange_rate.message.invalid.unit')}{' '.join(unsupported_currencies)}"
-            )
-    else:
-        raise Exception(data["error-type"])
+            await msg.finish(I18NContext("exchange_rate.message.invalid.unit", unit=", ".join(unsupported_currencies)))
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
-    time = msg.ts2strftime(
+    time = msg.format_time(
         datetime.datetime.now().timestamp(), time=False, timezone=False
     )
-    if data["result"] == "success":
+    if data and data["result"] == "success":
         exchange_rate = data["conversion_result"]
-        await msg.finish(
-            msg.locale.t(
-                "exchange_rate.message",
-                amount=amount,
-                base=base_currency,
-                exchange_rate=exchange_rate,
-                target=target_currency,
-                time=time,
-            )
+        await msg.finish(I18NContext(
+            "exchange_rate.message",
+            amount=float(amount),
+            base=base_currency,
+            exchange_rate=exchange_rate,
+            target=target_currency,
+            time=time,
         )
-    else:
-        raise Exception(data["error-type"])
+        )
 
 
 @excr.regex(
-    r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})",
-    desc="{exchange_rate.help.regex.desc}",
+    r"(\d+(?:\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})",
+    mode="M",
+    flags=re.I,
+    desc="{I18N:exchange_rate.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
-    groups = msg.matched_msg.groups()
-    amount = groups[0] if groups[0] else "1"
-    base = groups[2].upper()
-    target = groups[3].upper()
+    matched_msg = msg.matched_msg
+    amount = matched_msg.group(1) if matched_msg.group(1) and isfloat(matched_msg.group(1)) else 1
+    base = matched_msg.group(2).upper()
+    target = matched_msg.group(3).upper()
     if base != target:
-        await msg.finish(await exchange(base, target, amount, msg))
+        await exchange(msg, base, target, amount)

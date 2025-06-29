@@ -1,168 +1,190 @@
 import re
-import traceback
 
-from core.builtins import Bot
+from aiocqhttp.exceptions import NetworkError
+
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.logger import Logger
-from modules.wiki.utils.dbutils import WikiTargetInfo
-from .ab import ab
-from .ab_qq import ab_qq
-from .newbie import newbie
-from .rc import rc
-from .rc_qq import rc_qq
+from modules.wiki.database.models import WikiTargetInfo
+from .ab import get_ab
+from .ab_qq import get_ab_qq
+from .newbie import get_newbie
+from .rc import get_rc
+from .rc_qq import get_rc_qq
 from .user import get_user_info
 
 rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
 @rc_.command()
-@rc_.command(
-    "[--legacy] {{wiki.help.rc}}",
-    options_desc={"--legacy": "{help.option.legacy}"},
-    available_for=["QQ|Group"],
-)
-async def rc_loader(msg: Bot.MessageSession):
-    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+@rc_.command("[--legacy] {{I18N:wiki.help.rc}}",
+             options_desc={"--legacy": "{help.option.legacy}"},
+             available_for=["QQ|Group", "QQ|Private"]
+             )
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
-        await msg.finish(msg.locale.t("wiki.message.not_set"))
+        await msg.finish(I18NContext("wiki.message.not_set"))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward:
         from bots.aiocqhttp.utils import get_onebot_implementation
 
         obi = await get_onebot_implementation()
-        if obi == "ntqq":
+        if obi in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.sending")
                 )
-                nodelist = await rc_qq(msg, start_wiki)
+                nodelist = await get_rc_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
-            except Exception:
+                legacy = False
+            except NetworkError:
+                legacy = False
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
                 )
-            legacy = False
+            except Exception:
+                Logger.exception()
+                await msg.send_message(msg.locale.t("wiki.message.rollback"))
         else:
             try:
-                nodelist = await rc_qq(msg, start_wiki)
+                nodelist = await get_rc_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
                 legacy = False
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
     if legacy:
         try:
-            res = await rc(msg, start_wiki)
+            res = await get_rc(msg, start_wiki, headers)
             await msg.finish(res)
         except Exception:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
+            Logger.exception()
+            await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
-@rc_.command("{{wiki.help.rc}}", exclude_from=["QQ|Group"])
-async def rc_loader(msg: Bot.MessageSession):
-    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+@rc_.command("{{I18N:wiki.help.rc}}",
+             exclude_from=["QQ|Group", "QQ|Private"]
+             )
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
-        await msg.finish(msg.locale.t("wiki.message.not_set"))
+        await msg.finish(I18NContext("wiki.message.not_set"))
     try:
-        res = await rc(msg, start_wiki)
+        res = await get_rc(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
-        Logger.error(traceback.format_exc())
-        await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
+        Logger.exception()
+        await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
 ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
 @ab_.command()
-@ab_.command(
-    "[--legacy] {{wiki.help.ab}}",
-    options_desc={"--legacy": "{help.option.legacy}"},
-    available_for=["QQ|Group"],
-)
-async def ab_loader(msg: Bot.MessageSession):
-    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+@ab_.command("[--legacy] {{I18N:wiki.help.ab}}",
+             options_desc={"--legacy": "{help.option.legacy}"},
+             available_for=["QQ|Group", "QQ|Private"]
+             )
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
-        await msg.finish(msg.locale.t("wiki.message.not_set"))
+        await msg.finish(I18NContext("wiki.message.not_set"))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward:
         from bots.aiocqhttp.utils import get_onebot_implementation
 
         obi = await get_onebot_implementation()
-        if obi == "ntqq":
+        if obi in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.sending")
                 )
-                nodelist = await ab_qq(msg, start_wiki)
+                nodelist = await get_ab_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
-            except Exception:
+                legacy = False
+            except NetworkError:
+                legacy = False
                 await msg.send_message(
                     msg.locale.t("wiki.message.ntqq.forward.timeout")
                 )
-            legacy = False
+            except Exception:
+                Logger.exception()
+                await msg.send_message(msg.locale.t("wiki.message.rollback"))
         else:
             try:
-                nodelist = await ab_qq(msg, start_wiki)
+                nodelist = await get_ab_qq(msg, start_wiki, headers)
                 await msg.fake_forward_msg(nodelist)
                 legacy = False
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
                 await msg.send_message(msg.locale.t("wiki.message.rollback"))
     if legacy:
         try:
-            res = await ab(msg, start_wiki)
+            res = await get_ab(msg, start_wiki, headers)
             await msg.finish(res)
         except Exception:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
+            Logger.exception()
+            await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
-@ab_.command("{{wiki.help.ab}}", exclude_from=["QQ|Group"])
-async def ab_loader(msg: Bot.MessageSession):
-    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+@ab_.command("{{I18N:wiki.help.ab}}",
+             exclude_from=["QQ|Group", "QQ|Private"]
+             )
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
-        await msg.finish(msg.locale.t("wiki.message.not_set"))
+        await msg.finish(I18NContext("wiki.message.not_set"))
     try:
-        res = await ab(msg, start_wiki)
+        res = await get_ab(msg, start_wiki, headers)
         await msg.finish(res)
     except Exception:
-        Logger.error(traceback.format_exc())
-        await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
+        Logger.exception()
+        await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
 new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
-@new.command("{{wiki.help.newbie}}")
-async def newbie_loader(msg: Bot.MessageSession):
-    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+@new.command("{{I18N:wiki.help.newbie}}")
+async def _(msg: Bot.MessageSession):
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
     if not start_wiki:
-        await msg.finish(msg.locale.t("wiki.message.not_set"))
+        await msg.finish(I18NContext("wiki.message.not_set"))
     try:
-        res = await newbie(msg, start_wiki)
+        res = await get_newbie(start_wiki, headers)
         await msg.finish(res)
     except Exception:
-        Logger.error(traceback.format_exc())
-        await msg.finish(msg.locale.t("wiki.message.error.fetch_log"))
+        Logger.exception()
+        await msg.finish(I18NContext("wiki.message.error.fetch_log"))
 
 
 usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=True)
 
 
-@usr.command("<username> {{wiki.help.user}}")
-async def user(msg: Bot.MessageSession, username: str):
-    target = WikiTargetInfo(msg)
-    start_wiki = target.get_start_wiki()
+@usr.command("<username> {{I18N:wiki.help.user}}")
+async def _(msg: Bot.MessageSession, username: str):
+    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    start_wiki = target.api_link
+    headers = target.headers
     if start_wiki:
         match_interwiki = re.match(r"(.*?):(.*)", username)
         if match_interwiki:
-            interwikis = target.get_interwikis()
+            interwikis = target.interwikis
             if match_interwiki.group(1) in interwikis:
-                await get_user_info(
-                    msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2)
-                )
-        await get_user_info(msg, start_wiki, username)
+                await msg.finish(await get_user_info(
+                    msg, match_interwiki.group(2), interwikis[match_interwiki.group(1)], headers
+                ))
+        await msg.finish(await get_user_info(msg, username, start_wiki, headers))
     else:
-        await msg.finish(msg.locale.t("wiki.message.not_set"))
+        await msg.finish(I18NContext("wiki.message.not_set"))

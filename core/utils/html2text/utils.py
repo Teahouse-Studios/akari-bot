@@ -40,7 +40,7 @@ def dumb_css_parser(data: str) -> Dict[str, Dict[str, str]]:
     data += ";"
     importIndex = data.find("@import")
     while importIndex != -1:
-        data = data[0:importIndex] + data[data.find(";", importIndex) + 1 :]
+        data = data[0:importIndex] + data[data.find(";", importIndex) + 1:]
         importIndex = data.find("@import")
 
     # parse the css. reverted from dictionary comprehension in order to
@@ -64,7 +64,7 @@ def element_style(
     :type style_def: dict
     :type style_def: dict
 
-    :returns: A hash of the 'final' style attributes of the element
+    :returns: A hash of the \"final\" style attributes of the element
     :rtype: dict
     """
     style = parent_style.copy()
@@ -97,7 +97,7 @@ def google_list_style(style: Dict[str, str]) -> str:
 
 def google_has_height(style: Dict[str, str]) -> bool:
     """
-    Check if the style of the element has the 'height' attribute
+    Check if the style of the element has the \"height\" attribute
     explicitly defined
 
     :type style: dict
@@ -227,7 +227,7 @@ def reformat_table(lines: List[str], right_margin: int) -> List[str]:
         if num_cols < max_cols:
             cols += [""] * (max_cols - num_cols)
         elif max_cols < num_cols:
-            max_width += [len(x) + right_margin for x in cols[-(num_cols - max_cols) :]]
+            max_width += [len(x) + right_margin for x in cols[-(num_cols - max_cols):]]
             max_cols = num_cols
 
         max_width = [

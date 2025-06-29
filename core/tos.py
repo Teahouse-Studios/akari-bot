@@ -1,87 +1,58 @@
-from core.builtins import Bot
+from core.builtins import Bot, MessageChain, I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
-from core.database import BotDBUtil
-from core.utils.i18n import Locale
+from core.logger import Logger
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
-default_locale = Config("default_locale", cfg_type=str)
 
 
-async def warn_target(msg: Bot.MessageSession, reason: str):
+async def _abuse_warn_target(msg: Bot.MessageSession, reason: str):
+    issue_url = Config("issue_url", issue_url_default)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
-        current_warns = int(msg.info.warns) + 1
-        msg.info.edit("warns", current_warns)
-        warn_template = [msg.locale.t("tos.message.warning")]
-        i18n_reason = msg.locale.t_str(reason)
-        warn_template.append(msg.locale.t("tos.message.reason") + i18n_reason)
-        if current_warns < WARNING_COUNTS or msg.info.is_in_allow_list:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
-            warn_template.append(
-                msg.locale.t("tos.message.warning.count", current_warns=current_warns)
-            )
-            if not msg.info.is_in_allow_list:
-                warn_template.append(
-                    msg.locale.t(
-                        "tos.message.warning.prompt", warn_counts=WARNING_COUNTS
-                    )
-                )
-            if current_warns <= 2 and Config(
-                "issue_url", issue_url_default, cfg_type=str
-            ):
-                warn_template.append(
-                    msg.locale.t(
-                        "tos.message.appeal",
-                        issue_url=Config("issue_url", issue_url_default, cfg_type=str),
-                    )
-                )
-        elif current_warns == WARNING_COUNTS:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
-            warn_template.append(msg.locale.t("tos.message.warning.last"))
-        elif current_warns > WARNING_COUNTS:
-            msg.info.edit("isInBlockList", True)
-            await tos_report(
-                msg.target.sender_id, msg.target.target_id, reason, banned=True
-            )
-            warn_template.append(msg.locale.t("tos.message.banned"))
-            if Config("issue_url", issue_url_default, cfg_type=str):
-                warn_template.append(
-                    msg.locale.t(
-                        "tos.message.appeal",
-                        issue_url=Config("issue_url", issue_url_default, cfg_type=str),
-                    )
-                )
-        await msg.send_message("\n".join(warn_template))
+        await msg.sender_info.warn_user()
+        warn_template = MessageChain([I18NContext("tos.message.warning"),
+                                     I18NContext("tos.message.reason", reason=reason)])
 
-
-async def pardon_user(user: str):
-    BotDBUtil.SenderInfo(user).edit("warns", 0)
-
-
-async def warn_user(user: str, count: int = 1):
-    sender_info = BotDBUtil.SenderInfo(user)
-    current_warns = int(sender_info.warns) + count
-    sender_info.edit("warns", current_warns)
-    if current_warns > WARNING_COUNTS >= 1 and not sender_info.is_in_allow_list:
-        sender_info.edit("isInBlockList", True)
-    return current_warns
-
-
-async def tos_report(sender, target, reason, banned=False):
-    locale = Locale(default_locale)
-    if report_targets:
-        warn_template = [locale.t("tos.message.report", sender=sender, target=target)]
-        reason = locale.t_str(reason)
-        warn_template.append(locale.t("tos.message.reason") + reason)
-        if banned:
-            action = locale.t("tos.message.action.blocked")
+        # Logs
+        identify_str = f"[{msg.target.sender_id} ({msg.target.target_id})]"
+        if msg.sender_info.warns <= WARNING_COUNTS:
+            Logger.info(f"Warn {identify_str} by ToS: abuse ({msg.sender_info.warns}/{WARNING_COUNTS})")
+        elif msg.sender_info.warns > WARNING_COUNTS:
+            Logger.info(f"Ban {identify_str} by ToS: abuse")
         else:
-            action = locale.t("tos.message.action.warning")
-        warn_template.append(locale.t("tos.message.action") + action)
+            Logger.info(f"Warn {identify_str} by ToS: abuse")
+
+        # Send warns
+        if msg.sender_info.warns < WARNING_COUNTS or msg.sender_info.trusted:
+            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
+            warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))
+            if not msg.sender_info.trusted:
+                warn_template.append(I18NContext("tos.message.warning.prompt", warn_counts=WARNING_COUNTS))
+            if msg.sender_info.warns <= 2 and issue_url:
+                warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
+        elif msg.sender_info.warns == WARNING_COUNTS:
+            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
+            warn_template.append(I18NContext("tos.message.warning.last"))
+        elif msg.sender_info.warns > WARNING_COUNTS:
+            await msg.sender_info.switch_identity(trust=False)
+            await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
+            warn_template.append(I18NContext("tos.message.banned"))
+            if issue_url:
+                warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
+        await msg.send_message(warn_template)
+
+
+async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
+    if report_targets:
+        warn_template = [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
+        warn_template.append(I18NContext("tos.message.reason", reason=reason, disable_joke=True))
+        if banned:
+            action = "{I18N:tos.message.action.blocked}"
+        else:
+            action = "{I18N:tos.message.action.warning}"
+        warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
 
         for target_ in report_targets:
             if f := await Bot.FetchTarget.fetch_target(target_):
-                await f.send_direct_message(
-                    "\n".join(warn_template), disable_secret_check=True
-                )
+                await f.send_direct_message(warn_template)

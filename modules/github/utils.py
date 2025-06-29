@@ -1,7 +1,7 @@
 import datetime
 
-from core import dirty_check as dirty
-from core.constants.info import Info
+from core.builtins import Bot
+from core.dirty_check import check_bool
 
 
 def dark_check(message: str):
@@ -18,7 +18,7 @@ def dark_check(message: str):
         "zhao",
         "programthink",
     ]
-    if Info.dirty_word_check:
+    if Bot.Info.dirty_word_check:
         return any(message.find(i) != -1 for i in blacklist)
     return False
 
@@ -54,7 +54,7 @@ async def dirty_check(text: str, *allowlist_check):
     ]
     if allowlist_check in allowlist:
         return False
-    check = await dirty.check_bool(text)
+    check = await check_bool(text)
     if check:
         return True
     return False

@@ -1,27 +1,25 @@
 from __future__ import annotations
 
 import base64
+from copy import deepcopy
+import mimetypes
 import os
 import random
 import re
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
 
-import aiohttp
+import httpx
+import orjson as json
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
-from core.config import Config
-from core.constants import bug_report_url_default
-from core.constants.info import Info
-from core.joke import joke
+from core.builtins import Info
 from core.utils.cache import random_cache_path
-from core.utils.i18n import Locale
 
-from copy import deepcopy
 
 if TYPE_CHECKING:
     from core.builtins import MessageSession
@@ -43,6 +41,7 @@ class PlainElement(MessageElement):
     """
 
     text: str
+    disable_joke: bool = False
 
     @classmethod
     def assign(cls, *texts: Any, disable_joke: bool = False):
@@ -51,9 +50,14 @@ class PlainElement(MessageElement):
         :param disable_joke: 是否禁用玩笑功能。（默认为False）
         """
         text = "".join([str(x) for x in texts])
-        if not disable_joke:
-            text = joke(text)
-        return deepcopy(cls(text=text))
+        disable_joke = bool(disable_joke)
+        return deepcopy(cls(text=text, disable_joke=disable_joke))
+
+    def kecode(self):
+        return f"[KE:plain,text={self.text}]"
+
+    def __str__(self):
+        return self.text
 
 
 @define
@@ -82,6 +86,11 @@ class URLElement(MessageElement):
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
         return deepcopy(cls(url=url))
+
+    def kecode(self):
+        if self.md_format:
+            return f"[KE:plain,text=[{self.url}]({self.url})]"
+        return f"[KE:plain,text={self.url}]"
 
     def __str__(self):
         if self.md_format:
@@ -124,11 +133,40 @@ class FormattedTimeElement(MessageElement):
                     ftime_template.append(f"(UTC{msg._tz_offset})")
 
             return (
-                datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
+                datetime.fromtimestamp(self.timestamp, tz=UTC)
                 + msg.timezone_offset
             ).strftime(" ".join(ftime_template))
-        ftime_template.append("%Y-%m-%d %H:%M:%S")
-        return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+        else:
+            if self.date:
+                if self.iso:
+                    ftime_template.append("%Y-%m-%d")
+                else:
+                    ftime_template.append("%B %d, %Y")
+            if self.time:
+                if self.seconds:
+                    ftime_template.append("%H:%M:%S")
+                else:
+                    ftime_template.append("%H:%M")
+            if self.timezone:
+                tz_template = "(UTC)"
+                offset = datetime.now().astimezone().utcoffset()
+                if offset:
+                    total_min = int(offset.total_seconds() // 60)
+                    sign = "+" if total_min >= 0 else "-"
+                    abs_min = abs(total_min)
+                    hours = abs_min // 60
+                    mins = abs_min % 60
+
+                    if mins == 0:
+                        tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
+                    else:
+                        tz_template = f"(UTC{sign}{hours}:{mins:02d})"
+
+                ftime_template.append(tz_template)
+            return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+
+    def kecode(self):
+        return f"[KE:plain,text={self.to_str()}]"
 
     def __str__(self):
         return self.to_str()
@@ -170,60 +208,28 @@ class I18NContextElement(MessageElement):
     """
 
     key: str
+    disable_joke: bool
     kwargs: Dict[str, Any]
 
     @classmethod
-    def assign(cls, key: str, **kwargs: Any):
+    def assign(cls, key: str, disable_joke: bool = False, **kwargs: Any):
         """
         :param key: 多语言的键名。
         :param kwargs: 多语言中的变量。
         """
-        return deepcopy(cls(key=key, kwargs=kwargs))
+        return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))
 
-
-@define
-class ErrorMessageElement(MessageElement):
-    """
-    错误消息。
-
-    :param error_message: 错误信息文本。
-    """
-
-    error_message: str
-
-    @classmethod
-    def assign(
-        cls,
-        error_message: str,
-        locale: Optional[str] = None,
-        enable_report: bool = True,
-        **kwargs: Dict[str, Any],
-    ):
-        """
-        :param error_message: 错误信息文本。
-        :param locale: 多语言。
-        :param enable_report: 是否添加错误汇报部分。（默认为True）
-        :param kwargs: 多语言中的变量。
-        """
-
-        if locale:
-            locale = Locale(locale)
-            error_message = locale.t_str(error_message, **kwargs)
-            error_message = locale.t("message.error") + error_message
-            if enable_report and (
-                report_url := URLElement.assign(
-                    Config("bug_report_url", bug_report_url_default, cfg_type=str),
-                    use_mm=False,
-                )
-            ):
-                error_message += "\n" + locale.t(
-                    "error.prompt.address", url=str(report_url)
-                )
-
-        return deepcopy(cls(error_message))
+    def kecode(self):
+        if self.kwargs:
+            params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
+            return f"[KE:i18n,i18nkey={self.key},{params}]"
+        return f"[KE:i18n,i18nkey={self.key}]"
 
     def __str__(self):
-        return self.error_message
+        if self.kwargs:
+            params = ",".join(f"{k}={v}" for k, v in self.kwargs.items())
+            return f"{{I18N:{self.key},{params}}}"
+        return f"{{I18N:{self.key}}}"
 
 
 @define
@@ -232,6 +238,7 @@ class ImageElement(MessageElement):
     图片消息。
 
     :param path: 图片路径。
+    :param headers: 获取图片时的请求头。
     """
 
     path: str
@@ -253,6 +260,14 @@ class ImageElement(MessageElement):
             path = save
         elif re.match("^https?://.*", path):
             need_get = True
+        elif "base64" in path:
+            _, encoded_img = path.split(",", 1)
+            img_data = base64.b64decode(encoded_img)
+
+            save = f"{random_cache_path()}.png"
+            with open(save, "wb") as img_file:
+                img_file.write(img_data)
+            path = save
         return deepcopy(cls(path, need_get, headers))
 
     async def get(self):
@@ -269,19 +284,27 @@ class ImageElement(MessageElement):
         从网络下载图片。
         """
         url = self.path
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                raw = await req.read()
-                ft = filetype.match(raw).extension
-                img_path = f"{random_cache_path()}.{ft}"
-                with open(img_path, "wb+") as image_cache:
-                    image_cache.write(raw)
-                return img_path
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, timeout=20.0, headers=self.headers)
+            raw = resp.content
+            ft = filetype.match(raw).extension
+            img_path = f"{random_cache_path()}.{ft}"
+            with open(img_path, "wb+") as image_cache:
+                image_cache.write(raw)
+            return img_path
 
-    async def get_base64(self):
+    async def get_base64(self, mime: bool = False):
         file = await self.get()
+
         with open(file, "rb") as f:
-            return str(base64.b64encode(f.read()), "UTF-8")
+            img_b64 = base64.b64encode(f.read()).decode("UTF-8")
+
+        if mime:
+            mime_type, _ = mimetypes.guess_type(file)
+            if not mime_type:
+                mime_type = 'application/octet-stream'
+            return f"data:{mime_type};base64,{img_b64}"
+        return img_b64
 
     async def add_random_noise(self) -> "ImageElement":
         image = PILImage.open(await self.get())
@@ -297,6 +320,12 @@ class ImageElement(MessageElement):
         save = f"{random_cache_path()}.png"
         image.save(save)
         return ImageElement.assign(save)
+
+    def kecode(self):
+        if self.headers:
+            headers_b64 = base64.b64encode(json.dumps(self.headers)).decode("utf-8")
+            return f"[KE:image,path={self.path},headers={headers_b64}]"
+        return f"[KE:image,path={self.path}]"
 
 
 @define
@@ -315,6 +344,35 @@ class VoiceElement(MessageElement):
         :param path: 语音路径。
         """
         return deepcopy(cls(path))
+
+    def kecode(self):
+        return f"[KE:voice,path={self.path}]"
+
+
+@define
+class MentionElement(MessageElement):
+    """
+    提及元素。
+
+    :param id: 提及用户ID。
+    :param client: 平台。
+    """
+
+    client: str
+    id: str
+
+    @classmethod
+    def assign(cls, user_id: str):
+        """
+        :param user_id: 用户id。
+        """
+        return deepcopy(cls(client=user_id.split("|")[0], id=user_id.split("|")[-1]))
+
+    def kecode(self):
+        return f"[KE:mention,userid={self.client}|{self.id}]"
+
+    def __str__(self):
+        return f"<AT:{self.client}|{self.id}>"
 
 
 @define
@@ -347,23 +405,24 @@ class EmbedElement(MessageElement):
     Embed消息。
     :param title: 标题。
     :param description: 描述。
+    :param url: 跳转 URL。
     :param color: 颜色。
-    :param fields: 字段。
     :param image: 图片。
     :param thumbnail: 缩略图。
     :param author: 作者。
     :param footer: 页脚。
+    :param fields: 字段。
     """
 
-    title: Optional[str] = (None,)
-    description: Optional[str] = (None,)
-    url: Optional[str] = (None,)
-    timestamp: float = (datetime.now().timestamp(),)
-    color: int = (0x0091FF,)
-    image: Optional[ImageElement] = (None,)
-    thumbnail: Optional[ImageElement] = (None,)
-    author: Optional[str] = (None,)
-    footer: Optional[str] = (None,)
+    title: Optional[str] = None
+    description: Optional[str] = None
+    url: Optional[str] = None
+    timestamp: float = datetime.now().timestamp()
+    color: int = 0x0091FF
+    image: Optional[ImageElement] = None
+    thumbnail: Optional[ImageElement] = None
+    author: Optional[str] = None
+    footer: Optional[str] = None
     fields: Optional[List[EmbedFieldElement]] = None
 
     @classmethod
@@ -409,16 +468,20 @@ class EmbedElement(MessageElement):
         if self.fields:
             for f in self.fields:
                 if msg:
-                    text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
+                    text_lst.append(f"{msg.locale.t_str(f.name)}{msg.locale.t(
+                        "message.colon")}{msg.locale.t_str(f.value)}")
                 else:
                     text_lst.append(f"{f.name}: {f.value}")
         if self.author:
             if msg:
-                text_lst.append(f"{msg.locale.t('message.embed.author')}{self.author}")
+                text_lst.append(f"{msg.locale.t("message.embed.author")}{msg.locale.t_str(self.author)}")
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:
-            text_lst.append(self.footer)
+            if msg:
+                text_lst.append(msg.locale.t_str(self.footer))
+            else:
+                text_lst.append(self.footer)
         message_chain = []
         if text_lst:
             message_chain.append(PlainElement.assign("\n".join(text_lst)))
@@ -437,11 +500,11 @@ elements_map = {
         URLElement,
         FormattedTimeElement,
         I18NContextElement,
-        ErrorMessageElement,
         ImageElement,
         VoiceElement,
         EmbedFieldElement,
         EmbedElement,
+        MentionElement,
     ]
 }
 __all__ = [
@@ -450,10 +513,10 @@ __all__ = [
     "URLElement",
     "FormattedTimeElement",
     "I18NContextElement",
-    "ErrorMessageElement",
     "ImageElement",
     "VoiceElement",
     "EmbedFieldElement",
     "EmbedElement",
+    "MentionElement",
     "elements_map",
 ]

@@ -1,55 +1,51 @@
 import re
-import traceback
-from typing import List, Union
+from typing import Union
 
-import aiohttp
+import httpx
 import orjson as json
 from khl import MessageTypes, Message
 
-from bots.kook.client import bot
-from bots.kook.info import *
 from core.builtins import (
     Bot,
     Plain,
     Image,
     Voice,
-    MessageSession as MessageSessionT,
     I18NContext,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
-    FinishedSession as FinishedSessionT,
+    FinishedSession as FinishedSessionT
 )
-from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement
+from core.builtins.message.chain import MessageChain, match_atcode
+from core.builtins.message.elements import MentionElement, PlainElement, ImageElement, VoiceElement
 from core.config import Config
-from core.database import BotDBUtil
 from core.logger import Logger
+from .client import bot
+from .info import *
 
-enable_analytics = Config("enable_analytics", False)
 kook_base = "https://www.kookapp.cn"
+kook_token = Config("kook_token", cfg_type=str, secret=True, table_name="bot_kook")
 kook_headers = {
-    "Authorization": f"Bot {Config('kook_token', cfg_type=str, secret=True, table_name='bot_kook')}"
+    "Authorization": f"Bot {kook_token}"
 }
 
 
 async def direct_msg_delete(msg_id: str):
     """删除私聊消息"""
-    url = kook_base + "/api/v3/direct-message/delete"
+    url = f"{kook_base}/api/v3/direct-message/delete"
     params = {"msg_id": msg_id}
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=params, headers=kook_headers) as response:
-            res = json.loads(await response.text())
-    return res
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, data=params, headers=kook_headers)
+    return json.loads(resp.text)
 
 
 async def channel_msg_delete(msg_id: str):
     """删除普通消息"""
-    url = kook_base + "/api/v3/message/delete"
+    url = f"{kook_base}/api/v3/message/delete"
     params = {"msg_id": msg_id}
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, data=params, headers=kook_headers) as response:
-            res = json.loads(await response.text())
-    return res
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, data=params, headers=kook_headers)
+    return json.loads(resp.text)
 
 
 class FinishedSession(FinishedSessionT):
@@ -62,13 +58,14 @@ class FinishedSession(FinishedSessionT):
                     else:
                         await channel_msg_delete(y["msg_id"])
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
+        mention = True
         embed = False
         forward = False
         delete = True
@@ -96,6 +93,7 @@ class MessageSession(MessageSessionT):
         send = []
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
+                x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
                 send_ = await self.session.message.reply(
                     x.text,
                     quote=(
@@ -134,7 +132,19 @@ class MessageSession(MessageSessionT):
                 )
                 send.append(send_)
                 count += 1
-
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and self.target.target_from == target_group_prefix:
+                    send_ = await self.session.message.reply(
+                        f"(met){x.id}(met)",
+                        quote=(
+                            quote if quote and count == 0 and self.session.message else None
+                        ),
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{self.target.target_id}]: Mention: {sender_prefix}|{str(x.id)}"
+                    )
+                    send.append(send_)
+                    count += 1
         msg_ids = []
         for x in send:
             msg_ids.append(x["msg_id"])
@@ -168,7 +178,7 @@ class MessageSession(MessageSessionT):
 
     def as_display(self, text_only=False):
         if self.session.message.content:
-            m = re.sub(r"\[.*]\((.*)\)", "\\1", self.session.message.content)
+            m = re.sub(r"\[.*\]\((.*)\)", r"\1", self.session.message.content)
             return m
         return ""
 
@@ -191,7 +201,7 @@ class MessageSession(MessageSessionT):
                 await channel_msg_delete(self.session.message.id)
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False
 
     sendMessage = send_message
@@ -204,7 +214,7 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            # await bot.answer_chat_action(self.msg.session.target, 'typing')
+            # await bot.answer_chat_action(self.msg.session.target, "typing")
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -265,8 +275,9 @@ class FetchTarget(FetchTargetT):
         target_pattern = r"|".join(re.escape(item) for item in target_prefix_list)
         match_target = re.match(rf"^({target_pattern})\|(.*)", target_id)
         if match_target:
-            target_from = sender_from = match_target.group(1)
+            target_from = match_target.group(1)
             target_id = match_target.group(2)
+            sender_from = None
             if sender_id:
                 sender_pattern = r"|".join(
                     re.escape(item) for item in sender_prefix_list
@@ -275,64 +286,9 @@ class FetchTarget(FetchTargetT):
                 if match_sender:
                     sender_from = match_sender.group(1)
                     sender_id = match_sender.group(2)
-            else:
-                sender_id = target_id
-
-            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
-
-    @staticmethod
-    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
-        lst = []
-        for x in target_list:
-            fet = await FetchTarget.fetch_target(x)
-            if fet:
-                lst.append(fet)
-        return lst
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        module_name = None if module_name == "*" else module_name
-        if user_list:
-            for x in user_list:
-                try:
-                    msgchain = message
-                    if isinstance(message, str):
-                        if i18n:
-                            msgchain = MessageChain(
-                                [Plain(x.parent.locale.t(message, **kwargs))]
-                            )
-                        else:
-                            msgchain = MessageChain([Plain(message)])
-                    msgchain = MessageChain(msgchain)
-                    await x.send_direct_message(msgchain)
-                    if enable_analytics and module_name:
-                        BotDBUtil.Analytics(x).add("", module_name, "schedule")
-                except Exception:
-                    Logger.error(traceback.format_exc())
-        else:
-            get_target_id = BotDBUtil.TargetInfo.get_target_list(
-                module_name, client_name
-            )
-            for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
-                if fetch:
-                    if BotDBUtil.TargetInfo(fetch.target.target_id).is_muted:
-                        continue
-                    try:
-                        msgchain = message
-                        if isinstance(message, str):
-                            if i18n:
-                                msgchain = MessageChain(
-                                    [Plain(fetch.parent.locale.t(message, **kwargs))]
-                                )
-                            else:
-                                msgchain = MessageChain([Plain(message)])
-                        msgchain = MessageChain(msgchain)
-                        await fetch.send_direct_message(msgchain)
-                        if enable_analytics and module_name:
-                            BotDBUtil.Analytics(fetch).add("", module_name, "schedule")
-                    except Exception:
-                        Logger.error(traceback.format_exc())
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            await session.parent.data_init()
+            return session
 
 
 Bot.MessageSession = MessageSession

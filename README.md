@@ -1,5 +1,6 @@
 <div align="center">
-  <img width="512" src="./assets/character_marked.png" alt="logo">
+
+![AkariBot](https://socialify.git.ci/Teahouse-Studios/akari-bot/image?custom_description=A+multifunctional%2C+multilingual%2C+multiplatform+asynchronous+chatbot&description=1&font=Jost&forks=1&issues=1&logo=https%3A%2F%2Fp.sda1.dev%2F23%2F71aacf97af8f66276fcee14c065d20d8%2FImage_2392116191262997.jpg&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
 
 # 小可 · AkariBot
 
@@ -15,24 +16,18 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 [![License](https://img.shields.io/github/license/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/blob/master/LICENSE)
 </div>
 
-## 介绍
-
-**小可**是可扩展的多功能、多语言、多平台支持的异步聊天机器人。当前形象由 [OasisAkari](https://github.com/OasisAkari) 绘制。
-
-目前小可正在进行快速开发中，特性可能会随时发生变化，请留意更新。
-
 ## 功能列表
 > 此处展示的功能非机器人可用全部功能，详情请查看机器人文档。
 
-| 核心          | MediaWiki    | Minecraft      | 音乐游戏        | API 查询工具  | 实用工具        | 娱乐        | RSS               |
-| :-----------: | :----------: | :------------: | :------------: | :-----------: |  :------------: | :---------: | :---------------: |
-| 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | GitHub        | IP 地址查询     | Wordle      | MC 版本更新推送    |
-| 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | Bilibili      | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
-| 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai         | 网易云音乐     | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
-| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  | 迷因/梗查询     | 抛硬币      | 茶馆周报推送        |
-| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） | OpenAI        | 色彩查看器      | 掷骰工具    |                     |
-| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha | 随机数生成器     | Emojimix   |                     |
-| 货币系统（WIP） |             |                |                |               |                | 一言       |                     |
+| 核心          | MediaWiki    | Minecraft      | 音乐游戏        | API 查询工具  | 实用工具         | 娱乐       | RSS               |
+| :-----------: | :----------: | :------------: | :------------: | :-----------: |  :------------: | :--------: | :---------------: |
+| 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | Bilibili      | IP 地址查询     | Wordle     | MC 版本更新推送     |
+| 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | 网易云音乐    | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
+| 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai          | GitHub       | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
+| 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  |   色彩查看器    | 抛硬币      | 茶馆周报推送        |
+| 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） |   nbnhhsh    |   随机生成器    | 掷骰工具    |                    |
+| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |   大语言模型   | Emojimix   |                    |
+|   WebUI（WIP） |             |                |                |               |                | 一言        |                    |
 
 ## 运行
 
@@ -80,7 +75,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 ### 自搭建
 
-推荐前往[此项目](https://github.com/Teahouse-Studios/akari-bot-core)通过小可核心版进行搭建，你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
+你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 
@@ -96,6 +91,9 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
 
-## 友情链接
-
-* [音卡](https://github.com/codethink-cn/Inkar-Suki) - 各种功能于一体的群聊机器人。
+## 赞助者
+<p align="center">
+  <a href="https://afdian.com/a/teahouse">
+    <img src='https://fe.wd-ljt.com/m3me/sP0ns0r5/sP0ns0r5.svg'>
+  </a>
+</p>

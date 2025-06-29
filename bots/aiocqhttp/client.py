@@ -6,9 +6,7 @@ from aiocqhttp.event import Event
 
 from core.config import Config
 
-access_token = Config(
-    "qq_access_token", cfg_type=str, secret=True, table_name="bot_aiocqhttp"
-)
+access_token = Config("qq_access_token", cfg_type=str, secret=True, table_name="bot_aiocqhttp")
 
 
 class EventModded(Event):

@@ -1,9 +1,56 @@
-from typing import Union
+from datetime import timedelta
+from typing import Any, Union
 
-from discord import Embed as DiscordEmbed
 
-from core.builtins.message.elements import EmbedElement
-from core.builtins.message.internal import Embed, EmbedField
+def convert2lst(elements: Union[str, list, tuple]) -> list:
+    if isinstance(elements, str):
+        return [elements]
+    if isinstance(elements, tuple):
+        return list(elements)
+    return elements
+
+
+def isfloat(num_str: Any) -> bool:
+    """
+    检查字符串是否符合float。
+    """
+    try:
+        float(num_str)
+        return True
+    except ValueError:
+        return False
+
+
+def isint(num_str: Any) -> bool:
+    """
+    检查字符串是否符合int。
+    """
+    try:
+        int(num_str)
+        return True
+    except ValueError:
+        return False
+
+
+def parse_time_string(time_str: str) -> timedelta:
+    try:
+        negative = False
+        if time_str[0] == "+":
+            time_str = time_str[1:]
+        elif time_str[0] == "-":
+            negative = True
+            time_str = time_str[1:]
+        tstr_split = time_str.split(":")
+        hour = int(tstr_split[0])
+        minute = 0
+        if len(tstr_split) == 2:
+            minute = int(tstr_split[1])
+        if negative:
+            hour = -hour
+            minute = -minute
+        return timedelta(hours=hour, minutes=minute)
+    except Exception:
+        return timedelta()
 
 
 def remove_duplicate_space(text: str) -> str:
@@ -19,45 +66,3 @@ def remove_duplicate_space(text: str) -> str:
             break
     text = " ".join(strip_display_space)
     return text
-
-
-def convert_discord_embed(embed: Union[DiscordEmbed, dict]) -> EmbedElement:
-    """将DiscordEmbed转换为Embed。
-
-    :param embed: DiscordEmbed。
-    :returns: Embed。"""
-    embed_ = Embed()
-    if isinstance(embed, DiscordEmbed):
-        embed = embed.to_dict()
-    if isinstance(embed, dict):
-        if "title" in embed:
-            embed_.title = embed["title"]
-        if "description" in embed:
-            embed_.description = embed["description"]
-        if "url" in embed:
-            embed_.url = embed["url"]
-        if "color" in embed:
-            embed_.color = embed["color"]
-        if "timestamp" in embed:
-            embed_.timestamp = embed["timestamp"]
-        if "footer" in embed:
-            embed_.footer = embed["footer"]["text"]
-        if "image" in embed:
-            embed_.image = embed["image"]
-        if "thumbnail" in embed:
-            embed_.thumbnail = embed["thumbnail"]
-        if "author" in embed:
-            embed_.author = embed["author"]
-        if "fields" in embed:
-            fields = []
-            for field_value in embed["fields"]:
-                fields.append(
-                    EmbedField(
-                        field_value["name"], field_value["value"], field_value["inline"]
-                    )
-                )
-            embed_.fields = fields
-    return embed_
-
-
-__all__ = ["remove_duplicate_space", "convert_discord_embed"]

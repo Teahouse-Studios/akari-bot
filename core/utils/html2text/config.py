@@ -93,19 +93,20 @@ RE_MD_DASH_MATCHER = re.compile(
 )
 RE_SLASH_CHARS = r"\`*_{}[]()#+-.!"
 RE_MD_BACKSLASH_MATCHER = re.compile(
-    r"""
-    (\\)          # match one slash
-    (?=[%s])      # followed by a char that requires escaping
-    """
-    % re.escape(RE_SLASH_CHARS),
+    rf"""
+    (\\)
+    (?=[{re.escape(RE_SLASH_CHARS)}])
+    """,
+    # match one slash
+    # followed by a char that requires escaping
     flags=re.VERBOSE,
 )
 
 UNIFIABLE = {
-    "rsquo": "'",
-    "lsquo": "'",
-    "rdquo": '"',
-    "ldquo": '"',
+    "rsquo": "\'",
+    "lsquo": "\'",
+    "rdquo": "\"",
+    "ldquo": "\"",
     "copy": "(C)",
     "mdash": "--",
     "nbsp": " ",
@@ -152,5 +153,5 @@ IGNORE_TABLES = False
 SINGLE_LINE_BREAK = False
 
 # Use double quotation marks when converting the <q> tag.
-OPEN_QUOTE = '"'
-CLOSE_QUOTE = '"'
+OPEN_QUOTE = "\""
+CLOSE_QUOTE = "\""

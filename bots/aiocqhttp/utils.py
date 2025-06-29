@@ -4,8 +4,8 @@ from typing import Any, Dict, Optional, Union
 
 import orjson as json
 
-from bots.aiocqhttp.client import bot
 from core.logger import Logger
+from .client import bot
 
 
 async def get_onebot_implementation() -> Optional[str]:
@@ -14,8 +14,8 @@ async def get_onebot_implementation() -> Optional[str]:
     Logger.debug(str(data))
     app_name = data.get("app_name")
 
-    if app_name in ["NapCat.Onebot", "LLOneBot"]:
-        app_name = "ntqq"
+    if app_name == "NapCat.Onebot":
+        app_name = "napcat"
     elif app_name == "Lagrange.OneBot":
         app_name = "lagrange"
 
@@ -24,7 +24,7 @@ async def get_onebot_implementation() -> Optional[str]:
 
 class CQCodeHandler:
     get_supported = ["at", "face", "forward", "image", "json", "record", "text"]
-    pattern = re.compile(r"\[CQ:(\w+),[^\]]*\]")
+    pattern = re.compile(r"\[CQ:(\w+),?[^\]]*\]")
 
     @staticmethod
     def filter_cq(s: str) -> str:
@@ -43,18 +43,20 @@ class CQCodeHandler:
         """
         生成CQ码字符串。
 
-        :param data: 包含CQ类型和参数的字典，必须包含'type'和'data'字段。
+        :param data: 包含CQ类型和参数的字典，必须包含`type`和`data`字段。
         :return: 生成的CQ码字符串；如果输入数据无效，返回None。
         """
         if "type" in data and "data" in data:
             cq_type = data["type"]
             params = data["data"]
+
+            if not params:
+                return f"[CQ:{cq_type}]"
             param_str = [
                 f"{key}={CQCodeHandler.escape_special_char(str(value))}"
                 for key, value in params.items()
             ]
-            cq_code = f"[CQ:{cq_type}," + ",".join(param_str) + "]"
-            return cq_code
+            return f"[CQ:{cq_type},{", ".join(param_str)}]"
         return None
 
     @staticmethod
@@ -65,25 +67,22 @@ class CQCodeHandler:
         :param cq_code: CQ码字符串。
         :return: 包含CQ类型和参数的字典；如果CQ码格式不正确，返回None。
         """
-        match = re.match(r"\[CQ:(\w+),(.+?)\]", cq_code)
+        kwargs = {}
+        match = re.match(r"\[CQ:([^\s,\]]+)(?:,([^\]]+))?\]", cq_code)
         if not match:
             return None
-
         cq_type = match.group(1)
-        parameters = match.group(2)
-
-        param_dict = {}
-        if cq_type == "json":
-            for param in parameters.split(","):
-                key, value = param.split("=")
-                value = html.unescape(value)
-                param_dict[key] = json.loads(value)
-        else:
-            for param in parameters.split(","):
-                key, value = param.split("=")
-                param_dict[key] = html.unescape(value)
-
-        data = {"type": cq_type, "data": param_dict}
+        if match.group(2):
+            params = match.group(2).split(",")
+            params = [x for x in params if x]
+            for a in params:
+                ma = re.match(r"(.*?)=(.*)", a)
+                if ma:
+                    if cq_type == "json":
+                        kwargs[html.unescape(ma.group(1))] = json.loads(ma.group(2))
+                    else:
+                        kwargs[html.unescape(ma.group(1))] = html.unescape(ma.group(2))
+        data = {"type": cq_type, "data": kwargs}
 
         return data
 

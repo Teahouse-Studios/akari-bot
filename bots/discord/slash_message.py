@@ -1,23 +1,18 @@
-import traceback
-
 import discord
 
-from bots.discord.message import (
-    convert_embed,
-    MessageSession as MessageSessionT,
-    FinishedSession as FinS,
-)
 from core.builtins import MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
 from core.builtins.message.internal import I18NContext
-from core.config import Config
 from core.logger import Logger
+from .message import (
+    convert_embed,
+    MessageSession as MessageSessionT,
+    FinishedSession as FinishedSessionT,
+)
 
-enable_analytics = Config("enable_analytics", False)
 
-
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         """
         用于删除这条消息。
@@ -26,7 +21,7 @@ class FinishedSession(FinS):
             for x in self.result:
                 await x.delete()
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
 
 
 class MessageSession(MessageSessionT):
@@ -35,6 +30,7 @@ class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = False
+        mention = True
         embed = True
         forward = False
         delete = True
@@ -79,7 +75,7 @@ class MessageSession(MessageSessionT):
                     f"[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}"
                 )
             elif isinstance(x, EmbedElement):
-                embeds, _ = await convert_embed(x)
+                embeds, _ = await convert_embed(x, self)
                 if first_send:
                     send_ = await self.session.message.respond(embed=embeds)
                 else:
@@ -101,22 +97,9 @@ class MessageSession(MessageSessionT):
 
         return FinishedSession(self, msg_ids, send)
 
-    async def check_permission(self):
-        if (
-            self.session.message.channel.permissions_for(
-                self.session.message.author
-            ).administrator
-            or isinstance(self.session.message.channel, discord.DMChannel)
-            or self.info.is_super_user
-            or self.info.check_TargetAdmin(self.target.target_id)
-        ):
-            return True
-        return False
-
     async def check_native_permission(self):
-        if self.session.message.channel.permissions_for(
-            self.session.message.author
-        ).administrator or isinstance(self.session.message.channel, discord.DMChannel):
+        if self.session.message.channel.permissions_for(self.session.message.author).administrator or \
+                isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 
@@ -132,5 +115,5 @@ class MessageSession(MessageSessionT):
             await self.session.message.delete()
             return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
             return False

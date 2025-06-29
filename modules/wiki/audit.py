@@ -1,20 +1,15 @@
-import re
-from datetime import timezone
-
 from core.builtins import Bot, I18NContext, Image
 from core.component import module
-from core.constants import Info
-from core.database.tables import is_mysql
 from core.utils.image_table import image_table_render, ImageTable
-from modules.wiki.utils.dbutils import Audit
-from modules.wiki.utils.wikilib import WikiLib
+from .database.models import WikiAllowList, WikiBlockList
+from .utils.wikilib import WikiLib
 
 aud = module(
     "wiki_audit",
     required_superuser=True,
     alias="wau",
     doc=True,
-    load=Info.use_url_manager,
+    load=Bot.Info.use_url_manager,
 )
 
 
@@ -24,10 +19,10 @@ async def _(msg: Bot.MessageSession, apilink: str):
     if check.available:
         apilink = check.value.api
         if msg.parsed_msg.get("trust", False):
-            res = Audit(apilink).add_to_AllowList()
+            res = await WikiAllowList.add(apilink)
             list_name = msg.locale.t("wiki.message.wiki_audit.list_name.allowlist")
         else:
-            res = Audit(apilink).add_to_BlockList()
+            res = await WikiBlockList.add(apilink)
             list_name = msg.locale.t("wiki.message.wiki_audit.list_name.blocklist")
         if not res:
             await msg.finish(
@@ -56,10 +51,11 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @aud.command(["distrust <apilink>", "unblock <apilink>"])
 async def _(msg: Bot.MessageSession, apilink: str):
-    if not re.match(r"^.*(/api\.php)$", apilink):
-        await msg.finish(msg.locale.t("wiki.message.wiki_audit.remove.failed.not_api"))
+    check = await WikiLib(apilink).check_wiki_info_from_database_cache()
+    if check.available:
+        apilink = check.value.api
     if msg.parsed_msg.get("distrust", False):
-        res = Audit(apilink).remove_from_AllowList()  # 已关闭的站点无法验证有效性
+        res = await WikiAllowList.remove(apilink)  # 已关闭的站点无法验证有效性
         if not res:
             await msg.finish(
                 msg.locale.t(
@@ -68,7 +64,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
             )
         list_name = msg.locale.t("wiki.message.wiki_audit.list_name.allowlist")
     else:
-        res = Audit(apilink).remove_from_BlockList()
+        res = WikiBlockList.remove(apilink)
         list_name = msg.locale.t("wiki.message.wiki_audit.list_name.blocklist")
     if not res:
         await msg.finish(
@@ -93,23 +89,24 @@ async def _(msg: Bot.MessageSession, apilink: str):
     check = await WikiLib(apilink).check_wiki_available()
     if check.available:
         apilink = check.value.api
-        audit = Audit(apilink)
         msg_list = []
-        if audit.inAllowList:
+        allow = await WikiAllowList.check(apilink)
+        block = await WikiBlockList.check(apilink)
+        if allow:
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.allowlist", api=apilink)
             )
-        if audit.inBlockList:
+        if block:
             msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.blocklist", api=apilink)
             )
-        if msg_list:
+        if allow and block:
             msg_list.append(msg.locale.t("wiki.message.wiki_audit.query.conflict"))
-            await msg.finish(msg_list)
-        else:
-            await msg.finish(
+        if not msg_list:
+            msg_list.append(
                 msg.locale.t("wiki.message.wiki_audit.query.none", api=apilink)
             )
+        await msg.finish(msg_list)
     else:
         result = msg.locale.t("wiki.message.error.query") + (
             "\n" + msg.locale.t("wiki.message.error.info") + check.message
@@ -121,28 +118,15 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @aud.command("list [--legacy]")
 async def _(msg: Bot.MessageSession):
-    allow_list = Audit.get_allow_list()
-    block_list = Audit.get_block_list()
+    allow_list = await WikiAllowList.all().values("api_link", "timestamp")
+    block_list = await WikiBlockList.all().values("api_link", "timestamp")
     legacy = True
     if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
         send_msgs = []
-        if is_mysql:
-            allow_columns = [
-                [x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)]
-                for x in allow_list
-            ]
-        else:
-            allow_columns = [
-                [
-                    x[0],
-                    msg.ts2strftime(
-                        x[1].replace(tzinfo=timezone.utc).timestamp(),
-                        iso=True,
-                        timezone=False,
-                    ),
-                ]
-                for x in allow_list
-            ]
+        allow_columns = [
+            [x['api_link'], msg.format_time(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            for x in allow_list
+        ]
 
         if allow_columns:
             allow_table = ImageTable(
@@ -160,23 +144,10 @@ async def _(msg: Bot.MessageSession):
                     )
                     for im in allow_image:
                         send_msgs.append(Image(im))
-        if is_mysql:
-            block_columns = [
-                [x[0], msg.ts2strftime(x[1].timestamp(), iso=True, timezone=False)]
-                for x in block_list
-            ]
-        else:
-            block_columns = [
-                [
-                    x[0],
-                    msg.ts2strftime(
-                        x[1].replace(tzinfo=timezone.utc).timestamp(),
-                        iso=True,
-                        timezone=False,
-                    ),
-                ]
-                for x in block_list
-            ]
+        block_columns = [
+            [x['api_link'], msg.format_time(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            for x in block_list
+        ]
         if block_columns:
             block_table = ImageTable(
                 data=block_columns,
@@ -202,7 +173,7 @@ async def _(msg: Bot.MessageSession):
             wikis.append(msg.locale.t("wiki.message.wiki_audit.list.allowlist"))
             for al in allow_list:
                 wikis.append(
-                    f"{al[0]} ({msg.ts2strftime(al[1].timestamp(), iso=True, timezone=False)})"
+                    f"{al[0]} ({msg.format_time(al[1].timestamp(), iso=True, timezone=False)})"
                 )
         if block_list:
             wikis.append(msg.locale.t("wiki.message.wiki_audit.list.blocklist"))
@@ -211,4 +182,4 @@ async def _(msg: Bot.MessageSession):
         if wikis:
             await msg.finish(wikis)
         else:
-            await msg.finish(msg.locale.t("wiki.message.wiki_audit.list.none"))
+            await msg.finish(I18NContext("wiki.message.wiki_audit.list.none"))

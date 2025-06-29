@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from .process import process_expression
 
@@ -6,7 +6,7 @@ dice = module(
     "dice",
     alias=["rd", "roll"],
     developers=["Light-Beacon", "DoroWolf"],
-    desc="{dice.help.desc}",
+    desc="{I18N:dice.help.desc}",
     doc=True,
 )
 
@@ -16,30 +16,30 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(await process_expression(msg, "D", None))
 
 
-@dice.command("<dices> [<dc>] {{dice.help}}")
+@dice.command("<dices> [<dc>] {{I18N:dice.help}}")
 async def _(msg: Bot.MessageSession, dices: str, dc: int = None):
     await msg.finish(await process_expression(msg, dices, dc))
 
 
-@dice.command("set <sides> {{dice.help.set}}", required_admin=True)
+@dice.command("set <sides> {{I18N:dice.help.set}}", required_admin=True)
 async def _(msg: Bot.MessageSession, sides: int):
     if sides > 1:
-        msg.data.edit_option("dice_default_sides", sides)
-        await msg.finish(msg.locale.t("dice.message.set.success", sides=sides))
+        await msg.target_info.edit_target_data("dice_default_sides", sides)
+        await msg.finish(I18NContext("dice.message.set.success", sides=sides))
     elif sides == 0:
-        msg.data.edit_option("dice_default_sides", None)
-        await msg.finish(msg.locale.t("dice.message.set.clear"))
+        await msg.target_info.edit_target_data("dice_default_sides", None)
+        await msg.finish(I18NContext("dice.message.set.clear"))
     else:
-        await msg.finish(msg.locale.t("dice.message.error.value.sides.invalid"))
+        await msg.finish(I18NContext("dice.message.error.value.sides.invalid"))
 
 
-@dice.command("rule {{dice.help.rule}}", required_admin=True)
+@dice.command("rule {{I18N:dice.help.rule}}", required_admin=True)
 async def _(msg: Bot.MessageSession):
-    dc_rule = msg.data.options.get("dice_dc_reversed")
+    dc_rule = msg.target_data.get("dice_dc_reversed")
 
     if dc_rule:
-        msg.data.edit_option("dice_dc_reversed", False)
-        await msg.finish(msg.locale.t("dice.message.rule.disable"))
+        await msg.target_info.edit_target_data("dice_dc_reversed", False)
+        await msg.finish(I18NContext("dice.message.rule.disable"))
     else:
-        msg.data.edit_option("dice_dc_reversed", True)
-        await msg.finish(msg.locale.t("dice.message.rule.enable"))
+        await msg.target_info.edit_target_data("dice_dc_reversed", True)
+        await msg.finish(I18NContext("dice.message.rule.enable"))

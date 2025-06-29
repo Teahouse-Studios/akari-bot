@@ -1,0 +1,18 @@
+{
+    "ai.help": "透過大語言模型回答問題。",
+    "ai.help.desc": "有問題為什麽不問小可呢？",
+    "ai.help.list": "檢視已支援的大語言模型列表。",
+    "ai.help.option.llm": "指定使用的大語言模型。",
+    "ai.help.set": "設定會話內預設大語言模型。",
+    "ai.message.list.none": "找不到可用的大語言模型，請聯絡機器人所有者新增。",
+    "ai.message.list": "以下為可用的大語言模型：",
+    "ai.message.list.prompt": "使用「${prefix}ai set <模型名稱>」切換模型。",
+    "ai.message.llm.invalid": "無效的大語言模型。",
+    "ai.message.text2img.error": "（發生錯誤：無法正確將以下內容轉換為圖片：\n${text}）",
+    "config.comments.ai_default_llm": "預設使用的大語言模型。",
+    "config.comments.llm_frequency_penalty": "大語言模型的頻率懲罰，範圍 -2 到 2 之間。",
+    "config.comments.llm_max_tokens": "限制大語言模型的最大 Token 數。",
+    "config.comments.llm_presence_penalty": "大語言模型的存在懲罰，範圍 -2 到 2 之間。",
+    "config.comments.llm_temperature": "大語言模型的溫度取樣，範圍 0 到 2 之間。不建議與 top_p 同時修改。",
+    "config.comments.llm_top_p": "大語言模型的核取樣，範圍 0 到 1 之間。不建議與 temperature 同時修改。"
+}

@@ -1,13 +1,11 @@
-import os.path
 import shutil
-import traceback
 
-from core.builtins import Bot, Image
+from core.builtins import Bot, Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download
-from .dbutils import PgrBindInfoManager
+from modules.phigros.database.models import PhigrosBindInfo
 from .game_record import parse_game_record
 from .genb19 import drawb19
 from .update import update_assets, p_headers
@@ -15,13 +13,13 @@ from .update import update_assets, p_headers
 phi = module(
     "phigros",
     developers=["OasisAkari"],
-    desc="{phigros.help.desc}",
+    desc="{I18N:phigros.help.desc}",
     alias=["p", "pgr", "phi"],
     doc=True,
 )
 
 
-@phi.command("bind <sessiontoken> {{phigros.help.bind}}")
+@phi.command("bind <sessiontoken> {{I18N:phigros.help.bind}}")
 async def _(msg: Bot.MessageSession, sessiontoken: str):
     if msg.target.target_from in [
         "Discord|Channel",
@@ -47,37 +45,31 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         headers=headers,
         fmt="json",
     )
-    if "nickname" in get_user_info:
-        bind = PgrBindInfoManager(msg).set_bind_info(
-            sessiontoken=sessiontoken, username=get_user_info["nickname"]
-        )
-        if bind:
-            await msg.send_message(
-                msg.locale.t(
-                    "phigros.message.bind.success", username=get_user_info["nickname"]
-                ),
-                quote=False,
-            )
-        else:
-            await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
+    if get_user_info:
+        username = get_user_info.get("nickname", "Guest")
+        await PhigrosBindInfo.set_bind_info(sender_id=msg.target.sender_id, session_token=sessiontoken, username=username)
+        await msg.send_message(msg.locale.t("phigros.message.bind.success", username=username), quote=False)
+    else:
+        await msg.send_message(msg.locale.t("phigros.message.bind.failed"))
 
 
-@phi.command("unbind {{phigros.help.unbind}}")
+@phi.command("unbind {{I18N:phigros.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    if PgrBindInfoManager(msg).remove_bind_info():
-        await msg.finish(msg.locale.t("phigros.message.unbind.success"))
+    await PhigrosBindInfo.remove_bind_info(sender_id=msg.target.sender_id)
+    await msg.finish(I18NContext("phigros.message.unbind.success"))
 
 
-@phi.command("b19 {{phigros.help.b19}}")
+@phi.command("b19 {{I18N:phigros.help.b19}}")
 async def _(msg: Bot.MessageSession):
-    if not (bind := PgrBindInfoManager(msg).get_bind_info()):
+    bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
+    if not bind_info:
         await msg.finish(
             msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0])
         )
     else:
         try:
             headers = p_headers.copy()
-            headers["X-LC-Session"] = bind[0]
+            headers["X-LC-Session"] = bind_info.session_token
             get_save_url = await get_url(
                 "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave",
                 headers=headers,
@@ -87,7 +79,7 @@ async def _(msg: Bot.MessageSession):
             dl = await download(save_url)
             rd_path = random_cache_path()
             shutil.unpack_archive(dl, rd_path)
-            game_records = parse_game_record(os.path.join(rd_path, "gameRecord"))
+            game_records = parse_game_record(rd_path)
             sort_by_rks = sorted(
                 {
                     f"{level}.{song}": game_records[song][level]
@@ -106,16 +98,16 @@ async def _(msg: Bot.MessageSession):
             if len(rks_acc := [i[1]["rks"] for i in b19_data]) < 20:
                 rks_acc += [0] * (20 - len(rks_acc))
             await msg.finish(
-                Image(drawb19(bind[1], round(sum(rks_acc) / len(rks_acc), 2), b19_data))
+                Image(drawb19(bind_info.username, round(sum(rks_acc) / len(rks_acc), 2), b19_data))
             )
         except Exception as e:
-            Logger.error(traceback.format_exc())
-            await msg.finish(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
+            Logger.exception()
+            await msg.finish(I18NContext("phigros.message.b19.get_failed", err=str(e)))
 
 
 @phi.command("update", required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_assets():
-        await msg.finish(msg.locale.t("message.success"))
+        await msg.finish(I18NContext("message.success"))
     else:
-        await msg.finish(msg.locale.t("message.failed"))
+        await msg.finish(I18NContext("message.failed"))
