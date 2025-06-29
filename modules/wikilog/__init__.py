@@ -383,11 +383,11 @@ async def _(msg: Bot.MessageSession):
 
 
 @wikilog.hook("matched")
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(ctx: Bot.ModuleHookContext):
     matched = ctx.args["matched_logs"]
     Logger.debug("Received matched_logs hook: " + str(matched))
     for id_ in matched:
-        ft = await fetch.fetch_target(id_)
+        ft = await Bot.fetch_target(id_)
         if ft:
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value

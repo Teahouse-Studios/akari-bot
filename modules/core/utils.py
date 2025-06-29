@@ -5,7 +5,8 @@ import psutil
 from cpuinfo import get_cpu_info
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Plain, I18NContext, Url
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, FormattedTime, I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.constants.default import locale_url_default
@@ -39,7 +40,7 @@ started_time = datetime.now()
 
 @ping.command("{{I18N:core.help.ping}}")
 async def _(msg: Bot.MessageSession):
-    result = MessageChain(Plain("Pong!"))
+    result = MessageChain.assign(Plain("Pong!"))
     timediff = str(datetime.now() - started_time).split(".")[0]
     if msg.check_super_user():
         boot_start = str(FormattedTime(psutil.boot_time(), iso=True))

@@ -20,7 +20,7 @@ weekly_rss = module(
 
 
 @weekly_rss.hook()
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(ctx: Bot.ModuleHookContext):
     weekly_cn = MessageChain(ctx.args["weekly_cn"])
     weekly_tw = MessageChain(ctx.args["weekly_tw"])
     if Bot.Info.client_name == "QQ":
@@ -33,7 +33,7 @@ async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
         weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
         weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
     post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
-    await fetch.post_message("weekly_rss", message=post_msg, i18n=True)
+    await Bot.post_message("weekly_rss", message=post_msg, i18n=True)
     Logger.success("Weekly checked.")
 
 
