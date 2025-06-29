@@ -8,7 +8,7 @@ import orjson as json
 
 from core.builtins import Bot, I18NContext, Plain
 from core.component import module
-from core.config import Config, CFGManager
+from core.config import Config, config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
 from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
@@ -641,7 +641,7 @@ cfg_ = module("config", required_superuser=True, alias="cfg", base=True, doc=Tru
 
 @cfg_.command("get <k> [<table_name>]")
 async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
-    await msg.finish(str(Config(k, table_name=table_name)))
+    await msg.finish(str(config(k, table_name=table_name)))
 
 
 @cfg_.command("write <k> <v> [<table_name>] [-s]")

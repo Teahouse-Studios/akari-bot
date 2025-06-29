@@ -1,7 +1,8 @@
+import ast
 import os
-import re
 import shutil
 import sys
+import traceback
 from time import sleep
 
 if __name__ == "__main__":
@@ -10,6 +11,56 @@ if __name__ == "__main__":
 from core.constants import *
 from core.i18n import Locale, load_locale_file
 from core.utils.message import isint
+
+TYPE_MAPPING = {
+    "int": int,
+    "float": float,
+    "str": str,
+    "bool": bool,
+    "list": list
+}
+
+
+def safe_literal_eval(node, globals_dict=None):
+    """ 安全解析 AST 节点 """
+    if not globals_dict:
+        globals_dict = globals()
+
+    if isinstance(node, ast.Str):
+        return node.s
+    if isinstance(node, ast.Num):
+        return node.n
+    if isinstance(node, ast.NameConstant):
+        return node.value
+    if isinstance(node, ast.Tuple):
+        # 对元组元素进行递归解析，对于 type 类型的元素保持原样
+        return tuple(safe_literal_eval(el) if not isinstance(el, ast.Name)
+                     or el.id != 'type' else el for el in node.elts)
+    if isinstance(node, ast.List):
+        return tuple(safe_literal_eval(el) for el in node.elts)
+    if isinstance(node, ast.Dict):
+        return frozenset((safe_literal_eval(k), safe_literal_eval(v))
+                         for k, v in zip(node.keys, node.values))
+    if isinstance(node, ast.Name):
+        if node.id in TYPE_MAPPING:
+            return TYPE_MAPPING[node.id]
+        if node.id in globals_dict:
+            return globals_dict[node.id]
+        return node.id
+    return None
+
+
+def make_hashable(obj):
+    if isinstance(obj, dict):
+        return frozenset((make_hashable(k), make_hashable(v)) for k, v in obj.items())
+    elif isinstance(obj, list):
+        return tuple(make_hashable(i) for i in obj)
+    elif isinstance(obj, set):
+        return frozenset(make_hashable(i) for i in obj)
+    elif isinstance(obj, tuple):
+        return tuple(make_hashable(i) for i in obj)
+    else:
+        return obj
 
 
 def generate_config(dir_path, language):
@@ -21,8 +72,6 @@ def generate_config(dir_path, language):
 
     dir_list = ["bots", "core", "modules", "schedulers"]
     exclude_dir_list = [os.path.join("core", "config"), os.path.join("core", "scripts")]
-
-    match_code = re.compile(r"(Config\()", re.DOTALL)
 
     # create empty config.toml
     locale = Locale(language)
@@ -45,8 +94,7 @@ def generate_config(dir_path, language):
         f.write("initialized = false\n")
         f.close()
 
-    from core.config import Config, CFGManager  # noqa
-
+    from core.config import config, CFGManager  # noqa
     CFGManager.switch_config_path(dir_path)
 
     for _dir in dir_list:
@@ -58,41 +106,39 @@ def generate_config(dir_path, language):
                     file_path = os.path.join(root, file)
                     with open(file_path, "r", encoding="utf-8") as f:
                         code = f.read()
-                        if f := match_code.finditer(code):  # Find all Config() functions in the code
-                            for m in f:
-                                left_brackets_count = 0
-                                param_text = ""
-                                for param in code[m.end(
-                                ):]:  # Get the parameters text inside the Config() function by counting brackets
-                                    if param == "(":
-                                        left_brackets_count += 1
-                                    elif param == ")":
-                                        left_brackets_count -= 1
-                                    if left_brackets_count == -1:
-                                        break
-                                    param_text += param
-                                config_code_list[param_text] = file_path
-    # filtered_config_code_map = {}
-    # for c in config_code_list:
-    #     opt = c.split(",")[0]
-    #     if opt not in filtered_config_code_map:
-    #         filtered_config_code_map[opt] = c
-    #     else:
-    #         if len(c) > len(filtered_config_code_map[opt]):
-    #             print(f"Conflict found: {filtered_config_code_map[opt]}")
-    #             filtered_config_code_map[opt] = c
-    # config_code_list = [filtered_config_code_map[c] for c in filtered_config_code_map]
-    for c in config_code_list:
-        spl = c.split(",") + ["_generate=True"]  # Add _generate=True param to the end of the config function
-        for s in spl:
-            if s.strip() == "":
-                spl.remove(s)
+
+                        # 解析代码中的函数调用
+                        tree = ast.parse(code)
+                        for node in ast.walk(tree):
+                            if isinstance(
+                                    node, ast.Call) and isinstance(
+                                    node.func, ast.Name) and node.func.id == "Config":
+                                # 提取位置参数 (args) 和关键字参数 (kwargs)
+                                args = []
+                                kwargs = {}
+
+                                for arg in node.args:
+                                    args.append(safe_literal_eval(arg, globals()))
+
+                                for kwarg in node.keywords:
+                                    kwargs[kwarg.arg] = safe_literal_eval(kwarg.value, globals())
+
+                                kwargs['_generate'] = True
+
+                                key = (make_hashable(args), make_hashable(kwargs))
+                                config_code_list[key] = file_path
+
+    seen_configs = set()
+    for (args, kwargs) in config_code_list:
+        key = (args, kwargs)
+        if key in seen_configs:
+            continue
+
+        seen_configs.add(key)
         try:
-            # Execute the code to generate the config file, yeah, just stupid but works
-            exec(f"Config({",".join(spl)})")  # noqa
-        except (NameError, TypeError):
-            # traceback.print_exc()
-            ...
+            config(*args, **dict(kwargs))
+        except Exception:
+            traceback.print_exc()
 
     CFGManager.write("initialized", True)
 
