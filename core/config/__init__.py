@@ -135,7 +135,7 @@ class CFGManager:
                                     break
                     else:
                         """
-                        foo = bar <- if the item is not a table, assume it"s a key-value pair outside the table
+                        foo = bar <- if the item is not a table, assume it is a key-value pair outside the table
                         [config]
                         foo = bar
                         """
@@ -445,6 +445,5 @@ def Config(q: str,
     return v
 
 
-config = Config
 add_export(Config)
 add_export(CFGManager)
