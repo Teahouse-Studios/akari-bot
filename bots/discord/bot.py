@@ -1,4 +1,3 @@
-import bots.discord.slash as slash_modules
 import asyncio
 import importlib
 import logging
@@ -10,7 +9,7 @@ import traceback
 
 import discord
 
-from core.loader import ModulesManager
+import bots.discord.slash as slash_modules
 
 sys.path.append(os.getcwd())
 
@@ -26,8 +25,6 @@ from core.constants.path import assets_path  # noqa: E402
 from core.logger import Logger  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 from core.client.init import client_init  # noqa: E402
-import orjson as json  # noqa: E402
-
 
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
