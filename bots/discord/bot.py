@@ -1,3 +1,4 @@
+import bots.discord.slash as slash_modules
 import asyncio
 import importlib
 import logging
@@ -8,6 +9,8 @@ import sys
 import traceback
 
 import discord
+
+from core.loader import ModulesManager
 
 sys.path.append(os.getcwd())
 
@@ -53,10 +56,8 @@ slash_load_dir = os.path.abspath(
 
 
 def load_slashcommands():
-    slash_pkg_name = 'bots/discord/slash'
-    for subm in pkgutil.iter_modules([slash_pkg_name]):
-        Logger.debug(f"Found submodule: {subm.name}")
-        submodule_name = slash_pkg_name.replace('/', '.') + "." + subm.name
+    for subm in pkgutil.iter_modules(slash_modules.__path__):
+        submodule_name = slash_modules.__name__ + "." + subm.name
         try:
             Logger.debug(f"Loading {submodule_name}...")
             importlib.import_module(submodule_name)
