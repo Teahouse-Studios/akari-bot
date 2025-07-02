@@ -2,8 +2,10 @@ import asyncio
 import importlib
 import logging
 import os
+import pkgutil
 import re
 import sys
+import traceback
 
 import discord
 
@@ -51,44 +53,16 @@ slash_load_dir = os.path.abspath(
 
 
 def load_slashcommands():
-    fun_file = None
-    dir_list = []
-    if not Info.binary_mode:
-        dir_list = os.listdir(slash_load_dir)
-    else:
+    slash_pkg_name = 'bots/discord/slash'
+    for subm in pkgutil.iter_modules([slash_pkg_name]):
+        Logger.debug(f"Found submodule: {subm.name}")
+        submodule_name = slash_pkg_name.replace('/', '.') + "." + subm.name
         try:
-            Logger.warning(
-                "Binary mode detected, trying to load pre-built slash list..."
-            )
-            js = "assets/discord_slash_list.json"
-            with open(js, "rb") as f:
-                dir_list = json.loads(f.read())
+            Logger.debug(f"Loading {submodule_name}...")
+            importlib.import_module(submodule_name)
+            Logger.debug(f"Successfully loaded {submodule_name}!")
         except Exception:
-            Logger.error("Failed to load pre-built slash list, using default list.")
-            dir_list = os.listdir(slash_load_dir)
-    for file_name in dir_list:
-        try:
-            file_path = os.path.join(slash_load_dir, file_name)
-            fun_file = None
-            if not Info.binary_mode:
-                if os.path.isdir(file_path):
-                    if file_name[0] != "_":
-                        fun_file = file_name
-                elif os.path.isfile(file_path):
-                    if file_name[0] != "_" and file_name.endswith(".py"):
-                        fun_file = file_name[:-3]
-            else:
-                if file_name[0] != "_":
-                    fun_file = file_name
-                if file_name[0] != "_" and file_name.endswith(".py"):
-                    fun_file = file_name[:-3]
-            if fun_file:
-                Logger.info(f"Loading slash.{fun_file}...")
-                modules = "bots.discord.slash." + fun_file
-                importlib.import_module(modules)
-                Logger.success(f"Successfully loaded bots.discord.slash.{fun_file}!")
-        except Exception:
-            Logger.exception(f"Failed to load bots.discord.slash.{fun_file}: ")
+            Logger.exception(f"Failed to load {submodule_name}: {traceback.format_exc()}")
 
 
 load_slashcommands()
