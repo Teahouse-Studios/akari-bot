@@ -8,10 +8,7 @@ from core.queue.server import JobQueueServer
 async def main():
     Logger.info("Akari Bot Server is starting...")
     await init_async()
-
-    while True:
-        await JobQueueServer.check_job_queue("Server")
-        await asyncio.sleep(0.1)
+    await JobQueueServer.check_job_queue()
 
 
 def run_async():

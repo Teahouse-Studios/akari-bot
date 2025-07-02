@@ -1,12 +1,13 @@
 import importlib
 import os
+import pkgutil
 import re
 import sys
 import traceback
 from typing import Dict, Optional, Union, Callable
 
 from core.config import Config
-from core.constants import modules_path, Info, PrivateAssets
+from core.constants import PrivateAssets, modules_pkg_name
 from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
@@ -16,9 +17,7 @@ from core.types.module.component_meta import (
     ScheduleMeta,
     HookMeta,
 )
-from core.utils.loader import fetch_modules_list
 
-all_modules = []
 current_unloaded_modules = []
 err_modules = []
 
@@ -30,43 +29,25 @@ def load_modules():
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
-    fun_file = None
-    dir_list = fetch_modules_list()
 
     Logger.info("Attempting to load modules...")
 
-    for file_name in dir_list:
+    for subm in pkgutil.iter_modules([modules_pkg_name]):
+        submodule_name = modules_pkg_name + "." + subm.name
         try:
-            file_path = os.path.join(modules_path, file_name)
-            fun_file = None
-            if not Info.binary_mode:
-                if os.path.isdir(file_path):
-                    if file_name[0] != "_":
-                        fun_file = file_name
-                elif os.path.isfile(file_path):
-                    if file_name[0] != "_" and file_name.endswith(".py"):
-                        fun_file = file_name[:-3]
-            else:
-                if file_name[0] != "_":
-                    fun_file = file_name
-                if file_name[0] != "_" and file_name.endswith(".py"):
-                    fun_file = file_name[:-3]
-            if fun_file:
-                Logger.debug(f"Loading modules.{fun_file}...")
-                all_modules.append(fun_file)
-                if fun_file in unloaded_modules:
-                    Logger.warning(f"Skipped modules.{fun_file}!")
-                    current_unloaded_modules.append(fun_file)
-                    continue
-                modules = "modules." + fun_file
-                importlib.import_module(modules)
-                Logger.debug(f"Successfully loaded modules.{fun_file}!")
+            Logger.debug(f"Loading {submodule_name}...")
+            if subm.name in unloaded_modules:
+                Logger.warning(f"Skipped {submodule_name}!")
+                current_unloaded_modules.append(subm.name)
+                continue
+            importlib.import_module(submodule_name)
+            Logger.debug(f"Successfully loaded {submodule_name}!")
         except Exception:
             tb = traceback.format_exc()
-            errmsg = f"Failed to load modules.{fun_file}: \n{tb}"
+            errmsg = f"Failed to load {submodule_name}: \n{tb}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
-            err_modules.append(fun_file)
+            err_modules.append(subm.name)
     Logger.success("All modules loaded.")
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
     with open(loader_cache, "w") as open_loader_cache:

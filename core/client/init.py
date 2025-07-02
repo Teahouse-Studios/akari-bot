@@ -11,9 +11,7 @@ from core.scheduler import Scheduler, IntervalTrigger
 
 
 async def check_queue() -> None:
-    while True:
-        await JobQueueClient.check_job_queue()
-        await asyncio.sleep(0.1)
+    await JobQueueClient.check_job_queue()
 
 
 async def client_init(target_prefix_list: list = None, sender_prefix_list: list = None, queue=True) -> None:

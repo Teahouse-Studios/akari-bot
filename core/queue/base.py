@@ -4,6 +4,7 @@ import traceback
 from uuid import uuid4
 
 from core.config import Config
+from core.constants import QueueAlreadyRunning
 from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
@@ -42,6 +43,7 @@ class JobQueueBase:
     _queue_tasks = {}
     queue_actions = {}
     report_targets = Config("report_targets", [])
+    is_running = False
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
@@ -107,7 +109,7 @@ class JobQueueBase:
         await tsk.set_status('failed')
 
     @classmethod
-    async def check_job_queue(cls, target_client: str = None):
+    async def _check_queue(cls, target_client: str = None):
         # Logger.debug(f"Checking job queue for {cls.name}, target client: {target_client if target_client else 'all'}")
         for task_id in QueueTaskManager.tasks.copy():
             tsk = await JobQueuesTable.get(task_id=task_id)
@@ -122,6 +124,15 @@ class JobQueueBase:
             Logger.debug(f"Args: {tsk.args}")
             await tsk.set_status('processing')
             asyncio.create_task(cls._process_task(tsk))
+
+    @classmethod
+    async def check_job_queue(cls, target_client: str = None):
+        if cls.is_running:
+            raise QueueAlreadyRunning
+        cls.is_running = True
+        while True:
+            await cls._check_queue(target_client)
+            await asyncio.sleep(0.1)
 
     @classmethod
     def action(cls, action_name: str):

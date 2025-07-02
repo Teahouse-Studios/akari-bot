@@ -44,3 +44,7 @@ class NoReportException(Exception):
 
 class TestException(Exception):
     pass
+
+
+class QueueAlreadyRunning(Exception):
+    pass

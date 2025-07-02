@@ -2,25 +2,22 @@ import asyncio
 import logging
 import os
 
-from apscheduler.schedulers import SchedulerAlreadyRunningError
 import orjson as json
+from apscheduler.schedulers import SchedulerAlreadyRunningError
 
 from core.builtins.bot import Bot
-from core.builtins.message.chain import MessageChain
-from core.builtins.session.info import SessionInfo
 from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
-from .background_tasks import init_background_task
+from core.builtins.session.info import SessionInfo
 from core.config import CFGManager
 from core.constants import Info, PrivateAssets, Secret
-from core.ip import append_ip, fetch_ip_info
+from core.database import init_db
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.bash import run_sys_command
-from core.database import init_db
-from ..database.models import JobQueuesTable
-from ..utils.web_render import init_web_render
+from .background_tasks import init_background_task
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -48,10 +45,7 @@ async def init_async(start_scheduler=True) -> None:
                     max_instance=1,
                 )
     await asyncio.gather(*gather_list)
-    init_background_task()
-    append_ip(await fetch_ip_info())
-    Logger.info("Starting WebRender...")
-    Info.web_render_status = await init_web_render()
+    asyncio.create_task(init_background_task())
     if start_scheduler:
         try:
             Scheduler.start()

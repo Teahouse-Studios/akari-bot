@@ -2,11 +2,15 @@ import os
 import shutil
 
 from core.builtins.session.tasks import SessionTaskManager
+from core.constants import Info
 from core.constants.path import cache_path
+from core.ip import append_ip, fetch_ip_info
+from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list
 from core.database.models import JobQueuesTable
+from core.utils.web_render import init_web_render
 
 
 @Scheduler.scheduled_job(IntervalTrigger(minutes=60))
@@ -28,5 +32,7 @@ async def clear_list():
     clear_ps_list()
 
 
-def init_background_task():  # make IDE happy :)
-    pass
+async def init_background_task():
+    append_ip(await fetch_ip_info())
+    Logger.info("Starting WebRender...")
+    Info.web_render_status = await init_web_render()
