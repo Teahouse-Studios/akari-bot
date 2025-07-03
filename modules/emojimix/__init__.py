@@ -169,7 +169,7 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     if emoji:
         if supported_emojis:
             send_msgs = MessageChain.assign(I18NContext("emojimix.message.combine_supported", emoji=emoji))
-            if Bot.Info.client_name == "Discord":
+            if msg.session_info.client_name == "Discord":
                 send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
                                                   for i in range(0, len(supported_emojis), 200)])
             else:
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     else:
         send_msgs = MessageChain.assign(I18NContext("emojimix.message.all_supported"))
         if supported_emojis:
-            if Bot.Info.client_name == "Discord":
+            if msg.session_info.client_name == "Discord":
                 send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
                                                   for i in range(0, len(supported_emojis), 200)])
             else:

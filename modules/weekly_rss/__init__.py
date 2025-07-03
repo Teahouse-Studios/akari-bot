@@ -80,25 +80,22 @@ async def teahouse_weekly_rss():
     weekly = await get_teahouse_rss()
     Logger.info("Checking teahouse weekly...")
 
-    weekly_cn = [
-        Plain(
-            Locale("zh_cn").t(
-                "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
-            )
-            + weekly
+    weekly_cn = MessageChain.assign(Plain(
+        Locale("zh_cn").t(
+            "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
         )
-    ]
-    weekly_tw = [
+        + weekly
+    ))
+    weekly_tw = MessageChain.assign(
         Plain(
             Locale("zh_tw").t(
                 "weekly_rss.message.teahouse_weekly_rss", prefix=command_prefix[0]
             )
             + weekly
-        )
-    ]
-    if Bot.Info.client_name == "QQ":
-        weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
-        weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
-    post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
-    await fetch.post_message("teahouse_weekly_rss", message=post_msg, i18n=True)
+        ))
+    weekly_cn_qq = MessageChain.assign([Image(x) for x in await msgchain2image(weekly_cn)])
+    weekly_tw_qq = MessageChain.assign([Image(x) for x in await msgchain2image(weekly_tw)])
+    post_msg = I18NMessageChain.assign({"zh_cn": weekly_cn, "zh_tw": weekly_tw, "default": weekly_cn})
+    post_msg_qq = I18NMessageChain.assign({'zh_cn': weekly_cn_qq, 'zh_tw': weekly_tw_qq, 'default': weekly_cn_qq})
+    await Bot.post_message("teahouse_weekly_rss", PlatformMessageChain.assign({'QQ': post_msg_qq, 'default': post_msg}))
     Logger.success("Teahouse Weekly checked.")

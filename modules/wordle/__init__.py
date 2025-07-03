@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("wordle.message.occupied"))
 
     qc = CoolDown("wordle", msg, 180)
-    if not msg.session_info.client_name == "TEST" and not msg.check_super_user():
+    if not msg.check_super_user():
         c = qc.check()
         if c != 0:
             await msg.finish(I18NContext("message.cooldown", time=int(c)))

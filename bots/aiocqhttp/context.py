@@ -3,7 +3,7 @@ import datetime
 import re
 import traceback
 from pathlib import Path
-from typing import Any, Optional, List
+from typing import Optional, List
 
 import aiocqhttp
 from aiocqhttp import Event, MessageSegment
@@ -14,14 +14,14 @@ from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, clie
 from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
-from core.builtins.message.internal import I18NContext, Image
+from core.builtins.message.internal import I18NContext
 from core.builtins.session.context import ContextManager
-from .features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.config import Config
 from core.logger import Logger
 from core.utils.image import msgchain2image
+from .features import Features
 
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))

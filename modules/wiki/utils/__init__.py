@@ -6,6 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.logger import Logger
+from core.utils.forward import check_enable_forward_msg
 from modules.wiki.database.models import WikiTargetInfo
 from .ab import get_ab
 from .ab_qq import get_ab_qq
@@ -29,7 +30,7 @@ async def _(msg: Bot.MessageSession):
     if not start_wiki:
         await msg.finish(I18NContext("wiki.message.not_set"))
     legacy = True
-    if not msg.parsed_msg and msg.session_info.support_forward:
+    if not msg.parsed_msg and msg.session_info.support_forward and await check_enable_forward_msg():
         if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
@@ -95,7 +96,7 @@ async def _(msg: Bot.MessageSession):
     if not start_wiki:
         await msg.finish(I18NContext("wiki.message.not_set"))
     legacy = True
-    if not msg.parsed_msg and msg.session_info.support_forward:
+    if not msg.parsed_msg and msg.session_info.support_forward and await check_enable_forward_msg():
         if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(

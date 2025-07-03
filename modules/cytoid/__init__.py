@@ -40,14 +40,14 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.session_info.prefixes[0]))
         query_id = bind_info.username
     if query:
-        if msg.session_info.client_name == "TEST":
+        if msg.check_super_user():
             c = 0
         else:
             qc = CoolDown("cytoid_rank", msg, 150)
             c = qc.check()
         if c == 0:
             img = await get_rating(msg, query_id, query)
-            if msg.session_info.client_name != "TEST" and img["status"]:
+            if not msg.check_super_user() and img["status"]:
                 qc.reset()
             if "path" in img:
                 await msg.finish([Image(path=img["path"])], enable_split_image=False)
