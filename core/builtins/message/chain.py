@@ -166,8 +166,11 @@ class MessageChain:
         将消息链转换为可发送的格式。
         """
         value = []
+        support_embed = True
+        if session_info:
+            support_embed = session_info.support_embed
         for x in self.values:
-            if isinstance(x, EmbedElement) and not session_info.support_embed:
+            if isinstance(x, EmbedElement) and not support_embed:
                 value += x.to_message_chain()
             elif isinstance(x, PlainElement):
                 if session_info:

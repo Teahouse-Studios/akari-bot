@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import mimetypes
 import os
 import random
@@ -18,6 +19,7 @@ from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
 from core.constants import Info
+from core.logger import Logger
 from core.utils.cache import random_cache_path
 
 if TYPE_CHECKING:
@@ -299,13 +301,14 @@ class ImageElement(BaseElement):
 
         with open(file, "rb") as f:
             img_b64 = base64.b64encode(f.read()).decode("UTF-8")
-
+        self.cached_b64 = img_b64
+        Logger.debug(f"ImageElement: Cached base64 for {file}")
         if mime:
             mime_type, _ = mimetypes.guess_type(file)
             if not mime_type:
                 mime_type = 'application/octet-stream'
-            return f"data:{mime_type};base64,{img_b64}"
-        self.cached_b64 = img_b64
+            self.cached_b64 = f"data:{mime_type};base64,{img_b64}"
+            return self.cached_b64
         return img_b64
 
     async def add_random_noise(self) -> "ImageElement":
@@ -328,6 +331,15 @@ class ImageElement(BaseElement):
             headers_b64 = base64.b64encode(json.dumps(self.headers)).decode("utf-8")
             return f"[KE:image,path={self.path},headers={headers_b64}]"
         return f"[KE:image,path={self.path}]"
+
+    async def to_pil_image(self) -> PILImage.Image:
+        """
+        将图片元素转换为PIL Image对象。
+        """
+        path = self.path
+        if self.need_get:
+            path = await self.get_image()
+        return PILImage.open(path)
 
     def __str__(self):
         return f"Image(path={self.path})"
