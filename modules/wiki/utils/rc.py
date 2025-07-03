@@ -72,7 +72,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
-    y = await check(d)
+    y = await check(d, session=msg)
 
     g = MessageChain([Url(pageurl)])
     g += MessageChain([Plain(z["content"]) for z in y])
@@ -119,7 +119,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
     userlist = list(set(userlist))
     titlelist = list(set(titlelist))
     commentlist = list(set(commentlist))
-    checked_userlist = await check(userlist)
+    checked_userlist = await check(userlist, session=msg)
     user_checked_map = {}
     text_status = True
     for u in checked_userlist:
@@ -127,14 +127,14 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
         if not u["status"]:
             text_status = False
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(titlelist)
+    checked_titlelist = await check(titlelist, session=msg)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]
         if not t["status"]:
             text_status = False
         title_checked_map[t["original"]] = title_checked
-    checked_commentlist = await check(commentlist)
+    checked_commentlist = await check(commentlist, session=msg)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c["content"]

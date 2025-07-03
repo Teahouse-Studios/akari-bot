@@ -195,18 +195,28 @@ async def query_pages(
                 tasks.append(
                     asyncio.ensure_future(
                         WikiLib(
-                            q, headers, locale=session.session_info.locale.locale
-                        ).parse_page_info(title=rd, inline=inline_mode, lang=lang)
-                    )
-                )
+                            q,
+                            headers,
+                            locale=session.session_info.locale.locale).parse_page_info(
+                            title=rd,
+                            inline=inline_mode,
+                            lang=lang,
+                            session=session if isinstance(
+                                session,
+                                Bot.MessageSession) else None)))
             for rdp in ready_for_query_ids:
                 tasks.append(
                     asyncio.ensure_future(
                         WikiLib(
-                            q, headers, locale=session.session_info.locale.locale
-                        ).parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)
-                    )
-                )
+                            q,
+                            headers,
+                            locale=session.session_info.locale.locale).parse_page_info(
+                            pageid=int(rdp),
+                            inline=inline_mode,
+                            lang=lang,
+                            session=session if isinstance(
+                                session,
+                                Bot.MessageSession) else None)))
             query = await asyncio.gather(*tasks)
             for result in query:
                 Logger.debug(result)
@@ -355,7 +365,7 @@ async def query_pages(
                                     if isint(display):
                                         display = int(display)
                                         if display <= len(r.sections):
-                                            r.selected_section = display - 1
+                                            r.selected_section = str(display - 1)
                                             await query_pages(
                                                 session,
                                                 title=r.title

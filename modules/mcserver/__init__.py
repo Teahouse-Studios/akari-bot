@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("server.message.not_found"))
     else:
         sendmsg = "\n".join(sendmsg).split("\n")
-        sendmsg = await check(sendmsg)
+        sendmsg = await check(sendmsg, session=msg)
         t = "\n".join(x["content"] for x in sendmsg)
         await msg.finish(t.strip())
 

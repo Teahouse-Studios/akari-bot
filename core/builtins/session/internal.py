@@ -49,7 +49,7 @@ class MessageSession:
         disable_secret_check: bool = False,
         enable_parse_message: bool = True,
         enable_split_image: bool = True,
-        callback: Optional[Coroutine] = None,
+        callback: Optional[Any] = None,
     ) -> FinishedSession:
         """
         用于向消息发送者返回消息。

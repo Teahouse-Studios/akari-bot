@@ -100,7 +100,7 @@ async def _(msg: Bot.MessageSession):
     if start_wiki:
         base_interwiki_link_ = await WikiLib(
             start_wiki, target.headers
-        ).parse_page_info("Special:Interwiki")
+        ).parse_page_info("Special:Interwiki", session=msg)
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
     result = ""

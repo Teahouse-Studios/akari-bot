@@ -99,18 +99,18 @@ async def _(msg: Bot.MessageSession):
                     get_title = re.sub(r"" + articlepath, "\\1", qq)
                     get_page = None
                     if isint(get_id):
-                        get_page = await wiki_.parse_page_info(pageid=int(get_id))
+                        get_page = await wiki_.parse_page_info(pageid=int(get_id), session=msg)
                         if not q[qq].in_allowlist and Bot.Info.use_url_manager:
-                            for result in await check(get_page.title):
+                            for result in await check(get_page.title, session=msg):
                                 if not result["status"]:
                                     return
                     elif get_title != "":
                         title = urllib.parse.unquote(get_title)
                         if not q[qq].in_allowlist and Bot.Info.use_url_manager:
-                            for result in await check(title):
+                            for result in await check(title, session=msg):
                                 if not result["status"]:
                                     return
-                        get_page = await wiki_.parse_page_info(title)
+                        get_page = await wiki_.parse_page_info(title, session=msg)
                     if get_page:
                         if get_page.status and get_page.file:
                             dl = await download(get_page.file)

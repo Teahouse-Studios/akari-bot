@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession):
     if not start_wiki:
         await msg.finish(I18NContext("wiki.message.not_set"))
     try:
-        res = await get_newbie(start_wiki, headers)
+        res = await get_newbie(start_wiki, headers, session=msg)
         await msg.finish(res)
     except Exception:
         Logger.exception()

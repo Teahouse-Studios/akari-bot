@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
 from core.builtins.message.internal import Url
+from core.builtins.session.internal import MessageSession
 from core.config import Config
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
@@ -531,6 +532,7 @@ class WikiLib:
         _prefix="",
         _iw=False,
         _search=False,
+        session: MessageSession = None,
     ) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid。
@@ -1096,7 +1098,7 @@ class WikiLib:
                 checklist.append(page_info.before_title)
             if page_info.desc:
                 checklist.append(page_info.desc)
-            chk = await check(checklist)
+            chk = await check(checklist, session=session)
             for x in chk:
                 if not x["status"]:
                     ban = True

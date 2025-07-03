@@ -37,11 +37,11 @@ async def nbnhhsh(msg: Bot.MessageSession, term: str):
     if "trans" in result:
         trans = result["trans"]
         if trans:
-            chk = await check(trans)
+            chk = await check(trans, session=msg)
             return Plain("、".join(i["content"] for i in chk))
     if "inputting" in result:
         inputting = result["inputting"]
         if inputting:
-            chk = await check(inputting)
+            chk = await check(inputting, session=msg)
             return I18NContext("nbnhhsh.message.guess", term="、".join(i["content"] for i in chk))
         await msg.finish(I18NContext("nbnhhsh.message.not_found"))

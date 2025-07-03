@@ -28,7 +28,7 @@ async def get_ab(msg: Union[Bot.MessageSession,
                                      action=x["action"],
                                      filter_name=x["filter"],
                                      result=result))}")
-    y = await check(d)
+    y = await check(d, session=msg)
 
     g = MessageChain([Url(pageurl)])
     g += MessageChain([Plain(z["content"]) for z in y])
@@ -55,14 +55,14 @@ async def convert_ab_to_detailed_format(msg: Union[Bot.MessageSession,
         if "user" in x:
             userlist.append(x.get("user"))
     text_status = True
-    checked_userlist = await check(userlist)
+    checked_userlist = await check(userlist, session=msg)
     user_checked_map = {}
     for u in checked_userlist:
         if not u["status"]:
             text_status = False
         user_checked = u["content"]
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(titlelist)
+    checked_titlelist = await check(titlelist, session=msg)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]
