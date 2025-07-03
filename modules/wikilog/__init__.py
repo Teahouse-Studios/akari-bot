@@ -5,10 +5,12 @@ import orjson as json
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
+from core.builtins.session.internal import FetchedMessageSession
 from core.component import module
 from core.config import Config
 from core.constants.default import wiki_whitelist_url_default
 from core.logger import Logger
+from core.utils.templist import TempList
 from .database.models import WikiLogTargetSetInfo
 from .utils import convert_data_to_text
 from modules.wiki.utils.wikilib import WikiLib
@@ -382,34 +384,6 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(text)
 
 
-@wikilog.hook("matched")
-async def _(ctx: Bot.ModuleHookContext):
-    matched = ctx.args["matched_logs"]
-    Logger.debug("Received matched_logs hook: " + str(matched))
-    for id_ in matched:
-        ft = await Bot.fetch_target(id_)
-        if ft:
-            for wiki in matched[id_]:
-                wiki_info = (await WikiLib(wiki).check_wiki_available()).value
-                if matched[id_][wiki]["AbuseLog"]:
-                    ab = await convert_ab_to_detailed_format(
-                        ft.parent, matched[id_][wiki]["AbuseLog"]
-                    )
-                    for x in ab:
-                        await ft.send_direct_message(
-                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
-                        )
-                if matched[id_][wiki]["RecentChanges"]:
-                    rc = await convert_rc_to_detailed_format(
-                        ft.parent, matched[id_][wiki]["RecentChanges"], wiki_info
-                    )
-
-                    for x in rc:
-                        await ft.send_direct_message(
-                            f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
-                        )
-
-
 @wikilog.hook("keepalive")
 async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
@@ -421,6 +395,7 @@ async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
             ):
                 fetch_target = await fetch.fetch_target(target)
                 if fetch_target:
+                    session = await FetchedMessageSession.from_session_info(fetch_target)
                     try:
                         wiki_ = WikiLib(wiki)
                         await wiki_.fixup_wiki_info()
@@ -428,7 +403,7 @@ async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
                             action="query", meta="userinfo"
                         )
                         if n := get_user_info["query"]["userinfo"]["name"]:
-                            await fetch_target.send_direct_message(
+                            await session.send_direct_message(
                                 I18NContext(
                                     "wikilog.message.keepalive.logged.as",
                                     name=n,
@@ -437,7 +412,7 @@ async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
                             )
                     except Exception as e:
                         Logger.error(f"Keep alive failed: {e}")
-                        await fetch_target.send_direct_message(
+                        await session.send_direct_message(
                             I18NContext("wikilog.message.keepalive.failed", link=wiki)
                         )
 
@@ -557,22 +532,23 @@ async def wiki_log():
     for id_ in matched:
         ft = await Bot.fetch_target(id_)
         if ft:
+            ft_session = await FetchedMessageSession.from_session_info(ft)
             for wiki in matched[id_]:
                 wiki_info = (await WikiLib(wiki).check_wiki_available()).value
                 if matched[id_][wiki]["AbuseLog"]:
-                    ab = await convert_ab_to_detailed_format(
-                        matched[id_][wiki]["AbuseLog"], ft
-                    )
+                    ab = await convert_ab_to_detailed_format(ft_session,
+                                                             matched[id_][wiki]["AbuseLog"]
+                                                             )
                     for x in ab:
-                        await ft.send_direct_message(
+                        await ft_session.send_direct_message(
                             f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
                         )
                 if matched[id_][wiki]["RecentChanges"]:
-                    rc = await convert_rc_to_detailed_format(
-                        matched[id_][wiki]["RecentChanges"], wiki_info, ft
-                    )
+                    rc = await convert_rc_to_detailed_format(ft_session,
+                                                             matched[id_][wiki]["RecentChanges"], wiki_info
+                                                             )
 
                     for x in rc:
-                        await ft.send_direct_message(
+                        await ft_session.send_direct_message(
                             f"{wiki_info.name}\n{x}" if len(matched[id_]) > 1 else x
                         )

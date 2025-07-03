@@ -19,24 +19,6 @@ weekly_rss = module(
 )
 
 
-@weekly_rss.hook()
-async def _(ctx: Bot.ModuleHookContext):
-    weekly_cn = MessageChain(ctx.args["weekly_cn"])
-    weekly_tw = MessageChain(ctx.args["weekly_tw"])
-    if Bot.Info.client_name == "QQ":
-        weekly_cn = [
-            Plain(Locale("zh_cn").t("weekly_rss.message", prefix=command_prefix[0]))
-        ] + weekly_cn.as_sendable()
-        weekly_tw = [
-            Plain(Locale("zh_tw").t("weekly_rss.message", prefix=command_prefix[0]))
-        ] + weekly_tw.as_sendable()
-        weekly_cn = [Image(x) for x in await msgchain2image(weekly_cn)]
-        weekly_tw = [Image(x) for x in await msgchain2image(weekly_tw)]
-    post_msg = {"zh_cn": weekly_cn, "zh_tw": weekly_tw, "fallback": weekly_cn}
-    await Bot.post_message("weekly_rss", message=post_msg, i18n=True)
-    Logger.success("Weekly checked.")
-
-
 teahouse_weekly_rss = module(
     "teahouse_weekly_rss",
     desc="{I18N:weekly_rss.help.teahouse_weekly_rss.desc}",

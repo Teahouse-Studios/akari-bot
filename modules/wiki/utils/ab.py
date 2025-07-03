@@ -1,3 +1,5 @@
+from typing import Union
+
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
@@ -8,7 +10,8 @@ from modules.wiki.utils.wikilib import WikiLib
 AB_LIMIT = 5
 
 
-async def get_ab(msg: Bot.MessageSession, wiki_url, headers=None):
+async def get_ab(msg: Union[Bot.MessageSession,
+                            Bot.FetchedMessageSession], wiki_url, headers=None):
     wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(action="query", list="abuselog", aflprop="user|title|action|result|filter|timestamp",
                                 _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False))
@@ -41,7 +44,8 @@ async def get_ab(msg: Bot.MessageSession, wiki_url, headers=None):
     return g
 
 
-async def convert_ab_to_detailed_format(msg: Bot.MessageSession, abl: list):
+async def convert_ab_to_detailed_format(msg: Union[Bot.MessageSession,
+                                                   Bot.FetchedMessageSession], abl: list):
     ablist = []
     userlist = []
     titlelist = []
