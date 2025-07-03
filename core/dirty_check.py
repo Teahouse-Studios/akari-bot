@@ -8,7 +8,7 @@ import datetime
 import hashlib
 import hmac
 import time
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
 
 import httpx
 import orjson as json
@@ -16,7 +16,6 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
-from core.builtins.parser.args import Optional
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
 from core.config import Config

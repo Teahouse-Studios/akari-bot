@@ -49,7 +49,7 @@ filetype = "^1.2.0"
 orjson = "^3.10.9"
 Pillow = "^11.0.0"
 tenacity = "^9.0.0"
-akari-bot-webrender = "^0.1.9"
+akari-bot-webrender = "^0.2.0"
 
 # core.config
 tomlkit = "^0.13.2"
