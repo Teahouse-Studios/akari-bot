@@ -7,7 +7,7 @@ import traceback
 from typing import Dict, Optional, Union, Callable
 
 from core.config import Config
-from core.constants import PrivateAssets, modules_pkg_name
+from core.constants import PrivateAssets
 from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
@@ -23,6 +23,7 @@ err_modules = []
 
 
 def load_modules():
+    import modules
     unloaded_modules = Config("unloaded_modules", [])
     err_prompt = []
     locale_loaded_err = load_locale_file()
@@ -32,8 +33,8 @@ def load_modules():
 
     Logger.info("Attempting to load modules...")
 
-    for subm in pkgutil.iter_modules([modules_pkg_name]):
-        submodule_name = modules_pkg_name + "." + subm.name
+    for subm in pkgutil.iter_modules(modules.__path__):
+        submodule_name = modules.__name__ + "." + subm.name
         try:
             Logger.debug(f"Loading {submodule_name}...")
             if subm.name in unloaded_modules:

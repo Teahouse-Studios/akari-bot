@@ -5,16 +5,16 @@ from tortoise import Tortoise
 
 from core.builtins.temp import Temp
 from core.config import Config
-from core.constants.path import modules_pkg_name
 from core.logger import Logger
 from .link import get_db_link
 from .local import DB_LINK
 
 
 def fetch_module_db():
+    import modules
     unloaded_modules = Config("unloaded_modules", [])
     database_list = []
-    for m in pkgutil.iter_modules([modules_pkg_name]):
+    for m in pkgutil.iter_modules(modules.__path__):
         try:
             if m.name not in unloaded_modules:
                 database_list.append(importlib.util.find_spec('modules.' + m.name + '.database.models').name)
