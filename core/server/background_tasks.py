@@ -4,12 +4,12 @@ import shutil
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants import Info
 from core.constants.path import cache_path
+from core.database.models import JobQueuesTable
 from core.ip import append_ip, fetch_ip_info
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger, CronTrigger
 from core.utils.cooldown import clear_cd_list
 from core.utils.game import clear_ps_list
-from core.database.models import JobQueuesTable
 from core.utils.web_render import init_web_render
 
 

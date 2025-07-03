@@ -1,4 +1,4 @@
-import asyncio
+import inspect
 import inspect
 import re
 import traceback
@@ -6,11 +6,9 @@ from datetime import datetime
 from string import Template
 from typing import Optional, TYPE_CHECKING
 
-from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
-from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins.temp import Temp
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
+from core.builtins.parser.command import CommandParser
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.config import Config
@@ -23,11 +21,9 @@ from core.database.models import AnalyticsData
 from core.exports import exports
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
-from core.builtins.parser.command import CommandParser
 from core.tos import _abuse_warn_target
 from core.types import Module, Param
 from core.utils.message import remove_duplicate_space
-
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -290,7 +286,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
                 await msg.send_message(I18NContext("parser.admin.module.permission.denied", module=command_first_word))
                 return
 
-        if not (msg.session_info.target_from == qq_guild_prefix or module.base):
+        if not module.base:
             if enable_tos:
                 await _tos_msg_counter(msg, msg.trigger_msg)
             else:

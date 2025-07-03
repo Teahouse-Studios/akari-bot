@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
@@ -9,7 +10,6 @@ from core.database import reload_db
 from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
-from core.builtins.parser.command import CommandParser
 from .help import modules_list_help
 
 m = module(

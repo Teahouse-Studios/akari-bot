@@ -1,14 +1,11 @@
 import math
-import re
 
 from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Plain
-from core.config import Config
+from core.builtins.message.internal import Plain
 from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
-from core.utils.message import isint
 from .dice import *
 
 # 配置常量

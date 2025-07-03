@@ -11,13 +11,12 @@ sys.path.append(os.getcwd())
 from bots.qqbot.info import *  # noqa: E402
 from bots.qqbot.message import MessageSession, FetchTarget  # noqa: E402
 from core.server.init import init_async, load_prompt  # noqa: E402
-from core.builtins import PrivateAssets  # noqa: E402
+from core.constants import PrivateAssets  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants.info import Info  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
 from core.builtins.parser.message import parser  # noqa: E402
-from core.terminate import cleanup_sessions  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
+from core.server.terminate import cleanup_sessions  # noqa: E402
 
 Info.dirty_word_check = Config("enable_dirty_check", False)
 Info.use_url_manager = Config("enable_urlmanager", False)

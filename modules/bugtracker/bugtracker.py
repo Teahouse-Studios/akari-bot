@@ -1,8 +1,4 @@
-import base64
-from io import BytesIO
-
 import orjson as json
-from PIL import Image as PILImage
 
 from core.builtins.message.internal import I18NContext, Plain
 from core.logger import Logger

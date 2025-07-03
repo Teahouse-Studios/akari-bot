@@ -1,4 +1,3 @@
-import os
 from typing import Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont

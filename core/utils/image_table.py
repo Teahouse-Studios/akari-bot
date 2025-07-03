@@ -1,18 +1,13 @@
-import base64
 import re
 from html import escape
-from io import BytesIO
 from typing import Any, List, Union
 
-import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate
 
-from core.constants import Info
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.http import download
 from core.utils.image import cb64imglst
 from core.utils.web_render import web_render, LegacyScreenshotOptions
 

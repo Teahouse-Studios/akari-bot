@@ -1,5 +1,5 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config import Config
 from modules.osu.database.models import OsuBindInfo

@@ -1,12 +1,11 @@
+from datetime import timedelta
+
 from cattrs import Converter
 
+import core.builtins.message.elements as elements
 from core.builtins.types import MessageElement
 from core.database.models import TargetInfo, SenderInfo
-
-import core.builtins.message.elements as elements
 from core.i18n import Locale
-
-from datetime import timedelta
 
 converter = Converter()
 

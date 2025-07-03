@@ -5,11 +5,10 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.logger import Logger
 from core.queue.client import JobQueueClient
-from .database.models import WikiBotAccountList
-from .utils.wikilib import WikiLib
-from .utils.bot import BotAccount, LoginFailed
-
 from core.scheduler import DateTrigger, IntervalTrigger
+from .database.models import WikiBotAccountList
+from .utils.bot import BotAccount, LoginFailed
+from .utils.wikilib import WikiLib
 
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
 

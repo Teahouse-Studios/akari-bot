@@ -1,10 +1,8 @@
 import os
 import sys
 
-import orjson as json
-
+from tortoise import run_async, Tortoise
 from tortoise.models import Model
-from tortoise import fields, run_async, Tortoise
 
 if __name__ == "__main__":
     sys.path.append(os.getcwd())

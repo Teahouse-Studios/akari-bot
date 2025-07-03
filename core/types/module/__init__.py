@@ -1,10 +1,10 @@
-from attrs import define, field, Converter
 from copy import deepcopy
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from attrs import define, field, Converter
 
 from core.utils.message import convert2lst
 from .component_matches import *

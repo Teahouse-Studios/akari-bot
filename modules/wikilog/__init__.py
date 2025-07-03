@@ -10,14 +10,13 @@ from core.component import module
 from core.config import Config
 from core.constants.default import wiki_whitelist_url_default
 from core.logger import Logger
+from core.scheduler import IntervalTrigger
 from core.utils.templist import TempList
-from .database.models import WikiLogTargetSetInfo
-from .utils import convert_data_to_text
-from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.ab import convert_ab_to_detailed_format
 from modules.wiki.utils.rc import convert_rc_to_detailed_format
-
-from core.scheduler import IntervalTrigger
+from modules.wiki.utils.wikilib import WikiLib
+from .database.models import WikiLogTargetSetInfo
+from .utils import convert_data_to_text
 
 wiki_whitelist_url = Config("wiki_whitelist_url", wiki_whitelist_url_default, table_name="module_wiki")
 

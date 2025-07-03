@@ -5,7 +5,6 @@ import html
 import random
 import re
 from copy import deepcopy
-from cattrs import structure, unstructure
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
@@ -352,6 +351,7 @@ class MessageNodes:
     def assign(cls, values: List[MessageChain], name: Optional[str] = None):
         """
         :param values: 节点列表。
+        :param name: 节点名称，默认为随机生成的字符串。
         """
         if not name:
             name = "Message" + random.sample('abcdefghijklmnopqrstuvwxyz', 5)

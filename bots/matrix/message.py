@@ -5,13 +5,11 @@ from typing import Union
 
 import nio
 
-from bots.matrix.client import bot, homeserver_host
-from bots.matrix.info import *
-from core.builtins.message.internal import Plain, Image, Voice, I18NContext
 from core.builtins.bot import Bot, MessageSession as MessageSessionT, MessageTaskManager, \
     FetchTarget as FetchedTargetT, FinishedSession as FinishedSessionT
 from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
+from core.builtins.message.internal import Plain, Image, Voice, I18NContext
 from core.logger import Logger
 from core.utils.image import image_split
 from .client import bot, homeserver_host

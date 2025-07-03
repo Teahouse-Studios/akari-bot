@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from tortoise.exceptions import DoesNotExist
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Image, I18NContext
+from core.builtins.message.internal import Image, I18NContext, FormattedTime
 from core.component import module
 from core.config import Config
 from core.database.models import AnalyticsData

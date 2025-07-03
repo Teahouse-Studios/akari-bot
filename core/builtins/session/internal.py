@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import asyncio
-import warnings
 from datetime import datetime, UTC as datetimeUTC
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine, Dict
+from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coroutine
 
 from attrs import define
 from deprecated import deprecated
@@ -14,13 +13,11 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
-from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
 from core.exports import add_export, exports
 from core.utils.message import isint
-from core.logger import Logger
 
 if TYPE_CHECKING:
     from core.queue.server import JobQueueServer

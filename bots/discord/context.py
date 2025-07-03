@@ -1,20 +1,18 @@
 import asyncio
-import datetime
-import re
 import traceback
-from typing import Any, Union, Optional, List
+from typing import Optional, List
 
 import discord
 from discord import Message
 
 from bots.discord.client import client
+from bots.discord.features import Features
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
-from core.builtins.session.info import SessionInfo
-from bots.discord.features import Features
 from core.builtins.session.context import ContextManager
+from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 
 

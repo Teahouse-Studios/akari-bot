@@ -3,8 +3,8 @@ import traceback
 from datetime import datetime
 
 import orjson as json
-
 from bs4 import BeautifulSoup
+from google_play_scraper import app as google_play_scraper
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -13,11 +13,10 @@ from core.component import module
 from core.config import Config
 from core.constants import Secret
 from core.logger import Logger
+from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.web_render import web_render, SourceOptions
-from core.scheduler import IntervalTrigger
-from google_play_scraper import app as google_play_scraper
 
 mcv_rss = module(
     "mcv_rss",

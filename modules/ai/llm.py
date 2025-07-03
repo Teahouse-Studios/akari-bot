@@ -1,8 +1,8 @@
 import io
 from typing import List, Tuple
 
-from openai import AsyncOpenAI
 from PIL import Image as PILImage
+from openai import AsyncOpenAI
 
 from core.builtins.message.internal import I18NContext, Image, Plain
 from core.config import Config

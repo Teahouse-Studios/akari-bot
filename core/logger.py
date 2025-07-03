@@ -2,8 +2,8 @@
 
 import os
 import re
-import traceback
 import sys
+import traceback
 from typing import Optional
 
 from loguru import logger

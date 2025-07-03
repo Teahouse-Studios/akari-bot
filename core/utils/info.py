@@ -6,12 +6,12 @@ from typing import List
 
 import orjson as json
 
-from core.constants import Info
 from core.console.info import (
     client_name as console_client_name,
     sender_prefix_list as console_sender_prefix,
     target_prefix_list as console_target_prefix,
 )
+from core.constants import Info
 from core.constants.path import bots_info_path
 from core.logger import Logger
 

@@ -1,23 +1,18 @@
-import base64
 import re
 from html import escape
-from io import BytesIO
 
-import orjson as json
 from jinja2 import FileSystemLoader, Environment
-from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Image, Plain
+from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config import Config
 from core.constants.default import donate_url_default, help_url_default, help_page_url_default
 from core.constants.path import templates_path
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
-from core.builtins.parser.command import CommandParser
 from core.utils.cache import random_cache_path
-from core.utils.http import download
 from core.utils.image import cb64imglst
 from core.utils.web_render import web_render, ElementScreenshotOptions
 

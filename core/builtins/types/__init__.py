@@ -1,8 +1,7 @@
-from core.builtins.message.elements import (PlainElement, URLElement, FormattedTimeElement, I18NContextElement,
-                                            ImageElement, VoiceElement, EmbedFieldElement, EmbedElement, MentionElement)
-
 from typing import Union
 
+from core.builtins.message.elements import (PlainElement, URLElement, FormattedTimeElement, I18NContextElement,
+                                            ImageElement, VoiceElement, EmbedFieldElement, EmbedElement, MentionElement)
 
 MessageElement = Union[
     PlainElement,

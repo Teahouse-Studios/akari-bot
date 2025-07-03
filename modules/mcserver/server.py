@@ -1,6 +1,5 @@
 import re
 
-
 from mcstatus import JavaServer, BedrockServer
 
 from core.builtins.bot import Bot

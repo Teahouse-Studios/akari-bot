@@ -9,9 +9,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, UTC
 
 import jwt
+import orjson as json
 import psutil
 import uvicorn
-import orjson as json
 from argon2 import PasswordHasher
 from cpuinfo import get_cpu_info
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect

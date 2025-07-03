@@ -1,21 +1,17 @@
-import base64
 import os
 import re
 import uuid
-from io import BytesIO
 from typing import Union, List
 from urllib.parse import urljoin
 
-import orjson as json
 from PIL import Image as PILImage
 from akari_bot_webrender.functions.options import SectionScreenshotOptions, LegacyScreenshotOptions
 from bs4 import BeautifulSoup, Comment
 
-from core.constants.info import Info
 from core.constants.path import cache_path
 from core.logger import Logger
+from core.utils.http import get_url
 from core.utils.image import cb64imglst
-from core.utils.http import get_url, post_url
 from core.utils.web_render import ElementScreenshotOptions
 from core.utils.web_render import web_render
 from .mapping import infobox_elements

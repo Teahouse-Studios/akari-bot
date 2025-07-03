@@ -1,10 +1,10 @@
-import re
 import html
+import re
 from typing import List, Union
 
 import filetype
-from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.errors import ServerError
+from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.types.message import Reference
 
 from core.builtins import (

@@ -1,6 +1,5 @@
-from typing import List, Tuple
-
 import asyncio
+from typing import List, Tuple
 
 
 async def run_sys_command(command: List[str], timeout: float = 10) -> Tuple[int, str, str]:

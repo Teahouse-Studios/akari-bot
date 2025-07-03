@@ -1,13 +1,11 @@
-import traceback
 from typing import TYPE_CHECKING, Union
 
+from core.builtins.session.info import SessionInfo
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
-from ..logger import Logger
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot

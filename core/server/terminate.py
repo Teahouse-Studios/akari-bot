@@ -2,8 +2,9 @@ import sys
 
 from tortoise import Tortoise
 
-from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.message.internal import I18NContext
+from core.builtins.session.tasks import SessionTaskManager
+from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler
 

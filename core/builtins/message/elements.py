@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import base64
-from copy import deepcopy
 import mimetypes
 import os
 import random
 import re
+from copy import deepcopy
 from datetime import datetime, UTC
 from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
@@ -20,10 +20,8 @@ from tenacity import retry, stop_after_attempt
 from core.constants import Info
 from core.utils.cache import random_cache_path
 
-
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
-    from core.builtins.message.chain import MessageChain
 
 
 class BaseElement:
@@ -216,6 +214,7 @@ class I18NContextElement(BaseElement):
     def assign(cls, key: str, disable_joke: bool = False, **kwargs: Any):
         """
         :param key: 多语言的键名。
+        :param disable_joke: 是否禁用玩笑功能。（默认为False）
         :param kwargs: 多语言中的变量。
         """
         return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))

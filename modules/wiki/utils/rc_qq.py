@@ -1,7 +1,6 @@
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.session.internal import MessageSession
 from core.builtins.message.internal import I18NContext, Plain, Url
-from core.logger import Logger
+from core.builtins.session.internal import MessageSession
 from modules.wiki.utils.wikilib import WikiLib
 from .rc import convert_rc_to_detailed_format
 

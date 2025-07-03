@@ -1,8 +1,9 @@
-import sys
+import asyncio
 import importlib
 import multiprocessing
 import os
 import shutil
+import sys
 import traceback
 from datetime import datetime
 from time import sleep
@@ -10,8 +11,6 @@ from time import sleep
 import tortoise
 from loguru import logger as loggerFallback
 from tortoise import Tortoise, run_async
-
-import asyncio
 
 from core.config import Config
 from core.constants import config_path, config_filename

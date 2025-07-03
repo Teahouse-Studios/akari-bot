@@ -1,13 +1,12 @@
 import os
 
+import orjson as json
+
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image as BImage, Plain, I18NContext
 from core.component import module
 from core.constants.path import assets_path
-from core.utils.http import get_url
 from core.utils.web_render import web_render, SourceOptions
-
-import orjson as json
 
 arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 

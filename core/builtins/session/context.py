@@ -1,13 +1,11 @@
 import asyncio
-from typing import Any, Union, Optional, List
+from abc import ABC, abstractmethod
+from typing import Any, Optional, List
 
 from core.builtins.message.chain import MessageChain, MessageNodes
-from core.builtins.session.info import SessionInfo
 from core.builtins.session.features import Features
+from core.builtins.session.info import SessionInfo
 from core.logger import Logger
-
-
-from abc import ABC, abstractmethod
 
 
 class ContextManager(ABC):

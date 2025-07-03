@@ -5,7 +5,7 @@ from core.builtins.utils import command_prefix
 from core.component import module
 from core.i18n import Locale
 from core.logger import Logger
-from core.scheduler import CronTrigger, IntervalTrigger
+from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.weekly import get_weekly, get_teahouse_rss
 

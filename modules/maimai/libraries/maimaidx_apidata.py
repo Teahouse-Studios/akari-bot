@@ -1,4 +1,3 @@
-import os
 from typing import Optional, Union
 
 import orjson as json

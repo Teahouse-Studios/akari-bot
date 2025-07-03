@@ -14,11 +14,11 @@ import httpx
 import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.constants import Info
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.builtins.types import MessageElement
 from core.config import Config
+from core.constants import Info
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 

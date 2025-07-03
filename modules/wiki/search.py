@@ -6,9 +6,9 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.logger import Logger
 from core.utils.message import isint
-from .wiki import wiki, query_pages
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
+from .wiki import wiki, query_pages
 
 
 @wiki.command("search <pagename> {{I18N:wiki.help.search}}")

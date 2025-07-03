@@ -3,11 +3,11 @@ import io
 import re
 from datetime import datetime
 from typing import Optional
-from PIL import Image as PImage
 
-from tenacity import retry, stop_after_attempt
+from PIL import Image as PImage
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw, rdMolDescriptors
+from tenacity import retry, stop_after_attempt
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Image, I18NContext

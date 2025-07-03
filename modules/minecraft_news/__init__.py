@@ -1,18 +1,16 @@
 import traceback
 
+import orjson as json
+
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Url
 from core.component import module
 from core.config import Config
 from core.logger import Logger
-
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.web_render import web_render
-
-import orjson as json
 
 minecraft_news = module(
     "minecraft_news",

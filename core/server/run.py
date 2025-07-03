@@ -1,8 +1,6 @@
-import asyncio
-
-from core.server.init import init_async
 from core.logger import Logger
 from core.queue.server import JobQueueServer
+from core.server.init import init_async
 
 
 async def main():

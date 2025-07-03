@@ -3,6 +3,7 @@ from typing import Union, TYPE_CHECKING
 from tortoise.exceptions import DoesNotExist
 
 from core.database.models import StoredData
+
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
 

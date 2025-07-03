@@ -13,7 +13,6 @@ from core.constants.default import locale_url_default
 from core.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.bash import run_sys_command
 
-
 ver = module("version", base=True, doc=True)
 
 

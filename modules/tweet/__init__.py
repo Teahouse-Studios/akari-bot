@@ -1,14 +1,10 @@
-import base64
-from io import BytesIO
-
 import orjson as json
-from PIL import Image as PILImage
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Image, Url
+from core.builtins.message.internal import I18NContext, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.utils.http import download, get_url
+from core.utils.http import get_url
 from core.utils.image import cb64imglst
 from core.utils.message import isint
 from core.utils.web_render import web_render, ElementScreenshotOptions
