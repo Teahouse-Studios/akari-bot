@@ -31,6 +31,7 @@ no_confirm = false # Whether to execute the command without the sender confirmin
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword of the confirmation command. The value filled in here will be recognized as the confirmation command.
 command_prefix = ["~", "～"] # Command prefix. The value filled in here will be recognized as the command prefix.
 allow_request_private_ip = false # Whether to allow bot to request local private IP addresses. (Prevent possible leakage)
+use_font_mirror = false # 渲染网页时是否使用字体镜像。
 enable_get_petal = false # Whether to allow get petals.
 petal_gained_limit = 0 # The maximum number of petals users can get per day.
 petal_lost_limit = 0 # The maximum number of petals users can lose per day.

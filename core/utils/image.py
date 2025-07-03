@@ -10,12 +10,14 @@ from core.builtins.message.elements import PlainElement, ImageElement, EmbedElem
 from core.builtins.message.internal import Image
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.internal import MessageSession
+from core.config import Config
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
+use_font_mirror = Config("use_font_mirror", False, bool)
 
 
 async def image_split(i: ImageElement) -> List[ImageElement]:
@@ -95,7 +97,13 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     if session:
         title = session.locale.t("message.list")
 
-    html_content = await env.get_template("msgchain_to_image.html").render_async(title=title, message_list=message_list, isinstance=isinstance, PlainElement=PlainElement, ImageElement=ImageElement, EmbedElement=EmbedElement)
+    html_content = await env.get_template("msgchain_to_image.html").render_async(title=title,
+                                                                                 message_list=message_list,
+                                                                                 isinstance=isinstance,
+                                                                                 PlainElement=PlainElement,
+                                                                                 ImageElement=ImageElement,
+                                                                                 EmbedElement=EmbedElement,
+                                                                                 use_font_mirror=use_font_mirror,)
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
@@ -120,7 +128,7 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[Image
     with open(file_path, "r", encoding="utf-8") as file:
         svg_content = file.read()
 
-    html_content = env.get_template("svg_template.html").render(svg=svg_content)
+    html_content = await env.get_template("svg_template.html").render_async(svg=svg_content, use_font_mirror=use_font_mirror)
 
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:

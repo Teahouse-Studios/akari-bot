@@ -31,6 +31,7 @@ no_confirm = false # 是否无需发送者确认消息后再执行命令。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
 command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
 allow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）
+use_font_mirror = false # 渲染网页时是否使用字体镜像。
 enable_get_petal = false # 是否允许获取花瓣。
 petal_gained_limit = 0 # 单日获取花瓣上限。
 petal_lost_limit = 0 # 单日失去花瓣上限。

@@ -19,6 +19,7 @@ from core.utils.web_render import web_render, ElementScreenshotOptions
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 help_url = Config("help_url", help_url_default)
 donate_url = Config("donate_url", donate_url_default)
+use_font_mirror = Config("use_font_mirror", False, bool)
 
 hlp = module("help", base=True, doc=True)
 
@@ -125,7 +126,8 @@ async def _(msg: Bot.MessageSession, module: str):
                                                                                             escape=escape,
                                                                                             isinstance=isinstance,
                                                                                             str=str,
-                                                                                            repattern=re.Pattern)
+                                                                                            repattern=re.Pattern,
+                                                                                            use_font_mirror=use_font_mirror,)
 
                         # fname = f"{random_cache_path()}.html"
                         # with open(fname, "w", encoding="utf-8") as fi:
@@ -282,7 +284,8 @@ async def help_generator(msg: Bot.MessageSession,
         module_list=module_list,
         msg=msg,
         show_disabled_modules=show_disabled_modules,
-        target_enabled_list=target_enabled_list)
+        target_enabled_list=target_enabled_list,
+        use_font_mirror=use_font_mirror,)
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
