@@ -58,7 +58,6 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, PlainElement):
-                print(x.text)
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: {x.text}")
             elif isinstance(x, ImageElement):
                 image_path = await x.get()

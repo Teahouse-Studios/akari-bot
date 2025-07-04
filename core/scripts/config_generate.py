@@ -121,6 +121,8 @@ def generate_config(dir_path, language):
                                 for kwarg in node.keywords:
                                     kwargs[kwarg.arg] = safe_literal_eval(kwarg.value, globals())
 
+                                if kwargs.get("get_url"):
+                                    del kwargs["get_url"]
                                 kwargs["_generate"] = True
 
                                 key = (make_hashable(args), make_hashable(kwargs))
@@ -134,7 +136,7 @@ def generate_config(dir_path, language):
 
         seen_configs.add(key)
         try:
-            CFGManager.write(*args, **dict(kwargs))
+            CFGManager.get(*args, **dict(kwargs))
         except Exception:
             traceback.print_exc()
 

@@ -71,6 +71,28 @@ LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
 login_failed_attempts = defaultdict(list)
 
 
+def _webui_message():
+    if WEB_HOST == "0.0.0.0":
+        local_ip = get_local_ip()
+        network_line = f"Network: {protocol}://{local_ip}:{web_port}/webui\n" if local_ip else ""
+        message = (
+            f"\n---\n"
+            f"Visit AkariBot WebUI:\n"
+            f"Local:   {protocol}://127.0.0.1:{web_port}/webui\n"
+            f"{network_line}"
+            f"---\n"
+        )
+    else:
+        message = (
+            f"\n---\n"
+            f"Visit AkariBot WebUI:\n"
+            f"{protocol}://{WEB_HOST}:{web_port}/webui\n"
+            f"---\n"
+        )
+
+    return message
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_async(start_scheduler=False)
@@ -79,25 +101,7 @@ async def lifespan(app: FastAPI):
     await JobQueue.secret_append_ip()
     await JobQueue.web_render_status()
     if os.path.exists(webui_path):
-        if WEB_HOST == "0.0.0.0":
-            local_ip = get_local_ip()
-            network_line = f"Network: {protocol}://{local_ip}:{web_port}/webui\n" if local_ip else ""
-            message = (
-                f"\n---\n"
-                f"Visit AkariBot WebUI:\n"
-                f"Local:   {protocol}://127.0.0.1:{web_port}/webui\n"
-                f"{network_line}"
-                f"---\n"
-            )
-        else:
-            message = (
-                f"\n---\n"
-                f"Visit AkariBot WebUI:\n"
-                f"{protocol}://{WEB_HOST}:{web_port}/webui\n"
-                f"---\n"
-            )
-
-        Logger.info(message)
+        Logger.info(_webui_message())
     yield
     await cleanup_sessions()
     sys.exit(0)
@@ -892,6 +896,9 @@ def _extract_timestamp(line: str):
 async def restart_bot(request: Request):
     verify_jwt(request)
     await verify_csrf_token(request)
+
+    if __name__ != "bots.web.bot":
+        raise HTTPException(status_code=503, detail="Bot main process is not running")
 
     asyncio.create_task(restart())
     return {"message": "Success"}
