@@ -44,8 +44,7 @@ def load_modules():
             importlib.import_module(submodule_name)
             Logger.debug(f"Successfully loaded {submodule_name}!")
         except Exception:
-            tb = traceback.format_exc()
-            errmsg = f"Failed to load {submodule_name}: \n{tb}"
+            errmsg = f"Failed to load {submodule_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
             err_modules.append(subm.name)
@@ -212,8 +211,7 @@ class ModulesManager:
                     err_modules.remove(module_name)
                 current_unloaded_modules.remove(module_name)
             except Exception:
-                tb = traceback.format_exc()
-                Logger.error(f"Failed to load modules.{module_name}: \n{tb}")
+                Logger.error(f"Failed to load modules.{module_name}: \n{traceback.format_exc()}")
                 if module_name not in err_modules:
                     err_modules.append(module_name)
                 return False

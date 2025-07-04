@@ -11,23 +11,21 @@ from hypercorn import Config as HyperConfig
 
 from core.logger import Logger
 
-sys.path.append(os.getcwd())
-
-from bots.aiocqhttp.client import bot  # noqa: E402
-from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager  # noqa: E402
-from bots.aiocqhttp.info import *  # noqa: E402
-from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation  # noqa: E402
-from core.builtins.bot import Bot  # noqa: E402
-from core.builtins.session.info import SessionInfo  # noqa: E402
-from core.builtins.utils import command_prefix  # noqa: E402
-from core.builtins.temp import Temp  # noqa: E402
-from core.client.init import client_init  # noqa: E402
-from core.config import Config  # noqa: E402
-from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default  # noqa: E402
-from core.constants.info import Info  # noqa: E402
-from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords  # noqa: E402
-from core.i18n import Locale  # noqa: E402
-from core.tos import tos_report  # noqa: E402
+from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager
+from bots.aiocqhttp.info import *
+from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
+from core.builtins.bot import Bot
+from core.builtins.session.info import SessionInfo
+from core.builtins.utils import command_prefix
+from core.builtins.temp import Temp
+from core.client.init import client_init
+from core.config import Config
+from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
+from core.constants.info import Info
+from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
+from core.i18n import Locale
+from core.tos import tos_report
 
 
 Bot.register_bot(client_name=client_name)
@@ -121,21 +119,22 @@ async def message_handler(event: Event):
 
     msg_chain = await to_message_chain(event.message)
 
-    session_info = await SessionInfo.assign(target_id=target_id, sender_id=sender_id,
-                                            target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
-                                            sender_from=sender_prefix,
-                                            sender_name=event.sender["nickname"], client_name=client_name,
-                                            message_id=str(event.message_id),
-                                            reply_id=str(reply_id),
-                                            messages=msg_chain,
-                                            ctx_slot=ctx_id,
-                                            use_url_manager=use_url_manager,
-                                            require_check_dirty_words=dirty_word_check,
-                                            prefixes=prefix,
-                                            tmp=Temp.data.copy()
-                                            )
+    session = await SessionInfo.assign(target_id=target_id,
+                                       sender_id=sender_id,
+                                       target_from=target_group_prefix if event.detail_type == "group" else target_private_prefix,
+                                       sender_from=sender_prefix,
+                                       sender_name=event.sender["nickname"], client_name=client_name,
+                                       message_id=str(event.message_id),
+                                       reply_id=str(reply_id),
+                                       messages=msg_chain,
+                                       ctx_slot=ctx_id,
+                                       use_url_manager=use_url_manager,
+                                       require_check_dirty_words=dirty_word_check,
+                                       prefixes=prefix,
+                                       tmp=Temp.data.copy()
+                                       )
 
-    await Bot.process_message(session_info, event)
+    await Bot.process_message(session, event)
 
 
 if enable_listening_self_message:
@@ -240,7 +239,7 @@ async def _(event: Event):
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
-if qq_host and (Config("enable", False, table_name="bot_aiocqhttp") or __name__ == "__main__"):
+if Config("enable", False, table_name="bot_aiocqhttp"):
     argv = sys.argv
     Info.client_name = client_name
     HyperConfig.startup_timeout = 120

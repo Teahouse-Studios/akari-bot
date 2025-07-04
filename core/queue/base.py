@@ -101,7 +101,7 @@ class JobQueueBase:
                                                       exports["Plain"](f.strip(), disable_joke=True)],
                                                      enable_parse_message=False, disable_secret_check=True)
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
             return
 
         # The code below should not be reached if the task is processed correctly.

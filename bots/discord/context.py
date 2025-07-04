@@ -1,5 +1,4 @@
 import asyncio
-import traceback
 from typing import Optional, List
 
 import discord
@@ -48,7 +47,7 @@ class DiscordContextManager(ContextManager):
             ):
                 return True
         except Exception:
-            Logger.error(traceback.format_exc())
+            Logger.exception()
         return False
 
     @classmethod

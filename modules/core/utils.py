@@ -85,7 +85,7 @@ admin = module(
     alias={"ban": "admin ban", "unban": "admin unban", "ban list": "admin ban list"},
     desc="{I18N:core.help.admin.desc}",
     doc=True,
-    exclude_from=["TEST|Console"],
+    exclude_from=["Console"],
 )
 
 
@@ -263,7 +263,7 @@ async def _(msg: Bot.MessageSession, second: int):
 
 
 mute = module(
-    "mute", base=True, doc=True, required_admin=True, exclude_from=["TEST|Console"]
+    "mute", base=True, doc=True, required_admin=True, exclude_from=["Console"]
 )
 
 

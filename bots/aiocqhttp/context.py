@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import re
-import traceback
 from pathlib import Path
 from typing import Optional, List
 
@@ -238,20 +237,19 @@ class AIOCQContextManager(ContextManager):
                             send = await bot.send_group_msg(
                                 group_id=session_info.get_common_target_id(), message=msgsgm
                             )
-                        except aiocqhttp.exceptions.ActionFailed as e:
-                            Logger.error(f"Failed to send message: {traceback.format_exc()}")
+                        except aiocqhttp.exceptions.ActionFailed:
+                            Logger.exception("Failed to send message: ")
 
             else:
                 try:
                     send = await bot.send_private_msg(
                         user_id=session_info.get_common_target_id(), message=convert_msg_segments
                     )
-                except aiocqhttp.exceptions.ActionFailed as e:
-                    Logger.error(f"Failed to send message: {traceback.format_exc()}")
+                except aiocqhttp.exceptions.ActionFailed:
+                    Logger.exception("Failed to send message: ")
         if send:
             return [str(send["message_id"])]
-        else:
-            return []
+        return []
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
@@ -260,13 +258,15 @@ class AIOCQContextManager(ContextManager):
         :param session_info: 会话信息
         :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
         """
+        if isinstance(message_id, str):
+            message_id = [message_id]
 
         if session_info.target_from in [target_private_prefix, target_group_prefix]:
             try:
                 for x in message_id:
                     await bot.call_action("delete_msg", message_id=x)
             except Exception:
-                Logger.error(traceback.format_exc())
+                Logger.exception()
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:

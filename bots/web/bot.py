@@ -28,27 +28,25 @@ from tortoise.expressions import Q
 sys.path.append(os.getcwd())
 
 from bots.web.info import *  # noqa: E402
-from bots.web.message import MessageSession  # noqa: E402
-from bots.web.utils import find_available_port, generate_webui_config, get_local_ip  # noqa: E402
-from core.server.init import init_async  # noqa: E402
-from core.builtins import Info, PrivateAssets, Temp  # noqa: E402
+from bots.web.context import WebContextManager  # noqa: E402
+from bots.web.utils import *  # noqa: E402
+from core.builtins.bot import Bot  # noqa: E402
+from core.builtins.message.chain import MessageChain  # noqa: E402
+from core.builtins.session.info import SessionInfo  # noqa: E402
+from core.builtins.temp import Temp  # noqa: E402
+from core.client.init import client_init  # noqa: E402
+from core.constants import Info, PrivateAssets  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants import config_filename  # noqa: E402
 from core.constants.path import assets_path, config_path, logs_path, webui_path  # noqa: E402
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords  # noqa: E402
 from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords  # noqa: E402
-from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from core.i18n import Locale  # noqa: E402
 from core.loader import ModulesManager  # noqa: E402
 from core.logger import Logger  # noqa: E402
-from core.builtins.parser.message import parser  # noqa: E402
-from core.queue_ import JobQueue  # noqa: E402
-from core.scheduler import Scheduler  # noqa: E402
-from core.terminate import cleanup_sessions  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
+from core.server.terminate import cleanup_sessions  # noqa: E402
 
 started_time = datetime.now()
-PrivateAssets.set(os.path.join(assets_path, "private", "web"))
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_https = Config("enable_https", default=False, table_name="bot_web")
@@ -70,34 +68,39 @@ LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
 
 login_failed_attempts = defaultdict(list)
 
+Bot.register_bot(client_name=client_name,
+                 private_assets_path=os.path.join(assets_path, "private", "web"))
+
+ctx_id = Bot.register_context_manager(WebContextManager)
+
+
+def _webui_message():
+    if WEB_HOST == "0.0.0.0":
+        local_ip = get_local_ip()
+        network_line = f"Network: {protocol}://{local_ip}:{web_port}/webui\n" if local_ip else ""
+        message = (
+            f"\n---\n"
+            f"Visit AkariBot WebUI:\n"
+            f"Local:   {protocol}://127.0.0.1:{web_port}/webui\n"
+            f"{network_line}"
+            f"---\n"
+        )
+    else:
+        message = (
+            f"\n---\n"
+            f"Visit AkariBot WebUI:\n"
+            f"{protocol}://{WEB_HOST}:{web_port}/webui\n"
+            f"---\n"
+        )
+
+    return message
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_async(start_scheduler=False)
-    load_extra_schedulers()
-    Scheduler.start()
-    await JobQueue.secret_append_ip()
-    await JobQueue.web_render_status()
+    await client_init(target_prefix_list, sender_prefix_list)
     if os.path.exists(webui_path):
-        if WEB_HOST == "0.0.0.0":
-            local_ip = get_local_ip()
-            network_line = f"Network: {protocol}://{local_ip}:{web_port}/webui\n" if local_ip else ""
-            message = (
-                f"\n---\n"
-                f"Visit AkariBot WebUI:\n"
-                f"Local:   {protocol}://127.0.0.1:{web_port}/webui\n"
-                f"{network_line}"
-                f"---\n"
-            )
-        else:
-            message = (
-                f"\n---\n"
-                f"Visit AkariBot WebUI:\n"
-                f"{protocol}://{WEB_HOST}:{web_port}/webui\n"
-                f"---\n"
-            )
-
-        Logger.info(message)
+        Logger.info(_webui_message())
     yield
     await cleanup_sessions()
     sys.exit(0)
@@ -770,27 +773,32 @@ async def get_module_info(request: Request, module: str, locale: str = Query(def
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
+    if __name__ == "__main__":
+        await websocket.close(code=1008, reason="Chat has not been initialized")
+        return
+
     await websocket.accept()
     Temp.data["web_chat_websocket"] = websocket
+    target_id = f"{target_prefix}|0"
+    sender_id = f"{sender_prefix}|0"
     try:
         while True:
             rmessage = await websocket.receive_text()
             if rmessage:
                 message = json.loads(rmessage)
-                msg = MessageSession(
-                    target=MsgInfo(
-                        target_id=f"{target_prefix}|0",
-                        sender_id=f"{sender_prefix}|0",
-                        sender_name="Console",
-                        target_from=target_prefix,
-                        sender_from=sender_prefix,
-                        client_name=client_name,
-                        message_id=message["id"],
-                    ),
-                    session=Session(
-                        message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
-                    ))
-                asyncio.create_task(parser(msg))
+                msg_chain = MessageChain.assign(message["message"][0]["content"])
+                session = await SessionInfo.assign(target_id=target_id,
+                                                   sender_id=sender_id,
+                                                   sender_name="Console",
+                                                   target_from=target_prefix,
+                                                   sender_from=sender_prefix,
+                                                   client_name=client_name,
+                                                   message_id=message["id"],
+                                                   messages=msg_chain,
+                                                   ctx_slot=ctx_id
+                                                   )
+
+                await Bot.process_message(session, message)
     except WebSocketDisconnect:
         pass
     except Exception:

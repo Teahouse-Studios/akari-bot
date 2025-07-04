@@ -5,25 +5,21 @@ import os
 import pkgutil
 import re
 import sys
-import traceback
 
 import discord
 
 import bots.discord.slash as slash_modules
-
-sys.path.append(os.getcwd())
-
-from bots.discord.client import client  # noqa: E402
-from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager  # noqa: E402
-from bots.discord.info import *  # noqa: E402
-from core.builtins.bot import Bot  # noqa: E402
-from core.builtins.session.info import SessionInfo  # noqa: E402
-from core.builtins.message.chain import MessageChain  # noqa: E402
-from core.builtins.utils import command_prefix  # noqa: E402
-from core.config import Config  # noqa: E402
-from core.logger import Logger  # noqa: E402
-from core.utils.info import Info  # noqa: E402
-from core.client.init import client_init  # noqa: E402
+from bots.discord.client import client
+from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
+from bots.discord.info import *
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.session.info import SessionInfo
+from core.builtins.utils import command_prefix
+from core.client.init import client_init
+from core.config import Config
+from core.constants.info import Info
+from core.logger import Logger
 
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
@@ -58,7 +54,7 @@ def load_slashcommands():
             importlib.import_module(submodule_name)
             Logger.debug(f"Successfully loaded {submodule_name}!")
         except Exception:
-            Logger.exception(f"Failed to load {submodule_name}: {traceback.format_exc()}")
+            Logger.exception(f"Failed to load {submodule_name}: ")
 
 
 load_slashcommands()
@@ -91,14 +87,22 @@ async def on_message(message: discord.Message):
 
     msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
 
-    session = await SessionInfo.assign(target_id=target_id, sender_id=sender_id, sender_name=message.author.name,
-                                       target_from=target_from, sender_from=sender_prefix, client_name=client_name, message_id=str(message.id),
-                                       reply_id=reply_id, messages=msg_chain, ctx_slot=ctx_id)
+    session = await SessionInfo.assign(target_id=target_id,
+                                       sender_id=sender_id,
+                                       sender_name=message.author.name,
+                                       target_from=target_from,
+                                       sender_from=sender_prefix,
+                                       client_name=client_name,
+                                       message_id=str(message.id),
+                                       reply_id=reply_id,
+                                       messages=msg_chain,
+                                       ctx_slot=ctx_id
+                                       )
 
     await Bot.process_message(session, message)
 
 
-if Config("enable", False, table_name="bot_discord") or __name__ == "__main__":
+if Config("enable", False, table_name="bot_discord"):
     loop = asyncio.new_event_loop()
     Info.client_name = client_name
     if "subprocess" in sys.argv:

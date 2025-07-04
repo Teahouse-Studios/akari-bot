@@ -1,5 +1,3 @@
-import traceback
-
 import orjson as json
 
 from core.builtins.bot import Bot
@@ -105,7 +103,7 @@ feedback_news = module(
 #                     await update_stored_list(Bot, "mcnews", alist)
 #     except Exception:
 #         if Config("debug", False):
-#             Logger.error(traceback.format_exc())
+#             Logger.exception()
 #
 
 
@@ -152,4 +150,4 @@ async def feedback_news():
                     await update_stored_list(Bot.Info.client_name, "mcfeedbacknews", alist)
         except Exception:
             if Config("debug", False):
-                Logger.error(traceback.format_exc())
+                Logger.exception()

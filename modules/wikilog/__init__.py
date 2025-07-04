@@ -1,5 +1,4 @@
 import re
-import traceback
 
 import orjson as json
 
@@ -478,7 +477,7 @@ async def wiki_log():
                                     if matched_f:
                                         matched_logs[id_][wiki]["AbuseLog"].append(y)
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
             if fetches[id_][wiki]["RecentChanges"]["enable"]:
                 try:
                     query = await query_wiki.get_json(
@@ -524,7 +523,7 @@ async def wiki_log():
                                             y
                                         )
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
 
     matched = matched_logs
 

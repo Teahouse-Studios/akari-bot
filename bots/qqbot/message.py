@@ -465,7 +465,7 @@ class FetchTarget(FetchTargetT):
                                                    module_name=module_name,
                                                    module_type="schedule")
                 except Exception:
-                    Logger.error(traceback.format_exc())
+                    Logger.exception()
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(module_name, client_name)
             for x in get_target_id:
@@ -489,7 +489,7 @@ class FetchTarget(FetchTargetT):
                                                        module_name=module_name,
                                                        module_type="schedule")
                     except Exception:
-                        Logger.error(traceback.format_exc())
+                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession

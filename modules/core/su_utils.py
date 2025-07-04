@@ -30,7 +30,7 @@ target_list = get_all_target_prefix()
 sender_list = get_all_sender_prefix()
 
 
-su = module("superuser", alias="su", required_superuser=True, base=True, doc=True, exclude_from=["TEST|Console"])
+su = module("superuser", alias="su", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
 
 
 @su.command("add <user>")
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.purge.empty"))
 
 
-set_ = module("set", required_superuser=True, base=True, doc=True, exclude_from=["TEST|Console"])
+set_ = module("set", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
 
 
 @set_.command("target module enable <target> <modules> ...",
@@ -228,7 +228,7 @@ async def _(msg: Bot.MessageSession, group_id: str):
     await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
 
 
-ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True, exclude_from=["TEST|Console"])
+ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
 
 
 @ae.command("check <user>")
@@ -477,7 +477,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 
 
-exit_ = module("exit", required_superuser=True, base=True, doc=True, available_for=["TEST|Console"])
+exit_ = module("exit", required_superuser=True, base=True, doc=True, available_for=["Console"])
 
 
 @exit_.command()
