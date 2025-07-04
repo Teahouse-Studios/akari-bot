@@ -16,18 +16,20 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
+from core.constants.default import ignored_sender_default
 from core.client.init import client_init
 from core.config import Config
 from core.constants.info import Info
 from core.logger import Logger
-
-dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
 
 Bot.register_bot(client_name=client_name)
 
 ctx_id = Bot.register_context_manager(DiscordContextManager)
 Bot.register_context_manager(DiscordFetchedContextManager, fetch_session=True)
+
+dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
+ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 count = 0
 
@@ -70,6 +72,8 @@ async def on_message(message: discord.Message):
         target_from = target_dm_channel_prefix
     target_id = f"{target_from}|{message.channel.id}"
     sender_id = f"{sender_prefix}|{message.author.id}"
+    if sender_id in ignored_sender:
+        return
 
     reply_id = None
     if message.reference:
@@ -77,7 +81,7 @@ async def on_message(message: discord.Message):
 
     if match_at := re.match(r"^<@(.*?)>", message.content):  # pop up help information when user mentions bot
         if match_at.group(1) == str(client.user.id):
-            message.content = re.sub(r"<@(.*?)>", "", message.content)
+            message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
             if message.content in ["", " "]:
                 message.content = f"{command_prefix[0]}help"
             else:

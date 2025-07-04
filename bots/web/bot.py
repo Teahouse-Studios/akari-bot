@@ -773,8 +773,8 @@ async def get_module_info(request: Request, module: str, locale: str = Query(def
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
-    if __name__ == "__main__":
-        await websocket.close(code=1008, reason="Chat has not been initialized")
+    if __name__ != "bots.web.bot":
+        await websocket.close(code=1008, reason="Bot main process is not running")
         return
 
     await websocket.accept()
@@ -900,6 +900,9 @@ def _extract_timestamp(line: str):
 async def restart_bot(request: Request):
     verify_jwt(request)
     await verify_csrf_token(request)
+
+    if __name__ != "bots.web.bot":
+        raise HTTPException(status_code=503, detail="Bot main process is not running")
 
     asyncio.create_task(restart())
     return {"message": "Success"}

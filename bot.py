@@ -8,9 +8,9 @@ import traceback
 from datetime import datetime
 from time import sleep
 
-import tortoise
 from loguru import logger as loggerFallback
 from tortoise import Tortoise, run_async
+from tortoise.exceptions import ConfigurationError
 
 from core.constants import config_path, config_filename
 
@@ -33,7 +33,7 @@ bots_and_required_configs = {
     # "aiogram": ["telegram_token"],
     # "kook": ["kook_token"],
     # "matrix": ["matrix_homeserver", "matrix_user", "matrix_device_id", "matrix_token"],
-    # "qqbot": ["qq_bot_appid", "qq_bot_secret"],
+    "qqbot": ["qq_bot_appid", "qq_bot_secret"],
     "web": ["jwt_secret"],
 }
 
@@ -311,8 +311,7 @@ def terminate_process(process: multiprocessing.Process, timeout=5):
 async def main_async(console_only: bool = False):
     if not os.path.exists(os.path.join(config_path, config_filename)):
         import core.scripts.config_generate  # noqa
-    else:
-        from core.config import Config  # noqa
+    from core.config import Config  # noqa
 
     enable_console = Config("enable_console", default=False, cfg_type=bool)
     if enable_console or console_only:
@@ -327,7 +326,7 @@ async def main_async(console_only: bool = False):
         processes.clear()
         try:
             await Tortoise.close_connections()
-        except tortoise.exceptions.ConfigurationError:
+        except ConfigurationError:
             pass
         raise e
 
@@ -343,7 +342,7 @@ async def main_async(console_only: bool = False):
     finally:
         try:
             await Tortoise.close_connections()
-        except tortoise.exceptions.ConfigurationError:
+        except ConfigurationError:
             pass
 
 
