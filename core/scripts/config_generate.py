@@ -22,7 +22,6 @@ TYPE_MAPPING = {
 
 
 def safe_literal_eval(node, globals_dict=None):
-    """ 安全解析 AST 节点 """
     if not globals_dict:
         globals_dict = globals()
 
@@ -53,14 +52,13 @@ def safe_literal_eval(node, globals_dict=None):
 def make_hashable(obj):
     if isinstance(obj, dict):
         return frozenset((make_hashable(k), make_hashable(v)) for k, v in obj.items())
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return tuple(make_hashable(i) for i in obj)
-    elif isinstance(obj, set):
+    if isinstance(obj, set):
         return frozenset(make_hashable(i) for i in obj)
-    elif isinstance(obj, tuple):
+    if isinstance(obj, tuple):
         return tuple(make_hashable(i) for i in obj)
-    else:
-        return obj
+    return obj
 
 
 def generate_config(dir_path, language):
@@ -94,7 +92,7 @@ def generate_config(dir_path, language):
         f.write("initialized = false\n")
         f.close()
 
-    from core.config import config, CFGManager  # noqa
+    from core.config import CFGManager  # noqa
     CFGManager.switch_config_path(dir_path)
 
     for _dir in dir_list:
@@ -123,7 +121,9 @@ def generate_config(dir_path, language):
                                 for kwarg in node.keywords:
                                     kwargs[kwarg.arg] = safe_literal_eval(kwarg.value, globals())
 
-                                kwargs['_generate'] = True
+                                if kwargs.get("get_url"):
+                                    del kwargs["get_url"]
+                                kwargs["_generate"] = True
 
                                 key = (make_hashable(args), make_hashable(kwargs))
                                 config_code_list[key] = file_path
@@ -136,7 +136,7 @@ def generate_config(dir_path, language):
 
         seen_configs.add(key)
         try:
-            config(*args, **dict(kwargs))
+            CFGManager.get(*args, **dict(kwargs))
         except Exception:
             traceback.print_exc()
 

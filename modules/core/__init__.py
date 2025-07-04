@@ -3,5 +3,6 @@ from .analytics import *
 from .modules import *
 from .petal import *
 from .prefix import *
+from .petal import *
 from .su_utils import *
 from .utils import *
