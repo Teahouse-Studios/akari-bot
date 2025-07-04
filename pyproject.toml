@@ -17,7 +17,9 @@ package-mode = false
 python = "^3.12.0"
 
 # lib
+coverage = "^7.9.1"
 cryptography = "^45.0.0"
+deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
@@ -49,7 +51,7 @@ filetype = "^1.2.0"
 orjson = "^3.10.9"
 Pillow = "^11.0.0"
 tenacity = "^9.0.0"
-akari-bot-webrender = "^0.2.0"
+akari-bot-webrender = "^0.2.1"
 
 # core.config
 tomlkit = "^0.13.2"
@@ -97,8 +99,6 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
-coverage = "^7.9.1"
-deprecated = "^1.2.18"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
