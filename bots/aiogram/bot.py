@@ -10,14 +10,11 @@ from bots.aiogram.client import dp, bot  # noqa: E402
 from bots.aiogram.info import *  # noqa: E402
 from bots.aiogram.message import MessageSession, FetchTarget  # noqa: E402
 from core.server.init import load_prompt, init_async  # noqa: E402
-from core.builtins import PrivateAssets  # noqa: E402
+from core.constants import PrivateAssets  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants.default import ignored_sender_default  # noqa: E402
 from core.constants.path import assets_path  # noqa: E402
 from core.builtins.parser.message import parser  # noqa: E402
-from core.terminate import cleanup_sessions  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
-from core.utils.info import Info  # noqa: E402
 
 PrivateAssets.set(os.path.join(assets_path, "private", "aiogram"))
 ignored_sender = Config("ignored_sender", ignored_sender_default)

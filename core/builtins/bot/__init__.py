@@ -180,26 +180,17 @@ class Bot:
 
     @classmethod
     def register_bot(cls, client_name: str = None,
-                     private_assets_path: str = None,
-                     dirty_word_check=False,
-                     use_url_manager=False,
-                     use_url_md_format=False):
+                     private_assets_path: str = None,):
         """
         :param client_name: Client name
         :param private_assets_path: Private assets path
-        :param dirty_word_check: Whether to check for dirty words
-        :param use_url_manager: Whether to use URL manager
-        :param use_url_md_format: Whether to use URL markdown format
         :return: None
         """
         if private_assets_path:
             PrivateAssets.set(private_assets_path)
         else:
             PrivateAssets.set(os.path.join(assets_path, "private", client_name))
-        Info.dirty_word_check = dirty_word_check
         Info.client_name = client_name
-        Info.use_url_manager = use_url_manager
-        Info.use_url_md_format = use_url_md_format
 
     @classmethod
     async def send_direct_message(cls,

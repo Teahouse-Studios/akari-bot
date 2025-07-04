@@ -70,32 +70,33 @@ class URLElement(BaseElement):
     """
 
     url: str
-    md_format = Info.use_url_md_format
+    applied_mm: bool = False
+    applied_md_format: bool = False
+    md_format_name: Optional[str] = None
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool = False):
+    def assign(cls, url: str, use_mm: bool = False, md_format: bool = False, md_format_name: Optional[str] = None):
         """
         :param url: URL。
         :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为False）
+        :param md_format: 是否使用Markdown格式。（默认为False）
+        :param md_format_name: Markdown格式的链接名称。（默认为None，使用URL本身）
         """
-        if Info.use_url_manager and use_mm:
+        if use_mm:
             mm_url = "https://mm.teahouse.team/?source=akaribot&rot13=%s"
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM",
             )
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
-
-        return deepcopy(cls(url=url))
+        if md_format:
+            url = f"[{md_format_name if md_format_name else url}]({url})"
+        return deepcopy(cls(url=url, applied_mm=use_mm, applied_md_format=md_format, md_format_name=md_format_name))
 
     def kecode(self):
-        if self.md_format:
-            return f"[KE:plain,text=[{self.url}]({self.url})]"
         return f"[KE:plain,text={self.url}]"
 
     def __str__(self):
-        if self.md_format:
-            return f"[{self.url}]({self.url})"
         return self.url
 
 

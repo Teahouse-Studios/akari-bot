@@ -25,15 +25,12 @@ from core.client.init import client_init  # noqa: E402
 from core.config import Config  # noqa: E402
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default  # noqa: E402
 from core.constants.info import Info  # noqa: E402
-from core.constants.path import assets_path  # noqa: E402
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords  # noqa: E402
 from core.i18n import Locale  # noqa: E402
 from core.tos import tos_report  # noqa: E402
 
-Bot.register_bot(client_name=client_name,
-                 private_assets_path=os.path.join(assets_path, "private", "aiocqhttp"),
-                 )
 
+Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(AIOCQContextManager)
 Bot.register_context_manager(AIOCQFetchedContextManager, fetch_session=True)
 

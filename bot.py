@@ -152,8 +152,7 @@ async def run_prompt():
     from core.console.context import ConsoleContextManager  # noqa
     from core.client.init import client_init  # noqa
 
-    Bot.register_bot(client_name=client_name,
-                     dirty_word_check=True)
+    Bot.register_bot(client_name=client_name)
 
     console_ctx_id = Bot.register_context_manager(ConsoleContextManager)
 

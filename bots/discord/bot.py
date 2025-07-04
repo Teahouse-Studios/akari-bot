@@ -21,7 +21,6 @@ from core.builtins.session.info import SessionInfo  # noqa: E402
 from core.builtins.message.chain import MessageChain  # noqa: E402
 from core.builtins.utils import command_prefix  # noqa: E402
 from core.config import Config  # noqa: E402
-from core.constants.path import assets_path  # noqa: E402
 from core.logger import Logger  # noqa: E402
 from core.utils.info import Info  # noqa: E402
 from core.client.init import client_init  # noqa: E402
@@ -29,8 +28,7 @@ from core.client.init import client_init  # noqa: E402
 dc_token = Config("discord_token", cfg_type=str, secret=True, table_name="bot_discord")
 
 
-Bot.register_bot(client_name=client_name,
-                 private_assets_path=os.path.join(assets_path, "private", "discord"))
+Bot.register_bot(client_name=client_name)
 
 ctx_id = Bot.register_context_manager(DiscordContextManager)
 Bot.register_context_manager(DiscordFetchedContextManager, fetch_session=True)
