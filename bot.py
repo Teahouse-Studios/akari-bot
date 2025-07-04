@@ -54,6 +54,7 @@ def pre_init():
     os.makedirs(cache_path, exist_ok=True)
 
     from core.config import Config  # noqa
+    from core.console.info import sender_prefix as console_sender_prefix  # noqa
     from core.constants.default import base_superuser_default  # noqa
     from core.constants.version import database_version  # noqa
     from core.database.link import get_db_link  # noqa
@@ -88,6 +89,7 @@ def pre_init():
         else:
             await Tortoise.close_connections()
 
+        await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{console_sender_prefix}|0")
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
         )

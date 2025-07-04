@@ -50,7 +50,6 @@ class ConsoleContextManager(ContextManager):
             msg_ids = []
             for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
-                    print(x.text)
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 elif isinstance(x, ImageElement):
                     image_path = await x.get()

@@ -65,7 +65,7 @@ async def _(msg: Bot.MessageSession):
             swap_percent=swap_percent,
             disk_space=disk,
             disk_space_total=disk_total,
-            client_name=Bot.Info.client_name,
+            client_name=msg.session_info.client_name,
             command_parsed=Bot.Info.command_parsed,
         ))
     else:
