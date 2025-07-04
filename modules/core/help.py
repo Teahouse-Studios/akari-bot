@@ -109,7 +109,8 @@ async def _(msg: Bot.MessageSession, module: str):
             else:
                 wiki_msg = ""
 
-            if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image and Bot.Info.web_render_status:
+            if not msg.parsed_msg.get("--legacy",
+                                      False) and msg.session_info.support_image and Bot.Info.web_render_status:
 
                 if (module_.required_superuser and not is_superuser) or \
                    (module_.required_base_superuser and not is_base_superuser):
@@ -291,5 +292,6 @@ async def help_generator(msg: Bot.MessageSession,
         fi.write(html_content)
 
     images = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
-
-    return cb64imglst(images, bot_img=True)
+    if images:
+        return cb64imglst(images, bot_img=True)
+    return None

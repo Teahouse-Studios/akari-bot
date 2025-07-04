@@ -59,7 +59,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: Optional[in
         ]
     ):
         raise ConfigValueError("{I18N:error.config.invalid}")
-    if msg.Feature.markdown:
+    if msg.session_info.support_markdown:
         expr = expr.replace("*", "\\*")
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)

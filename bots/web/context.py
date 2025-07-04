@@ -20,12 +20,19 @@ class WebContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
         return True
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
+    async def send_message(cls,
+                           session_info: SessionInfo,
+                           message: MessageChain | MessageNodes,
+                           quote: bool = True,
                            enable_parse_message: bool = True,
-                           enable_split_image: bool = True) -> List[str]:
+                           enable_split_image: bool = True
+                           ) -> List[str]:
         websocket: WebSocket = Temp.data.get("web_chat_websocket")
 
         sends = []
@@ -56,6 +63,14 @@ class WebContextManager(ContextManager):
         :param session_info: 会话信息
         :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
         """
+        if isinstance(message_id, str):
+            message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
+
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+
         try:
             websocket: WebSocket = Temp.data.get("web_chat_websocket")
 
@@ -64,3 +79,15 @@ class WebContextManager(ContextManager):
                 await websocket.send_text(json.dumps(resp).decode())
         except Exception:
             Logger.exception()
+
+    @classmethod
+    async def start_typing(cls, session_info: SessionInfo) -> None:
+        pass
+
+    @classmethod
+    async def end_typing(cls, session_info: SessionInfo) -> None:
+        pass
+
+    @classmethod
+    async def error_signal(cls, session_info: SessionInfo) -> None:
+        pass

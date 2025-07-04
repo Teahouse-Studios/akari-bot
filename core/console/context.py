@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from PIL import Image as PILImage
 
@@ -21,7 +21,7 @@ class MsgIdGenerator:
 
 class ConsoleContextManager(ContextManager):
     context: dict[str, Any] = {}
-    features = Features
+    features: Optional[Features] = Features
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -36,7 +36,8 @@ class ConsoleContextManager(ContextManager):
         return True
 
     @classmethod
-    async def send_message(cls, session_info: SessionInfo,
+    async def send_message(cls,
+                           session_info: SessionInfo,
                            message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message: bool = True,

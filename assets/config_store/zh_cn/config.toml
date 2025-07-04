@@ -8,6 +8,9 @@ initialized = true
 
 [config]
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
+debug = false # 是否启用调试模式，启用后会输出更多的日志信息。
+enable_console = false # 是否在生产环境下启用控制台。
+base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
 enable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
 enable_urlmanager = false # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）
 enable_tos = true # 是否启用内置的 ToS 检查规则。
@@ -19,10 +22,8 @@ enable_rickroll = true # 当文字过滤检测失败时，是否 Rickroll 用户
 enable_joke = true # 是否启用玩笑，启用后将在服务器时间 4 月 1 日时发生。
 shuffle_rate = 0.1 # 玩笑的随机发生率，范围 0 到 1 之间。
 unloaded_modules = [] # 不加载的模块列表，匹配到此列表中的模块将不会被加载。
-debug = false # 是否启用调试模式，启用后会输出更多的日志信息。
 report_targets = [] # 上报会话列表，此处填写的值将会被识别为上报会话。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应会话）
 tos_warning_counts = 5 # 违反 ToS 时的警告次数。
-base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
 enable_analytics = false # 是否启用内置的统计功能。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。
 tos_temp_ban_time = 300 # 违反 ToS 时的临时封禁时间。
@@ -38,8 +39,8 @@ petal_lost_limit = 0 # 单日失去花瓣上限。
 petal_sign_limit = 5 # 单日签到获取花瓣上限。
 petal_sign_rate = 0.5 # 签到获取花瓣概率，范围 0 到 1 之间，获取数量呈指数衰减。
 use_secrets_random = false # 是否使用基于 secrets 库的随机数生成器。
-enable_webrender = false # 是否启用 WebRender。
-remote_web_render_url = "" # 远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。
+enable_web_render = false # 是否启用 WebRender。
+remote_web_render_url = "<Replace me with str value>" # 远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。
 web_render_browser = "chrome" # WebRender 使用的浏览器。
 help_url = "https://bot.teahouse.team" # 帮助文档网址。
 donate_url = "http://afdian.com/a/teahouse" # 捐赠网址。

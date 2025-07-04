@@ -6,24 +6,24 @@ from uuid import uuid4
 
 import nio
 
-sys.path.append(os.getcwd())
+from bots.matrix import client
+from bots.matrix.client import bot
+from bots.matrix.context import MatrixContextManager, MatrixFetchedContextManager
+from bots.matrix.info import *
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.session.info import SessionInfo
+from core.config import Config
+from core.client.init import client_init
+from core.constants.default import ignored_sender_default
+from core.logger import Logger
+from core.constants.info import Info
 
-from bots.matrix import client  # noqa: E402
-from bots.matrix.client import bot  # noqa: E402
-from bots.matrix.info import *  # noqa: E402
-from bots.matrix.message import MessageSession, FetchTarget  # noqa: E402
-from core.server.init import load_prompt, init_async  # noqa: E402
-from core.builtins import PrivateAssets  # noqa: E402
-from core.config import Config  # noqa: E402
-from core.constants.default import ignored_sender_default  # noqa: E402
-from core.constants.path import assets_path  # noqa: E402
-from core.logger import Logger  # noqa: E402
-from core.builtins.parser.message import parser  # noqa: E402
-from core.terminate import cleanup_sessions  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
-from core.utils.info import Info  # noqa: E402
+Bot.register_bot(client_name=client_name)
 
-PrivateAssets.set(os.path.join(assets_path, "private", "matrix"))
+ctx_id = Bot.register_context_manager(MatrixContextManager)
+Bot.register_context_manager(MatrixFetchedContextManager, fetch_session=True)
+
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 
@@ -93,20 +93,21 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         Logger.error(f"Failed to get display name for {event.sender}")
         return
 
-    msg = MessageSession(
-        MsgInfo(
-            target_id=target_id,
-            sender_id=sender_id,
-            target_from=target_prefix,
-            sender_from=sender_prefix,
-            sender_name=resp.displayname,
-            client_name=client_name,
-            message_id=event.event_id,
-            reply_id=reply_id,
-        ),
-        Session(message=event.source, target=room.room_id, sender=event.sender),
-    )
-    asyncio.create_task(parser(msg))
+    msg_chain = MessageChain.assign(event.source["content"])
+
+    session = await SessionInfo.assign(target_id=target_id,
+                                       sender_id=sender_id,
+                                       sender_name=resp.displayname,
+                                       target_from=target_prefix,
+                                       sender_from=sender_prefix,
+                                       client_name=client_name,
+                                       message_id=str(event.event_id),
+                                       reply_id=reply_id,
+                                       messages=msg_chain,
+                                       ctx_slot=ctx_id
+                                       )
+
+    await Bot.process_message(session, event.source)
 
 
 async def on_verify(event: nio.KeyVerificationEvent):
@@ -233,8 +234,7 @@ async def start():
     await bot._handle_invited_rooms(resp)
     await bot._handle_joined_rooms(resp)
 
-    await init_async()
-    await load_prompt(FetchTarget)
+    await client_init(target_prefix_list, sender_prefix_list)
 
     Logger.info("starting sync loop...")
     await bot.set_presence("online", f"AkariBot {Info.version}")
@@ -263,12 +263,9 @@ async def start():
     await bot.set_presence("offline")
 
 
-if bot and Config("enable", False, table_name="bot_matrix") or __name__ == "__main__":
+if bot and Config("enable", False, table_name="bot_matrix"):
     loop = asyncio.new_event_loop()
-    try:
-        Info.client_name = client_name
-        if "subprocess" in sys.argv:
-            Info.subprocess = True
-        loop.run_until_complete(start())
-    except (KeyboardInterrupt, SystemExit):
-        loop.run_until_complete(cleanup_sessions())
+    Info.client_name = client_name
+    if "subprocess" in sys.argv:
+        Info.subprocess = True
+    loop.run_until_complete(start())

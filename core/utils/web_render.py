@@ -1,13 +1,12 @@
-import traceback
-
 from akari_bot_webrender.functions.main import WebRender
 from akari_bot_webrender.functions.options import ElementScreenshotOptions, PageScreenshotOptions, SourceOptions, \
     SectionScreenshotOptions, LegacyScreenshotOptions
 
 from core.config import Config
+from core.logger import Logger
 
-enable_web_render = Config("enable_webrender", False)
-remote_web_render_url = Config("remote_web_render_url", "", get_url=True)
+enable_web_render = Config("enable_web_render", False)
+remote_web_render_url = Config("remote_web_render_url", cfg_type=str, get_url=True)
 web_render_browser = Config("web_render_browser", "chrome")
 
 web_render = WebRender(debug=False, remote_webrender_url=remote_web_render_url)
@@ -18,11 +17,10 @@ async def init_web_render():
         try:
             await web_render.browser_init(browse_type=web_render_browser)
             return True
-        except Exception as e:
-            print(f"WebRender initialization failed: {e}")
-            traceback.print_exc()
+        except Exception:
+            Logger.exception(f"WebRender initialization failed: ")
     else:
-        print("WebRender is disabled in the configuration.")
+        Logger.info("WebRender is disabled in the configuration.")
     return False
 
 
