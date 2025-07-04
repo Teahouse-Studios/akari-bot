@@ -68,7 +68,7 @@ def generate_config(dir_path, language):
     os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
 
-    dir_list = ["bots", "core", "modules", "schedulers"]
+    dir_list = [".", "bots", "core", "modules", "schedulers"]
     exclude_dir_list = [os.path.join("core", "config"), os.path.join("core", "scripts")]
 
     # create empty config.toml

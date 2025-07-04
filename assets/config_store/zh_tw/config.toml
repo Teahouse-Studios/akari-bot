@@ -8,6 +8,8 @@ initialized = true
 
 [config]
 # 一些基礎的設定部分，此處填寫的值可在訊息中以明文形式顯示。請不要在此部分填寫敏感資訊。
+debug = false # 是否啟用調試模式，啟用後會輸出更多的日誌訊息。
+base_superuser = ["QQ|2596322644"] # 機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。
 enable_dirty_check = false # 是否啟用文字過濾偵測，需要設定阿里雲內容安全服務的 AccessKey ID 與 AccessKey Secret。
 enable_urlmanager = false # 是否啟用 URLManager，用於 URL 跳板用。（聲明此 URL 非官方連結等）
 enable_tos = true # 是否啟用內建的 ToS 檢查規則。
@@ -20,10 +22,8 @@ enable_rickroll = true # 當文字過濾偵測失敗時，是否 Rickroll 使用
 enable_joke = true # 是否啟用玩笑，啟用後將在伺服器時間 4 月 1 日時發生。
 shuffle_rate = 0.1 # 玩笑的隨機發生率，範圍 0 到 1 之間。
 unloaded_modules = [] # 不載入的模組列表，符合到此列表中的模組將不會被載入。
-debug = false # 是否啟用調試模式，啟用後會輸出更多的日誌訊息。
 report_targets = [] # 上報會話列表，此處填寫的值將會被辨識為上報會話。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應會話）
 tos_warning_counts = 5 # 違反 ToS 時的警告次數。
-base_superuser = ["QQ|2596322644"] # 機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。
 no_confirm = false # 是否無需傳送者確認訊息後再執行指令。
 timezone_offset = "+8" # 機器人的預設時區偏移量。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認指令的關鍵字，此處填入的值將會被辨識為確認指令。
