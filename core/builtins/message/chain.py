@@ -197,9 +197,9 @@ class MessageChain:
                 else:
                     value += MessageChain.assign(t_value).as_sendable(session_info)
             elif isinstance(x, URLElement):
-                if not x.applied_mm and session_info and session_info.use_url_manager:
+                if session_info and session_info.use_url_manager and not x.applied_mm:
                     x = URLElement.assign(x.url, use_mm=True, md_format_name=x.md_format_name)
-                if not x.applied_mm and session_info and session_info.use_url_md_format:
+                if session_info and session_info.use_url_md_format and not x.applied_mm:
                     x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
 
                 value.append(PlainElement.assign(x.url, disable_joke=True))

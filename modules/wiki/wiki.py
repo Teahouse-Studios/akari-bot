@@ -254,22 +254,18 @@ async def query_pages(
                                     redirected_title=display_title,
                                 )
                             )
-                    if (
-                        r.link
-                        and r.selected_section
-                        and (r.info.in_allowlist or not Bot.Info.use_url_manager)
-                        and not r.invalid_section
-                        and Bot.Info.web_render_status
-                    ):
+                    if (r.link and r.selected_section and (r.info.in_allowlist or not (isinstance(session, Bot.MessageSession)
+                                                                                       and session.session_info.use_url_manager)) and not r.invalid_section and Bot.Info.web_render_status):
                         render_section_list.append(
                             {
                                 r.link: {
                                     "url": r.info.realurl,
                                     "section": r.selected_section,
-                                    "in_allowlist": r.info.in_allowlist or not Bot.Info.use_url_manager,
-                                }
-                            }
-                        )
+                                    "in_allowlist": r.info.in_allowlist or not (
+                                        isinstance(
+                                            session,
+                                            Bot.MessageSession) and session.session_info.use_url_manager),
+                                }})
                         plain_slice.append(
                             session.locale.t("wiki.message.section.rendering")
                         )
@@ -278,9 +274,8 @@ async def query_pages(
                             plain_slice.append(r.desc)
 
                     if r.link:
-                        plain_slice.append(
-                            str(Url(r.link, use_mm=not r.info.in_allowlist or not Bot.Info.use_url_manager))
-                        )
+                        plain_slice.append(str(Url(r.link, use_mm=not r.info.in_allowlist or (
+                            isinstance(session, Bot.MessageSession) and session.session_info.use_url_manager))))
 
                     if r.file:
                         dl_list.append(r.file)
@@ -293,27 +288,19 @@ async def query_pages(
                                 {
                                     r.link: {
                                         "url": r.info.realurl,
-                                        "in_allowlist": r.info.in_allowlist or not Bot.Info.use_url_manager,
-                                        "content_mode": r.has_template_doc
-                                        or r.title.split(":")[0] in ["User"]
-                                        or (
-                                            r.templates
-                                            and (
-                                                "Template:Disambiguation" in r.templates
-                                                or "Template:Version disambiguation"
-                                                in r.templates
-                                            )
-                                        )
-                                        or r.is_forum_topic,
-                                    }
-                                }
-                            )
+                                        "in_allowlist": r.info.in_allowlist or not (
+                                            isinstance(
+                                                session,
+                                                Bot.MessageSession) and session.session_info.use_url_manager),
+                                        "content_mode": r.has_template_doc or r.title.split(":")[0] in ["User"] or (
+                                            r.templates and (
+                                                "Template:Disambiguation" in r.templates or "Template:Version disambiguation" in r.templates)) or r.is_forum_topic,
+                                    }})
                     if plain_slice:
                         msg_list.append(Plain("\n".join(plain_slice)))
                     if Bot.Info.web_render_status:
-                        if (r.invalid_section and (r.info.in_allowlist or not Bot.Info.use_url_manager)) or (
-                            r.is_talk_page and not r.selected_section
-                        ):
+                        if (r.invalid_section and (r.info.in_allowlist or not (isinstance(session, Bot.MessageSession)
+                                                                               and session.session_info.use_url_manager))) or (r.is_talk_page and not r.selected_section):
                             if (
                                 isinstance(session, Bot.MessageSession)
                                 and session.session_info.support_image
@@ -327,12 +314,11 @@ async def query_pages(
                                 i_msg_lst.append(
                                     Plain(
                                         session.locale.t(
-                                            "wiki.message.invalid_section.prompt"
-                                            if r.invalid_section and (r.info.in_allowlist or not Bot.Info.use_url_manager)
-                                            else "wiki.message.talk_page.prompt"
-                                        )
-                                    )
-                                )
+                                            "wiki.message.invalid_section.prompt" if r.invalid_section and (
+                                                r.info.in_allowlist or not (
+                                                    isinstance(
+                                                        session,
+                                                        Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt")))
                                 i_msg_lst += [
                                     Image(ii)
                                     for ii in await image_table_render(
@@ -378,7 +364,11 @@ async def query_pages(
                                     i_msg_lst, callback=_callback
                                 )
                             else:
-                                if r.invalid_section and (r.info.in_allowlist or not Bot.Info.use_url_manager):
+                                if r.invalid_section and (
+                                    r.info.in_allowlist or not (
+                                        isinstance(
+                                            session,
+                                            Bot.MessageSession) and session.session_info.use_url_manager)):
                                     msg_list.append(
                                         Plain(
                                             session.locale.t(
