@@ -68,8 +68,7 @@ LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
 
 login_failed_attempts = defaultdict(list)
 
-Bot.register_bot(client_name=client_name,
-                 private_assets_path=os.path.join(assets_path, "private", "web"))
+Bot.register_bot(client_name=client_name)
 
 ctx_id = Bot.register_context_manager(WebContextManager)
 
