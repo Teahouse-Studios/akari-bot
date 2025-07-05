@@ -3,8 +3,8 @@ import sys
 
 import orjson as json
 
-from tortoise.models import Model
 from tortoise import fields, run_async, Tortoise
+from tortoise.models import Model
 
 if __name__ == "__main__":
     sys.path.append(os.getcwd())
@@ -187,24 +187,24 @@ async def rename_old_tables():
     # Renaming old tables to avoid conflicts
     # Start with "_old" to order them at the end of the list
     try:
-        await conn.execute_script("ALTER TABLE SenderInfo RENAME TO _old_SenderInfo;")
-        await conn.execute_script("ALTER TABLE TargetInfo RENAME TO _old_TargetInfo;")
-        await conn.execute_script("ALTER TABLE GroupBlockList RENAME TO _old_GroupBlockList;")
-        await conn.execute_script("ALTER TABLE StoredData RENAME TO _old_StoredData;")
-        await conn.execute_script("ALTER TABLE Analytics RENAME TO _old_Analytics;")
-        await conn.execute_script("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
-        await conn.execute_script("ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
-        await conn.execute_script("ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
-        await conn.execute_script("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
-        await conn.execute_script("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
-        await conn.execute_script("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
-        await conn.execute_script("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
-        await conn.execute_script("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
-        await conn.execute_script("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
-        await conn.execute_script("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
-        await conn.execute_script("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
-        await conn.execute_script("ALTER TABLE job_queues RENAME TO _old_job_queues;")
-        await conn.execute_script("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
+        await conn.execute_query("ALTER TABLE SenderInfo RENAME TO _old_SenderInfo;")
+        await conn.execute_query("ALTER TABLE TargetInfo RENAME TO _old_TargetInfo;")
+        await conn.execute_query("ALTER TABLE GroupBlockList RENAME TO _old_GroupBlockList;")
+        await conn.execute_query("ALTER TABLE StoredData RENAME TO _old_StoredData;")
+        await conn.execute_query("ALTER TABLE Analytics RENAME TO _old_Analytics;")
+        await conn.execute_query("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
+        await conn.execute_query("ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
+        await conn.execute_query("ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
+        await conn.execute_query("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
+        await conn.execute_query("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
+        await conn.execute_query("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
+        await conn.execute_query("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
+        await conn.execute_query("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
+        await conn.execute_query("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
+        await conn.execute_query("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
+        await conn.execute_query("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
+        await conn.execute_query("ALTER TABLE job_queues RENAME TO _old_job_queues;")
+        await conn.execute_query("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
     except Exception:
         pass
 
@@ -220,6 +220,7 @@ async def convert_database():
         db_url=get_db_link(),
         modules={"models": ["core.scripts.convert_database", "core.database.models"] + database_list}
     )
+    conn = Tortoise.get_connection("default")
 
     await Tortoise.generate_schemas(safe=True)
 
@@ -245,6 +246,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert SenderInfo: {r.id}, error: {e}")
             Logger.error(f"SenderInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_SenderInfo;")
 
     Logger.info("Converting TargetInfo...")
 
@@ -271,15 +273,20 @@ async def convert_database():
             Logger.error(f"TargetInfo record: {r.__dict__}")
 
         if r.targetId in blocked_target_ids:
-            target_info_record = await TargetInfo.get_by_target_id(r.targetId, create=False)
-            if target_info_record:
-                target_info_record.blocked = True
-                await target_info_record.save()
-            else:
-                await TargetInfo.create(
-                    target_id=r.targetId,
-                    blocked=True
-                )
+            try:
+                target_info_record = await TargetInfo.get_by_target_id(r.targetId, create=False)
+                if target_info_record:
+                    target_info_record.blocked = True
+                    await target_info_record.save()
+                else:
+                    await TargetInfo.create(
+                        target_id=r.targetId,
+                        blocked=True
+                    )
+            except Exception as e:
+                Logger.error(f"Failed to convert TargetInfo: {r.targetId}, error: {e}")
+                Logger.error(f"TargetInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_GroupBlockList;")
 
     Logger.info("Converting StoredData...")
 
@@ -301,6 +308,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert StoredData: {r.name}, error: {e}")
             Logger.error(f"StoredData record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_StoredData;")
 
     Logger.info("Converting Analytics...")
 
@@ -323,6 +331,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert Analytics: {r.id}, error: {e}")
             Logger.error(f"Analytics record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_Analytics;")
 
     Logger.info("Converting UnfriendlyActions...")
 
@@ -340,6 +349,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert UnfriendlyActionRecords: {r.id}, error: {e}")
             Logger.error(f"UnfriendlyActionRecords record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_unfriendly_action;")
 
     Logger.info("Converting CytoidBindInfo...")
 
@@ -353,6 +363,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert CytoidBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"CytoidBindInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_cytoid_CytoidBindInfo;")
 
     Logger.info("Converting DivingProberBindInfo...")
 
@@ -366,6 +377,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert DivingProberBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"DivingProberBindInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_maimai_DivingProberBindInfo;")
 
     Logger.info("Converting OsuBindInfo...")
 
@@ -379,6 +391,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert OsuBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"OsuBindInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_osu_OsuBindInfo;")
 
     Logger.info("Converting PhigrosBindInfo...")
 
@@ -393,6 +406,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert PhigrosBindInfo: {r.targetId}, error: {e}")
             Logger.error(f"PhigrosBindInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_phigros_PgrBindInfo;")
 
     Logger.info("Converting WikiTargetInfo...")
 
@@ -409,6 +423,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert WikiTargetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiTargetInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_TargetSetInfo;")
 
     Logger.info("Converting WikiSiteInfo...")
 
@@ -423,6 +438,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert WikiSiteInfo: {r.apiLink}, error: {e}")
             Logger.error(f"WikiSiteInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiInfo;")
 
     Logger.info("Converting WikiAllowList...")
 
@@ -436,6 +452,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert WikiAllowList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiAllowList record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiAllowList;")
 
     Logger.info("Converting WikiBlockList...")
 
@@ -449,6 +466,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert WikiBlockList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiBlockList record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiBlockList;")
 
     Logger.info("Converting WikiBotAccountList...")
 
@@ -463,6 +481,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert WikiBotAccountList: {r.apiLink}, error: {e}")
             Logger.error(f"WikiBotAccountList record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_wiki_WikiBotAccountList;")
 
     Logger.info("Converting WikiLogTargetSetInfo...")
 
@@ -476,6 +495,7 @@ async def convert_database():
         except Exception as e:
             Logger.error(f"Failed to convert WikiLogTargetSetInfo: {r.targetId}, error: {e}")
             Logger.error(f"WikiLogTargetSetInfo record: {r.__dict__}")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_module_wikilog_WikiLogTargetSetInfo;")
 
     Logger.info("Converting DBVersion...")
 
@@ -483,6 +503,8 @@ async def convert_database():
     if db_v:
         await db_v.delete()
     await DBVersion.create(version=database_version)
+    await conn.execute_query("DROP TABLE IF EXISTS _old_job_queues;")
+    await conn.execute_query("DROP TABLE IF EXISTS _old_DBVersion;")
 
     await Tortoise.close_connections()
 
