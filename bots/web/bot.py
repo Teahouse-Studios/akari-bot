@@ -104,7 +104,6 @@ async def lifespan(app: FastAPI):
         Logger.info(_webui_message())
     yield
     await cleanup_sessions()
-    sys.exit(0)
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
