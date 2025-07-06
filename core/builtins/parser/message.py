@@ -23,6 +23,7 @@ from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.tos import _abuse_warn_target
 from core.types import Module, Param
+from core.types.module.component_meta import CommandMeta
 from core.utils.message import remove_duplicate_space
 
 if TYPE_CHECKING:
@@ -134,9 +135,9 @@ def _transform_alias(msg, command: str):
     for pattern, replacement in aliases.items():
         if re.search(r"\${[^}]*}", pattern):
             # 使用正则表达式匹配并分隔多个连在一起的占位符
-            pattern = re.sub(r"(\$\{\w+\})(?=\$\{\w+\})", r"\1 ", pattern)
+            pattern = re.sub(r"(\$\{\w+})(?=\$\{\w+})", r"\1 ", pattern)
             # 匹配占位符
-            pattern_placeholders = re.findall(r"\$\{([^{}$]+)\}", pattern)
+            pattern_placeholders = re.findall(r"\$\{([^{}$]+)}", pattern)
 
             regex_pattern = re.escape(pattern)
             for placeholder in pattern_placeholders:
@@ -230,7 +231,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
                 alias_list.append(alias)
     if alias_list:
         max_ = max(alias_list, key=len)
-        command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
+        command = command.replace(max_, ModulesManager.modules_aliases[str(max_)], 1)
 
     command_split: list = command.split(" ")  # 切割消息
     msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
@@ -525,7 +526,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                                        command_prefixes=msg.session_info.prefixes)
         try:
             parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
-            submodule: Module = parsed_msg[0]
+            submodule: CommandMeta = parsed_msg[0]
             msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
             Logger.trace('Parsed message: ' + str(msg.parsed_msg))
 
@@ -675,9 +676,9 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     if not timeout and report_targets:
         for target in report_targets:
             if f := await Bot.fetch_target(target):
-                await f.send_direct_message([I18NContext("error.message.report", module=msg.trigger_msg),
-                                            Plain(tb.strip(), disable_joke=True)],
-                                            enable_parse_message=False, disable_secret_check=True)
+                await Bot.send_direct_message(f, [I18NContext("error.message.report", module=msg.trigger_msg),
+                                                  Plain(tb.strip(), disable_joke=True)],
+                                              enable_parse_message=False, disable_secret_check=True)
 
 
 """async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):

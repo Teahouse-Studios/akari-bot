@@ -572,4 +572,11 @@ converter.register_structure_hook(
     lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else MessageNodes)
 )
 
-__all__ = ["MessageChain", "I18NMessageChain", "PlatformMessageChain", "Chainable", "get_message_chain", "MessageNodes"]
+__all__ = [
+    "MessageChain",
+    "I18NMessageChain",
+    "PlatformMessageChain",
+    "Chainable",
+    "get_message_chain",
+    "MessageNodes",
+    "match_kecode"]
