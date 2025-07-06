@@ -10,7 +10,7 @@ import discord
 import filetype
 
 import bots.discord.slash as slash_modules
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 from bots.discord.info import *
 from core.builtins.bot import Bot
@@ -36,9 +36,9 @@ ignored_sender = Config("ignored_sender", ignored_sender_default)
 count = 0
 
 
-@client.event
+@discord_bot.event
 async def on_ready():
-    Logger.info(f"Logged on as {client.user}")
+    Logger.info(f"Logged on as {discord_bot.user}")
     global count
     if count == 0:
         await client_init(target_prefix_list, sender_prefix_list)
@@ -75,10 +75,10 @@ async def to_message_chain(message: discord.Message):
     return MessageChain(lst)
 
 
-@client.event
+@discord_bot.event
 async def on_message(message: discord.Message):
     # don't respond to ourselves
-    if message.author == client.user or message.author.bot:
+    if message.author == discord_bot.user or message.author.bot:
         return
     target_from = target_channel_prefix
     if isinstance(message.channel, discord.DMChannel):
@@ -93,7 +93,7 @@ async def on_message(message: discord.Message):
         reply_id = message.reference.message_id
 
     if match_at := re.match(r"^<@(.*?)>", message.content):  # pop up help information when user mentions bot
-        if match_at.group(1) == str(client.user.id):
+        if match_at.group(1) == str(discord_bot.user.id):
             message.content = re.sub(r"<@(.*?)>", "", message.content).strip()
             if message.content in ["", " "]:
                 message.content = f"{command_prefix[0]}help"
@@ -124,4 +124,4 @@ if Config("enable", False, table_name="bot_discord"):
     Info.client_name = client_name
     if "subprocess" in sys.argv:
         Info.subprocess = True
-    loop.run_until_complete(client.start(dc_token))
+    loop.run_until_complete(discord_bot.start(dc_token))

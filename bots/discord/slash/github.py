@@ -1,9 +1,9 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
-github = client.create_group("github", "Github query tool.")
+github = discord_bot.create_group("github", "Github query tool.")
 
 
 @github.command(

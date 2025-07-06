@@ -8,12 +8,12 @@ from bots.aiocqhttp.info import sender_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice, Mention
 from core.logger import Logger
-from .client import bot
+from .client import aiocqhttp_bot
 
 
 async def get_onebot_implementation() -> Optional[str]:
     """获取正在使用的OneBot实现。"""
-    data = await bot.call_action("get_version_info")
+    data = await aiocqhttp_bot.call_action("get_version_info")
     Logger.debug(str(data))
     app_name = data.get("app_name")
 

@@ -4,7 +4,7 @@ from typing import Optional, List
 import discord
 from discord import Message
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.features import Features
 from bots.discord.info import client_name, target_channel_prefix
 from bots.discord.utils import get_channel_id, get_sender_id, convert_embed
@@ -36,7 +36,7 @@ class DiscordContextManager(ContextManager):
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
         if not ctx:
-            channel = await client.fetch_channel(get_channel_id(session_info))
+            channel = await discord_bot.fetch_channel(get_channel_id(session_info))
             author = await channel.guild.fetch_member(get_sender_id(session_info))
         else:
             channel = ctx.channel
@@ -61,7 +61,7 @@ class DiscordContextManager(ContextManager):
         if ctx:
             channel = ctx.channel
         else:
-            channel = await client.fetch_channel(get_channel_id(session_info))
+            channel = await discord_bot.fetch_channel(get_channel_id(session_info))
         msg_ids = []
 
         if isinstance(message, MessageNodes):
@@ -175,7 +175,7 @@ class DiscordContextManager(ContextManager):
 
         for msg_id in message_id:
             try:
-                channel = await client.fetch_channel(get_channel_id(session_info))
+                channel = await discord_bot.fetch_channel(get_channel_id(session_info))
                 message = await channel.fetch_message(msg_id)
                 if message:
                     await message.delete()

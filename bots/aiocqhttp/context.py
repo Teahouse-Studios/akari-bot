@@ -8,7 +8,7 @@ import aiocqhttp
 from aiocqhttp import Event, MessageSegment
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.client import aiocqhttp_bot
 from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, client_name
 from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
@@ -31,13 +31,13 @@ qq_account = Temp.data.get("qq_account")
 
 async def fake_forward_msg(session_info: SessionInfo, nodelist):
     if session_info.target_from == target_group_prefix:
-        return await bot.call_action(
+        return await aiocqhttp_bot.call_action(
             "send_group_forward_msg",
             group_id=int(session_info.get_common_target_id()),
             messages=nodelist,
         )
     elif session_info.target_from == target_private_prefix:
-        return await bot.call_action(
+        return await aiocqhttp_bot.call_action(
             "send_private_forward_msg",
             user_id=int(session_info.get_common_sender_id()),
             messages=nodelist
@@ -88,7 +88,7 @@ class AIOCQContextManager(ContextManager):
             if session_info.target_from == target_private_prefix:
                 return True
             if session_info.target_from == target_group_prefix:
-                get_member_info = await bot.call_action(
+                get_member_info = await aiocqhttp_bot.call_action(
                     "get_group_member_info",
                     group_id=session_info.get_common_target_id(),
                     user_id=session_info.get_common_sender_id(),
@@ -215,11 +215,11 @@ class AIOCQContextManager(ContextManager):
             Logger.info(f"[Bot] -> [{session_info.target_id}]: {message_chain_assendable}")
             if session_info.target_from == target_group_prefix:
                 try:
-                    send = await bot.send_group_msg(
+                    send = await aiocqhttp_bot.send_group_msg(
                         group_id=session_info.get_common_target_id(), message=convert_msg_segments
                     )
                 except aiocqhttp.exceptions.NetworkError:
-                    send = await bot.send_group_msg(
+                    send = await aiocqhttp_bot.send_group_msg(
                         group_id=session_info.get_common_target_id(),
                         message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
                     )
@@ -234,7 +234,7 @@ class AIOCQContextManager(ContextManager):
                                 "base64://" + await img.get_base64()
                             )
                         try:
-                            send = await bot.send_group_msg(
+                            send = await aiocqhttp_bot.send_group_msg(
                                 group_id=session_info.get_common_target_id(), message=msgsgm
                             )
                         except aiocqhttp.exceptions.ActionFailed:
@@ -242,7 +242,7 @@ class AIOCQContextManager(ContextManager):
 
             else:
                 try:
-                    send = await bot.send_private_msg(
+                    send = await aiocqhttp_bot.send_private_msg(
                         user_id=session_info.get_common_target_id(), message=convert_msg_segments
                     )
                 except aiocqhttp.exceptions.ActionFailed:
@@ -264,7 +264,7 @@ class AIOCQContextManager(ContextManager):
         if session_info.target_from in [target_private_prefix, target_group_prefix]:
             try:
                 for x in message_id:
-                    await bot.call_action("delete_msg", message_id=x)
+                    await aiocqhttp_bot.call_action("delete_msg", message_id=x)
             except Exception:
                 Logger.exception()
 
@@ -283,12 +283,12 @@ class AIOCQContextManager(ContextManager):
             if session_info.target_from == target_group_prefix:  # wtf onebot 11
                 obi = await get_onebot_implementation()
                 if obi in ["llonebot", "napcat"]:
-                    await bot.call_action(
+                    await aiocqhttp_bot.call_action(
                         "set_msg_emoji_like",
                         message_id=session_info.message_id,
                         emoji_id=qq_typing_emoji)
                 elif obi == "lagrange":
-                    await bot.call_action(
+                    await aiocqhttp_bot.call_action(
                         "set_group_reaction",
                         group_id=session_info.get_common_target_id(),
                         message_id=session_info.message_id,
@@ -300,11 +300,11 @@ class AIOCQContextManager(ContextManager):
                             return
                     last_send_typing_time[session_info.sender_id] = datetime.datetime.now().timestamp()
                     if obi == "shamrock":
-                        await bot.send_group_msg(
+                        await aiocqhttp_bot.send_group_msg(
                             group_id=session_info.get_common_target_id(),
                             message=f"[CQ:touch,id={session_info.get_common_sender_id()}]")
                     elif obi == "go-cqhttp":
-                        await bot.send_group_msg(
+                        await aiocqhttp_bot.send_group_msg(
                             group_id=session_info.get_common_target_id(),
                             message=f"[CQ:poke,qq={session_info.get_common_sender_id()}]")
                     else:
@@ -341,23 +341,23 @@ class AIOCQContextManager(ContextManager):
         if session_info.target_from == target_group_prefix:
             obi = await get_onebot_implementation()
             if obi in ["llonebot", "napcat"]:
-                await bot.call_action("set_msg_emoji_like",
-                                      message_id=session_info.message_id,
-                                      emoji_id=qq_limited_emoji)
+                await aiocqhttp_bot.call_action("set_msg_emoji_like",
+                                                message_id=session_info.message_id,
+                                                emoji_id=qq_limited_emoji)
             elif obi == "lagrange":
-                await bot.call_action("set_group_reaction",
-                                      group_id=session_info.get_common_target_id(),
-                                      message_id=session_info.message_id,
-                                      code=qq_limited_emoji,
-                                      is_add=True)
+                await aiocqhttp_bot.call_action("set_group_reaction",
+                                                group_id=session_info.get_common_target_id(),
+                                                message_id=session_info.message_id,
+                                                code=qq_limited_emoji,
+                                                is_add=True)
             elif obi == "shamrock":
-                await bot.call_action("send_group_msg",
-                                      group_id=session_info.get_common_target_id(),
-                                      message=f"[CQ:touch,id={qq_account}]")
+                await aiocqhttp_bot.call_action("send_group_msg",
+                                                group_id=session_info.get_common_target_id(),
+                                                message=f"[CQ:touch,id={qq_account}]")
             elif obi == "go-cqhttp":
-                await bot.call_action("send_group_msg",
-                                      group_id=session_info.get_common_target_id(),
-                                      message=f"[CQ:poke,qq={qq_account}]")
+                await aiocqhttp_bot.call_action("send_group_msg",
+                                                group_id=session_info.get_common_target_id(),
+                                                message=f"[CQ:poke,qq={qq_account}]")
             else:
                 pass
 

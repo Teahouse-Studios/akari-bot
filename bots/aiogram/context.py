@@ -3,7 +3,7 @@ from typing import Optional
 from aiogram import types
 from aiogram.types import FSInputFile
 
-from bots.aiogram.client import bot
+from bots.aiogram.client import aiogram_bot
 from bots.aiogram.features import Features
 from bots.aiogram.info import client_name
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
@@ -30,13 +30,13 @@ class AiogramContextManager(ContextManager):
         # 这里可以添加权限检查的逻辑
         ctx = cls.context.get(session_info.session_id)
         if not ctx:
-            chat = await bot.get_chat(session_info.get_common_target_id())
+            chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
         else:
             chat = ctx.chat
         if chat.type == "private":
             return True
         admins = [
-            member.user.id for member in await bot.get_chat_administrators(chat.id)
+            member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)
         ]
         if ctx.sender in admins:
             return True
@@ -72,9 +72,9 @@ class AiogramContextManager(ContextManager):
                 mentions.append(x)
         if text:
             send_text = "\n".join(text)
-            send_ = await bot.send_message(session_info.get_common_target_id(),
-                                           send_text,
-                                           reply_to_message_id=(
+            send_ = await aiogram_bot.send_message(session_info.get_common_target_id(),
+                                                   send_text,
+                                                   reply_to_message_id=(
                 session_info.message_id if quote and not msg_ids and session_info.message_id
                 else None
             ), parse_mode="HTML"
@@ -86,7 +86,7 @@ class AiogramContextManager(ContextManager):
                 for image in images:
                     split = await image_split(image)
                     for xs in split:
-                        send_ = await bot.send_photo(
+                        send_ = await aiogram_bot.send_photo(
                             session_info.get_common_target_id(),
                             FSInputFile(await xs.get()),
                             reply_to_message_id=(
@@ -100,7 +100,7 @@ class AiogramContextManager(ContextManager):
                         msg_ids.append(send_.message_id)
             else:
                 for image in images:
-                    send_ = await bot.send_photo(
+                    send_ = await aiogram_bot.send_photo(
                         session_info.get_common_target_id(),
                         FSInputFile(await image.get()),
                         reply_to_message_id=(
@@ -114,7 +114,7 @@ class AiogramContextManager(ContextManager):
                     msg_ids.append(send_.message_id)
         if voices:
             for voice in voices:
-                send_ = await bot.send_audio(
+                send_ = await aiogram_bot.send_audio(
                     session_info.get_common_target_id(),
                     FSInputFile(voice.path),
                     reply_to_message_id=(
@@ -130,7 +130,7 @@ class AiogramContextManager(ContextManager):
             for mention in mentions:
                 if mention.client == client_name and session_info.target_from in [
                         f"{client_name}|Group", f"{client_name}|Supergroup"]:
-                    send_ = await bot.send_message(
+                    send_ = await aiogram_bot.send_message(
                         session_info.get_common_target_id(),
                         f"<a href=\"tg://user?id={mention.id}\">@{mention.id}</a>",
                         reply_to_message_id=(session_info.message_id if quote and not msg_ids and session_info.message_id else None), parse_mode="HTML"
@@ -153,7 +153,7 @@ class AiogramContextManager(ContextManager):
 
         for msg_id in message_id:
             try:
-                await bot.delete_message(
+                await aiogram_bot.delete_message(
                     chat_id=session_info.get_common_target_id(),
                     message_id=int(msg_id)
                 )

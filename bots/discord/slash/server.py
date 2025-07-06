@@ -1,6 +1,6 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
 
@@ -10,7 +10,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
     return [ctx.options["address"]]
 
 
-@client.slash_command(
+@discord_bot.slash_command(
     name="server", description="Get Minecraft: Java/Bedrock Edition server motd."
 )
 @discord.option(

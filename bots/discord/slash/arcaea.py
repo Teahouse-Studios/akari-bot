@@ -1,9 +1,9 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
-arc = client.create_group("arcaea", "Queries about Arcaea.")
+arc = discord_bot.create_group("arcaea", "Queries about Arcaea.")
 
 
 @arc.command(name="download", description="Get the latest version of game apk.")

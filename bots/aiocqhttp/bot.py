@@ -11,7 +11,7 @@ from hypercorn import Config as HyperConfig
 
 from core.logger import Logger
 
-from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.client import aiocqhttp_bot
 from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
@@ -41,16 +41,16 @@ ignored_sender = Config("ignored_sender", ignored_sender_default)
 default_locale = Config("default_locale", cfg_type=str)
 
 
-@bot.on_startup
+@aiocqhttp_bot.on_startup
 async def startup():
     await client_init(target_prefix_list, sender_prefix_list)
     asyncio.create_task(AIOCQFetchedContextManager.process_tasks())
-    bot.logger.setLevel(logging.WARNING)
+    aiocqhttp_bot.logger.setLevel(logging.WARNING)
 
 
-@bot.on_websocket_connection
+@aiocqhttp_bot.on_websocket_connection
 async def _(event: Event):
-    qq_login_info = await bot.call_action("get_login_info")
+    qq_login_info = await aiocqhttp_bot.call_action("get_login_info")
     qq_account = qq_login_info.get("user_id")
     Temp.data["qq_account"] = str(qq_account)
     Temp.data["qq_nickname"] = qq_login_info.get("nickname")
@@ -138,17 +138,17 @@ async def message_handler(event: Event):
 
 
 if enable_listening_self_message:
-    @bot.on("message_sent")
+    @aiocqhttp_bot.on("message_sent")
     async def _(event: Event):
         await message_handler(event)
 
 
-@bot.on_message("group", "private")
+@aiocqhttp_bot.on_message("group", "private")
 async def _(event: Event):
     await message_handler(event)
 
 
-@bot.on("request.friend")
+@aiocqhttp_bot.on("request.friend")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
     sender_info = await SenderInfo.get_by_sender_id(sender_id)
@@ -161,7 +161,7 @@ async def _(event: Event):
     return {"approve": False}
 
 
-@bot.on("request.group.invite")
+@aiocqhttp_bot.on("request.group.invite")
 async def _(event: Event):
     sender_id = f"{sender_prefix}|{event.user_id}"
     sender_info = await SenderInfo.get_by_sender_id(sender_id)
@@ -176,7 +176,7 @@ async def _(event: Event):
     return {"approve": False}
 
 
-@bot.on_notice("group_ban")
+@aiocqhttp_bot.on_notice("group_ban")
 async def _(event: Event):
     qq_account = Temp.data.get("qq_account")
     if enable_tos and event.user_id == int(qq_account):
@@ -198,12 +198,12 @@ async def _(event: Event):
             reason = Locale(default_locale).t("tos.message.reason.mute")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
-            await bot.call_action("set_group_leave", group_id=event.group_id)
+            await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
             await sender_info.switch_identity(trust=False)
-            await bot.call_action("delete_friend", friend_id=event.operator_id)
+            await aiocqhttp_bot.call_action("delete_friend", friend_id=event.operator_id)
 
 
-@bot.on_notice("group_decrease")
+@aiocqhttp_bot.on_notice("group_decrease")
 async def _(event: Event):
     if enable_tos and event.sub_type == "kick_me":
         sender_id = f"{sender_prefix}|{event.operator_id}"
@@ -222,10 +222,10 @@ async def _(event: Event):
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
             await sender_info.switch_identity(trust=False)
-            await bot.call_action("delete_friend", friend_id=event.operator_id)
+            await aiocqhttp_bot.call_action("delete_friend", friend_id=event.operator_id)
 
 
-@bot.on_message("group")
+@aiocqhttp_bot.on_message("group")
 async def _(event: Event):
     if enable_tos:
         target_id = f"{target_group_prefix}|{event.group_id}"
@@ -234,8 +234,8 @@ async def _(event: Event):
             res = Locale(default_locale).t("tos.message.in_group_blocklist")
             if issue_url := Config("issue_url", issue_url_default):
                 res += "\n" + Locale(default_locale).t("tos.message.appeal", issue_url=issue_url)
-            await bot.send(event=event, message=res)
-            await bot.call_action("set_group_leave", group_id=event.group_id)
+            await aiocqhttp_bot.send(event=event, message=res)
+            await aiocqhttp_bot.call_action("set_group_leave", group_id=event.group_id)
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
@@ -246,4 +246,4 @@ if Config("enable", False, table_name="bot_aiocqhttp"):
     if "subprocess" in sys.argv:
         Info.subprocess = True
     host, port = qq_host.split(":")
-    bot.run(host=host, port=port, debug=False)
+    aiocqhttp_bot.run(host=host, port=port, debug=False)

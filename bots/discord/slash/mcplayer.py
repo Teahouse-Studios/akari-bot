@@ -1,10 +1,10 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
 
-@client.slash_command(name="mcplayer", description="Get Minecraft player information.")
+@discord_bot.slash_command(name="mcplayer", description="Get Minecraft player information.")
 @discord.option(
     name="username_or_uuid", description="The name or UUID of Minecraft player."
 )

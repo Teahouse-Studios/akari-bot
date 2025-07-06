@@ -3,7 +3,7 @@ import sys
 
 from aiogram import types
 
-from bots.aiogram.client import dp, bot, token
+from bots.aiogram.client import dp, aiogram_bot, token
 from bots.aiogram.context import AiogramContextManager, AiogramFetchedContextManager
 from bots.aiogram.info import *
 from core.builtins.bot import Bot
@@ -27,18 +27,18 @@ ignored_sender = Config("ignored_sender", ignored_sender_default)
 async def to_message_chain(msg: types.Message):
     lst = []
     if msg.audio:
-        file = await bot.get_file(msg.audio.file_id)
+        file = await aiogram_bot.get_file(msg.audio.file_id)
         d = await download(
             f"https://api.telegram.org/file/bot{token}/{file.file_path}"
         )
         lst.append(Voice(d))
     if msg.photo:
-        file = await bot.get_file(msg.photo[-1]["file_id"])
+        file = await aiogram_bot.get_file(msg.photo[-1]["file_id"])
         lst.append(
             Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
         )
     if msg.voice:
-        file = await bot.get_file(msg.voice.file_id)
+        file = await aiogram_bot.get_file(msg.voice.file_id)
         d = await download(
             f"https://api.telegram.org/file/bot{token}/{file.file_path}"
         )
@@ -88,4 +88,4 @@ if Config("enable", False, table_name="bot_aiogram"):
     if "subprocess" in sys.argv:
         Info.subprocess = True
     dp.startup.register(on_startup)
-    asyncio.run(dp.start_polling(bot))
+    asyncio.run(dp.start_polling(aiogram_bot))

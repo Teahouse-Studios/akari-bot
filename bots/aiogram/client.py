@@ -17,5 +17,5 @@ elif proxy:
 else:
     session = None
 
-bot = Bot(token=token, session=session)
+aiogram_bot = Bot(token=token, session=session)
 dp = Dispatcher()

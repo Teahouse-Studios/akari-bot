@@ -2,28 +2,28 @@ import re
 
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser, ctx_to_session
 from modules.wiki import WikiLib
 from modules.wiki.database.models import WikiTargetInfo
 
 
-@client.slash_command(description="Get recent abuse logs for the default wiki.")
+@discord_bot.slash_command(description="Get recent abuse logs for the default wiki.")
 async def ab(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@client.slash_command(description="Get recent newbie logs for the default wiki.")
+@discord_bot.slash_command(description="Get recent newbie logs for the default wiki.")
 async def newbie(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@client.slash_command(description="Get recent changes for the default wiki.")
+@discord_bot.slash_command(description="Get recent changes for the default wiki.")
 async def rc(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-wiki = client.create_group("wiki", "Query information from Mediawiki-based websites.")
+wiki = discord_bot.create_group("wiki", "Query information from Mediawiki-based websites.")
 
 
 async def auto_search(ctx: discord.AutocompleteContext):
