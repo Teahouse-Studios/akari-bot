@@ -166,31 +166,6 @@ class MessageSession(MessageSessionT):
             return self.session.message.text
         return ""
 
-    async def to_message_chain(self):
-        lst = []
-        if self.session.message.audio:
-            file = await bot.get_file(self.session.message.audio.file_id)
-            d = await download(
-                f"https://api.telegram.org/file/bot{token}/{file.file_path}"
-            )
-            lst.append(Voice(d))
-        if self.session.message.photo:
-            file = await bot.get_file(self.session.message.photo[-1]["file_id"])
-            lst.append(
-                Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
-            )
-        if self.session.message.voice:
-            file = await bot.get_file(self.session.message.voice.file_id)
-            d = await download(
-                f"https://api.telegram.org/file/bot{token}/{file.file_path}"
-            )
-            lst.append(Voice(d))
-        if self.session.message.caption:
-            lst.append(Plain(self.session.message.caption))
-        if self.session.message.text:
-            lst.append(Plain(self.session.message.text))
-        return MessageChain.assign(lst)
-
     async def delete(self):
         try:
             for x in self.session.message:

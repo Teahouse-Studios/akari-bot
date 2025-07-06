@@ -7,6 +7,7 @@ import re
 import sys
 
 import discord
+import filetype
 
 import bots.discord.slash as slash_modules
 from bots.discord.client import client
@@ -14,6 +15,7 @@ from bots.discord.context import DiscordContextManager, DiscordFetchedContextMan
 from bots.discord.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.constants.default import ignored_sender_default
@@ -21,7 +23,7 @@ from core.client.init import client_init
 from core.config import Config
 from core.constants.info import Info
 from core.logger import Logger
-
+from core.utils.http import download
 
 Bot.register_bot(client_name=client_name)
 
@@ -62,6 +64,17 @@ def load_slashcommands():
 load_slashcommands()
 
 
+async def to_message_chain(message: discord.Message):
+    lst = [Plain(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))]
+    for x in message.attachments:
+        d = await download(x.url)
+        if filetype.is_image(d):
+            lst.append(Image(d))
+        elif filetype.is_audio(d):
+            lst.append(Voice(d))
+    return MessageChain(lst)
+
+
 @client.event
 async def on_message(message: discord.Message):
     # don't respond to ourselves
@@ -89,7 +102,7 @@ async def on_message(message: discord.Message):
         else:
             return
 
-    msg_chain = MessageChain.assign(re.sub(r"<@(.*?)>", rf"{sender_prefix}|\1", message.content))
+    msg_chain = await to_message_chain(message)
 
     session = await SessionInfo.assign(target_id=target_id,
                                        sender_id=sender_id,
