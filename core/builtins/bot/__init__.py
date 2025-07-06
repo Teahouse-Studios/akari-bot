@@ -84,7 +84,6 @@ class Bot:
         await Bot.post_message(
             "*", message=message, session_list=session_list, **kwargs
         )
-        ...
 
     @classmethod
     async def fetch_target(cls,
@@ -93,9 +92,8 @@ class Bot:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
-        # todo
         try:
-            Logger.debug(f"Fetching target {target_id} with sender {sender_id}")
+            Logger.trace(f"Fetching target {target_id} with sender {sender_id}")
             session = await FetchedSessionInfo.assign(target_id=target_id,
                                                       sender_id=sender_id,
                                                       fetch=True, create=False)
