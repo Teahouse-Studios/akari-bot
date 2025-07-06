@@ -12,7 +12,7 @@ from core.config import Config
 from core.constants import base_superuser_default
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path
-from core.database.models import TargetInfo
+from core.database.models import TargetInfo, AnalyticsData
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -21,6 +21,9 @@ from core.types.message import ModuleHookContext
 if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
     from core.queue.server import JobQueueServer
+
+
+enable_analytics = Config("enable_analytics", False)
 
 
 class Bot:
@@ -143,6 +146,12 @@ class Bot:
             else:
                 post_message = message
             await queue_server.client_send_message(session_, post_message)
+            if enable_analytics and module_name:
+                await AnalyticsData.create(target_id=session_.target_id,
+                                           sender_id=session_.sender_id,
+                                           command="",
+                                           module_name=module_name,
+                                           module_type="schedule")
 
     postMessage = post_message
     postGlobalMessage = post_global_message
