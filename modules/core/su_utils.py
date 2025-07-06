@@ -20,14 +20,12 @@ from core.logger import Logger
 from core.server.terminate import restart
 from core.tos import WARNING_COUNTS
 from core.types import Param
+from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
 from core.utils.info import get_all_sender_prefix, get_all_target_prefix
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
-
-target_list = get_all_target_prefix()
-sender_list = get_all_sender_prefix()
 
 
 su = module("superuser", alias="su", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
@@ -35,20 +33,21 @@ su = module("superuser", alias="su", required_superuser=True, base=True, doc=Tru
 
 @su.command("add <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
-    if await sender_info.edit_attr("isSuperUser", True):
+    if await sender_info.edit_attr("superuser", True):
         await msg.finish(I18NContext("core.message.superuser.add.success", user=user))
 
 
 @su.command("remove <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     if user == msg.session_info.sender_id:
         if not await msg.wait_confirm(I18NContext("core.message.superuser.remove.confirm"), append_instruction=False):
@@ -58,7 +57,7 @@ async def _(msg: Bot.MessageSession, user: str):
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
-    if await sender_info.edit_attr("isSuperUser", False):
+    if await sender_info.edit_attr("superuser", False):
         await msg.finish(I18NContext("core.message.superuser.remove.success", user=user))
 
 
@@ -86,7 +85,7 @@ set_ = module("set", required_superuser=True, base=True, doc=True, exclude_from=
               "target module disable <target> <modules> ...",
               "target module list <target>")
 async def _(msg: Bot.MessageSession, target: str):
-    if not any(target.startswith(f"{target_from}|") for target_from in target_list):
+    if not Alive.determine_target_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
     target_info = await TargetInfo.get_by_target_id(target, create=False)
 
@@ -128,7 +127,7 @@ async def _(msg: Bot.MessageSession, target: str):
               "target data edit <target> <k> <v>",
               "target data delete <target> <k>")
 async def _(msg: Bot.MessageSession, target: str):
-    if not any(target.startswith(f"{target_from}|") for target_from in target_list):
+    if not Alive.determine_sender_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
     target_info = await TargetInfo.get_by_target_id(target, create=False)
     if not target_info:
@@ -168,7 +167,7 @@ async def _(msg: Bot.MessageSession, target: str):
               "sender data edit <user> <k> <v>",
               "sender data delete <user> <k>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -233,7 +232,7 @@ ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True, e
 
 @ae.command("check <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -254,7 +253,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("warn <user> [<count>]")
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -269,7 +268,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
 
 @ae.command("revoke <user> [<count>]")
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -282,7 +281,7 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
 
 @ae.command("clear <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -295,7 +294,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("untempban <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     await remove_temp_ban(user)
     await msg.finish(I18NContext("core.message.abuse.untempban.success", user=user))
@@ -303,7 +302,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("ban <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -316,7 +315,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("unban <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -329,7 +328,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("trust <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:
@@ -342,7 +341,7 @@ async def _(msg: Bot.MessageSession, user: str):
 
 @ae.command("distrust <user>")
 async def _(msg: Bot.MessageSession, user: str):
-    if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+    if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
     if not sender_info:

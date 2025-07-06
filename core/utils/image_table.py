@@ -28,7 +28,7 @@ class ImageTable:
 async def image_table_render(
     table: Union[ImageTable, List[ImageTable]],
     save_source: bool = True,
-) -> Union[List[PILImage.Image], bool]:
+) -> Union[List[PILImage.Image], None]:
     """
     使用WebRender渲染图片表格。
 
@@ -79,8 +79,12 @@ async def image_table_render(
         image_list = await web_render.legacy_screenshot(LegacyScreenshotOptions(content=tblst + css, width=w, mw=False))
     except Exception:
         Logger.exception()
-        return False
-    return cb64imglst(image_list)
+        return None
+    if image_list:
+        return cb64imglst(image_list)
+    else:
+        Logger.error("Image table render failed, no image returned.")
+        return None
 
 
 __all__ = ["ImageTable", "image_table_render"]

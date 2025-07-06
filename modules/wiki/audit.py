@@ -10,7 +10,6 @@ aud = module(
     required_superuser=True,
     alias="wau",
     doc=True,
-    load=Bot.Info.use_url_manager,
 )
 
 

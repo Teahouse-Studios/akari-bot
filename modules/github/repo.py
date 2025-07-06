@@ -18,12 +18,13 @@ async def repo(msg: Bot.MessageSession, name: str, pat: str):
         parent = False
 
         if result["homepage"]:
-            website = "Website: " + str(Url(result["homepage"])) + "\n"
+            website = "Website: " + str(Url(result["homepage"], md_format=msg.session_info.use_url_md_format)) + "\n"
         else:
             website = ""
 
         if result["mirror_url"]:
-            mirror = f" (This is a mirror of {str(Url(result["mirror_url"]))} )"
+            mirror = f" (This is a mirror of {
+                str(Url(result["mirror_url"], md_format=msg.session_info.use_url_md_format))} )"
         else:
             mirror = ""
 
@@ -42,7 +43,7 @@ Language · {result["language"]} | Fork · {result["forks_count"]}
                                              | Star · {result["stargazers_count"]} | Watch · {result["watchers_count"]}
 License: {rlicense}
 Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updated_at"])} ago
-{website}{str(Url(result["html_url"]))}"""
+{website}{str(Url(result["html_url"], md_format=msg.session_info.use_url_md_format))}"""
 
         if mirror:
             message += "\n" + mirror

@@ -26,7 +26,6 @@ class SessionInfo:
     message_id: Optional[str] = None
     reply_id: Optional[str] = None
     messages: Optional[MessageChain] = None
-    admin: bool = False
     superuser: bool = False
     support_image: bool = False
     support_voice: bool = False

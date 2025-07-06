@@ -18,9 +18,8 @@ async def search(msg: Bot.MessageSession, keyword: str, pat: str):
         items_out = []
         for item in items:
             try:
-                items_out.append(
-                    str(item["full_name"] + ": " + str(Url(item["html_url"])))
-                )
+                items_out.append(str(item["full_name"] + ": " +
+                                     str(Url(item["html_url"], md_format=msg.session_info.use_url_md_format))))
             except TypeError:
                 continue
         message = (

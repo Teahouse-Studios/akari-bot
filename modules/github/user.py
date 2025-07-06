@@ -34,7 +34,7 @@ async def user(msg: Bot.MessageSession, name: str, pat: str):
 Type · {result["type"]} | Follower · {result["followers"]} | Following · {result["following"]}
                                                               | Repo · {result["public_repos"]} | Gist · {result["public_gists"]}{optional_text}
 Account Created {time_diff(result["created_at"])} ago | Latest activity {time_diff(result["updated_at"])} ago
-{str(Url(result["html_url"]))}"""
+{str(Url(result["html_url"], md_format=msg.session_info.use_url_md_format))}"""
 
         is_dirty = await dirty_check(message, result["login"]) or dark_check(message)
         if is_dirty:

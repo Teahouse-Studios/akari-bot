@@ -260,6 +260,8 @@ class AIOCQContextManager(ContextManager):
         """
         if isinstance(message_id, str):
             message_id = [message_id]
+        if not isinstance(message_id, list):
+            raise TypeError("Message ID must be a list or str")
 
         if session_info.target_from in [target_private_prefix, target_group_prefix]:
             try:

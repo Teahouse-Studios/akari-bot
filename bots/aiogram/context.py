@@ -25,8 +25,8 @@ class AiogramContextManager(ContextManager):
         :param session_info: 会话信息
         :return: 是否有权限
         """
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
         ctx = cls.context.get(session_info.session_id)
         if not ctx:
