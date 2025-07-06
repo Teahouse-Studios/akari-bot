@@ -85,7 +85,7 @@ class JobQueueBase:
                 Logger.warning(f"Unknown action {tsk.action}, skip.")
                 await cls.return_val(tsk, {}, status="failed")
         except QueueFinished:
-            Logger.debug(f"Task {tsk.action}({tsk.task_id}) finished.")
+            Logger.trace(f"Task {tsk.action}({tsk.task_id}) finished.")
             return
         except Exception:
             f = traceback.format_exc()
@@ -120,8 +120,8 @@ class JobQueueBase:
         get_all = await JobQueuesTable.get_all([cls.name, target_client if target_client else exports['Bot'].Info.client_name])
 
         for tsk in get_all:
-            Logger.debug(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
-            Logger.debug(f"Args: {tsk.args}")
+            Logger.trace(f"Received job queue task {tsk.task_id}, action: {tsk.action}")
+            Logger.trace(f"Args: {tsk.args}")
             await tsk.set_status('processing')
             asyncio.create_task(cls._process_task(tsk))
 

@@ -22,9 +22,9 @@ class ContextManager(ABC):
     def del_context(cls, session_info: SessionInfo):
         if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
             del cls.context[session_info.session_id]
-            Logger.debug(f"Context for session {session_info.session_id} deleted.")
+            Logger.trace(f"Context for session {session_info.session_id} deleted.")
         if session_info.session_id in cls.context_marks_hold:
-            Logger.debug(f"Context for session {session_info.session_id} is held, skipping deletion.")
+            Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
 
     @classmethod
     def hold_context(cls, session_info: SessionInfo):
@@ -34,7 +34,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         cls.context_marks_hold.append(session_info.session_id)
-        Logger.debug(f"Context for session {session_info.session_id} is now held.")
+        Logger.trace(f"Context for session {session_info.session_id} is now held.")
 
     @classmethod
     def release_context(cls, session_info: SessionInfo):
@@ -45,7 +45,7 @@ class ContextManager(ABC):
             cls.context_marks_hold.remove(session_info.session_id)
             if session_info.session_id in cls.context:
                 del cls.context[session_info.session_id]
-                Logger.debug(f"Context for session {session_info.session_id} is released.")
+                Logger.trace(f"Context for session {session_info.session_id} is released.")
 
     @classmethod
     @abstractmethod

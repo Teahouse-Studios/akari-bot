@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 
@@ -33,6 +34,6 @@ async def clear_list():
 
 
 async def init_background_task():
-    append_ip(await fetch_ip_info())
+    asyncio.create_task(fetch_ip_info())
     Logger.info("Starting WebRender...")
     Info.web_render_status = await init_web_render()

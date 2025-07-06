@@ -95,7 +95,7 @@ class CommandParser:
             split_command = shlex.split(command)
         except ValueError:
             split_command = command.split(" ")
-        Logger.debug(split_command)
+        Logger.trace("splited command: " + str(split_command))
         try:
             if not self.origin_template.command_list.set:
                 if len(split_command) == 1:

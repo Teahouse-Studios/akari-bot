@@ -527,7 +527,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
             parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
             submodule: Module = parsed_msg[0]
             msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
-            Logger.debug(msg.parsed_msg)
+            Logger.trace('Parsed message: ' + str(msg.parsed_msg))
 
             if submodule.required_base_superuser:
                 if msg.session_info.sender_id not in bot.base_superuser_list:
