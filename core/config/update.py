@@ -51,6 +51,92 @@ if not os.path.exists(cfg_file_path):
         raise ConfigFileNotFound(cfg_file_path) from None
 
 
+class ConfigReorganizer:
+    def __init__(self, old_config, configs, locale, table_prefix=""):
+        self.config = old_config
+        self.configs = configs
+        self.locale = locale
+        self.prefix = table_prefix
+        self.table = ""
+
+    def set_table(self, table_name):
+        self.table = table_name
+
+    def _init_file(self, cfg_name):
+        if cfg_name not in self.configs:
+            self.configs[cfg_name] = toml_document()
+            self.configs[cfg_name].add(
+                toml_comment(
+                    self.locale.t(
+                        "config.header.line.1",
+                        fallback_failed_prompt=False)))
+            self.configs[cfg_name].add(
+                toml_comment(
+                    self.locale.t(
+                        "config.header.line.2",
+                        fallback_failed_prompt=False)))
+            self.configs[cfg_name].add(
+                toml_comment(
+                    self.locale.t(
+                        "config.header.line.3",
+                        fallback_failed_prompt=False)))
+
+    def reorganize_key(self, key, secret=False):
+        cfg_name = self.prefix + self.table
+        c_target = "secret" if key in self.config.get("secret", {}) else "config"
+        table = cfg_name + "_secret" if secret else cfg_name
+
+        if key not in self.config.get(c_target, {}):
+            return  # key 不存在则跳过
+
+        self._init_file(cfg_name)
+
+        if table not in self.configs[cfg_name]:
+            if self.prefix:
+                qk = f"config.table.secret_{self.prefix.rstrip('_')}" if table.endswith(
+                    "_secret") else f"config.table.config_{self.prefix.rstrip('_')}"
+            self.configs[cfg_name].add(nl())
+            self.configs[cfg_name].add(table, toml_document())
+            self.configs[cfg_name][table].add(toml_comment(self.locale.t(qk, fallback_failed_prompt=False)))
+
+        try:
+            self.configs[cfg_name][table].add(key, self.config[c_target][key])
+        except KeyAlreadyPresent:
+            self.configs[cfg_name][table][key] = self.config[c_target][key]
+
+        qc = f"config.comments.{key}"
+        localed_comment = self.locale.t(qc, fallback_failed_prompt=False)
+        if localed_comment != qc:
+            self.configs[cfg_name][table].value.item(key).comment(localed_comment)
+
+        self.config[c_target].pop(key)
+
+    def add_enable_flag(self):
+        cfg_name = self.prefix + self.table
+        self._init_file(cfg_name)
+        if cfg_name not in self.configs[cfg_name]:
+            self.configs[cfg_name].add(nl())
+            self.configs[cfg_name].add(cfg_name, toml_document())
+            self.configs[cfg_name][cfg_name].add(
+                toml_comment(
+                    self.locale.t("config.table.config_bot", fallback_failed_prompt=False)
+                )
+            )
+        try:
+            self.configs[cfg_name][cfg_name].add("enable", True)
+        except KeyAlreadyPresent:
+            self.configs[cfg_name][cfg_name]["enable"] = True
+
+        qc = "config.comments.enable"
+        localed_comment = self.locale.t(qc, fallback_failed_prompt=False)
+        if localed_comment != qc:
+            self.configs[cfg_name][cfg_name].value.item("enable").comment(localed_comment)
+
+        if "disabled_bots" in self.config.get("config", {}):
+            if self.table in self.config["config"]["disabled_bots"]:
+                self.configs[cfg_name][cfg_name]["enable"] = False
+
+
 # Load the config file
 with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
     config = toml_parser(cfg_file.read())
@@ -82,135 +168,49 @@ if "config_version" not in config:
     configs["config"].add(nl())
 
     # reorganize some keys
+    reorganizer = ConfigReorganizer(old_config, configs, old_locale, table_prefix="bot_")
 
-    class Reorganize:
-        table = ""
+    reorganizer.set_table("aiocqhttp")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("qq_access_token", True)
+    reorganizer.reorganize_key("qq_allow_approve_friend")
+    reorganizer.reorganize_key("qq_allow_approve_group_invite")
+    reorganizer.reorganize_key("qq_enable_listening_self_message")
+    reorganizer.reorganize_key("qq_host")
+    reorganizer.reorganize_key("qq_limited_emoji")
+    reorganizer.reorganize_key("qq_typing_emoji")
 
-        @classmethod
-        def reorganize_bot_key(cls, key, secret=False):
-            cfg_name = "bot_" + cls.table
-            c_target = "secret" if key in old_config["secret"] else "cfg"
-            table = cfg_name + "_secret" if secret else cfg_name
+    reorganizer.set_table("aiogram")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("telegram_token", True)
 
-            if key in old_config[c_target]:
-                if cfg_name not in configs:
-                    configs[cfg_name] = toml_document()
-                    configs[cfg_name].add(
-                        toml_comment(
-                            old_locale.t(
-                                "config.header.line.1",
-                                fallback_failed_prompt=False)))
-                    configs[cfg_name].add(
-                        toml_comment(
-                            old_locale.t(
-                                "config.header.line.2",
-                                fallback_failed_prompt=False)))
-                    configs[cfg_name].add(
-                        toml_comment(
-                            old_locale.t(
-                                "config.header.line.3",
-                                fallback_failed_prompt=False)))
-                if table not in configs[cfg_name].keys():
-                    qk = "config.table.secret_bot" if table.endswith("_secret") else "config.table.config_bot"
-                    configs[cfg_name].add(nl())
-                    configs[cfg_name].add(table, toml_document())
-                    configs[cfg_name][table].add(toml_comment(old_locale.t(qk, fallback_failed_prompt=False)))
+    reorganizer.set_table("discord")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("discord_token", True)
 
-                try:
-                    configs[cfg_name][table].add(key, old_config[c_target][key])
-                except KeyAlreadyPresent:
-                    configs[cfg_name][table][key] = old_config[c_target][key]
-                finally:
-                    qc = f"config.comments.{key}"
-                    # get the comment for the key from locale
-                    localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
-                    if localed_comment != qc:
-                        configs[cfg_name][table].value.item(key).comment(localed_comment)
-                old_config[c_target].pop(key)
+    reorganizer.set_table("kook")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("kook_token", True)
 
-        @classmethod
-        def bot_add_enabled_flag(cls):
-            cfg_name = "bot_" + cls.table
-            if cfg_name not in configs:
-                configs[cfg_name] = toml_document()
-                configs[cfg_name].add(
-                    toml_comment(
-                        old_locale.t(
-                            "config.header.line.1",
-                            fallback_failed_prompt=False)))
-                configs[cfg_name].add(
-                    toml_comment(
-                        old_locale.t(
-                            "config.header.line.2",
-                            fallback_failed_prompt=False)))
-                configs[cfg_name].add(
-                    toml_comment(
-                        old_locale.t(
-                            "config.header.line.3",
-                            fallback_failed_prompt=False)))
-                configs[cfg_name].add(nl())
-                configs[cfg_name].add(cfg_name, toml_document())
-                configs[cfg_name][cfg_name].add(
-                    toml_comment(
-                        old_locale.t(
-                            "config.table.config_bot",
-                            fallback_failed_prompt=False)))
-            try:
-                configs[cfg_name][cfg_name].add("enable", True)
-            except KeyAlreadyPresent:
-                configs[cfg_name][cfg_name]["enable"] = True
-            finally:
-                qc = "config.comments.enable"
-                # get the comment for the key from locale
-                localed_comment = old_locale.t(qc, fallback_failed_prompt=False)
-                if localed_comment != qc:
-                    configs[cfg_name][cfg_name].value.item("enable").comment(localed_comment)
+    reorganizer.set_table("matrix")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("matrix_homeserver")
+    reorganizer.reorganize_key("matrix_user")
+    reorganizer.reorganize_key("matrix_device_id", True)
+    reorganizer.reorganize_key("matrix_device_name")
+    reorganizer.reorganize_key("matrix_token", True)
 
-            if "disabled_bots" in config["cfg"]:
-                if cls.table in config["cfg"]["disabled_bots"]:
-                    configs[cfg_name][cfg_name]["enable"] = False
+    reorganizer.set_table("qqbot")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("qq_bot_appid")
+    reorganizer.reorganize_key("qq_bot_secret", True)
+    reorganizer.reorganize_key("qq_private_bot")
+    reorganizer.reorganize_key("qq_bot_enable_send_url")
 
-    Reorganize.table = "aiocqhttp"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("qq_access_token", True)
-    Reorganize.reorganize_bot_key("qq_allow_approve_friend")
-    Reorganize.reorganize_bot_key("qq_allow_approve_group_invite")
-    Reorganize.reorganize_bot_key("qq_enable_listening_self_message")
-    Reorganize.reorganize_bot_key("qq_host")
-    Reorganize.reorganize_bot_key("qq_limited_emoji")
-    Reorganize.reorganize_bot_key("qq_typing_emoji")
-
-    Reorganize.table = "aiogram"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("telegram_token", True)
-
-    Reorganize.table = "discord"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("discord_token", True)
-
-    Reorganize.table = "kook"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("kook_token", True)
-
-    Reorganize.table = "matrix"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("matrix_homeserver")
-    Reorganize.reorganize_bot_key("matrix_user")
-    Reorganize.reorganize_bot_key("matrix_device_id", True)
-    Reorganize.reorganize_bot_key("matrix_device_name")
-    Reorganize.reorganize_bot_key("matrix_token", True)
-
-    Reorganize.table = "qqbot"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("qq_bot_appid")
-    Reorganize.reorganize_bot_key("qq_bot_secret", True)
-    Reorganize.reorganize_bot_key("qq_private_bot")
-    Reorganize.reorganize_bot_key("qq_bot_enable_send_url")
-
-    Reorganize.table = "web"
-    Reorganize.bot_add_enabled_flag()
-    Reorganize.reorganize_bot_key("web_port")
-    Reorganize.reorganize_bot_key("jwt_secret", True)
+    reorganizer.set_table("web")
+    reorganizer.add_enable_flag()
+    reorganizer.reorganize_key("web_port")
+    reorganizer.reorganize_key("jwt_secret", True)
 
     configs["config"].add("config", toml_document())
     configs["config"]["config"].add(toml_comment(old_locale.t("config.table.config")))
@@ -254,92 +254,79 @@ if config["config_version"] < config_version:
         locale = Locale(config.get("locale", "zh_cn"))
         configs = {}
 
-        class Reorganize:
-            table = ""
+        reorganizer = ConfigReorganizer(config, configs, locale, table_prefix="module_")
+        reorganizer.set_table("ai")
+        reorganizer.reorganize_key("ai_default_llm")
+        reorganizer.reorganize_key("llm_frequency_penalty")
+        reorganizer.reorganize_key("llm_max_tokens")
+        reorganizer.reorganize_key("llm_presence_penalty")
+        reorganizer.reorganize_key("llm_temperature")
+        reorganizer.reorganize_key("llm_top_p")
 
-            @classmethod
-            def reorganize_module_key(cls, key, secret=False):
-                cfg_name = "module_" + cls.table
-                c_target = "secret" if key in config["secret"] else "config"
-                table = cfg_name + "_secret" if secret else cfg_name
+        reorganizer.set_table("coin")
+        reorganizer.reorganize_key("coin_limit")
+        reorganizer.reorganize_key("coin_faceup_weight")
+        reorganizer.reorganize_key("coin_facedown_weight")
+        reorganizer.reorganize_key("coin_stand_weight")
 
-                if cfg_name not in configs:
-                    configs[cfg_name] = toml_document()
-                    configs[cfg_name].add(toml_comment(locale.t("config.header.line.1", fallback_failed_prompt=False)))
-                    configs[cfg_name].add(toml_comment(locale.t("config.header.line.2", fallback_failed_prompt=False)))
-                    configs[cfg_name].add(toml_comment(locale.t("config.header.line.3", fallback_failed_prompt=False)))
+        reorganizer.set_table("dice")
+        reorganizer.reorganize_key("dice_limit")
+        reorganizer.reorganize_key("dice_output_count")
+        reorganizer.reorganize_key("dice_output_len")
+        reorganizer.reorganize_key("dice_output_digit")
+        reorganizer.reorganize_key("dice_roll_limit")
+        reorganizer.reorganize_key("dice_detail_count")
+        reorganizer.reorganize_key("dice_count_limit")
 
-                if table not in configs[cfg_name].keys():
-                    qk = "config.table.secret_module" if table.endswith("_secret") else "config.table.config_module"
-                    configs[cfg_name].add(nl())
-                    configs[cfg_name].add(table, toml_document())
-                    configs[cfg_name][table].add(toml_comment(locale.t(qk, fallback_failed_prompt=False)))
+        reorganizer.set_table("exchange_rate")
+        reorganizer.reorganize_key("exchange_rate_api_key", True)
 
-                if key in config[c_target]:
-                    try:
-                        configs[cfg_name][table].add(key, config[c_target][key])
-                    except KeyAlreadyPresent:
-                        configs[cfg_name][table][key] = config[c_target][key]
+        reorganizer.set_table("github")
+        reorganizer.reorganize_key("github_pat", True)
 
-                    comment_key = f"config.comments.{key}"
-                    localized_comment = locale.t(comment_key, fallback_failed_prompt=False)
-                    if localized_comment != comment_key:
-                        configs[cfg_name][table].value.item(key).comment(localized_comment)
+        reorganizer.set_table("maimai")
+        reorganizer.reorganize_key("diving_fish_developer_token", True)
 
-                    config[c_target].pop(key)
+        reorganizer.set_table("mod_dl")
+        reorganizer.reorganize_key("curseforge_api_key", True)
 
-        Reorganize.table = "ai"
-        Reorganize.reorganize_module_key("ai_default_llm")
-        Reorganize.reorganize_module_key("llm_frequency_penalty")
-        Reorganize.reorganize_module_key("llm_max_tokens")
-        Reorganize.reorganize_module_key("llm_presence_penalty")
-        Reorganize.reorganize_module_key("llm_temperature")
-        Reorganize.reorganize_module_key("llm_top_p")
+        reorganizer.set_table("ncmusic")
+        reorganizer.reorganize_key("ncmusic_api", True)
+        reorganizer.reorganize_key("ncmusic_enable_card")
 
-        Reorganize.table = "coin"
-        Reorganize.reorganize_module_key("coin_limit")
-        Reorganize.reorganize_module_key("coin_faceup_weight")
-        Reorganize.reorganize_module_key("coin_facedown_weight")
-        Reorganize.reorganize_module_key("coin_stand_weight")
+        reorganizer.set_table("osu")
+        reorganizer.reorganize_key("osu_api_key", True)
 
-        Reorganize.table = "dice"
-        Reorganize.reorganize_module_key("dice_limit")
-        Reorganize.reorganize_module_key("dice_output_count")
-        Reorganize.reorganize_module_key("dice_output_len")
-        Reorganize.reorganize_module_key("dice_output_digit")
-        Reorganize.reorganize_module_key("dice_roll_limit")
-        Reorganize.reorganize_module_key("dice_detail_count")
-        Reorganize.reorganize_module_key("dice_count_limit")
+        reorganizer.set_table("wiki")
+        reorganizer.reorganize_key("wiki_whitelist_url")
 
-        Reorganize.table = "exchange_rate"
-        Reorganize.reorganize_module_key("exchange_rate_api_key", True)
+        reorganizer.set_table("wolframalpha")
+        reorganizer.reorganize_key("wolfram_alpha_appid", True)
 
-        Reorganize.table = "github"
-        Reorganize.reorganize_module_key("github_pat", True)
-
-        Reorganize.table = "maimai"
-        Reorganize.reorganize_module_key("diving_fish_developer_token", True)
-
-        Reorganize.table = "mod_dl"
-        Reorganize.reorganize_module_key("curseforge_api_key", True)
-
-        Reorganize.table = "ncmusic"
-        Reorganize.reorganize_module_key("ncmusic_api", True)
-        Reorganize.reorganize_module_key("ncmusic_enable_card")
-
-        Reorganize.table = "osu"
-        Reorganize.reorganize_module_key("osu_api_key", True)
-
-        Reorganize.table = "wiki"
-        Reorganize.reorganize_module_key("wiki_whitelist_url")
-
-        Reorganize.table = "wolframalpha"
-        Reorganize.reorganize_module_key("wolfram_alpha_appid", True)
-
-        Reorganize.table = "wordle"
-        Reorganize.reorganize_module_key("wordle_disable_image")
+        reorganizer.set_table("wordle")
+        reorganizer.reorganize_key("wordle_disable_image")
 
         config["config_version"] = 1
+        for c in configs:
+            filename = c
+            if not c.endswith(".toml"):
+                filename += ".toml"
+            with open(os.path.join(config_path, filename), "w", encoding="utf-8") as f:
+                f.write(toml_dumps(configs[c]))
+        with open(cfg_file_path, "w", encoding="utf-8") as f:
+            f.write(toml_dumps(config))
+    if config["config_version"] < 2:
+        with open(cfg_file_path, "r", encoding="utf-8") as f:
+            config = toml_parser(f.read())
+        locale = Locale(config.get("locale", "zh_cn"))
+        configs = {}
+
+        reorganizer = ConfigReorganizer(config, configs, locale, table_prefix="webrender")
+        reorganizer.reorganize_key("enable_web_render")
+        reorganizer.reorganize_key("remote_web_render_url")
+        reorganizer.reorganize_key("web_render_browser")
+
+        config["config_version"] = 2
         for c in configs:
             filename = c
             if not c.endswith(".toml"):

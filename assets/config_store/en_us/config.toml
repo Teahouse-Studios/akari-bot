@@ -50,7 +50,6 @@ enable_eval = false # Whether to enable eval module.
 enable_commit_url = true # Whether to show the commit URL when displaying version information.
 locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
 slower_schedule = false # Whether to enable a slower scheduled task scheduler. (To reduce request pressure)
-ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ)
 
 [secret]
 # The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.
