@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import random
 import re
 from pathlib import Path
 from typing import Optional, List
@@ -364,6 +365,7 @@ class AIOCQContextManager(ContextManager):
                 pass
 
 
+_tasks_high_priority = []
 _tasks = []
 
 
@@ -374,7 +376,9 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
                            quote: bool = True,
                            enable_parse_message=True,
                            enable_split_image=True,) -> None:
-        _tasks.append(
+        append_tsk = _tasks_high_priority if session_info.target_info.target_data.get(
+            "in_post_whitelist", False) else _tasks
+        append_tsk.append(
             super().send_message(
                 session_info,
                 message,
@@ -385,9 +389,19 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
     @staticmethod
     async def process_tasks():
         while True:
-            if _tasks:
+            if _tasks_high_priority:
+                task = _tasks_high_priority.pop(0)
+                await task
+                cd = random.randint(2, 10)
+                Logger.info(f"Processed a high-priority task in AIOCQFetchedContextManager, waiting cooldown for {
+                            cd}s...")
+                await asyncio.sleep(cd)
+            elif _tasks:
                 task = _tasks.pop(0)
                 await task
+                cd = random.randint(5, qq_initiative_msg_cooldown)
                 Logger.info(f"Processed a task in AIOCQFetchedContextManager, waiting cooldown for {
-                            qq_initiative_msg_cooldown}s...")
-            await asyncio.sleep(qq_initiative_msg_cooldown)
+                            cd}s...")
+                await asyncio.sleep(cd)
+            else:
+                await asyncio.sleep(1)
