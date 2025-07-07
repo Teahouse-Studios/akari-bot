@@ -7,7 +7,6 @@ from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
-from core.builtins.message.internal import Image
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.internal import MessageSession
 from core.config import Config
@@ -24,7 +23,7 @@ async def image_split(i: ImageElement) -> List[ImageElement]:
     i = PILImage.open(await i.get())
     iw, ih = i.size
     if ih <= 1500:
-        return [Image(i)]
+        return [ImageElement.assign(i)]
     _h = 0
     i_list = []
     for _ in range((ih // 1500) + 1):
@@ -32,7 +31,7 @@ async def image_split(i: ImageElement) -> List[ImageElement]:
             crop_h = ih
         else:
             crop_h = _h + 1500
-        i_list.append(Image(i.crop((0, _h, iw, crop_h))))
+        i_list.append(ImageElement.assign(i.crop((0, _h, iw, crop_h))))
         _h = crop_h
     return i_list
 
@@ -42,10 +41,11 @@ def get_fontsize(font, text):
     return right - left, bottom - top
 
 
-def cb64imglst(b64imglst: List[str], bot_img=False) -> List[Union[PILImage.Image, Image]]:
+def cb64imglst(b64imglst: List[str], bot_img=False) -> List[Union[PILImage.Image, ImageElement]]:
     """转换base64编码的图片列表。
 
     :param b64imglst: base64编码的图片列表。
+    :param bot_img: 是否将图片转换为机器人 ImageElement 对象。
     :return: PIL Image 或机器人 Image 对象列表。
     """
     img_lst = []
@@ -54,7 +54,7 @@ def cb64imglst(b64imglst: List[str], bot_img=False) -> List[Union[PILImage.Image
         bio = BytesIO(b)
         bimg = PILImage.open(bio)
         if bot_img:
-            bimg = Image(bimg)
+            bimg = ImageElement.assign(bimg)
         img_lst.append(bimg)
     return img_lst
 
@@ -74,7 +74,7 @@ async def msgnode2image(message_node: MessageNodes,
 
 
 async def msgchain2image(message_chain: Union[List, MessageChain],
-                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None) -> Union[List[Image], bool]:
+                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None) -> Union[List[ImageElement], bool]:
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
@@ -117,11 +117,10 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     return cb64imglst(pic_list, bot_img=True)
 
 
-async def svg_render(file_path: str, use_local: bool = True) -> Union[List[Image], bool]:
+async def svg_render(file_path: str) -> Union[List[ImageElement], bool]:
     """使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。
-    :param use_local: 是否使用本地WebRender渲染。
     :return: 机器人 Image 对象。
     """
 

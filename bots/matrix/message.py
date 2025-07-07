@@ -12,7 +12,7 @@ from core.builtins.message.elements import PlainElement, ImageElement, VoiceElem
 from core.builtins.message.internal import Plain, Image, Voice, I18NContext
 from core.logger import Logger
 from core.utils.image import image_split
-from .client import bot, homeserver_host
+from .client import matrix_bot, homeserver_host
 from .info import *
 
 
@@ -20,7 +20,7 @@ class FinishedSession(FinishedSessionT):
     async def delete(self):
         try:
             for x in self.message_id:
-                await bot.room_redact(str(self.result), x)
+                await matrix_bot.room_redact(str(self.result), x)
         except Exception:
             Logger.exception()
 
@@ -114,7 +114,7 @@ class MessageSession(MessageSessionT):
                                 "m.in_reply_to": {"event_id": self.session_info.message_id},
                             }
 
-                resp = await bot.room_send(
+                resp = await matrix_bot.room_send(
                     self.session.target,
                     "m.room.message",
                     content,
@@ -148,8 +148,8 @@ class MessageSession(MessageSessionT):
                             content_encoding = "png"
                         mimetype = f"{content_type}/{content_encoding}"
 
-                        encrypted = self.session.target in bot.encrypted_rooms
-                        (upload, upload_encryption) = await bot.upload(
+                        encrypted = self.session.target in matrix_bot.encrypted_rooms
+                        (upload, upload_encryption) = await matrix_bot.upload(
                             image,
                             content_type=mimetype,
                             filename=filename,
@@ -195,9 +195,9 @@ class MessageSession(MessageSessionT):
                     content_encoding = "ogg"
                 mimetype = f"{content_type}/{content_encoding}"
 
-                encrypted = self.session.target in bot.encrypted_rooms
+                encrypted = self.session.target in matrix_bot.encrypted_rooms
                 with open(path, "rb") as audio:
-                    (upload, upload_encryption) = await bot.upload(
+                    (upload, upload_encryption) = await matrix_bot.upload(
                         audio,
                         content_type=mimetype,
                         filename=filename,
@@ -250,7 +250,7 @@ class MessageSession(MessageSessionT):
             return True
         # https://spec.matrix.org/v1.9/client-server-api/#permissions
         power_levels = (
-            await bot.room_get_state_event(self.session.target, "m.room.power_levels")
+            await matrix_bot.room_get_state_event(self.session.target, "m.room.power_levels")
         ).content
         level = (
             power_levels["users"][self.session.sender]
@@ -295,16 +295,16 @@ class MessageSession(MessageSessionT):
                 return MessageChain.assign([])
             else:
                 Logger.error(f"Got invalid m.image message from {self.session.target}")
-            return MessageChain.assign(Image(await bot.mxc_to_http(url)))
+            return MessageChain.assign(Image(await matrix_bot.mxc_to_http(url)))
         if msgtype == "m.audio":
             url = str(content["url"])
-            return MessageChain.assign(Voice(await bot.mxc_to_http(url)))
+            return MessageChain.assign(Voice(await matrix_bot.mxc_to_http(url)))
         Logger.error(f"Got unknown msgtype: {msgtype}")
         return MessageChain.assign([])
 
     async def delete(self):
         try:
-            await bot.room_redact(self.session.target, self.session.message["event_id"])
+            await matrix_bot.room_redact(self.session.target, self.session.message["event_id"])
             return True
         except Exception:
             Logger.exception()
@@ -321,10 +321,10 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            await bot.room_typing(self.msg.session.target, True)
+            await matrix_bot.room_typing(self.msg.session.target, True)
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
-            await bot.room_typing(self.msg.session.target, False)
+            await matrix_bot.room_typing(self.msg.session.target, False)
 
 
 class FetchedSession(Bot.FetchedSession):
@@ -333,13 +333,13 @@ class FetchedSession(Bot.FetchedSession):
         target_id: str = self.session.target
         if target_id.startswith("@"):
             # find private messaging room
-            for room in bot.rooms:
-                room = bot.rooms[room]
+            for room in matrix_bot.rooms:
+                room = matrix_bot.rooms[room]
                 if room.join_rule == "invite" and (
                     (room.member_count == 2 and target_id in room.users)
                     or (room.member_count == 1 and target_id in room.invited_users)
                 ):
-                    resp = await bot.room_get_state_event(
+                    resp = await matrix_bot.room_get_state_event(
                         room.room_id, "m.room.member", target_id
                     )
                     if resp is nio.ErrorResponse:
@@ -351,7 +351,7 @@ class FetchedSession(Bot.FetchedSession):
                 f"Could not find any exist private room for {target_id}, trying to create one."
             )
             try:
-                resp = await bot.room_create(
+                resp = await matrix_bot.room_create(
                     visibility=nio.RoomVisibility.private,
                     is_direct=True,
                     preset=nio.RoomPreset.trusted_private_chat,
