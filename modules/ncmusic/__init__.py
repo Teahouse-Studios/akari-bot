@@ -6,6 +6,7 @@ from core.utils.http import get_url
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.message import isint
 
+enable_card = Config("ncmusic_enable_card", False, table_name="module_ncmusic")
 API = Config("ncmusic_api", cfg_type=str, secret=True, table_name="module_ncmusic")
 SEARCH_LIMIT = 10
 
@@ -148,7 +149,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
                     msg.locale.t("ncmusic.message.search.invalid.non_digital")
                 )
 
-        if msg.target.client_name == "QQ" and Config("ncmusic_enable_card", False):
+        if msg.target.client_name == "QQ" and enable_card:
             await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
         else:
             await info(msg, sid)
@@ -156,7 +157,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
 @ncmusic.command("<sid> {{I18N:ncmusic.help}}", available_for=["QQ|Group", "QQ|Private"])
 async def _(msg: Bot.MessageSession, sid: int):
-    if Config("ncmusic_enable_card", False, table_name="module_ncmusic"):
+    if enable_card:
         await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
     else:
         await info(msg, sid)

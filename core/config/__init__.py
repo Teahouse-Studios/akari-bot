@@ -337,16 +337,17 @@ class CFGManager:
                     table_comment_key = "config.table.config"  # i18n comment
                 elif target == "secret":
                     table_comment_key = "config.table.secret"
-                elif target.startswith("bot_"):
-                    if target.endswith("_secret"):
-                        table_comment_key = "config.table.secret_bot"
+                else:
+                    is_secret = target.endswith("_secret")
+
+                    if target.startswith("bot_"):
+                        prefix = "bot"
+                    elif target.startswith("module_"):
+                        prefix = "module"
                     else:
-                        table_comment_key = "config.table.config_bot"
-                elif target.startswith("module_"):
-                    if target.endswith("_secret"):
-                        table_comment_key = "config.table.secret_module"
-                    else:
-                        table_comment_key = "config.table.config_module"
+                        prefix = target.split('_')[0]
+
+                    table_comment_key = f"config.table.{"secret" if is_secret else "config"}_{prefix}"
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))

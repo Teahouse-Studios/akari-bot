@@ -44,7 +44,6 @@ allow_reload_base = false # Whether to allow reloading of the base modules.
 enable_eval = false # Whether to enable eval module.
 enable_commit_url = true # Whether to show the commit URL when displaying version information.
 locale_url = "https://www.crowdin.com/project/akari-bot" # Localized project URL.
-ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ)
 slower_schedule = false # Whether to enable a slower scheduled task scheduler. (To reduce request pressure)
 
 [secret]

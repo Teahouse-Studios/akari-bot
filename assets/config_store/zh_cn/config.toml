@@ -44,7 +44,6 @@ allow_reload_base = false # 是否允许重载基础模块。
 enable_eval = false # 是否启用 eval 模块。
 enable_commit_url = true # 是否在展示版本信息时显示 commit URL。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 本地化项目网址。
-ncmusic_enable_card = false # ncmusic 模块是否启用卡片消息。（仅在 QQ 客户端有效）
 slower_schedule = false # 是否启用更慢的计划任务调度器。（减少请求压力用）
 
 [secret]
