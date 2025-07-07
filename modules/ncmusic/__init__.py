@@ -64,12 +64,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
         tables = ImageTable(
             data,
             [
-                msg.session_info.locale.t("ncmusic.message.search.table.header.id"),
-                msg.session_info.locale.t("ncmusic.message.search.table.header.name"),
-                msg.session_info.locale.t("ncmusic.message.search.table.header.artists"),
-                msg.session_info.locale.t("ncmusic.message.search.table.header.album"),
+                "{I18N:ncmusic.message.search.table.header.id}",
+                "{I18N:ncmusic.message.search.table.header.name}",
+                "{I18N:ncmusic.message.search.table.header.artists}",
+                "{I18N:ncmusic.message.search.table.header.album}",
                 "ID",
             ],
+            msg.session_info
         )
 
         imgs = await image_table_render(tables)

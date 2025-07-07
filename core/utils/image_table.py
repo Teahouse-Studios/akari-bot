@@ -1,10 +1,11 @@
 import re
 from html import escape
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from PIL import Image as PILImage
 from tabulate import tabulate
 
+from core.builtins.session.info import SessionInfo
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -16,13 +17,27 @@ class ImageTable:
     """
     图片表格。
 
-    :param data: 表格内容，表格行数需与表格标头的数量相符。
+    :param data: 表格内容，每行的列数需与表头数量相符。
     :param headers: 表格表头。
     """
 
-    def __init__(self, data: List[List[Any]], headers: List[str]):
-        self.data = data
-        self.headers = headers
+    def __init__(self, data: List[List[Any]], headers: List[str], session_info: Optional['SessionInfo'] = None):
+        if not all(len(row) == len(headers) for row in data):
+            raise ValueError("The number of columns of data must match the number of table headers.")
+
+        if session_info:
+            localized_data = []
+            for row in data:
+                translated_row = [
+                    session_info.locale.t_str(cell) if isinstance(cell, str) else cell
+                    for cell in row
+                ]
+                localized_data.append(translated_row)
+            self.data = localized_data
+            self.headers = [session_info.locale.t_str(h) for h in headers]
+        else:
+            self.data = data
+            self.headers = headers
 
 
 async def image_table_render(

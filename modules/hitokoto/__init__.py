@@ -21,14 +21,12 @@ hitokoto = module(
 @hitokoto.command()
 @hitokoto.command("[<msg_type>] {{I18N:hitokoto.help.type}}")
 async def _(msg: Bot.MessageSession, msg_type: str = None):
-    url = "https://v1.hitokoto.cn/"
+    api = "https://v1.hitokoto.cn/"
     if msg_type:
-        if msg_type in msg_types:
-            url += "?c=" + msg_type
-        else:
+        if msg_type not in msg_types:
             await msg.finish(I18NContext("hitokoto.message.invalid"))
 
-    data = await get_url(url, 200, fmt="json")
+    data = await get_url(f"{api}?c={msg_type}", 200, fmt="json")
     if msg.session_info.locale.locale == "zh_tw":
         data = {
             k: (
@@ -39,10 +37,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
             for k, v in data.items()
         }
     from_who = data["from_who"] or ""
-    tp = msg.session_info.locale.t("hitokoto.message.type") + msg.session_info.locale.t(
-        "hitokoto.message.type." + data["type"]
-    )
-    link = f"https://hitokoto.cn?id={data["id"]}"
-    await msg.finish(
-        [Plain(f"{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{tp}"), Url(link)]
-    )
+    tp = str(I18NContext("hitokoto.message.type")) + str(I18NContext(f"hitokoto.message.type.{data["type"]}"))
+    msgchain = [Plain(f"{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{tp}"),
+                Url(f"https://hitokoto.cn?id={data["id"]}")]
+    await msg.finish(msgchain)

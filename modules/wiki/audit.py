@@ -132,9 +132,10 @@ async def _(msg: Bot.MessageSession):
             allow_table = ImageTable(
                 data=allow_columns,
                 headers=[
-                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.apilink"),
-                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.date"),
+                    "{I18N:wiki.message.wiki_audit.list.table.header.apilink}",
+                    "{I18N:wiki.message.wiki_audit.list.table.header.date}",
                 ],
+                session_info=msg.session_info
             )
             if allow_table:
                 allow_image = await image_table_render(allow_table)
@@ -152,9 +153,10 @@ async def _(msg: Bot.MessageSession):
             block_table = ImageTable(
                 data=block_columns,
                 headers=[
-                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.apilink"),
-                    msg.session_info.locale.t("wiki.message.wiki_audit.list.table.header.date"),
+                    "{I18N:wiki.message.wiki_audit.list.table.header.apilink}",
+                    "{I18N:wiki.message.wiki_audit.list.table.header.date}",
                 ],
+                session_info=msg.session_info
             )
             if block_table:
                 block_image = await image_table_render(block_table)

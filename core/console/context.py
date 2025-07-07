@@ -49,7 +49,8 @@ class ConsoleContextManager(ContextManager):
 
         async def send_message_chain(message_chain: MessageChain) -> list[str]:
             msg_ids = []
-            for x in message.as_sendable(session_info):
+
+            for x in message_chain.as_sendable(session_info):
                 if isinstance(x, PlainElement):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                 elif isinstance(x, ImageElement):

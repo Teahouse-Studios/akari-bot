@@ -120,10 +120,11 @@ async def _(msg: Bot.MessageSession):
                     for i, k in enumerate(aliases)
                 ],
                 [
-                    msg.session_info.locale.t("core.message.alias.list.table.header.priority"),
-                    msg.session_info.locale.t("core.message.alias.list.table.header.alias"),
-                    msg.session_info.locale.t("core.message.alias.list.table.header.command"),
+                    "{I18N:core.message.alias.list.table.header.priority}",
+                    "{I18N:core.message.alias.list.table.header.alias}",
+                    "{I18N:core.message.alias.list.table.header.command}",
                 ],
+                msg.session_info
             )
             imgs = await image_table_render(table)
             if imgs:

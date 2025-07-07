@@ -11,7 +11,7 @@ from core.builtins.converter import converter
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.message import check_temp_ban, remove_temp_ban
 from core.component import module
-from core.config import Config, config, CFGManager
+from core.config import Config, CFGManager
 from core.constants.exceptions import NoReportException, TestException
 from core.constants.path import cache_path
 from core.database.models import SenderInfo, TargetInfo, JobQueuesTable
@@ -23,7 +23,6 @@ from core.types import Param
 from core.utils.alive import Alive
 from core.utils.bash import run_sys_command
 from core.utils.decrypt import decrypt_string
-from core.utils.info import get_all_sender_prefix, get_all_target_prefix
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
 
