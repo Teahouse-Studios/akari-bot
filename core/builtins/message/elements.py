@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import base64
-import io
 import mimetypes
 import os
 import random
@@ -18,7 +17,6 @@ from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
-from core.constants import Info
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 
