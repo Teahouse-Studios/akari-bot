@@ -19,7 +19,6 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
 from core.config import Config
-from core.constants import Info
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 

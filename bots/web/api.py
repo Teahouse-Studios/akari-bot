@@ -1,8 +1,8 @@
 import asyncio
 import glob
 import os
-import re
 import platform
+import re
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, UTC
 
@@ -21,8 +21,8 @@ from core.config import Config
 from core.constants import config_filename
 from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
-from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords
+from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.i18n import Locale
 from core.loader import ModulesManager
 from core.logger import Logger

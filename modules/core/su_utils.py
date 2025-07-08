@@ -26,7 +26,6 @@ from core.utils.decrypt import decrypt_string
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
 
-
 su = module("superuser", alias="su", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
 
 
@@ -647,7 +646,7 @@ cfg_ = module("config", required_superuser=True, alias="cfg", base=True, doc=Tru
 
 @cfg_.command("get <k> [<table_name>]")
 async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
-    await msg.finish(str(config(k, table_name=table_name)))
+    await msg.finish(str(Config(k, table_name=table_name)))
 
 
 @cfg_.command("write <k> <v> [<table_name>] [-s]")

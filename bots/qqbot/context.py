@@ -10,12 +10,12 @@ from bots.qqbot.features import Features
 from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
+from core.builtins.message.internal import Image, I18NContext, Url
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
-from core.builtins.message.internal import Image, I18NContext, Url
 from core.config import Config
-from core.utils.http import url_pattern
 from core.logger import Logger
+from core.utils.http import url_pattern
 from core.utils.image import msgchain2image, msgnode2image
 
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
@@ -197,7 +197,7 @@ class QQBotContextManager(ContextManager):
                         img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
                         if image_1:
                             img_chain.append(image_1)
-                        imgs = await msgchain2image(img_chain, self)
+                        imgs = await msgchain2image(img_chain, session_info)
                         if imgs:
                             imgs = [Image(img) for img in imgs]
                             images = imgs + images
@@ -251,7 +251,7 @@ class QQBotContextManager(ContextManager):
                         img_chain.insert(0, I18NContext("error.message.limited.msg2img"))
                         if image_1:
                             img_chain.append(image_1)
-                        imgs = await msgchain2image(img_chain, self)
+                        imgs = await msgchain2image(img_chain, session_info)
                         if imgs:
                             imgs = [Image(img) for img in imgs]
                             images = imgs + images

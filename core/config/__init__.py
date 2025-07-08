@@ -18,7 +18,6 @@ from core.constants.path import config_path
 from core.exports import add_export
 from core.i18n import Locale
 
-
 ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
 

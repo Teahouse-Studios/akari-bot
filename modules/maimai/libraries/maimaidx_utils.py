@@ -282,7 +282,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                 sync_rank = sync_mapping.get(fs, "")  # Sync字典转换
                 level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
-    output_chain = MessageChain()
+    output_chain = []
     if int(input_id) >= 100000:
         if len(level_scores.items()) > 1:
             await msg.finish(I18NContext("maimai.message.score.utage"))
@@ -319,7 +319,7 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
             else:
                 output_chain.append(I18NContext("maimai.message.score.no_record"))
 
-    return output_chain
+    return MessageChain.assign(output_chain)
 
 
 async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, page: int,
@@ -409,7 +409,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
         music = (await total_list.get()).by_id(song[0])
         song_detail.append((music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type))
 
-    output_chain = MessageChain()
+    output_chain = []
     get_img = False
     if len(song_remain) > 0:
         song_record = [(str(s["id"]), s["level_index"]) for s in verlist]
@@ -441,7 +441,7 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     else:
         await msg.finish(I18NContext("maimai.message.process.completed", level=level, goal=goal))
 
-    return output_chain, get_img
+    return MessageChain.assign(output_chain), get_img
 
 
 async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[MessageChain, bool]:
@@ -588,7 +588,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
 
     song_record = [(str(s["id"]), s["level_index"]) for s in verlist]
 
-    output_chain = MessageChain()
+    output_chain = []
     if len(song_remain_difficult) > 0:
         if len(song_remain_difficult) < SONGS_PER_PAGE:
             output_chain.append(I18NContext("maimai.message.plate.difficult.last"))
@@ -638,7 +638,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
     else:
         output_chain.append(I18NContext("maimai.message.plate.completed", plate=plate))
 
-    return output_chain, get_img
+    return MessageChain.assign(output_chain), get_img
 
 
 async def get_grade_info(msg: Bot.MessageSession, grade: str):

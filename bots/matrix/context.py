@@ -1,9 +1,8 @@
 import mimetypes
 import os
-from typing import Any, Optional, Tuple
+from typing import Optional, Tuple
 
 import nio
-from PIL import Image as PILImage
 
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement

@@ -1,8 +1,7 @@
 import os
 import sys
 
-import orjson as json
-from tortoise import fields, run_async, Tortoise
+from tortoise import run_async, Tortoise
 from tortoise.models import Model
 
 if __name__ == "__main__":

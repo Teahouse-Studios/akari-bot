@@ -1,9 +1,7 @@
-from typing import Any, Optional, Union
-
-import orjson as json
+from typing import Optional
 
 import httpx
-from PIL import Image as PILImage
+import orjson as json
 from khl import Message, MessageTypes, PublicChannel, User
 
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
@@ -13,9 +11,9 @@ from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 from core.utils.image import msgnode2image
 from .client import bot
-from .features import Features
-from .info import client_name, target_group_prefix, target_person_prefix, sender_prefix
 from .client import token as kook_token
+from .features import Features
+from .info import client_name, target_group_prefix, target_person_prefix
 
 kook_base = "https://www.kookapp.cn"
 kook_headers = {

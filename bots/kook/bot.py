@@ -11,11 +11,10 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
 from core.builtins.session.info import SessionInfo
-from core.config import Config
 from core.client.init import client_init
+from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.info import Info
-from core.logger import Logger
 
 Bot.register_bot(client_name=client_name)
 

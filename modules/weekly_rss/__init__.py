@@ -1,6 +1,6 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain, I18NMessageChain, PlatformMessageChain
-from core.builtins.message.internal import Image, Plain
+from core.builtins.message.internal import Plain
 from core.builtins.utils import command_prefix
 from core.component import module
 from core.i18n import Locale

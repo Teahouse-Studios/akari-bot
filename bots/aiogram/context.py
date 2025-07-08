@@ -7,7 +7,7 @@ from bots.aiogram.client import aiogram_bot
 from bots.aiogram.features import Features
 from bots.aiogram.info import client_name
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
-from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement, EmbedElement
+from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.logger import Logger

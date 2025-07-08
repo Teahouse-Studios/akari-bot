@@ -16,7 +16,6 @@ from core.config import Config
 from core.constants.default import ignored_sender_default
 from core.constants.info import Info
 
-
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 

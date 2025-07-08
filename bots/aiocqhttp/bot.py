@@ -1,7 +1,6 @@
 import asyncio
 import html
 import logging
-import os
 import re
 import sys
 
@@ -9,24 +8,22 @@ import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
-from core.logger import Logger
-
 from bots.aiocqhttp.client import aiocqhttp_bot
 from bots.aiocqhttp.context import AIOCQContextManager, AIOCQFetchedContextManager
 from bots.aiocqhttp.info import *
 from bots.aiocqhttp.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
-from core.builtins.utils import command_prefix
 from core.builtins.temp import Temp
+from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
 from core.constants.info import Info
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
+from core.logger import Logger
 from core.tos import tos_report
-
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(AIOCQContextManager)

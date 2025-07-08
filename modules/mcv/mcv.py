@@ -7,7 +7,6 @@ from google_play_scraper import app as google_play_scraper
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.constants import Secret
-from core.logger import Logger
 from core.utils.http import get_url, post_url
 
 

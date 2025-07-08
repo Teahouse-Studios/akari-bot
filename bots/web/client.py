@@ -10,8 +10,8 @@ from flask import Flask, abort, send_from_directory
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from bots.web.utils import find_available_port, get_local_ip
 from bots.web.info import *
+from bots.web.utils import find_available_port, get_local_ip
 from core.client.init import client_init
 from core.config import Config
 from core.constants.path import webui_path
