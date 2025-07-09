@@ -3,7 +3,7 @@
 # 例如：TOML 中的布林值必須是小寫。
 
 default_locale = "zh_tw" # 預設的會話語言環境。
-config_version = 1 # 設定檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
+config_version = 2 # 設定檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
 initialized = true
 
 [config]
@@ -39,9 +39,6 @@ petal_lost_limit = 0 # 單日失去花瓣上限。
 petal_sign_limit = 5 # 單日簽到取得花瓣上限。
 petal_sign_rate = 0.5 # 簽到取得花瓣機率，範圍 0 到 1 之間，取得數量呈指數衰減。
 use_secrets_random = false # 是否使用基於 secrets 庫的隨機數產生器。
-enable_web_render = false # 是否启用 WebRender。
-remote_web_render_url = "<Replace me with str value>" # 远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。
-web_render_browser = "chrome" # WebRender 使用的浏览器。
 help_url = "https://bot.teahouse.team" # 線上說明文件網址。
 donate_url = "http://afdian.com/a/teahouse" # 捐贈網址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模組線上說明文件網址。

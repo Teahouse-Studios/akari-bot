@@ -83,6 +83,7 @@
     "config.table.config": "The basic config section. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.",
     "config.table.config_bot": "The basic config section of the platform. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.",
     "config.table.config_module": "The basic config section of the module. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.",
+    "config.table.config_webrender": "The basic config section of WebRender. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.",
     "config.table.secret": "The secret config section. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.",
     "config.table.secret_bot": "The secret config section of the platform. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.",
     "config.table.secret_module": "The secret config section of the module. The bot will try to intercept if the value here accidentally appears in the message sent, but be careful to prevent leakage.",

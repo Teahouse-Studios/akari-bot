@@ -1,0 +1,9 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[webrender]
+# WebRender 的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+enable_web_render = false # 是否启用 WebRender。
+remote_web_render_url = "<Replace me with str value>" # 远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。
+web_render_browser = "chrome" # WebRender 使用的浏览器。

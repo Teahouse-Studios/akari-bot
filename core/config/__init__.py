@@ -349,7 +349,11 @@ class CFGManager:
                     table_comment_key = f"config.table.{"secret" if is_secret else "config"}_{prefix}"
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
-                cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))
+                cls.values[cfg_name][target].add(
+                    toml_comment(
+                        get_locale.t(
+                            table_comment_key,
+                            fallback_failed_prompt=False)))
 
             try:
                 cls.values[cfg_name][target].add(q, value)
