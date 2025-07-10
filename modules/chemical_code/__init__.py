@@ -172,10 +172,10 @@ async def search_pubchem(id: Optional[int] = None):
         answer_id = Random.randint(1, ID_RANGE_MAX)
     answer_id = str(answer_id)
     Logger.info(f"PubChem CID: {answer_id}")
-    get = await get_url(f"{pubchem_link}/compound/cid/{answer_id}/property/IsomericSMILES,Title/JSON", 200, fmt="json")
+    get = await get_url(f"{pubchem_link}/compound/cid/{answer_id}/property/SMILES/JSON", 200, fmt="json")
     if get:
         compound_info = get["PropertyTable"]["Properties"][0]
-        smiles = compound_info["IsomericSMILES"]
+        smiles = compound_info["SMILES"]
         mol = Chem.MolFromSmiles(smiles)
         formula = rdMolDescriptors.CalcMolFormula(mol)
         elements = parse_elements(formula)
