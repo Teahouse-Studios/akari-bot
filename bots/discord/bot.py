@@ -124,4 +124,4 @@ if Config("enable", False, table_name="bot_discord"):
     Info.client_name = client_name
     if "subprocess" in sys.argv:
         Info.subprocess = True
-    loop.run_until_complete(discord_bot.start(dc_token))
+    discord_bot.run(dc_token)

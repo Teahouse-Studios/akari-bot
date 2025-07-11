@@ -52,19 +52,6 @@ class JobQueueBase:
             return await QueueTaskManager.add(task_id)
         return task_id
 
-    @classmethod
-    async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
-        for k in kwargs:
-            if isinstance(kwargs[k], exports["MessageChain"]):
-                kwargs[k] = kwargs[k].to_list()
-        return await cls.add_job(target_client, "trigger_hook",
-                                 {"module_or_hook_name": module_or_hook_name, "args": kwargs}, wait=False)
-
-    @classmethod
-    async def trigger_hook_all(cls, module_or_hook_name: str, **kwargs):
-        for target in get_all_clients_name():
-            await cls.trigger_hook(target, module_or_hook_name, **kwargs)
-
     @staticmethod
     async def return_val(tsk: JobQueuesTable, value: dict, status: str = "done"):
         await tsk.set_val(value, status)

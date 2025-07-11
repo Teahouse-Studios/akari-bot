@@ -13,7 +13,7 @@ slash_ctx_id = Bot.register_context_manager(DiscordSlashContextManager)
 
 
 async def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext], command: str) -> SessionInfo:
-    target_from = target_slash_prefix
+    target_from = target_channel_prefix
     if isinstance(ctx, discord.ApplicationContext):
         if isinstance(ctx.channel, discord.DMChannel):
             target_from = target_dm_channel_prefix

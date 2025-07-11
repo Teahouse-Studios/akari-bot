@@ -14,8 +14,8 @@ async def check_queue() -> None:
     await JobQueueClient.check_job_queue()
 
 
-async def client_init(target_prefix_list: list = None, sender_prefix_list: list = None, queue=True) -> None:
-    await init_db(load_module_db=False)
+async def client_init(target_prefix_list: list = None, sender_prefix_list: list = None, queue=True, load_module_db=False) -> None:
+    await init_db(load_module_db=load_module_db)
     if queue:
         asyncio.create_task(check_queue())
     await JobQueueClient.send_keepalive_signal_to_server(Info.client_name,

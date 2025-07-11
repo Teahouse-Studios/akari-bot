@@ -59,7 +59,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wb.hook("login_wiki_bots")
-async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
+async def _(ctx: Bot.ModuleHookContext):
     Logger.debug("Received login_wiki_bots hook: " + str(ctx.args["cookies"]))
 
 
@@ -68,5 +68,5 @@ async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
 async def login_bots():
     Logger.info("Start login wiki bot account...")
     await BotAccount.login()
-    await JobQueueClient.trigger_hook_all("wikilog.keepalive")
+    await JobQueueClient.trigger_hook("wikilog.keepalive")
     Logger.success("Successfully login wiki bot account.")

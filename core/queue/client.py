@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Optional
 
 from core.builtins.session.info import SessionInfo
 from .base import JobQueueBase
@@ -24,6 +24,19 @@ class JobQueueClient(JobQueueBase):
                           {"client_name": client_name,
                            "target_prefix_list": target_prefix_list or [],
                            "sender_prefix_list": sender_prefix_list or []}, wait=False)
+
+    @classmethod
+    async def trigger_hook(cls, module_or_hook_name: str, session_info: Optional[SessionInfo] = '', wait=False, **kwargs):
+        for k in kwargs:
+            if isinstance(kwargs[k], exports["MessageChain"]):
+                kwargs[k] = kwargs[k].to_list()
+        ret = await cls.add_job("Server", "trigger_hook",
+                                {"module_or_hook_name": module_or_hook_name,
+                                 "session_info": converter.unstructure(session_info) if session_info else '',
+                                 "args": kwargs}, wait=wait)
+        if wait:
+            return ret['result']
+        return None
 
 
 def get_session(args: dict):

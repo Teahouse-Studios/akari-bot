@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from core.builtins.message.chain import *
 from core.builtins.session.context import ContextManager
-from core.builtins.session.info import SessionInfo, FetchedSessionInfo
+from core.builtins.session.info import SessionInfo, FetchedSessionInfo, ModuleHookContext
 from core.builtins.session.internal import MessageSession, FetchedMessageSession
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
@@ -16,7 +16,6 @@ from core.database.models import TargetInfo, AnalyticsData
 from core.exports import add_export, exports
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.types.message import ModuleHookContext
 
 if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
@@ -235,7 +234,9 @@ class Bot:
 
     class Hook:
         @staticmethod
-        async def trigger(module_or_hook_name: str, args):
+        async def trigger(module_or_hook_name: str, session_info: Optional[SessionInfo] = None, args=None) -> Any:
+            if args is None:
+                args = {}
             hook_mode = False
             if "." in module_or_hook_name:
                 hook_mode = True
@@ -245,19 +246,15 @@ class Bot:
                     if module_or_hook_name in modules:
                         for hook in modules[module_or_hook_name].hooks_list.set:
                             await asyncio.create_task(
-                                hook.function(Bot, ModuleHookContext(args))
+                                hook.function(ModuleHookContext(args, session_info=session_info))
                             )
-                        return
+                        return None
 
                 raise ValueError(f"Invalid module name {module_or_hook_name}")
             if module_or_hook_name:
                 if module_or_hook_name in ModulesManager.modules_hooks:
-                    await asyncio.create_task(
-                        ModulesManager.modules_hooks[module_or_hook_name](
-                            Bot, ModuleHookContext(args)
-                        )
-                    )
-                    return
+                    return await ModulesManager.modules_hooks[module_or_hook_name](ModuleHookContext(args, session_info=session_info)
+                                                                                   )
             raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 

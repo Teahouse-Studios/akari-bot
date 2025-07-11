@@ -383,7 +383,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wikilog.hook("keepalive")
-async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
+async def _(ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
     for target in data_:
         for wiki in data_[target]:
@@ -391,7 +391,7 @@ async def _(fetch: Bot, ctx: Bot.ModuleHookContext):
                 "keep_alive" in data_[target][wiki]
                 and data_[target][wiki]["keep_alive"]
             ):
-                fetch_target = await fetch.fetch_target(target)
+                fetch_target = await Bot.fetch_target(target)
                 if fetch_target:
                     session = await FetchedMessageSession.from_session_info(fetch_target)
                     try:

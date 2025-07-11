@@ -19,15 +19,6 @@ class DiscordSlashContextManager(DiscordContextManager):
     typing_flags: dict[str, asyncio.Event] = {}
 
     @classmethod
-    def add_context(cls, session_info: SessionInfo, context: discord.ApplicationContext):
-        cls.context[session_info.session_id] = context
-
-    @classmethod
-    def del_context(cls, session_info: SessionInfo):
-        if session_info.session_id in cls.context:
-            del cls.context[session_info.session_id]
-
-    @classmethod
     async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True,):

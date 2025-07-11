@@ -159,4 +159,14 @@ class FetchedSessionInfo(SessionInfo):
     pass
 
 
-__all__ = [SessionInfo, FetchedSessionInfo]
+@define
+class ModuleHookContext:
+    """
+    模块任务上下文。主要用于传递模块任务的参数。
+    """
+
+    args: dict
+    session_info: Optional[SessionInfo] = None
+
+
+__all__ = [SessionInfo, FetchedSessionInfo, ModuleHookContext]

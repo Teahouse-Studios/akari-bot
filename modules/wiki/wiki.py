@@ -740,3 +740,39 @@ async def query_pages(
             "wait_list": wait_list,
             "wait_msg_list": wait_msg_list,
         }
+
+
+@wiki.hook('autosearch')
+async def auto_search(ctx: Bot.ModuleHookContext):
+    title = ctx.args["title"]
+    iw = ""
+    target = await WikiTargetInfo.get_by_target_id(ctx.session_info.target_id)
+    iws = target.interwikis
+    query_wiki = target.api_link
+    if match_iw := re.match(r"(.*?):(.*)", title):
+        if match_iw.group(1) in iws:
+            query_wiki = iws[match_iw.group(1)]
+            iw = match_iw.group(1) + ":"
+            title = match_iw.group(2)
+    if not query_wiki:
+        return []
+    wiki = WikiLib(query_wiki)
+    if title != "":
+        return [iw + x for x in (await wiki.search_page(title))]
+    return [
+        iw
+        + (await wiki.get_json(action="query", list="random", rnnamespace="0"))[
+            "query"
+        ]["random"][0]["title"]
+    ]
+
+
+@wiki.hook('auto_get_custom_iw_list')
+async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
+    """
+    Get custom interwiki list from target info.
+    """
+    target = await WikiTargetInfo.get_by_target_id(ctx.session_info.target_id)
+    if not target:
+        return []
+    return list(target.interwikis.keys())

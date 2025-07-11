@@ -115,7 +115,7 @@ class TargetInfo(DBModel):
     :param locale: 会话语言。
     :param modules: 会话内可用模块。
     :param custom_admins: 会话内自定义管理员列表。
-    :param ban_user: 会话内已限制用户。
+    :param banned_users: 会话内已限制用户。
     :param target_data: 会话数据。
     """
     target_id = fields.CharField(max_length=512, pk=True)
@@ -451,11 +451,10 @@ class MaliciousLoginRecords(DBModel):
     """
     恶意登录行为记录。
 
-    :param target_id: 会话 ID。
-    :param sender_id: 用户 ID。
-    :param action: 行为类型。
-    :param detail: 行为详情。
-    :param timestamp: 时间戳。
+    :param id: 会话 ID。
+    :param ip_address: IP 地址。
+    :param blocked_until: 被封禁的截止时间。
+    :param created_date: 创建日期。
     """
     id = fields.IntField(pk=True)
     ip_address = fields.CharField(max_length=45)

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, TYPE_CHECKING, Optional
 
 from core.builtins.parser.message import parser
 from .base import JobQueueBase
@@ -7,7 +7,14 @@ from ..builtins.message.chain import MessageChain, MessageNodes
 from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
+from ..logger import Logger
 from ..utils.alive import Alive
+
+import orjson as json
+
+
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
 
 
 class JobQueueServer(JobQueueBase):
@@ -76,5 +83,21 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
                         target_prefix_list=tsk.args.get("target_prefix_list"),
                         sender_prefix_list=tsk.args.get("sender_prefix_list"))
     return {"success": True}
+
+
+@JobQueueServer.action("trigger_hook")
+async def _(tsk: JobQueuesTable, args: dict):
+    bot: "Bot" = exports["Bot"]
+    session_info: Optional[SessionInfo] = None
+    if args['session_info']:
+        session_info = converter.structure(args['session_info'], SessionInfo)
+        await session_info.refresh_info()
+    _val = await bot.Hook.trigger(args["module_or_hook_name"], session_info=session_info, args=args["args"])
+    Logger.trace(
+        f"Trigger hook {
+            args['module_or_hook_name']} with args {
+            args['args']}, result: {_val}, type: {
+                type(_val)}")
+    await JobQueueServer.return_val(tsk, {'result': _val})
 
 add_export(JobQueueServer)

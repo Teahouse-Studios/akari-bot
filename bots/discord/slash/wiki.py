@@ -1,11 +1,8 @@
-import re
-
 import discord
 
 from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser, ctx_to_session
-from modules.wiki import WikiLib
-from modules.wiki.database.models import WikiTargetInfo
+from core.queue.client import JobQueueClient
 
 
 @discord_bot.slash_command(description="Get recent abuse logs for the default wiki.")
@@ -26,41 +23,22 @@ async def rc(ctx: discord.ApplicationContext):
 wiki = discord_bot.create_group("wiki", "Query information from Mediawiki-based websites.")
 
 
-async def auto_search(ctx: discord.AutocompleteContext):
-    title = ctx.options["pagename"]
-    iw = ""
-    target = await WikiTargetInfo.get_by_target_id(await ctx_to_session(ctx, '').target_id)
-    iws = target.interwikis
-    query_wiki = target.api_link
-    if match_iw := re.match(r"(.*?):(.*)", title):
-        if match_iw.group(1) in iws:
-            query_wiki = iws[match_iw.group(1)]
-            iw = match_iw.group(1) + ":"
-            title = match_iw.group(2)
-    if not query_wiki:
-        return []
-    wiki = WikiLib(query_wiki)
-    if title != "":
-        return [iw + x for x in (await wiki.search_page(title))]
-    return [
-        iw
-        + (await wiki.get_json(action="query", list="random", rnnamespace="0"))[
-            "query"
-        ]["random"][0]["title"]
-    ]
-
-
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
-    target = await WikiTargetInfo.get_by_target_id(await ctx_to_session(ctx, '').target_id)
-    iws = target.interwikis
-    if not iws:
-        return []
-    return list(iws.keys())
+    session = await ctx_to_session(ctx, '')
+    return await JobQueueClient.trigger_hook('wiki.auto_get_custom_iw_list',
+                                             session, wait=True)
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):
     if not ctx.options["wikiurl"]:
         return ["https://zh.minecraft.wiki/"]
+
+
+async def auto_search(ctx: discord.AutocompleteContext):
+    session = await ctx_to_session(ctx, '')
+    return await JobQueueClient.trigger_hook('wiki.autosearch',
+                                             session, wait=True,
+                                             **{'title': ctx.options["pagename"]})
 
 
 @wiki.command(name="query", description="Query a wiki page.")
