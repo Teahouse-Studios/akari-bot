@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import inspect
 import re
@@ -62,17 +63,11 @@ async def remove_temp_ban(target):
         del temp_ban_counter[target]
 
 
-async def parser(msg: "Bot.MessageSession",
-                 require_enable_modules: bool = True,
-                 prefix: Optional[list] = None,
-                 running_mention: bool = False):
+async def parser(msg: "Bot.MessageSession"):
     """
     接收消息必经的预处理器。
 
     :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游。
-    :param require_enable_modules: 是否需要检查模块是否已启用。
-    :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在空字符串的情况下则代表无需命令前缀。
-    :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行。
     """
     await msg.session_info.refresh_info()
     identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
@@ -92,7 +87,7 @@ async def parser(msg: "Bot.MessageSession",
                 msg.session_info.sender_id in msg.session_info.target_info.target_data.get("ban", []) and not msg.session_info.superuser):
             return
 
-        disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg, prefix)
+        disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg)
 
         if in_prefix_list or disable_prefix:  # 检查消息前缀
             Logger.info(
@@ -103,7 +98,7 @@ async def parser(msg: "Bot.MessageSession",
                 return
 
             if command_first_word in modules:  # 检查触发命令是否在模块列表中
-                await _execute_module(msg, require_enable_modules, modules, command_first_word, identify_str)
+                await _execute_module(msg, modules, command_first_word, identify_str)
             if command_first_word in current_unloaded_modules:
                 await msg.send_message(I18NContext("parser.module.unloaded", module=command_first_word))
             elif command_first_word in err_modules:
@@ -112,7 +107,7 @@ async def parser(msg: "Bot.MessageSession",
             return msg
         if msg.session_info.muted:
             return
-        if running_mention:
+        if msg.session_info.running_mention:
             if msg.trigger_msg.lower().find(msg.session_info.bot_name.lower()) != -1:
                 if ExecutionLockList.check(msg):
                     return await msg.send_message(I18NContext("parser.command.running.prompt2"))
@@ -163,16 +158,14 @@ def _transform_alias(msg, command: str):
     return command
 
 
-def _get_prefixes(msg: "Bot.MessageSession", prefix):
+def _get_prefixes(msg: "Bot.MessageSession"):
     if msg.session_info.target_info.target_data.get("command_alias"):
         msg.trigger_msg = _transform_alias(msg, msg.trigger_msg)  # 将自定义别名替换为命令
 
     disable_prefix = False
-    if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
-        if "" in prefix:
+    if msg.session_info.prefixes:  # 如果上游指定了命令前缀，则使用指定的命令前缀
+        if "" in msg.session_info.prefixes:
             disable_prefix = True
-        msg.session_info.prefixes.clear()
-        msg.session_info.prefixes.extend(prefix)
     display_prefix = ""
     in_prefix_list = False
     for cp in msg.session_info.prefixes:  # 判断是否在命令前缀列表中
@@ -240,7 +233,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     return command_first_word
 
 
-async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, modules, command_first_word, identify_str):
+async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word, identify_str):
     time_start = datetime.now()
     bot: "Bot" = exports["Bot"]
     try:
@@ -272,7 +265,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
                 await msg.send_message(I18NContext("parser.superuser.permission.denied"))
                 return
         elif not module.base:
-            if command_first_word not in msg.session_info.enabled_modules and require_enable_modules:  # 若未开启
+            if command_first_word not in msg.session_info.enabled_modules and msg.session_info.require_enable_modules:  # 若未开启
                 await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word, prefix=msg.session_info.prefixes[0]))
                 if await msg.check_permission():
                     if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable")):
@@ -314,7 +307,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
         await _process_send_message_failed(msg)
 
     except FinishedException as e:
-        await bot.end_typing(msg.session_info)
+
         time_used = datetime.now() - time_start
         Logger.success(f"Successfully finished session from {identify_str}, returns: {str(e)}. "
                        f"Times take up: {str(time_used)}")
@@ -325,7 +318,7 @@ async def _execute_module(msg: "Bot.MessageSession", require_enable_modules, mod
                                        command=msg.trigger_msg,
                                        module_name=command_first_word,
                                        module_type="normal")
-
+        await bot.end_typing(msg.session_info)
     except AbuseWarning as e:
         await _process_tos_abuse_warning(msg, e)
 
@@ -431,7 +424,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 await rfunc.function(msg)  # 将msg传入下游模块
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
-                        await bot.end_typing(msg.session_info)
                         time_used = datetime.now() - time_start
                         if rfunc.logging:
                             Logger.success(
@@ -445,6 +437,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                                        command=msg.trigger_msg,
                                                        module_name=m,
                                                        module_type="regex")
+                        await bot.end_typing(msg.session_info)
                         continue
 
                     except NoReportException as e:

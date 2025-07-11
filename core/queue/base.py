@@ -8,7 +8,6 @@ from core.constants import QueueAlreadyRunning
 from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
-from core.utils.info import get_all_clients_name
 
 
 class QueueFinished(Exception):

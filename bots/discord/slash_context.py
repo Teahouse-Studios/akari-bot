@@ -13,6 +13,9 @@ from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 
 
+typing_ended_list = []  # List to keep track of typing end events
+
+
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
     features: Optional[Features] = Features
@@ -104,6 +107,11 @@ class DiscordSlashContextManager(DiscordContextManager):
             ctx = cls.context[session_info.session_id]
             if ctx:
                 async with ctx.channel.typing() as typing:
+                    if session_info.session_id in typing_ended_list:
+                        Logger.warning(
+                            f"Typing start event got for session: {
+                                session_info.session_id}, but typing end event already received, skip.")
+                        return
                     await ctx.defer()
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑
@@ -125,5 +133,12 @@ class DiscordSlashContextManager(DiscordContextManager):
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
             del cls.typing_flags[session_info.session_id]
-        # 这里可以添加结束输入状态的逻辑
-        Logger.debug(f"End typing in session: {session_info.session_id}")
+            Logger.debug(f"End typing in session: {session_info.session_id}")
+        else:
+            Logger.warning(
+                f"Typing start event not found for session: {
+                    session_info.session_id}, done too quickly? Intercept start typing signals for 30s.")
+            typing_ended_list.append(session_info.session_id)
+            await asyncio.sleep(30)
+            if session_info.session_id in typing_ended_list:
+                typing_ended_list.remove(session_info.session_id)

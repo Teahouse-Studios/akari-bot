@@ -57,6 +57,7 @@ class SessionInfo:
     require_check_dirty_words: bool = False
     use_url_manager: bool = False
     use_url_md_format: bool = False
+    running_mention: bool = True
     tmp: Optional[dict[str, str]] = {}
 
     @classmethod
@@ -77,6 +78,7 @@ class SessionInfo:
                      require_check_dirty_words: bool = False,
                      use_url_manager: bool = False,
                      use_url_md_format: bool = False,
+                     running_mention: bool = True,
                      tmp: Optional[dict[str, str]] = None
                      ) -> SessionInfo:
 
@@ -136,6 +138,7 @@ class SessionInfo:
             require_check_dirty_words=require_check_dirty_words,
             use_url_manager=use_url_manager,
             use_url_md_format=use_url_md_format,
+            running_mention=running_mention,
             tmp=tmp,
 
         )
