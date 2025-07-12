@@ -22,9 +22,8 @@ hitokoto = module(
 @hitokoto.command("[<msg_type>] {{I18N:hitokoto.help.type}}")
 async def _(msg: Bot.MessageSession, msg_type: str = None):
     api = "https://v1.hitokoto.cn/"
-    if msg_type:
-        if msg_type not in msg_types:
-            await msg.finish(I18NContext("hitokoto.message.invalid"))
+    if not msg_type or msg_type not in msg_types:
+        await msg.finish(I18NContext("hitokoto.message.invalid"))
 
     data = await get_url(f"{api}?c={msg_type}", 200, fmt="json")
     if msg.session_info.locale.locale == "zh_tw":

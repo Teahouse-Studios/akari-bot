@@ -25,7 +25,7 @@ async def get_video_info(
         #     return I18NContext("bilibili.message.error.rejected")
         raise e
 
-    view = res["data"]["View"]
+    view = load_json["data"]["View"]
     stat = view["stat"]
 
     video_url = f"https://www.bilibili.com/video/{view["bvid"]}"
@@ -51,7 +51,7 @@ async def get_video_info(
 
     owner = view["owner"]["name"]
     avatar = view["owner"]["face"]
-    fans = msg.format_num(res["data"]["Card"]["card"]["fans"], 1)
+    fans = msg.format_num(load_json["data"]["Card"]["card"]["fans"], 1)
 
     if use_embed:
         return Embed(

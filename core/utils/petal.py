@@ -31,7 +31,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
-            await msg.sender_info.modify_petal(amount)
+            await msg.session_info.sender_info.modify_petal(amount)
             await update_stored_list(msg.session_info.client_name, "gainedpetal", [p])
             return I18NContext("petal.message.gained.success", amount=amount)
         if limit > 0:
@@ -40,7 +40,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
             if p[msg.session_info.sender_id]["amount"] + amount > limit:
                 amount = limit - p[msg.session_info.sender_id]["amount"]
         p[msg.session_info.sender_id]["amount"] += amount
-        await msg.sender_info.modify_petal(amount)
+        await msg.session_info.sender_info.modify_petal(amount)
         await update_stored_list(msg.session_info.client_name, "gainedpetal", [p])
         return I18NContext("petal.message.gained.success", amount=amount)
 
@@ -68,7 +68,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
-            await msg.sender_info.modify_petal(-amount)
+            await msg.session_info.sender_info.modify_petal(-amount)
             await update_stored_list(msg.session_info.client_name, "lostpetal", [p])
             return I18NContext("petal.message.lost.success", amount=amount)
         if limit > 0:
@@ -77,7 +77,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
             if p[msg.session_info.sender_id]["amount"] + amount > limit:
                 amount = limit - p[msg.session_info.sender_id]["amount"]
         p[msg.session_info.sender_id]["amount"] += amount
-        await msg.sender_info.modify_petal(-amount)
+        await msg.session_info.sender_info.modify_petal(-amount)
         await update_stored_list(msg.session_info.client_name, "lostpetal", [p])
         return I18NContext("petal.message.lost.success", amount=amount)
 
@@ -91,7 +91,7 @@ async def cost_petal(msg: Bot.MessageSession, amount: int, send_prompt: bool = T
     :returns: 是否成功处理。
     """
     if Config("enable_petal", False):
-        if amount > msg.petal:
+        if amount > msg.session_info.petal:
             if send_prompt:
                 await msg.send_message(I18NContext("petal.message.cost.not_enough"))
             return False
@@ -127,7 +127,7 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int:
                 "expired": expired.timestamp(),
                 "amount": amount,
             }
-            await msg.sender_info.modify_petal(amount)
+            await msg.session_info.sender_info.modify_petal(amount)
             await update_stored_list(msg.session_info.client_name, "signgetpetal", [p])
             return amount
 

@@ -91,7 +91,7 @@ async def image_table_render(
             fname = f"{random_cache_path()}.html"
             with open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
-        image_list = await web_render.legacy_screenshot(LegacyScreenshotOptions(content=tblst + css, width=w, mw=False))
+        image_list = await web_render.legacy_screenshot(LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False))
     except Exception:
         Logger.exception()
         return None

@@ -38,11 +38,11 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 d.append(comment)
         if x["type"] == "log":
             if x["logtype"] == x["logaction"]:
-                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}",
-                                   user=user,
-                                   title=title)
+                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x["logtype"]}",
+                                                user=user,
+                                                title=title)
             else:
-                log = msg.locale.t(
+                log = msg.session_info.locale.t(
                     f"wiki.message.rc.action.{x["logtype"]}.{x["logaction"]}",
                     user=user,
                     title=title)
@@ -175,7 +175,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
             if x["logtype"] == x["logaction"]:
                 log = msg.session_info.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
             else:
-                log = msg.locale.t(
+                log = msg.session_info.locale.t(
                     f"wiki.message.rc.action.{x["logtype"]}.{x["logaction"]}",
                     user=user,
                     title=title)

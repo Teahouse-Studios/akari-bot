@@ -21,12 +21,12 @@ petal_ = module("petal",
 
 @petal_.command("{{I18N:core.help.petal}}")
 async def _(msg: Bot.MessageSession):
-    await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
+    await msg.finish(I18NContext("core.message.petal.self", petal=msg.session_info.petal))
 
 
 @petal_.command("sign {{I18N:core.help.petal.sign}}")
 async def _(msg: Bot.MessageSession):
-    if not msg.target_data.get("disable_sign", False):
+    if not msg.session_info.target_data.get("disable_sign", False):
         amount = await sign_get_petal(msg)
         if amount:
             await msg.finish([I18NContext("core.message.petal.sign.success"),
@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession, petal: int, user: str):
             await msg.finish(I18NContext("core.message.petal.give.success",
                                          sender=user,
                                          give_petal=petal,
-                                         petal=msg.petal - int(petal)))
+                                         petal=msg.session_info.petal - int(petal)))
         else:
             await msg.finish()
     else:
@@ -76,8 +76,8 @@ async def _(msg: Bot.MessageSession):
             await sender_info.modify_petal(petal)
             await msg.finish(I18NContext("core.message.petal.modify", sender=user, add_petal=petal, petal=sender_info.petal))
         else:
-            await msg.sender_info.modify_petal(petal)
-            await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=msg.petal + int(petal)))
+            await msg.session_info.sender_info.modify_petal(petal)
+            await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=msg.session_info.petal + int(petal)))
     elif msg.parsed_msg.get("clear", False):
         if user:
             if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
@@ -90,7 +90,7 @@ async def _(msg: Bot.MessageSession):
             await sender_info.clear_petal()
             await msg.finish(I18NContext("core.message.petal.clear", sender=user))
         else:
-            await msg.sender_info.clear_petal()
+            await msg.session_info.sender_info.clear_petal()
             await msg.finish(I18NContext("core.message.petal.clear.self"))
     else:
         if user:
@@ -103,4 +103,4 @@ async def _(msg: Bot.MessageSession):
                 await SenderInfo.create(sender_id=user)
             await msg.finish(I18NContext("core.message.petal", sender=user, petal=sender_info.petal))
         else:
-            await msg.finish(I18NContext("core.message.petal.self", petal=msg.petal))
+            await msg.finish(I18NContext("core.message.petal.self", petal=msg.session_info.petal))

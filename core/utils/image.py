@@ -133,7 +133,7 @@ async def svg_render(file_path: str) -> Union[List[ImageElement], bool]:
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"], counttime=False))
+    pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"], counttime=False, output_type='png'))
     if not pic_list:
         Logger.exception("[WebRender] Generation Failed.")
         return False

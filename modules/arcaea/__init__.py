@@ -28,7 +28,7 @@ async def _(msg: Bot.MessageSession):
         load_json = json.loads(resp)
         url = load_json.get("value", {}).get("url")
     if url:
-        await msg.finish(I18NContext("arcaea.message.download", version=resp["value"]["version"], url=url))
+        await msg.finish(I18NContext("arcaea.message.download", version=load_json["value"]["version"], url=url))
     else:
         await msg.finish(I18NContext("arcaea.message.get_failed"))
 

@@ -88,7 +88,7 @@ async def get_info(music: Music, details) -> MessageChain:
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not os.path.exists(mai_alias_path):
         await msg.finish(
-            I18NContext("maimai.message.alias.file_not_found", prefix=msg.prefixes[0])
+            I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0])
         )
     with open(mai_alias_path, "rb") as file:
         data = json.loads(file.read())

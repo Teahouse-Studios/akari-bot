@@ -67,7 +67,8 @@ async def query_bedrock_server(msg, address, raw=False):
         query_msg.append("[BE]")
         query_msg.append(status.motd.raw)
 
-        player_count = f"{msg.locale.t("server.message.player")}{status.players.online} / {status.players.max}"
+        player_count = f"{msg.session_info.locale.t("server.message.player")}{
+            status.players.online} / {status.players.max}"
         query_msg.append(player_count)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):

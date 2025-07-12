@@ -95,8 +95,8 @@ admin = module(
     "list {{I18N:core.help.admin.list}}")
 async def _(msg: Bot.MessageSession):
     if "list" in msg.parsed_msg:
-        if msg.custom_admins:
-            await msg.finish([I18NContext("core.message.admin.list"), Plain("\n".join(msg.custom_admins))])
+        if msg.session_info.custom_admins:
+            await msg.finish([I18NContext("core.message.admin.list"), Plain("\n".join(msg.session_info.custom_admins))])
         else:
             await msg.finish(I18NContext("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -123,8 +123,8 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
-        if msg.banned_users:
-            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.custom_admins))])
+        if msg.session_info.banned_users:
+            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.session_info.custom_admins))])
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
@@ -229,11 +229,11 @@ async def _(msg: Bot.MessageSession):
                required_admin=True,
                load=Config("enable_petal", False))
 async def _(msg: Bot.MessageSession):
-    if not msg.target_data.get("disable_sign", False):
-        await msg.target_info.edit_target_data("disable_sign", True)
+    if not msg.session_info.target_data.get("disable_sign", False):
+        await msg.session_info.target_info.edit_target_data("disable_sign", True)
         await msg.finish(I18NContext("core.message.setup.sign.disable"))
     else:
-        await msg.target_info.edit_target_data("disable_sign", False)
+        await msg.session_info.target_info.edit_target_data("disable_sign", False)
         await msg.finish(I18NContext("core.message.setup.sign.enable"))
 
 

@@ -222,8 +222,8 @@ async def _(msg: Bot.MessageSession):
     redlink_state = msg.session_info.target_info.target_data.get("wiki_redlink")
 
     if redlink_state:
-        await msg.target_info.edit_target_data("wiki_redlink", False)
+        await msg.session_info.target_info.edit_target_data("wiki_redlink", False)
         await msg.finish(I18NContext("wiki.message.redlink.disable"))
     else:
-        await msg.target_info.edit_target_data("wiki_redlink", True)
+        await msg.session_info.target_info.edit_target_data("wiki_redlink", True)
         await msg.finish(I18NContext("wiki.message.redlink.enable"))

@@ -83,7 +83,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image(Plain(s))
         if imgs:
             await msg.finish(imgs)
@@ -130,7 +130,7 @@ async def _(msg: Bot.MessageSession, level: str):
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image(Plain(s))
         if imgs:
             await msg.finish(imgs)
@@ -167,7 +167,7 @@ async def _(msg: Bot.MessageSession):
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image(Plain(s))
         if imgs:
             await msg.finish(imgs)
@@ -204,7 +204,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     if len(data) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image(Plain(s))
         if imgs:
             await msg.finish(imgs)
@@ -276,7 +276,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.prefixes[0]))
+                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
             username = bind_info.username
             payload = {"username": username, "b50": True}
         use_cache = True
@@ -491,7 +491,7 @@ async def query_song_score(msg, query, username):
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.prefixes[0]))
+                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
             username = bind_info.username
             payload = {"username": username}
         use_cache = True
@@ -517,7 +517,7 @@ async def query_plate(msg, plate, username, get_list=False):
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.prefixes[0]))
+                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
             username = bind_info.username
             payload = {"username": username}
         use_cache = True
@@ -556,7 +556,7 @@ async def query_process(msg, level, goal, username):
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.prefixes[0]))
+                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
             username = bind_info.username
             payload = {"username": username}
         use_cache = True
@@ -589,7 +589,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.prefixes[0]))
+                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
             username = bind_info.username
             payload = {"username": username}
         use_cache = True
@@ -616,7 +616,7 @@ async def _(msg: Bot.MessageSession, level: str):
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
-                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.prefixes[0]))
+                await msg.finish(I18NContext("maimai.message.user_unbound", prefix=msg.session_info.prefixes[0]))
             username = bind_info.username
             payload = {"username": username}
         use_cache = True

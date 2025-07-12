@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
                 )
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
         else:
             try:
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
                 legacy = False
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
     if legacy:
         try:
             res = await get_rc(msg, start_wiki, headers)
@@ -112,7 +112,7 @@ async def _(msg: Bot.MessageSession):
                 )
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
         else:
             try:
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
@@ -120,7 +120,7 @@ async def _(msg: Bot.MessageSession):
                 legacy = False
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
     if legacy:
         try:
             res = await get_ab(msg, start_wiki, headers)

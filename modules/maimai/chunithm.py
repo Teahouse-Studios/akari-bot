@@ -83,7 +83,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image(Plain(s))
         if imgs:
             await msg.finish(imgs)
@@ -128,7 +128,7 @@ async def _(msg: Bot.MessageSession, level: str):
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
-        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        s += msg.session_info.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         imgs = await msgchain2image(Plain(s))
         if imgs:
             await msg.finish(imgs)

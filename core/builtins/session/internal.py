@@ -186,6 +186,17 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         await _queue_server.client_release_context(self.session_info)
 
+    async def start_typing(self):
+        """
+        用于在会话中开始输入状态。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_start_typing_signal(self.session_info)
+
+    async def end_typing(self):
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        await _queue_server.client_end_typing_signal(self.session_info)
+
     async def wait_confirm(
         self,
         message_chain: Optional[Chainable] = None,
@@ -206,6 +217,7 @@ class MessageSession:
         """
         send = None
         ExecutionLockList.remove(self)
+        await self.end_typing()
         if Config("no_confirm", False):
             return True
         if message_chain:
@@ -251,6 +263,7 @@ class MessageSession:
         """
         send = None
         ExecutionLockList.remove(self)
+        await self.end_typing()
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
@@ -294,6 +307,7 @@ class MessageSession:
         """
         send = None
         ExecutionLockList.remove(self)
+        await self.end_typing()
         message_chain = get_message_chain(self.session_info, message_chain)
         if append_instruction:
             message_chain.append(I18NContext("message.reply.prompt"))
@@ -334,6 +348,7 @@ class MessageSession:
         """
         send = None
         ExecutionLockList.remove(self)
+        await self.end_typing()
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             send = await self.send_message(message_chain, quote)

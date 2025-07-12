@@ -13,6 +13,7 @@ import bots.discord.slash as slash_modules
 from bots.discord.client import discord_bot
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager
 from bots.discord.info import *
+from bots.discord.slash_context import DiscordSlashContextManager
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice
@@ -36,14 +37,26 @@ ignored_sender = Config("ignored_sender", ignored_sender_default)
 count = 0
 
 
+async def cleanup_typing_signal():
+    while True:
+        for f in DiscordContextManager.typing_flags:
+            if f not in DiscordContextManager.context:
+                DiscordContextManager.typing_flags[f].set()
+        for fs in DiscordSlashContextManager.typing_flags:
+            if fs not in DiscordSlashContextManager.context:
+                DiscordSlashContextManager.typing_flags[fs].set()
+        await asyncio.sleep(1)
+
+
 @discord_bot.event
 async def on_ready():
     Logger.info(f"Logged on as {discord_bot.user}")
     global count
     if count == 0:
         await client_init(target_prefix_list, sender_prefix_list)
-        count += 1
+        asyncio.create_task(cleanup_typing_signal())
         logging.getLogger("discord").setLevel(logging.INFO)
+        count += 1
 
 slash_load_dir = os.path.abspath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), "slash")

@@ -42,20 +42,6 @@ m = module(
      "list [--legacy] {{I18N:core.help.module.list}}",
      ],
     options_desc={"--legacy": "{I18N:help.option.legacy}"},
-    exclude_from=["QQ|Guild"],
-)
-@m.command(
-    ["enable [-g] <module> ... {{I18N:core.help.module.enable}}",
-     "enable all [-g] {{I18N:core.help.module.enable_all}}",
-     "disable [-g] <module> ... {{I18N:core.help.module.disable}}",
-     "disable all [-g] {{I18N:core.help.module.disable_all}}",
-     "list [--legacy] {{I18N:core.help.module.list}}",
-     ],
-    options_desc={
-        "-g": "{I18N:core.help.option.module.g}",
-        "--legacy": "{I18N:help.option.legacy}",
-    },
-    available_for=["QQ|Guild"],
 )
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("list", False):
@@ -176,20 +162,13 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(I18NContext("core.message.module.disable.base", module=module_))
                     else:
                         disable_list.append(module_)
-        if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
-            get_all_channel = await msg.get_text_channel_list()
-            for x in get_all_channel:
-                target_info = await TargetInfo.get_by_target_id(f"{msg.session_info.target_from}|{x}")
-                await target_info.config_module(disable_list, False)
+
+        if await msg.session_info.target_info.config_module(disable_list, False):
             for x in disable_list:
-                msglist.append(I18NContext("core.message.module.disable.qqchannel_global.success", module=x))
-        else:
-            if await msg.session_info.target_info.config_module(disable_list, False):
-                for x in disable_list:
-                    if x not in enabled_modules_list:
-                        msglist.append(I18NContext("core.message.module.disable.already", module=x))
-                    else:
-                        msglist.append(I18NContext("core.message.module.disable.success", module=x))
+                if x not in enabled_modules_list:
+                    msglist.append(I18NContext("core.message.module.disable.already", module=x))
+                else:
+                    msglist.append(I18NContext("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get("reload", False):
 
         def module_reload(module, extra_modules, base_module=False):

@@ -94,6 +94,13 @@ async def parser(msg: "Bot.MessageSession"):
                 f"{identify_str} -> [Bot]: {msg.trigger_msg}")
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list, display_prefix)
 
+            if command_first_word:
+                if not ExecutionLockList.check(msg):  # 加锁
+                    ExecutionLockList.add(msg)
+                else:
+                    await msg.send_message(I18NContext("parser.command.running.prompt"))
+                    return
+
             if msg.session_info.muted and command_first_word != "mute":
                 return
 
@@ -121,6 +128,7 @@ async def parser(msg: "Bot.MessageSession"):
     except Exception:
         Logger.exception()
     finally:
+        await msg.end_typing()
         ExecutionLockList.remove(msg)
 
 
@@ -189,12 +197,6 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     else:
         command = msg.trigger_msg[len(display_prefix):]
     command = command.strip()
-
-    if not ExecutionLockList.check(msg):  # 加锁
-        ExecutionLockList.add(msg)
-    else:
-        await msg.send_message(I18NContext("parser.command.running.prompt"))
-
     not_alias = False
     cm = ""
     for moduleName in modules:
@@ -297,7 +299,7 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
             for func in module.command_list.set:
                 if not func.help_doc:
                     if not msg.session_info.sender_info.sender_data.get("disable_typing", False):
-                        await bot.start_typing(msg.session_info)
+                        await msg.start_typing()
                         await func.function(msg)  # 将msg传入下游模块
 
                     else:
@@ -318,7 +320,6 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                                        command=msg.trigger_msg,
                                        module_name=command_first_word,
                                        module_type="normal")
-        await bot.end_typing(msg.session_info)
     except AbuseWarning as e:
         await _process_tos_abuse_warning(msg, e)
 
@@ -327,6 +328,9 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
 
     except Exception as e:
         await _process_exception(msg, e)
+    finally:
+        await msg.end_typing()
+        ExecutionLockList.remove(msg)
 
 
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
@@ -417,7 +421,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             if rfunc.show_typing and not msg.session_info.sender_info.sender_data.get(
                                     "disable_typing", False):
-                                await bot.start_typing(msg.session_info)
+                                await msg.start_typing()
                                 await rfunc.function(msg)  # 将msg传入下游模块
 
                             else:
@@ -437,7 +441,6 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                                        command=msg.trigger_msg,
                                                        module_name=m,
                                                        module_type="regex")
-                        await bot.end_typing(msg.session_info)
                         continue
 
                     except NoReportException as e:
@@ -449,6 +452,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     except Exception as e:
                         await _process_exception(msg, e)
                     finally:
+                        await msg.end_typing()
                         ExecutionLockList.remove(msg)
 
         except SendMessageFailed:
@@ -596,7 +600,7 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
             if not msg.session_info.target_info.target_data.get("disable_typing", False):
-                await bot.start_typing(msg.session_info)
+                await msg.start_typing()
                 await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
             else:
                 await parsed_msg[0].function(**kwargs)

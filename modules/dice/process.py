@@ -255,7 +255,7 @@ def generate_dice_message(
         try:
             if dc:
                 output_line += f"/{dc}  "
-                if msg.target_data.get("dice_dc_reversed"):
+                if msg.session_info.target_data.get("dice_dc_reversed"):
                     if int(result) <= dc:
                         output_line += "{I18N:dice.message.dc.success}"
                         success_num += 1

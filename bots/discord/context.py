@@ -16,9 +16,6 @@ from core.logger import Logger
 from core.utils.image import msgnode2image
 
 
-typing_ended_list = []  # List to keep track of typing end events
-
-
 class DiscordContextManager(ContextManager):
     context: dict[str, Message] = {}
     features: Optional[Features] = Features
@@ -201,16 +198,12 @@ class DiscordContextManager(ContextManager):
             ctx = cls.context[session_info.session_id]
             if ctx:
                 async with ctx.channel.typing() as typing:
-                    if session_info.session_id in typing_ended_list:
-                        Logger.warning(
-                            f"Typing start event got for session: {
-                                session_info.session_id}, but typing end event already received, skip.")
-                        return
                     Logger.debug(f"Start typing in session: {session_info.session_id}")
                     # 这里可以添加开始输入状态的逻辑
                     flag = asyncio.Event()
                     cls.typing_flags[session_info.session_id] = flag
                     await flag.wait()
+                    del cls.typing_flags[session_info.session_id]
 
             # 这里可以添加开始输入状态的逻辑
         asyncio.create_task(_typing())
@@ -225,17 +218,8 @@ class DiscordContextManager(ContextManager):
             raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
-            del cls.typing_flags[session_info.session_id]
         # 这里可以添加结束输入状态的逻辑
             Logger.debug(f"End typing in session: {session_info.session_id}")
-        else:
-            Logger.warning(
-                f"Typing start event not found for session: {
-                    session_info.session_id}, done too quickly? Intercept start typing signals for 30s.")
-            typing_ended_list.append(session_info.session_id)
-            await asyncio.sleep(30)
-            if session_info.session_id in typing_ended_list:
-                typing_ended_list.remove(session_info.session_id)
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:

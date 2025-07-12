@@ -20,7 +20,7 @@ def precount_petal(msg: Bot.MessageSession,
         petal = petal if petal > 0 else 0
         if petal == 0:
             return True
-        return msg.petal >= petal
+        return msg.session_info.petal >= petal
     return True
 
 
