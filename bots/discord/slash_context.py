@@ -13,9 +13,6 @@ from core.builtins.session.info import SessionInfo
 from core.logger import Logger
 
 
-typing_ended_list = []  # List to keep track of typing end events
-
-
 class DiscordSlashContextManager(DiscordContextManager):
     context: dict[str, discord.ApplicationContext] = {}
     features: Optional[Features] = Features

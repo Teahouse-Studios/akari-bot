@@ -10,9 +10,6 @@ from ..exports import exports, add_export
 from ..logger import Logger
 from ..utils.alive import Alive
 
-import orjson as json
-
-
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
