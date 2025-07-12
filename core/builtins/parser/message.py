@@ -1,11 +1,9 @@
-import asyncio
-import inspect
 import inspect
 import re
 import traceback
 from datetime import datetime
 from string import Template
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Plain, I18NContext
@@ -653,6 +651,7 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
 
 
 async def _process_exception(msg: "Bot.MessageSession", e: Exception):
+    bot: "Bot" = exports["Bot"]
     tb = traceback.format_exc()
     Logger.error(tb)
     errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
@@ -672,8 +671,8 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
 
     if not timeout and report_targets:
         for target in report_targets:
-            if f := await Bot.fetch_target(target):
-                await Bot.send_direct_message(f, [I18NContext("error.message.report", module=msg.trigger_msg),
+            if f := await bot.fetch_target(target):
+                await bot.send_direct_message(f, [I18NContext("error.message.report", module=msg.trigger_msg),
                                                   Plain(tb.strip(), disable_joke=True)],
                                               enable_parse_message=False, disable_secret_check=True)
 
