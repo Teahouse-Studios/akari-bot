@@ -97,4 +97,15 @@ async def _(tsk: JobQueuesTable, args: dict):
                 type(_val)}")
     await JobQueueServer.return_val(tsk, {'result': _val})
 
+
+@JobQueueServer.action("client_direct_message")
+async def client_direct_message(tsk: JobQueuesTable, args: dict):
+    bot: "Bot" = exports["Bot"]
+    session_info = converter.structure(args['session_info'], SessionInfo)
+    await session_info.refresh_info()
+    message = converter.structure(args['message'], Union[MessageChain, MessageNodes])
+    await bot.send_direct_message(session_info, message, disable_secret_check=args["disable_secret_check"],
+                                  enable_parse_message=args["enable_parse_message"])
+    return {"success": True}
+
 add_export(JobQueueServer)

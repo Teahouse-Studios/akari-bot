@@ -243,14 +243,14 @@ docs = ["sphinx (==8.1.3)", "sphinx-mdinclude (==0.6.1)"]
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.2.8"
+version = "0.2.9"
 description = ""
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "akari_bot_webrender-0.2.8-py3-none-any.whl", hash = "sha256:830b08aa6fa0cde3f4a4b6eb9d2fc87967a695eeb7cedc993bf8ce24a754f41f"},
-    {file = "akari_bot_webrender-0.2.8.tar.gz", hash = "sha256:76d023efa71649298213362d25da5322f1d45ecc03b1455abaa4ad28982ee063"},
+    {file = "akari_bot_webrender-0.2.9-py3-none-any.whl", hash = "sha256:76812806e19332310b815177a92eab4b91015542f889b097ca5aaebf6f15e5e9"},
+    {file = "akari_bot_webrender-0.2.9.tar.gz", hash = "sha256:2e571e655c238296dba8510333eab322a1861e66aa99a469200f31f29635a9e4"},
 ]
 
 [package.dependencies]
@@ -260,8 +260,8 @@ jinja2 = ">=3.1.6,<4.0.0"
 loguru = ">=0.7.3,<0.8.0"
 orjson = ">=3.10.18,<4.0.0"
 playwright = ">=1.52.0,<2.0.0"
-playwright-stealth = ">=2.0.0,<3.0.0"
 pydantic = ">=2.11.7,<3.0.0"
+tf-playwright-stealth = ">=1.2.0,<2.0.0"
 uvicorn = ">=0.34.3,<0.35.0"
 
 [[package]]
@@ -1306,6 +1306,17 @@ files = [
 
 [package.extras]
 dev = ["coverage", "pytest (>=7.4.4)"]
+
+[[package]]
+name = "fake-http-header"
+version = "0.3.5"
+description = "Generates random request fields for a http request header"
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "fake_http_header-0.3.5-py3-none-any.whl", hash = "sha256:cd05f4bebf1b7e38b5f5c03d7fb820c0c17e87d9614fbee0afa39c32c7a2ad3c"},
+]
 
 [[package]]
 name = "fastapi"
@@ -3359,21 +3370,6 @@ greenlet = ">=3.1.1,<4.0.0"
 pyee = ">=13,<14"
 
 [[package]]
-name = "playwright-stealth"
-version = "2.0.0"
-description = "Make your playwright instance stealthy"
-optional = false
-python-versions = "<4.0,>=3.9"
-groups = ["main"]
-files = [
-    {file = "playwright_stealth-2.0.0-py3-none-any.whl", hash = "sha256:9eb3af1fd21619aac9fdd13a4a08141ed67159ac6310a94f7d2f758ba0cbe179"},
-    {file = "playwright_stealth-2.0.0.tar.gz", hash = "sha256:4f44d416d4226689895a4d1cfb40e8d137216c0c9710ea8f84bae2dbf1186fc5"},
-]
-
-[package.dependencies]
-playwright = ">=1.0.0,<2.0.0"
-
-[[package]]
 name = "poetry"
 version = "2.1.2"
 description = "Python dependency management and packaging made easy."
@@ -4684,6 +4680,22 @@ doc = ["reno", "sphinx"]
 test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
+name = "tf-playwright-stealth"
+version = "1.2.0"
+description = "Makes playwright stealthy like a ninja!"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "tf_playwright_stealth-1.2.0-py3-none-any.whl", hash = "sha256:26ee47ee89fa0f43c606fe37c188ea3ccd36f96ea90c01d167b768df457e7886"},
+    {file = "tf_playwright_stealth-1.2.0.tar.gz", hash = "sha256:7bb8d32d3e60324fbf6b9eeae540b8cd9f3b9e07baeb33b025dbc98ad47658ba"},
+]
+
+[package.dependencies]
+fake-http-header = ">=0.3.5,<0.4.0"
+playwright = ">=1,<2"
+
+[[package]]
 name = "tomlkit"
 version = "0.13.2"
 description = "Style preserving TOML library"
@@ -5625,4 +5637,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "f259a1efd08003e2b2828fa6e6c1993fb4112899e9aa5413a2a10b8ee0527af0"
+content-hash = "a2bf62dd79ec6de8f87219e10dde4d5eacd60beb6dd844278244e7a8bca08ee7"

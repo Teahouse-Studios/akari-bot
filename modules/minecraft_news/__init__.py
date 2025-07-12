@@ -9,6 +9,7 @@ from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
+from core.utils.web_render import web_render, SourceOptions
 
 minecraft_news = module(
     "minecraft_news",
@@ -57,54 +58,46 @@ feedback_news = module(
             random_choice()
         return random_tags"""
 
-#
-# @minecraft_news.schedule(
-#     IntervalTrigger(seconds=60 if not Config("slower_schedule", False) else 180)
-# )
-# async def start_check_news():
-#     baseurl = "https://www.minecraft.net"
-#     url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/articles/jcr:content/root/container/image_grid_a.articles.json"
-#     try:
-#         get_webrender = webrender("source", url)
-#         if get_webrender == url:
-#             Logger.debug("WebRender is not working, skip check minecraft news.")
-#             return
-#         getpage = await get_url(
-#             get_webrender,
-#             200,
-#             attempt=1,
-#             request_private_ip=True,
-#             logging_err_resp=False,
-#         )
-#         if getpage:
-#             alist = await get_stored_list(Bot, "mcnews")
-#             o_json = json.loads(getpage)
-#             o_nws = o_json["article_grid"]
-#             for o_article in o_nws:
-#                 default_tile = o_article["default_tile"]
-#                 title = default_tile["title"]
-#                 desc = default_tile["sub_header"]
-#                 link = baseurl + o_article["article_url"]
-#                 if title not in alist:
-#                     await Bot.post_message(
-#                         "minecraft_news",
-#                         message=MessageChain.assign(
-#                             [
-#                                 I18NContext(
-#                                     "minecraft_news.message.minecraft_news",
-#                                     title=title,
-#                                     desc=desc,
-#                                 ),
-#                                 Url(link)
-#                             ]
-#                         ),
-#                     )
-#                     alist.append(title)
-#                     await update_stored_list(Bot, "mcnews", alist)
-#     except Exception:
-#         if Config("debug", False):
-#             Logger.exception()
-#
+
+@minecraft_news.schedule(
+    IntervalTrigger(seconds=60 if not Config("slower_schedule", False) else 180)
+)
+async def start_check_news():
+    baseurl = "https://www.minecraft.net"
+    url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/jcr:content/root/container/image_grid_a_copy_64.articles.page-1.json"
+    try:
+        getpage = await web_render.source(SourceOptions(url=url, raw_text=True))
+        if not getpage:
+            Logger.error("Failed to fetch Minecraft news page.")
+            return
+        if getpage:
+            alist = await get_stored_list(Bot.Info.client_name, "mcnews")
+            o_json = json.loads(getpage)
+            o_nws = o_json["article_grid"]
+            for o_article in o_nws:
+                default_tile = o_article["default_tile"]
+                title = default_tile["title"]
+                desc = default_tile["sub_header"]
+                link = baseurl + o_article["article_url"]
+                if title not in alist:
+                    await Bot.post_message(
+                        "minecraft_news",
+                        message=MessageChain.assign(
+                            [
+                                I18NContext(
+                                    "minecraft_news.message.minecraft_news",
+                                    title=title,
+                                    desc=desc,
+                                ),
+                                Url(link)
+                            ]
+                        ),
+                    )
+                    alist.append(title)
+                    await update_stored_list(Bot.Info.client_name, "mcnews", alist)
+    except Exception:
+        if Config("debug", False):
+            Logger.exception()
 
 
 @feedback_news.schedule(IntervalTrigger(seconds=300))

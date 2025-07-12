@@ -144,8 +144,8 @@ class SessionInfo:
         )
 
     async def refresh_info(self):
-        self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id)
-        self.target_info = await TargetInfo.get_by_target_id(self.target_id)
+        self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else None
+        self.target_info = await TargetInfo.get_by_target_id(self.target_id) if self.target_id else None
 
     def get_common_target_id(cls) -> str:
         return cls.target_id.split(cls.target_from + "|")[1]

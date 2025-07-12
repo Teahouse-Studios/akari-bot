@@ -1,13 +1,21 @@
 import asyncio
 import datetime
 import traceback
+from typing import TYPE_CHECKING, Union
 from uuid import uuid4
 
+from core.builtins.converter import converter
+from core.builtins.message.chain import MessageChain, MessageNodes
+from core.builtins.session.info import SessionInfo
 from core.config import Config
 from core.constants import QueueAlreadyRunning
 from core.database.models import JobQueuesTable
 from core.exports import exports
 from core.logger import Logger
+from core.builtins.message.internal import I18NContext, Plain
+
+if TYPE_CHECKING:
+    from core.builtins.bot import Bot
 
 
 class QueueFinished(Exception):
@@ -58,7 +66,7 @@ class JobQueueBase:
 
     @classmethod
     async def _process_task(cls, tsk):
-
+        bot: "Bot" = exports['Bot']
         try:
             timestamp = tsk.timestamp
             if datetime.datetime.now().timestamp() - timestamp.timestamp() > 7200:
@@ -82,10 +90,9 @@ class JobQueueBase:
                 pass
             try:
                 for target in cls.report_targets:
-                    if ft := await exports['Bot'].fetch_target(target):
-                        await ft.send_direct_message([exports["I18NContext"]("error.message.report", module=tsk.action),
-                                                      exports["Plain"](f.strip(), disable_joke=True)],
-                                                     enable_parse_message=False, disable_secret_check=True)
+                    if ft := await bot.fetch_target(target):
+                        await cls.client_direct_message(ft, MessageChain.assign([I18NContext("error.message.report", module=tsk.action),
+                                                                                 Plain(f.strip(), disable_joke=True)]), enable_parse_message=False, disable_secret_check=True)
             except Exception:
                 Logger.exception()
             return
@@ -127,3 +134,11 @@ class JobQueueBase:
             return func
 
         return decorator
+
+    @classmethod
+    async def client_direct_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, enable_parse_message=False, disable_secret_check=True):
+        await cls.add_job("Server", "client_direct_message",
+                          {"session_info": converter.unstructure(session_info),
+                           "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
+                           "enable_parse_message": enable_parse_message,
+                           "disable_secret_check": disable_secret_check},)
