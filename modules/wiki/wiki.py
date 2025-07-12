@@ -240,7 +240,7 @@ async def query_pages(
                             and r.page_property == "page"
                         ):
                             plain_slice.append(
-                                session.locale.t(
+                                session.session_info.locale.t(
                                     "wiki.message.redirect.template_to_page",
                                     title=display_before_title,
                                     redirected_title=display_title,
@@ -248,7 +248,7 @@ async def query_pages(
                             )
                         else:
                             plain_slice.append(
-                                session.locale.t(
+                                session.session_info.locale.t(
                                     "wiki.message.redirect",
                                     title=display_before_title,
                                     redirected_title=display_title,
@@ -267,7 +267,7 @@ async def query_pages(
                                             Bot.MessageSession) and session.session_info.use_url_manager),
                                 }})
                         plain_slice.append(
-                            session.locale.t("wiki.message.section.rendering")
+                            session.session_info.locale.t("wiki.message.section.rendering")
                         )
                     else:
                         if r.desc:
@@ -284,7 +284,7 @@ async def query_pages(
                     if r.file:
                         dl_list.append(r.file)
                         plain_slice.append(
-                            session.locale.t("wiki.message.flies") + r.file
+                            session.session_info.locale.t("wiki.message.flies") + r.file
                         )
                     else:
                         if r.link and not r.selected_section:
@@ -317,7 +317,7 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     Plain(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.invalid_section.prompt" if r.invalid_section and (
                                                 r.info.in_allowlist or not (
                                                     isinstance(
@@ -329,10 +329,10 @@ async def query_pages(
                                         ImageTable(
                                             session_data,
                                             [
-                                                session.locale.t(
+                                                session.session_info.locale.t(
                                                     "wiki.message.table.header.id"
                                                 ),
-                                                session.locale.t(
+                                                session.session_info.locale.t(
                                                     "wiki.message.table.header.section"
                                                 ),
                                             ],
@@ -341,7 +341,7 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     Plain(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.invalid_section.select"
                                         )
                                     )
@@ -375,7 +375,7 @@ async def query_pages(
                                             Bot.MessageSession) and session.session_info.use_url_manager)):
                                     msg_list.append(
                                         Plain(
-                                            session.locale.t(
+                                            session.session_info.locale.t(
                                                 "wiki.message.invalid_section"
                                             )
                                         )
@@ -408,7 +408,7 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     Plain(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.invalid_section.select"
                                         )
                                     )
@@ -444,7 +444,7 @@ async def query_pages(
                             if not session.session_info.target_info.target_data.get("wiki_redlink", False):
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.not_found.autofix.choice",
                                             title=display_before_title,
                                         )
@@ -454,7 +454,7 @@ async def query_pages(
                                         pi += 1
                                         wait_plain_slice.append(f"{pi}. {p}")
                                     wait_plain_slice.append(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.not_found.autofix.choice.prompt",
                                             number=str(
                                                 r.possible_research_title.index(
@@ -472,39 +472,39 @@ async def query_pages(
                                         }
                                     )
                                     wait_plain_slice.append(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "message.wait.prompt.next_message"
                                         )
                                     )
                                 else:
                                     wait_plain_slice.append(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.not_found.autofix.confirm",
                                             title=display_before_title,
                                             redirected_title=display_title,
                                         )
                                     )
                                     wait_plain_slice.append(
-                                        session.locale.t("message.wait.prompt.confirm")
+                                        session.session_info.locale.t("message.wait.prompt.confirm")
                                     )
                             else:
                                 if r.edit_link:
                                     plain_slice.append(
                                         r.edit_link
-                                        + session.locale.t(
+                                        + session.session_info.locale.t(
                                             "wiki.message.redlink.not_found"
                                         )
                                     )
                                 else:
                                     plain_slice.append(
-                                        session.locale.t(
+                                        session.session_info.locale.t(
                                             "wiki.message.redlink.not_found.uneditable",
                                             title=display_before_title,
                                         )
                                     )
                         else:
                             wait_plain_slice.append(
-                                session.locale.t(
+                                session.session_info.locale.t(
                                     "wiki.message.not_found.autofix",
                                     title=display_before_title,
                                     redirected_title=display_title,
@@ -514,19 +514,19 @@ async def query_pages(
                             wait_list.append({display_title: display_before_title})
                     elif r.before_title:
                         plain_slice.append(
-                            session.locale.t(
+                            session.session_info.locale.t(
                                 "wiki.message.not_found", title=display_before_title
                             )
                         )
                     elif r.id != -1:
                         plain_slice.append(
-                            session.locale.t("wiki.message.id.not_found", id=str(r.id))
+                            session.session_info.locale.t("wiki.message.id.not_found", id=str(r.id))
                         )
                     if r.desc:
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title:
                         plain_slice.append(
-                            session.locale.t(
+                            session.session_info.locale.t(
                                 "wiki.message.invalid_namespace",
                                 namespace=r.invalid_namespace,
                             )
@@ -534,7 +534,7 @@ async def query_pages(
                     if r.before_page_property == "template":
                         if r.before_title.split(":")[1].isupper():
                             plain_slice.append(
-                                session.locale.t("wiki.message.magic_word")
+                                session.session_info.locale.t("wiki.message.magic_word")
                             )
                     if plain_slice:
                         msg_list.append(Plain("\n".join(plain_slice)))
@@ -607,7 +607,7 @@ async def query_pages(
                                 else:
                                     section_msg_list.append(
                                         Plain(
-                                            session.locale.t(
+                                            session.session_info.locale.t(
                                                 "wiki.message.error.render_section"
                                             )
                                         )
@@ -622,7 +622,7 @@ async def query_pages(
                                 else:
                                     section_msg_list.append(
                                         Plain(
-                                            session.locale.t(
+                                            session.session_info.locale.t(
                                                 "wiki.message.error.render_section"
                                             )
                                         )
@@ -682,7 +682,7 @@ async def query_pages(
                 for w in wait_list:
                     for wd in w:
                         preset_message.append(
-                            session.locale.t(
+                            session.session_info.locale.t(
                                 "wiki.message.redirect.autofix",
                                 title=w[wd],
                                 redirected_title=wd,
@@ -694,7 +694,7 @@ async def query_pages(
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
                             preset_message.append(
-                                session.locale.t(
+                                session.session_info.locale.t(
                                     "wiki.message.redirect.autofix",
                                     title=wpk,
                                     redirected_title=keys[0],
@@ -707,7 +707,7 @@ async def query_pages(
                             keys = list(wp[wpk].keys())
                             if len(wp[wpk][keys[0]]) > index:
                                 preset_message.append(
-                                    session.locale.t(
+                                    session.session_info.locale.t(
                                         "wiki.message.redirect.autofix",
                                         title=wpk,
                                         redirected_title=wp[wpk][keys[0]][index],
