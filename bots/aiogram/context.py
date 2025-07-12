@@ -95,7 +95,7 @@ class AiogramContextManager(ContextManager):
                             ),
                         )
                         Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(xs.__dict__)}"
+                            f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}"
                         )
                         msg_ids.append(send_.message_id)
             else:
@@ -109,7 +109,7 @@ class AiogramContextManager(ContextManager):
                         ),
                     )
                     Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Image: {str(image.__dict__)}"
+                        f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}"
                     )
                     msg_ids.append(send_.message_id)
         if voices:
@@ -123,7 +123,7 @@ class AiogramContextManager(ContextManager):
                     ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice)}"
                 )
                 msg_ids.append(send_.message_id)
         if mentions:

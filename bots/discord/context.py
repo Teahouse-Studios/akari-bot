@@ -112,7 +112,7 @@ class DiscordContextManager(ContextManager):
                                ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(img.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
                 )
                 msg_ids.append(str(send_.id))
         if voices:
@@ -125,7 +125,7 @@ class DiscordContextManager(ContextManager):
                                ),
                 )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice)}"
                 )
                 msg_ids.append(str(send_.id))
         if mentions:
@@ -156,7 +156,7 @@ class DiscordContextManager(ContextManager):
                     files=files,
                 )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(embed.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(embed)}"
                 )
                 msg_ids.append(str(send_.id))
         return msg_ids

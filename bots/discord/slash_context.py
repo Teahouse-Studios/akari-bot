@@ -49,7 +49,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                         file=discord.File(await x.get())
                     )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}"
                 )
             elif isinstance(x, VoiceElement):
                 if count == 0:
@@ -61,7 +61,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                         file=discord.File(x.path)
                     )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
                 )
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_channel_prefix:
@@ -87,7 +87,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                         embed=embeds,
                         files=files)
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}"
                 )
 
             if send_:

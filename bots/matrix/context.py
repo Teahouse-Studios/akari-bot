@@ -149,7 +149,7 @@ class MatrixContextManager(ContextManager):
             elif isinstance(x, ImageElement):
                 split = [x]
                 if enable_split_image:
-                    Logger.info(f"Split image: {str(x.__dict__)}")
+                    Logger.info(f"Split image: {str(x)}")
                     split = await image_split(x)
                 for xs in split:
                     path = await xs.get()
@@ -196,7 +196,7 @@ class MatrixContextManager(ContextManager):
                                 },
                             }
                         Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(xs.__dict__)}"
+                            f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}"
                         )
                         await _send_msg(content)
             elif isinstance(x, VoiceElement):
@@ -244,7 +244,7 @@ class MatrixContextManager(ContextManager):
                     }
 
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
                 )
                 await _send_msg(content)
             elif isinstance(x, MentionElement):

@@ -118,14 +118,14 @@ class QQBotContextManager(ContextManager):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
                         Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1.__dict__)}"
+                            f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                         )
                     if images:
                         for img in images:
                             send_img = await img.get()
                             send = await ctx.reply(file_image=send_img)
                             Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img.__dict__)}"
+                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
                             )
                             if send:
                                 msg_ids.append(send["id"])
@@ -151,14 +151,14 @@ class QQBotContextManager(ContextManager):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
                         Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1.__dict__)}"
+                            f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                         )
                     if images:
                         for img in images:
                             send_img = await img.get()
                             send = await ctx.reply(file_image=send_img)
                             Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img.__dict__)}"
+                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
                             )
                             if send:
                                 msg_ids.append(send["id"])
@@ -187,7 +187,7 @@ class QQBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
                             Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1.__dict__)}"
+                                f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                             )
                         if send:
                             msg_ids.append(send["id"])
@@ -212,7 +212,7 @@ class QQBotContextManager(ContextManager):
                                 msg_type=7, media=send_img, msg_seq=seq
                             )
                             Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img.__dict__)}"
+                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
                             )
                             if send:
                                 msg_ids.append(send["id"])
@@ -241,7 +241,7 @@ class QQBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg.strip()}")
                         if image_1:
                             Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1.__dict__)}"
+                                f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                             )
                         if send:
                             msg_ids.append(send["id"])
@@ -266,7 +266,7 @@ class QQBotContextManager(ContextManager):
                                 msg_type=7, media=send_img, msg_seq=seq
                             )
                             Logger.info(
-                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img.__dict__)}"
+                                f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
                             )
                             if send:
                                 msg_ids.append(send["id"])
