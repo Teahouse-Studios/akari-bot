@@ -85,7 +85,7 @@ async def to_message_chain(message: discord.Message):
             lst.append(Image(d))
         elif filetype.is_audio(d):
             lst.append(Voice(d))
-    return MessageChain(lst)
+    return MessageChain.assign(lst)
 
 
 @discord_bot.event

@@ -21,7 +21,7 @@ async def get_rc_qq(msg: MessageSession, wiki_url, headers=None):
         MessageChain.assign([I18NContext("wiki.message.rc.qq.title"), Url(pageurl)])
     ]
     if wiki.wiki_info.in_allowlist:
-        msgchain_lst.append(MessageChain([I18NContext("wiki.message.rc.qq.link.prompt")]))
+        msgchain_lst.append(MessageChain.assign([I18NContext("wiki.message.rc.qq.link.prompt")]))
     rclist = await convert_rc_to_detailed_format(msg, query["query"]["recentchanges"], wiki_info)
 
     for x in rclist:

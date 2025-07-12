@@ -17,8 +17,8 @@ async def get_newbie(wiki_url, headers=None, session: MessageSession = None):
             d.append(x["title"])
     y = await check(d, session=session)
 
-    g = MessageChain([Url(pageurl)])
-    g += MessageChain([Plain(z["content"]) for z in y])
+    g = MessageChain.assign([Url(pageurl)])
+    g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=NEWBIE_LIMIT))
 
     st = True

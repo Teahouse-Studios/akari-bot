@@ -74,8 +74,8 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                 d.append(comment)
     y = await check(d, session=msg)
 
-    g = MessageChain([Url(pageurl)])
-    g += MessageChain([Plain(z["content"]) for z in y])
+    g = MessageChain.assign([Url(pageurl)])
+    g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=RC_LIMIT))
 
     st = True

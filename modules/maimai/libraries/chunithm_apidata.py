@@ -13,13 +13,13 @@ from .chunithm_music import Music
 
 
 async def get_info(music: Music, details) -> MessageChain:
-    info = MessageChain(Plain(f"{music.id} - {music.title}"))
+    info = MessageChain.assign(Plain(f"{music.id} - {music.title}"))
     cover_path = os.path.join(chu_cover_path, f"{music.id}.png")
     if os.path.exists(cover_path):
         info.append(Image(cover_path))
     if details:
         if not isinstance(details, MessageChain):
-            details = MessageChain(details)
+            details = MessageChain.assign(details)
         info += details
 
     return info

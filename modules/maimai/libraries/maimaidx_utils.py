@@ -348,7 +348,7 @@ async def get_score_list(msg: Bot.MessageSession, payload: dict, level: str, pag
                 output += f" {combo_mapping.get(s["fc"], "")}{sync_mapping.get(s["fs"], "")}"
             output_line.append(Plain(output))
 
-    output_chain = MessageChain(
+    output_chain = MessageChain.assign(
         I18NContext(
             "maimai.message.scorelist",
             user=player_data["username"],
@@ -571,7 +571,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
         song_remain_expert + song_remain_master + song_remain_remaster
     song_remain_difficult = [music for music in song_remain_difficult if music[0] not in song_expect]
 
-    prompt = MessageChain(I18NContext("maimai.message.plate.prompt", plate=plate))
+    prompt = MessageChain.assign(I18NContext("maimai.message.plate.prompt", plate=plate))
     if song_remain_basic:
         prompt.append(I18NContext("maimai.message.plate.basic", song_remain=len(song_remain_basic)))
     if song_remain_advanced:
