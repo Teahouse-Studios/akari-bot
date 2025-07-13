@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.logger import Logger
 from core.queue.client import JobQueueClient
@@ -28,11 +28,9 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
             Logger.error(f"Login failed: {e}")
             await msg.finish(I18NContext("wiki.message.wiki_bot.login.failed", detail=e))
     else:
-        result = msg.session_info.locale.t("wiki.message.error.query") + (
-            "\n" + msg.session_info.locale.t("wiki.message.error.info") + check.message
-            if check.message != ""
-            else ""
-        )
+        result = [I18NContext("wiki.message.error.query")]
+        if check.message:
+            result.append(Plain(str(I18NContext("wiki.message.error.info")) + check.message))
         await msg.finish(result)
 
 

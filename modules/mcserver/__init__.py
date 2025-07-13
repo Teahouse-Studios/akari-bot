@@ -29,8 +29,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("server.message.local_address"))
 
     java_info, bedrock_info = await asyncio.gather(
-        query_java_server(msg, server_address, raw, showplayer),
-        query_bedrock_server(msg, server_address, raw),
+        query_java_server(server_address, raw, showplayer),
+        query_bedrock_server(server_address, raw),
     )
 
     sendmsg = [java_info, bedrock_info]

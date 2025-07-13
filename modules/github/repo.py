@@ -57,7 +57,7 @@ Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updat
         if is_dirty:
             await msg.finish(rickroll())
         else:
-            await msg.send_message([Plain(message)])
+            await msg.send_message(Plain(message))
 
         repo_hash = str(uuid.uuid4())
         download_pic = await download(
@@ -65,7 +65,7 @@ Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updat
             filename=f"{repo_hash}.png",
         )
         if download_pic:
-            await msg.finish([Image(download_pic)], quote=False)
+            await msg.finish(Image(download_pic), quote=False)
 
     except ValueError as e:
         if str(e).startswith("404"):

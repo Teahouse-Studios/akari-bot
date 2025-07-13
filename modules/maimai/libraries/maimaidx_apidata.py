@@ -68,7 +68,7 @@ async def update_alias() -> bool:
         return False
 
 
-async def get_info(music: Music, details) -> MessageChain:
+async def get_info(music: Music, details: Union[str, MessageChain]) -> MessageChain:
     info = MessageChain.assign(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
     cover_path = os.path.join(mai_cover_path, f"{music.id}.png")
     if os.path.exists(cover_path):

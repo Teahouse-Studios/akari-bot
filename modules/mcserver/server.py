@@ -3,12 +3,11 @@ import re
 from mcstatus import JavaServer, BedrockServer
 
 from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.logger import Logger
 
 
-async def query_java_server(
-    msg: Bot.MessageSession, address: str, raw: bool = False, showplayer: bool = False
-) -> str:
+async def query_java_server(address: str, raw: bool = False, showplayer: bool = False) -> str:
     query_msg = []
 
     try:
@@ -26,7 +25,7 @@ async def query_java_server(
                 "".join(extra.get("text", "") for extra in description.get("extra", []))
             )
 
-        onlinesplayer = f"{msg.session_info.locale.t("server.message.player")}{
+        onlinesplayer = f"{str(I18NContext("server.message.player"))}{
             status.players.online} / {status.players.max}"
         query_msg.append(onlinesplayer)
 
@@ -37,14 +36,14 @@ async def query_java_server(
                 else []
             )
             players_text = (
-                "\n".join(playerlist) if playerlist else msg.session_info.locale.t("message.none")
+                "\n".join(playerlist) if playerlist else str(I18NContext("message.none"))
             )
             query_msg.append(
-                msg.session_info.locale.t("server.message.player.current") + "\n" + players_text
+                str(I18NContext("server.message.player.current")) + "\n" + players_text
             )
 
         if hasattr(status, "version") and hasattr(status.version, "name"):
-            query_msg.append(msg.session_info.locale.t("server.message.version") + status.version.name)
+            query_msg.append(str(I18NContext("server.message.version")) + status.version.name)
 
     except OSError:
         return ""
@@ -57,7 +56,7 @@ async def query_java_server(
     return re.sub(r"§\w", "", "\n".join(query_msg))
 
 
-async def query_bedrock_server(msg, address, raw=False):
+async def query_bedrock_server(address, raw=False) -> str:
     query_msg = []
 
     try:
@@ -67,15 +66,15 @@ async def query_bedrock_server(msg, address, raw=False):
         query_msg.append("[BE]")
         query_msg.append(status.motd.raw)
 
-        player_count = f"{msg.session_info.locale.t("server.message.player")}{
+        player_count = f"{str(I18NContext("server.message.player"))}{
             status.players.online} / {status.players.max}"
         query_msg.append(player_count)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):
-            query_msg.append(msg.session_info.locale.t("server.message.version") + status.version.name)
+            query_msg.append(str(I18NContext("server.message.version")) + status.version.name)
 
         if hasattr(status, "gamemode"):
-            game_mode = msg.session_info.locale.t("server.message.gamemode") + status.gamemode
+            game_mode = str(I18NContext("server.message.gamemode")) + status.gamemode
             query_msg.append(game_mode)
 
     except OSError:

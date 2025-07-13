@@ -35,10 +35,10 @@ async def _(msg: Bot.MessageSession, username: str):
     if getcode:
         await OsuBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, username=getcode[0])
         if getcode[1]:
-            m = f"{getcode[1]}{msg.session_info.locale.t("message.brackets", msg=getcode[0])}"
+            m = f"{getcode[1]}{str(I18NContext("message.brackets", msg=getcode[0]))}"
         else:
             m = getcode[0]
-        await msg.finish(msg.session_info.locale.t("osu.message.bind.success") + m)
+        await msg.finish(str(I18NContext("osu.message.bind.success")) + m)
     else:
         await msg.finish(I18NContext("osu.message.bind.failed"))
 

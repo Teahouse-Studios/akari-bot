@@ -31,14 +31,10 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         "Telegram|Group",
         "Telegram|Supergroup",
     ]:
-        await msg.send_message(
-            msg.session_info.locale.t("phigros.message.bind.warning"), quote=False
-        )
+        await msg.send_message(I18NContext("phigros.message.bind.warning"), quote=False)
         deleted = await msg.delete()
         if not deleted:
-            await msg.send_message(
-                msg.session_info.locale.t("phigros.message.bind.delete_failed"), quote=False
-            )
+            await msg.send_message(I18NContext("phigros.message.bind.delete_failed"), quote=False)
     headers = p_headers.copy()
     headers["X-LC-Session"] = sessiontoken
     get_user_info = await get_url(
@@ -49,9 +45,9 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
     if get_user_info:
         username = get_user_info.get("nickname", "Guest")
         await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken, username=username)
-        await msg.send_message(msg.session_info.locale.t("phigros.message.bind.success", username=username), quote=False)
+        await msg.send_message(I18NContext("phigros.message.bind.success", username=username), quote=False)
     else:
-        await msg.send_message(msg.session_info.locale.t("phigros.message.bind.failed"))
+        await msg.send_message(I18NContext("phigros.message.bind.failed"))
 
 
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
@@ -64,9 +60,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
-        await msg.finish(
-            msg.session_info.locale.t("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0])
-        )
+        await msg.finish(I18NContext("phigros.message.user_unbound", prefix=msg.session_info.prefixes[0]))
     else:
         try:
             headers = p_headers.copy()

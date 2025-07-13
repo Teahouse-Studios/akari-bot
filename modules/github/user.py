@@ -1,5 +1,5 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Url
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import get_url
 from modules.github.utils import time_diff, dirty_check, dark_check
@@ -40,7 +40,7 @@ Account Created {time_diff(result["created_at"])} ago | Latest activity {time_di
         if is_dirty:
             await msg.finish(rickroll())
 
-        await msg.finish(message)
+        await msg.finish(Plain(message))
     except ValueError as e:
         if str(e).startswith("404"):
             await msg.finish(I18NContext("github.message.repo.not_found"))

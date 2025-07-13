@@ -2,7 +2,7 @@ import asyncio
 import re
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext
+from core.builtins.message.internal import Plain, I18NContext
 from core.component import module
 from core.config import Config
 from core.utils.http import get_url
@@ -112,27 +112,29 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
         await msg.finish(I18NContext("mod_dl.message.not_found"))
     else:
         # 合并搜索结果
-        reply_text, count = [], 0
+        reply_chain = []
+        count = 0
 
         # 先显示 CurseForge 的结果
         if not result[1]:
-            reply_text.append(msg.session_info.locale.t("mod_dl.message.curseforge.not_found"))
+            reply_chain.append(I18NContext("mod_dl.message.curseforge.not_found"))
         else:
-            reply_text.append(msg.session_info.locale.t("mod_dl.message.curseforge.result"))
+            reply_chain.append(I18NContext("mod_dl.message.curseforge.result"))
             for mod in result[1]:
                 count += 1
-                reply_text.append(f"{count}. {mod[1]}")
+                reply_chain.append(Plain(f"{count}. {mod[1]}"))
                 cache_result.append(mod)
 
         if not result[0]:
-            reply_text.append(msg.session_info.locale.t("mod_dl.message.modrinth.not_found"))
-        reply_text.append(msg.session_info.locale.t("mod_dl.message.modrinth.result"))
+            reply_chain.append(I18NContext("mod_dl.message.modrinth.not_found"))
+        reply_chain.append(I18NContext("mod_dl.message.modrinth.result"))
         for mod in result[0]:
             count += 1
-            reply_text.append(f"{count}. {mod[1]}")
+            reply_chain.append(Plain(f"{count}. {mod[1]}"))
             cache_result.append(mod)
+        reply_chain.append(I18NContext("mod_dl.message.prompt"))
 
-        reply = await msg.wait_reply("\n".join(reply_text) + "\n" + msg.session_info.locale.t("mod_dl.message.prompt"), delete=True)
+        reply = await msg.wait_reply(reply_chain, delete=True)
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
