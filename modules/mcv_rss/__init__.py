@@ -140,7 +140,7 @@ trigger_times = 60 if not Config("slower_schedule", False) else 180
 
 
 @mcv_rss.schedule(IntervalTrigger(seconds=trigger_times))
-async def mcv_rss():
+async def _():
     url = "https://piston-meta.mojang.com/mc/game/version_manifest.json"
     try:
         verlist = await get_stored_list(Bot, "mcv_rss")
@@ -227,7 +227,7 @@ async def mcv_rss():
 
 
 @mcbv_rss.schedule(IntervalTrigger(seconds=180))
-async def mcbv_rss():
+async def _():
     if Secret.ip_country == "China" or not Secret.ip_country:
         return  # 中国大陆无法访问Google Play商店
     try:

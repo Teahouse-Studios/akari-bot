@@ -30,7 +30,7 @@ teahouse_weekly_rss = module(
 
 
 @weekly_rss.schedule(CronTrigger.from_crontab("0 9 * * MON"))
-async def weekly_rss():
+async def _():
     Logger.info("Checking MCWZH weekly...")
 
     weekly_cn = MessageChain.assign(await get_weekly())
@@ -56,7 +56,7 @@ async def weekly_rss():
 
 
 @teahouse_weekly_rss.schedule(trigger=CronTrigger.from_crontab("30 9 * * MON"))
-async def teahouse_weekly_rss():
+async def _():
     Logger.info("Checking teahouse weekly...")
 
     weekly = await get_teahouse_rss()

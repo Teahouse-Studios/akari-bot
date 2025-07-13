@@ -419,7 +419,7 @@ fetch_cache = {}
 
 
 @wikilog.schedule(IntervalTrigger(seconds=60))
-async def wiki_log():
+async def _():
     fetches = await WikiLogTargetSetInfo.return_all_data()
     matched_logs = {}
     Logger.debug(fetches)

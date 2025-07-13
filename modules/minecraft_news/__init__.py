@@ -62,7 +62,7 @@ feedback_news = module(
 @minecraft_news.schedule(
     IntervalTrigger(seconds=60 if not Config("slower_schedule", False) else 180)
 )
-async def start_check_news():
+async def _():
     baseurl = "https://www.minecraft.net"
     url = "https://www.minecraft.net/content/minecraftnet/language-masters/en-us/jcr:content/root/container/image_grid_a_copy_64.articles.page-1.json"
     try:
@@ -101,7 +101,7 @@ async def start_check_news():
 
 
 @feedback_news.schedule(IntervalTrigger(seconds=300))
-async def feedback_news():
+async def _():
     sections = [{"name": "beta",
                  "url": "https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5",
                  },

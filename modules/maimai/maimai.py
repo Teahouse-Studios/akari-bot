@@ -1,5 +1,7 @@
 from core.builtins.message.internal import Image as BImage
 from core.component import module
+from core.logger import Logger
+from core.scheduler import CronTrigger
 from core.utils.message import isint
 from .database.models import DivingProberBindInfo
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_cover
@@ -763,3 +765,9 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("message.success"))
     else:
         await msg.finish(I18NContext("message.failed"))
+
+
+@mai.schedule(CronTrigger.from_crontab("0 0 * * *"))
+async def _():
+    Logger.info("Updating Maimai alias...")
+    await update_alias()

@@ -63,7 +63,7 @@ async def _(ctx: Bot.ModuleHookContext):
 
 @wb.schedule(DateTrigger(datetime.now() + timedelta(seconds=30)))
 @wb.schedule(IntervalTrigger(minutes=30))
-async def login_bots():
+async def _():
     Logger.info("Start login wiki bot account...")
     await BotAccount.login()
     await JobQueueClient.trigger_hook("wikilog.keepalive")
