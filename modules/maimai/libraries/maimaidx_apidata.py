@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from typing import Optional, Union
 
 import orjson as json
@@ -48,19 +49,49 @@ async def update_cover() -> bool:
 
 async def update_alias() -> bool:
     try:
-        data = await get_url("https://www.yuzuchan.moe/api/maimaidx/maimaidxalias", 200, fmt="json")
-        if data:
-            alias_data = []
-            for song in data["content"]:
-                fmt_data = {
-                    "song_id": song["SongID"],
-                    "name": song["Name"],
-                    "alias": [a for a in song["Alias"] if a.lower() != song["Name"].lower()]  # 删除与标题相同的别名
-                }
-                alias_data.append(fmt_data)
+        alias_map = defaultdict(lambda: {"song_id": "", "name": "", "alias": set()})
+        try:
+            yuzuchan_data = await get_url("https://www.yuzuchan.moe/api/maimaidx/maimaidxalias", 200, fmt="json")
 
-            with open(mai_alias_path, "wb") as file:
-                file.write(json.dumps(alias_data, option=json.OPT_INDENT_2))
+            for song in yuzuchan_data["content"]:
+                song_id = str(song["SongID"])
+                name = song["Name"]
+                alias_list = [a for a in song["Alias"] if a.lower() != name.lower()]
+                alias_map[song_id]["song_id"] = song_id
+                alias_map[song_id]["name"] = name
+                alias_map[song_id]["alias"].update(alias_list)
+
+        except Exception:
+            Logger.exception()
+
+        if not alias_map:
+            return False
+
+        try:
+            xray_data = await get_url("https://download.xraybot.site/maimai/alias.json", 200, fmt="json")
+
+            for song_id, aliases in xray_data.items():
+                if song_id not in alias_map:
+                    alias_map[song_id]["song_id"] = song_id
+                alias_map[song_id]["alias"].update(aliases)
+
+        except Exception:
+            Logger.exception()
+
+        alias_data = []
+        for song_id, info in alias_map.items():
+            fmt_data = {"song_id": song_id}
+            if info.get("name"):
+                fmt_data["name"] = info["name"]
+                fmt_data["alias"] = [a for a in info["alias"] if a.lower() != info["name"].lower()]
+            else:
+                fmt_data["alias"] = list(info["alias"])
+
+            alias_data.append(fmt_data)
+
+        with open(mai_alias_path, "wb") as file:
+            file.write(json.dumps(alias_data, option=json.OPT_INDENT_2))
+
         return True
     except Exception:
         Logger.exception()
