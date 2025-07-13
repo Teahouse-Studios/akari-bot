@@ -37,9 +37,8 @@ async def repo(msg: Bot.MessageSession, name: str, pat: str):
             desc = "\n" + result["description"]
 
         message = f"""{result["full_name"]} ({result["id"]}){desc}
-Language · {result["language"]} | Fork · {result["forks_count"]}
-                                             | Star · {result["stargazers_count"]} | Watch · {result["watchers_count"]}
-License: {rlicense}
+Fork · {result["forks_count"]} | Star · {result["stargazers_count"]} | Watch · {result["watchers_count"]}
+Language: {result["language"]} | License: {rlicense}
 Created {time_diff(result["created_at"])} ago | Updated {time_diff(result["updated_at"])} ago
 {website}{str(Url(result["html_url"]))}"""
 
