@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import sys
 from datetime import datetime
 
 import orjson as json
@@ -480,8 +479,7 @@ exit_ = module("exit", required_superuser=True, base=True, doc=True, available_f
 @exit_.command()
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(append_instruction=False, delete=False):
-        await msg.sleep(0.5)
-        sys.exit(0)
+        os._exit(0)
     else:
         await msg.finish()
 
