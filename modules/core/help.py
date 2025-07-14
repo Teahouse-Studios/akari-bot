@@ -119,16 +119,17 @@ async def _(msg: Bot.MessageSession, module: str):
                     pass
                 elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
-                        html_content = await env.get_template("help_doc.html").render_async(msg=msg,
-                                                                                            module=module_,
-                                                                                            help=help_,
-                                                                                            help_name=help_name,
-                                                                                            regex_list=regex_list,
-                                                                                            escape=escape,
-                                                                                            isinstance=isinstance,
-                                                                                            str=str,
-                                                                                            repattern=re.Pattern,
-                                                                                            use_font_mirror=use_font_mirror,)
+                        html_content = await env.get_template("help_doc.html").render_async(
+                            locale=msg.session_info.locale,
+                            module=module_,
+                            help=help_,
+                            help_name=help_name,
+                            regex_list=regex_list,
+                            escape=escape,
+                            isinstance=isinstance,
+                            str=str,
+                            repattern=re.Pattern,
+                            use_font_mirror=use_font_mirror)
 
                         # fname = f"{random_cache_path()}.html"
                         # with open(fname, "w", encoding="utf-8") as fi:
@@ -278,15 +279,16 @@ async def help_generator(msg: Bot.MessageSession,
         module_list = {k: v for k, v in module_.items() if k not in dev_module_list}
 
     html_content = await env.get_template("module_list.html").render_async(
+        msg=msg,
+        locale=msg.session_info.locale,
         CommandParser=CommandParser,
         is_base_superuser=is_base_superuser,
         is_superuser=is_superuser,
         len=len,
         module_list=module_list,
-        msg=msg,
         show_disabled_modules=show_disabled_modules,
         target_enabled_list=target_enabled_list,
-        use_font_mirror=use_font_mirror,)
+        use_font_mirror=use_font_mirror)
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)

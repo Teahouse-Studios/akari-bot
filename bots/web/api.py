@@ -637,7 +637,7 @@ async def delete_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/modules_list")
+@app.get("/api/module_list")
 @limiter.limit("2/second")
 async def get_modules_list(request: Request):
     try:
@@ -645,10 +645,10 @@ async def get_modules_list(request: Request):
         modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
         modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
 
-        modules_list = []
+        module_list = []
         for module in modules.values():
-            modules_list.append(module["bind_prefix"])
-        return {"message": "Success", "modules": modules}
+            module_list.append(module["bind_prefix"])
+        return {"message": "Success", "modules": module_list}
     except HTTPException as e:
         raise e
     except Exception:

@@ -211,7 +211,7 @@ class ModulesManager:
                     err_modules.remove(module_name)
                 current_unloaded_modules.remove(module_name)
             except Exception:
-                Logger.error(f"Failed to load modules.{module_name}: \n{traceback.format_exc()}")
+                Logger.exception(f"Failed to load modules.{module_name}: ")
                 if module_name not in err_modules:
                     err_modules.append(module_name)
                 return False

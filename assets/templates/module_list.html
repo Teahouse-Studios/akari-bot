@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ msg.session_info.locale.locale }}">
+<html lang="{{ locale.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -99,7 +99,7 @@
         }
 
         .module-name {
-            font-family: 'Noto Sans Mono', 'Courier New', Courier, monospace;
+            font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
             font-size: 14px;
         }
 
@@ -119,7 +119,7 @@
 <body>
     <div class="botbox mdui-prose">
         <div class="content-layout">
-        <h2>{{ msg.session_info.locale.t("core.message.module.list.header") }}</h2>
+        <h2>{{ locale.t("core.message.module.list.header") }}</h2>
         <hr>
         <div class="grid-container">
             {% for key, value in module_list.items() %}
@@ -130,10 +130,10 @@
                     {% set regex_list=value.regex_list.get(msg.session_info.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
                     <div class="module-name">{{ value.bind_prefix | e }}</div>
                     {% if len(help_.args) > 0 %}
-                    <div>{{ msg.session_info.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
+                    <div>{{ locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
                     {%- endif %}
                     {% if len(regex_list) > 0 %}
-                    <div>{{ msg.session_info.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
+                    <div>{{ locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
                     {%- endif %}
                 </div>
             </div>
@@ -141,8 +141,8 @@
         </div>
         <hr>
             <div class="footer">
-                {{ msg.session_info.locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) }} <br> {{
-                    msg.session_info.locale.t('core.message.help.detail', prefix=msg.session_info.prefixes[0]) |safe }}
+                {{ locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) }} <br> {{
+                    locale.t('core.message.help.detail', prefix=msg.session_info.prefixes[0]) |safe }}
             </div>
         </div>
     </div>
