@@ -274,16 +274,21 @@ async def run_bot(console_only: bool = False):
         for p in processes:
             if p.is_alive():
                 continue
+            if p.name == "server":
+                if p.exitcode == 0:
+                    sys.exit(0)
+                Logger.critical(f"Server ({p.pid}) exited with code {p.exitcode}, please check the log.")
+                sys.exit(1)
             if p.exitcode == 0:
                 Logger.warning(
-                    f"{p.pid} ({p.name}) exited with code 0, abort to restart."
+                    f"Process {p.pid} ({p.name}) exited with code 0, abort to restart."
                 )
                 processes.remove(p)
                 terminate_process(p)
                 break
             if p.exitcode == 233:
                 Logger.warning(
-                    f"{p.pid} ({p.name}) exited with code 233, restart all bots."
+                    f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
                 )
                 raise RestartBot
             Logger.critical(
