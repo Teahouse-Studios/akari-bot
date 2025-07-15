@@ -1,0 +1,18 @@
+{
+    "mod_dl.help": "通过 Mod 名称获取下载链接。",
+    "mod_dl.help.desc": "下载 CurseForge 和 Modrinth 上的 Mod。",
+    "mod_dl.message.curseforge.not_found": "CurseForge 结果：无",
+    "mod_dl.message.curseforge.result": "CurseForge 结果：",
+    "mod_dl.message.download_url": "下载链接：",
+    "mod_dl.message.filename": "文件名：",
+    "mod_dl.message.invalid.non_digital": "无效的编号，必须为数字。",
+    "mod_dl.message.invalid.out_of_range": "编号超出范围。",
+    "mod_dl.message.modrinth.not_found": "Modrinth 结果：无",
+    "mod_dl.message.modrinth.result": "Modrinth 结果：",
+    "mod_dl.message.not_found": "未找到结果。",
+    "mod_dl.message.prompt": "请回复编号来选择 Mod。",
+    "mod_dl.message.version": "此 Mod 拥有以下版本：",
+    "mod_dl.message.version.not_found": "未找到指定版本。",
+    "mod_dl.message.version.prompt": "请回复版本号来选择版本。",
+    "config.comments.curseforge_api_key": "CurseForge 的 API Key。（用于 mod_dl 模块）"
+}
