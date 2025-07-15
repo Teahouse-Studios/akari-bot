@@ -198,7 +198,7 @@ async def cleanup_tasks():
 
 
 async def run_bot(console_only: bool = False):
-    from core.config import Config, CFGManager  # noqa
+    from core.config import CFGManager  # noqa
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
 
@@ -252,7 +252,7 @@ async def run_bot(console_only: bool = False):
             if bl in bots_and_required_configs:
                 abort = False
                 for c in bots_and_required_configs[bl]:
-                    if not Config(c, _global=True):
+                    if not CFGManager.get(c, _global=True):
                         Logger.error(
                             f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
                         )

@@ -650,7 +650,7 @@ cfg_ = module("config", required_superuser=True, alias="cfg", base=True, doc=Tru
 
 @cfg_.command("get <k> [<table_name>]")
 async def _(msg: Bot.MessageSession, k: str, table_name: str = None):
-    await msg.finish(str(Config(k, table_name=table_name)))
+    await msg.finish(str(CFGManager.get(k, table_name=table_name)))
 
 
 @cfg_.command("write <k> <v> [<table_name>] [-s]")

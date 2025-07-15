@@ -25,11 +25,7 @@ def safe_literal_eval(node, globals_dict=None):
     if not globals_dict:
         globals_dict = globals()
 
-    if isinstance(node, ast.Str):
-        return node.s
-    if isinstance(node, ast.Num):
-        return node.n
-    if isinstance(node, ast.NameConstant):
+    if isinstance(node, ast.Constant):
         return node.value
     if isinstance(node, ast.Tuple):
         # 对元组元素进行递归解析，对于 type 类型的元素保持原样

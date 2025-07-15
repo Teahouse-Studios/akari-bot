@@ -242,13 +242,13 @@ class CFGManager:
                         cfg_type_str = "(" + ", ".join(map(lambda ty: ty.__name__, cfg_type)) + ")"
                     else:
                         cfg_type_str = cfg_type.__name__
-                if cfg_type_str:
-                    if cfg_type_str == "list":
-                        value = []
+                    if cfg_type_str:
+                        if cfg_type_str == "list":
+                            value = []
+                        else:
+                            value = f"<Replace me with {cfg_type_str} value>"
                     else:
-                        value = f"<Replace me with {cfg_type_str} value>"
-                else:
-                    value = "<Replace me>"
+                        value = "<Replace me>"
             else:  # if the value is None, skip to autofill
                 logger.debug(f"[Config] Config {q} has no default value, skipped to auto fill.")
                 return
