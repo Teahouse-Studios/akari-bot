@@ -8,8 +8,7 @@ from typing import Optional
 
 from bots.aiocqhttp.info import target_group_prefix as qq_group_prefix, target_guild_prefix as qq_guild_prefix
 from bots.aiocqhttp.utils import get_onebot_implementation
-from core.builtins import command_prefix, ExecutionLockList, MessageTaskManager, Bot, \
-    base_superuser_list, Temp, MessageChain, Plain, I18NContext
+from core.builtins import Bot, Info, Temp, ExecutionLockList, MessageTaskManager, base_superuser_list, command_prefix, MessageChain, Plain, I18NContext
 from core.builtins.message.chain import match_kecode
 from core.config import Config
 from core.constants.default import bug_report_url_default
@@ -20,12 +19,11 @@ from core.database.models import AnalyticsData
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
-from core.tos import warn_target
+from core.tos import _abuse_warn_target
 from core.types import Module, Param
-from core.utils.info import Info
 from core.utils.message import remove_duplicate_space
 
-qq_account = Temp().data.get("qq_account")
+qq_account = Temp.data.get("qq_account")
 qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_aiocqhttp"))
 
 enable_tos = Config("enable_tos", True)
@@ -70,8 +68,7 @@ async def parser(msg: Bot.MessageSession,
     :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在空字符串的情况下则代表无需命令前缀。
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行。
     """
-    identify_str = f"[{msg.target.sender_id}{
-        f" ({msg.target.target_id})" if msg.target.target_from != msg.target.sender_from else ""}]"
+    identify_str = f"[{msg.target.sender_id} ({msg.target.target_id})]"
     # Logger.info(f"{identify_str} -> [Bot]: {display}")
     await msg.data_init()
     try:
@@ -181,7 +178,7 @@ def _get_prefixes(msg: Bot.MessageSession, prefix):
             break
     if in_prefix_list or disable_prefix:  # 检查消息前缀
         if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == "~~":  # 排除 ~~xxx~~ 的情况
-            return
+            return None, None, None
         if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
             msg.prefixes.remove(display_prefix)
             msg.prefixes.insert(0, display_prefix)
@@ -620,7 +617,7 @@ async def _execute_submodule(msg: Bot.MessageSession, module, command_first_word
 
 async def _process_tos_abuse_warning(msg: Bot.MessageSession, e: AbuseWarning):
     if enable_tos and Config("tos_warning_counts", 5) >= 1 and not msg.check_super_user():
-        await warn_target(msg, str(e))
+        await _abuse_warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {"count": 1,
                                                   "ts": datetime.now().timestamp()}
     else:

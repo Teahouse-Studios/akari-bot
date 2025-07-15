@@ -17,8 +17,5 @@ elif proxy:
 else:
     session = None
 
-if token:
-    bot = Bot(token=token, session=session)
-    dp = Dispatcher()
-else:
-    bot = dp = None
+bot = Bot(token=token, session=session)
+dp = Dispatcher()

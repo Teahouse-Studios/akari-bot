@@ -8,9 +8,8 @@ from PIL import Image as PILImage
 from aiofile import async_open
 from jinja2 import FileSystemLoader, Environment
 
-from core.builtins import Image, MessageChain, MessageSession
+from core.builtins import Info, MessageSession, MessageChain, Image
 from core.builtins.message.elements import MessageElement, PlainElement, ImageElement, VoiceElement, EmbedElement
-from core.constants.info import Info
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -46,18 +45,14 @@ save_source = True
 
 
 async def msgchain2image(message_chain: Union[MessageChain, str, list, MessageElement],
-                         msg: Optional[MessageSession] = None,
-                         use_local: bool = True) -> Union[List[PILImage.Image], bool]:
+                         msg: Optional[MessageSession] = None) -> Union[List[PILImage.Image], bool]:
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
-    :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象列表。
     """
     if not Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
 
     lst = []
     message_chain = MessageChain(message_chain)
@@ -88,7 +83,7 @@ async def msgchain2image(message_chain: Union[MessageChain, str, list, MessageEl
 
     Logger.info("[WebRender] Converting message chain...")
     try:
-        pic = await download(webrender("element_screenshot", use_local=use_local),
+        pic = await download(webrender("element_screenshot"),
                              status_code=200,
                              headers={"Content-Type": "application/json"},
                              method="POST",
@@ -98,23 +93,8 @@ async def msgchain2image(message_chain: Union[MessageChain, str, list, MessageEl
                              request_private_ip=True
                              )
     except Exception:
-        if use_local:
-            try:
-                pic = await download(webrender("element_screenshot", use_local=False),
-                                     status_code=200,
-                                     headers={"Content-Type": "application/json"},
-                                     method="POST",
-                                     post_data=html_,
-                                     attempt=1,
-                                     timeout=30,
-                                     request_private_ip=True
-                                     )
-            except Exception:
-                Logger.error("[WebRender] Generation Failed.")
-                return False
-        else:
-            Logger.error("[WebRender] Generation Failed.")
-            return False
+        Logger.exception("[WebRender] Generation Failed.")
+        return False
 
     with open(pic, "rb") as read:
         load_img = json.loads(read.read())
@@ -128,17 +108,14 @@ async def msgchain2image(message_chain: Union[MessageChain, str, list, MessageEl
     return img_lst
 
 
-async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILImage.Image], bool]:
+async def svg_render(file_path: str) -> Union[List[PILImage.Image], bool]:
     """使用WebRender渲染svg文件。
 
     :param file_path: svg文件路径。
-    :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象。
     """
     if not Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
 
     with open(file_path, "r", encoding="utf-8") as file:
         svg_content = file.read()
@@ -153,7 +130,7 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILIm
     html_ = json.dumps(d)
 
     try:
-        pic = await download(webrender("element_screenshot", use_local=use_local),
+        pic = await download(webrender("element_screenshot"),
                              status_code=200,
                              headers={"Content-Type": "application/json"},
                              method="POST",
@@ -163,23 +140,8 @@ async def svg_render(file_path: str, use_local: bool = True) -> Union[List[PILIm
                              request_private_ip=True
                              )
     except Exception:
-        if use_local:
-            try:
-                pic = await download(webrender("element_screenshot", use_local=False),
-                                     status_code=200,
-                                     headers={"Content-Type": "application/json"},
-                                     method="POST",
-                                     post_data=html_,
-                                     attempt=1,
-                                     timeout=30,
-                                     request_private_ip=True
-                                     )
-            except Exception:
-                Logger.error("[WebRender] Generation Failed.")
-                return False
-        else:
-            Logger.error("[WebRender] Generation Failed.")
-            return False
+        Logger.exception("[WebRender] Generation Failed.")
+        return False
 
     with open(pic, "rb") as read:
         load_img = json.loads(read.read())

@@ -8,28 +8,27 @@ import orjson as json
 from aiocqhttp import Event
 from hypercorn import Config as HyperConfig
 
-from core.bot_init import load_prompt, init_async
-from core.builtins import PrivateAssets
-from core.builtins.utils import command_prefix
-from core.builtins.temp import Temp
-from core.config import Config
-from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
-from core.constants.info import Info
-from core.constants.path import assets_path
-from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
-from core.i18n import Locale
-from core.parser.message import parser
-from core.terminate import cleanup_sessions
-from core.tos import tos_report
-from core.types import MsgInfo, Session
-from .client import bot
-from .info import *
-from .message import MessageSession, FetchTarget
+sys.path.append(os.getcwd())
 
+from bots.aiocqhttp.client import bot  # noqa: E402
+from bots.aiocqhttp.info import *  # noqa: E402
+from bots.aiocqhttp.message import MessageSession, FetchTarget  # noqa: E402
+from core.bot_init import load_prompt, init_async  # noqa: E402
+from core.builtins import Info, PrivateAssets, Temp, command_prefix  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
+from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords  # noqa: E402
+from core.i18n import Locale  # noqa: E402
+from core.logger import Logger  # noqa: E402
+from core.parser.message import parser  # noqa: E402
+from core.terminate import cleanup_sessions  # noqa: E402
+from core.tos import tos_report  # noqa: E402
+from core.types import MsgInfo, Session  # noqa: E402
 
-PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
 Info.dirty_word_check = Config("enable_dirty_check", False)
 Info.use_url_manager = Config("enable_urlmanager", False)
+PrivateAssets.set(os.path.join(assets_path, "private", "aiocqhttp"))
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")
 enable_tos = Config("enable_tos", True)
 ignored_sender = Config("ignored_sender", ignored_sender_default)
@@ -47,12 +46,12 @@ async def _(event: Event):
     await load_prompt(FetchTarget)
     qq_login_info = await bot.call_action("get_login_info")
     qq_account = qq_login_info.get("user_id")
-    Temp().data["qq_account"] = qq_account
-    Temp().data["qq_nickname"] = qq_login_info.get("nickname")
+    Temp.data["qq_account"] = qq_account
+    Temp.data["qq_nickname"] = qq_login_info.get("nickname")
 
 
 async def message_handler(event: Event):
-    qq_account = Temp().data.get("qq_account")
+    qq_account = Temp.data.get("qq_account")
     if event.detail_type == "private" and event.sub_type == "group" \
             and Config("qq_disable_temp_session", True, table_name="bot_aiocqhttp"):
         return
@@ -200,7 +199,7 @@ async def _(event: Event):
 
 @bot.on_notice("group_ban")
 async def _(event: Event):
-    qq_account = Temp().data.get("qq_account")
+    qq_account = Temp.data.get("qq_account")
     if enable_tos and event.user_id == int(qq_account):
         sender_id = f"{sender_prefix}|{event.operator_id}"
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
@@ -210,10 +209,13 @@ async def _(event: Event):
                                              sender_id=sender_id,
                                              action="mute",
                                              detail=str(event.duration))
+        Logger.info(f"Unfriendly action detected: mute ({event.duration})")
         result = await UnfriendlyActionRecords.check_mute(target_id=target_id)
         if event.duration >= 259200:  # 3 days
             result = True
         if result and not sender_info.superuser:
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: mute")
+            Logger.info(f"Block {target_id} by ToS: mute")
             reason = Locale(default_locale).t("tos.message.reason.mute")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
@@ -231,8 +233,12 @@ async def _(event: Event):
         target_info = await TargetInfo.get_by_target_id(target_id)
         await UnfriendlyActionRecords.create(target_id=target_id,
                                              sender_id=sender_id,
-                                             action="kick")
+                                             action="kick",
+                                             detail="")
+        Logger.info("Unfriendly action detected: kick")
         if not sender_info.superuser:
+            Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
+            Logger.info(f"Block {target_id} by ToS: kick")
             reason = Locale(default_locale).t("tos.message.reason.kick")
             await tos_report(sender_id, target_id, reason, banned=True)
             await target_info.edit_attr("blocked", True)
@@ -259,7 +265,7 @@ async def _():
 
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
-if qq_host and Config("enable", False, table_name="bot_aiocqhttp"):
+if qq_host and (Config("enable", False, table_name="bot_aiocqhttp") or __name__ == "__main__"):
     argv = sys.argv
     Info.client_name = client_name
     HyperConfig.startup_timeout = 120

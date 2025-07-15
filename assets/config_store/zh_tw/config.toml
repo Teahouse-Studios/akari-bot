@@ -8,6 +8,8 @@ initialized = true
 
 [config]
 # 一些基礎的設定部分，此處填寫的值可在訊息中以明文形式顯示。請不要在此部分填寫敏感資訊。
+debug = false # 是否啟用調試模式，啟用後會輸出更多的日誌訊息。
+base_superuser = ["QQ|2596322644"] # 機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。
 enable_dirty_check = false # 是否啟用文字過濾偵測，需要設定阿里雲內容安全服務的 AccessKey ID 與 AccessKey Secret。
 enable_urlmanager = false # 是否啟用 URLManager，用於 URL 跳板用。（聲明此 URL 非官方連結等）
 enable_tos = true # 是否啟用內建的 ToS 檢查規則。
@@ -20,16 +22,14 @@ enable_rickroll = true # 當文字過濾偵測失敗時，是否 Rickroll 使用
 enable_joke = true # 是否啟用玩笑，啟用後將在伺服器時間 4 月 1 日時發生。
 shuffle_rate = 0.1 # 玩笑的隨機發生率，範圍 0 到 1 之間。
 unloaded_modules = [] # 不載入的模組列表，符合到此列表中的模組將不會被載入。
-debug = false # 是否啟用調試模式，啟用後會輸出更多的日誌訊息。
 report_targets = [] # 上報會話列表，此處填寫的值將會被辨識為上報會話。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應會話）
 tos_warning_counts = 5 # 違反 ToS 時的警告次數。
-base_superuser = ["QQ|2596322644"] # 機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。
-timezone_offset = "+8" # 機器人的預設時區偏移量。
 no_confirm = false # 是否無需傳送者確認訊息後再執行指令。
+timezone_offset = "+8" # 機器人的預設時區偏移量。
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認指令的關鍵字，此處填入的值將會被辨識為確認指令。
 command_prefix = ["~", "～"] # 指令前綴，此處填入的值將會被辨識為指令前綴。
-tos_temp_ban_time = 300 # 違反 ToS 時的暫時封鎖時間。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # 回報錯誤網址。
+tos_temp_ban_time = 300 # 違反 ToS 時的暫時封鎖時間。
 allow_request_private_ip = false # 是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）
 enable_get_petal = false # 是否允許取得花瓣。
 petal_gained_limit = 0 # 單日取得花瓣上限。
@@ -37,7 +37,6 @@ petal_lost_limit = 0 # 單日失去花瓣上限。
 petal_sign_limit = 5 # 單日簽到取得花瓣上限。
 petal_sign_rate = 0.5 # 簽到取得花瓣機率，範圍 0 到 1 之間，取得數量呈指數衰減。
 use_secrets_random = false # 是否使用基於 secrets 庫的隨機數產生器。
-web_render_local = "<Replace me with str value>" # 本地 WebRender 服務位址。
 help_url = "https://bot.teahouse.team" # 線上說明文件網址。
 donate_url = "http://afdian.com/a/teahouse" # 捐贈網址。
 help_page_url = "https://bot.teahouse.team/wiki/${module}" # 模組線上說明文件網址。
@@ -45,7 +44,6 @@ allow_reload_base = false # 是否允許重載基礎模組。
 enable_eval = false # 是否啟用 eval 模組。
 enable_commit_url = true # 是否在展示版本訊息時顯示 commit URL。
 locale_url = "https://www.crowdin.com/project/akari-bot" # 在地化專案網址。
-ncmusic_enable_card = false # ncmusic 模組是否啟用卡片訊息。（僅在 QQ 平台有效）
 slower_schedule = false # 是否啟用更慢的排程任務調度器。（減少請求壓力用）
 
 [secret]

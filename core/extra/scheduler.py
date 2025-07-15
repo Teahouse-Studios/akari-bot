@@ -4,11 +4,11 @@ import traceback
 
 import orjson as json
 
+from core.builtins import Info
 from core.constants.path import schedulers_path
 from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
-from core.utils.info import Info
 
 
 def load_extra_schedulers():

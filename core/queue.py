@@ -3,9 +3,8 @@ import datetime
 import traceback
 from uuid import uuid4
 
-from core.builtins import Bot, MessageChain, I18NContext, Plain
+from core.builtins import Bot, Info, MessageChain, I18NContext, Plain
 from core.config import Config
-from core.constants import Info
 from core.database.models import JobQueuesTable
 from core.ip import append_ip, fetch_ip_info
 from core.logger import Logger
@@ -70,10 +69,9 @@ class JobQueue:
 
     @classmethod
     async def web_render_status(cls):
-        web_render_status, web_render_local_status = await check_web_render()
+        web_render_status = await check_web_render()
         for target in get_all_clients_name():
-            await cls.add_job(target, "web_render_status", {"web_render_status": web_render_status,
-                                                            "web_render_local_status": web_render_local_status}, wait=False)
+            await cls.add_job(target, "web_render_status", {"web_render_status": web_render_status}, wait=False)
 
     @classmethod
     async def send_message(cls, target_client: str, target_id: str, message):
@@ -151,7 +149,6 @@ async def _(tsk: JobQueuesTable, args: dict):
 @action("web_render_status")
 async def _(tsk: JobQueuesTable, args: dict):
     Info.web_render_status = args["web_render_status"]
-    Info.web_render_local_status = args["web_render_local_status"]
     await return_val(tsk, {})
 
 

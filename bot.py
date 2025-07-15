@@ -43,13 +43,15 @@ processes: list[multiprocessing.Process] = []
 
 def init_bot():
     from core.config import Config  # noqa
-    from core.constants import database_version  # noqa
     from core.constants.default import base_superuser_default  # noqa
+    from core.constants.version import database_version  # noqa
     from core.database.link import get_db_link  # noqa
     from core.database.models import SenderInfo, DBVersion  # noqa
     from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)
+    if Config("debug", False):
+        Logger.debug("Debug mode is enabled.")
 
     async def update_db():
         await Tortoise.init(
@@ -91,6 +93,12 @@ def init_bot():
     run_async(update_db())
 
 
+def clear_import_cache():
+    for pymod in list(sys.modules):
+        if pymod.startswith("bots.") or pymod.startswith("core."):
+            del sys.modules[pymod]
+
+
 def terminate_process(process: multiprocessing.Process, timeout=5):
     process.terminate()
     process.join(timeout=timeout)
@@ -115,8 +123,8 @@ def multiprocess_run_until_complete(func):
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+    from core.builtins import Info  # noqa
     from core.logger import Logger  # noqa
-    from core.utils.info import Info  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
@@ -179,6 +187,7 @@ def run_bot():
                     disabled_bots.append(t[4:])
             else:
                 Logger.warning(f"Bot {t} cannot found config \"enable\".")
+                disabled_bots.append(t[4:])
 
     for bl in lst:
         if bl in disabled_bots:
@@ -235,13 +244,14 @@ if __name__ == "__main__":
         while True:
             try:
                 multiprocess_run_until_complete(init_bot)
-                run_bot()  # Process will block here so
+                run_bot()  # Process will block here
                 break
             except RestartBot:
                 for ps in processes:
                     loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
                     terminate_process(ps)
                 processes.clear()
+                clear_import_cache()
                 continue
             except Exception:
                 loggerFallback.critical("An error occurred, please check the output.")

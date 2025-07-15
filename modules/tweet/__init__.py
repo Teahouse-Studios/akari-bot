@@ -52,11 +52,7 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
             raise e
 
     res_json = json.loads(res)
-    if await check_bool(
-        res_json["data"]["text"],
-        res_json["data"]["user"]["name"],
-        res_json["data"]["user"]["screen_name"],
-    ):
+    if await check_bool("\n".join([res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]])):
         await msg.finish(rickroll())
 
     css = """

@@ -4,15 +4,13 @@ import os
 import re
 import traceback
 from collections.abc import MutableMapping
-from decimal import Decimal, ROUND_HALF_UP
 from string import Template
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import orjson as json
 
 from core.constants.default import lang_list
 from core.constants.path import locales_path, modules_locales_path
-from core.utils.message import isint
 
 # Load all locale files into memory
 
@@ -158,10 +156,10 @@ class Locale:
                         node.value
                     )  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f"{{{key}}}" + self.t(
+            return f"{{I18N:{key}}}" + self.t(
                 "error.i18n.fallback", fallback_failed_prompt=False
             )
-        return key
+        return f"{{I18N:{key}}}"
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
     def t(
@@ -201,7 +199,7 @@ class Locale:
             if params_str:
                 params_str = self.t_str(params_str, fallback_failed_prompt=fallback_failed_prompt)
 
-                param_pairs = re.findall(r'(\w+)=([^\s,]+)', params_str)
+                param_pairs = re.findall(r'(\w+)=([^,]+)', params_str)
                 for k, v in param_pairs:
                     local_kwargs[html.unescape(k)] = html.unescape(v)
 
@@ -218,64 +216,7 @@ class Locale:
 
         return text
 
-    def num(
-        self,
-        number: Union[Decimal, int, str],
-        precision: int = 0,
-        fallback_failed_prompt: bool = False,
-    ) -> str:
-        """
-        格式化数字。
 
-        :param number: 数字。
-        :param precision: 保留小数点位数。
-        :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
-        :returns: 本地化后的数字。
-        """
-        if isint(number):
-            number = int(number)
-        else:
-            return str(number)
-
-        if self.locale in ["zh_cn", "zh_tw"]:
-            unit_info = self._get_cjk_unit(Decimal(number))
-        else:
-            unit_info = self._get_unit(Decimal(number))
-
-        if not unit_info:
-            return str(number)
-
-        unit, scale = unit_info
-        fmted_num = self._fmt_num(number / scale, precision)
-        return self.t_str(f"{fmted_num} {{I18N:i18n.unit.{unit}}}", fallback_failed_prompt)
-
-    @staticmethod
-    def _get_cjk_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal("10e11"):
-            return 3, Decimal("10e11")
-        if number >= Decimal("10e7"):
-            return 2, Decimal("10e7")
-        if number >= Decimal("10e3"):
-            return 1, Decimal("10e3")
-        return None
-
-    @staticmethod
-    def _get_unit(number: Decimal) -> Optional[Tuple[int, Decimal]]:
-        if number >= Decimal("10e8"):
-            return 3, Decimal("10e8")
-        if number >= Decimal("10e5"):
-            return 2, Decimal("10e5")
-        if number >= Decimal("10e2"):
-            return 1, Decimal("10e2")
-        return None
-
-    @staticmethod
-    def _fmt_num(number: Decimal, precision: int) -> str:
-        number = number.quantize(
-            Decimal(f"1.{"0" * precision}"), rounding=ROUND_HALF_UP
-        )
-        num_str = f"{number:.{precision}f}".rstrip("0").rstrip(".")
-        return num_str if precision > 0 else str(int(number))
-
+load_locale_file()
 
 __all__ = ["Locale", "load_locale_file", "get_available_locales"]

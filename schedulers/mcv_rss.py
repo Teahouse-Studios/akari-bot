@@ -5,9 +5,8 @@ import orjson as json
 from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
-from core.builtins import I18NContext, FormattedTime, MessageChain
+from core.builtins import Secret, MessageChain, FormattedTime, I18NContext
 from core.config import Config
-from core.constants.info import Secret
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger

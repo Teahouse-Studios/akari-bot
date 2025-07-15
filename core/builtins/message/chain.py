@@ -3,13 +3,18 @@ from __future__ import annotations
 import base64
 import html
 import re
+from cattrs import structure, unstructure
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson as json
 
-from core.builtins.message.elements import (
+from core.constants import Secret
+from core.joke import shuffle_joke as joke
+from core.logger import Logger
+from core.utils.http import url_pattern
+from .elements import (
     elements_map,
     MessageElement,
     PlainElement,
@@ -24,13 +29,6 @@ from core.builtins.message.elements import (
 
 if TYPE_CHECKING:
     from core.builtins.message import MessageSession
-
-from core.builtins.utils import Secret
-from core.joke import shuffle_joke as joke
-from core.logger import Logger
-from core.utils.http import url_pattern
-
-from cattrs import structure, unstructure
 
 
 class MessageChain:
@@ -115,56 +113,51 @@ class MessageChain:
 
         for v in self.value:
             if isinstance(v, PlainElement):
-                for secret in Secret.list:
-                    if secret in ["", None, True, False]:
-                        continue
-                    if v.text.upper().find(secret.upper()) != -1:
-                        Logger.warning(unsafeprompt("Plain", secret, v.text))
-                        return False
+                if secret := Secret.check(v.text):
+                    Logger.warning(unsafeprompt("Plain", secret, v.text))
+                    return False
             elif isinstance(v, EmbedElement):
-                for secret in Secret.list:
-                    if secret in ["", None, True, False]:
-                        continue
-                    if v.title:
-                        if v.title.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.title", secret, v.title))
-                            return False
-                    if v.description:
-                        if v.description.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.description", secret, v.description)
-                            )
-                            return False
-                    if v.footer:
-                        if v.footer.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.footer", secret, v.footer)
-                            )
-                            return False
-                    if v.author:
-                        if v.author.upper().find(secret.upper()) != -1:
-                            Logger.warning(
-                                unsafeprompt("Embed.author", secret, v.author)
-                            )
-                            return False
-                    if v.url:
-                        if v.url.upper().find(secret.upper()) != -1:
-                            Logger.warning(unsafeprompt("Embed.url", secret, v.url))
-                            return False
+                if v.title:
+                    if secret := Secret.check(v.title):
+                        Logger.warning(unsafeprompt("Embed.title", secret, v.title))
+                        return False
+                if v.description:
+                    if secret := Secret.check(v.description):
+                        Logger.warning(
+                            unsafeprompt("Embed.description", secret, v.description)
+                        )
+                        return False
+                if v.footer:
+                    if secret := Secret.check(v.footer):
+                        Logger.warning(
+                            unsafeprompt("Embed.footer", secret, v.footer)
+                        )
+                        return False
+                if v.author:
+                    if secret := Secret.check(v.author):
+                        Logger.warning(
+                            unsafeprompt("Embed.author", secret, v.author)
+                        )
+                        return False
+                if v.url:
+                    if secret := Secret.check(v.url):
+                        Logger.warning(unsafeprompt("Embed.url", secret, v.url))
+                        return False
+                if v.fields:
                     for f in v.fields:
-                        if f.name.upper().find(secret.upper()) != -1:
+                        if secret := Secret.check(f.name):
                             Logger.warning(
                                 unsafeprompt("Embed.field.name", secret, f.name)
                             )
                             return False
-                        if f.value.upper().find(secret.upper()) != -1:
+                        if secret := Secret.check(f.value):
                             Logger.warning(
                                 unsafeprompt("Embed.field.value", secret, f.value)
                             )
                             return False
         return True
 
-    def as_sendable(self, msg: MessageSession = None, embed: bool = True) -> list:
+    def as_sendable(self, msg: Optional[MessageSession] = None, embed: bool = True) -> list:
         """
         将消息链转换为可发送的格式。
         """
@@ -188,14 +181,14 @@ class MessageChain:
                 else:
                     value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
-                for k, v in x.kwargs.items():
-                    if isinstance(v, str):
-                        x.kwargs[k] = msg.locale.t_str(v)
-                t_value = msg.locale.t(x.key, **x.kwargs)
-                if isinstance(t_value, str):
+                if msg:
+                    for k, v in x.kwargs.items():
+                        if isinstance(v, str):
+                            x.kwargs[k] = msg.locale.t_str(v)
+                    t_value = msg.locale.t(x.key, **x.kwargs)
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
-                    value += MessageChain(t_value).as_sendable(msg)
+                    value.append(PlainElement.assign(f"{{I18N:{x.key}}}", disable_joke=x.disable_joke))
             elif isinstance(x, URLElement):
                 value.append(PlainElement.assign(x.url, disable_joke=True))
             else:
@@ -302,11 +295,11 @@ def _extract_kecode_blocks(text):
             while i < len(text):
                 if text.startswith("[KE:", i):
                     break
-                elif text[i] == "]" and depth == 1:
+                if text[i] == "]" and depth == 1:
                     i += 1
                     result.append(text[start:i])
                     break
-                elif text[i] == "]":
+                if text[i] == "]":
                     depth -= 1
                     i += 1
                 else:
@@ -441,8 +434,7 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
         user_id = match.group(2)
         if match_client == client:
             return pattern.replace("{uid}", user_id)
-        else:
-            return match.group(0)
+        return match.group(0)
 
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 

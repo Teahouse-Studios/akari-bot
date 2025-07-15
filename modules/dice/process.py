@@ -157,7 +157,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
                 continue
         except (DiceSyntaxError, DiceValueError) as ex:
             errmsg = (
-                f"{{I18N:dice.message.error.prompt,i={dice_count}}}" + ex.message
+                str(I18NContext("dice.message.error.prompt", i=dice_count)) + ex.message
             )
     if errmsg:
         return (
@@ -206,7 +206,7 @@ def generate_dice_message(
     if "#" in expr:
         expr = expr.partition("#")[2]
     if times < 1 or times > MAX_ROLL_TIMES:
-        errmsg = f"{{I18N:dice.message.error.value.times.out_of_range,max={MAX_ROLL_TIMES}}}"
+        errmsg = str(I18NContext("dice.message.error.value.times.out_of_range", max=MAX_ROLL_TIMES))
         return DiceValueError(
             "{I18N:dice.message.error}" + "\n" + errmsg
         ).message

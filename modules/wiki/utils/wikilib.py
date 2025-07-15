@@ -1095,7 +1095,7 @@ class WikiLib:
                 checklist.append(page_info.before_title)
             if page_info.desc:
                 checklist.append(page_info.desc)
-            chk = await check(*checklist)
+            chk = await check(checklist)
             for x in chk:
                 if not x["status"]:
                     ban = True

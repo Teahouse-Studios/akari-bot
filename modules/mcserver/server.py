@@ -4,7 +4,6 @@ import re
 from mcstatus import JavaServer, BedrockServer
 
 from core.builtins import Bot
-from core.config import Config
 from core.logger import Logger
 
 
@@ -47,9 +46,10 @@ async def query_java_server(
         if hasattr(status, "version") and hasattr(status.version, "name"):
             query_msg.append(msg.locale.t("server.message.version") + status.version.name)
 
+    except OSError:
+        return ""
     except Exception:
-        if Config("debug", False):
-            Logger.exception()
+        Logger.exception()
         return ""
 
     if raw:
@@ -67,7 +67,7 @@ async def query_bedrock_server(msg, address, raw=False):
         query_msg.append("[BE]")
         query_msg.append(status.motd.raw)
 
-        player_count = f"{msg.locale.t("server.message.player")}{status.players_online} / {status.players_max}"
+        player_count = f"{msg.locale.t("server.message.player")}{status.players.online} / {status.players.max}"
         query_msg.append(player_count)
 
         if hasattr(status, "version") and hasattr(status.version, "name"):
@@ -77,9 +77,10 @@ async def query_bedrock_server(msg, address, raw=False):
             game_mode = msg.locale.t("server.message.gamemode") + status.gamemode
             query_msg.append(game_mode)
 
+    except OSError:
+        return ""
     except Exception:
-        if Config("debug", False):
-            Logger.exception()
+        Logger.exception()
         return ""
 
     if raw:

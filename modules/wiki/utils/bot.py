@@ -23,12 +23,12 @@ class BotAccount:
         async with httpx.AsyncClient() as client:
             resp = await client.get(lgtoken_url)
             if resp.status_code != 200:
-                raise LoginFailed(f"Login failed: {resp.text}")
+                raise LoginFailed(resp.text)
             PARAMS_1["lgtoken"] = resp.json()["query"]["tokens"]["logintoken"]
 
             resp = await client.post(api_link, data=PARAMS_1)
             if resp.status_code != 200:
-                raise LoginFailed(f"Login failed: {resp.text}")
+                raise LoginFailed(resp.text)
 
             Logger.info(f"Logged in to {api_link} as {account}")
             return dict(resp.cookies)

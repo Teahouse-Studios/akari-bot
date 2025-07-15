@@ -7,10 +7,9 @@ from prompt_toolkit.history import FileHistory
 
 from bot import init_bot
 from core.bot_init import init_async
-from core.builtins import PrivateAssets
+from core.builtins import Info, PrivateAssets
 from core.console.info import *
 from core.console.message import MessageSession
-from core.constants.info import Info
 from core.constants.path import assets_path, cache_path
 from core.extra.scheduler import load_extra_schedulers
 from core.logger import Logger

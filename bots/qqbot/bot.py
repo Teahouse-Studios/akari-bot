@@ -6,20 +6,21 @@ import sys
 import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message
 
-from core.bot_init import init_async, load_prompt
-from core.builtins import PrivateAssets
-from core.config import Config
-from core.constants.info import Info
-from core.constants.path import assets_path
-from core.parser.message import parser
-from core.terminate import cleanup_sessions
-from core.types import MsgInfo, Session
-from .info import *
-from .message import MessageSession, FetchTarget
+sys.path.append(os.getcwd())
 
-PrivateAssets.set(os.path.join(assets_path, "private", "qqbot"))
+from bots.qqbot.info import *  # noqa: E402
+from bots.qqbot.message import MessageSession, FetchTarget  # noqa: E402
+from core.bot_init import init_async, load_prompt  # noqa: E402
+from core.builtins import Info, PrivateAssets  # noqa: E402
+from core.config import Config  # noqa: E402
+from core.constants.path import assets_path  # noqa: E402
+from core.parser.message import parser  # noqa: E402
+from core.terminate import cleanup_sessions  # noqa: E402
+from core.types import MsgInfo, Session  # noqa: E402
+
 Info.dirty_word_check = Config("enable_dirty_check", False)
 Info.use_url_manager = Config("enable_urlmanager", False)
+PrivateAssets.set(os.path.join(assets_path, "private", "qqbot"))
 qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
 qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 
@@ -177,7 +178,7 @@ class MyClient(botpy.Client):
         await parser(msg, prefix=prefix, require_enable_modules=require_enable_modules)
 
 
-if Config("enable", False, table_name="bot_qqbot"):
+if Config("enable", False, table_name="bot_qqbot") or __name__ == "__main__":
     loop = asyncio.get_event_loop()
     try:
         intents = botpy.Intents.none()

@@ -8,7 +8,7 @@ import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate
 
-from core.constants.info import Info
+from core.builtins import Info
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -32,20 +32,16 @@ class ImageTable:
 async def image_table_render(
     table: Union[ImageTable, List[ImageTable]],
     save_source: bool = True,
-    use_local: bool = True,
 ) -> Union[List[PILImage.Image], bool]:
     """
     使用WebRender渲染图片表格。
 
     :param table: 要渲染的表格。
     :param save_source: 是否保存源文件。
-    :param use_local: 是否使用本地WebRender渲染。
     :return: 图片的PIL对象。
     """
     if not Info.web_render_status:
         return False
-    if not Info.web_render_local_status:
-        use_local = False
     pic = False
 
     try:
@@ -92,7 +88,7 @@ async def image_table_render(
 
         try:
             pic = await download(
-                webrender(use_local=use_local),
+                webrender(),
                 method="POST",
                 post_data=json.dumps(html),
                 request_private_ip=True,
@@ -101,23 +97,8 @@ async def image_table_render(
                 },
             )
         except Exception:
-            if use_local:
-                try:
-                    pic = await download(
-                        webrender(use_local=False),
-                        method="POST",
-                        post_data=json.dumps(html),
-                        request_private_ip=True,
-                        headers={
-                            "Content-Type": "application/json",
-                        },
-                    )
-                except Exception:
-                    Logger.error("Generation failed.")
-                    return False
-            else:
-                Logger.error("Generation failed.")
-                return False
+            Logger.error("Generation failed.")
+            return False
     except Exception:
         Logger.exception()
         return False

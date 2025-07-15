@@ -4,18 +4,15 @@ from core.builtins import MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
 from core.builtins.message.internal import I18NContext
-from core.config import Config
 from core.logger import Logger
 from .message import (
     convert_embed,
     MessageSession as MessageSessionT,
-    FinishedSession as FinS,
+    FinishedSession as FinishedSessionT,
 )
 
-enable_analytics = Config("enable_analytics", False)
 
-
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         """
         用于删除这条消息。

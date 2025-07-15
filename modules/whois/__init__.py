@@ -2,7 +2,7 @@ from datetime import UTC
 
 from whois import whois
 
-from core.builtins import Bot
+from core.builtins import Bot, I18NContext
 from core.component import module
 from core.logger import Logger
 
@@ -46,7 +46,7 @@ async def get_whois(msg, domain):
         registrant_postal_code = info.get("registrant_postal_code")
 
         if not domain_name:
-            await msg.finish(msg.locale.t("whois.message.get_failed"))
+            await msg.finish(I18NContext("whois.message.get_failed"))
 
         if whois_server:
             whois_server = whois_server.lower()
@@ -69,9 +69,9 @@ async def get_whois(msg, domain):
         res = [f"{msg.locale.t("whois.message.domain_name")}{format_lst(domain_name).lower()}",
                f"{msg.locale.t("whois.message.registrar")}{registrar}" if registrar else "",
                f"{msg.locale.t("whois.message.whois_server")}{whois_server}" if whois_server else "",
-               f"{msg.locale.t("whois.message.updated_date")}{msg.ts2strftime(updated_date.timestamp())}" if updated_date else "",
-               f"{msg.locale.t("whois.message.creation_date")}{msg.ts2strftime(creation_date.timestamp())}" if creation_date else "",
-               f"{msg.locale.t("whois.message.expiration_date")}{msg.ts2strftime(expiration_date.timestamp())}" if expiration_date else "",
+               f"{msg.locale.t("whois.message.updated_date")}{msg.format_time(updated_date.timestamp())}" if updated_date else "",
+               f"{msg.locale.t("whois.message.creation_date")}{msg.format_time(creation_date.timestamp())}" if creation_date else "",
+               f"{msg.locale.t("whois.message.expiration_date")}{msg.format_time(expiration_date.timestamp())}" if expiration_date else "",
                f"{msg.locale.t("whois.message.name_servers")}{format_lst(name_servers)}" if name_servers else "",
                f"{msg.locale.t("whois.message.email")}{format_lst(emails)}" if emails else "",
                f"{msg.locale.t("whois.message.dnssec")}{format_lst(dnssec)}" if dnssec else "",
@@ -83,4 +83,4 @@ async def get_whois(msg, domain):
 
         return "\n".join([x for x in res if x])
     except Exception:
-        await msg.finish(msg.locale.t("whois.message.get_failed"))
+        await msg.finish(I18NContext("whois.message.get_failed"))

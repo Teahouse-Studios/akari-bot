@@ -135,7 +135,7 @@ class CFGManager:
                                     break
                     else:
                         """
-                        foo = bar <- if the item is not a table, assume it"s a key-value pair outside the table
+                        foo = bar <- if the item is not a table, assume it is a key-value pair outside the table
                         [config]
                         foo = bar
                         """
@@ -178,6 +178,9 @@ class CFGManager:
             if default is not None:
                 if isinstance(default, dict):
                     default = json.dumps(default).decode()  # if the default value is dict, convert to json str
+                elif isinstance(default, tuple):  # if the default value is tuple, convert to list
+                    default = list(default)
+                    cfg_type = cfg_type if cfg_type else list
                 elif not isinstance(default, ALLOWED_TYPES):
                     logger.error(f"[Config] Config {q} has an unsupported default type {type(default).__name__}.")
                     return None
@@ -199,6 +202,8 @@ class CFGManager:
                     return None
                 # check that value matches cfg_type type
                 if value is not None and not isinstance(value, cfg_type):
+                    if list in (cfg_type if isinstance(cfg_type, tuple) else [cfg_type]) and isinstance(value, tuple):
+                        value = list(value)  # allow tuple as list
                     if (float in (cfg_type if isinstance(cfg_type, tuple)
                                   else [cfg_type])) and isinstance(value, int):
                         pass  # allow int as float
@@ -332,16 +337,17 @@ class CFGManager:
                     table_comment_key = "config.table.config"  # i18n comment
                 elif target == "secret":
                     table_comment_key = "config.table.secret"
-                elif target.startswith("bot_"):
-                    if target.endswith("_secret"):
-                        table_comment_key = "config.table.secret_bot"
+                else:
+                    is_secret = target.endswith("_secret")
+
+                    if target.startswith("bot_"):
+                        prefix = "bot"
+                    elif target.startswith("module_"):
+                        prefix = "module"
                     else:
-                        table_comment_key = "config.table.config_bot"
-                elif target.startswith("module_"):
-                    if target.endswith("_secret"):
-                        table_comment_key = "config.table.secret_module"
-                    else:
-                        table_comment_key = "config.table.config_module"
+                        prefix = target.split('_')[0]
+
+                    table_comment_key = f"config.table.{"secret" if is_secret else "config"}_{prefix}"
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
                 cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))

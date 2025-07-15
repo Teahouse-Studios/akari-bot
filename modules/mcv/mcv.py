@@ -4,8 +4,7 @@ from datetime import datetime
 import orjson as json
 from google_play_scraper import app as google_play_scraper
 
-from core.builtins import Bot
-from core.constants.info import Secret
+from core.builtins import Bot, I18NContext
 from core.logger import Logger
 from core.utils.http import get_url, post_url
 
@@ -31,8 +30,8 @@ async def mcjv(msg: Bot.MessageSession):
             "mcv.message.mcv.launcher",
             release=data["latest"]["release"],
             snapshot=data["latest"]["snapshot"],
-            release_time=msg.ts2strftime(time_release),
-            snapshot_time=msg.ts2strftime(time_snapshot),
+            release_time=msg.format_time(time_release),
+            snapshot_time=msg.format_time(time_snapshot),
         )
     except Exception:  # Probably...
         message1 = msg.locale.t("mcv.message.mcv.launcher.failed")
@@ -55,7 +54,7 @@ async def mcjv(msg: Bot.MessageSession):
 
 async def mcbv(msg: Bot.MessageSession):
     play_store_version = None
-    if Secret.ip_country != "China":
+    if Bot.Secret.ip_country != "China":
         try:  # play store
             play_store_version = google_play_scraper("com.mojang.minecraftpe")[
                 "version"
@@ -88,7 +87,7 @@ async def mcbv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     beta = []
     preview = []
     release = []
@@ -108,7 +107,7 @@ async def mcbv(msg: Bot.MessageSession):
             f"""{msg.locale.t("mcv.message.mcbv.play_store")}
 {play_store_version if play_store_version else msg.locale.t("mcv.message.mcbv.get_failed")}
 """
-            if Secret.ip_country != "China"
+            if Bot.Secret.ip_country != "China"
             else ""
         )
         + f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
@@ -126,7 +125,7 @@ async def mcdv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:
@@ -144,7 +143,7 @@ async def mcev(msg: Bot.MessageSession):
         version = re.search(r"(?<=\[)(.*?)(?=])", data)[0]
         Logger.debug(version)
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     return msg.locale.t("mcv.message.mcev", version=version)
 
 
@@ -156,7 +155,7 @@ async def mclgv(msg: Bot.MessageSession):
             )
         )
     except Exception:  # Probably...
-        await msg.finish(msg.locale.t("mcv.message.error.server"))
+        await msg.finish(I18NContext("mcv.message.error.server"))
     release = []
     for v in data:
         if not v["archived"]:

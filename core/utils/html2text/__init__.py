@@ -452,9 +452,8 @@ class HTML2Text(html.parser.HTMLParser):
                 self.o(self.close_quote)
             self.quote = not self.quote
 
-        def link_url(self: HTML2Text, link: str, title: str = "") -> None:
+        def link_url(self: HTML2Text, link: str) -> None:
             url = str(Url(urlparse.urljoin(self.baseurl, link)))
-            # title = f" \"{title}\"" if title.strip() else ""
             self.o(f"]({escape_md(url)})")
 
         if tag == "a" and not self.ignore_links:
@@ -484,7 +483,7 @@ class HTML2Text(html.parser.HTMLParser):
                         if self.inline_links:
                             title = a.get("title") or ""
                             title = escape_md(title)
-                            link_url(self, a["href"], title)
+                            link_url(self, a["href"])
                         else:
                             i = self.previousIndex(a)
                             if i is not None:

@@ -21,6 +21,9 @@ class PhigrosBindInfo(DBModel):
 
     @classmethod
     async def set_bind_info(cls, sender_id: str, session_token: str, username: str = "Guest"):
+        exist_info = await cls.get_or_none(sender_id=sender_id)
+        if exist_info:
+            await exist_info.delete()
         bind_info = (await cls.get_or_create(sender_id=sender_id, session_token=session_token, username=username))[0]
         await bind_info.save()
         return True

@@ -13,16 +13,16 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.builtins import (
     Bot,
+    Temp,
     base_superuser_list,
     command_prefix,
-    I18NContext,
-    Temp,
-    MessageTaskManager,
-    FetchTarget as FetchTargetT,
-    FinishedSession as FinishedSessionT,
     Plain,
     Image,
     Voice,
+    I18NContext,
+    MessageTaskManager,
+    FetchTarget as FetchTargetT,
+    FinishedSession as FinishedSessionT,
 )
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain, match_atcode
@@ -37,7 +37,6 @@ from .client import bot
 from .info import *
 from .utils import CQCodeHandler, get_onebot_implementation
 
-enable_analytics = Config("enable_analytics", False)
 qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_aiocqhttp"))
 
 
@@ -357,7 +356,7 @@ class MessageSession(MessageSessionT):
         node_list = []
         for message in msg_chain_list:
             content = ""
-            msgchain = message.as_sendable()
+            msgchain = message.as_sendable(self)
             for x in msgchain:
                 if isinstance(x, PlainElement):
                     content += x.text + "\n"
@@ -367,8 +366,8 @@ class MessageSession(MessageSessionT):
             template = {
                 "type": "node",
                 "data": {
-                    "nickname": sender_name if sender_name else Temp().data.get("qq_nickname"),
-                    "user_id": str(Temp().data.get("qq_account")),
+                    "nickname": sender_name if sender_name else Temp.data.get("qq_nickname"),
+                    "user_id": str(Temp.data.get("qq_account")),
                     "content": content.strip()
                 }
             }
@@ -556,12 +555,12 @@ class FetchTarget(FetchTargetT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
+    async def post_message(module_name, message, target_list=None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
         module_name = None if module_name == "*" else module_name
 
-        async def post_(fetch_: Bot.FetchedSession):
+        async def post_(fetch_: Bot.FetchedSession, message, i18n=False, **kwargs):
             nonlocal _tsk
             nonlocal blocked
             try:
@@ -578,6 +577,9 @@ class FetchTarget(FetchTargetT):
                         }
                     )
                 else:
+                    if isinstance(message, dict) and i18n:  # 提取字典语言映射
+                        message = message.get(fetch_.parent.locale, message.get("fallback", ""))
+
                     msgchain = message
                     if isinstance(message, str):
                         if i18n:
@@ -594,7 +596,7 @@ class FetchTarget(FetchTargetT):
                     await fetch_.send_direct_message(new_msgchain)
                     if _tsk:
                         _tsk = []
-                if enable_analytics and module_name:
+                if Config("enable_analytics", False) and module_name:
                     await AnalyticsData.create(target_id=fetch_.target.target_id,
                                                sender_id=fetch_.target.sender_id,
                                                command="",
@@ -637,9 +639,9 @@ class FetchTarget(FetchTargetT):
             except Exception:
                 Logger.exception()
 
-        if user_list:
-            for x in user_list:
-                await post_(x)
+        if target_list:
+            for x in target_list:
+                await post_(x, message, i18n, **kwargs)
         else:
             get_target_id = await TargetInfo.get_target_list_by_module(
                 module_name, client_name
@@ -691,13 +693,13 @@ class FetchTarget(FetchTargetT):
                         target_private_prefix,
                         target_guild_prefix,
                     ]:
-                        in_whitelist.append(post_(fetch))
+                        in_whitelist.append(post_(fetch, message, i18n, **kwargs))
                     else:
                         load_options: dict = x.target_data
                         if load_options.get("in_post_whitelist", False):
-                            in_whitelist.append(post_(fetch))
+                            in_whitelist.append(post_(fetch, message, i18n, **kwargs))
                         else:
-                            else_.append(post_(fetch))
+                            else_.append(post_(fetch, message, i18n, **kwargs))
 
             async def post_in_whitelist(lst):
                 for f in lst:

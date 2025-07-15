@@ -60,7 +60,7 @@ async def exchange(msg: Bot.MessageSession, base_currency, target_currency, amou
 
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}"
     data = await get_url(url, 200, fmt="json")
-    time = msg.ts2strftime(
+    time = msg.format_time(
         datetime.datetime.now().timestamp(), time=False, timezone=False
     )
     if data and data["result"] == "success":

@@ -1,20 +1,30 @@
-from core.builtins import Bot, I18NContext
+from core.builtins import Bot, MessageChain, I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
+from core.logger import Logger
 
 report_targets = Config("report_targets", [])
 WARNING_COUNTS = Config("tos_warning_counts", 5)
 
 
-async def warn_target(msg: Bot.MessageSession, reason: str):
+async def _abuse_warn_target(msg: Bot.MessageSession, reason: str):
     issue_url = Config("issue_url", issue_url_default)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
         await msg.sender_info.warn_user()
-        current_warns = msg.sender_info.warns
-        warn_template = [
-            I18NContext("tos.message.warning"),
-            I18NContext("tos.message.reason", reason=reason)]
-        if current_warns < WARNING_COUNTS or msg.sender_info.trusted:
+        warn_template = MessageChain([I18NContext("tos.message.warning"),
+                                     I18NContext("tos.message.reason", reason=reason)])
+
+        # Logs
+        identify_str = f"[{msg.target.sender_id} ({msg.target.target_id})]"
+        if msg.sender_info.warns <= WARNING_COUNTS:
+            Logger.info(f"Warn {identify_str} by ToS: abuse ({msg.sender_info.warns}/{WARNING_COUNTS})")
+        elif msg.sender_info.warns > WARNING_COUNTS:
+            Logger.info(f"Ban {identify_str} by ToS: abuse")
+        else:
+            Logger.info(f"Warn {identify_str} by ToS: abuse")
+
+        # Send warns
+        if msg.sender_info.warns < WARNING_COUNTS or msg.sender_info.trusted:
             await tos_report(msg.target.sender_id, msg.target.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))
             if not msg.sender_info.trusted:

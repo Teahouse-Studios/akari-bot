@@ -6,7 +6,6 @@ import filetype
 
 from core.builtins import Bot, I18NContext, Image, Voice
 from core.component import module
-from core.constants.info import Info
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import download
@@ -100,13 +99,13 @@ async def _(msg: Bot.MessageSession):
                     get_page = None
                     if isint(get_id):
                         get_page = await wiki_.parse_page_info(pageid=int(get_id))
-                        if not q[qq].in_allowlist and Info.use_url_manager:
+                        if not q[qq].in_allowlist and Bot.Info.use_url_manager:
                             for result in await check(get_page.title):
                                 if not result["status"]:
                                     return
                     elif get_title != "":
                         title = urllib.parse.unquote(get_title)
-                        if not q[qq].in_allowlist and Info.use_url_manager:
+                        if not q[qq].in_allowlist and Bot.Info.use_url_manager:
                             for result in await check(title):
                                 if not result["status"]:
                                     return
@@ -172,7 +171,7 @@ async def _(msg: Bot.MessageSession):
                             if (
                                 get_page.status
                                 and get_page.title
-                                and (wiki_.wiki_info.in_allowlist or not Info.use_url_manager)
+                                and (wiki_.wiki_info.in_allowlist or not Bot.Info.use_url_manager)
                             ):
                                 if (
                                     wiki_.wiki_info.realurl
@@ -194,7 +193,7 @@ async def _(msg: Bot.MessageSession):
                                     )
                                     get_infobox = await generate_screenshot_v2(
                                         qq,
-                                        allow_special_page=(q[qq].in_allowlist or not Info.use_url_manager),
+                                        allow_special_page=(q[qq].in_allowlist or not Bot.Info.use_url_manager),
                                         content_mode=content_mode,
                                     )
                                     if get_infobox:
@@ -214,13 +213,13 @@ async def _(msg: Bot.MessageSession):
                             if (
                                 (
                                     get_page.invalid_section
-                                    and (wiki_.wiki_info.in_allowlist or not Info.use_url_manager)
+                                    and (wiki_.wiki_info.in_allowlist or not Bot.Info.use_url_manager)
                                 )
                                 or (
                                     get_page.is_talk_page
                                     and not get_page.selected_section
                                 )
-                                and Info.web_render_status
+                                and Bot.Info.web_render_status
                             ):
                                 i_msg_lst = []
                                 if get_page.sections:
@@ -233,7 +232,7 @@ async def _(msg: Bot.MessageSession):
                                             "wiki.message.invalid_section.prompt"
                                             if (
                                                 get_page.invalid_section
-                                                and (wiki_.wiki_info.in_allowlist or not Info.use_url_manager)
+                                                and (wiki_.wiki_info.in_allowlist or not Bot.Info.use_url_manager)
                                             )
                                             else "wiki.message.talk_page.prompt"
                                         )
@@ -340,7 +339,7 @@ async def _(msg: Bot.MessageSession):
                                 section_.append(qs)
                         if section_:
                             s = urllib.parse.unquote("".join(section_)[1:])
-                            if q[qq].realurl and (q[qq].in_allowlist or not Info.use_url_manager):
+                            if q[qq].realurl and (q[qq].in_allowlist or not Bot.Info.use_url_manager):
                                 if q[qq].realurl in generate_screenshot_v2_blocklist:
                                     get_section = await generate_screenshot_v1(
                                         q[qq].realurl, qq, headers, section=s

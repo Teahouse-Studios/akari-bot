@@ -1,13 +1,12 @@
 <div align="center">
-
-![AkariBot](https://socialify.git.ci/Teahouse-Studios/akari-bot/image?custom_description=A+multifunctional%2C+multilingual%2C+multiplatform+asynchronous+chatbot&description=1&font=Jost&forks=1&issues=1&logo=https%3A%2F%2Fp.sda1.dev%2F23%2F71aacf97af8f66276fcee14c065d20d8%2FImage_2392116191262997.jpg&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
+<img width="512" src="./assets/character_marked.png" alt="logo">
 
 # 小可 · AkariBot
 
 _多功能、多语言、多平台支持的异步聊天机器人_
 
 [![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)<!--![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/akari-bot?include_prereleases)-->
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/akari-bot)](https://github.com/Teahouse-Studios/akari-bot/pulls)
 [![Crowdin](https://badges.crowdin.net/akari-bot/localized.svg)](https://crowdin.com/project/akari-bot)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/akari-bot?style=social)
 <br>
@@ -21,13 +20,13 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 | 核心          | MediaWiki    | Minecraft      | 音乐游戏        | API 查询工具  | 实用工具         | 娱乐       | RSS               |
 | :-----------: | :----------: | :------------: | :------------: | :-----------: |  :------------: | :--------: | :---------------: |
-| 模块化功能管理  | Wiki 页面查询 | 漏洞追踪器     | ~~Arcaea~~     | Bilibili      | IP 地址查询     | Wordle     | MC 版本更新推送     |
+| 模块化功能管理  | Wiki 页面查询 | ~~漏洞追踪器~~     | ~~Arcaea~~     | Bilibili      | IP 地址查询     | Wordle     | ~~MC 版本更新推送~~     |
 | 用户权限管理    | Wiki 页面搜索 | 服务器 MOTD    | Cytoid         | 网易云音乐    | 网站 WHOIS 查询 | 24 点       | MC 新闻推送        |
 | 自定义命令别名  | Wiki 用户查询 | 玩家信息查询   | Maimai          | GitHub       | 汇率信息查询    | 化学式小游戏 | MCWiki 每周页面推送 |
 | 自定义命令前缀  | 滥用日志查询  | 版本更新查询   | Phigros         | X（Twitter）  |   色彩查看器    | 抛硬币      | 茶馆周报推送        |
 | 多语言支持      | 最近更改查询 | MCWiki 每周页面 | Chunithm（WIP） |   nbnhhsh    |   随机生成器    | 掷骰工具    |                    |
-| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |   大语言模型   | Emojimix   |                    |
-|   WebUI（WIP） |             |                |                |               |                | 一言        |                    |
+| 对话内行为设置  | 最新用户查询 |                | Osu!（WIP）     | WolframAlpha  |   AI 大语言模型   | Emojimix   |                    |
+|   WebUI |             |                |                |               |                | 一言        |                    |
 
 ## 运行
 
@@ -75,7 +74,7 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 
 ### 自搭建
 
-你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)来尝试搭建。
+你可以参考[此处](https://bot.teahouse.team/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA)（[镜像](https://github.com/Teahouse-Studios/akari-bot/wiki/%E8%87%AA%E6%90%AD%E5%BB%BA%E6%8C%87%E5%8D%97)）来尝试搭建。
 
 若遇到问题，可以通过 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 或其他方式咨询开发者。
 
@@ -90,6 +89,9 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 ## 许可
 
 小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
+
+## Star 历史
+[![Star Chart](https://starchart.cc/Teahouse-Studios/akari-bot.svg?variant=adaptive)](https://starchart.cc/Teahouse-Studios/akari-bot)
 
 ## 赞助者
 <p align="center">

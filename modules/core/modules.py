@@ -4,6 +4,7 @@ from core.builtins import Bot, I18NContext, Plain
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
+from core.database import reload_db
 from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -193,17 +194,21 @@ async def config_modules(msg: Bot.MessageSession):
             if base_module and reload_count >= 1:
                 return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
-                return Plain(f"{{I18N:core.message.module.reload.success,module={module}}}"
-                             + ("\n" if len(extra_modules) != 0 else "")
-                             + "\n".join(extra_modules)
-                             + "\n"
-                             + f"{{I18N:core.message.module.reload.with,reload_count={reload_count - 1}}}")
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.with", reload_count=reload_count - 1))
+                )
             if reload_count == 1:
-                return Plain(f"{{I18N:core.message.module.reload.success,module={module}}}"
-                             + ("\n" if len(extra_modules) != 0 else "")
-                             + "\n".join(extra_modules)
-                             + "\n"
-                             + "{I18N:core.message.module.reload.no_more}")
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.no_more"))
+                )
             return I18NContext("core.message.module.reload.failed")
 
         for module_ in wait_config_list:
@@ -235,6 +240,8 @@ async def config_modules(msg: Bot.MessageSession):
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
                 msglist.append(module_reload(module_, extra_reload_modules, base_module))
+
+        await reload_db()
 
         locale_err = load_locale_file()
         if len(locale_err) != 0:

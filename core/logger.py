@@ -11,8 +11,6 @@ from loguru import logger
 from core.config import Config
 from core.constants.path import logs_path
 
-debug = Config("debug", False)
-
 os.makedirs(logs_path, exist_ok=True)
 
 bot_name = re.split(r"[/\\]", sys.path[0])[-1]
@@ -54,21 +52,19 @@ class LoggingLogger:
 
         self.rename(name)
 
-        if debug:
-            self.log.warning("Debug mode is enabled.")
-
     def rename(self, name):
         self.log.remove()
         self.log.add(
             sys.stderr,
             format=basic_logger_format(name),
-            level="TRACE" if debug else "INFO",
+            level="TRACE" if Config("debug", False) else "INFO",
             colorize=True,
         )
 
         self.log.add(
             sink=os.path.join(logs_path, f"{name}_debug_{{time:YYYY-MM-DD}}.log"),
             format=basic_logger_format(name),
+            rotation="00:00",
             retention="1 day",
             level="DEBUG",
             filter=lambda r: r["level"].name == "DEBUG",
@@ -77,6 +73,7 @@ class LoggingLogger:
         self.log.add(
             sink=os.path.join(logs_path, f"{name}_{{time:YYYY-MM-DD}}.log"),
             format=basic_logger_format(name),
+            rotation="00:00",
             retention="10 days",
             level="INFO",
             encoding="utf8",
@@ -90,7 +87,7 @@ class LoggingLogger:
         self.critical = logger.critical
 
     def exception(self, message: Optional[str] = None):
-        """自带traceback的错误日志，用于记录与跟踪异常信息。"""
+        """自带 traceback 的错误日志，用于记录与跟踪异常信息。"""
         if message:
             self.error(f"{message}\n{traceback.format_exc()}")
         else:

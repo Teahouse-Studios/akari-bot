@@ -8,29 +8,30 @@ from fastapi import WebSocket
 
 from core.builtins import (
     Bot,
+    Temp,
     Plain,
     Image,
     I18NContext,
     MessageTaskManager,
-    FinishedSession as FinS,
+    MessageSession as MessageSessionT,
+    FinishedSession as FinishedSessionT,
     FetchTarget as FetchTargetT
 )
-from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import PlainElement, ImageElement
-from core.builtins.temp import Temp
 from core.logger import Logger
 from core.types import Session
 from .info import *
 
 
-class FinishedSession(FinS):
+class FinishedSession(FinishedSessionT):
     async def delete(self):
         try:
-            websocket: WebSocket = Temp.data["web_chat_websocket"]
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
 
             resp = {"action": "delete", "id": self.message_id}
-            await websocket.send_text(json.dumps(resp).decode())
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
         except Exception:
             Logger.exception()
 
@@ -61,8 +62,10 @@ class MessageSession(MessageSessionT):
         enable_split_image=True,
         callback=None,
     ) -> FinishedSession:
-        websocket: WebSocket = Temp.data["web_chat_websocket"]
+        websocket: WebSocket = Temp.data.get("web_chat_websocket")
         message_chain = MessageChain(message_chain)
+        if not message_chain.is_safe and not disable_secret_check:
+            await self.send_direct_message(I18NContext("error.message.chain.unsafe"))
         self.sent.append(message_chain)
         sends = []
         sends_display = []
@@ -79,7 +82,8 @@ class MessageSession(MessageSessionT):
                 Logger.info(f"[Bot] -> [{self.target.target_id}]: Image: {img_b64[:50]}...")
 
         resp = {"action": "send", "message": sends, "id": str(uuid.uuid4())}
-        await websocket.send_text(json.dumps(resp).decode())
+        if websocket:
+            await websocket.send_text(json.dumps(resp).decode())
 
         if callback:
             MessageTaskManager.add_callback(resp["id"], callback)
@@ -103,10 +107,13 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         try:
-            websocket: WebSocket = Temp.data["web_chat_websocket"]
+            websocket: WebSocket = Temp.data.get("web_chat_websocket")
             resp = {"action": "delete", "id": [self.session.message["id"]]}
-            await websocket.send_text(json.dumps(resp).decode())
-            return True
+
+            if websocket:
+                await websocket.send_text(json.dumps(resp).decode())
+                return True
+            return False
         except Exception:
             Logger.exception()
             return False
@@ -153,14 +160,6 @@ class FetchTarget(FetchTargetT):
             session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
             await session.parent.data_init()
             return session
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        fetch = await FetchTarget.fetch_target(f"{target_prefix}|0")
-        if i18n:
-            await fetch.send_direct_message(I18NContext(message, **kwargs))
-        else:
-            await fetch.send_direct_message(message)
 
 
 Bot.MessageSession = MessageSession

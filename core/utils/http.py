@@ -58,7 +58,7 @@ async def get_url(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
-) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
+) -> Any:
     """利用httpx获取指定URL的内容。
 
     :param url: 需要获取的URL。
@@ -138,7 +138,7 @@ async def post_url(
     request_private_ip: bool = False,
     logging_err_resp: bool = True,
     cookies: Optional[Dict[str, Any]] = None,
-) -> Optional[Union[str, dict[str, Any], list[Any], bytes]]:
+) -> Any:
     """利用httpx发送POST请求。
 
     :param url: 需要发送的URL。

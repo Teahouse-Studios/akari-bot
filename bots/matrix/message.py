@@ -1,7 +1,7 @@
 import mimetypes
 import os
 import re
-from typing import List, Union
+from typing import Union
 
 import nio
 
@@ -10,22 +10,18 @@ from core.builtins import (
     Plain,
     Image,
     Voice,
-    MessageSession as MessageSessionT,
     I18NContext,
     MessageTaskManager,
+    MessageSession as MessageSessionT,
     FetchTarget as FetchTargetT,
     FinishedSession as FinishedSessionT,
 )
 from core.builtins.message.chain import MessageChain, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
-from core.config import Config
-from core.database.models import AnalyticsData, TargetInfo
 from core.logger import Logger
 from core.utils.image import image_split
 from .client import bot, homeserver_host
 from .info import *
-
-enable_analytics = Config("enable_analytics", False)
 
 
 class FinishedSession(FinishedSessionT):
@@ -62,7 +58,8 @@ class MessageSession(MessageSessionT):
     ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
-            return await self.send_message((I18NContext("error.message.chain.unsafe", locale=self.locale.locale)))
+            return await self.send_message(I18NContext("error.message.chain.unsafe"))
+
         self.sent.append(message_chain)
         sentMessages: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(self, embed=False):
@@ -400,62 +397,6 @@ class FetchTarget(FetchTargetT):
             await session.parent.data_init()
             await session._resolve_matrix_room_()
             return session
-
-    @staticmethod
-    async def fetch_target_list(target_list) -> List[Bot.FetchedSession]:
-        lst = []
-        for x in target_list:
-            fet = await FetchTarget.fetch_target(x)
-            if fet:
-                lst.append(fet)
-        return lst
-
-    @staticmethod
-    async def post_message(module_name, message, user_list=None, i18n=False, **kwargs):
-        module_name = None if module_name == "*" else module_name
-        if user_list:
-            for x in user_list:
-                try:
-                    msgchain = message
-                    if isinstance(message, str):
-                        if i18n:
-                            msgchain = MessageChain(I18NContext(message, **kwargs))
-                        else:
-                            msgchain = MessageChain(Plain(message))
-                    msgchain = MessageChain(msgchain)
-                    await x.send_direct_message(msgchain)
-                    if enable_analytics and module_name:
-                        await AnalyticsData.create(target_id=x.target.target_id,
-                                                   sender_id=x.target.sender_id,
-                                                   command="",
-                                                   module_name=module_name,
-                                                   module_type="schedule")
-                except Exception:
-                    Logger.exception()
-        else:
-            get_target_id = await TargetInfo.get_target_list_by_module(module_name, client_name)
-            for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.target_id)
-                if fetch:
-                    if x.muted:
-                        continue
-                    try:
-                        msgchain = message
-                        if isinstance(message, str):
-                            if i18n:
-                                msgchain = MessageChain(I18NContext(message, **kwargs))
-                            else:
-                                msgchain = MessageChain(Plain(message))
-                        msgchain = MessageChain(msgchain)
-                        await fetch.send_direct_message(msgchain)
-                        if enable_analytics and module_name:
-                            await AnalyticsData.create(target_id=fetch.target.target_id,
-                                                       sender_id=fetch.target.sender_id,
-                                                       command="",
-                                                       module_name=module_name,
-                                                       module_type="schedule")
-                    except Exception:
-                        Logger.exception()
 
 
 Bot.MessageSession = MessageSession
