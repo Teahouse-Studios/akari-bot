@@ -187,6 +187,7 @@ def run_bot():
                     disabled_bots.append(t[4:])
             else:
                 Logger.warning(f"Bot {t} cannot found config \"enable\".")
+                disabled_bots.append(t[4:])
 
     for bl in lst:
         if bl in disabled_bots:
