@@ -409,7 +409,13 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.update.binary_mode"))
 
 
-rst = module("restart", required_superuser=True, base=True, doc=True, exclude_from="Web", load=Bot.Info.subprocess)
+rst = module(
+    "restart",
+    required_superuser=True,
+    base=True,
+    doc=True,
+    exclude_from=["Console", "Web"],
+    load=Bot.Info.subprocess)
 
 
 def write_restart_cache(msg: Bot.MessageSession):
@@ -449,7 +455,7 @@ upds = module(
     alias="u&r",
     base=True,
     doc=True,
-    exclude_from="Web",
+    exclude_from=["Console", "Web"],
     load=Bot.Info.subprocess)
 
 
