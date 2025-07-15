@@ -115,9 +115,9 @@ class FormattedTimeElement(MessageElement):
     timezone: bool = True
 
     def to_str(self, msg: Optional[MessageSession] = None):
-        dt = datetime.fromtimestamp(self.timestamp, UTC) + msg.timezone_offset
         ftime_template = []
         if msg:
+            dt = datetime.fromtimestamp(self.timestamp, UTC) + msg.timezone_offset
             if self.date:
                 if self.iso:
                     ftime_template.append(msg.locale.t("time.date.iso.format"))
