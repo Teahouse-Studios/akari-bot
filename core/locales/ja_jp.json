@@ -170,7 +170,7 @@
     "petal.message.gained.success": "${amount} 枚のペタルを入手しました。",
     "petal.message.lost.limit": "（今日は失われたペタルの一日あたりの制限に達しました。）",
     "petal.message.lost.success": "${amount} 枚のペタルを失いました。",
-    "time.date.format": "%Y 年 %m 月 %d 日",
+    "time.date.format": "%-K %-y 年 %m 月 %d 日",
     "time.date.iso.format": "%Y-%m-%d",
     "time.time.format": "%H:%M:%S",
     "time.time.nosec.format": "%H:%M",

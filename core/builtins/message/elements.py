@@ -15,6 +15,7 @@ import orjson as json
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
+from japanera import EraDate
 from tenacity import retry, stop_after_attempt
 
 from core.builtins import Info
@@ -114,11 +115,15 @@ class FormattedTimeElement(MessageElement):
     timezone: bool = True
 
     def to_str(self, msg: Optional[MessageSession] = None):
+        dt = datetime.fromtimestamp(self.timestamp, UTC) + msg.timezone_offset
         ftime_template = []
         if msg:
             if self.date:
                 if self.iso:
                     ftime_template.append(msg.locale.t("time.date.iso.format"))
+                elif msg.locale.locale == "ja_jp":
+                    era_date = EraDate.from_date(dt).strftime(msg.locale.t("time.date.format"))
+                    ftime_template.append(era_date)
                 else:
                     ftime_template.append(msg.locale.t("time.date.format"))
             if self.time:
@@ -132,10 +137,7 @@ class FormattedTimeElement(MessageElement):
                 else:
                     ftime_template.append(f"(UTC{msg._tz_offset})")
 
-            return (
-                datetime.fromtimestamp(self.timestamp, tz=UTC)
-                + msg.timezone_offset
-            ).strftime(" ".join(ftime_template))
+            return dt.strftime(" ".join(ftime_template))
 
         if self.date:
             if self.iso:

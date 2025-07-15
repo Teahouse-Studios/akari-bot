@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, UTC as datetimeUTC, timedelta
 from decimal import Decimal, ROUND_HALF_UP
+from japanera import EraDate
 from re import Match
 from typing import Any, Coroutine, Dict, List, Optional, Tuple, Union
 
@@ -609,10 +610,14 @@ class MessageSession:
         :param timezone: 是否显示时区。（默认为True）
         :return: 格式化后的时间格式。
         """
+        dt = datetime.fromtimestamp(timestamp, datetimeUTC) + self.timezone_offset
         ftime_template = []
         if date:
             if iso:
                 ftime_template.append(self.locale.t("time.date.iso.format"))
+            elif self.locale.locale == "ja_jp":
+                era_date = EraDate.from_date(dt).strftime(self.locale.t("time.date.format"))
+                ftime_template.append(era_date)
             else:
                 ftime_template.append(self.locale.t("time.date.format"))
         if time:
@@ -625,9 +630,7 @@ class MessageSession:
                 ftime_template.append("(UTC)")
             else:
                 ftime_template.append(f"(UTC{self._tz_offset})")
-        return (
-            datetime.fromtimestamp(timestamp, datetimeUTC) + self.timezone_offset
-        ).strftime(" ".join(ftime_template))
+        return dt.strftime(" ".join(ftime_template))
 
     def format_num(
         self,
