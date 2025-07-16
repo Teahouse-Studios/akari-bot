@@ -130,7 +130,7 @@
     "core.message.module.enable.not_found": "失敗：モジュール「${module}」が存在しません。",
     "core.message.module.enable.qqchannel_global.success": "成功：为所有文字频道开启“${module}”模块。",
     "core.message.module.enable.success": "成功：モジュール「${module}」を有効にしました。",
-    "core.message.module.enable.unsupported_rss": "失敗：このクライアントは RSS モジュールの登録をサポートしていません。",
+    "core.message.module.enable.unsupported_rss": "失敗：このクライアントは RSS モジュールをサポートしていません。",
     "core.message.module.list.header": "モジュール リスト",
     "core.message.module.load.failed": "モジュールのロードに失敗しました。",
     "core.message.module.load.not_found": "失敗：モジュールは既にロードされているか、存在しません。",
