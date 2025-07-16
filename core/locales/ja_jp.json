@@ -179,7 +179,7 @@
     "tos.message.action.warning": "警告",
     "tos.message.appeal": "異議がある場合は、${issue_url} で問題を報告してください。",
     "tos.message.banned": "警告の上限数を超えたため、あなたのアカウントをブロックしました。このメッセージ以降、あなたのリクエストに対する返答はありません。",
-    "tos.message.in_group_blocklist": "このグループはブラックリストに入っているので、自動的に退会しました。",
+    "tos.message.in_group_blocklist": "このグループはブラックリストに入っているので、自動的に退出しました。",
     "tos.message.reason": "具体的な理由：${reason}",
     "tos.message.reason.abuse": "コマンドは一定期間内に何度も使用されました。",
     "tos.message.reason.cooldown": "同じコマンドは一定期間内に何度も使用されました。",
