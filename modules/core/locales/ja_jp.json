@@ -14,7 +14,7 @@
     "core.help.alias.reset": "カスタム コマンド エイリアスをリセットします。",
     "core.help.help": "利用可能なコマンド一覧を表示します。",
     "core.help.help.detail": "モジュールの詳細情報を表示します。",
-    "core.help.leave": "ボットをグループから退会させます。",
+    "core.help.leave": "ボットをグループから退出させます。",
     "core.help.locale.desc": "ボットの言語をコントロールします。",
     "core.help.locale.set": "ボットの言語を設定します。",
     "core.help.module.disable": "モジュールを無効にします。",
