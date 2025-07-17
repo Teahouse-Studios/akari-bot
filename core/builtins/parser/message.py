@@ -28,7 +28,6 @@ from core.utils.message import remove_duplicate_space
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
-
 ignored_sender = Config("ignored_sender", ignored_sender_default)
 
 enable_tos = Config("enable_tos", True)
@@ -81,8 +80,10 @@ async def parser(msg: "Bot.MessageSession"):
         msg.trigger_msg = remove_duplicate_space(msg.as_display())  # 将消息转换为一般显示形式
         if len(msg.trigger_msg) == 0:
             return
-        if (msg.session_info.sender_info.blocked and not msg.session_info.sender_info.trusted and not msg.session_info.sender_info.superuser) or (
-                msg.session_info.sender_id in msg.session_info.target_info.target_data.get("ban", []) and not msg.session_info.superuser):
+        if (
+            msg.session_info.sender_info.blocked and not msg.session_info.sender_info.trusted and not msg.session_info.sender_info.superuser) or (
+            msg.session_info.sender_id in msg.session_info.target_info.target_data.get("ban",
+                                                                                       []) and not msg.session_info.superuser):
             return
 
         disable_prefix, in_prefix_list, display_prefix = _get_prefixes(msg)
@@ -266,11 +267,13 @@ async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word
                 return
         elif not module.base:
             if command_first_word not in msg.session_info.enabled_modules and msg.session_info.require_enable_modules:  # 若未开启
-                await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word, prefix=msg.session_info.prefixes[0]))
+                await msg.send_message(I18NContext("parser.module.disabled.prompt", module=command_first_word,
+                                                   prefix=msg.session_info.prefixes[0]))
                 if await msg.check_permission():
                     if await msg.wait_confirm(I18NContext("parser.module.disabled.to_enable")):
                         await msg.session_info.target_info.config_module(command_first_word)
-                        await msg.send_message(I18NContext("core.message.module.enable.success", module=command_first_word))
+                        await msg.send_message(
+                            I18NContext("core.message.module.enable.success", module=command_first_word))
                     else:
                         return
                 else:
@@ -352,8 +355,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     msg.session_info.target_from in regex_module.exclude_from or \
                     msg.session_info.client_name in regex_module.exclude_from or \
                     ("*" not in regex_module.available_for and
-                        msg.session_info.target_from not in regex_module.available_for and
-                        msg.session_info.client_name not in regex_module.available_for):
+                     msg.session_info.target_from not in regex_module.available_for and
+                     msg.session_info.client_name not in regex_module.available_for):
                     continue
 
                 for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
@@ -378,8 +381,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             msg.session_info.target_from in regex_module.exclude_from or
                             msg.session_info.client_name in regex_module.exclude_from or
                             ("*" not in regex_module.available_for and
-                                msg.session_info.target_from not in regex_module.available_for and
-                                msg.session_info.client_name not in regex_module.available_for)):  # 如果匹配成功
+                             msg.session_info.target_from not in regex_module.available_for and
+                             msg.session_info.client_name not in regex_module.available_for)):  # 如果匹配成功
 
                             if rfunc.logging:
                                 Logger.info(
@@ -389,7 +392,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                                 match_hash_cache[msg.session_info.target_id] = {}
                             if rfunc.logging and matched_hash in match_hash_cache[msg.session_info.target_id] and \
                                     datetime.now().timestamp() - match_hash_cache[msg.session_info.target_id][
-                                    matched_hash] < int((msg.session_info.target_info.target_data.get("cooldown_time", 0)) or 3):
+                                    matched_hash] < int(
+                                    (msg.session_info.target_info.target_data.get("cooldown_time", 0)) or 3):
                                 Logger.warning("Match loop detected, skipping...")
                                 continue
                             match_hash_cache[msg.session_info.target_id][matched_hash] = datetime.now().timestamp()
@@ -489,7 +493,8 @@ async def _check_temp_ban(msg: "Bot.MessageSession"):
                 await msg.finish(I18NContext("tos.message.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             elif is_temp_banned["count"] <= 5:
                 is_temp_banned["count"] += 1
-                await msg.finish(I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
+                await msg.finish(
+                    I18NContext("tos.message.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
                 raise AbuseWarning("{I18N:tos.message.reason.ignore}")
 
@@ -542,8 +547,8 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                 msg.session_info.target_from in submodule.exclude_from or \
                 msg.session_info.client_name in submodule.exclude_from or \
                 ("*" not in submodule.available_for and
-                    msg.session_info.target_from not in submodule.available_for and
-                    msg.session_info.client_name not in submodule.available_for):
+                 msg.session_info.target_from not in submodule.available_for and
+                 msg.session_info.client_name not in submodule.available_for):
                 raise InvalidCommandFormatError
 
             kwargs = {}
@@ -592,8 +597,9 @@ async def _execute_submodule(msg: "Bot.MessageSession", module, command_first_wo
                             else:
                                 kwargs[param_name_] = None
                 if no_message_session:
-                    Logger.warning(f"{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
-                                   "Remember: MessageSession IS NOT Bot.MessageSession")
+                    Logger.warning(
+                        f"{submodule.function.__name__} has no Bot.MessageSession parameter, did you forgot to add it?\n"
+                        "Remember: MessageSession IS NOT Bot.MessageSession")
             else:
                 kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
@@ -786,6 +792,5 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
                     return msg, command_first_word, command_split
     return None, None, None
 """
-
 
 __all__ = ["parser", "check_temp_ban", "remove_temp_ban"]

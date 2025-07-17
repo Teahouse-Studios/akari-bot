@@ -81,7 +81,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError        # 请继承 class 后实现方法
+        raise NotImplementedError  # 请继承 class 后实现方法
 
     @classmethod
     @abstractmethod
@@ -99,7 +99,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError        # 请继承 class 后实现方法
+        raise NotImplementedError  # 请继承 class 后实现方法
 
     @classmethod
     @abstractmethod
@@ -108,6 +108,7 @@ class ContextManager(ABC):
         开始输入状态
         :param session_info: 会话信息
         """
+
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -116,6 +117,7 @@ class ContextManager(ABC):
             flag = asyncio.Event()
             cls.typing_flags[session_info.session_id] = flag
             await flag.wait()
+
         asyncio.create_task(_typing())
 
     @classmethod

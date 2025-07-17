@@ -1111,7 +1111,7 @@ class WikiLib:
             page_info.id = -1
             if page_info.link:
                 page_info.desc = str(Url(page_info.link, use_mm=True,
-                                     md_format=True if session and session.session_info.use_url_md_format else False))
+                                         md_format=True if session and session.session_info.use_url_md_format else False))
             page_info.link = None
         return page_info
 

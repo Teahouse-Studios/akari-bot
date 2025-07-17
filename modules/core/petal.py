@@ -74,10 +74,12 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user)
             await sender_info.modify_petal(petal)
-            await msg.finish(I18NContext("core.message.petal.modify", sender=user, add_petal=petal, petal=sender_info.petal))
+            await msg.finish(
+                I18NContext("core.message.petal.modify", sender=user, add_petal=petal, petal=sender_info.petal))
         else:
             await msg.session_info.sender_info.modify_petal(petal)
-            await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal, petal=msg.session_info.petal + int(petal)))
+            await msg.finish(I18NContext("core.message.petal.modify.self", add_petal=petal,
+                                         petal=msg.session_info.petal + int(petal)))
     elif msg.parsed_msg.get("clear", False):
         if user:
             if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):

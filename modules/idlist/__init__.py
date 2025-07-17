@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, query: str):
             msgchain.append(f"{x["enumName"]}：{x["key"]} -> {v}")
         if resp["data"]["count"] > SEARCH_LIMIT:
             msgchain.append(Plain(str(I18NContext("message.collapse", amount=SEARCH_LIMIT)) +
-                            str(I18NContext("idlist.message.collapse"))))
+                                  str(I18NContext("idlist.message.collapse"))))
             msgchain.append(Url(f"https://ca.projectxero.top/idlist/{resp["data"]["hash"]}"))
         await msg.finish(msgchain)
     else:

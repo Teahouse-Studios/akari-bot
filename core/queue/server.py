@@ -17,53 +17,62 @@ if TYPE_CHECKING:
 class JobQueueServer(JobQueueBase):
 
     @classmethod
-    async def client_send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True, wait=True,
+    async def client_send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
+                                  quote: bool = True, wait=True,
                                   enable_parse_message: bool = True,
                                   enable_split_image: bool = True):
-        value = await cls.add_job(session_info.client_name, "send_message", {"session_info": converter.unstructure(session_info),
-                                                                             "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
-                                                                             'quote': quote,
-                                                                             'enable_parse_message': enable_parse_message,
-                                                                             'enable_split_image': enable_split_image
-                                                                             }, wait=wait)
+        value = await cls.add_job(session_info.client_name, "send_message",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
+                                   'quote': quote,
+                                   'enable_parse_message': enable_parse_message,
+                                   'enable_split_image': enable_split_image
+                                   }, wait=wait)
         return value
 
     @classmethod
     async def client_delete_message(cls, session_info: SessionInfo, message_id: Union[str, list]):
         if isinstance(message_id, str):
             message_id = [message_id]
-        value = await cls.add_job(session_info.client_name, "delete_message", {"session_info": converter.unstructure(session_info),
-                                                                               "message_id": message_id}, wait=False)
+        value = await cls.add_job(session_info.client_name, "delete_message",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "message_id": message_id}, wait=False)
         return value
 
     @classmethod
     async def client_start_typing_signal(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "start_typing", {"session_info": converter.unstructure(session_info)})
+        value = await cls.add_job(session_info.client_name, "start_typing",
+                                  {"session_info": converter.unstructure(session_info)})
         return value
 
     @classmethod
     async def client_end_typing_signal(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "end_typing", {"session_info": converter.unstructure(session_info)})
+        value = await cls.add_job(session_info.client_name, "end_typing",
+                                  {"session_info": converter.unstructure(session_info)})
         return value
 
     @classmethod
     async def client_error_signal(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "error_signal", {"session_info": converter.unstructure(session_info)}, wait=False)
+        value = await cls.add_job(session_info.client_name, "error_signal",
+                                  {"session_info": converter.unstructure(session_info)}, wait=False)
         return value
 
     @classmethod
     async def client_check_native_permission(cls, session_info: SessionInfo):
-        v = await cls.add_job(session_info.client_name, "check_session_native_permission", {"session_info": converter.unstructure(session_info)})
+        v = await cls.add_job(session_info.client_name, "check_session_native_permission",
+                              {"session_info": converter.unstructure(session_info)})
         return v['value']
 
     @classmethod
     async def client_hold_context(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "hold_context", {"session_info": converter.unstructure(session_info)})
+        value = await cls.add_job(session_info.client_name, "hold_context",
+                                  {"session_info": converter.unstructure(session_info)})
         return value
 
     @classmethod
     async def client_release_context(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "release_context", {"session_info": converter.unstructure(session_info)})
+        value = await cls.add_job(session_info.client_name, "release_context",
+                                  {"session_info": converter.unstructure(session_info)})
         return value
 
 
@@ -94,7 +103,7 @@ async def _(tsk: JobQueuesTable, args: dict):
         f"Trigger hook {
             args['module_or_hook_name']} with args {
             args['args']}, result: {_val}, type: {
-                type(_val)}")
+            type(_val)}")
     await JobQueueServer.return_val(tsk, {'result': _val})
 
 
@@ -107,5 +116,6 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
     await bot.send_direct_message(session_info, message, disable_secret_check=args["disable_secret_check"],
                                   enable_parse_message=args["enable_parse_message"])
     return {"success": True}
+
 
 add_export(JobQueueServer)

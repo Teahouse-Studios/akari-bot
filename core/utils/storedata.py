@@ -29,4 +29,5 @@ async def update_stored_list(bot: Union["Bot", str], name: str, value: list):
         defaults={"value": value}, stored_key=f"{bot}|{name}"
     )
 
+
 __all__ = ["get_stored_list", "update_stored_list"]

@@ -12,7 +12,8 @@ from core.logger import Logger
 slash_ctx_id = Bot.register_context_manager(DiscordSlashContextManager)
 
 
-async def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext], command: str) -> SessionInfo:
+async def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext],
+                         command: str) -> SessionInfo:
     target_from = target_channel_prefix
     if isinstance(ctx, discord.ApplicationContext):
         if isinstance(ctx.channel, discord.DMChannel):
@@ -33,7 +34,8 @@ async def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.Autocomp
         else ctx.interaction.user.name
     ),
         target_from=target_from, sender_from=sender_prefix, client_name=client_name,
-        message_id=str(ctx.command.id), messages=msg_chain, ctx_slot=slash_ctx_id, prefixes=["~", "/"],
+        message_id=str(ctx.command.id), messages=msg_chain, ctx_slot=slash_ctx_id,
+        prefixes=["~", "/"],
         require_enable_modules=False)
 
     return session

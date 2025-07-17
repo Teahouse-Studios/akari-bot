@@ -29,7 +29,6 @@ Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(AIOCQContextManager)
 Bot.register_context_manager(AIOCQFetchedContextManager, fetch_session=True)
 
-
 dirty_word_check = Config("enable_dirty_check", False)
 use_url_manager = Config("enable_urlmanager", False)
 enable_listening_self_message = Config("qq_enable_listening_self_message", False, table_name="bot_aiocqhttp")

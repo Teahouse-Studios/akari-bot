@@ -151,7 +151,8 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
             if not ver:
                 reply2 = await msg.wait_reply(f"{msg.session_info.locale.t("mod_dl.message.version")}\n"
                                               + "\n".join(mod_info[3])
-                                              + f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}", delete=True)
+                                              + f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}",
+                                              delete=True)
                 replied2 = reply2.as_display(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
@@ -176,7 +177,8 @@ async def _(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 if not ver:
                     reply2 = await msg.wait_reply(f"{msg.session_info.locale.t("mod_dl.message.version")}\n" +
                                                   "\n".join(ver_list) +
-                                                  f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}", delete=True)
+                                                  f"\n{msg.session_info.locale.t("mod_dl.message.version.prompt")}",
+                                                  delete=True)
                     ver = reply2.as_display(text_only=True)
                 elif ver not in ver_list:
                     await msg.finish(I18NContext("mod_dl.message.version.not_found"))

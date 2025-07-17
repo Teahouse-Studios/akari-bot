@@ -101,7 +101,8 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.admin.list.none"))
     user = msg.parsed_msg["<user>"]
     if not user.startswith(f"{msg.session_info.sender_from}|"):
-        await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from, prefix=msg.session_info.prefixes[0]))
+        await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from,
+                                     prefix=msg.session_info.prefixes[0]))
     if "add" in msg.parsed_msg:
         if await msg.check_permission():
             await msg.finish(I18NContext("core.message.admin.add.already"))
@@ -124,12 +125,14 @@ async def _(msg: Bot.MessageSession):
     admin_ban_list = msg.session_info.target_info.target_data.get("ban", [])
     if "list" in msg.parsed_msg:
         if msg.session_info.banned_users:
-            await msg.finish([I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.session_info.custom_admins))])
+            await msg.finish(
+                [I18NContext("core.message.admin.ban.list"), Plain("\n".join(msg.session_info.custom_admins))])
         else:
             await msg.finish(I18NContext("core.message.admin.ban.list.none"))
     user = msg.parsed_msg["<user>"]
     if not user.startswith(f"{msg.session_info.sender_from}|"):
-        await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from, prefix=msg.session_info.prefixes[0]))
+        await msg.finish(I18NContext("core.message.admin.invalid", sender=msg.session_info.sender_from,
+                                     prefix=msg.session_info.prefixes[0]))
     if user == msg.session_info.sender_id:
         await msg.finish(I18NContext("core.message.admin.ban.self"))
     if "ban" in msg.parsed_msg:
@@ -195,7 +198,9 @@ async def _(msg: Bot.MessageSession):
         perm.append(I18NContext("core.message.whoami.botadmin"))
     if msg.check_super_user():
         perm.append(I18NContext("core.message.whoami.superuser"))
-    await msg.finish([I18NContext("core.message.whoami", sender=msg.session_info.sender_id, target=msg.session_info.target_id, disable_joke=True)] + perm)
+    await msg.finish(
+        [I18NContext("core.message.whoami", sender=msg.session_info.sender_id, target=msg.session_info.target_id,
+                     disable_joke=True)] + perm)
 
 
 setup = module(

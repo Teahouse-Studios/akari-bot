@@ -133,4 +133,5 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int:
 
         return 0
 
+
 __all__ = ["gained_petal", "lost_petal", "cost_petal"]

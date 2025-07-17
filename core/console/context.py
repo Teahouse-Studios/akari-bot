@@ -60,6 +60,7 @@ class ConsoleContextManager(ContextManager):
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {image_path}")
                 msg_ids.append(MsgIdGenerator.next())
             return msg_ids
+
         msg_ids = []
         if isinstance(message, MessageNodes):
             for message in message.values:

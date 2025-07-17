@@ -36,7 +36,6 @@ async def _(msg: Bot.MessageSession):
 
 
 async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
-
     try:
         res = await get_url(f"https://react-tweet.vercel.app/api/tweet/{tweet_id}", 200)
     except ValueError as e:
@@ -46,7 +45,8 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
             raise e
 
     res_json = json.loads(res)
-    if await check_bool("\n".join([res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]])):
+    if await check_bool("\n".join(
+            [res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]])):
         await msg.finish(rickroll())
 
     css = """

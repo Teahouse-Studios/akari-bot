@@ -234,7 +234,6 @@ def parse_argv(argv: List[str], templates: List["Template"]) -> MatchedResult:
                             index_flag = argv_copy.index(a.flag)
                             len_t_args = len(a.args[0].args)
                             if len(argv_copy[index_flag:]) >= len_t_args:
-
                                 sub_argv = argv_copy[
                                     index_flag + 1: index_flag + len_t_args + 1
                                 ]

@@ -79,7 +79,6 @@ async def mcbv(msg: Bot.MessageSession):
 {ms_store_version if ms_store_version else msg.session_info.locale.t("mcv.message.mcbv.get_failed")}"""
     )
 
-
 # async def mcev(msg: Bot.MessageSession):
 #     try:
 #         data = await get_url(

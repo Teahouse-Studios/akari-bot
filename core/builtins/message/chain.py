@@ -554,7 +554,6 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
 add_export(MessageChain)
 add_export(I18NMessageChain)
 
-
 converter.register_unstructure_hook(Union[MessageChain, I18NMessageChain],
                                     lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
 
@@ -565,7 +564,6 @@ converter.register_structure_hook(
     Union[MessageChain, I18NMessageChain],
     lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain)
 )
-
 
 converter.register_structure_hook(
     Union[MessageChain, MessageNodes],

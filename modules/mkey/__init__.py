@@ -17,7 +17,6 @@ async def _(
     inquiry_num: str,
     device_id: str = None,
 ):
-
     device_codes = {
         "3ds": "CTR",
         "dsi": "TWL",

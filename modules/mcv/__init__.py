@@ -22,7 +22,6 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     await msg.finish(await mcbv(msg))
 
-
 # @m.command("mcev {{I18N:mcv.help.mcev}}")
 # async def mcev_loader(msg: Bot.MessageSession):
 #     await msg.finish(await mcev(msg))

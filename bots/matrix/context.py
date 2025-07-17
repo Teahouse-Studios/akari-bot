@@ -89,7 +89,7 @@ class MatrixContextManager(ContextManager):
                         # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                         reply_to_type = event.source["content"]["msgtype"]
                         content["body"] = (f">{" *" if reply_to_type == "m.emote" else ""} <{event.sender}> {
-                                           event.source["content"]["body"]}\n\n{x.text}")
+                            event.source["content"]["body"]}\n\n{x.text}")
                         content["format"] = "org.matrix.custom.html"
                         html_text = x.text
                         html_text = html_text.replace("<", "&lt;").replace(">", "&gt;")
@@ -141,6 +141,7 @@ class MatrixContextManager(ContextManager):
                     msg_ids.append(resp.event_id)
                 # reply_to = None
                 # reply_to_user = None
+
             if isinstance(x, PlainElement):
                 x.text = match_atcode(x.text, client_name, "{uid}")
                 content = {"msgtype": "m.notice", "body": x.text}

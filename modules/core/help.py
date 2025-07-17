@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession, module: str):
 
             devs_msg = ""
             if (module_.required_superuser and not is_superuser) or \
-               (module_.required_base_superuser and not is_base_superuser):
+                    (module_.required_base_superuser and not is_base_superuser):
                 pass
             elif module_.rss and not msg.session_info.support_rss:
                 pass
@@ -113,11 +113,12 @@ async def _(msg: Bot.MessageSession, module: str):
                                       False) and msg.session_info.support_image and Bot.Info.web_render_status:
 
                 if (module_.required_superuser and not is_superuser) or \
-                   (module_.required_base_superuser and not is_base_superuser):
+                        (module_.required_base_superuser and not is_base_superuser):
                     pass
                 elif module_.rss and not msg.session_info.support_rss:
                     pass
-                elif any((module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
+                elif any(
+                        (module_.alias, module_.desc, module_.developers, help_.return_formatted_help_doc(), regex_list)):
                     try:
                         html_content = await env.get_template("help_doc.html").render_async(
                             locale=msg.session_info.locale,
@@ -135,7 +136,8 @@ async def _(msg: Bot.MessageSession, module: str):
                         # with open(fname, "w", encoding="utf-8") as fi:
                         #     fi.write(html_content)
 
-                        images = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
+                        images = await web_render.element_screenshot(
+                            ElementScreenshotOptions(content=html_content, element=[".botbox"]))
                         await msg.finish(cb64imglst(images, bot_img=True) + [Plain(wiki_msg.strip())])
                     except Exception:
                         Logger.exception()

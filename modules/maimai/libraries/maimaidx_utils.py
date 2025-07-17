@@ -130,18 +130,18 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
             idx:<2} {
             chart["song_id"]:>5} {
             level:<3} {
-                chart["achievements"]:>8.4f}% {
-                    rank:<4} {
-                        combo_mapping.get(
-                            chart["fc"],
-                            ""):<3} {
-                                sync_mapping.get(
-                                    chart["fs"],
-                                    ""):<4} {
-                                        chart["ds"]:>4}->{
-                                            chart["ra"]:<3} {
-                                                dxstar:<5} {
-                                                    title:<20}\n"
+            chart["achievements"]:>8.4f}% {
+            rank:<4} {
+            combo_mapping.get(
+                chart["fc"],
+                ""):<3} {
+            sync_mapping.get(
+                chart["fs"],
+                ""):<4} {
+            chart["ds"]:>4}->{
+            chart["ra"]:<3} {
+            dxstar:<5} {
+            title:<20}\n"
         html += line
     html += f"New ({sum(chart["ra"] for chart in dx_charts)})\n"
     for idx, chart in enumerate(dx_charts, start=1):
@@ -160,18 +160,18 @@ async def generate_best50_text(msg: Bot.MessageSession, payload: dict) -> Messag
             idx:<2} {
             chart["song_id"]:>5} {
             level:<3} {
-                chart["achievements"]:>8.4f}% {
-                    rank:<4} {
-                        combo_mapping.get(
-                            chart["fc"],
-                            ""):<3} {
-                                sync_mapping.get(
-                                    chart["fs"],
-                                    ""):<4} {
-                                        chart["ds"]:>4}->{
-                                            chart["ra"]:<3} {
-                                                dxstar:<5} {
-                                                    title:<20}\n"
+            chart["achievements"]:>8.4f}% {
+            rank:<4} {
+            combo_mapping.get(
+                chart["fc"],
+                ""):<3} {
+            sync_mapping.get(
+                chart["fs"],
+                ""):<4} {
+            chart["ds"]:>4}->{
+            chart["ra"]:<3} {
+            dxstar:<5} {
+            title:<20}\n"
         html += line
     html += "</pre>"
     time = msg.format_time(datetime.now().timestamp(), iso=True, timezone=False)
@@ -234,7 +234,8 @@ async def get_rank(msg: Bot.MessageSession, payload: dict, use_cache: bool = Tru
                                  surpassing_rate=f"{surpassing_rate:.2f}"))
 
 
-async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str, use_cache: bool = True) -> MessageChain:
+async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str,
+                           use_cache: bool = True) -> MessageChain:
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music["level"]))}  # 获取歌曲难度列表
 
@@ -250,7 +251,8 @@ async def get_player_score(msg: Bot.MessageSession, payload: dict, input_id: str
                     try:
                         score_rank = next(
                             # 根据成绩获得等级
-                            rank for interval, rank in score_to_rate.items() if interval[0] <= achievements < interval[1]
+                            rank for interval, rank in score_to_rate.items() if
+                            interval[0] <= achievements < interval[1]
                         )
                     except StopIteration:
                         continue
@@ -444,7 +446,8 @@ async def get_level_process(msg: Bot.MessageSession, payload: dict, level: str, 
     return MessageChain.assign(output_chain), get_img
 
 
-async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[MessageChain, bool]:
+async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, use_cache: bool = True) -> tuple[
+        MessageChain, bool]:
     song_played = []
     song_remain_basic = []
     song_remain_advanced = []
@@ -486,7 +489,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if song["level_index"] == 3 and song["achievements"] < (100.0 if goal == "将" else 80.0):
                 song_remain_master.append((str(song["id"]), song["level_index"]))
             if version in ["舞", "覇"] and str(song["id"]) in mai_plate_remaster_required and \
-               song["level_index"] == 4 and song["achievements"] < (100.0 if goal == "将" else 80.0):
+                    song["level_index"] == 4 and song["achievements"] < (100.0 if goal == "将" else 80.0):
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))  # 霸者和舞牌需要Re:MASTER难度
             song_played.append((str(song["id"]), song["level_index"]))
     elif goal == "極":
@@ -514,7 +517,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if song["level_index"] == 3 and song["fs"] not in ["fsd", "fsdp"]:
                 song_remain_master.append((str(song["id"]), song["level_index"]))
             if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
-               song["level_index"] == 4 and song["fs"] not in ["fsd", "fsdp"]:
+                    song["level_index"] == 4 and song["fs"] not in ["fsd", "fsdp"]:
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))
             song_played.append((str(song["id"]), song["level_index"]))
     elif goal == "神":
@@ -528,7 +531,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if song["level_index"] == 3 and song["fc"] not in ["ap", "app"]:
                 song_remain_master.append((str(song["id"]), song["level_index"]))
             if version == "舞" and str(song["id"]) in mai_plate_remaster_required and \
-               song["level_index"] == 4 and song["fc"] not in ["ap", "app"]:
+                    song["level_index"] == 4 and song["fc"] not in ["ap", "app"]:
                 song_remain_remaster.append((str(song["id"]), song["level_index"]))
             song_played.append((str(song["id"]), song["level_index"]))
     else:
@@ -545,8 +548,8 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
             if (music.id, 3) not in song_played:
                 song_remain_master.append((music.id, 3))
             if version in ["舞", "覇"] and len(music.level) == 5 and \
-               music.id in mai_plate_remaster_required and \
-               (music.id, 4) not in song_played:
+                    music.id in mai_plate_remaster_required and \
+                    (music.id, 4) not in song_played:
                 song_remain_remaster.append((music.id, 4))
     song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))  # 根据ID排序结果
     song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))
@@ -605,7 +608,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         if verlist[record_index]["fs"]:
                             self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
                 output_chain.append(Plain(f"{s[0]} - {s[1]}{" (DX)" if s[5] ==
-                                    "DX" else ""} {s[2]} {s[3]} {self_record}"))
+                                                            "DX" else ""} {s[2]} {s[3]} {self_record}"))
             if len(song_remain_difficult) > SONGS_NEED_IMG:
                 get_img = True
         else:
@@ -630,7 +633,7 @@ async def get_plate_process(msg: Bot.MessageSession, payload: dict, plate: str, 
                         if verlist[record_index]["fs"]:
                             self_record = sync_list[sync_list_raw.index(verlist[record_index]["fs"])]
                 output_chain.append(Plain(f"{m.id} - {m.title}{" (DX)" if m.type ==
-                                    "DX" else ""} {diffs[s[1]]} {m.ds[s[1]]} {self_record}"))
+                                                               "DX" else ""} {diffs[s[1]]} {m.ds[s[1]]} {self_record}"))
             if len(song_remain) > SONGS_NEED_IMG:
                 get_img = True
         else:

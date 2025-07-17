@@ -284,7 +284,9 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             await msg.send_message(msglist)
     if recommend_modules_help_doc_list and not ("-g" in msg.parsed_msg and msg.parsed_msg["-g"]):
-        if await msg.wait_confirm([I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)), Plain("\n")] + recommend_modules_help_doc_list):
+        if await msg.wait_confirm(
+            [I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)),
+             Plain("\n")] + recommend_modules_help_doc_list):
             if await msg.session_info.target_info.config_module(recommend_modules_list, True):
                 msglist = []
                 for x in recommend_modules_list:

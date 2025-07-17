@@ -234,7 +234,8 @@ async def _(msg: Bot.MessageSession):
                                             "wiki.message.invalid_section.prompt"
                                             if (
                                                 get_page.invalid_section
-                                                and (wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
+                                                and (
+                                                    wiki_.wiki_info.in_allowlist or not msg.session_info.use_url_manager)
                                             )
                                             else "wiki.message.talk_page.prompt"
                                         )
@@ -353,6 +354,7 @@ async def _(msg: Bot.MessageSession):
                                         imgs.append(Image(img))
                                     await msg.send_message(imgs, quote=False)
         await msg.release()
+
     await msg.hold()
     asyncio.create_task(bgtask())
     # await bgtask()

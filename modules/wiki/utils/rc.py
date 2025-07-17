@@ -32,7 +32,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             else:
                 count = str(count)
             d.append(f"•{msg.format_time(strptime2ts(x["timestamp"]),
-                     iso=True, timezone=False)} - {title} .. ({count}) .. {user}")
+                                         iso=True, timezone=False)} - {title} .. ({count}) .. {user}")
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)

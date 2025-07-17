@@ -497,7 +497,7 @@ class EmbedElement(BaseElement):
         if self.author:
             if session_info:
                 text_lst.append(f"{session_info.locale.t("message.embed.author")}{
-                                session_info.locale.t_str(self.author)}")
+                    session_info.locale.t_str(self.author)}")
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:

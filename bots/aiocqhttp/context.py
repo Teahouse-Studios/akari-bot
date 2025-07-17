@@ -82,6 +82,7 @@ class AIOCQContextManager(ContextManager):
         :param session_info: 会话信息
         :return: 是否有权限
         """
+
         # 这里可以添加权限检查的逻辑
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
@@ -104,7 +105,7 @@ class AIOCQContextManager(ContextManager):
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message=True,
-                           enable_split_image=True,) -> List[str]:
+                           enable_split_image=True, ) -> List[str]:
 
         #
         # if session_info.session_id not in cls.context:
@@ -277,6 +278,7 @@ class AIOCQContextManager(ContextManager):
         开始输入状态
         :param session_info: 会话信息
         """
+
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -315,6 +317,7 @@ class AIOCQContextManager(ContextManager):
             flag = asyncio.Event()
             cls.typing_flags[session_info.session_id] = flag
             await flag.wait()
+
         asyncio.create_task(_typing())
 
     @classmethod
@@ -375,7 +378,7 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes,
                            quote: bool = True,
                            enable_parse_message=True,
-                           enable_split_image=True,) -> None:
+                           enable_split_image=True, ) -> None:
         append_tsk = _tasks_high_priority if session_info.target_info.target_data.get(
             "in_post_whitelist", False) else _tasks
         append_tsk.append(
@@ -394,14 +397,14 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
                 await task
                 cd = random.randint(2, 10)
                 Logger.info(f"Processed a high-priority task in AIOCQFetchedContextManager, waiting cooldown for {
-                            cd}s...")
+                    cd}s...")
                 await asyncio.sleep(cd)
             elif _tasks:
                 task = _tasks.pop(0)
                 await task
                 cd = random.randint(5, qq_initiative_msg_cooldown)
                 Logger.info(f"Processed a task in AIOCQFetchedContextManager, waiting cooldown for {
-                            cd}s...")
+                    cd}s...")
                 await asyncio.sleep(cd)
             else:
                 await asyncio.sleep(1)

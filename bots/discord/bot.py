@@ -58,6 +58,7 @@ async def on_ready():
         logging.getLogger("discord").setLevel(logging.INFO)
         count += 1
 
+
 slash_load_dir = os.path.abspath(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), "slash")
 )

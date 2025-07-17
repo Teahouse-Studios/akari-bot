@@ -58,6 +58,6 @@ class Alive:
         """
         for client_name, data in cls.get_alive().copy().items():
             if id.startswith(tuple(data.get('target_prefix_list', []))) or \
-               id.startswith(tuple(data.get('sender_prefix_list', []))):
+                    id.startswith(tuple(data.get('sender_prefix_list', []))):
                 return client_name
         return None

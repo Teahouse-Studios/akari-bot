@@ -53,7 +53,7 @@ class DiscordContextManager(ContextManager):
     @classmethod
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
                            enable_parse_message: bool = True,
-                           enable_split_image: bool = True,) -> List[str]:
+                           enable_split_image: bool = True, ) -> List[str]:
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
@@ -191,6 +191,7 @@ class DiscordContextManager(ContextManager):
         开始输入状态
         :param session_info: 会话信息
         """
+
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -206,6 +207,7 @@ class DiscordContextManager(ContextManager):
                     del cls.typing_flags[session_info.session_id]
 
             # 这里可以添加开始输入状态的逻辑
+
         asyncio.create_task(_typing())
 
     @classmethod
@@ -218,7 +220,7 @@ class DiscordContextManager(ContextManager):
             raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
-        # 这里可以添加结束输入状态的逻辑
+            # 这里可以添加结束输入状态的逻辑
             Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod

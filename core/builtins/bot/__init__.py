@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     from core.queue.client import JobQueueClient
     from core.queue.server import JobQueueServer
 
-
 enable_analytics = Config("enable_analytics", False)
 
 
@@ -186,7 +185,7 @@ class Bot:
 
     @classmethod
     def register_bot(cls, client_name: str = None,
-                     private_assets_path: str = None,):
+                     private_assets_path: str = None, ):
         """
         :param client_name: Client name
         :param private_assets_path: Private assets path
@@ -253,12 +252,12 @@ class Bot:
                 raise ValueError(f"Invalid module name {module_or_hook_name}")
             if module_or_hook_name:
                 if module_or_hook_name in ModulesManager.modules_hooks:
-                    return await ModulesManager.modules_hooks[module_or_hook_name](ModuleHookContext(args, session_info=session_info)
-                                                                                   )
+                    return await ModulesManager.modules_hooks[module_or_hook_name](
+                        ModuleHookContext(args, session_info=session_info)
+                    )
             raise ValueError(f"Invalid hook name {module_or_hook_name}")
 
 
 add_export(Bot)
-
 
 __all__ = ["Bot"]

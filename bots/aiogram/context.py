@@ -75,8 +75,8 @@ class AiogramContextManager(ContextManager):
             send_ = await aiogram_bot.send_message(session_info.get_common_target_id(),
                                                    send_text,
                                                    reply_to_message_id=(
-                session_info.message_id if quote and not msg_ids and session_info.message_id
-                else None
+                                                       session_info.message_id if quote and not msg_ids and session_info.message_id
+                                                       else None
             ), parse_mode="HTML"
             )
             Logger.info(f"[Bot] -> [{session_info.target_id}]: {send_text}")
@@ -133,7 +133,9 @@ class AiogramContextManager(ContextManager):
                     send_ = await aiogram_bot.send_message(
                         session_info.get_common_target_id(),
                         f"<a href=\"tg://user?id={mention.id}\">@{mention.id}</a>",
-                        reply_to_message_id=(session_info.message_id if quote and not msg_ids and session_info.message_id else None), parse_mode="HTML"
+                        reply_to_message_id=(
+                            session_info.message_id if quote and not msg_ids and session_info.message_id else None),
+                        parse_mode="HTML"
                     )
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {mention.client}|{mention.id}")
                     msg_ids.append(send_.message_id)

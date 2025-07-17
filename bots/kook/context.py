@@ -150,7 +150,7 @@ class KOOKContextManager(ContextManager):
                         ),
                     )
                 else:
-                    send_ = await _channel.send(url, type=MessageTypes.IMG,)
+                    send_ = await _channel.send(url, type=MessageTypes.IMG, )
                 Logger.info(
                     f"[Bot] -> [{session_info.target_id}]: Image: {str(image.path)}"
                 )
@@ -167,7 +167,7 @@ class KOOKContextManager(ContextManager):
                         ),
                     )
                 else:
-                    send_ = await _channel.send(url, type=MessageTypes.AUDIO,)
+                    send_ = await _channel.send(url, type=MessageTypes.AUDIO, )
                 Logger.info(
                     f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice.__dict__)}"
                 )

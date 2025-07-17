@@ -30,7 +30,6 @@ su = module("superuser", alias="su", required_superuser=True, base=True, doc=Tru
 
 @su.command("add <user>")
 async def _(msg: Bot.MessageSession, user: str):
-
     if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     sender_info = await SenderInfo.get_by_sender_id(user, create=False)
@@ -260,7 +259,8 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     await sender_info.warn_user(count)
     if sender_info.warns > WARNING_COUNTS >= 1 and not sender_info.trusted:
         await sender_info.switch_identity(trust=False)
-    await msg.finish(I18NContext("core.message.abuse.warn.success", user=user, count=count, warn_count=sender_info.warns))
+    await msg.finish(
+        I18NContext("core.message.abuse.warn.success", user=user, count=count, warn_count=sender_info.warns))
 
 
 @ae.command("revoke <user> [<count>]")
@@ -273,7 +273,8 @@ async def _(msg: Bot.MessageSession, user: str, count: int = 1):
             await msg.finish()
         sender_info = await SenderInfo.create(sender_id=user)
     await sender_info.warn_user(-count)
-    await msg.finish(I18NContext("core.message.abuse.revoke.success", user=user, count=count, warn_count=sender_info.warns))
+    await msg.finish(
+        I18NContext("core.message.abuse.revoke.success", user=user, count=count, warn_count=sender_info.warns))
 
 
 @ae.command("clear <user>")
@@ -449,6 +450,7 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish()
 
+
 upds = module(
     "update&restart",
     required_superuser=True,
@@ -549,6 +551,7 @@ async def _(msg: Bot.MessageSession):
     Bot.Temp.data["waiting_for_send_group_message"] = []
     await msg.finish(I18NContext("core.message.resume.clear"))
 
+
 forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True, available_for="QQ")
 
 
@@ -628,7 +631,8 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
     session = await Bot.fetch_target(target)
     post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
-    if await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg), append_instruction=False):
+    if await msg.wait_confirm(I18NContext("core.message.post.confirm", target=target, post_msg=post_msg),
+                              append_instruction=False):
         await Bot.post_global_message(post_msg, [session])
         await msg.finish(I18NContext("core.message.post.success"))
     else:
@@ -638,7 +642,8 @@ async def _(msg: Bot.MessageSession, target: str, post_msg: str):
 @post_.command("global <post_msg>")
 async def _(msg: Bot.MessageSession, post_msg: str):
     post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"
-    if await msg.wait_confirm(I18NContext("core.message.post.global.confirm", post_msg=post_msg), append_instruction=False):
+    if await msg.wait_confirm(I18NContext("core.message.post.global.confirm", post_msg=post_msg),
+                              append_instruction=False):
         await Bot.post_global_message(post_msg)
         await msg.finish(I18NContext("core.message.post.success"))
     else:

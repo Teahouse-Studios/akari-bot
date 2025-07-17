@@ -41,6 +41,7 @@ def convert_cfg_to_toml():
         f.write(toml_dumps(config_dict))
     os.remove(old_cfg_file_path)
 
+
 # If the config file does not exist, try to convert the old config file to the new format, or raise an error.
 
 

@@ -219,7 +219,8 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]],
+                                        id_prefix: Optional[str] = None) -> List[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 

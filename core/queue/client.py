@@ -19,14 +19,16 @@ class JobQueueClient(JobQueueBase):
                           {"session_info": converter.unstructure(session_info)})
 
     @classmethod
-    async def send_keepalive_signal_to_server(cls, client_name: str, target_prefix_list: list = None, sender_prefix_list: list = None):
+    async def send_keepalive_signal_to_server(cls, client_name: str, target_prefix_list: list = None,
+                                              sender_prefix_list: list = None):
         await cls.add_job("Server", "client_keepalive",
                           {"client_name": client_name,
                            "target_prefix_list": target_prefix_list or [],
                            "sender_prefix_list": sender_prefix_list or []}, wait=False)
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: Optional[SessionInfo] = '', wait=False, **kwargs):
+    async def trigger_hook(cls, module_or_hook_name: str, session_info: Optional[SessionInfo] = '', wait=False,
+                           **kwargs):
         for k in kwargs:
             if isinstance(kwargs[k], exports["MessageChain"]):
                 kwargs[k] = kwargs[k].to_list()

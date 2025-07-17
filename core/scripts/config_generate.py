@@ -163,7 +163,6 @@ Please input the number of the language you want to use: """)
     input()
     sys.exit(0)
 
-
 if __name__ == "__main__":
     import zipfile
     import difflib

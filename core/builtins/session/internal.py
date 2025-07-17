@@ -533,6 +533,7 @@ class FetchedMessageSession(MessageSession):
     """
     主动获取的消息会话。
     """
+
     @classmethod
     async def from_session_info(cls, session: Union[FetchedSessionInfo, SessionInfo]):
         return cls(
@@ -542,6 +543,5 @@ class FetchedMessageSession(MessageSession):
 
 add_export(MessageSession)
 add_export(FinishedSession)
-
 
 __all__ = [SessionInfo, FetchedMessageSession]

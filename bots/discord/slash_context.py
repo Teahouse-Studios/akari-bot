@@ -21,7 +21,7 @@ class DiscordSlashContextManager(DiscordContextManager):
     @classmethod
     async def send_message(cls, session_info: SessionInfo, message: MessageChain, quote: bool = True,
                            enable_parse_message: bool = True,
-                           enable_split_image: bool = True,):
+                           enable_split_image: bool = True, ):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         ctx = cls.context.get(session_info.session_id)
@@ -98,6 +98,7 @@ class DiscordSlashContextManager(DiscordContextManager):
         开始输入状态
         :param session_info: 会话信息
         """
+
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -112,6 +113,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                     await flag.wait()
 
             # 这里可以添加开始输入状态的逻辑
+
         asyncio.create_task(_typing())
 
     @classmethod

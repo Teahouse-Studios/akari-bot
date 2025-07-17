@@ -74,7 +74,8 @@ async def msgnode2image(message_node: MessageNodes,
 
 
 async def msgchain2image(message_chain: Union[List, MessageChain],
-                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None) -> Union[List[ImageElement], bool]:
+                         session: Optional[Union[MessageSession, SessionInfo, FetchedSessionInfo]] = None) -> Union[
+        List[ImageElement], bool]:
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
@@ -103,7 +104,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
                                                                                  PlainElement=PlainElement,
                                                                                  ImageElement=ImageElement,
                                                                                  EmbedElement=EmbedElement,
-                                                                                 use_font_mirror=use_font_mirror,)
+                                                                                 use_font_mirror=use_font_mirror, )
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
@@ -127,13 +128,15 @@ async def svg_render(file_path: str) -> Union[List[ImageElement], bool]:
     with open(file_path, "r", encoding="utf-8") as file:
         svg_content = file.read()
 
-    html_content = await env.get_template("svg_template.html").render_async(svg=svg_content, use_font_mirror=use_font_mirror)
+    html_content = await env.get_template("svg_template.html").render_async(svg=svg_content,
+                                                                            use_font_mirror=use_font_mirror)
 
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"], counttime=False, output_type='png'))
+    pic_list = await web_render.element_screenshot(
+        ElementScreenshotOptions(content=html_content, element=[".botbox"], counttime=False, output_type='png'))
     if not pic_list:
         Logger.exception("[WebRender] Generation Failed.")
         return False

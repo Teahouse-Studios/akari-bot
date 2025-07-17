@@ -315,6 +315,7 @@ class QQBotContextManager(ContextManager):
         开始输入状态
         :param session_info: 会话信息
         """
+
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -338,6 +339,7 @@ class QQBotContextManager(ContextManager):
             flag = asyncio.Event()
             cls.typing_flags[session_info.session_id] = flag
             await flag.wait()
+
         asyncio.create_task(_typing())
 
     @classmethod

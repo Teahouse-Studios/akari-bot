@@ -15,7 +15,6 @@ from core.builtins.message.chain import MessageChain  # noqa: E402
 from core.builtins.session.info import SessionInfo  # noqa: E402
 from core.builtins.temp import Temp  # noqa: E402
 
-
 Bot.register_bot(client_name=client_name)
 
 ctx_id = Bot.register_context_manager(WebContextManager)

@@ -3,8 +3,8 @@ import re
 import orjson as json
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
@@ -13,7 +13,6 @@ from .libraries.maimaidx_utils import get_diff, get_grade_info
 from .maimai import query_alias, query_plate, query_song_score, query_process
 
 total_list = TotalList()
-
 
 mai_regex = module(
     "maimai_regex",

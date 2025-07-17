@@ -146,7 +146,8 @@ async def auth(request: Request, response: Response):
             login_failed_attempts[ip].append(now)
 
             if len(login_failed_attempts[ip]) >= login_max_attempts:
-                await MaliciousLoginRecords.create(ip_address=ip, blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
+                await MaliciousLoginRecords.create(ip_address=ip,
+                                                   blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
                 login_failed_attempts[ip].clear()
                 raise HTTPException(status_code=403, detail="This IP has been blocked")
 
@@ -701,7 +702,7 @@ async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
 
     current_date = datetime.today().strftime("%Y-%m-%d")
-    last_file_pos = defaultdict(int)    # 日志文件当前位置
+    last_file_pos = defaultdict(int)  # 日志文件当前位置
     last_file_size = defaultdict(int)  # 日志文件大小
     logs_history = deque(maxlen=MAX_LOG_HISTORY)  # 日志缓存历史
     try:

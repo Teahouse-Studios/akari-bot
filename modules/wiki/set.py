@@ -28,7 +28,7 @@ async def _(msg: Bot.MessageSession, wikiurl: str):
             prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
             if wiki_whitelist_url:
                 prompt += "\n" + \
-                    msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+                          msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
         else:
             prompt = ""
         await msg.finish(
@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession, interwiki: str, wikiurl: str):
             prompt = "\n" + msg.session_info.locale.t("wiki.message.wiki_audit.untrust")
             if wiki_whitelist_url:
                 prompt += "\n" + \
-                    msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+                          msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
 
         else:
             prompt = ""
@@ -127,7 +127,8 @@ async def _(msg: Bot.MessageSession):
         result = msg.session_info.locale.t("wiki.message.iw.list.none", prefix=msg.session_info.prefixes[0])
     if base_interwiki_link:
         result += "\n" + msg.session_info.locale.t(
-            "wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link, md_format=msg.session_info.use_url_md_format))
+            "wiki.message.iw.list.prompt",
+            url=str(Url(base_interwiki_link, md_format=msg.session_info.use_url_md_format))
         )
     await msg.finish(result)
 

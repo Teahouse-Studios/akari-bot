@@ -48,14 +48,14 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
             idx:<2} {
             chart["mid"]:>4} {
             level:<3} {
-                chart["score"]:>7} {
-                    rank:<4} {
-                        combo_mapping.get(
-                            chart["fc"],
-                            ""):<2} {
-                                chart["ds"]:>4}->{
-                                    chart["ra"]:<5.2f} {
-                                        title:<20}\n"
+            chart["score"]:>7} {
+            rank:<4} {
+            combo_mapping.get(
+                chart["fc"],
+                ""):<2} {
+            chart["ds"]:>4}->{
+            chart["ra"]:<5.2f} {
+            title:<20}\n"
         html += line
     html += "Recent10\n"
     for idx, chart in enumerate(r10_records, start=1):
@@ -73,14 +73,14 @@ async def generate_best30_text(msg: Bot.MessageSession, payload: dict, use_cache
             idx:<2} {
             chart["mid"]:>4} {
             level:<3} {
-                chart["score"]:>7} {
-                    rank:<4} {
-                        combo_mapping.get(
-                            chart["fc"],
-                            ""):<2} {
-                                chart["ds"]:>4}->{
-                                    chart["ra"]:<5.2f} {
-                                        title:<20}\n"
+            chart["score"]:>7} {
+            rank:<4} {
+            combo_mapping.get(
+                chart["fc"],
+                ""):<2} {
+            chart["ds"]:>4}->{
+            chart["ra"]:<5.2f} {
+            title:<20}\n"
         html += line
     html += "</pre>"
     time = msg.format_time(datetime.now().timestamp(), iso=True, timezone=False)

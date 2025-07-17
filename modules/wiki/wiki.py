@@ -371,8 +371,8 @@ async def query_pages(
                                 if r.invalid_section and (
                                     r.info.in_allowlist or not (
                                         isinstance(
-                                            session,
-                                            Bot.MessageSession) and session.session_info.use_url_manager)):
+                                        session,
+                                        Bot.MessageSession) and session.session_info.use_url_manager)):
                                     msg_list.append(
                                         Plain(
                                             session.session_info.locale.t(

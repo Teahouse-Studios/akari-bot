@@ -34,13 +34,15 @@ async def generate_screenshot_v2(
         if allow_special_page and not content_mode:
             elements_.insert(0, ".diff")
         Logger.info("[WebRender] Generating element screenshot...")
-        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_, locale=locale))
+        imgs = await web_render.element_screenshot(
+            ElementScreenshotOptions(url=page_link, element=elements_, locale=locale))
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False
     else:
         Logger.info("[WebRender] Generating section screenshot...")
-        imgs = await web_render.section_screenshot(SectionScreenshotOptions(url=page_link, section=section, locale=locale))
+        imgs = await web_render.section_screenshot(
+            SectionScreenshotOptions(url=page_link, section=section, locale=locale))
         if not imgs:
             Logger.error("[WebRender] Generation Failed.")
             return False

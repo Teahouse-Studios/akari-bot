@@ -10,7 +10,6 @@ from core.utils.web_render import web_render, SourceOptions
 
 arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 
-
 arc = module(
     "arcaea",
     developers=["OasisAkari"],

@@ -64,10 +64,10 @@ async def lifespan(app: FastAPI):
     yield
     await cleanup_sessions()
 
+
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -76,7 +76,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
 
 if os.path.exists(webui_path):
     flask_app = Flask(__name__)

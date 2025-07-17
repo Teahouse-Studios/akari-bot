@@ -19,7 +19,6 @@ from core.constants.info import Info
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
 
-
 qqbot_appid = str(Config("qq_bot_appid", cfg_type=(int, str), table_name="bot_qqbot"))
 qqbot_secret = Config("qq_bot_secret", cfg_type=str, secret=True, table_name="bot_qqbot")
 ignored_sender = Config("ignored_sender", ignored_sender_default)

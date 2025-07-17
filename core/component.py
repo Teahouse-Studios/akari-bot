@@ -140,7 +140,8 @@ class Bind:
             exclude_from: Union[str, list, tuple] = "",
             load: bool = True,
             priority: int = 1
-        ): ...
+        ):
+            ...
 
         @overload
         def handle(
@@ -157,7 +158,8 @@ class Bind:
             load: bool = True,
             show_typing: bool = True,
             logging: bool = True,
-        ): ...
+        ):
+            ...
 
         @overload
         def handle(
@@ -165,7 +167,8 @@ class Bind:
             trigger: Union[
                 AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger
             ],
-        ): ...
+        ):
+            ...
 
         def handle(self, *args, **kwargs):
             first_key = (

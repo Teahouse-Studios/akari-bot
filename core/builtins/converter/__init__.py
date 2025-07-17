@@ -33,11 +33,9 @@ converter.register_structure_hook(
     TargetInfo,
     lambda o, _: TargetInfo)
 
-
 converter.register_structure_hook(
     SenderInfo,
     lambda o, _: SenderInfo)
-
 
 converter.register_structure_hook(
     Locale,
