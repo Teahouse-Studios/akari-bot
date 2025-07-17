@@ -43,6 +43,8 @@ jobs:
               langconv
               emoji
               akari_bot_webrender
+              fake_http_header
+              tortoise.backends.mysql
           clang: true
 
 
