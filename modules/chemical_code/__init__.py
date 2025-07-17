@@ -321,7 +321,8 @@ async def chemical_code(
 
                                 if incorrect_list:
                                     incorrect_elements = "{I18N:message.delimiter}".join(incorrect_list)
-                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2", elements=incorrect_elements))
+                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2",
+                                                                        elements=incorrect_elements))
                     except ValueError:
                         Logger.exception()
 

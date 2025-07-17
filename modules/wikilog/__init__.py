@@ -28,7 +28,6 @@ type_map = {
     "rc": "RecentChanges",
 }
 
-
 rcshows = [
     "!anon",
     "!autopatrolled",
@@ -69,7 +68,7 @@ async def _(msg: Bot.MessageSession, apilink: str):
         prompt = msg.session_info.locale.t("wikilog.message.untrust.wiki", name=status.value.name)
         if wiki_whitelist_url:
             prompt += "\n" + \
-                msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
+                      msg.session_info.locale.t("wiki.message.wiki_audit.untrust.address", url=wiki_whitelist_url)
         await msg.finish(prompt)
     if status.available:
         records = await WikiLogTargetSetInfo.get_by_target_id(msg)

@@ -79,6 +79,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain],
     """使用WebRender将消息链转换为图片。
 
     :param message_chain: 消息链或消息链列表。
+    :param session: 消息会话信息，用于转换消息链为可发送格式时使用。
     :return: 机器人 Image 对象。
     """
 

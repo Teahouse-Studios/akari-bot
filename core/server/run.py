@@ -1,3 +1,4 @@
+from core.constants import Info
 from core.logger import Logger
 from core.queue.server import JobQueueServer
 from core.server.init import init_async
@@ -9,8 +10,11 @@ async def main():
     await JobQueueServer.check_job_queue()
 
 
-def run_async():
+def run_async(subprocess: bool = False, binary_mode: bool = False):
     import asyncio
+
+    Info.subprocess = subprocess
+    Info.binary_mode = binary_mode
 
     try:
         asyncio.run(main())

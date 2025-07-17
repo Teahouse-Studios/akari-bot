@@ -547,6 +547,7 @@ class WikiLib:
         :param _prefix: iw前缀，仅用作内部递归调用判断。
         :param _iw: 是否为iw模式，仅用作内部递归调用判断。
         :param _search: 是否为搜索模式，仅用作内部递归调用判断。
+        :param session: 消息会话，用作检查结果时使用。
         """
         if title:
             if (

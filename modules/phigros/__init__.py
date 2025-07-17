@@ -44,7 +44,8 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
     )
     if get_user_info:
         username = get_user_info.get("nickname", "Guest")
-        await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken, username=username)
+        await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken,
+                                            username=username)
         await msg.send_message(I18NContext("phigros.message.bind.success", username=username), quote=False)
     else:
         await msg.send_message(I18NContext("phigros.message.bind.failed"))

@@ -147,11 +147,11 @@ class SessionInfo:
         self.sender_info = await SenderInfo.get_by_sender_id(self.sender_id) if self.sender_id else None
         self.target_info = await TargetInfo.get_by_target_id(self.target_id) if self.target_id else None
 
-    def get_common_target_id(cls) -> str:
-        return cls.target_id.split(cls.target_from + "|")[1]
+    def get_common_target_id(self) -> str:
+        return self.target_id.split(self.target_from + "|")[1]
 
-    def get_common_sender_id(cls) -> str:
-        return cls.sender_id.split(cls.sender_from + "|")[1]
+    def get_common_sender_id(self) -> str:
+        return self.sender_id.split(self.sender_from + "|")[1]
 
 
 @define

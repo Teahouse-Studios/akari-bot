@@ -196,6 +196,9 @@ async def cleanup_tasks():
     asyncio.all_tasks(loop=loop)
 
 
+binary_mode = not sys.argv[0].endswith(".py")
+
+
 async def run_bot(console_only: bool = False):
     from core.config import CFGManager  # noqa
     from core.logger import Logger  # noqa
@@ -222,7 +225,7 @@ async def run_bot(console_only: bool = False):
         Logger.warning(f"Restarting bot {bot_name}...")
         p = multiprocessing.Process(
             target=go,
-            args=(bot_name, True, bool(not sys.argv[0].endswith(".py"))),
+            args=(bot_name, True, binary_mode, ),
             name=bot_name,
             daemon=True
         )
@@ -260,13 +263,14 @@ async def run_bot(console_only: bool = False):
                 if abort:
                     continue
             p = multiprocessing.Process(
-                target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
+                target=go, args=(bl, True, binary_mode), name=bl, daemon=True
             )
             p.start()
             processes.append(p)
 
     # run the server process
-    server_process = multiprocessing.Process(target=server_run_async, name="server", daemon=True)
+    server_process = multiprocessing.Process(target=server_run_async, args=(True, binary_mode
+                                                                            ), name="server", daemon=True)
     server_process.start()
     processes.append(server_process)
 

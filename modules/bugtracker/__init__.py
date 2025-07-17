@@ -37,7 +37,6 @@ async def _(msg: Bot.MessageSession, mojiraid: str):
     desc="{I18N:bugtracker.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
-
     titles = msg.matched_msg[:5]
     for title in titles:
         if title != "":

@@ -27,7 +27,6 @@ mcv_rss = module(
     rss=True,
 )
 
-
 mcbv_rss = module(
     "mcbv_rss",
     developers=["OasisAkari"],
@@ -37,7 +36,6 @@ mcbv_rss = module(
     doc=True,
     rss=True,
 )
-
 
 mcv_jira_rss = module(
     "mcv_jira_rss",
@@ -65,7 +63,6 @@ mcbv_jira_rss = module(
     rss=True,
 )
 
-
 mcdv_rss = module(
     "mcdv_rss",
     developers=["OasisAkari", "Dianliang233"],
@@ -75,7 +72,6 @@ mcdv_rss = module(
     hidden=True,
     rss=True,
 )
-
 
 mclgv_rss = module(
     "mclgv_rss",
@@ -246,6 +242,7 @@ async def _():
     except Exception:
         if Config("debug", False):
             Logger.exception()
+
 
 """
 

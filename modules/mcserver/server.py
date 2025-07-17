@@ -2,7 +2,6 @@ import re
 
 from mcstatus import JavaServer, BedrockServer
 
-from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.logger import Logger
 

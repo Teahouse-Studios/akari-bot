@@ -18,7 +18,6 @@ weekly_rss = module(
     rss=True,
 )
 
-
 teahouse_weekly_rss = module(
     "teahouse_weekly_rss",
     desc="{I18N:weekly_rss.help.teahouse_weekly_rss.desc}",

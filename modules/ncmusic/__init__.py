@@ -1,6 +1,6 @@
 from core.builtins.bot import Bot
-from core.builtins.message.internal import Plain, I18NContext, Image, Url
 from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, I18NContext, Image, Url
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError

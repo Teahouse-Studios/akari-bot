@@ -21,7 +21,6 @@ minecraft_news = module(
     rss=True,
 )
 
-
 feedback_news = module(
     "feedback_news",
     developers=["Dianliang233"],
@@ -31,7 +30,6 @@ feedback_news = module(
     doc=True,
     rss=True,
 )
-
 
 """class Article:
     count = 10

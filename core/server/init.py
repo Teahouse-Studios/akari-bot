@@ -27,7 +27,6 @@ async def init_async(start_scheduler=True) -> None:
     else:
         Logger.warning("Failed to get Git commit hash, is it a Git repository?")
     Info.client_name = 'Server'
-    Info.subprocess = True
     Logger.info("Initializing database...")
     if await init_db():
         Logger.success("Database initialized successfully.")
