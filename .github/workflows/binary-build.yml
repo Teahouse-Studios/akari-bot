@@ -44,11 +44,15 @@ jobs:
               emoji
               akari_bot_webrender
               fake_http_header
+              limits
+              discord
           include-package: |
               tortoise
               fake_http_header
               asyncmy
+              discord
           clang: true
+          playwright-include-browser: chrome
 
 
       - name: Copy Assets
