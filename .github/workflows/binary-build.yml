@@ -43,9 +43,10 @@ jobs:
               langconv
               emoji
               akari_bot_webrender
-              fake_http_header
           include-package: |
               tortoise
+              fake_http_header
+              asyncmy
           clang: true
 
 
