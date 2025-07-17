@@ -42,6 +42,7 @@ jobs:
           include-package-data: |
               langconv
               emoji
+              akari_bot_webrender
           clang: true
 
 
