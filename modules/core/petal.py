@@ -3,10 +3,8 @@ from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config import Config
 from core.database.models import SenderInfo
-from core.utils.info import get_all_sender_prefix
 from core.utils.petal import sign_get_petal, cost_petal
-
-sender_list = get_all_sender_prefix()
+from core.utils.alive import Alive
 
 petal_ = module("petal",
                 alias={
@@ -70,7 +68,7 @@ async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("modify", False):
         petal = msg.parsed_msg.get("<petal>", False)
         if user:
-            if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+            if not Alive.determine_sender_from(user):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user)
             await sender_info.modify_petal(petal)
@@ -82,7 +80,7 @@ async def _(msg: Bot.MessageSession):
                                          petal=msg.session_info.petal + int(petal)))
     elif msg.parsed_msg.get("clear", False):
         if user:
-            if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+            if not Alive.determine_sender_from(user):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user, create=False)
             if not sender_info:
@@ -96,7 +94,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(I18NContext("core.message.petal.clear.self"))
     else:
         if user:
-            if not any(user.startswith(f"{sender_from}|") for sender_from in sender_list):
+            if not Alive.determine_sender_from(user):
                 await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
             sender_info = await SenderInfo.get_by_sender_id(user, create=False)
             if not sender_info:

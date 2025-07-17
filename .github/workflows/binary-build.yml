@@ -29,11 +29,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Prepare Build
-        run: |
-          python .github/scripts/pre_build.py
-
-
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
         with:

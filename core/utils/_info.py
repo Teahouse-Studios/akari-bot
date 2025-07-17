@@ -1,3 +1,5 @@
+# DEPRECATED: This module is deprecated, use core.utils.alive to get available bot info.
+
 import glob
 import importlib
 import os
