@@ -53,7 +53,7 @@ jobs:
               asyncmy
               discord
           clang: true
-          playwright-include-browser: all
+          playwright-include-browser: none
           enable-plugins: |
               playwright
 
