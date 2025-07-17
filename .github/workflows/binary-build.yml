@@ -44,7 +44,8 @@ jobs:
               emoji
               akari_bot_webrender
               fake_http_header
-              tortoise.backends.mysql
+          include-package: |
+              tortoise
           clang: true
 
 
