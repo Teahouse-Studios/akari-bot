@@ -53,7 +53,8 @@ jobs:
               discord
           clang: true
           playwright-include-browser: chrome
-
+          enable-plugins: |
+              playwright
 
       - name: Copy Assets
         run: |
