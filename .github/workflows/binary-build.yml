@@ -28,7 +28,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          playwright install
+          playwright install --with-deps chromium
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
