@@ -39,7 +39,6 @@ jobs:
           include-plugin-directory: |
               modules
               bots
-              schedulers
           include-package-data: |
               langconv
               emoji
