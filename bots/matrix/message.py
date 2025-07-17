@@ -256,7 +256,28 @@ class MessageSession(MessageSessionT):
     async def check_native_permission(self):
         if self.session.target.startswith("@") or self.session.sender.startswith("!"):
             return True
-        # https://spec.matrix.org/v1.9/client-server-api/#permissions
+
+        # check room creator for room v12
+        create_event_id = "$" + str(self.session.target)[1:]
+        result = await bot.room_get_event(self.session.target, create_event_id)
+        if isinstance(result, nio.RoomGetEventResponse):
+            event = result.event
+            assert isinstance(event, nio.RoomCreateEvent)
+            if int(event.room_version) >= 12:
+                creators = [event.sender]
+                event_content = event.source["content"]
+                if "additional_creators" in event_content:
+                    creators = creators + event_content["additional_creators"]
+                Logger.debug(f"Matrix room v12 creators: {creators}")
+                if self.session.sender in creators:
+                    return True
+        else:
+            # When the room does not follow MSC4291, ignore it silently
+            # IO and other server-side errors are also ignored
+            # because I am too lazy to write a detailed check
+            pass
+
+        # https://spec.matrix.org/unstable/client-server-api/#permissions
         power_levels = (
             await bot.room_get_state_event(self.session.target, "m.room.power_levels")
         ).content
