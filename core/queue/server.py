@@ -77,6 +77,12 @@ class JobQueueServer(JobQueueBase):
                                   {"session_info": converter.unstructure(session_info)})
         return value
 
+    @classmethod
+    async def qq_set_group_leave(cls, session_info: SessionInfo):
+        value = await cls.add_job(session_info.client_name, "qq_set_group_leave",
+                                  {"session_info": converter.unstructure(session_info)})
+        return value
+
 
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):

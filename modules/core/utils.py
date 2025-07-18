@@ -295,6 +295,6 @@ leave = module(
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(I18NContext("core.message.leave.confirm")):
         await msg.send_message(I18NContext("core.message.leave.success"))
-        await msg.call_api("set_group_leave", group_id=msg.session.target)
+        await msg.qq_set_group_leave()
     else:
         await msg.finish()

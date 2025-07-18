@@ -367,6 +367,17 @@ class AIOCQContextManager(ContextManager):
             else:
                 pass
 
+    @classmethod
+    async def set_group_leave(cls, session_info: SessionInfo) -> None:
+        """
+        设置群组离开
+        :param session_info: 会话信息
+        """
+        if session_info.target_from == target_group_prefix:
+            await aiocqhttp_bot.call_action("set_group_leave", group_id=session_info.get_common_target_id())
+        else:
+            raise ValueError("Session is not a group session")
+
 
 _tasks_high_priority = []
 _tasks = []

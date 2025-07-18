@@ -129,4 +129,13 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
+@JobQueueClient.action("qq_set_group_leave")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    get_ = getattr(ctx_manager, "set_group_leave", None)
+    if get_:
+        await get_(session_info)
+    return {"success": True}
+
+
 add_export(JobQueueClient)

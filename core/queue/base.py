@@ -54,7 +54,11 @@ class JobQueueBase:
 
     @classmethod
     async def add_job(cls, target_client: str, action, args, wait=True):
-        task_id = await JobQueuesTable.add_task(target_client, action, args)
+        if target_client:
+            task_id = await JobQueuesTable.add_task(target_client, action, args)
+        else:
+            Logger.warning(f"Cannot add job {action} due to target_client is None, perhaps a bug?")
+            return None
         if wait:
             return await QueueTaskManager.add(task_id)
         return task_id
