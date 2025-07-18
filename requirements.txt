@@ -117,7 +117,7 @@ priority==2.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0
 prompt-toolkit==3.0.51 ; python_version >= "3.12" and python_full_version < "4.0.0"
 propcache==0.3.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
 psutil==7.0.0 ; python_version >= "3.12" and python_full_version < "4.0.0"
-py-cord==2.6.1 ; python_version >= "3.12" and python_full_version < "4.0.0"
+py-cord @ git+https://github.com/Pycord-Development/pycord@1c65fc820b7faf7c02041b14ef43ed28ac18a24c ; python_version >= "3.12" and python_full_version < "4.0.0"
 py-cpuinfo==9.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0"
 pycparser==2.22 ; python_version >= "3.12" and python_full_version < "4.0.0"
 pycryptodome==3.22.0 ; python_version >= "3.12" and python_full_version < "4.0.0"

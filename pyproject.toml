@@ -35,7 +35,7 @@ ffmpy = "^0.5.0"
 flask = "^3.1.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
-py-cord = "^2.6.1"
+py-cord = {git = "https://github.com/Pycord-Development/pycord"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 qq-botpy = "^1.2.1"
 slowapi = "^0.1.9"

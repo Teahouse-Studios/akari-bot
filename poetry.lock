@@ -3612,23 +3612,27 @@ test = ["pytest", "pytest-xdist", "setuptools"]
 
 [[package]]
 name = "py-cord"
-version = "2.6.1"
+version = "2.4.1.dev220+g122cf464"
 description = "A Python wrapper for the Discord API"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-files = [
-    {file = "py_cord-2.6.1-py3-none-any.whl", hash = "sha256:e3d3b528c5e37b0e0825f5b884cbb9267860976c1e4878e28b55da8fd3af834b"},
-    {file = "py_cord-2.6.1.tar.gz", hash = "sha256:36064f225f2c7bbddfe542d5ed581f2a5744f618e039093cf7cd2659a58bc79b"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<4.0"
 
 [package.extras]
-docs = ["furo (==2023.3.23)", "myst-parser (==1.0.0)", "sphinx (==5.3.0)", "sphinx-autodoc-typehints (==1.23.0)", "sphinx-copybutton (==0.5.2)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport (==1.2.4)", "sphinxext-opengraph (==0.9.1)"]
-speed = ["aiohttp[speedups]", "msgspec (>=0.18.6,<0.19.0)"]
+docs = ["furo @ git+https://github.com/pradyunsg/furo@193643f", "myst-parser (==1.0.0)", "sphinx (==5.3.0)", "sphinx-autodoc-typehints (==1.23.0)", "sphinx-copybutton (==0.5.2)", "sphinxcontrib-websupport (==1.2.4)", "sphinxcontrib_trio (==1.1.2)", "sphinxext-opengraph (==0.9.1)"]
+speed = ["aiohttp[speedups]", "msgspec (>=0.18.5,<0.19.0)"]
 voice = ["PyNaCl (>=1.3.0,<1.6)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/Pycord-Development/pycord"
+reference = "HEAD"
+resolved_reference = "1c65fc820b7faf7c02041b14ef43ed28ac18a24c"
 
 [[package]]
 name = "py-cpuinfo"
@@ -5637,4 +5641,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "8b780175c603dd882443fa613fba26614757a066620f2910fb84fe026f1aae75"
+content-hash = "954b77cb965e76a96988ff0d4c0bdc6c492f73a7d1560722db3e5c751b83b5b3"
