@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from akari_bot_webrender.functions.main import WebRender
 from akari_bot_webrender.functions.options import ElementScreenshotOptions, PageScreenshotOptions, SourceOptions, \
     SectionScreenshotOptions, LegacyScreenshotOptions
@@ -7,7 +9,8 @@ from core.logger import Logger
 
 enable_web_render = Config("enable_web_render", False, table_name="webrender")
 remote_web_render_url = Config("remote_web_render_url", cfg_type=str, table_name="webrender", get_url=True)
-web_render_browser = Config("web_render_browser", "chrome", table_name="webrender")
+web_render_browser = Config("browser_type", "chrome", table_name="webrender")
+browser_executable_path = Config("browser_executable_path", "", table_name="webrender")
 
 web_render = WebRender(debug=False, remote_webrender_url=remote_web_render_url)
 
@@ -15,7 +18,7 @@ web_render = WebRender(debug=False, remote_webrender_url=remote_web_render_url)
 async def init_web_render():
     if enable_web_render:
         try:
-            await web_render.browser_init(browse_type=web_render_browser)
+            await web_render.browser_init(browse_type=web_render_browser, executable_path=Path(browser_executable_path))
             return True
         except Exception:
             Logger.exception(f"WebRender initialization failed: ")
@@ -33,8 +36,8 @@ __all__ = [
     "web_render",
     "init_web_render",
     "close_web_render",
-    ElementScreenshotOptions,
-    PageScreenshotOptions,
-    SourceOptions,
-    SectionScreenshotOptions,
-    LegacyScreenshotOptions]
+    "ElementScreenshotOptions",
+    "PageScreenshotOptions",
+    "SourceOptions",
+    "SectionScreenshotOptions",
+    "LegacyScreenshotOptions"]

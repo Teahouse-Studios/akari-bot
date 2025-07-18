@@ -66,6 +66,8 @@ slash_load_dir = os.path.abspath(
 
 def load_slashcommands():
     for subm in pkgutil.iter_modules(slash_modules.__path__):
+        if subm.name in ["context", "parser"]:  # dunno why these appear in the list in some environments
+            continue
         submodule_name = slash_modules.__name__ + "." + subm.name
         try:
             Logger.debug(f"Loading {submodule_name}...")
