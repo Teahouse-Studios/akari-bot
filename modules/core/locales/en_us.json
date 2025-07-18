@@ -89,8 +89,6 @@
     "core.message.analytics.days": "Last 30 days for command \"${module}\" calls (from ${first_record}): ",
     "core.message.analytics.days.total": "Last 30 days for all commands calls (from ${first_record}): ",
     "core.message.analytics.disabled": "Analytics command is not enabled.",
-    "core.message.analytics.export": "导出地址：\n${url}\n将在 ${expires} 秒后过期。",
-    "core.message.analytics.export.waiting": "Exporting data... It may take a while.",
     "core.message.analytics.none": "The database is empty. Initializing...",
     "core.message.analytics.year": "Last year for command \"${module}\" calls (from ${first_record}): ",
     "core.message.analytics.year.total": "Last year for all commands calls (from ${first_record}): ",
