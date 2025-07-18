@@ -11,6 +11,13 @@ from core.server.terminate import cleanup_sessions
 stop_event = asyncio.Event()
 
 
+def inner_ctrl_c_signal_handler(sig, frame):
+    stop_event.set()
+
+
+signal.signal(signal.SIGINT, inner_ctrl_c_signal_handler)
+
+
 async def main():
     Logger.info("Akari Bot Server is starting...")
     await init_async()
@@ -30,12 +37,6 @@ def run_async(subprocess: bool = False, binary_mode: bool = False):
     Info.binary_mode = binary_mode
     asyncio.run(main())
 
-
-def inner_ctrl_c_signal_handler(sig, frame):
-    stop_event.set()
-
-
-signal.signal(signal.SIGINT, inner_ctrl_c_signal_handler)
 
 if __name__ == "__main__":
     run_async()
