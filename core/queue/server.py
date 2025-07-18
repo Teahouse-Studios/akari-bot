@@ -7,6 +7,8 @@ from ..builtins.message.chain import MessageChain, MessageNodes
 from ..builtins.session.info import SessionInfo
 from ..database.models import JobQueuesTable
 from ..exports import exports, add_export
+from ..i18n import Locale
+from ..loader import ModulesManager
 from ..logger import Logger
 from ..utils.alive import Alive
 
@@ -116,6 +118,42 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
     await bot.send_direct_message(session_info, message, disable_secret_check=args["disable_secret_check"],
                                   enable_parse_message=args["enable_parse_message"])
     return {"success": True}
+
+
+@JobQueueServer.action("get_modules_list")
+async def get_module_list(tsk: JobQueuesTable, args: dict):
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
+    module_list = []
+    for module in modules.values():
+        module_list.append(module["bind_prefix"])
+    return {"modules_list": module_list}
+
+
+@JobQueueServer.action("get_modules_info")
+async def get_modules_info(tsk: JobQueuesTable, args: dict):
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
+
+    for module in modules.values():
+        if "desc" in module and module.get("desc"):
+            module["desc"] = Locale(args['locale']).t_str(module["desc"])
+    return {"modules": modules}
+
+
+@JobQueueServer.action("get_module_info")
+async def get_module_info(tsk: JobQueuesTable, args: dict):
+    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
+    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
+    module = args.get("module")
+    if not module:
+        return {"success": False}
+    locale = args.get("locale", "zh_cn")
+    for m in modules.values():
+        if module == m["bind_prefix"]:
+            if "desc" in m and m.get("desc"):
+                m["desc"] = Locale(locale).t_str(m["desc"])
+            return {"success": True, "modules": m}
 
 
 add_export(JobQueueServer)

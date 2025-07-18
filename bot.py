@@ -281,6 +281,11 @@ async def run_bot(console_only: bool = False):
             if p.name == "server":
                 if p.exitcode == 0:
                     sys.exit(0)
+                if p.exitcode == 233:
+                    Logger.warning(
+                        f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
+                    )
+                    raise RestartBot
                 Logger.critical(f"Server ({p.pid}) exited with code {p.exitcode}, please check the log.")
                 sys.exit(1)
             if p.exitcode == 0:

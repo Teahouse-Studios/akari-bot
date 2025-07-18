@@ -49,8 +49,6 @@ class LoggingLogger:
         self.critical = logger.critical
         """严重错误信息，记录产生可能使程序崩溃的情况。"""
 
-        self.rename(name)
-
     def rename(self, name):
         self.log.remove()
         self.log = logger.bind(name=name)

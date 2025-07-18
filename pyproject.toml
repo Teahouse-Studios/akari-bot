@@ -43,7 +43,7 @@ uvicorn = {extras = ["standard"], version = "^0.34.0"}
 
 # console
 inputimeout = "^1.0.4"
-prompt-toolkit = "^3.0.47"
+prompt-toolkit = "^3.0.51"
 
 # core
 cattrs = "^24.1.2"
