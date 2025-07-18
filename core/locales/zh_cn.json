@@ -82,7 +82,7 @@
     "config.comments.web_host": "Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。",
     "config.comments.web_port": "Web 服务的端口号，设为 0 则禁用服务。",
     "config.comments.browser_type": "WebRender 使用的浏览器类型。",
-    "config.comments.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。",
+    "config.comments.browser_executable_path": "WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。（使用二进制部署时，必须指定路径才可使用 WebRender）",
     "config.header.line.1": "https://toml.io/cn/v1.0.0",
     "config.header.line.2": "注意：TOML 不是 Python。请不要在此处使用 Python 语法。",
     "config.header.line.3": "例如：TOML 中的布尔值必须是小写。",
