@@ -415,7 +415,7 @@ rst = module(
     required_superuser=True,
     base=True,
     doc=True,
-    exclude_from=["Console", "Web"],
+    exclude_from=["Web"],
     load=Bot.Info.subprocess)
 
 
