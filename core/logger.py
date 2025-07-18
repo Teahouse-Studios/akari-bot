@@ -33,11 +33,7 @@ def basic_logger_format(bot_name: str):
 
 class LoggingLogger:
     def __init__(self, name):
-        try:
-            logger.remove(0)
-        except ValueError:
-            # 如果没有默认的日志处理器，则忽略此错误
-            pass
+
         self.log = logger
         self.trace = logger.trace
         """跟踪信息，用于细粒度调试。启用debug配置项后在控制台显示，不会被记录到日志中。不建议在正式环境中使用。"""
@@ -55,6 +51,11 @@ class LoggingLogger:
         """严重错误信息，记录产生可能使程序崩溃的情况。"""
 
     def rename(self, name):
+        try:
+            logger.remove(0)
+        except ValueError:
+            # 如果没有默认的日志处理器，则忽略此错误
+            pass
         self.log = logger.bind(name=name)
         self.log.add(
             sys.stderr,
