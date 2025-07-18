@@ -89,8 +89,6 @@
     "core.message.analytics.days": "過去 30 日間のコマンド「${module}」の呼び出し回数の統計（${first_record} から開始)：",
     "core.message.analytics.days.total": "過去 30 日間のすべてのコマンドの呼び出し回数の統計（${first_record} から開始)：",
     "core.message.analytics.disabled": "ボットにはコマンド統計機能が有効になってません。",
-    "core.message.analytics.export": "导出地址：${url}\n将在 ${expires} 秒后过期。",
-    "core.message.analytics.export.waiting": "正在导出数据……可能需要一些时间。",
     "core.message.analytics.none": "ボット データベースは空です。初期化しています……",
     "core.message.analytics.year": "過去一年間のコマンド「${module}」の呼び出し回数の統計（${first_record} から開始)：",
     "core.message.analytics.year.total": "過去一年間のすべてのコマンドの呼び出し回数の統計（${first_record} から開始)：",
