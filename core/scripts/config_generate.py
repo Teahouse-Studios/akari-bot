@@ -164,6 +164,14 @@ Please input the number of the language you want to use: """)
     sys.exit(0)
 
 if __name__ == "__main__":
+    cfg_file_path = os.path.join(config_path, config_filename)
+    old_cfg_file_path = os.path.join(config_path, "config.cfg")
+    if not os.path.exists(cfg_file_path):
+        if os.path.exists(old_cfg_file_path):
+            pass
+        else:
+            os.makedirs(config_path, exist_ok=True)
+            open(cfg_file_path, "w", encoding="utf-8").close()
     import zipfile
     import difflib
 
