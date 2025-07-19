@@ -19,5 +19,6 @@
     "bilibili.message.embed.view": "View",
     "bilibili.message.error.rejected": "The request was rejected because of the Bilibili security control policy. Please try again later.\nIf the error occurs repeatedly, please contact the bot owner to resolve the issue.",
     "bilibili.message.invalid": "Invalid video ID.",
-    "bilibili.message.not_found": "No corresponding video is found."
+    "bilibili.message.not_found": "No corresponding video is found.",
+    "bilibili.message.failed": "Failed to get video information, please try again later."
 }

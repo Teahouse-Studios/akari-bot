@@ -1,7 +1,7 @@
 {
     "minecraft_news.help.feedback_news": "啟用後將會推送來自 Minecraft Feedback 的更新記錄。",
     "minecraft_news.help.minecraft_news": "啟用後將會自動推送來自 Minecraft 官網的新聞。",
-    "minecraft_news.message.feedback_news": "Minecraft Feedback 發布了新的文章：\n${name}\n${link}",
-    "minecraft_news.message.minecraft_news": "Minecraft 官網發布了新的文章：\n${title}\n  ${desc}\n${link}",
+    "minecraft_news.message.feedback_news": "Minecraft Feedback 發布了新的文章：\n${name}\n",
+    "minecraft_news.message.minecraft_news": "Minecraft 官網發布了新的文章：\n${title}\n  ${desc}",
     "minecraft_news.message.update_log": "Minecraft 官網發布了 ${version} 的更新日誌：\n ${article}"
 }

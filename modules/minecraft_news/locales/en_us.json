@@ -1,7 +1,7 @@
 {
     "minecraft_news.help.feedback_news": "When enabled, you will automatically push news from Minecraft Feedback.",
     "minecraft_news.help.minecraft_news": "When enabled, you will automatically push news from Minecraft website.",
-    "minecraft_news.message.feedback_news": "Minecraft Feedback posted a new article:\n${name}\n${link}",
-    "minecraft_news.message.minecraft_news": "Minecraft Website posted a new article:\n${title}\n  ${desc}\n${link}",
+    "minecraft_news.message.feedback_news": "Minecraft Feedback posted a new article:\n${name}",
+    "minecraft_news.message.minecraft_news": "Minecraft Website posted a new article:\n${title}\n  ${desc}",
     "minecraft_news.message.update_log": "Minecraft Website posted a new update log for ${version}:\n${article}"
 }

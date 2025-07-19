@@ -2,5 +2,5 @@
     "tweet.help": "Get tweet image from tweet ID. (P.S. We didn't pay the $200 Elon tax)",
     "tweet.help.desc": "Get tweet image.",
     "tweet.help.regex.url": "Get tweet image by URL.",
-    "tweet.message.not_found": "Tweet not found, may be restricted or not exist."
+    "tweet.message.not_found": "Tweet not found. It may be restricted or not exist."
 }
