@@ -62,13 +62,13 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             if "description" in params:
                 d.append(params["description"])
             if "duration" in params:
-                d.append(str(I18NContext("wiki.message.rc.params.duration") + params["duration"]))
+                d.append(str(I18NContext("wiki.message.rc.params.duration")) + params["duration"])
             if "flags" in params:
                 d.append(", ".join(params["flags"]))
             if "tag" in params:
-                d.append(str(I18NContext("wiki.message.rc.params.tag") + params["tag"]))
+                d.append(str(I18NContext("wiki.message.rc.params.tag")) + params["tag"])
             if "target_title" in params:
-                d.append(str(I18NContext("wiki.message.rc.params.target_title") + params["target_title"]))
+                d.append(str(I18NContext("wiki.message.rc.params.target_title")) + params["target_title"])
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
