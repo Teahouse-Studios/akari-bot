@@ -114,7 +114,7 @@
     "error.message.paused": "Group message delivering was blocked by the server. Group message delivering is suspended. Use \"${prefix}resume\" to resume pushing.",
     "error.message.prompt": "An error occurred while executing the command:",
     "error.message.prompt.address": "Report this issue: ${url}",
-    "error.message.prompt.noreport": "This error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to bot owner.",
+    "error.message.prompt.noreport": "This error is not caused by the bot and thus should not be reported to bot owner.",
     "error.message.prompt.report": "Please report the following message to bot owner.",
     "error.message.prompt.timeout": "This error may be caused by the bot not processing messages in time. If the error occurs repeatedly, please report the following message to bot owner.",
     "error.message.report": "The following error occurred while executing \"${module}\": ",
