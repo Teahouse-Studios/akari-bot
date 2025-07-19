@@ -15,11 +15,14 @@ async def get_video_info(
     try:
         url = f"https://api.bilibili.com/x/web-interface/view/detail{query}"
         res = await web_render.source(SourceOptions(url=url, raw_text=True))
-        load_json = json.loads(res)
-        if load_json["code"] != 0:
-            if load_json["code"] == -400:
-                return I18NContext("bilibili.message.invalid")
-            return I18NContext("bilibili.message.not_found")
+        if res:
+            load_json = json.loads(res)
+            if load_json["code"] != 0:
+                if load_json["code"] == -400:
+                    return I18NContext("bilibili.message.invalid")
+                return I18NContext("bilibili.message.not_found")
+        else:
+            return I18NContext("bilibili.message.failed")
     except ValueError as e:
         # if str(e).startswith("412"):
         #     return I18NContext("bilibili.message.error.rejected")
