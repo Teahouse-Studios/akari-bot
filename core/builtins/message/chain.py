@@ -177,7 +177,7 @@ class MessageChain:
                     if x.text != "":
                         x.text = session_info.locale.t_str(x.text)
                     else:
-                        x = PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty"))
+                        x = PlainElement.assign(session_info.locale.t("error.message.chain.empty"))
                 value.append(x)
             elif isinstance(x, FormattedTimeElement):
                 x = x.to_str(session_info)
@@ -208,7 +208,7 @@ class MessageChain:
                 value.append(x)
         if not value:
             if session_info:
-                value.append(PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty")))
+                value.append(PlainElement.assign(session_info.locale.t("error.message.chain.empty")))
         for x in value:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)

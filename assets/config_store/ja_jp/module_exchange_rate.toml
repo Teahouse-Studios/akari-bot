@@ -1,0 +1,7 @@
+# https://toml.io/ja/v1.0.0
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
+# 例：TOML のブール値は小文字でなければならないです。
+
+[module_exchange_rate_secret]
+# モジュールのキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
+exchange_rate_api_key = "<Replace me with str value>" # ExchangeRate-API 的 API Key。（用于 exchange_rate 模块与计算汇率用）

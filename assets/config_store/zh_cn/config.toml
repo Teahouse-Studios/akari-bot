@@ -9,7 +9,6 @@ initialized = true
 [config]
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 debug = false # 是否启用调试模式，启用后会输出更多的日志信息。
-enable_console = false # 是否在生产环境下启用控制台。
 base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
 enable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
 enable_urlmanager = false # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）

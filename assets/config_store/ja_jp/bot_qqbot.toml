@@ -1,0 +1,15 @@
+# https://toml.io/ja/v1.0.0
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
+# 例：TOML のブール値は小文字でなければならないです。
+
+[bot_qqbot_secret]
+# プラットフォーム側のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
+qq_bot_secret = "<Replace me with str value>" # QQ ロボット（公式）の AppSecret。
+
+[bot_qqbot]
+# プラットフォーム側の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
+qq_private_bot = false # QQ ロボット（公式）を使用する場合、プライベートドメイン ロボットであるかどうか。
+enable = false # このプラットフォームを有効にするかどうか。
+qq_bot_appid = "<Replace me with (int, str) value>" # QQ ロボット（公式）の AppID。
+qq_bot_enable_send_url = false # QQ ロボット（公式）使用時に、URL 送信を有効にするかどうか。
+qq_typing_emoji = 181 # QQ関連プロトコル側でメッセージを処理するときにメッセージに添付される応答顔文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji をご覧ください。

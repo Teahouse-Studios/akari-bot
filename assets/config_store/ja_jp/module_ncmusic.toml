@@ -1,0 +1,11 @@
+# https://toml.io/ja/v1.0.0
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
+# 例：TOML のブール値は小文字でなければならないです。
+
+[module_ncmusic]
+# モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
+ncmusic_enable_card = false # ncmusic 模块是否启用卡片消息。（仅在 QQ 客户端有效）
+
+[module_ncmusic_secret]
+# モジュールのキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
+ncmusic_api = "<Replace me with str value>" # 网易云音乐 API 的 API 地址。（用于 ncmusic 模块）

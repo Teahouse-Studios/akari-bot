@@ -1,0 +1,13 @@
+# https://toml.io/ja/v1.0.0
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
+# 例：TOML のブール値は小文字でなければならないです。
+
+[module_dice]
+# モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
+dice_limit = 100 # dice 模块一次投掷骰子数量上限。
+dice_output_count = 50 # dice 模块输出数据量上限。
+dice_output_len = 200 # dice 模块输出最大长度。
+dice_output_digit = 9 # dice 模块输出数据数位上限，超过则使用 10 的指数幂形式。
+dice_roll_limit = 10 # dice 模块一次命令投掷次数上限。
+dice_detail_count = 5 # dice 模块 n 次投掷的骰子的总量超过该值时将不再显示详细信息。
+dice_count_limit = 10 # dice 模块骰子表达式项数上限。
