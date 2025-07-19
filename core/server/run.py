@@ -19,15 +19,15 @@ signal.signal(signal.SIGINT, inner_ctrl_c_signal_handler)
 
 
 async def main():
-    Logger.info("Akari Bot Server is starting...")
+    Logger.info("Starting AkariBot Server...")
     await init_async()
     asyncio.create_task(JobQueueServer.check_job_queue())
     while not stop_event.is_set():
         await asyncio.sleep(1)
     if stop_event.is_set():
-        Logger.info("Stopping Akari Bot Server...")
+        Logger.info("Stopping AkariBot Server...")
         await cleanup_sessions()
-        Logger.success("Akari Bot Server stopped successfully.")
+        Logger.success("AkariBot Server stopped successfully.")
 
 
 def run_async(subprocess: bool = False, binary_mode: bool = False):
