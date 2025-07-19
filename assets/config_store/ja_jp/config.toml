@@ -1,5 +1,5 @@
 # https://toml.io/ja/v1.0.0
-# 注：TOML は Python ではないので、ここでは Python の文法を使わないでください。
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
 # 例：TOML のブール値は小文字でなければならないです。
 
 default_locale = "ja_jp" # デフォルトのセッション ロケール。
@@ -12,15 +12,15 @@ debug = false # デバッグモードを有効にするかどうか。有効に�
 base_superuser = ["QQ|2596322644"] # ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースに読み込まれます。
 enable_dirty_check = false # テキスト フィルタ リング検出を有効にするかどうか。Alibaba Cloud コンテンツ セキュリティ サービスの AccessKey ID と AccessKey Secret を設定する必要があります。
 
-enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。(URL が公式リンクではないことを宣言するなど）
-enable_tos = true # 組み込みの ToS チェック ルールを有効にするかどうか。
+enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
+enable_tos = true # 組み込みの ToS（利用規約）チェック ルールを有効にするかどうか。
 ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。このリストにマッチしたユーザーは無視されます。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
 enable_analytics = false # 組み込みの統計機能を有効にするかどうか。
 enable_petal = false # ペタル機能を有効にするかどうか。
 rickroll_msg = "<Replace me with str value>" # テキスト フィルタ リング検出に失敗したときのリックロール メッセージ。
 enable_rickroll = true # テキスト フィルタの検出に失敗したときに、ユーザーをリックロールするかどうか。
-enable_joke = true # ジョークを有効にするかどうか。有効にした場合はサーバー時間で 4 月 1 日に実行されます。
+enable_joke = true # ジョークを有効にするかどうか。有効にすると、サーバー時間の 4 月 1 日（エイプリルフール）に実行されます。
 shuffle_rate = 0.1 # ジョークのランダム発生率。範囲は 0 から 1 です。
 unloaded_modules = [] # ロードされないモジュールのリスト。このリストに一致するモジュールはロードされない。
 report_targets = [] # レポート セッション リスト。ここに入力された値がレポートセッションとして認識されます。（例：コマンド エラーを実行すると、ボットは対応するセッションにエラー情報を送信します）

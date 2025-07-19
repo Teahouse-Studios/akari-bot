@@ -1,5 +1,5 @@
 # https://toml.io/ja/v1.0.0
-# 注：TOML は Python ではないので、ここでは Python の文法を使わないでください。
+# 注：TOML は Python ではありませんので、ここでは Python の文法を使用しないでください。
 # 例：TOML のブール値は小文字でなければならないです。
 
 [bot_web]
