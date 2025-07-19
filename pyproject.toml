@@ -46,7 +46,6 @@ prompt-toolkit = "^3.0.47"
 # core
 cattrs = "^24.1.2"
 filetype = "^1.2.0"
-japanera = "^2.1.3"
 orjson = "^3.10.9"
 Pillow = "^11.0.0"
 tenacity = "^9.0.0"

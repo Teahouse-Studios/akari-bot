@@ -1896,21 +1896,6 @@ files = [
 ]
 
 [[package]]
-name = "japanera"
-version = "2.1.3"
-description = "Easy japanese era tool"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "japanera-2.1.3-py3-none-any.whl", hash = "sha256:bc3ccadd1b6ef91732f2bf1ef74d240a28c3f7697fa0682283c7b84751352ccd"},
-    {file = "japanera-2.1.3.tar.gz", hash = "sha256:a54e1f50a66fd1a2a110a357e155e93f2cf6df7de9927d966f9f6bd2ad2c1738"},
-]
-
-[package.dependencies]
-kanjize = ">=1.6.1"
-
-[[package]]
 name = "jaraco-classes"
 version = "3.4.0"
 description = "Utility functions for Python class constructs"
@@ -2125,18 +2110,6 @@ files = [
 
 [package.dependencies]
 referencing = ">=0.31.0"
-
-[[package]]
-name = "kanjize"
-version = "1.6.1"
-description = "Easy converter between Kanji-Number and Integer"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "kanjize-1.6.1-py3-none-any.whl", hash = "sha256:4f0318e94a947e0613ac68fba8c9822ff7bfd138ac58a68caa849879bb532f26"},
-    {file = "kanjize-1.6.1.tar.gz", hash = "sha256:5e96a2df8af21f55e7e2b8f1042efb830a171a5cb9046f6239e89e03622b9756"},
-]
 
 [[package]]
 name = "keyring"
@@ -2808,14 +2781,14 @@ files = [
 
 [[package]]
 name = "openai"
-version = "1.82.1"
+version = "1.97.0"
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "openai-1.82.1-py3-none-any.whl", hash = "sha256:334eb5006edf59aa464c9e932b9d137468d810b2659e5daea9b3a8c39d052395"},
-    {file = "openai-1.82.1.tar.gz", hash = "sha256:ffc529680018e0417acac85f926f92aa0bbcbc26e82e2621087303c66bc7f95d"},
+    {file = "openai-1.97.0-py3-none-any.whl", hash = "sha256:a1c24d96f4609f3f7f51c9e1c2606d97cc6e334833438659cfd687e9c972c610"},
+    {file = "openai-1.97.0.tar.gz", hash = "sha256:0be349569ccaa4fb54f97bb808423fd29ccaeb1246ee1be762e0c81a47bae0aa"},
 ]
 
 [package.dependencies]
@@ -2829,6 +2802,7 @@ tqdm = ">4"
 typing-extensions = ">=4.11,<5"
 
 [package.extras]
+aiohttp = ["aiohttp", "httpx-aiohttp (>=0.1.8)"]
 datalib = ["numpy (>=1)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)"]
 realtime = ["websockets (>=13,<16)"]
 voice-helpers = ["numpy (>=2.0.2)", "sounddevice (>=0.5.1)"]
@@ -5464,4 +5438,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "5204bc0b41eeea33b34dbafa1589b9c7657937235767589c294ec159348bbdd2"
+content-hash = "23610bcf471e444eb1509c3c9904df566f1011a13175903bbb370ac2789f04e2"
