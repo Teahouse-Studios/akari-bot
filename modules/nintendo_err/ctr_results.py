@@ -145,6 +145,7 @@ am = Module(
         43: ResultInfo("数据库不存在或打开失败。"),
         44: ResultInfo("尝试卸载系统程序。"),
         106: ResultInfo("无效的签名/CIA。"),
+        107: ResultInfo('The console ID in the ticket does not match the current console ID.'),
         393: ResultInfo("无效的数据库。"),
     },
 )

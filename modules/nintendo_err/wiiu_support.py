@@ -270,6 +270,8 @@ act = Module(
         1023: ResultInfo("Not committed."),
         1101: ResultInfo("Network clock is invalid."),
         2000: ResultInfo("Authentication error."),
+        2402: ResultInfo('Invalid NNID. Usually happens if the console is trying to connect to Nintendo servers with a Pretendo Network ID, or Pretendo Network with an NNID.'),
+        2511: ResultInfo('This error occurs when the Wii U system software is not up to date and must be updated in order to sign in to the Nintendo Network.'),
         # TODO: 2001-2644 (there aren't really that many errors)
         2643: ResultInfo("Authentication is required."),
         2651: ResultInfo("Confirmation code is expired."),
@@ -492,9 +494,8 @@ unknown2 = Module(
     "unknown (browser?)",
     {
         1037: ResultInfo(
-            "Incorrect permissions for the default index.html file which prevents the Internet Browser from reading it.",
-            "[To fix it, follow these steps.](https://wiiu.hacks.guide/#/fix-errcode-112-1037)",
-        ),
+            'Incorrect permissions for the default index.html file which prevents the Internet Browser from reading it.',
+            '[To fix it, follow these steps.](https://wiki.hacks.guide/wiki/Wii_U:Fix_error_code_112-1037)'),
         1035: ResultInfo("SSL handshake failed due to cipher mismatch."),
         1209: ResultInfo("Internet Browser is unable to load a file(?)."),
     },
@@ -533,17 +534,23 @@ fs = Module(
 syserr = Module(
     "system error",
     {
-        101: ResultInfo(
-            "Generic error. Can happen when formatting a console that has CBHC installed."
-        ),
+        101: ResultInfo("Generic error. Can happen when formatting a console that has CBHC installed."),
         102: ResultInfo("Error in SLC/MLC or USB."),
         103: ResultInfo("The MLC system memory is corrupted."),
         104: ResultInfo("The SLC system memory is corrupted."),
         105: ResultInfo("The USB storage is corrupted."),
+        1400: ResultInfo(
+            'Disc drive error.',
+            'Actually, the disc drive is probably okay, but rather, a Common Mode Filter may be broken. Fixing this requires soldering, [see for more info.](https://gbatemp.net/threads/572879/)'),
         2706: ResultInfo("Error when reading from USB storage device"),
-        2713: ResultInfo("The USB Storage device has been disconnected."),
-    },
+        2713: ResultInfo('The USB Storage device has been disconnected.'),
+        2793: ResultInfo('Usually indicates missing files on vWii. Run vWii Decaffeinator, then update your Wii U.'),
+        4711: ResultInfo('This error usually indicates the USB storage device connected to the console is dying or dead.')},
 )
+
+vpad_gamepad = Module('vpad (gamepad)', {
+    9901: ResultInfo('Error when updating a GamePad with a different region from the console.')
+})
 
 unknown = Module(
     "unknown/misc.",
@@ -573,7 +580,7 @@ modules = {
     151: Module("kpad (wiimote)"),
     155: Module("save"),
     160: syserr,
-    165: Module("vpad (gamepad)"),
+    165: vpad_gamepad,
     166: Module("aoc (dlc)"),
     187: Module("nfp (amiibo)"),
     199: unknown,

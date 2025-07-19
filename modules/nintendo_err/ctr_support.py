@@ -88,6 +88,7 @@ account = Module(
             "Local friend code SEED的签证非法。这个应只在其被修改时出现。", is_ban=True
         ),
         123: ResultInfo("此主机已被任天堂永久封禁。", is_ban=True),
+        1021: ResultInfo('There is no Nintendo Network ID linked with this system.')
     },
 )
 
@@ -103,7 +104,9 @@ internet = Module(
         ),
         1101: ResultInfo("错误的接入点密码或配置不兼容3DS"),
         2001: ResultInfo("DNS错误，如果你正在使用自定义DNS服务器，请确保设置正确。"),
-        2103: ResultInfo("常见的连接错误（？"),
+        (1401, 1403): ResultInfo(
+            'Incorrect password for access point or configuration is not compatible with the 3DS.'),
+        (2101, 2103): ResultInfo('Generic connection error(?)')
     },
 )
 
@@ -231,7 +234,7 @@ eshop_mint = Module(
         3049: ResultInfo(
             "eShop已停服维护。", "https://support.nintendo.com/networkstatus/"
         ),
-        6106: ResultInfo("常见于从eShop重新下载带有非法或无效ticket的软件时。"),
+        6106: ResultInfo("常见于从eShop重新下载带有非法或无效ticket的软件时。当 Luma3DS 的 UNITINFO 补丁开启时，也可能会出现此错误。"),
     },
 )
 
@@ -243,6 +246,8 @@ eshop_app = Module(
         # "https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399"),
         1000: ResultInfo("需要系统更新（好友模块？）。"),
         1001: eshop_mint.data[3049],
+        1003: ResultInfo('Often caused by the country setting setting of the system and the eshop country setting of eShop not matching.'),
+        2001: eshop_mint.data[2001],
         2705: ResultInfo(
             "此错误经常于eShop网络连接超时或丢失时出现。",
             "https://en-americas-support.nintendo.com/app/answers/detail/a_id/14478",
@@ -265,7 +270,7 @@ eshop_app = Module(
         4077: ResultInfo("无法开始或继续eShop下载。会在SD卡没有充足空间的时候出现。"),
         4079: ResultInfo("无法访问内存卡。"),
         4998: ResultInfo("本地内容比服务器的更新，鬼知道为什么会这样。"),
-        6106: ResultInfo("NIM的AM报错，可能是坏ticket惹的祸。"),
+        6106: ResultInfo("NIM的AM报错，可能是坏ticket惹的祸。当 Luma3DS 的 UNITINFO 补丁开启时，也可能会出现此错误。"),
         8401: ResultInfo("升级数据错误，删了然后重新下载它。"),
         9001: ResultInfo("主机电量不足的时候尝试下载内容时出现。"),
     },
@@ -306,13 +311,19 @@ data_transfer = Module(
 )
 # 012: a category related to the web browser or ssl module considered 1511
 browser1 = Module(
-    "browser (?)", {1004: ResultInfo("SSL连接失败。"), 1511: ResultInfo("证书警告。")}
+    "browser (?)", {1004: ResultInfo("SSL连接失败。"),
+                    (1510, 1511): ResultInfo("证书警告。")}
 )
 
 # 032: a second category related to the web browser
 browser2 = Module(
     "browser (?)",
     {
+        1035: ResultInfo('Unable to open this webpage. The 3ds browser can\'t display this page.'),
+        1209: ResultInfo(
+            'Unable to load file. Seems to happen when attemping to download something on the 3DS Browser (invalid Format?)'),
+        1222: ResultInfo(
+            'Displayed during a maintenance period of the browser filter service on Japanese consoles. (Known to be the 15th and 19th JST, separately, of each month.)'),
         1820: ResultInfo(
             "于你想访问一个危险的网站时出现。如果你是秋名山车神就直接确认。"
         )
@@ -348,10 +359,18 @@ account2 = Module(
             "此主机由于在宝可梦日月发售日前偷跑联网而被永久封禁。", is_ban=True
         ),
         2815: ResultInfo("此主机的Miiverse功能已被任天堂封禁。"),
+        2882: ResultInfo('The online services for the game or application you are trying to use are no longer available.'),
         5363: ResultInfo("出现于设置了无效的语言后加载NNID设置。"),
         5515: ResultInfo("网络连接超时。"),
     },
 )
+
+account3 = Module(
+    'account',
+    {
+        3278: ResultInfo(
+            'Adding funds to NNID via the 3DS console is deprecated.',
+            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22369/~/how-to-combine-nintendo-account-and-nintendo-network-id-funds')})
 
 # 090: application defined?
 unknown1 = Module(
