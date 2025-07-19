@@ -9,8 +9,8 @@
     "mcv.message.mcbv.ms_store": "當前 Microsoft Store 內最新正式版：",
     "mcv.message.mcbv.play_store": "當前 Google Play 商店內最新正式版：",
     "mcv.message.mcev": "最新版：${version}",
-    "mcv.message.mcv": "当前启动器内最新版本：\n${launcher_ver}",
+    "mcv.message.mcv": "目前啟動器內最新版本：\n${launcher_ver}",
     "mcv.message.mcv.jira.failed": "取得 Mojira 資訊失敗。",
-    "mcv.message.mcv.launcher": "最新版：${release}\n发布于：${release_time}\n最新快照：${snapshot}\n发布于：${snapshot_time}",
+    "mcv.message.mcv.launcher": "最新版：${release}\n發佈於：${release_time}\n最新快照：${snapshot}\n發佈於：${snapshot_time}",
     "mcv.message.mcv.launcher.failed": "取得 manifest.json 失敗。"
 }
