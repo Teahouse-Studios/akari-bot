@@ -119,7 +119,7 @@
     "error.message.prompt.timeout": "This error may be caused by the bot not processing messages in time. If the error occurs repeatedly, please report the following message to bot owner.",
     "error.message.report": "The following error occurred while executing \"${module}\": ",
     "error.message.timeout": "Message sending timed out. Please retry the command later or wait for the result to be returned.",
-    "error.module.helpdoc.invalid": "\"${module}\" module provided invalid help information. Please contact the bot owner to solve this issue.",
+    "error.module.helpdoc.invalid": "\"${module}\" module provided invalid help information. Please contact the developers to solve this issue.",
     "error.module.unbound": "\"${module}\" module is unbound with any commands and doesn't have the description. Please contact the developers to solve this issue.",
     "error.module.unloaded": "\"${module}\" module failed to load. Please contact the developers to resolve this issue.",
     "example": "Hello world!",
