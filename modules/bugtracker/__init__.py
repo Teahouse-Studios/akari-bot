@@ -12,7 +12,7 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
     result = await bugtracker_get(msg, mojiraid)
     msg_list = [result[0]]
     if result[1]:
-        msg_list.append(Url(result[1]))
+        msg_list.append(Url(result[1], use_mm=False))
     await msg.send_message(msg_list)
     if result[1]:
         screenshot = await make_screenshot(result[1])

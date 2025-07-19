@@ -15,7 +15,8 @@ async def get_ab_qq(msg: MessageSession, wiki_url, headers=None):
         _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False),
     )
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
-    msgchain_lst = [MessageChain.assign([I18NContext("wiki.message.ab.qq.title"), Url(pageurl)])]
+    msgchain_lst = [MessageChain.assign([I18NContext("wiki.message.ab.qq.title"), Url(
+        pageurl, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False)])]
     ablist = await convert_ab_to_detailed_format(msg, query["query"]["abuselog"])
     for x in ablist:
         msgchain_lst.append(MessageChain.assign([Plain(x)]))

@@ -22,5 +22,5 @@ async def mcmod(keyword: str, detail: bool = False):
             name = a.text
             url = a["href"]
             desc = res.find("div", class_="body").text
-            return [Plain(name), Url(url), Plain(desc)]
+            return [Plain(name), Url(url, use_mm=False), Plain(desc)]
     return I18NContext("mcmod.message.not_found")
