@@ -1,7 +1,8 @@
 import asyncio
 import re
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.dirty_check import check
 from .server import query_java_server, query_bedrock_server
@@ -28,8 +29,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("server.message.local_address"))
 
     java_info, bedrock_info = await asyncio.gather(
-        query_java_server(msg, server_address, raw, showplayer),
-        query_bedrock_server(msg, server_address, raw),
+        query_java_server(server_address, raw, showplayer),
+        query_bedrock_server(server_address, raw),
     )
 
     sendmsg = [java_info, bedrock_info]
@@ -37,7 +38,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("server.message.not_found"))
     else:
         sendmsg = "\n".join(sendmsg).split("\n")
-        sendmsg = await check(sendmsg)
+        sendmsg = await check(sendmsg, session=msg)
         t = "\n".join(x["content"] for x in sendmsg)
         await msg.finish(t.strip())
 

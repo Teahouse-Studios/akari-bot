@@ -8,8 +8,6 @@ config_path = os.path.abspath("./config")
 database_path = os.path.abspath("./database")
 locales_path = os.path.abspath("./core/locales")
 logs_path = os.path.abspath("./logs")
-modules_path = os.path.abspath("./modules")
-schedulers_path = os.path.abspath("./schedulers")
 webui_path = os.path.abspath("./webui")
 
 # assets 子路径
@@ -25,7 +23,7 @@ nunito_light_path = os.path.join(fonts_path, "Nunito Light.ttf")
 nunito_regular_path = os.path.join(fonts_path, "Nunito Regular.ttf")
 
 # 特殊路径
-modules_locales_path = os.path.join(modules_path, "*", "locales")
+modules_locales_path = os.path.join(os.path.abspath('./modules'), "*", "locales")
 bots_info_path = os.path.join(bots_path, "*", "info.py")
 
 

@@ -1,12 +1,12 @@
 import datetime
 
-from core.builtins import Bot
 from core.dirty_check import check_bool
 
 
 def dark_check(message: str):
     blacklist = [
-        "china-dictatorship" "cirosantilli",
+        "china-dictatorship",
+        "cirosantilli",
         "gfwlist",
         "v2ray",
         "shadowsocks",
@@ -18,9 +18,7 @@ def dark_check(message: str):
         "zhao",
         "programthink",
     ]
-    if Bot.Info.dirty_word_check:
-        return any(message.find(i) != -1 for i in blacklist)
-    return False
+    return any(message.find(i) != -1 for i in blacklist)
 
 
 def time_diff(time: str):

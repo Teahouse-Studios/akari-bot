@@ -8,7 +8,8 @@ from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from gql import Client, gql
 from gql.transport.httpx import HTTPXAsyncTransport
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.config import Config
 from core.constants.path import (
     assets_path,
@@ -108,7 +109,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             details = x["details"]
             _date = datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
             local_time = _date + parse_time_string(
-                msg.target_data.get("timezone_offset", Config("timezone_offset", "+8"))
+                msg.session_info.target_info.target_data.get("timezone_offset", Config("timezone_offset", "+8"))
             )
             playtime = local_time.timestamp()
             nowtime = time.time()
@@ -184,7 +185,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         )
 
         font5 = ImageFont.truetype(noto_sans_demilight_path, 20)
-        level_text = f"{msg.locale.t("cytoid.message.b30.level")} {profile_level}"
+        level_text = f"{msg.session_info.locale.t("cytoid.message.b30.level")} {profile_level}"
         level_text_size = get_fontsize(font5, level_text)
         level_text_width = level_text_size[0]
         level_text_height = level_text_size[1]

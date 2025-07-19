@@ -1,10 +1,10 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
 
-@client.slash_command(
+@discord_bot.slash_command(
     name="exchange_rate",
     description="Convert currency prices according to the exchange rate of the day.",
 )

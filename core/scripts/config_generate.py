@@ -25,11 +25,7 @@ def safe_literal_eval(node, globals_dict=None):
     if not globals_dict:
         globals_dict = globals()
 
-    if isinstance(node, ast.Str):
-        return node.s
-    if isinstance(node, ast.Num):
-        return node.n
-    if isinstance(node, ast.NameConstant):
+    if isinstance(node, ast.Constant):
         return node.value
     if isinstance(node, ast.Tuple):
         # 对元组元素进行递归解析，对于 type 类型的元素保持原样
@@ -68,7 +64,7 @@ def generate_config(dir_path, language):
     os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
 
-    dir_list = [".", "bots", "core", "modules", "schedulers"]
+    dir_list = [".", "bots", "core", "modules"]
     exclude_dir_list = [os.path.join("core", "config"), os.path.join("core", "scripts")]
 
     # create empty config.toml
@@ -167,8 +163,15 @@ Please input the number of the language you want to use: """)
     input()
     sys.exit(0)
 
-
 if __name__ == "__main__":
+    cfg_file_path = os.path.join(config_path, config_filename)
+    old_cfg_file_path = os.path.join(config_path, "config.cfg")
+    if not os.path.exists(cfg_file_path):
+        if os.path.exists(old_cfg_file_path):
+            pass
+        else:
+            os.makedirs(config_path, exist_ok=True)
+            open(cfg_file_path, "w", encoding="utf-8").close()
     import zipfile
     import difflib
 

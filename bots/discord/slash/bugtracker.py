@@ -1,6 +1,6 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
 
@@ -9,7 +9,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
         return ["BDS-", "MCPE-", "MCD-", "MCL-", "MCLG-", "REALMS-", "MC-", "WEB-"]
 
 
-@client.command(
+@discord_bot.command(
     name="bugtracker", description="Query the corresponding ticket on Mojira."
 )
 @discord.option(

@@ -1,7 +1,8 @@
 # ported from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.utils.element import convert_discord_embed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results

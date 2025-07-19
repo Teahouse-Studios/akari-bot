@@ -3,19 +3,19 @@
 # 例如：TOML 中的布林值必須是小寫。
 
 default_locale = "zh_tw" # 預設的會話語言環境。
-config_version = 1 # 設定檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
+config_version = 2 # 設定檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。
 initialized = true
 
 [config]
 # 一些基礎的設定部分，此處填寫的值可在訊息中以明文形式顯示。請不要在此部分填寫敏感資訊。
 debug = false # 是否啟用調試模式，啟用後會輸出更多的日誌訊息。
+enable_console = false # 是否在生产环境下启用控制台。
 base_superuser = ["QQ|2596322644"] # 機器人的基礎超級使用者列表，此處填寫的值將會在機器人啟動時載入資料庫。
 enable_dirty_check = false # 是否啟用文字過濾偵測，需要設定阿里雲內容安全服務的 AccessKey ID 與 AccessKey Secret。
 enable_urlmanager = false # 是否啟用 URLManager，用於 URL 跳板用。（聲明此 URL 非官方連結等）
 enable_tos = true # 是否啟用內建的 ToS 檢查規則。
 ignored_sender = ["QQ|2854196310"] # 無視的使用者列表，匹配到此列表中的使用者將會被忽略。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 問題報告網址。
-enable_analytics = false # 是否啟用內建的統計功能。
 enable_petal = false # 是否啟用花瓣功能。
 rickroll_msg = "<Replace me with str value>" # 文字過濾偵測失敗時的 Rickroll 訊息。
 enable_rickroll = true # 當文字過濾偵測失敗時，是否 Rickroll 使用者。
@@ -24,13 +24,15 @@ shuffle_rate = 0.1 # 玩笑的隨機發生率，範圍 0 到 1 之間。
 unloaded_modules = [] # 不載入的模組列表，符合到此列表中的模組將不會被載入。
 report_targets = [] # 上報會話列表，此處填寫的值將會被辨識為上報會話。（如：當機器人執行指令出錯時，機器人會將報錯訊息傳送至對應會話）
 tos_warning_counts = 5 # 違反 ToS 時的警告次數。
-no_confirm = false # 是否無需傳送者確認訊息後再執行指令。
-timezone_offset = "+8" # 機器人的預設時區偏移量。
-confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認指令的關鍵字，此處填入的值將會被辨識為確認指令。
-command_prefix = ["~", "～"] # 指令前綴，此處填入的值將會被辨識為指令前綴。
+enable_analytics = false # 是否啟用內建的統計功能。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # 回報錯誤網址。
 tos_temp_ban_time = 300 # 違反 ToS 時的暫時封鎖時間。
+timezone_offset = "+8" # 機器人的預設時區偏移量。
+no_confirm = false # 是否無需傳送者確認訊息後再執行指令。
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 確認指令的關鍵字，此處填入的值將會被辨識為確認指令。
+command_prefix = ["~", "～"] # 指令前綴，此處填入的值將會被辨識為指令前綴。
 allow_request_private_ip = false # 是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）
+use_font_mirror = false # 渲染网页时是否使用字体镜像。
 enable_get_petal = false # 是否允許取得花瓣。
 petal_gained_limit = 0 # 單日取得花瓣上限。
 petal_lost_limit = 0 # 單日失去花瓣上限。
@@ -54,4 +56,3 @@ check_access_key_secret = "<Replace me with str value>" # 阿里雲內容安全�
 db_path = "sqlite://database/save.db" # 資料庫連結字串，請使用 Tortoise ORM 支援的連結字串格式。
 ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # 用於加密敏感資訊的金鑰。（使用 ff3 演算法進行加密，部分場景可能會使用）
 ff3_tweak = "1E915EC4922E78" # 用於加密敏感資訊的金鑰微調量。
-web_render = "<Replace me with str value>" # WebRender 服務的 URL 位址。

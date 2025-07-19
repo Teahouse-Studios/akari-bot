@@ -1,6 +1,7 @@
 import re
 
-from core.builtins import Bot, Image, Url, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Url, I18NContext
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
@@ -16,10 +17,7 @@ async def query_bugtracker(msg: Bot.MessageSession, mojiraid: str):
     if result[1]:
         screenshot = await make_screenshot(result[1])
         if screenshot:
-            img_chain = []
-            for scr in screenshot:
-                img_chain.append(Image(scr))
-            await msg.send_message(img_chain)
+            await msg.send_message(screenshot)
 
 
 @bug.command("<mojiraid> {{I18N:bugtracker.help}}")
@@ -39,7 +37,6 @@ async def _(msg: Bot.MessageSession, mojiraid: str):
     desc="{I18N:bugtracker.help.regex.desc}",
 )
 async def _(msg: Bot.MessageSession):
-
     titles = msg.matched_msg[:5]
     for title in titles:
         if title != "":

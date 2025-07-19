@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ msg.locale.locale }}">
+<html lang="{{ locale.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Module Help</title>
-    <link rel="preconnect" href="https://fonts.font.im">
-    <link rel="preconnect" href="https://fonts.font.im" crossorigin>
+    <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}">
+    <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}" crossorigin>
     <link
-        href="https://fonts.font.im/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
+        href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
         rel="stylesheet">
     <link
-        href="https://fonts.font.im/css2?family=Consolas&family=Courier+New&display=swap"
+        href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}/css2?family=Consolas&family=Courier+New&display=swap"
         rel="stylesheet">
     <style>
         html body {
@@ -175,22 +175,22 @@
 
 <body>
     <div class="botbox">
-        <h2>{{ msg.locale.t("core.help.header") }}</h2>
+        <h2>{{ locale.t("core.help.header") }}</h2>
         <hr>
         <div class="help-shard">
             <h3 class="help-module-name"> {{ help_name }} </h3>
             {% if module.desc %}
-            <div class="help-desc">{{ msg.locale.t_str(module.desc) }}</div>
+            <div class="help-desc">{{ locale.t_str(module.desc) }}</div>
             {%- endif %}
             <div class="help-contents">
                 <div class="help-commands">
                     {% set command_doc = help.return_formatted_help_doc().split('\n') %}
                     {%if help.args %}
                     <div class="help-command-body">
-                        <h4>{{ msg.locale.t("core.help.commands") }}</h4>
+                        <h4>{{ locale.t("core.help.commands") }}</h4>
                         {% for doc in command_doc %}
-                        {% if doc == msg.locale.t("core.help.options") %}
-                        <h5>{{ msg.locale.t("core.help.options") }}</h5>
+                        {% if doc == locale.t("core.help.options") %}
+                        <h5>{{ locale.t("core.help.options") }}</h5>
                         {% else %}
                         <div class="help-detail">{{ escape(doc) | safe }}</div>
                         {% endif %}
@@ -199,7 +199,7 @@
                     {% endif %}
                     {% if module.alias %}
                     <div class="help-sidebar">
-                        <h4>{{ msg.locale.t("core.help.alias") }}</h4>
+                        <h4>{{ locale.t("core.help.alias") }}</h4>
                         {% for alias in module.alias %}
                         <div class="help-detail">{{ alias }} -> {{ module.alias[alias] }}</div>
                         {%- endfor %}
@@ -208,16 +208,16 @@
                 </div>
                 {% if regex_list %}
                 <div class="help-regex">
-                    <h4>{{ msg.locale.t("core.help.regex") }}</h4>
-                    <div class="help-note">{{ msg.locale.t("core.help.regex.note") }}</div>
+                    <h4>{{ locale.t("core.help.regex") }}</h4>
+                    <div class="help-note">{{ locale.t("core.help.regex.note") }}</div>
                     {% for regex in regex_list %}
                     {% set pattern = regex.pattern if isinstance(regex.pattern, str) else
                     (regex.pattern.pattern if isinstance(regex.pattern, repattern) else None) %}
                     {% if pattern %}
                     <div class="help-detail">{{ escape(pattern) | safe }} {{
-                        msg.locale.t("core.message.help.regex.detail",
-                        msg=msg.locale.t_str(regex.desc)) if regex.desc else
-                        msg.locale.t("core.message.help.regex.no_information") }}</div>
+                        locale.t("core.message.help.regex.detail",
+                        msg=locale.t_str(regex.desc)) if regex.desc else
+                        locale.t("core.message.help.regex.no_information") }}</div>
                     {%- endif %}
                     {%- endfor %}
                 </div>
@@ -225,7 +225,7 @@
             </div>
             {% if module.developers %}
             <div class="authors">
-                {{ msg.locale.t("core.help.author") }}{{ msg.locale.t('message.delimiter').join(module.developers)
+                {{ locale.t("core.help.author") }}{{ locale.t('message.delimiter').join(module.developers)
                 }}</div>
             {%- endif %}
         </div>

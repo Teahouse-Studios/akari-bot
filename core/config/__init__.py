@@ -18,7 +18,6 @@ from core.constants.path import config_path
 from core.exports import add_export
 from core.i18n import Locale
 
-
 ALLOWED_TYPES = (bool, datetime.datetime, datetime.date, float, int, list, str)
 
 
@@ -108,6 +107,8 @@ class CFGManager:
         :param cfg_type: 配置项类型。
         :param secret: 是否为密钥配置项。（默认为False）
         :param table_name: 配置项表名。
+        :param _global: 内部变量，是否在所有表中查找配置项。（默认为False）
+        :param _generate: 内部变量，生成配置文件时使用。（默认为False）
 
         :return: 配置文件中对应配置项的值。
         """
@@ -243,13 +244,13 @@ class CFGManager:
                         cfg_type_str = "(" + ", ".join(map(lambda ty: ty.__name__, cfg_type)) + ")"
                     else:
                         cfg_type_str = cfg_type.__name__
-                if cfg_type_str:
-                    if cfg_type_str == "list":
-                        value = []
+                    if cfg_type_str:
+                        if cfg_type_str == "list":
+                            value = []
+                        else:
+                            value = f"<Replace me with {cfg_type_str} value>"
                     else:
-                        value = f"<Replace me with {cfg_type_str} value>"
-                else:
-                    value = "<Replace me>"
+                        value = "<Replace me>"
             else:  # if the value is None, skip to autofill
                 logger.debug(f"[Config] Config {q} has no default value, skipped to auto fill.")
                 return
@@ -350,7 +351,11 @@ class CFGManager:
                     table_comment_key = f"config.table.{"secret" if is_secret else "config"}_{prefix}"
                 cls.values[cfg_name].add(nl())
                 cls.values[cfg_name].add(target, toml_document())
-                cls.values[cfg_name][target].add(toml_comment(get_locale.t(table_comment_key)))
+                cls.values[cfg_name][target].add(
+                    toml_comment(
+                        get_locale.t(
+                            table_comment_key,
+                            fallback_failed_prompt=False)))
 
             try:
                 cls.values[cfg_name][target].add(q, value)
@@ -431,7 +436,8 @@ def Config(q: str,
     :param secret: 是否为密钥配置项。（默认为False）
     :param table_name: 配置项表名。
     :param get_url: 是否为URL配置项。（默认为False）
-
+    :param _global: 内部变量，是否在所有表中查找配置项。（默认为False）
+    :param _generate: 内部变量，生成配置文件时使用。（默认为False）
     :return: 配置文件中对应配置项的值。
     """
     if get_url:

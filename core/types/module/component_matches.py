@@ -1,9 +1,9 @@
+from copy import deepcopy
 from typing import List
 
-from .component_meta import *
-
 from attrs import define
-from copy import deepcopy
+
+from .component_meta import *
 
 
 @define

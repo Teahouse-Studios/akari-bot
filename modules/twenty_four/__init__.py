@@ -2,9 +2,11 @@ import itertools
 
 from simpleeval import simple_eval
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.utils.game import PlayState, GAME_EXPIRED
+from core.utils.message import isint
 from core.utils.petal import gained_petal, lost_petal
 from core.utils.message import isint
 from core.utils.random import Random
@@ -143,7 +145,7 @@ async def _(msg: Bot.MessageSession):
         play_state.disable()
         if expr.lower() in no_solution_lst:
             if solution:
-                if msg.Feature.markdown:
+                if msg.session_info.support_markdown:
                     solution.replace("*", "\\*")
                 send = [I18NContext("twenty_four.message.incorrect.have_solution", solution=solution)]
                 if g_msg := (g_msg := await lost_petal(msg, 1)):

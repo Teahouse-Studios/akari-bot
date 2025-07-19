@@ -10,16 +10,13 @@ from flask import Flask, abort, send_from_directory
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from bots.web.utils import find_available_port, get_local_ip
 from bots.web.info import *
-from core.bot_init import init_async
+from bots.web.utils import find_available_port, get_local_ip
+from core.client.init import client_init
 from core.config import Config
 from core.constants.path import webui_path
-from core.extra.scheduler import load_extra_schedulers
+from core.database.models import SenderInfo
 from core.logger import Logger
-from core.queue import JobQueue
-from core.scheduler import Scheduler
-from core.terminate import cleanup_sessions
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 protocol = "https" if enable_https else "http"
@@ -57,20 +54,16 @@ def _webui_message():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_async(start_scheduler=False)
-    load_extra_schedulers()
-    Scheduler.start()
-    await JobQueue.secret_append_ip()
-    await JobQueue.web_render_status()
+    await client_init(target_prefix_list, sender_prefix_list)
+    await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
     if os.path.exists(webui_path):
         Logger.info(_webui_message())
     yield
-    await cleanup_sessions()
+
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -79,7 +72,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
 
 if os.path.exists(webui_path):
     flask_app = Flask(__name__)

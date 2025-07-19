@@ -3,19 +3,19 @@
 # 例如：TOML 中的布尔值必须是小写。
 
 default_locale = "zh_cn" # 默认的会话语言环境。
-config_version = 1 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
+config_version = 2 # 配置版本号，将会随功能更新自增，一般情况请勿修改。
 initialized = true
 
 [config]
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 debug = false # 是否启用调试模式，启用后会输出更多的日志信息。
+enable_console = false # 是否在生产环境下启用控制台。
 base_superuser = ["QQ|2596322644"] # 机器人的基础超级用户列表，此处填写的值将会在机器人启动时被加载进入数据库。
 enable_dirty_check = false # 是否启用文字过滤检测，需要配置阿里云内容安全服务的 AccessKey ID 与 AccessKey Secret。
 enable_urlmanager = false # 是否启用 URLManager，用于 URL 跳板用。（声明此 URL 非官方链接等）
 enable_tos = true # 是否启用内置的 ToS 检查规则。
 ignored_sender = ["QQ|2854196310"] # 无视的用户列表，匹配到此列表中的用户将会被忽略。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 问题反馈网址。
-enable_analytics = false # 是否启用内置的统计功能。
 enable_petal = false # 是否启用花瓣功能。
 rickroll_msg = "<Replace me with str value>" # 文字过滤检测失败时的 Rickroll 消息。
 enable_rickroll = true # 当文字过滤检测失败时，是否 Rickroll 用户。
@@ -24,13 +24,15 @@ shuffle_rate = 0.1 # 玩笑的随机发生率，范围 0 到 1 之间。
 unloaded_modules = [] # 不加载的模块列表，匹配到此列表中的模块将不会被加载。
 report_targets = [] # 上报会话列表，此处填写的值将会被识别为上报会话。（如：在机器人执行命令出错时，机器人将会把错误信息发送至对应会话）
 tos_warning_counts = 5 # 违反 ToS 时的警告次数。
-no_confirm = false # 是否无需发送者确认消息后再执行命令。
-timezone_offset = "+8" # 机器人的默认时区偏移量。
-confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
-command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
+enable_analytics = false # 是否启用内置的统计功能。
 bug_report_url = "https://s.wd-ljt.com/botreportbug" # 汇报错误网址。
 tos_temp_ban_time = 300 # 违反 ToS 时的临时封禁时间。
+timezone_offset = "+8" # 机器人的默认时区偏移量。
+no_confirm = false # 是否无需发送者确认消息后再执行命令。
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 确认命令的关键词，此处填写的值将会被识别为确认命令。
+command_prefix = ["~", "～"] # 命令前缀，此处填写的值将会被识别为命令前缀。
 allow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）
+use_font_mirror = false # 渲染网页时是否使用字体镜像。
 enable_get_petal = false # 是否允许获取花瓣。
 petal_gained_limit = 0 # 单日获取花瓣上限。
 petal_lost_limit = 0 # 单日失去花瓣上限。
@@ -54,4 +56,3 @@ check_access_key_secret = "<Replace me with str value>" # 阿里云内容安全�
 db_path = "sqlite://database/save.db" # 数据库连接字符串，请使用 Tortoise ORM 支持的数据库连接字符串格式。
 ff3_key = "25FDA29B045EE0034966792BAD5AF1C0" # 用于加密敏感信息的密钥。（使用 ff3 算法进行加密，部分场景可能会使用到）
 ff3_tweak = "1E915EC4922E78" # 用于加密敏感信息的密钥偏移量。
-web_render = "<Replace me with str value>" # WebRender 服务的 URL 地址。

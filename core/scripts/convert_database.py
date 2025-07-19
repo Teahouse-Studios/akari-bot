@@ -1,9 +1,7 @@
 import os
 import sys
 
-import orjson as json
-
-from tortoise import fields, run_async, Tortoise
+from tortoise import run_async, Tortoise
 from tortoise.models import Model
 
 if __name__ == "__main__":
@@ -193,16 +191,20 @@ async def rename_old_tables():
         await conn.execute_query("ALTER TABLE StoredData RENAME TO _old_StoredData;")
         await conn.execute_query("ALTER TABLE Analytics RENAME TO _old_Analytics;")
         await conn.execute_query("ALTER TABLE unfriendly_action RENAME TO _old_unfriendly_action;")
-        await conn.execute_query("ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
-        await conn.execute_query("ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
+        await conn.execute_query(
+            "ALTER TABLE module_cytoid_CytoidBindInfo RENAME TO _old_module_cytoid_CytoidBindInfo;")
+        await conn.execute_query(
+            "ALTER TABLE module_maimai_DivingProberBindInfo RENAME TO _old_module_maimai_DivingProberBindInfo;")
         await conn.execute_query("ALTER TABLE module_osu_OsuBindInfo RENAME TO _old_module_osu_OsuBindInfo;")
         await conn.execute_query("ALTER TABLE module_phigros_PgrBindInfo RENAME TO _old_module_phigros_PgrBindInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_TargetSetInfo RENAME TO _old_module_wiki_TargetSetInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiInfo RENAME TO _old_module_wiki_WikiInfo;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiAllowList RENAME TO _old_module_wiki_WikiAllowList;")
         await conn.execute_query("ALTER TABLE module_wiki_WikiBlockList RENAME TO _old_module_wiki_WikiBlockList;")
-        await conn.execute_query("ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
-        await conn.execute_query("ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
+        await conn.execute_query(
+            "ALTER TABLE module_wiki_WikiBotAccountList RENAME TO _old_module_wiki_WikiBotAccountList;")
+        await conn.execute_query(
+            "ALTER TABLE module_wikilog_WikiLogTargetSetInfo RENAME TO _old_module_wikilog_WikiLogTargetSetInfo;")
         await conn.execute_query("ALTER TABLE job_queues RENAME TO _old_job_queues;")
         await conn.execute_query("ALTER TABLE DBVersion RENAME TO _old_DBVersion;")
     except Exception:
@@ -507,6 +509,7 @@ async def convert_database():
     await conn.execute_query("DROP TABLE IF EXISTS _old_DBVersion;")
 
     await Tortoise.close_connections()
+
 
 if __name__ == "__main__":
     run_async(convert_database())

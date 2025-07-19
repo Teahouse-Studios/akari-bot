@@ -1,47 +1,53 @@
-import asyncio
 import os
 import sys
 
 import uvicorn
-import orjson as json
-from fastapi import WebSocket, WebSocketDisconnect
 
 sys.path.append(os.getcwd())
 
 from bots.web.api import *  # noqa: E402
-from bots.web.client import web_host, avaliable_web_port  # noqa: E402
 from bots.web.info import *  # noqa: E402
-from bots.web.message import MessageSession  # noqa: E402
+from bots.web.client import web_host, avaliable_web_port  # noqa: E402
+from bots.web.context import WebContextManager  # noqa: E402
 from bots.web.utils import generate_webui_config  # noqa: E402
-from core.builtins import Info, Temp  # noqa: E402
-from core.config import Config  # noqa: E402
-from core.parser.message import parser  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
+from core.builtins.bot import Bot  # noqa: E402
+from core.builtins.message.chain import MessageChain  # noqa: E402
+from core.builtins.session.info import SessionInfo  # noqa: E402
+from core.builtins.temp import Temp  # noqa: E402
+
+Bot.register_bot(client_name=client_name)
+
+ctx_id = Bot.register_context_manager(WebContextManager)
 
 
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
+    if __name__ != "bots.web.bot":
+        await websocket.close(code=1008, reason="Bot main process is not running")
+        return
+
     await websocket.accept()
     Temp.data["web_chat_websocket"] = websocket
+    target_id = f"{target_prefix}|0"
+    sender_id = f"{sender_prefix}|0"
     try:
         while True:
             rmessage = await websocket.receive_text()
             if rmessage:
                 message = json.loads(rmessage)
-                msg = MessageSession(
-                    target=MsgInfo(
-                        target_id=f"{target_prefix}|0",
-                        sender_id=f"{sender_prefix}|0",
-                        sender_name="Console",
-                        target_from=target_prefix,
-                        sender_from=sender_prefix,
-                        client_name=client_name,
-                        message_id=message["id"],
-                    ),
-                    session=Session(
-                        message=message, target=f"{target_prefix}|0", sender=f"{sender_prefix}|0"
-                    ))
-                asyncio.create_task(parser(msg))
+                msg_chain = MessageChain.assign(message["message"][0]["content"])
+                session = await SessionInfo.assign(target_id=target_id,
+                                                   sender_id=sender_id,
+                                                   sender_name="Console",
+                                                   target_from=target_prefix,
+                                                   sender_from=sender_prefix,
+                                                   client_name=client_name,
+                                                   message_id=message["id"],
+                                                   messages=msg_chain,
+                                                   ctx_slot=ctx_id
+                                                   )
+
+                await Bot.process_message(session, message)
     except WebSocketDisconnect:
         pass
     except Exception:

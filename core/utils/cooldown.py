@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 
-from core.builtins import MessageSession
+from core.builtins.session.internal import MessageSession
 
 _cd_lst = defaultdict(lambda: defaultdict(dict))
 
@@ -15,19 +15,9 @@ def clear_cd_list():
         for sender in list(target_data.keys()):
             sender_data = target_data[sender]
 
-            if isinstance(sender_data, dict):
-                if "timestamp" in sender_data and (now - sender_data["timestamp"] >= sender_data["delay"]):
-                    del target_data[sender]
-                    continue
-            elif isinstance(sender_data, str):
-                for cd in list(sender_data.keys()):
-                    cd_data = sender_data[cd]
-
-                    if "timestamp" in cd_data and (now - cd_data["timestamp"] >= cd_data["delay"]):
-                        del sender_data[cd]
-
-                if not sender_data:
-                    del target_data[sender]
+            if "timestamp" in sender_data and (now - sender_data["timestamp"] >= sender_data["delay"]):
+                del target_data[sender]
+                continue
 
         if not target_data:
             del _cd_lst[target]
@@ -48,8 +38,8 @@ class CoolDown:
         self.msg = msg
         self.delay = delay
         self.whole_target = whole_target
-        self.target_id = self.msg.target.target_id
-        self.sender_id = self.msg.target.sender_id
+        self.target_id = self.msg.session_info.target_id
+        self.sender_id = self.msg.session_info.sender_id
 
     def _get_cd_dict(self):
         target_dict = _cd_lst[self.target_id]

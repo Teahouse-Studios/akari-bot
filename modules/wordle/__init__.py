@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext, Image as BImage, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image as BImage, Plain
 from core.component import module
 from core.config import Config
 from core.logger import Logger
@@ -32,7 +33,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("wordle.message.occupied"))
 
     qc = CoolDown("wordle", msg, 180)
-    if not msg.target.client_name == "TEST" and not msg.check_super_user():
+    if not msg.check_super_user():
         c = qc.check()
         if c != 0:
             await msg.finish(I18NContext("message.cooldown", time=int(c)))
@@ -40,7 +41,7 @@ async def _(msg: Bot.MessageSession):
     board = WordleBoard.from_random_word()
     last_word = None
     board_image = WordleBoardImage(
-        wordle_board=board, dark_theme=msg.target_data.get("wordle_dark_theme")
+        wordle_board=board, dark_theme=msg.session_info.target_info.target_data.get("wordle_dark_theme")
     )
 
     play_state.enable()
@@ -112,11 +113,11 @@ async def _(msg: Bot.MessageSession):
 
 @wordle.command("theme {{I18N:wordle.help.theme}}", load=not text_mode)
 async def _(msg: Bot.MessageSession):
-    dark_theme = msg.target_data.get("wordle_dark_theme")
+    dark_theme = msg.session_info.target_info.target_data.get("wordle_dark_theme")
 
     if dark_theme:
-        await msg.target_info.edit_target_data("wordle_dark_theme", False)
+        await msg.session_info.target_info.edit_target_data("wordle_dark_theme", False)
         await msg.finish(I18NContext("wordle.message.theme.disable"))
     else:
-        await msg.target_info.edit_target_data("wordle_dark_theme", True)
+        await msg.session_info.target_info.edit_target_data("wordle_dark_theme", True)
         await msg.finish(I18NContext("wordle.message.theme.enable"))

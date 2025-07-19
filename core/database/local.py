@@ -1,13 +1,12 @@
-from datetime import datetime, timedelta, UTC
 import hashlib
 import os
 import secrets
+from datetime import datetime, timedelta, UTC
 
 from tortoise import fields
 
 from core.constants.path import database_path
 from .base import DBModel
-
 
 os.makedirs(database_path, exist_ok=True)
 

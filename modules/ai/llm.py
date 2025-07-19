@@ -1,10 +1,11 @@
 import io
 from typing import List, Tuple
 
-from openai import AsyncOpenAI
 from PIL import Image as PILImage
+from openai import AsyncOpenAI
 
-from core.builtins import I18NContext, Image, Plain
+from core.builtins.message.internal import I18NContext, Image, Plain
+from core.builtins.session.internal import MessageSession
 from core.config import Config
 from core.dirty_check import check
 from core.logger import Logger
@@ -21,7 +22,7 @@ presence_penalty = Config("llm_presence_penalty", 0, cfg_type=float, table_name=
 async def ask_llm(prompt: str,
                   model_name: str,
                   api_url: str,
-                  api_key: str) -> Tuple[List, int, int]:
+                  api_key: str, session: MessageSession) -> Tuple[List, int, int]:
     client = AsyncOpenAI(base_url=api_url, api_key=api_key)
     completion = await client.chat.completions.create(
         model=model_name,
@@ -44,7 +45,7 @@ async def ask_llm(prompt: str,
     input_tokens = completion.usage.prompt_tokens
     output_tokens = completion.usage.completion_tokens
 
-    res = await check(res)
+    res = await check(res, session=session)
     resm = "".join(m["content"] for m in res)
     blocks = parse_markdown(resm)
 

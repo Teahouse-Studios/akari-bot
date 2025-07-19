@@ -1,9 +1,9 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
-ctd = client.create_group("cytoid", "Query about Cytoid.")
+ctd = discord_bot.create_group("cytoid", "Query about Cytoid.")
 
 
 @ctd.command(name="b30", description="Query the Best30 list.")

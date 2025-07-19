@@ -41,6 +41,7 @@ def convert_cfg_to_toml():
         f.write(toml_dumps(config_dict))
     os.remove(old_cfg_file_path)
 
+
 # If the config file does not exist, try to convert the old config file to the new format, or raise an error.
 
 
@@ -149,7 +150,10 @@ if "config_version" not in config:
     logger.info("Config version not found, regenerating the config file...")
     shutil.copy(cfg_file_path, cfg_file_path + ".bak")
     configs = {"config": toml_document()}
-    get_old_locale = old_config["cfg"].get("locale", "zh_cn")
+    if "cfg" in old_config:
+        get_old_locale = old_config["cfg"].get("locale", "zh_cn")
+    else:
+        get_old_locale = "zh_cn"
     old_locale = Locale(get_old_locale)
     configs["config"].add(toml_comment(old_locale.t("config.header.line.1", fallback_failed_prompt=False)))
     configs["config"].add(toml_comment(old_locale.t("config.header.line.2", fallback_failed_prompt=False)))
@@ -246,6 +250,8 @@ if "config_version" not in config:
             f.write(toml_dumps(configs[c]))
     logger.success("Config file regenerated successfully.")
     sleep(3)
+    with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
+        config = toml_parser(cfg_file.read())  # Reload the config file after regeneration
 if config["config_version"] < config_version:
     logger.info(f"Updating Config file from {config["config_version"]} to {config_version}...")
     if config["config_version"] < 1:
@@ -315,6 +321,9 @@ if config["config_version"] < config_version:
                 f.write(toml_dumps(configs[c]))
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))
+        with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
+            config = toml_parser(cfg_file.read())  # Reload the config file after regeneration
+
     if config["config_version"] < 2:
         with open(cfg_file_path, "r", encoding="utf-8") as f:
             config = toml_parser(f.read())
@@ -335,6 +344,8 @@ if config["config_version"] < config_version:
                 f.write(toml_dumps(configs[c]))
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))
+        with open(cfg_file_path, "r", encoding="utf-8") as cfg_file:
+            config = toml_parser(cfg_file.read())  # Reload the config file after regeneration
 
     logger.success("Config file updated successfully.")
     sleep(3)

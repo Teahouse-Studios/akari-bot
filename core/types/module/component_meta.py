@@ -1,13 +1,13 @@
 import re
-from attrs import define, field
 from typing import Callable, Union, List
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from attrs import define, field
 
-from core.parser.args import Template
+from core.builtins.parser.args import Template
 from core.utils.message import convert2lst
 
 

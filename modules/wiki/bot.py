@@ -1,10 +1,14 @@
-from core.builtins import Bot, I18NContext
+from datetime import datetime, timedelta
+
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.logger import Logger
+from core.queue.client import JobQueueClient
+from core.scheduler import DateTrigger, IntervalTrigger
 from .database.models import WikiBotAccountList
-from .utils.wikilib import WikiLib
 from .utils.bot import BotAccount, LoginFailed
-
+from .utils.wikilib import WikiLib
 
 wb = module("wiki_bot", required_superuser=True, doc=True, alias="wbot")
 
@@ -24,11 +28,9 @@ async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
             Logger.error(f"Login failed: {e}")
             await msg.finish(I18NContext("wiki.message.wiki_bot.login.failed", detail=e))
     else:
-        result = msg.locale.t("wiki.message.error.query") + (
-            "\n" + msg.locale.t("wiki.message.error.info") + check.message
-            if check.message != ""
-            else ""
-        )
+        result = [I18NContext("wiki.message.error.query")]
+        if check.message:
+            result.append(Plain(str(I18NContext("wiki.message.error.info")) + check.message))
         await msg.finish(result)
 
 
@@ -45,16 +47,24 @@ async def _(msg: Bot.MessageSession, apilink: str):
 
 @wb.command("toggle")
 async def _(msg: Bot.MessageSession):
-    use_bot_account = msg.target_info.target_data.get("use_bot_account")
+    use_bot_account = msg.session_info.target_info.target_data.get("use_bot_account")
     if use_bot_account:
-        await msg.target_info.edit_target_data("use_bot_account", False)
+        await msg.session_info.target_info.edit_target_data("use_bot_account", False)
         await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.disable"))
     else:
-        await msg.target_info.edit_target_data("use_bot_account", True)
+        await msg.session_info.target_info.edit_target_data("use_bot_account", True)
         await msg.finish(I18NContext("wiki.message.wiki_bot.toggle.enable"))
 
 
 @wb.hook("login_wiki_bots")
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+async def _(ctx: Bot.ModuleHookContext):
     Logger.debug("Received login_wiki_bots hook: " + str(ctx.args["cookies"]))
-    BotAccount.cookies.update(ctx.args["cookies"])
+
+
+@wb.schedule(DateTrigger(datetime.now() + timedelta(seconds=30)))
+@wb.schedule(IntervalTrigger(minutes=30))
+async def _():
+    Logger.info("Start login wiki bot account...")
+    await BotAccount.login()
+    await JobQueueClient.trigger_hook("wikilog.keepalive")
+    Logger.success("Successfully login wiki bot account.")

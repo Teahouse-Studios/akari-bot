@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 import numpy as np
 
-from core.builtins import I18NContext
+from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.utils.message import isint
 from core.utils.random import Random
@@ -15,7 +15,7 @@ MAX_OUTPUT_EXP = Config("dice_output_digit", 9, table_name="module_dice")  # 输
 
 
 def fmt_num(num: int, sep: bool = False):
-    if MAX_OUTPUT_EXP > 0 and abs(num) >= 10**MAX_OUTPUT_EXP:
+    if MAX_OUTPUT_EXP > 0 and abs(num) >= 10 ** MAX_OUTPUT_EXP:
         fmt_num = f"{num:.{MAX_OUTPUT_EXP}e}"
         if not sep:
             fmt_num = f"({fmt_num})"

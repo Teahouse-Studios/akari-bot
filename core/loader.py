@@ -1,13 +1,13 @@
 import importlib
 import os
+import pkgutil
 import re
 import sys
 import traceback
 from typing import Dict, Optional, Union, Callable
 
 from core.config import Config
-from core.builtins import Info, PrivateAssets
-from core.constants.path import modules_path
+from core.constants import PrivateAssets
 from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
@@ -17,57 +17,37 @@ from core.types.module.component_meta import (
     ScheduleMeta,
     HookMeta,
 )
-from core.utils.loader import fetch_modules_list
 
-all_modules = []
 current_unloaded_modules = []
 err_modules = []
 
 
 def load_modules():
+    import modules
     unloaded_modules = Config("unloaded_modules", [])
     err_prompt = []
     locale_loaded_err = load_locale_file()
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
-    fun_file = None
-    dir_list = fetch_modules_list()
 
     Logger.info("Attempting to load modules...")
 
-    for file_name in dir_list:
+    for subm in pkgutil.iter_modules(modules.__path__):
+        submodule_name = modules.__name__ + "." + subm.name
         try:
-            file_path = os.path.join(modules_path, file_name)
-            fun_file = None
-            if not Info.binary_mode:
-                if os.path.isdir(file_path):
-                    if file_name[0] != "_":
-                        fun_file = file_name
-                elif os.path.isfile(file_path):
-                    if file_name[0] != "_" and file_name.endswith(".py"):
-                        fun_file = file_name[:-3]
-            else:
-                if file_name[0] != "_":
-                    fun_file = file_name
-                if file_name[0] != "_" and file_name.endswith(".py"):
-                    fun_file = file_name[:-3]
-            if fun_file:
-                Logger.debug(f"Loading modules.{fun_file}...")
-                all_modules.append(fun_file)
-                if fun_file in unloaded_modules:
-                    Logger.warning(f"Skipped modules.{fun_file}!")
-                    current_unloaded_modules.append(fun_file)
-                    continue
-                modules = "modules." + fun_file
-                importlib.import_module(modules)
-                Logger.debug(f"Successfully loaded modules.{fun_file}!")
+            Logger.debug(f"Loading {submodule_name}...")
+            if subm.name in unloaded_modules:
+                Logger.warning(f"Skipped {submodule_name}!")
+                current_unloaded_modules.append(subm.name)
+                continue
+            importlib.import_module(submodule_name)
+            Logger.debug(f"Successfully loaded {submodule_name}!")
         except Exception:
-            tb = traceback.format_exc()
-            errmsg = f"Failed to load modules.{fun_file}: \n{tb}"
+            errmsg = f"Failed to load {submodule_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)
             err_prompt.append(errmsg)
-            err_modules.append(fun_file)
+            err_modules.append(subm.name)
     Logger.success("All modules loaded.")
     loader_cache = os.path.join(PrivateAssets.path, ".cache_loader")
     with open(loader_cache, "w") as open_loader_cache:
@@ -172,17 +152,20 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, target_from: Optional[str] = None) -> Dict[str, Module]:
+    def return_modules_list(cls, target_from: Optional[str] = None,
+                            client_name: Optional[str] = None) -> Dict[str, Module]:
+        if target_from and target_from in cls._return_cache:
+            return cls._return_cache[target_from]
         modules = {
             bind_prefix: cls.modules[bind_prefix] for bind_prefix in sorted(cls.modules)
         }
+
         if target_from:
-            if "|" in target_from:
-                client_name = target_from.split("|")[0]
-            else:
-                client_name = target_from
-            if target_from in cls._return_cache:
-                return cls._return_cache[target_from]
+            if not client_name:
+                if "|" in target_from:
+                    client_name = target_from.split("|")[0]
+                else:
+                    client_name = target_from
             returns = {}
             for m in modules:
                 if isinstance(modules[m], Module):
@@ -228,8 +211,7 @@ class ModulesManager:
                     err_modules.remove(module_name)
                 current_unloaded_modules.remove(module_name)
             except Exception:
-                tb = traceback.format_exc()
-                Logger.error(f"Failed to load modules.{module_name}: \n{tb}")
+                Logger.exception(f"Failed to load modules.{module_name}: ")
                 if module_name not in err_modules:
                     err_modules.append(module_name)
                 return False

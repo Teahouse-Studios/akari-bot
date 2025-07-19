@@ -9,7 +9,7 @@ from typing import Sequence, List, MutableSequence, Optional, TypeVar
 
 from core.config import Config
 
-INF = 2**53
+INF = 2 ** 53
 T = TypeVar("T")
 
 

@@ -53,4 +53,4 @@ class CQHttpModded(CQHttp):
         return results[0] if results else None
 
 
-bot = CQHttpModded(access_token=access_token)
+aiocqhttp_bot = CQHttpModded(access_token=access_token)

@@ -1,9 +1,9 @@
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn, zh_hk, zh_tw
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.dirty_check import check_bool, rickroll
 
 lc_ = module("langconv", developers=["Dianliang233"], alias=["lc"], doc=True)
 
@@ -21,6 +21,4 @@ async def _(msg: Bot.MessageSession, language: str, content: str):
         await msg.finish(I18NContext("langconv.message.unsupported_language"))
     lc = {"zh-cn": lc_zh_cn, "zh-hk": lc_zh_hk, "zh-tw": lc_zh_tw}[language]
     res = lc.convert(content)
-    if await check_bool(res):
-        await msg.finish(rickroll())
     await msg.finish(res)

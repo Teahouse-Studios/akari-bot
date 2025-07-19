@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from collections import Counter
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 from decimal import Decimal
 from typing import Any, List, Optional, Union
 
@@ -11,6 +11,7 @@ from tortoise import fields
 from core.constants.default import default_locale
 from core.utils.message import convert2lst
 from .base import DBModel
+from ..logger import Logger
 
 
 class SenderInfo(DBModel):
@@ -114,7 +115,7 @@ class TargetInfo(DBModel):
     :param locale: 会话语言。
     :param modules: 会话内可用模块。
     :param custom_admins: 会话内自定义管理员列表。
-    :param ban_user: 会话内已限制用户。
+    :param banned_users: 会话内已限制用户。
     :param target_data: 会话数据。
     """
     target_id = fields.CharField(max_length=512, pk=True)
@@ -218,7 +219,8 @@ class TargetInfo(DBModel):
         return True
 
     @classmethod
-    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]], id_prefix: Optional[str] = None) -> List[TargetInfo]:
+    async def get_target_list_by_module(cls, module_name: Optional[Union[str, list[str], tuple[str]]],
+                                        id_prefix: Optional[str] = None) -> List[TargetInfo]:
         """
         获取开启此模块的所有会话列表。
 
@@ -406,33 +408,43 @@ class JobQueuesTable(DBModel):
         )
         return task_id
 
-    async def return_val(self, value, status) -> bool:
+    async def set_val(self, value, status) -> bool:
         self.result = value
         self.status = status
         await self.save()
         return True
 
-    @classmethod
-    async def clear_task(cls, time=43200) -> bool:
-        now_timestamp = datetime.now().timestamp()
+    async def set_status(self, status):
+        self.status = status
+        await self.save()
+        return True
 
-        queries = await cls.all()
+    @classmethod
+    async def clear_task(cls, time=3600) -> bool:
+        timestamp = datetime.now(UTC) - timedelta(seconds=time)
+        Logger.debug(f'Clearing tasks older than {timestamp}...')
+
+        queries = await cls.filter(timestamp__lt=timestamp)
+
         for q in queries:
-            if now_timestamp - q.timestamp.timestamp() > time:
-                await q.delete()
+            await q.delete()
 
         return True
 
     @classmethod
-    async def get_first(cls, target_client: str):
+    async def get_first(cls, target_clients: Union[str, List[str]]):
+        if isinstance(target_clients, str):
+            target_clients = [target_clients]
         return await cls.filter(
-            target_client=target_client, status="pending"
+            target_client__in=target_clients, status="pending"
         ).first()
 
     @classmethod
-    async def get_all(cls, target_client: str):
+    async def get_all(cls, target_clients: Union[str, List[str]]):
+        if isinstance(target_clients, str):
+            target_clients = [target_clients]
         return await cls.filter(
-            target_client=target_client, status="pending"
+            target_client__in=target_clients, status="pending"
         ).all()
 
 
@@ -440,11 +452,10 @@ class MaliciousLoginRecords(DBModel):
     """
     恶意登录行为记录。
 
-    :param target_id: 会话 ID。
-    :param sender_id: 用户 ID。
-    :param action: 行为类型。
-    :param detail: 行为详情。
-    :param timestamp: 时间戳。
+    :param id: 会话 ID。
+    :param ip_address: IP 地址。
+    :param blocked_until: 被封禁的截止时间。
+    :param created_date: 创建日期。
     """
     id = fields.IntField(pk=True)
     ip_address = fields.CharField(max_length=45)

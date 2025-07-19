@@ -8,14 +8,16 @@ import datetime
 import hashlib
 import hmac
 import time
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
 
 import httpx
 import orjson as json
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.builtins import Info, MessageChain, I18NContext
-from core.builtins.message.elements import MessageElement
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext
+from core.builtins.session.internal import MessageSession
+from core.builtins.types import MessageElement
 from core.config import Config
 from core.database.local import DirtyWordCache
 from core.logger import Logger
@@ -63,10 +65,15 @@ def parse_data(result: dict, additional_text=None) -> Dict:
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(text: Union[str, List[str], List[MessageElement], MessageElement, MessageChain], additional_text=None) -> List[Dict]:
+async def check(text: Union[str,
+                            List[str],
+                            List[MessageElement],
+                            MessageElement,
+                            MessageChain], session: Optional[MessageSession] = None, additional_text=None) -> List[Dict]:
     """检查字符串。
 
     :param text: 字符串（List/Union）。
+    :param session: 消息会话，若指定则会在返回的消息中附加会话信息。
     :param additional_text: 附加文本，若指定则会在返回的消息中附加此文本。
     :returns: 经过审核后的字符串。不合规部分会被替换为`<REDACTED:原因>`，全部不合规则是`<ALL REDACTED:原因>`。
     """
@@ -77,10 +84,10 @@ async def check(text: Union[str, List[str], List[MessageElement], MessageElement
         text = [text]
     if isinstance(text, MessageElement):
         text = [str(text)]
-    if isinstance(text, (MessageChain, list)):
+    if isinstance(text, list) or isinstance(text, MessageChain):
         text = [str(x) for x in text]
 
-    if not access_key_id or not access_key_secret or not Info.dirty_word_check:
+    if not access_key_id or not access_key_secret or not (session and session.session_info.require_check_dirty_words):
         Logger.warning("Dirty words filter was disabled, skip.")
         return [{"content": t, "status": True, "original": t} for t in text]
 

@@ -10,18 +10,18 @@ from attrs import define
 from bs4 import BeautifulSoup
 
 import core.utils.html2text as html2text
-from core.builtins import Url
+from core.builtins.message.internal import Url
+from core.builtins.session.internal import MessageSession
 from core.config import Config
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
-from core.utils.web_render import webrender
-from modules.wiki.utils.bot import BotAccount
+from core.utils.web_render import web_render, SourceOptions
 from modules.wiki.database.models import WikiSiteInfo, WikiAllowList, WikiBlockList
+from modules.wiki.utils.bot import BotAccount
 from .mapping import *
-
 
 default_locale = Config("default_locale", cfg_type=str)
 enable_tos = Config("enable_tos", True)
@@ -125,22 +125,24 @@ class WikiLib:
             Logger.debug(api)
         else:
             raise ValueError("kwargs is None")
-        request_local = False
+        request_by_webrender = False
         for x in request_by_web_render_list:
             if x.match(api):
-                api = webrender("source", api)
-                request_local = True
-                break
+                request_by_webrender = True
 
         try:
-            return await get_url(
-                api,
-                status_code=200,
-                headers=self.headers,
-                fmt="json",
-                request_private_ip=request_local,
-                cookies=cookies,
-            )
+            if not request_by_webrender:
+                return await get_url(
+                    api,
+                    status_code=200,
+                    headers=self.headers,
+                    fmt="json",
+                    request_private_ip=False,
+                    cookies=cookies,
+                )
+            else:
+                req = await web_render.source(SourceOptions(url=api, raw_text=True))
+                return json.loads(req)
 
         except Exception as e:
             if api.find("moegirl.org.cn") != -1:
@@ -275,6 +277,9 @@ class WikiLib:
                     value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
                     message="",
                 )
+            else:
+                await get_cache_info.delete()
+                get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         else:
             get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         try:
@@ -311,7 +316,7 @@ class WikiLib:
     async def check_wiki_info_from_database_cache(self):
         """检查wiki信息是否已记录在数据库缓存（由于部分wiki通过path区分语言，此处仅模糊查询域名部分，返回结果可能不准确）"""
         parse_url = urllib.parse.urlparse(self.url)
-        get = await WikiSiteInfo.get_like_this(parse_url.netloc)
+        get = await WikiSiteInfo.get_like_this(parse_url.scheme + '://' + parse_url.netloc)
         if get:
             api_link = get.api_link
             if api_link in redirect_list:
@@ -530,6 +535,7 @@ class WikiLib:
         _prefix="",
         _iw=False,
         _search=False,
+        session: MessageSession = None,
     ) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid。
@@ -541,6 +547,7 @@ class WikiLib:
         :param _prefix: iw前缀，仅用作内部递归调用判断。
         :param _iw: 是否为iw模式，仅用作内部递归调用判断。
         :param _search: 是否为搜索模式，仅用作内部递归调用判断。
+        :param session: 消息会话，用作检查结果时使用。
         """
         if title:
             if (
@@ -1095,7 +1102,7 @@ class WikiLib:
                 checklist.append(page_info.before_title)
             if page_info.desc:
                 checklist.append(page_info.desc)
-            chk = await check(checklist)
+            chk = await check(checklist, session=session)
             for x in chk:
                 if not x["status"]:
                     ban = True
@@ -1104,7 +1111,8 @@ class WikiLib:
             page_info.title = page_info.before_title = None
             page_info.id = -1
             if page_info.link:
-                page_info.desc = str(Url(page_info.link, use_mm=True))
+                page_info.desc = str(Url(page_info.link, use_mm=True,
+                                         md_format=True if session and session.session_info.use_url_md_format else False))
             page_info.link = None
         return page_info
 

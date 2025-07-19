@@ -1,10 +1,10 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
 
-@client.slash_command(
+@discord_bot.slash_command(
     name="user", description="Get information about a MediaWiki user."
 )
 @discord.option(name="username", description="The username, support Interwiki.")
