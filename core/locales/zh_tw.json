@@ -71,7 +71,7 @@
     "config.comments.telegram_token": "Telegram 機器人令牌。",
     "config.comments.timezone_offset": "機器人的預設時區偏移量。",
     "config.comments.tos_temp_ban_time": "違反 ToS 時的暫時封鎖時間。",
-    "config.comments.tos_warning_counts": "違反 ToS 時的警告次數。",
+    "config.comments.tos_warning_counts": "違反 ToS 的最大警告次數。",
     "config.comments.unloaded_modules": "不載入的模組列表，符合到此列表中的模組將不會被載入。",
     "config.comments.use_secrets_random": "是否使用基於 secrets 庫的隨機數產生器。",
     "config.comments.web_host": "Web 服務的主機位址，設為 0.0.0.0 則監聽所有位址。",
@@ -100,10 +100,6 @@
     "error.config.secret.not_found": "未找到金鑰設定參數，請檢查設定檔。",
     "error.config.webrender.invalid": "未設定 WebRender，無法使用此指令。",
     "error.i18n.fallback": "（如果你看到了這個佔位符，說明我們又搞砸了什麼！請回報此問題以便快速解決。）",
-    "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人擁有者解決問題。",
-    "error.message.chain.invalid": "機器人嘗試傳送無效訊息鏈，請聯絡機器人擁有者解決問題。",
-    "error.message.chain.plain.empty": "機器人嘗試傳送空白文字訊息，請聯絡機器人擁有者解決問題。",
-    "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。",
     "error.message.limited": "訊息傳送失敗，可能被風控，請稍後再試。",
     "error.message.limited.msg2img": "訊息被風控，嘗試使用圖片傳送：",
     "error.message.paused": "傳送群訊息被伺服器攔截，已暫停傳送群訊息，使用「${prefix}resume」恢復傳送。",
@@ -192,5 +188,7 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳戶。",
+    "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。",
+    "error.message.chain.empty": "機器人嘗試傳送空白訊息，請聯絡機器人擁有者解決問題。"
 }
