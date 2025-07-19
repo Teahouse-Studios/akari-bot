@@ -8,13 +8,35 @@ import traceback
 from datetime import datetime
 from time import sleep
 
-from loguru import logger as loggerFallback
+from loguru import logger
 from tortoise import Tortoise, run_async
 from tortoise.exceptions import ConfigurationError
 
 from core.constants import config_path, config_filename
 
+# Capture the base import lists to avoid clearing essential modules when restarting
 base_import_lists = list(sys.modules)
+
+# Basic logger setup
+
+try:
+    logger.remove(0)
+except ValueError:
+    pass
+
+Logger = logger.bind(name="BotDaemon")
+
+Logger.add(
+    sys.stderr,
+    format=(
+        f"<cyan>[BotDaemon]</cyan>"
+        "<yellow>[{name}:{function}:{line}]</yellow>"
+        "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
+        "<level>[{level}]:{message}</level>"
+    ),
+    colorize=True,
+    filter=lambda record: record["extra"].get("name") == "BotDaemon"
+)
 
 ascii_art = r"""
            _              _   ____        _
@@ -57,7 +79,6 @@ def pre_init():
     from core.constants.version import database_version  # noqa
     from core.database.link import get_db_link  # noqa
     from core.database.models import SenderInfo, DBVersion  # noqa
-    from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)
     if Config("debug", False):
@@ -151,15 +172,14 @@ binary_mode = not sys.argv[0].endswith(".py")
 
 async def run_bot():
     from core.config import CFGManager  # noqa
-    from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
 
     def restart_bot_process(bot_name: str):
         if (
-            bot_name not in failed_to_start_attempts
-            or datetime.now().timestamp()
-            - failed_to_start_attempts[bot_name]["timestamp"]
-            > 60
+                bot_name not in failed_to_start_attempts
+                or datetime.now().timestamp()
+                - failed_to_start_attempts[bot_name]["timestamp"]
+                > 60
         ):
             failed_to_start_attempts[bot_name] = {}
             failed_to_start_attempts[bot_name]["count"] = 0
@@ -175,7 +195,7 @@ async def run_bot():
         Logger.warning(f"Restarting bot {bot_name}...")
         p = multiprocessing.Process(
             target=go,
-            args=(bot_name, True, binary_mode, ),
+            args=(bot_name, True, binary_mode,),
             name=bot_name,
             daemon=True
         )
@@ -284,7 +304,7 @@ async def main_async():
         await run_bot()  # Process will block here so
     except RestartBot as e:
         for ps in processes:
-            loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
+            Logger.warning(f"Terminating process {ps.pid} ({ps.name})...")
             terminate_process(ps)
         processes.clear()
         try:
@@ -299,7 +319,7 @@ async def main_async():
         processes.clear()
         raise e
     except Exception as e:
-        loggerFallback.critical("An error occurred, please check the output.")
+        Logger.critical("An error occurred, please check the output.")
         traceback.print_exc()
         raise e
     finally:
