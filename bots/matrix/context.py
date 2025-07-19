@@ -39,6 +39,27 @@ class MatrixContextManager(ContextManager):
             sender = session_info.get_common_sender_id()
         if room_id.startswith("@") or sender.startswith("!"):
             return True
+
+        # check room creator for room v12
+        create_event_id = "$" + str(room_id)[1:]
+        result = await matrix_bot.room_get_event(room_id, create_event_id)
+        if isinstance(result, nio.RoomGetEventResponse):
+            event = result.event
+            assert isinstance(event, nio.RoomCreateEvent)
+            if int(event.room_version) >= 12:
+                creators = [event.sender]
+                event_content = event.source["content"]
+                if "additional_creators" in event_content:
+                    creators = creators + event_content["additional_creators"]
+                Logger.debug(f"Matrix room v12 creators: {creators}")
+                if sender in creators:
+                    return True
+        else:
+            # When the room does not follow MSC4291, ignore it silently
+            # IO and other server-side errors are also ignored
+            # because I am too lazy to write a detailed check
+            pass
+
         # https://spec.matrix.org/v1.9/client-server-api/#permissions
         power_levels = (
             await matrix_bot.room_get_state_event(room_id, "m.room.power_levels")
