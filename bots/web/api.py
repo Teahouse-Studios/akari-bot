@@ -698,10 +698,7 @@ async def websocket_logs(websocket: WebSocket):
                 last_file_size.clear()
                 current_date = new_date
 
-            today_logs = [
-                p for p in glob.glob(f"{logs_path}/*_{current_date}.log")
-                if "console" not in os.path.basename(p)
-            ]
+            today_logs = [p for p in glob.glob(f"{logs_path}/*_{current_date}.log")]
 
             new_loglines = []  # 打包后的日志行
             for log_file in today_logs:

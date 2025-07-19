@@ -18,8 +18,6 @@ bot_name = re.split(r"[/\\]", sys.path[0])[-1]
 args = sys.argv
 if "subprocess" in args:
     bot_name = args[-1]
-if args[0].lower() == "console.py":
-    bot_name = "console"
 
 
 def basic_logger_format(bot_name: str):
