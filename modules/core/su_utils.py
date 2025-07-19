@@ -552,7 +552,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("core.message.resume.clear"))
 
 
-forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True, available_for="QQ")
+forward_msg = module("forward_msg", required_superuser=True, base=True, doc=True)
 
 
 @forward_msg.command()
@@ -562,7 +562,7 @@ async def _(msg: Bot.MessageSession):
         alist = [{"status": True}]
     alist[0]["status"] = not alist[0]["status"]
     await update_stored_list(Bot.Info.client_name, "forward_msg", alist)
-    if alist[0]["status"]:
+    if not alist[0]["status"]:
         await msg.finish(I18NContext("core.message.forward_msg.disable"))
     else:
         await msg.finish(I18NContext("core.message.forward_msg.enable"))
