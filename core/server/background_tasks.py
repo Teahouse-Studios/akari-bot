@@ -38,4 +38,4 @@ async def init_background_task():
     Logger.info("Starting WebRender...")
     Info.web_render_status = await init_web_render()
     if Info.web_render_status:
-        Logger.info("WebRender started successfully.")
+        Logger.success("WebRender started successfully.")
