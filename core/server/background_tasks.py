@@ -37,4 +37,5 @@ async def init_background_task():
     asyncio.create_task(fetch_ip_info())
     Logger.info("Starting WebRender...")
     Info.web_render_status = await init_web_render()
-    Logger.info("WebRender started successfully.")
+    if Info.web_render_status:
+        Logger.info("WebRender started successfully.")
