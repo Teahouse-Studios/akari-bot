@@ -123,4 +123,4 @@ async def get_video_info(
             desc=desc,
             time=time,
         )
-    return [Image(pic), Url(video_url), output]
+    return [Image(pic), Url(video_url, use_mm=False), output]

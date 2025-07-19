@@ -69,15 +69,20 @@ class URLElement(BaseElement):
     """
 
     url: str
-    applied_mm: bool = False
+    applied_mm: bool | None = None
     applied_md_format: bool = False
     md_format_name: Optional[str] = None
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool = False, md_format: bool = False, md_format_name: Optional[str] = None):
+    def assign(
+            cls,
+            url: str,
+            use_mm: bool | None = None,
+            md_format: bool = False,
+            md_format_name: Optional[str] = None):
         """
         :param url: URL。
-        :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为False）
+        :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为 None，为 None 时将根据客户端情况选择是否使用跳板）
         :param md_format: 是否使用Markdown格式。（默认为False）
         :param md_format_name: Markdown格式的链接名称。（默认为None，使用URL本身）
         """
