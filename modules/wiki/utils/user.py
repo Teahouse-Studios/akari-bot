@@ -198,7 +198,7 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
         ))
 
     if url := data.get("url", ''):
-        msgs.append(Url(url))
+        msgs.append(Url(url, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False))
 
     if await check_bool(msgs):
         return Plain(rickroll())

@@ -87,7 +87,7 @@ async def _():
                                     title=title,
                                     desc=desc,
                                 ),
-                                Url(link)
+                                Url(link, use_mm=False)
                             ]
                         ),
                     )
@@ -133,7 +133,7 @@ async def _():
                                 I18NContext(
                                     "minecraft_news.message.feedback_news",
                                     name=name,
-                                ), Url(link)
+                                ), Url(link, use_mm=False)
                             ]
                         ),
                     )

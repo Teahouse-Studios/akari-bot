@@ -30,7 +30,8 @@ async def get_ab(msg: Union[Bot.MessageSession,
                                      result=result))}")
     y = await check(d, session=msg)
 
-    g = MessageChain.assign([Url(pageurl)])
+    g = MessageChain.assign(
+        [Url(pageurl, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False)])
     g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=AB_LIMIT))
 

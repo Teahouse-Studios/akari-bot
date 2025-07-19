@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
                     msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except NetworkError:
                 legacy = False
@@ -50,7 +50,7 @@ async def _(msg: Bot.MessageSession):
         else:
             try:
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except Exception:
                 Logger.exception()
@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession):
                     msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except NetworkError:
                 legacy = False
@@ -116,7 +116,7 @@ async def _(msg: Bot.MessageSession):
         else:
             try:
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except Exception:
                 Logger.exception()
