@@ -2077,6 +2077,21 @@ files = [
 ]
 
 [[package]]
+name = "japanera"
+version = "2.1.3"
+description = "Easy japanese era tool"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "japanera-2.1.3-py3-none-any.whl", hash = "sha256:bc3ccadd1b6ef91732f2bf1ef74d240a28c3f7697fa0682283c7b84751352ccd"},
+    {file = "japanera-2.1.3.tar.gz", hash = "sha256:a54e1f50a66fd1a2a110a357e155e93f2cf6df7de9927d966f9f6bd2ad2c1738"},
+]
+
+[package.dependencies]
+kanjize = ">=1.6.1"
+
+[[package]]
 name = "jaraco-classes"
 version = "3.4.0"
 description = "Utility functions for Python class constructs"
@@ -2291,6 +2306,18 @@ files = [
 
 [package.dependencies]
 referencing = ">=0.31.0"
+
+[[package]]
+name = "kanjize"
+version = "1.6.1"
+description = "Easy converter between Kanji-Number and Integer"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "kanjize-1.6.1-py3-none-any.whl", hash = "sha256:4f0318e94a947e0613ac68fba8c9822ff7bfd138ac58a68caa849879bb532f26"},
+    {file = "kanjize-1.6.1.tar.gz", hash = "sha256:5e96a2df8af21f55e7e2b8f1042efb830a171a5cb9046f6239e89e03622b9756"},
+]
 
 [[package]]
 name = "keyring"
@@ -5641,4 +5668,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "02f266cafa6f8ae520c42fd3a9f55dc45a361b3cdc4eb695f17d2baf455cd186"
+content-hash = "4141f9c9fb56e4adff20086a5ddcfdb60c02cfe7f0c7b55337854ef37e54dfcb"

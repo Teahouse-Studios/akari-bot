@@ -15,6 +15,7 @@ import orjson as json
 from PIL import Image as PILImage
 from attrs import define
 from filetype import filetype
+from japanera import EraDate
 from tenacity import retry, stop_after_attempt
 
 from core.logger import Logger
@@ -116,9 +117,13 @@ class FormattedTimeElement(BaseElement):
     def to_str(self, session_info: Optional[SessionInfo] = None):
         ftime_template = []
         if session_info:
+            dt = datetime.fromtimestamp(self.timestamp, UTC) + session_info.timezone_offset
             if self.date:
                 if self.iso:
                     ftime_template.append(session_info.locale.t("time.date.iso.format"))
+                elif session_info.locale.locale == "ja_jp":
+                    era_date = EraDate.from_date(dt).strftime(session_info.locale.t("time.date.format"))
+                    ftime_template.append(era_date)
                 else:
                     ftime_template.append(session_info.locale.t("time.date.format"))
             if self.time:
@@ -132,38 +137,35 @@ class FormattedTimeElement(BaseElement):
                 else:
                     ftime_template.append(f"(UTC{session_info._tz_offset})")
 
-            return (
-                datetime.fromtimestamp(self.timestamp, tz=UTC)
-                + session_info.timezone_offset
-            ).strftime(" ".join(ftime_template))
-        else:
-            if self.date:
-                if self.iso:
-                    ftime_template.append("%Y-%m-%d")
-                else:
-                    ftime_template.append("%B %d, %Y")
-            if self.time:
-                if self.seconds:
-                    ftime_template.append("%H:%M:%S")
-                else:
-                    ftime_template.append("%H:%M")
-            if self.timezone:
-                tz_template = "(UTC)"
-                offset = datetime.now().astimezone().utcoffset()
-                if offset:
-                    total_min = int(offset.total_seconds() // 60)
-                    sign = "+" if total_min >= 0 else "-"
-                    abs_min = abs(total_min)
-                    hours = abs_min // 60
-                    mins = abs_min % 60
+            return dt.strftime(" ".join(ftime_template))
 
-                    if mins == 0:
-                        tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
-                    else:
-                        tz_template = f"(UTC{sign}{hours}:{mins:02d})"
+        if self.date:
+            if self.iso:
+                ftime_template.append("%Y-%m-%d")
+            else:
+                ftime_template.append("%B %d, %Y")
+        if self.time:
+            if self.seconds:
+                ftime_template.append("%H:%M:%S")
+            else:
+                ftime_template.append("%H:%M")
+        if self.timezone:
+            tz_template = "(UTC)"
+            offset = datetime.now().astimezone().utcoffset()
+            if offset:
+                total_min = int(offset.total_seconds() // 60)
+                sign = "+" if total_min >= 0 else "-"
+                abs_min = abs(total_min)
+                hours = abs_min // 60
+                mins = abs_min % 60
 
-                ftime_template.append(tz_template)
-            return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
+                if mins == 0:
+                    tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
+                else:
+                    tz_template = f"(UTC{sign}{hours}:{mins:02d})"
+
+            ftime_template.append(tz_template)
+        return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
 
     def kecode(self):
         return f"[KE:plain,text={self.to_str()}]"
@@ -363,9 +365,6 @@ class VoiceElement(BaseElement):
 
     def kecode(self):
         return f"[KE:voice,path={self.path}]"
-
-    def __str__(self):
-        return f"Voice(path={self.path})"
 
 
 @define
