@@ -28,11 +28,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-
-      - name: Prepare Build
-        run: |
-          python .github/scripts/pre_build.py
-
+          playwright install --with-deps chromium
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
@@ -44,12 +40,22 @@ jobs:
           include-plugin-directory: |
               modules
               bots
-              schedulers
           include-package-data: |
               langconv
               emoji
+              akari_bot_webrender
+              fake_http_header
+              limits
+              discord
+          include-package: |
+              tortoise
+              fake_http_header
+              asyncmy
+              discord
           clang: true
-
+          playwright-include-browser: none
+          enable-plugins: |
+              playwright
 
       - name: Copy Assets
         run: |

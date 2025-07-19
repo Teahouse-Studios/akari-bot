@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import base64
-from copy import deepcopy
 import mimetypes
 import os
 import random
 import re
+from copy import deepcopy
 from datetime import datetime, UTC
 from typing import Optional, TYPE_CHECKING, Dict, Any, Union, List
 from urllib import parse
@@ -18,15 +18,14 @@ from filetype import filetype
 from japanera import EraDate
 from tenacity import retry, stop_after_attempt
 
-from core.builtins import Info
+from core.logger import Logger
 from core.utils.cache import random_cache_path
 
-
 if TYPE_CHECKING:
-    from core.builtins import MessageSession
+    from core.builtins.session.info import SessionInfo
 
 
-class MessageElement:
+class BaseElement:
 
     @classmethod
     def __name__(cls):
@@ -34,7 +33,7 @@ class MessageElement:
 
 
 @define
-class PlainElement(MessageElement):
+class PlainElement(BaseElement):
     """
     文本元素。
 
@@ -62,7 +61,7 @@ class PlainElement(MessageElement):
 
 
 @define
-class URLElement(MessageElement):
+class URLElement(BaseElement):
     """
     URL元素。
 
@@ -70,37 +69,43 @@ class URLElement(MessageElement):
     """
 
     url: str
-    md_format = Info.use_url_md_format
+    applied_mm: bool | None = None
+    applied_md_format: bool = False
+    md_format_name: Optional[str] = None
 
     @classmethod
-    def assign(cls, url: str, use_mm: bool = False):
+    def assign(
+            cls,
+            url: str,
+            use_mm: bool | None = None,
+            md_format: bool = False,
+            md_format_name: Optional[str] = None):
         """
         :param url: URL。
-        :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为False）
+        :param use_mm: 是否使用链接跳板，覆盖全局设置。（默认为 None，为 None 时将根据客户端情况选择是否使用跳板）
+        :param md_format: 是否使用Markdown格式。（默认为False）
+        :param md_format_name: Markdown格式的链接名称。（默认为None，使用URL本身）
         """
-        if Info.use_url_manager and use_mm:
+        if use_mm:
             mm_url = "https://mm.teahouse.team/?source=akaribot&rot13=%s"
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM",
             )
             url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
-
-        return deepcopy(cls(url=url))
+        if md_format:
+            url = f"[{md_format_name if md_format_name else url}]({url})"
+        return deepcopy(cls(url=url, applied_mm=use_mm, applied_md_format=md_format, md_format_name=md_format_name))
 
     def kecode(self):
-        if self.md_format:
-            return f"[KE:plain,text=[{self.url}]({self.url})]"
         return f"[KE:plain,text={self.url}]"
 
     def __str__(self):
-        if self.md_format:
-            return f"[{self.url}]({self.url})"
         return self.url
 
 
 @define
-class FormattedTimeElement(MessageElement):
+class FormattedTimeElement(BaseElement):
     """
     格式化时间消息。
 
@@ -114,28 +119,28 @@ class FormattedTimeElement(MessageElement):
     seconds: bool = True
     timezone: bool = True
 
-    def to_str(self, msg: Optional[MessageSession] = None):
+    def to_str(self, session_info: Optional[SessionInfo] = None):
         ftime_template = []
-        if msg:
-            dt = datetime.fromtimestamp(self.timestamp, UTC) + msg.timezone_offset
+        if session_info:
+            dt = datetime.fromtimestamp(self.timestamp, UTC) + session_info.timezone_offset
             if self.date:
                 if self.iso:
-                    ftime_template.append(msg.locale.t("time.date.iso.format"))
-                elif msg.locale.locale == "ja_jp":
-                    era_date = EraDate.from_date(dt).strftime(msg.locale.t("time.date.format"))
+                    ftime_template.append(session_info.locale.t("time.date.iso.format"))
+                elif session_info.locale.locale == "ja_jp":
+                    era_date = EraDate.from_date(dt).strftime(session_info.locale.t("time.date.format"))
                     ftime_template.append(era_date)
                 else:
-                    ftime_template.append(msg.locale.t("time.date.format"))
+                    ftime_template.append(session_info.locale.t("time.date.format"))
             if self.time:
                 if self.seconds:
-                    ftime_template.append(msg.locale.t("time.time.format"))
+                    ftime_template.append(session_info.locale.t("time.time.format"))
                 else:
-                    ftime_template.append(msg.locale.t("time.time.nosec.format"))
+                    ftime_template.append(session_info.locale.t("time.time.nosec.format"))
             if self.timezone:
-                if msg._tz_offset == "+0":
+                if session_info._tz_offset == "+0":
                     ftime_template.append("(UTC)")
                 else:
-                    ftime_template.append(f"(UTC{msg._tz_offset})")
+                    ftime_template.append(f"(UTC{session_info._tz_offset})")
 
             return dt.strftime(" ".join(ftime_template))
 
@@ -204,7 +209,7 @@ class FormattedTimeElement(MessageElement):
 
 
 @define
-class I18NContextElement(MessageElement):
+class I18NContextElement(BaseElement):
     """
     带有多语言的消息。
     """
@@ -217,6 +222,7 @@ class I18NContextElement(MessageElement):
     def assign(cls, key: str, disable_joke: bool = False, **kwargs: Any):
         """
         :param key: 多语言的键名。
+        :param disable_joke: 是否禁用玩笑功能。（默认为False）
         :param kwargs: 多语言中的变量。
         """
         return deepcopy(cls(key=key, disable_joke=disable_joke, kwargs=kwargs))
@@ -235,7 +241,7 @@ class I18NContextElement(MessageElement):
 
 
 @define
-class ImageElement(MessageElement):
+class ImageElement(BaseElement):
     """
     图片消息。
 
@@ -246,6 +252,7 @@ class ImageElement(MessageElement):
     path: str
     need_get: bool = False
     headers: Optional[Dict[str, Any]] = None
+    cached_b64: Optional[str] = None
 
     @classmethod
     def assign(
@@ -300,12 +307,14 @@ class ImageElement(MessageElement):
 
         with open(file, "rb") as f:
             img_b64 = base64.b64encode(f.read()).decode("UTF-8")
-
+        self.cached_b64 = img_b64
+        Logger.debug(f"ImageElement: Cached base64 for {file}")
         if mime:
             mime_type, _ = mimetypes.guess_type(file)
             if not mime_type:
                 mime_type = 'application/octet-stream'
-            return f"data:{mime_type};base64,{img_b64}"
+            self.cached_b64 = f"data:{mime_type};base64,{img_b64}"
+            return self.cached_b64
         return img_b64
 
     async def add_random_noise(self) -> "ImageElement":
@@ -329,9 +338,21 @@ class ImageElement(MessageElement):
             return f"[KE:image,path={self.path},headers={headers_b64}]"
         return f"[KE:image,path={self.path}]"
 
+    async def to_pil_image(self) -> PILImage.Image:
+        """
+        将图片元素转换为PIL Image对象。
+        """
+        path = self.path
+        if self.need_get:
+            path = await self.get_image()
+        return PILImage.open(path)
+
+    def __str__(self):
+        return f"Image(path={self.path})"
+
 
 @define
-class VoiceElement(MessageElement):
+class VoiceElement(BaseElement):
     """
     语音消息。
 
@@ -352,7 +373,7 @@ class VoiceElement(MessageElement):
 
 
 @define
-class MentionElement(MessageElement):
+class MentionElement(BaseElement):
     """
     提及元素。
 
@@ -378,7 +399,7 @@ class MentionElement(MessageElement):
 
 
 @define
-class EmbedFieldElement(MessageElement):
+class EmbedFieldElement(BaseElement):
     """
     Embed字段。
 
@@ -400,9 +421,12 @@ class EmbedFieldElement(MessageElement):
         """
         return deepcopy(cls(name=name, value=value, inline=inline))
 
+    def __str__(self):
+        return f'[EmbedField:{self.name},{self.value},{self.inline}]'
+
 
 @define
-class EmbedElement(MessageElement):
+class EmbedElement(BaseElement):
     """
     Embed消息。
     :param title: 标题。
@@ -456,7 +480,7 @@ class EmbedElement(MessageElement):
             )
         )
 
-    def to_message_chain(self, msg: Optional[MessageSession] = None):
+    def to_message_chain(self, session_info: Optional[SessionInfo] = None):
         """
         将Embed转换为消息链。
         """
@@ -469,19 +493,20 @@ class EmbedElement(MessageElement):
             text_lst.append(self.url)
         if self.fields:
             for f in self.fields:
-                if msg:
-                    text_lst.append(f"{msg.locale.t_str(f.name)}{msg.locale.t(
-                        "message.colon")}{msg.locale.t_str(f.value)}")
+                if session_info:
+                    text_lst.append(f"{session_info.locale.t_str(f.name)}{session_info.locale.t(
+                        "message.colon")}{session_info.locale.t_str(f.value)}")
                 else:
                     text_lst.append(f"{f.name}: {f.value}")
         if self.author:
-            if msg:
-                text_lst.append(f"{msg.locale.t("message.embed.author")}{msg.locale.t_str(self.author)}")
+            if session_info:
+                text_lst.append(f"{session_info.locale.t("message.embed.author")}{
+                    session_info.locale.t_str(self.author)}")
             else:
                 text_lst.append(f"Author: {self.author}")
         if self.footer:
-            if msg:
-                text_lst.append(msg.locale.t_str(self.footer))
+            if session_info:
+                text_lst.append(session_info.locale.t_str(self.footer))
             else:
                 text_lst.append(self.footer)
         message_chain = []
@@ -495,22 +520,8 @@ class EmbedElement(MessageElement):
         return str(self.to_message_chain())
 
 
-elements_map = {
-    x.__name__: x
-    for x in [
-        PlainElement,
-        URLElement,
-        FormattedTimeElement,
-        I18NContextElement,
-        ImageElement,
-        VoiceElement,
-        EmbedFieldElement,
-        EmbedElement,
-        MentionElement,
-    ]
-}
 __all__ = [
-    "MessageElement",
+    "BaseElement",
     "PlainElement",
     "URLElement",
     "FormattedTimeElement",
@@ -520,5 +531,4 @@ __all__ = [
     "EmbedFieldElement",
     "EmbedElement",
     "MentionElement",
-    "elements_map",
 ]

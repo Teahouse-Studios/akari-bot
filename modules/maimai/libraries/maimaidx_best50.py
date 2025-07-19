@@ -3,7 +3,7 @@ from typing import Optional, Dict, List
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.constants.path import noto_sans_demilight_path, noto_sans_symbol_path
 from .maimaidx_apidata import get_record
 from .maimaidx_mapping import (

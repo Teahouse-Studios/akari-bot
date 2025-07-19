@@ -1,13 +1,10 @@
-import base64
-from io import BytesIO
-
 import orjson as json
-from PIL import Image as PILImage
 
-from core.builtins import Info, I18NContext, Plain
+from core.builtins.message.internal import I18NContext, Plain
 from core.logger import Logger
-from core.utils.http import download, post_url, get_url
-from core.utils.web_render import webrender
+from core.utils.http import post_url, get_url
+from core.utils.image import cb64imglst
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 elements = ["div[class^='MuiContainer-root']"]
 
@@ -16,30 +13,12 @@ spx_cache = {}
 
 async def make_screenshot(page_link):
     elements_ = elements.copy()
-    if not Info.web_render_status:
-        return False
     Logger.info("[WebRender] Generating element screenshot...")
     try:
-        img = await download(
-            webrender("element_screenshot"),
-            status_code=200,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-            post_data=json.dumps({"url": page_link, "element": elements_}),
-            attempt=1,
-            timeout=30,
-            request_private_ip=True,
-        )
-        if img:
-            with open(img) as read:
-                load_img = json.loads(read.read())
-            img_lst = []
-            for x in load_img:
-                b = base64.b64decode(x)
-                bio = BytesIO(b)
-                bimg = PILImage.open(bio)
-                img_lst.append(bimg)
-            return img_lst
+        imgs = await web_render.element_screenshot(ElementScreenshotOptions(url=page_link, element=elements_))
+        if imgs:
+            return cb64imglst(imgs, bot_img=True)
+        return False
     except Exception:
         Logger.exception("[WebRender] Generation Failed.")
         return False
@@ -70,7 +49,7 @@ async def bugtracker_get(msg, mojira_id: str):
         )
         if get_spx:
             spx_cache.update(json.loads(get_spx))
-    if id_ in spx_cache and msg.locale.locale == "zh_cn":
+    if id_ in spx_cache and msg.session_info.locale.locale == "zh_cn":
         data["translation"] = spx_cache[id_]
     if get_json:
         errmsg = ""

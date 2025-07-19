@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext, Image, Plain, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain, Url
 from core.component import module
 from .mojang_api import *
 
@@ -29,11 +30,11 @@ async def _(msg: Bot.MessageSession, username_or_uuid: str):
             render = sac["render"]
             skin = sac["skin"]
             cape = sac["cape"]
-            chain = [Plain(f"{name} ({uuid})"), Url(namemc), Image(render), Image(skin)]
+            chain = [Plain(f"{name} ({uuid})"), Url(namemc, use_mm=False), Image(render), Image(skin)]
             if cape:
                 chain.append(Image(cape))
             await msg.finish(chain)
         else:
-            await msg.finish([Plain(f"{name} ({uuid})"), Url(namemc)])
+            await msg.finish([Plain(f"{name} ({uuid})"), Url(namemc, use_mm=False)])
     except ValueError:
         await msg.finish(I18NContext("mcplayer.message.not_found", player=arg))

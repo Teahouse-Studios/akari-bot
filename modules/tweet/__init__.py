@@ -1,16 +1,13 @@
-import base64
-from io import BytesIO
-
 import orjson as json
-from PIL import Image as PILImage
 
-from core.builtins import Bot
-from core.builtins.message import I18NContext, Image, Url
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.utils.http import download, get_url
+from core.utils.http import get_url
+from core.utils.image import cb64imglst
 from core.utils.message import isint
-from core.utils.web_render import webrender
+from core.utils.web_render import web_render, ElementScreenshotOptions
 
 t = module(
     "tweet",
@@ -39,10 +36,6 @@ async def _(msg: Bot.MessageSession):
 
 
 async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
-    web_render = webrender("element_screenshot")
-    if not web_render:
-        await msg.finish(I18NContext("error.config.webrender.invalid"))
-
     try:
         res = await get_url(f"https://react-tweet.vercel.app/api/tweet/{tweet_id}", 200)
     except ValueError as e:
@@ -52,7 +45,8 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
             raise e
 
     res_json = json.loads(res)
-    if await check_bool("\n".join([res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]])):
+    if await check_bool("\n".join(
+            [res_json["data"]["text"], res_json["data"]["user"]["name"], res_json["data"]["user"]["screen_name"]])):
         await msg.finish(rickroll())
 
     css = """
@@ -88,30 +82,11 @@ async def get_tweet(msg: Bot.MessageSession, tweet_id: int):
         }
     """
 
-    pic = await download(
-        web_render,
-        method="POST",
-        headers={
-            "Content-Type": "application/json",
-        },
-        post_data=json.dumps(
-            {
-                "url": f"https://react-tweet-next.vercel.app/light/{tweet_id}",
-                "css": css,
-                "mw": False,
-                "element": "article",
-            }
-        ),
-        request_private_ip=True,
-    )
-    with open(pic, "rb") as read:
-        load_img = json.loads(read.read())
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(Image(bimg))
+    load_img = await web_render.element_screenshot(ElementScreenshotOptions(
+        url=f"https://react-tweet-next.vercel.app/light/{tweet_id}",
+        css=css,
+        element="article"))
+    img_lst = cb64imglst(load_img, bot_img=True)
     img_lst.append(
         Url(
             f"https://x.com/{res_json["data"]["user"]["screen_name"]}/status/{tweet_id}"

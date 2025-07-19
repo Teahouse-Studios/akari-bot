@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from .generator import get_mkey
 
@@ -16,7 +17,6 @@ async def _(
     inquiry_num: str,
     device_id: str = None,
 ):
-
     device_codes = {
         "3ds": "CTR",
         "dsi": "TWL",

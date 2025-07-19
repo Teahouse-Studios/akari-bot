@@ -2,7 +2,8 @@ from datetime import UTC
 
 from whois import whois
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from core.logger import Logger
 
@@ -23,7 +24,7 @@ async def _(msg: Bot.MessageSession, domain: str):
     await msg.finish(res)
 
 
-async def get_whois(msg, domain):
+async def get_whois(msg: Bot.MessageSession, domain: str):
     try:
         info = whois(domain)
         Logger.debug(str(info))
@@ -66,21 +67,69 @@ async def get_whois(msg, domain):
                 expiration_date = expiration_date[0]
             expiration_date = expiration_date.replace(tzinfo=UTC)
 
-        res = [f"{msg.locale.t("whois.message.domain_name")}{format_lst(domain_name).lower()}",
-               f"{msg.locale.t("whois.message.registrar")}{registrar}" if registrar else "",
-               f"{msg.locale.t("whois.message.whois_server")}{whois_server}" if whois_server else "",
-               f"{msg.locale.t("whois.message.updated_date")}{msg.format_time(updated_date.timestamp())}" if updated_date else "",
-               f"{msg.locale.t("whois.message.creation_date")}{msg.format_time(creation_date.timestamp())}" if creation_date else "",
-               f"{msg.locale.t("whois.message.expiration_date")}{msg.format_time(expiration_date.timestamp())}" if expiration_date else "",
-               f"{msg.locale.t("whois.message.name_servers")}{format_lst(name_servers)}" if name_servers else "",
-               f"{msg.locale.t("whois.message.email")}{format_lst(emails)}" if emails else "",
-               f"{msg.locale.t("whois.message.dnssec")}{format_lst(dnssec)}" if dnssec else "",
-               f"{msg.locale.t("whois.message.name")}{format_lst(name)}" if name else "",
-               f"{msg.locale.t("whois.message.organization")}{format_lst(org)}" if org else "",
-               f"{msg.locale.t("whois.message.location")}{f"{format_lst(address)}, " if address else ""}{
-               f"{format_lst(city)}, " if city else ""}{f"{format_lst(state)}, " if state else ""}{format_lst(country)}" if country else "",
-               f"{msg.locale.t("whois.message.postal_code")}{format_lst(registrant_postal_code)}" if registrant_postal_code else ""]
+        res = []
 
-        return "\n".join([x for x in res if x])
+        domain_name_label = str(I18NContext("whois.message.domain_name"))
+        res.append(f"{domain_name_label}{format_lst(domain_name).lower()}")
+        if registrar:
+            registrar_label = str(I18NContext("whois.message.registrar"))
+            res.append(Plain(f"{registrar_label}{registrar}"))
+
+        if whois_server:
+            whois_server_label = str(I18NContext("whois.message.whois_server"))
+            res.append(Plain(f"{whois_server_label}{whois_server}"))
+
+        if updated_date:
+            updated_date_label = str(I18NContext("whois.message.updated_date"))
+            res.append(Plain(f"{updated_date_label}{msg.format_time(updated_date.timestamp())}"))
+
+        if creation_date:
+            creation_date_label = str(I18NContext("whois.message.creation_date"))
+            res.append(Plain(f"{creation_date_label}{msg.format_time(creation_date.timestamp())}"))
+
+        if expiration_date:
+            expiration_date_label = str(I18NContext("whois.message.expiration_date"))
+            res.append(Plain(f"{expiration_date_label}{msg.format_time(expiration_date.timestamp())}"))
+
+        if name_servers:
+            name_servers_label = str(I18NContext("whois.message.name_servers"))
+            res.append(Plain(f"{name_servers_label}{format_lst(name_servers)}"))
+
+        if emails:
+            emails_label = str(I18NContext("whois.message.email"))
+            res.append(Plain(f"{emails_label}{format_lst(emails)}"))
+
+        if dnssec:
+            dnssec_label = str(I18NContext("whois.message.dnssec"))
+            res.append(Plain(f"{dnssec_label}{format_lst(dnssec)}"))
+
+        if name:
+            name_label = str(I18NContext("whois.message.name"))
+            res.append(Plain(f"{name_label}{format_lst(name)}"))
+
+        if org:
+            org_label = str(I18NContext("whois.message.organization"))
+            res.append(Plain(f"{org_label}{format_lst(org)}"))
+
+        location_parts = []
+        if address:
+            location_parts.append(format_lst(address))
+        if city:
+            location_parts.append(format_lst(city))
+        if state:
+            location_parts.append(format_lst(state))
+        if country:
+            location_parts.append(format_lst(country))
+
+        if location_parts:
+            location_str = ", ".join(location_parts)
+            location_label = str(I18NContext("whois.message.location"))
+            res.append(Plain(f"{location_label}{location_str}"))
+
+        if registrant_postal_code:
+            postal_code_label = str(I18NContext("whois.message.postal_code"))
+            res.append(Plain(f"{postal_code_label}{format_lst(registrant_postal_code)}"))
+
+        return res
     except Exception:
         await msg.finish(I18NContext("whois.message.get_failed"))

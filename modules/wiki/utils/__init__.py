@@ -2,9 +2,11 @@ import re
 
 from aiocqhttp.exceptions import NetworkError
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.logger import Logger
+from core.utils.forward import check_enable_forward_msg
 from modules.wiki.database.models import WikiTargetInfo
 from .ab import get_ab
 from .ab_qq import get_ab_qq
@@ -22,40 +24,37 @@ rc_ = module("rc", developers=["OasisAkari"], recommend_modules="wiki", doc=True
              available_for=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
         await msg.finish(I18NContext("wiki.message.not_set"))
     legacy = True
-    if not msg.parsed_msg and msg.Feature.forward:
-        from bots.aiocqhttp.utils import get_onebot_implementation
-
-        obi = await get_onebot_implementation()
-        if obi in ["napcat", "llonebot"]:
+    if not msg.parsed_msg and msg.session_info.support_forward and await check_enable_forward_msg():
+        if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
-                    msg.locale.t("wiki.message.ntqq.forward.sending")
+                    msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except NetworkError:
                 legacy = False
                 await msg.send_message(
-                    msg.locale.t("wiki.message.ntqq.forward.timeout")
+                    msg.session_info.locale.t("wiki.message.ntqq.forward.timeout")
                 )
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
         else:
             try:
                 nodelist = await get_rc_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
     if legacy:
         try:
             res = await get_rc(msg, start_wiki, headers)
@@ -69,7 +68,7 @@ async def _(msg: Bot.MessageSession):
              exclude_from=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -91,40 +90,37 @@ ab_ = module("ab", developers=["OasisAkari"], recommend_modules="wiki", doc=True
              available_for=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
         await msg.finish(I18NContext("wiki.message.not_set"))
     legacy = True
-    if not msg.parsed_msg and msg.Feature.forward:
-        from bots.aiocqhttp.utils import get_onebot_implementation
-
-        obi = await get_onebot_implementation()
-        if obi in ["napcat", "llonebot"]:
+    if not msg.parsed_msg and msg.session_info.support_forward and await check_enable_forward_msg():
+        if msg.session_info.tmp.get("onebot_impl") in ["napcat", "llonebot"]:
             try:
                 await msg.send_message(
-                    msg.locale.t("wiki.message.ntqq.forward.sending")
+                    msg.session_info.locale.t("wiki.message.ntqq.forward.sending")
                 )
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except NetworkError:
                 legacy = False
                 await msg.send_message(
-                    msg.locale.t("wiki.message.ntqq.forward.timeout")
+                    msg.session_info.locale.t("wiki.message.ntqq.forward.timeout")
                 )
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
         else:
             try:
                 nodelist = await get_ab_qq(msg, start_wiki, headers)
-                await msg.fake_forward_msg(nodelist)
+                await msg.send_message(nodelist)
                 legacy = False
             except Exception:
                 Logger.exception()
-                await msg.send_message(msg.locale.t("wiki.message.rollback"))
+                await msg.send_message(msg.session_info.locale.t("wiki.message.rollback"))
     if legacy:
         try:
             res = await get_ab(msg, start_wiki, headers)
@@ -138,7 +134,7 @@ async def _(msg: Bot.MessageSession):
              exclude_from=["QQ|Group", "QQ|Private"]
              )
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
@@ -156,13 +152,13 @@ new = module("newbie", developers=["OasisAkari"], recommend_modules="wiki", doc=
 
 @new.command("{{I18N:wiki.help.newbie}}")
 async def _(msg: Bot.MessageSession):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if not start_wiki:
         await msg.finish(I18NContext("wiki.message.not_set"))
     try:
-        res = await get_newbie(start_wiki, headers)
+        res = await get_newbie(start_wiki, headers, session=msg)
         await msg.finish(res)
     except Exception:
         Logger.exception()
@@ -174,7 +170,7 @@ usr = module("user", developers=["OasisAkari"], recommend_modules="wiki", doc=Tr
 
 @usr.command("<username> {{I18N:wiki.help.user}}")
 async def _(msg: Bot.MessageSession, username: str):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     headers = target.headers
     if start_wiki:

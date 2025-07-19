@@ -8,8 +8,8 @@ qq_bot_secret = "<Replace me with str value>" # QQ 機器人（官方）的 AppS
 
 [bot_qqbot]
 # 平台端的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
-qq_bot_appid = "<Replace me with (int, str) value>" # QQ 機器人（官方）的 AppID。
-enable = false # 是否啟用此平台。
 qq_private_bot = false # 使用 QQ 機器人（官方）時，是否為私域機器人。
+enable = false # 是否啟用此平台。
+qq_bot_appid = "<Replace me with (int, str) value>" # QQ 機器人（官方）的 AppID。
 qq_bot_enable_send_url = false # 使用 QQ 機器人（官方）時，是否啟用傳送 URL。
 qq_typing_emoji = 181 # 使用 QQ 相關協定端時，正在處理訊息時向訊息掛上的回應表情 ID，需協定端支援。 ID 詳見：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji

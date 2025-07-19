@@ -10,12 +10,12 @@ repos:
       hooks:
           - id: autopep8
 
-    - repo: local
-      hooks:
-          - id: auto-generate-config
-            name: Auto-generate config
-            entry: poetry run python ./core/scripts/config_generate.py
-            language: python
-            pass_filenames: false
+#    - repo: local
+#      hooks:
+#          - id: auto-generate-config
+#            name: Auto-generate config
+#            entry: poetry run python ./core/scripts/config_generate.py
+#            language: python
+#            pass_filenames: false
 
 

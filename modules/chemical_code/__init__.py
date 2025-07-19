@@ -3,13 +3,14 @@ import io
 import re
 from datetime import datetime
 from typing import Optional
-from PIL import Image as PImage
 
-from tenacity import retry, stop_after_attempt
+from PIL import Image as PImage
 from rdkit import Chem
 from rdkit.Chem import AllChem, Draw, rdMolDescriptors
+from tenacity import retry, stop_after_attempt
 
-from core.builtins import Bot, Image, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Image, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -320,7 +321,8 @@ async def chemical_code(
 
                                 if incorrect_list:
                                     incorrect_elements = "{I18N:message.delimiter}".join(incorrect_list)
-                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2", elements=incorrect_elements))
+                                    await wait.send_message(I18NContext("chemical_code.message.incorrect.remind2",
+                                                                        elements=incorrect_elements))
                     except ValueError:
                         Logger.exception()
 

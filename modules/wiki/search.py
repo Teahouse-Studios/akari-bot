@@ -2,12 +2,13 @@ import asyncio
 import re
 from typing import Union
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.logger import Logger
 from core.utils.message import isint
-from .wiki import wiki, query_pages
 from .database.models import WikiTargetInfo
 from .utils.wikilib import WikiLib
+from .wiki import wiki, query_pages
 
 
 @wiki.command("search <pagename> {{I18N:wiki.help.search}}")
@@ -18,13 +19,13 @@ async def _(msg: Bot.MessageSession, pagename: str):
 async def search_pages(
     msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix: bool = True
 ):
-    target = await WikiTargetInfo.get_by_target_id(msg.target.target_id)
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
     start_wiki = target.api_link
     interwiki_list = target.interwikis
     headers = target.headers
     prefix = target.prefix
     if not start_wiki:
-        await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.prefixes[0]))
+        await msg.finish(I18NContext("wiki.message.set.not_set", prefix=msg.session_info.prefixes[0]))
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {"query": [], "iw_prefix": ""}}

@@ -1,38 +1,49 @@
-import base64
 import re
 from html import escape
-from io import BytesIO
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
-import orjson as json
 from PIL import Image as PILImage
 from tabulate import tabulate
 
-from core.builtins import Info
+from core.builtins.session.info import SessionInfo
 from core.joke import shuffle_joke as joke
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.http import download
-from core.utils.web_render import webrender
+from core.utils.image import cb64imglst
+from core.utils.web_render import web_render, LegacyScreenshotOptions
 
 
 class ImageTable:
     """
     图片表格。
 
-    :param data: 表格内容，表格行数需与表格标头的数量相符。
+    :param data: 表格内容，每行的列数需与表头数量相符。
     :param headers: 表格表头。
     """
 
-    def __init__(self, data: List[List[Any]], headers: List[str]):
-        self.data = data
-        self.headers = headers
+    def __init__(self, data: List[List[Any]], headers: List[str], session_info: Optional['SessionInfo'] = None):
+        if not all(len(row) == len(headers) for row in data):
+            raise ValueError("The number of columns of data must match the number of table headers.")
+
+        if session_info:
+            localized_data = []
+            for row in data:
+                translated_row = [
+                    session_info.locale.t_str(cell) if isinstance(cell, str) else cell
+                    for cell in row
+                ]
+                localized_data.append(translated_row)
+            self.data = localized_data
+            self.headers = [session_info.locale.t_str(h) for h in headers]
+        else:
+            self.data = data
+            self.headers = headers
 
 
 async def image_table_render(
     table: Union[ImageTable, List[ImageTable]],
     save_source: bool = True,
-) -> Union[List[PILImage.Image], bool]:
+) -> Union[List[PILImage.Image], None]:
     """
     使用WebRender渲染图片表格。
 
@@ -40,10 +51,6 @@ async def image_table_render(
     :param save_source: 是否保存源文件。
     :return: 图片的PIL对象。
     """
-    if not Info.web_render_status:
-        return False
-    pic = False
-
     try:
         tblst = []
         if isinstance(table, ImageTable):
@@ -80,37 +87,20 @@ async def image_table_render(
               padding: 15px;
               text-align: left;
             }</style>"""
-        html = {"content": tblst + css, "width": w, "mw": False}
         if save_source:
             fname = f"{random_cache_path()}.html"
             with open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
-
-        try:
-            pic = await download(
-                webrender(),
-                method="POST",
-                post_data=json.dumps(html),
-                request_private_ip=True,
-                headers={
-                    "Content-Type": "application/json",
-                },
-            )
-        except Exception:
-            Logger.error("Generation failed.")
-            return False
+        image_list = await web_render.legacy_screenshot(
+            LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False))
     except Exception:
         Logger.exception()
-        return False
-    with open(pic, "rb") as read:
-        load_img = json.loads(read.read())
-    img_lst = []
-    for x in load_img:
-        b = base64.b64decode(x)
-        bio = BytesIO(b)
-        bimg = PILImage.open(bio)
-        img_lst.append(bimg)
-    return img_lst
+        return None
+    if image_list:
+        return cb64imglst(image_list)
+    else:
+        Logger.error("Image table render failed, no image returned.")
+        return None
 
 
 __all__ = ["ImageTable", "image_table_render"]

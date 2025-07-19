@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import multiprocessing
 import os
@@ -7,9 +8,35 @@ import traceback
 from datetime import datetime
 from time import sleep
 
-from loguru import logger as loggerFallback
+from loguru import logger
 from tortoise import Tortoise, run_async
+from tortoise.exceptions import ConfigurationError
 
+from core.constants import config_path, config_filename
+
+# Capture the base import lists to avoid clearing essential modules when restarting
+base_import_lists = list(sys.modules)
+
+# Basic logger setup
+
+try:
+    logger.remove(0)
+except ValueError:
+    pass
+
+Logger = logger.bind(name="BotDaemon")
+
+Logger.add(
+    sys.stderr,
+    format=(
+        f"<cyan>[BotDaemon]</cyan>"
+        "<yellow>[{name}:{function}:{line}]</yellow>"
+        "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
+        "<level>[{level}]:{message}</level>"
+    ),
+    colorize=True,
+    filter=lambda record: record["extra"].get("name") == "BotDaemon"
+)
 
 ascii_art = r"""
            _              _   ____        _
@@ -41,13 +68,17 @@ disabled_bots = []
 processes: list[multiprocessing.Process] = []
 
 
-def init_bot():
+def pre_init():
+    from core.constants.path import cache_path  # noqa
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+    os.makedirs(cache_path, exist_ok=True)
+
     from core.config import Config  # noqa
     from core.constants.default import base_superuser_default  # noqa
     from core.constants.version import database_version  # noqa
     from core.database.link import get_db_link  # noqa
     from core.database.models import SenderInfo, DBVersion  # noqa
-    from core.logger import Logger  # noqa
 
     Logger.info(ascii_art)
     if Config("debug", False):
@@ -94,18 +125,9 @@ def init_bot():
 
 
 def clear_import_cache():
-    for pymod in list(sys.modules):
-        if pymod.startswith("bots.") or pymod.startswith("core."):
-            del sys.modules[pymod]
-
-
-def terminate_process(process: multiprocessing.Process, timeout=5):
-    process.terminate()
-    process.join(timeout=timeout)
-    if process.is_alive():
-        process.kill()
-    process.join()
-    process.close()
+    for m in list(sys.modules):
+        if m not in base_import_lists:
+            del sys.modules[m]
 
 
 def multiprocess_run_until_complete(func):
@@ -123,7 +145,7 @@ def multiprocess_run_until_complete(func):
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
-    from core.builtins import Info  # noqa
+    from core.constants import Info  # noqa
     from core.logger import Logger  # noqa
 
     Logger.info(f"[{bot_name}] Here we go!")
@@ -139,17 +161,24 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
         sys.exit(1)
 
 
-def run_bot():
-    from core.constants.path import cache_path  # noqa
-    from core.config import Config, CFGManager  # noqa
-    from core.logger import Logger  # noqa
+async def cleanup_tasks():
+    loop = asyncio.get_event_loop()
+    asyncio.all_tasks(loop=loop)
+
+
+binary_mode = not sys.argv[0].endswith(".py")
+
+
+async def run_bot():
+    from core.config import CFGManager  # noqa
+    from core.server.run import run_async as server_run_async  # noqa
 
     def restart_bot_process(bot_name: str):
         if (
-            bot_name not in failed_to_start_attempts
-            or datetime.now().timestamp()
-            - failed_to_start_attempts[bot_name]["timestamp"]
-            > 60
+                bot_name not in failed_to_start_attempts
+                or datetime.now().timestamp()
+                - failed_to_start_attempts[bot_name]["timestamp"]
+                > 60
         ):
             failed_to_start_attempts[bot_name] = {}
             failed_to_start_attempts[bot_name]["count"] = 0
@@ -165,16 +194,13 @@ def run_bot():
         Logger.warning(f"Restarting bot {bot_name}...")
         p = multiprocessing.Process(
             target=go,
-            args=(bot_name, True, bool(not sys.argv[0].endswith(".py"))),
+            args=(bot_name, True, binary_mode,),
             name=bot_name,
             daemon=True
         )
         p.start()
         processes.append(p)
 
-    if os.path.exists(cache_path):
-        shutil.rmtree(cache_path)
-    os.makedirs(cache_path, exist_ok=True)
     envs = os.environ.copy()
     envs["PYTHONIOENCODING"] = "UTF-8"
     envs["PYTHONPATH"] = os.path.abspath(".")
@@ -195,7 +221,7 @@ def run_bot():
         if bl in bots_and_required_configs:
             abort = False
             for c in bots_and_required_configs[bl]:
-                if not Config(c, _global=True):
+                if not CFGManager.get(c, _global=True):
                     Logger.error(
                         f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
                     )
@@ -204,26 +230,45 @@ def run_bot():
             if abort:
                 continue
         p = multiprocessing.Process(
-            target=go, args=(bl, True, bool(not sys.argv[0].endswith(".py"))), name=bl, daemon=True
+            target=go, args=(bl, True, binary_mode), name=bl, daemon=True
         )
         p.start()
         processes.append(p)
+
+    # run the server process
+    server_process = multiprocessing.Process(target=server_run_async, args=(True, binary_mode
+                                                                            ), name="server", daemon=True)
+    server_process.start()
+    processes.append(server_process)
+
     while True:
         for p in processes:
             if p.is_alive():
                 continue
+            if p.name == "server":
+                if p.exitcode == 0:
+                    sys.exit(0)
+                if p.exitcode == 233:
+                    Logger.warning(
+                        f"Process {p.pid} (server) exited with code 233, restart all bots."
+                    )
+                    raise RestartBot
+                Logger.critical(f"Process {p.pid} (server) exited with code {p.exitcode}, please check the log.")
+                sys.exit(p.exitcode)
             if p.exitcode == 0:
                 Logger.warning(
-                    f"{p.pid} ({p.name}) exited with code 0, abort to restart."
+                    f"Process {p.pid} ({p.name}) exited with code 0, abort to restart."
                 )
                 processes.remove(p)
                 terminate_process(p)
                 break
             if p.exitcode == 233:
                 Logger.warning(
-                    f"{p.pid} ({p.name}) exited with code 233, restart all bots."
+                    f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
                 )
                 raise RestartBot
+            if p.exitcode == 466:
+                break
             Logger.critical(
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
@@ -231,33 +276,69 @@ def run_bot():
             terminate_process(p)
             restart_bot_process(p.name)
             break
-
         if not processes:
             break
-        sleep(1)
+        await asyncio.sleep(1)
     Logger.critical("All bots exited unexpectedly, please check the output.")
+    sys.exit(1)
 
 
-if __name__ == "__main__":
-    import core.scripts.config_generate  # noqa
+def terminate_process(process: multiprocessing.Process, timeout=5):
+    process.kill()
+    # process.terminate()
+    # process.join(timeout=timeout)
+    # if process.is_alive():
+    #     process.kill()
+    process.join()
+    process.close()
+
+
+async def main_async():
+    if not os.path.exists(os.path.join(config_path, config_filename)):
+        import core.scripts.config_generate  # noqa
+    from core.config import Config  # noqa
+
     try:
-        while True:
-            try:
-                multiprocess_run_until_complete(init_bot)
-                run_bot()  # Process will block here
-                break
-            except RestartBot:
-                for ps in processes:
-                    loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
-                    terminate_process(ps)
-                processes.clear()
-                clear_import_cache()
-                continue
-            except Exception:
-                loggerFallback.critical("An error occurred, please check the output.")
-                traceback.print_exc()
-                break
-    except (KeyboardInterrupt, SystemExit):
+        multiprocess_run_until_complete(pre_init)
+        await run_bot()  # Process will block here so
+    except RestartBot as e:
+        for ps in processes:
+            Logger.warning(f"Terminating process {ps.pid} ({ps.name})...")
+            terminate_process(ps)
+        processes.clear()
+        try:
+            await Tortoise.close_connections()
+        except ConfigurationError:
+            pass
+        raise e
+
+    except (KeyboardInterrupt, SystemExit) as e:
         for ps in processes:
             terminate_process(ps)
         processes.clear()
+        raise e
+    except Exception as e:
+        Logger.critical("An error occurred, please check the output.")
+        traceback.print_exc()
+        raise e
+    finally:
+        try:
+            await Tortoise.close_connections()
+        except ConfigurationError:
+            pass
+
+
+def main():
+    while True:
+        try:
+            asyncio.run(main_async())
+        except RestartBot:
+            clear_import_cache()
+            continue
+        except (KeyboardInterrupt, SystemExit):
+            print("Exited.")
+            break
+
+
+if __name__ == "__main__":
+    main()

@@ -5,7 +5,7 @@ from tortoise.models import Model
 from core.exports import exports
 
 if TYPE_CHECKING:
-    from core.builtins import Bot
+    from core.builtins.bot import Bot
 
 
 class DBModel(Model):
@@ -18,7 +18,7 @@ class DBModel(Model):
 
     @classmethod
     async def get_by_target_id(cls,
-                               target_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
+                               target_id: Union["Bot.MessageSession", "Bot.FetchedMessageSession", str],
                                create: bool = True
                                ) -> Optional[Self]:
         """
@@ -34,18 +34,19 @@ class DBModel(Model):
             t = target_id
         else:
             if ex := exports.get("Bot"):
-                if isinstance(target_id, (ex.MessageSession, ex.FetchedSession)):
-                    t = target_id.target.target_id
+                ex: 'Bot'
+                if isinstance(target_id, (ex.MessageSession, ex.FetchedMessageSession)):
+                    t = target_id.session_info.target_id
         if not t:
             raise ValueError(
-                "target_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
+                "target_id must be a str or a MessageSession/FetchedMessageSession instance, or exports are unavailable.")
         if create:
             return (await cls.get_or_create(target_id=t))[0]
         return await cls.get_or_none(target_id=t)
 
     @classmethod
     async def get_by_sender_id(cls,
-                               sender_id: Union["Bot.MessageSession", "Bot.FetchedSession", str],
+                               sender_id: Union["Bot.MessageSession", "Bot.FetchedMessageSession", str],
                                create: bool = True
                                ) -> Optional[Self]:
         """
@@ -60,11 +61,12 @@ class DBModel(Model):
             t = sender_id
         else:
             if ex := exports.get("Bot"):
-                if isinstance(sender_id, (ex.MessageSession, ex.FetchedSession)):
-                    t = sender_id.target.sender_id
+                ex: 'Bot'
+                if isinstance(sender_id, (ex.MessageSession, ex.FetchedMessageSession)):
+                    t = sender_id.session_info.sender_id
         if not t:
             raise ValueError(
-                "sender_id must be a str or a MessageSession/FetchedSession instance, or exports are unavailable.")
+                "sender_id must be a str or a MessageSession/FetchedMessageSession instance, or exports are unavailable.")
         if create:
             return (await cls.get_or_create(sender_id=t))[0]
         return await cls.get_or_none(sender_id=t)

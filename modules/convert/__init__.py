@@ -2,7 +2,8 @@ from decimal import Decimal
 
 from pint import UnitRegistry
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 
 # ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +

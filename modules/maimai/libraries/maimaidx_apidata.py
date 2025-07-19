@@ -1,4 +1,3 @@
-import os
 from collections import defaultdict
 from typing import Optional, Union
 
@@ -6,7 +5,9 @@ import orjson as json
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn
 
-from core.builtins import Bot, MessageChain, I18NContext, Image, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.constants.exceptions import ConfigValueError
 from core.constants.path import cache_path
 from core.logger import Logger
@@ -64,9 +65,6 @@ async def update_alias() -> bool:
         except Exception:
             Logger.exception()
 
-        if not alias_map:
-            return False
-
         try:
             xray_data = await get_url("https://download.xraybot.site/maimai/alias.json", 200, fmt="json")
 
@@ -77,6 +75,9 @@ async def update_alias() -> bool:
 
         except Exception:
             Logger.exception()
+
+        if not alias_map:
+            return False
 
         alias_data = []
         for song_id, info in alias_map.items():
@@ -98,8 +99,8 @@ async def update_alias() -> bool:
         return False
 
 
-async def get_info(music: Music, details) -> MessageChain:
-    info = MessageChain(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
+async def get_info(music: Music, details: Union[str, MessageChain]) -> MessageChain:
+    info = MessageChain.assign(Plain(f"{music.id} - {music.title}{" (DX)" if music["type"] == "DX" else ""}"))
     cover_path = os.path.join(mai_cover_path, f"{music.id}.png")
     if os.path.exists(cover_path):
         info.append(Image(cover_path))
@@ -109,7 +110,7 @@ async def get_info(music: Music, details) -> MessageChain:
             info.append(Image(cover_path))
     if details:
         if not isinstance(details, MessageChain):
-            details = MessageChain(details)
+            details = MessageChain.assign(details)
         info += details
 
     return info
@@ -118,7 +119,7 @@ async def get_info(music: Music, details) -> MessageChain:
 async def get_alias(msg: Bot.MessageSession, sid: str) -> list:
     if not os.path.exists(mai_alias_path):
         await msg.finish(
-            I18NContext("maimai.message.alias.file_not_found", prefix=msg.prefixes[0])
+            I18NContext("maimai.message.alias.file_not_found", prefix=msg.session_info.prefixes[0])
         )
     with open(mai_alias_path, "rb") as file:
         data = json.loads(file.read())
@@ -165,7 +166,7 @@ async def get_record(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_record.json"
+        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/player"
     try:
@@ -215,7 +216,7 @@ async def get_song_record(
         mai_cache_path = os.path.join(cache_path, "maimai-record")
         os.makedirs(mai_cache_path, exist_ok=True)
         cache_dir = os.path.join(
-            mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_song_record.json"
+            mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_song_record.json"
         )
         url = "https://www.diving-fish.com/api/maimaidxprober/dev/player/record"
         try:
@@ -268,7 +269,7 @@ async def get_total_record(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_total_record.json"
+        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_total_record.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     payload["version"] = versions
@@ -326,7 +327,7 @@ async def get_plate(
     mai_cache_path = os.path.join(cache_path, "maimai-record")
     os.makedirs(mai_cache_path, exist_ok=True)
     cache_dir = os.path.join(
-        mai_cache_path, f"{msg.target.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
+        mai_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_maimaidx_plate_{version}.json"
     )
     url = "https://www.diving-fish.com/api/maimaidxprober/query/plate"
     try:

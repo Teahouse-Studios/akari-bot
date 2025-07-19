@@ -1,6 +1,6 @@
 from typing import Optional
 
-from core.builtins import Url
+from core.builtins.message.internal import Url
 
 
 class Module:
@@ -115,7 +115,7 @@ class ConsoleErrorInfo:
 
 # Helper constants
 REPORT_DETAILS = "你应该向本模块的原仓库发起Issue来添加有关内容（请说英文）：" + str(
-    Url("https://github.com/nh-server/Kurisu/issues")
+    Url("https://github.com/nh-server/Kurisu/issues", use_mm=False)
 )
 
 UNKNOWN_MODULE = ResultInfo(

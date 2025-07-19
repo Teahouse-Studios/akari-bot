@@ -1,6 +1,8 @@
-from core.builtins import Bot, Embed, EmbedField, Image, Url, I18NContext
-from core.utils.http import get_url
-from core.utils.web_render import webrender
+import orjson as json
+
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
+from core.utils.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100
 
@@ -8,23 +10,27 @@ DESC_LENGTH = 100
 async def get_video_info(
     msg: Bot.MessageSession, query, get_detail=False, use_embed=False
 ):
-    if msg.target.sender_from in ["Discord|Client"]:
+    if msg.session_info.sender_from in ["Discord|Client"]:
         use_embed = True
     try:
         url = f"https://api.bilibili.com/x/web-interface/view/detail{query}"
-        res = await get_url(
-            webrender("source", url), 200, fmt="json", request_private_ip=True
-        )
-        if res["code"] != 0:
-            if res["code"] == -400:
-                return I18NContext("bilibili.message.invalid")
-            return I18NContext("bilibili.message.not_found")
+        res = await web_render.source(SourceOptions(url=url, raw_text=True, stealth=False))
+        if not res:
+            res = await web_render.source(SourceOptions(url=url, raw_text=True))
+        if res:
+            load_json = json.loads(res)
+            if load_json["code"] != 0:
+                if load_json["code"] == -400:
+                    return I18NContext("bilibili.message.invalid")
+                return I18NContext("bilibili.message.not_found")
+        else:
+            return I18NContext("bilibili.message.failed")
     except ValueError as e:
-        if str(e).startswith("412"):
-            return I18NContext("bilibili.message.error.rejected")
+        # if str(e).startswith("412"):
+        #     return I18NContext("bilibili.message.error.rejected")
         raise e
 
-    view = res["data"]["View"]
+    view = load_json["data"]["View"]
     stat = view["stat"]
 
     video_url = f"https://www.bilibili.com/video/{view["bvid"]}"
@@ -50,7 +56,7 @@ async def get_video_info(
 
     owner = view["owner"]["name"]
     avatar = view["owner"]["face"]
-    fans = msg.format_num(res["data"]["Card"]["card"]["fans"], 1)
+    fans = msg.format_num(load_json["data"]["Card"]["card"]["fans"], 1)
 
     if use_embed:
         return Embed(
@@ -117,4 +123,4 @@ async def get_video_info(
             desc=desc,
             time=time,
         )
-    return [Image(pic), Url(video_url), output]
+    return [Image(pic), Url(video_url, use_mm=False), output]

@@ -1,0 +1,10 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[webrender]
+# The basic config section of WebRender. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+enable_web_render = false # 是否启用 WebRender。
+remote_web_render_url = "<Replace me with str value>" # 远程 WebRender 服务的 URL，在本地 WebRender 渲染失败时尝试请求。
+browser_type = "chrome" # WebRender 使用的浏览器类型。
+browser_executable_path = "" # WebRender 使用的浏览器可执行文件路径，若空则使用 playwright 默认安装浏览器。（使用二进制部署时，必须指定路径才可使用 WebRender）

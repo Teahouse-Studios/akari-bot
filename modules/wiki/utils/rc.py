@@ -1,7 +1,9 @@
 import re
 import urllib.parse
 
-from core.builtins import Bot, MessageChain, I18NContext, Plain, Url
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.utils import strptime2ts
@@ -16,7 +18,7 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
                                 rcprop="title|user|timestamp|loginfo|comment|sizes",
                                 rclimit=RC_LIMIT,
                                 rctype="edit|new|log",
-                                _no_login=not msg.target_data.get("use_bot_account", False))
+                                _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:RecentChanges")
     d = []
     for x in query["query"]["recentchanges"]:
@@ -30,17 +32,17 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             else:
                 count = str(count)
             d.append(f"•{msg.format_time(strptime2ts(x["timestamp"]),
-                     iso=True, timezone=False)} - {title} .. ({count}) .. {user}")
+                                         iso=True, timezone=False)} - {title} .. ({count}) .. {user}")
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
         if x["type"] == "log":
             if x["logtype"] == x["logaction"]:
-                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}",
-                                   user=user,
-                                   title=title)
+                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x["logtype"]}",
+                                                user=user,
+                                                title=title)
             else:
-                log = msg.locale.t(
+                log = msg.session_info.locale.t(
                     f"wiki.message.rc.action.{x["logtype"]}.{x["logaction"]}",
                     user=user,
                     title=title)
@@ -60,20 +62,21 @@ async def get_rc(msg: Bot.MessageSession, wiki_url, headers=None):
             if "description" in params:
                 d.append(params["description"])
             if "duration" in params:
-                d.append(str(I18NContext("wiki.message.rc.params.duration") + params["duration"]))
+                d.append(str(I18NContext("wiki.message.rc.params.duration")) + params["duration"])
             if "flags" in params:
                 d.append(", ".join(params["flags"]))
             if "tag" in params:
-                d.append(str(I18NContext("wiki.message.rc.params.tag") + params["tag"]))
+                d.append(str(I18NContext("wiki.message.rc.params.tag")) + params["tag"])
             if "target_title" in params:
-                d.append(str(I18NContext("wiki.message.rc.params.target_title") + params["target_title"]))
+                d.append(str(I18NContext("wiki.message.rc.params.target_title")) + params["target_title"])
             if x["comment"]:
                 comment = str(I18NContext("message.brackets", msg=replace_brackets(x["comment"])))
                 d.append(comment)
-    y = await check(d)
+    y = await check(d, session=msg)
 
-    g = MessageChain([Url(pageurl)])
-    g += MessageChain([Plain(z["content"]) for z in y])
+    g = MessageChain.assign(
+        [Url(pageurl, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False)])
+    g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=RC_LIMIT))
 
     st = True
@@ -117,7 +120,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
     userlist = list(set(userlist))
     titlelist = list(set(titlelist))
     commentlist = list(set(commentlist))
-    checked_userlist = await check(userlist)
+    checked_userlist = await check(userlist, session=msg)
     user_checked_map = {}
     text_status = True
     for u in checked_userlist:
@@ -125,14 +128,14 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
         if not u["status"]:
             text_status = False
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(titlelist)
+    checked_titlelist = await check(titlelist, session=msg)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]
         if not t["status"]:
             text_status = False
         title_checked_map[t["original"]] = title_checked
-    checked_commentlist = await check(commentlist)
+    checked_commentlist = await check(commentlist, session=msg)
     comment_checked_map = {}
     for c in checked_commentlist:
         comment_checked = c["content"]
@@ -171,9 +174,9 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
                 t.append(comment)
         if x["type"] == "log":
             if x["logtype"] == x["logaction"]:
-                log = msg.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
+                log = msg.session_info.locale.t(f"wiki.message.rc.action.{x["logtype"]}", user=user, title=title)
             else:
-                log = msg.locale.t(
+                log = msg.session_info.locale.t(
                     f"wiki.message.rc.action.{x["logtype"]}.{x["logaction"]}",
                     user=user,
                     title=title)

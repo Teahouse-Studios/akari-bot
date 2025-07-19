@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="preconnect" href="https://fonts.font.im">
-    <link rel="preconnect" href="https://fonts.font.im" crossorigin>
-    <link href="https://fonts.font.im/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap&font-display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
+    <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}">
+    <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}" crossorigin>
+    <link href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap&font-display=swap" rel="stylesheet">
     <style>
-        html body {
-            margin-top: 0px !important;
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
             font-family: 'Noto Sans SC', sans-serif;
         }
 
@@ -29,14 +32,105 @@
         :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
             font-family:  'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
         }
+
+        .plain, .embed, .image{
+            margin: 10px;
+            word-wrap: break-word;
+            background-color: rgb(var(--mdui-color-surface-container));
+            border-radius: var(--mdui-shape-corner-large);
+            padding: 20px;
+            max-width: fit-content;
+            margin-top: 0;
+        }
+
+        .message-id{
+            margin-top: 10px;
+            margin-left: 10px;
+            color: rgb(var(--mdui-color-on-surface));
+        }
+
+        .image{
+            padding: 0;
+        }
+
+        img{
+            max-width: fit-content;
+            border-radius: var(--mdui-shape-corner-large);
+            background-color: rgb(var(--mdui-color-surface-container));
+            display: block;
+        }
+
+        .botbox{
+            margin: 10px;
+            background-color: rgb(var(--mdui-color-surface));
+            border-radius: var(--mdui-shape-corner-extra-small);
+            box-shadow: var(--mdui-elevation-level1);
+            color: rgb(var(--mdui-color-on-surface));
+            padding: 10px;
+        }
+
+        .mdui-prose h2, .mdui-prose h3{
+            margin-top: 15px;
+        }
     </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Message Chain</title>
 </head>
 <body>
-    <div class="botbox">
-        {{ content|safe }}
+    <div class="botbox mdui-prose">
+        <h2>{{ title }}</h2>
+        {% for value in message_list %}
+            <div class="message-id">#{{ loop.index }}</div>
+            {% if isinstance(value, PlainElement) %}
+            <div class="plain">
+                {{ value.text }}
+            </div>
+            {% elif isinstance(value, ImageElement) %}
+            <div class="image">
+                <img src="{{ value.cached_b64 }}" alt="Image" style="max-width: 100%; height: auto;">
+            </div>
+            {% elif isinstance(value, EmbedElement) %}
+            <div class="embed">
+                {% if value.author %}
+                <p>{{ value.author }}</p>
+                {% endif %}
+                {% if value.title %}
+                <h3>{{ value.title }}</h3>
+                {% endif %}
+
+                {% if value.description %}
+                <p>{{ value.description }}</p>
+                {% endif %}
+
+                {% if value.url %}
+                <p>
+                    <a href="{{ value.url }}" target="_blank">Link</a>
+                </p>
+                {% endif %}
+
+                {% if value.fields %}
+                <ul>
+                    {% for field in value.fields %}
+                        <li>
+                            <strong>{{ field.name }}</strong>: {{ field.value }}
+                            {% if field.inline %} (inline) {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if value.image %}
+                <p>
+                <img src="{{ value.image.cached_b64 }}" alt="Embed Image">
+                </p>
+                {% endif %}
+                {% if value.timestamp %}
+                <p>{{ (value.footer + '·') if value.footer else '' + str(value.timestamp)  }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
     </div>
 </body>
 </html>

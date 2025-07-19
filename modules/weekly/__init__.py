@@ -4,7 +4,9 @@ from html import unescape
 import orjson as json
 from bs4 import BeautifulSoup
 
-from core.builtins import Bot, MessageChain, Plain, Image, Url
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, Image, Url
 from core.component import module
 from core.i18n import Locale
 from core.utils.http import get_url
@@ -34,9 +36,9 @@ async def get_weekly(with_img=False, zh_tw=False):
     img_filename = re.match(r"/w/(.*)", img.attrs["href"]) if img else None
     page = re.findall(r"(?<=<b><a href=\").*?(?=\")", str(content))
     if (page and page[0] == "/w/%E7%8E%BB%E7%92%83"):
-        msg_list = MessageChain([Plain(locale.t("weekly.message.expired"))])
+        msg_list = MessageChain.assign([Plain(locale.t("weekly.message.expired"))])
     else:
-        msg_list = MessageChain([Plain(locale.t("weekly.message.prompt", text=text))])
+        msg_list = MessageChain.assign([Plain(locale.t("weekly.message.prompt", text=text))])
     imglink = None
     if img_filename:
         get_image = await (WikiLib("https://zh.minecraft.wiki/")).parse_page_info(img_filename.group(1))
@@ -84,15 +86,15 @@ wky = module("weekly", developers=["Dianliang233"], support_languages=["zh_cn", 
 
 @wky.command("{{I18N:weekly.help}}")
 async def _(msg: Bot.MessageSession):
-    weekly = await get_weekly(msg.target.client_name in ["QQ", "TEST"],
-                              zh_tw=msg.locale.locale == "zh_tw")
+    weekly = await get_weekly(msg.session_info.client_name in ["QQ", "TEST"],
+                              zh_tw=msg.session_info.locale.locale == "zh_tw")
     await msg.finish(weekly)
 
 
 @wky.command("image {{I18N:weekly.help.image}}")
 async def _(msg: Bot.MessageSession):
-    await msg.finish(await get_weekly_img(msg.target.client_name in ["QQ", "TEST"],
-                                          zh_tw=msg.locale.locale == "zh_tw"))
+    await msg.finish(await get_weekly_img(msg.session_info.client_name in ["QQ", "TEST"],
+                                          zh_tw=msg.session_info.locale.locale == "zh_tw"))
 
 
 @wky.command("teahouse {{I18N:weekly.help.teahouse}}")

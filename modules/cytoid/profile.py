@@ -1,6 +1,7 @@
 import orjson as json
 
-from core.builtins import Bot, I18NContext, Image, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image, Plain
 from core.utils.http import get_url
 from modules.cytoid.database.models import CytoidBindInfo
 
@@ -11,7 +12,7 @@ async def cytoid_profile(msg: Bot.MessageSession, username):
     else:
         bind_info = await CytoidBindInfo.get_by_sender_id(msg, create=False)
         if not bind_info:
-            await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.prefixes[0]))
+            await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.session_info.prefixes[0]))
         query_id = bind_info.username
     profile_url = f"http://services.cytoid.io/profile/{query_id}"
     try:

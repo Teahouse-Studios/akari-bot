@@ -1,4 +1,6 @@
-from core.builtins import Bot, I18NContext, Image, Url
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, I18NContext, Image, Url
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
@@ -36,9 +38,9 @@ async def _(msg: Bot.MessageSession, keyword: str):
 
     songs = result["result"]["songs"][:SEARCH_LIMIT]
 
-    if not msg.parsed_msg.get("--legacy", False) and msg.Feature.image:
+    send_msg = MessageChain.assign(I18NContext("ncmusic.message.search.result"))
+    if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
 
-        send_msg = [I18NContext("ncmusic.message.search.result")]
         data = [
             [
                 str(i),
@@ -63,12 +65,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
         tables = ImageTable(
             data,
             [
-                msg.locale.t("ncmusic.message.search.table.header.id"),
-                msg.locale.t("ncmusic.message.search.table.header.name"),
-                msg.locale.t("ncmusic.message.search.table.header.artists"),
-                msg.locale.t("ncmusic.message.search.table.header.album"),
+                "{I18N:ncmusic.message.search.table.header.id}",
+                "{I18N:ncmusic.message.search.table.header.name}",
+                "{I18N:ncmusic.message.search.table.header.artists}",
+                "{I18N:ncmusic.message.search.table.header.album}",
                 "ID",
             ],
+            msg.session_info
         )
 
         imgs = await image_table_render(tables)
@@ -95,61 +98,53 @@ async def _(msg: Bot.MessageSession, keyword: str):
             if isint(query):
                 query = int(query)
                 if not query or query > song_count:
-                    await msg.finish(
-                        msg.locale.t("mod_dl.message.invalid.out_of_range")
-                    )
+                    await msg.finish(I18NContext("mod_dl.message.invalid.out_of_range"))
                 else:
                     sid = result["result"]["songs"][query - 1]["id"]
             else:
-                await msg.finish(
-                    msg.locale.t("ncmusic.message.search.invalid.non_digital")
-                )
+                await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
         await info(msg, sid)
 
     if legacy:
-        send_msg = msg.locale.t("ncmusic.message.search.result") + "\n"
 
         for i, song in enumerate(songs, start=1):
-            send_msg += f"{i} - {song["name"]}"
+            song_msg = f"{i} - {song["name"]}"
             if "transNames" in song:
-                send_msg += f"（{" / ".join(song["transNames"])}）"
-            send_msg += f"——{" / ".join(artist["name"] for artist in song["artists"])}"
+                song_msg += f"（{" / ".join(song["transNames"])}）"
+            song_msg += f"——{" / ".join(artist["name"] for artist in song["artists"])}"
             if song["album"]["name"]:
-                send_msg += f"《{song["album"]["name"]}》"
+                song_msg += f"《{song["album"]["name"]}》"
             if "transNames" in song["album"]:
-                send_msg += f"（{" / ".join(song["album"]["transNames"])}）"
-            send_msg += f"（{song["id"]}）\n"
+                song_msg += f"（{" / ".join(song["album"]["transNames"])}）"
+            song_msg += f"（{song["id"]}）"
+            send_msg.append(Plain(song_msg))
 
         if song_count > SEARCH_LIMIT:
             song_count = SEARCH_LIMIT
-            send_msg += msg.locale.t("message.collapse", amount=SEARCH_LIMIT)
+            send_msg.append(I18NContext("message.collapse", amount=SEARCH_LIMIT))
 
         if song_count == 1:
-            send_msg += "\n" + msg.locale.t("ncmusic.message.search.confirm")
+            send_msg.append(I18NContext("ncmusic.message.search.confirm"))
             if await msg.wait_confirm(send_msg, delete=False):
                 sid = result["result"]["songs"][0]["id"]
             else:
                 await msg.finish()
         else:
-            send_msg += "\n" + msg.locale.t("ncmusic.message.search.prompt")
+            send_msg.append(I18NContext("ncmusic.message.search.prompt"))
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
 
             if isint(query):
                 query = int(query)
                 if query > song_count:
-                    await msg.finish(
-                        msg.locale.t("mod_dl.message.invalid.out_of_range")
-                    )
+                    await msg.finish(I18NContext("mod_dl.message.invalid.out_of_range"))
                 else:
                     sid = result["result"]["songs"][query - 1]["id"]
             else:
-                await msg.finish(
-                    msg.locale.t("ncmusic.message.search.invalid.non_digital")
-                )
+                await msg.finish(I18NContext("ncmusic.message.search.invalid.non_digital"))
 
-        if msg.target.client_name == "QQ" and enable_card:
+        if msg.session_info.client_name == "QQ" and enable_card:
             await msg.finish(f"[CQ:music,type=163,id={sid}]", quote=False)
         else:
             await info(msg, sid)
@@ -182,7 +177,7 @@ async def info(msg: Bot.MessageSession, sid: int):
         await msg.finish(
             [
                 Image(info["al"]["picUrl"]),
-                Url(song_url),
+                Url(song_url, use_mm=False),
                 I18NContext(
                     "ncmusic.message.info",
                     name=info["name"],

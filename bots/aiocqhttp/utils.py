@@ -4,13 +4,16 @@ from typing import Any, Dict, Optional, Union
 
 import orjson as json
 
+from bots.aiocqhttp.info import sender_prefix
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, Image, Voice, Mention
 from core.logger import Logger
-from .client import bot
+from .client import aiocqhttp_bot
 
 
 async def get_onebot_implementation() -> Optional[str]:
     """获取正在使用的OneBot实现。"""
-    data = await bot.call_action("get_version_info")
+    data = await aiocqhttp_bot.call_action("get_version_info")
     Logger.debug(str(data))
     app_name = data.get("app_name")
 
@@ -100,3 +103,55 @@ class CQCodeHandler:
         if escape_comma:
             s = s.replace(",", "&#44;")
         return s
+
+
+async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> MessageChain:
+    lst = []
+    if isinstance(message, str):
+        spl = re.split(
+            r"(\[CQ:(?:text|image|record|at).*?])", message
+        )
+        for s in spl:
+            if not s:
+                continue
+            if re.match(r"\[CQ:[^\]]+\]", s):
+                cq_data = CQCodeHandler.parse_cq(s)
+                if cq_data:
+                    if cq_data["type"] == "text":
+                        lst.append(Plain(cq_data["data"].get("text")))
+                    elif cq_data["type"] == "image":
+                        obi = await get_onebot_implementation()
+                        if obi == "lagrange":
+                            img_src = cq_data["data"].get("file")
+                        else:
+                            img_src = cq_data["data"].get("url")
+                        if img_src:
+                            lst.append(Image(img_src))
+                    elif cq_data["type"] == "record":
+                        lst.append(Voice(cq_data["data"].get("file")))
+                    elif cq_data["type"] == "at":
+                        lst.append(Mention(f"{sender_prefix}|{cq_data["data"].get("qq")}"))
+                    else:
+                        lst.append(Plain(s))
+                else:
+                    lst.append(Plain(s))
+            else:
+                lst.append(Plain(s))
+    else:
+        for item in message:
+            if item["type"] == "text":
+                lst.append(Plain(item["data"]["text"]))
+            elif item["type"] == "image":
+                obi = await get_onebot_implementation()
+                if obi == "lagrange":
+                    lst.append(Image(item["data"]["file"]))
+                else:
+                    lst.append(Image(item["data"]["url"]))
+            elif item["type"] == "record":
+                lst.append(Voice(item["data"]["file"]))
+            elif item["type"] == "at":
+                lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
+            else:
+                lst.append(Plain(CQCodeHandler.generate_cq(item)))
+
+    return MessageChain.assign(lst)

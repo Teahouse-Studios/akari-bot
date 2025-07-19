@@ -63,20 +63,22 @@ async def update_database():
                 """)
             else:
                 await conn.execute_query("""
-                    ALTER TABLE target_info ADD COLUMN banned_users JSON DEFAULT NULL AFTER custom_admins;
+                                         ALTER TABLE target_info
+                                             ADD COLUMN banned_users JSON DEFAULT NULL AFTER custom_admins;
 
-                    UPDATE target_info
-                    SET banned_users =
-                        IF(
-                            JSON_CONTAINS_PATH(target_data, 'one', '$.ban'),
-                            JSON_EXTRACT(target_data, '$.ban'),
-                            JSON_ARRAY()
-                        ),
-                        target_data = JSON_REMOVE(target_data, '$.ban');
+                                         UPDATE target_info
+                                         SET banned_users =
+                                                 IF(
+                                                     JSON_CONTAINS_PATH(target_data, 'one', '$.ban'),
+                                                     JSON_EXTRACT(target_data, '$.ban'),
+                                                     JSON_ARRAY()
+                                                 ),
+                                             target_data  = JSON_REMOVE(target_data, '$.ban');
 
-                    ALTER TABLE analytics_data MODIFY sender_id VARCHAR(512) NULL;
+                                         ALTER TABLE analytics_data
+                                             MODIFY sender_id VARCHAR(512) NULL;
 
-                """)
+                                         """)
 
             await query_dbver.delete()
             await DBVersion.create(version=2)

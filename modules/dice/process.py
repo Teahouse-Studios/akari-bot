@@ -1,13 +1,11 @@
 import math
-import re
 
 from simpleeval import SimpleEval, FunctionNotDefined, NameNotDefined
 
-from core.builtins import Bot, I18NContext, Plain
-from core.config import Config
+from core.builtins.bot import Bot
+from core.builtins.message.internal import Plain
 from core.constants.exceptions import ConfigValueError
 from core.logger import Logger
-from core.utils.message import isint
 from .dice import *
 
 # 配置常量
@@ -61,7 +59,7 @@ async def process_expression(msg: Bot.MessageSession, expr: str, dc: Optional[in
         ]
     ):
         raise ConfigValueError("{I18N:error.config.invalid}")
-    if msg.Feature.markdown:
+    if msg.session_info.support_markdown:
         expr = expr.replace("*", "\\*")
 
     dice_list, count, times, err = parse_dice_expression(msg, expr)
@@ -104,9 +102,9 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
         if (
             dice_expr_list[item][-1].upper() == "D"
             and dice_expr_list[item] not in math_funcs
-            and msg.target_data.get("dice_default_sides")
+            and msg.session_info.target_info.target_data.get("dice_default_sides")
         ):
-            dice_expr_list[item] += str(msg.target_data.get("dice_default_sides"))
+            dice_expr_list[item] += str(msg.session_info.target_info.target_data.get("dice_default_sides"))
 
     for i, item in enumerate(dice_expr_list):  # 将所有骰子项切片转为大写
         for pattern in dice_patterns:
@@ -174,7 +172,7 @@ def parse_dice_expression(msg: Bot.MessageSession, dices: str):
 def insert_multiply(msg: Bot.MessageSession, lst: list):
     """在各项之间加上乘号"""
     result = []
-    asterisk = "\\*" if msg.Feature.markdown else "*"
+    asterisk = "\\*" if msg.session_info.support_markdown else "*"
     for i, item in enumerate(lst):
         if i == 0:
             result.append(item)
@@ -257,7 +255,7 @@ def generate_dice_message(
         try:
             if dc:
                 output_line += f"/{dc}  "
-                if msg.target_data.get("dice_dc_reversed"):
+                if msg.session_info.target_info.target_data.get("dice_dc_reversed"):
                     if int(result) <= dc:
                         output_line += "{I18N:dice.message.dc.success}"
                         success_num += 1

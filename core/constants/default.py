@@ -7,7 +7,7 @@ lang_list = {
     "zh_tw": "繁體中文",
     "en_us": "English",
     "ja_jp": "日本語"
-            }
+}
 
 qq_host_default = "127.0.0.1:8080"
 matrix_homeserver_default = "https://matrix.org"

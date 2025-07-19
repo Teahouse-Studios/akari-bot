@@ -1,7 +1,8 @@
 import datetime
 import re
 
-from core.builtins import Bot, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.config import Config
 from core.constants.exceptions import ConfigValueError
@@ -28,7 +29,7 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
     base_currency = base[-3:]
 
     if not api_key:
-        raise ConfigValueError("{{I18N:error.config.secret.not_found]")
+        raise ConfigValueError("{I18N:error.config.secret.not_found}")
 
     try:
         amount = amount if amount else 1

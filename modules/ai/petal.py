@@ -1,7 +1,7 @@
 from decimal import Decimal
 from math import ceil
 
-from core.builtins import Bot
+from core.builtins.bot import Bot
 from core.config import Config
 
 PREDICT_INPUT_TOKEN = 10
@@ -20,7 +20,7 @@ def precount_petal(msg: Bot.MessageSession,
         petal = petal if petal > 0 else 0
         if petal == 0:
             return True
-        return msg.petal >= petal
+        return msg.session_info.petal >= petal
     return True
 
 
@@ -35,6 +35,6 @@ async def count_token_petal(msg: Bot.MessageSession,
         petal = input_petal + output_petal
         petal = petal if petal > 0 else 0
         if petal != 0:
-            await msg.sender_info.modify_petal(-petal)
+            await msg.session_info.sender_info.modify_petal(-petal)
             return petal
     return 0

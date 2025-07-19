@@ -1,9 +1,9 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
-phigros = client.create_group("phigros", "查询Phigros的相关信息")
+phigros = discord_bot.create_group("phigros", "查询Phigros的相关信息")
 
 
 @phigros.command(description="查询Best19列表")

@@ -1,4 +1,6 @@
-from core.builtins import Bot, MessageChain, I18NContext
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext
 from core.config import Config
 from core.constants.default import issue_url_default
 from core.logger import Logger
@@ -10,33 +12,36 @@ WARNING_COUNTS = Config("tos_warning_counts", 5)
 async def _abuse_warn_target(msg: Bot.MessageSession, reason: str):
     issue_url = Config("issue_url", issue_url_default)
     if WARNING_COUNTS >= 1 and not msg.check_super_user():
-        await msg.sender_info.warn_user()
-        warn_template = MessageChain([I18NContext("tos.message.warning"),
-                                     I18NContext("tos.message.reason", reason=reason)])
+        await msg.session_info.sender_info.warn_user()
+        warn_template = MessageChain.assign([I18NContext("tos.message.warning"),
+                                             I18NContext("tos.message.reason", reason=reason)])
 
         # Logs
-        identify_str = f"[{msg.target.sender_id} ({msg.target.target_id})]"
-        if msg.sender_info.warns <= WARNING_COUNTS:
-            Logger.info(f"Warn {identify_str} by ToS: abuse ({msg.sender_info.warns}/{WARNING_COUNTS})")
-        elif msg.sender_info.warns > WARNING_COUNTS:
+        identify_str = f"[{msg.session_info.sender_id} ({msg.session_info.target_id})]"
+        if msg.session_info.sender_info.warns <= WARNING_COUNTS:
+            Logger.info(f"Warn {identify_str} by ToS: abuse ({msg.session_info.sender_info.warns}/{WARNING_COUNTS})")
+        elif msg.session_info.sender_info.warns > WARNING_COUNTS:
             Logger.info(f"Ban {identify_str} by ToS: abuse")
         else:
             Logger.info(f"Warn {identify_str} by ToS: abuse")
 
         # Send warns
-        if msg.sender_info.warns < WARNING_COUNTS or msg.sender_info.trusted:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
-            warn_template.append(I18NContext("tos.message.warning.count", current_warns=msg.sender_info.warns))
-            if not msg.sender_info.trusted:
+        if msg.session_info.sender_info.warns < WARNING_COUNTS or msg.session_info.sender_info.trusted:
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
+            warn_template.append(
+                I18NContext(
+                    "tos.message.warning.count",
+                    current_warns=msg.session_info.sender_info.warns))
+            if not msg.session_info.sender_info.trusted:
                 warn_template.append(I18NContext("tos.message.warning.prompt", warn_counts=WARNING_COUNTS))
-            if msg.sender_info.warns <= 2 and issue_url:
+            if msg.session_info.sender_info.warns <= 2 and issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
-        elif msg.sender_info.warns == WARNING_COUNTS:
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason)
+        elif msg.session_info.sender_info.warns == WARNING_COUNTS:
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason)
             warn_template.append(I18NContext("tos.message.warning.last"))
-        elif msg.sender_info.warns > WARNING_COUNTS:
-            await msg.sender_info.switch_identity(trust=False)
-            await tos_report(msg.target.sender_id, msg.target.target_id, reason, banned=True)
+        elif msg.session_info.sender_info.warns > WARNING_COUNTS:
+            await msg.session_info.sender_info.switch_identity(trust=False)
+            await tos_report(msg.session_info.sender_id, msg.session_info.target_id, reason, banned=True)
             warn_template.append(I18NContext("tos.message.banned"))
             if issue_url:
                 warn_template.append(I18NContext("tos.message.appeal", issue_url=issue_url))
@@ -54,5 +59,5 @@ async def tos_report(sender: str, target: str, reason: str, banned: bool = False
         warn_template.append(I18NContext("tos.message.action", action=action, disable_joke=True))
 
         for target_ in report_targets:
-            if f := await Bot.FetchTarget.fetch_target(target_):
-                await f.send_direct_message(warn_template)
+            if f := await Bot.fetch_target(target_):
+                await Bot.send_direct_message(f, warn_template)

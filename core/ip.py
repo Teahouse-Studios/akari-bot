@@ -1,4 +1,4 @@
-from core.builtins import Secret
+from core.constants import Secret
 from core.logger import Logger
 from core.utils.http import get_url
 
@@ -15,6 +15,7 @@ async def fetch_ip_info() -> dict:
         Logger.info("Fetching IP information...")
         ip_info = await get_url("https://api.ip.sb/geoip", timeout=10, fmt="json")
         Logger.success("Successfully fetched IP information.")
+        append_ip(ip_info)
         return ip_info
     except Exception:
         Logger.error("Failed to get IP information.")

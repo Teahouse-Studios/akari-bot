@@ -105,6 +105,7 @@
     "error.config.secret.not_found": "The secret key is not found. Please check the config file.",
     "error.config.webrender.invalid": "No WebRender configured. This command cannot be used.",
     "error.i18n.fallback": "(If you see this placeholder, it means something we've messed up! Please send the issue back so that we can fix it in time.)",
+    "error.message.chain.empty": "The bot attempted to send an empty message. Please contact the bot owner to resolve this issue.",
     "error.message.chain.unsafe": "The message contains insecure content and has been blocked.",
     "error.message.discord.dm.cannot.send": "This command does not support sending messages in private chat. Please contact the developer.",
     "error.message.discord.thread.permission.denied": "Unable to send message. Probably because the bot does not have sufficient permissions in this channel (to create a sub-channel).",
@@ -113,7 +114,7 @@
     "error.message.paused": "Group message delivering was blocked by the server. Group message delivering is suspended. Use \"${prefix}resume\" to resume pushing.",
     "error.message.prompt": "An error occurred while executing the command:",
     "error.message.prompt.address": "Report this issue: ${url}",
-    "error.message.prompt.noreport": "This error is not caused by the bot and thus should not be reported to bot owner.",
+    "error.message.prompt.noreport": "This error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to bot owner.",
     "error.message.prompt.report": "Please report the following message to bot owner.",
     "error.message.prompt.timeout": "This error may be caused by the bot not processing messages in time. If the error occurs repeatedly, please report the following message to bot owner.",
     "error.message.report": "The following error occurred while executing \"${module}\": ",
@@ -198,6 +199,5 @@
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
-    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
-    "error.message.chain.empty": "The bot attempted to send an empty message. Please contact the bot owner to resolve this issue."
+    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings."
 }

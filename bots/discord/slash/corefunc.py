@@ -1,6 +1,6 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 from core.config import Config
 from core.i18n import get_available_locales
@@ -11,13 +11,13 @@ async def auto_get_lang(ctx: discord.AutocompleteContext):
         return get_available_locales()
 
 
-@client.slash_command(name="help", description="View details of a module.")
+@discord_bot.slash_command(name="help", description="View details of a module.")
 @discord.option(name="module", description="The module you want to know about.")
 async def hlp(ctx: discord.ApplicationContext, module: str):
     await slash_parser(ctx, module)
 
 
-@client.slash_command(name="locale", description="Set the bot running languages.")
+@discord_bot.slash_command(name="locale", description="Set the bot running languages.")
 @discord.option(
     name="lang", description="Supported language codes.", autocomplete=auto_get_lang
 )
@@ -28,29 +28,28 @@ async def locale(ctx: discord.ApplicationContext, lang: str = None):
         await slash_parser(ctx, "")
 
 
-@client.slash_command(name="mute", description="Make the bot stop sending message.")
+@discord_bot.slash_command(name="mute", description="Make the bot stop sending message.")
 async def mute(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@client.slash_command(name="ping", description="Get bot status.")
+@discord_bot.slash_command(name="ping", description="Get bot status.")
 async def ping(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
 if Config("enable_petal", False):
-
-    @client.slash_command(name="petal", description="Get the number of petals.")
+    @discord_bot.slash_command(name="petal", description="Get the number of petals.")
     async def petal(ctx: discord.ApplicationContext):
         await slash_parser(ctx, "")
 
 
-@client.slash_command(name="version", description="View bot version.")
+@discord_bot.slash_command(name="version", description="View bot version.")
 async def version(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-@client.slash_command(
+@discord_bot.slash_command(
     name="whoami",
     description="Get the ID of the user account that sent the command inside the bot.",
 )
@@ -58,7 +57,7 @@ async def whoami(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
-admin = client.create_group("admin", "Commands available to bot administrators.")
+admin = discord_bot.create_group("admin", "Commands available to bot administrators.")
 
 
 @admin.command(name="add", description="Set members as bot administrators.")
@@ -92,7 +91,7 @@ async def unban(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"unban {userid}")
 
 
-ali = client.create_group("alias", "Set custom command alias.")
+ali = discord_bot.create_group("alias", "Set custom command alias.")
 
 
 @ali.command(name="add", description="Add custom command alias.")
@@ -132,7 +131,7 @@ async def reset(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "reset")
 
 
-m = client.create_group("module", "Set about modules.")
+m = discord_bot.create_group("module", "Set about modules.")
 
 
 @m.command(name="list", description="View all available modules.")
@@ -144,7 +143,7 @@ async def lst(ctx: discord.ApplicationContext, legacy: str):
     await slash_parser(ctx, f"list {legacy}")
 
 
-p = client.create_group("prefix", "Set custom command prefix.")
+p = discord_bot.create_group("prefix", "Set custom command prefix.")
 
 
 @p.command(name="add", description="Add custom command prefix.")
@@ -169,7 +168,7 @@ async def reset(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "reset")
 
 
-setup = client.create_group("setup", "Set up bot actions.")
+setup = discord_bot.create_group("setup", "Set up bot actions.")
 
 
 @setup.command(name="typing", description="Set up whether to display input prompts.")

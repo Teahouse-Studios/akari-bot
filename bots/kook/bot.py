@@ -1,28 +1,43 @@
 import asyncio
-import os
+import re
 import sys
 
 from khl import Message, MessageTypes
 
-sys.path.append(os.getcwd())
+from bots.kook.client import bot
+from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager
+from bots.kook.info import *
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Plain, Image, Voice
+from core.builtins.session.info import SessionInfo
+from core.client.init import client_init
+from core.config import Config
+from core.constants.default import ignored_sender_default
+from core.constants.info import Info
 
-from bots.kook.client import bot  # noqa: E402
-from bots.kook.info import *  # noqa: E402
-from bots.kook.message import MessageSession, FetchTarget  # noqa: E402
-from core.bot_init import load_prompt, init_async  # noqa: E402
-from core.builtins import Info, PrivateAssets  # noqa: E402
-from core.config import Config  # noqa: E402
-from core.constants.default import ignored_sender_default  # noqa: E402
-from core.constants.path import assets_path  # noqa: E402
-from core.parser.message import parser  # noqa: E402
-from core.terminate import cleanup_sessions  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
+Bot.register_bot(client_name=client_name)
 
-Info.dirty_word_check = Config("enable_dirty_check", False)
-Info.use_url_manager = Config("enable_urlmanager", False)
-Info.use_url_md_format = True
-PrivateAssets.set(os.path.join(assets_path, "private", "kook"))
+ctx_id = Bot.register_context_manager(KOOKContextManager)
+Bot.register_context_manager(KOOKFetchedContextManager, fetch_session=True)
+
 ignored_sender = Config("ignored_sender", ignored_sender_default)
+use_url_manager = Config("enable_urlmanager", False)
+use_url_md_format = True
+
+
+async def to_message_chain(message: Message):
+    lst = []
+    if message.type == MessageTypes.TEXT:
+        lst.append(Plain(message.content))
+    if message.type == MessageTypes.KMD:
+        sub_url = re.sub(r'\[.*?]\((.*?)\)', r'\1', message.content)
+        lst.append(Plain(sub_url))
+    elif message.type == MessageTypes.IMG:
+        lst.append(Image(message.content))
+    elif message.type == MessageTypes.AUDIO:
+        lst.append(Voice(message.content))
+    return MessageChain.assign(lst)
 
 
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
@@ -39,37 +54,33 @@ async def msg_handler(message: Message):
     if "quote" in message.extra:
         reply_id = message.extra["quote"]["rong_id"]
 
-    target = f"{target_prefix}|{message.channel_type.name.title()}"
+    msg_chain = await to_message_chain(message)
 
-    msg = MessageSession(
-        MsgInfo(
-            target_id=target_id,
-            sender_id=sender_id,
-            target_from=target,
-            sender_from=sender_prefix,
-            sender_name=message.author.nickname,
-            client_name=client_name,
-            message_id=message.id,
-            reply_id=reply_id,
-        ),
-        Session(message=message, target=message.target_id, sender=message.author_id),
-    )
-    await parser(msg)
+    session = await SessionInfo.assign(target_id=target_id,
+                                       sender_id=sender_id,
+                                       sender_name=message.author.nickname,
+                                       target_from=f"{target_prefix}|{message.channel_type.name.title()}",
+                                       sender_from=sender_prefix,
+                                       client_name=client_name,
+                                       message_id=str(message.id),
+                                       reply_id=reply_id,
+                                       messages=msg_chain,
+                                       ctx_slot=ctx_id,
+                                       use_url_manager=use_url_manager,
+                                       use_url_md_format=use_url_md_format,
+                                       )
+
+    await Bot.process_message(session, message)
 
 
 @bot.on_startup
 async def _(b: bot):
-    await init_async()
-    await load_prompt(FetchTarget)
+    await client_init(target_prefix_list, sender_prefix_list)
 
 
-if Config("enable", False, table_name="bot_kook") or __name__ == "__main__":
+if Config("enable", False, table_name="bot_kook"):
     loop = asyncio.get_event_loop()
-    try:
-        Info.client_name = client_name
-        if "subprocess" in sys.argv:
-            Info.subprocess = True
-
-        loop.run_until_complete(bot.start())
-    except (KeyboardInterrupt, SystemExit):
-        loop.run_until_complete(cleanup_sessions())
+    Info.client_name = client_name
+    if "subprocess" in sys.argv:
+        Info.subprocess = True
+    loop.run_until_complete(bot.start())

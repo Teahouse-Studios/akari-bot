@@ -60,6 +60,7 @@ class LocaleNode:
 
 locale_root = LocaleNode()
 
+
 # From https://stackoverflow.com/a/6027615
 
 
@@ -189,6 +190,7 @@ class Locale:
         :param fallback_failed_prompt: 是否添加本地化失败提示。（默认为False）
         :returns: 本地化后的字符串。
         """
+
         def match_i18ncode(match):
             full = match.group(0)
             key = html.unescape(match.group(1))

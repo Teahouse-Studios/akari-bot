@@ -20,7 +20,7 @@ megolm_backup_passphrase = Config(
 )
 proxy = Config("proxy", cfg_type=str, secret=True)
 
-store_path = os.path.abspath("./matrix_store")
+store_path = os.path.abspath("./assets/private/matrix/matrix_store")
 store_path_nio = os.path.join(store_path, "nio")
 store_path_megolm_backup = os.path.join(store_path, "megolm_backup")
 
@@ -44,15 +44,15 @@ if homeserver.endswith("/"):
         "The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error."
     )
 homeserver_host = urllib3.util.parse_url(homeserver).host
-bot: AsyncClient = AsyncClient(
+matrix_bot: AsyncClient = AsyncClient(
     homeserver,
     user,
     store_path=store_path_nio,
     config=AsyncClientConfig(store_sync_tokens=True),
     proxy=proxy
 )
-bot.restore_login(user, device_id, token)
-if bot.olm:
+matrix_bot.restore_login(user, device_id, token)
+if matrix_bot.olm:
     Logger.info("Matrix E2E encryption support is available.")
 else:
     Logger.info("Matrix E2E encryption support is not available.")

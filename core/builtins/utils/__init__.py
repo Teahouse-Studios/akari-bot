@@ -13,5 +13,4 @@ command_prefix = list(
     or command_prefix_default
 )  # 消息前缀
 
-
 __all__ = ["confirm_command", "command_prefix"]

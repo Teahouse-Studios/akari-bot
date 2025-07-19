@@ -1,4 +1,5 @@
-from core.builtins import Bot, I18NContext, Image
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
 from modules.cytoid.database.models import CytoidBindInfo
@@ -36,17 +37,17 @@ async def _(msg: Bot.MessageSession, username: str = None):
     else:
         bind_info = await CytoidBindInfo.get_by_sender_id(msg, create=False)
         if not bind_info:
-            await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.prefixes[0]))
+            await msg.finish(I18NContext("cytoid.message.user_unbound", prefix=msg.session_info.prefixes[0]))
         query_id = bind_info.username
     if query:
-        if msg.target.client_name == "TEST":
+        if msg.check_super_user():
             c = 0
         else:
             qc = CoolDown("cytoid_rank", msg, 150)
             c = qc.check()
         if c == 0:
             img = await get_rating(msg, query_id, query)
-            if msg.target.client_name != "TEST" and img["status"]:
+            if not msg.check_super_user() and img["status"]:
                 qc.reset()
             if "path" in img:
                 await msg.finish([Image(path=img["path"])], enable_split_image=False)
@@ -62,7 +63,7 @@ async def _(msg: Bot.MessageSession, username: str):
     code: str = username.lower()
     getcode = await get_profile_name(code)
     if getcode:
-        await CytoidBindInfo.set_bind_info(msg.target.sender_id, getcode[0])
+        await CytoidBindInfo.set_bind_info(msg.session_info.sender_id, getcode[0])
         if getcode[1]:
             m = f"{getcode[1]}({getcode[0]})"
         else:
@@ -74,5 +75,5 @@ async def _(msg: Bot.MessageSession, username: str):
 
 @ctd.command("unbind {{I18N:cytoid.help.unbind}}")
 async def _(msg: Bot.MessageSession):
-    await CytoidBindInfo.remove_bind_info(msg.target.sender_id)
+    await CytoidBindInfo.remove_bind_info(msg.session_info.sender_id)
     await msg.finish(I18NContext("cytoid.message.unbind.success"))

@@ -1,6 +1,6 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
 
@@ -9,7 +9,7 @@ async def auto_complete(ctx: discord.AutocompleteContext):
         return ["d4", "d6", "d8", "d12", "d20"]
 
 
-dice = client.create_group("dice", "Random dice.")
+dice = discord_bot.create_group("dice", "Random dice.")
 
 
 @dice.command(name="roll", description="Roll the specified dice.")

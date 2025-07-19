@@ -2,21 +2,17 @@ from __future__ import annotations
 
 import base64
 import html
+import random
 import re
-from cattrs import structure, unstructure
+from copy import deepcopy
 from typing import List, Optional, Tuple, Union, Any
 from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import orjson as json
 
-from core.constants import Secret
-from core.joke import shuffle_joke as joke
-from core.logger import Logger
-from core.utils.http import url_pattern
-from .elements import (
-    elements_map,
-    MessageElement,
+from core.builtins.message.elements import (
+    BaseElement,
     PlainElement,
     EmbedElement,
     FormattedTimeElement,
@@ -26,18 +22,32 @@ from .elements import (
     VoiceElement,
     MentionElement,
 )
+from core.constants import Secret
+from core.exports import add_export
 
 if TYPE_CHECKING:
-    from core.builtins.message import MessageSession
+    from core.builtins.session.info import SessionInfo
+
+from core.builtins.types import MessageElement
+from core.builtins.converter import converter
+from core.joke import shuffle_joke as joke
+from core.logger import Logger
+from core.utils.http import url_pattern
+
+from attrs import define
 
 
+@define
 class MessageChain:
     """
     消息链。
     """
 
-    def __init__(
-        self,
+    values: List[MessageElement]
+
+    @classmethod
+    def assign(
+        cls,
         elements: Optional[
             Union[
                 str,
@@ -51,13 +61,12 @@ class MessageChain:
         """
         :param elements: 消息链元素。
         """
-        self.value = []
         if isinstance(elements, MessageChain):
-            self.value = elements.value
-            return
+            return elements
+        values = []
         if isinstance(elements, str):
             elements = match_kecode(elements)
-        if isinstance(elements, MessageElement):
+        if isinstance(elements, BaseElement):
             if isinstance(elements, PlainElement):
                 if elements.text != "":
                     elements = match_kecode(elements.text, elements.disable_joke)
@@ -65,34 +74,28 @@ class MessageChain:
                 elements = [elements]
         if isinstance(elements, dict):
             for key in elements:
-                if key in elements_map:
-                    elements = [structure(elements[key], elements_map[key])]
-                else:
-                    Logger.error(f"Unexpected message type {key}: {elements}")
+                elements = converter.structure(elements[key], MessageElement)
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 if isinstance(e, str):
                     if e != "":
-                        self.value += match_kecode(e)
+                        values += match_kecode(e)
                 elif isinstance(e, dict):
                     for key in e:
-                        if key in elements_map:
-                            tmp_e = structure(e[key], elements_map[key])
-                            if isinstance(tmp_e, PlainElement):
-                                if tmp_e.text != "":
-                                    self.value += match_kecode(tmp_e.text, tmp_e.disable_joke)
-                            else:
-                                self.value.append(tmp_e)
+                        tmp_e = converter.structure(e[key], MessageElement)
+                        if isinstance(tmp_e, PlainElement):
+                            if tmp_e.text != "":
+                                values += match_kecode(tmp_e.text, tmp_e.disable_joke)
                         else:
-                            Logger.error(f"Unexpected message type {key}: {e}")
+                            values.append(tmp_e)
 
                 elif isinstance(e, PlainElement):
                     if isinstance(e, PlainElement):
                         if e.text != "":
-                            self.value += match_kecode(e.text, e.disable_joke)
+                            values += match_kecode(e.text, e.disable_joke)
 
-                elif isinstance(e, MessageElement):
-                    self.value.append(e)
+                elif isinstance(e, BaseElement):
+                    values.append(e)
                 else:
                     Logger.error(f"Unexpected message type: {e}")
         elif not elements:
@@ -101,6 +104,7 @@ class MessageChain:
             Logger.error(f"Unexpected message type: {elements}")
         # Logger.debug(f"MessageChain: {self.value}")
         # Logger.debug("Elements: " + str(elements))
+        return deepcopy(cls(values))
 
     @property
     def is_safe(self) -> bool:
@@ -111,7 +115,7 @@ class MessageChain:
         def unsafeprompt(name, secret, text):
             return f"{name} contains unsafe text \"{secret}\": {text}"
 
-        for v in self.value:
+        for v in self.values:
             if isinstance(v, PlainElement):
                 if secret := Secret.check(v.text):
                     Logger.warning(unsafeprompt("Plain", secret, v.text))
@@ -157,23 +161,26 @@ class MessageChain:
                             return False
         return True
 
-    def as_sendable(self, msg: Optional[MessageSession] = None, embed: bool = True) -> list:
+    def as_sendable(self, session_info: SessionInfo = None) -> list:
         """
         将消息链转换为可发送的格式。
         """
         value = []
-        for x in self.value:
-            if isinstance(x, EmbedElement) and not embed:
-                value += x.to_message_chain(msg)
+        support_embed = True
+        if session_info:
+            support_embed = session_info.support_embed
+        for x in self.values:
+            if isinstance(x, EmbedElement) and not support_embed:
+                value += x.to_message_chain()
             elif isinstance(x, PlainElement):
-                if msg:
+                if session_info:
                     if x.text != "":
-                        x.text = msg.locale.t_str(x.text)
+                        x.text = session_info.locale.t_str(x.text)
                     else:
-                        x = PlainElement.assign(msg.locale.t("error.message.chain.empty"))
+                        x = PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty"))
                 value.append(x)
             elif isinstance(x, FormattedTimeElement):
-                x = x.to_str(msg=msg)
+                x = x.to_str(session_info)
                 if value and isinstance(value[-1], PlainElement):
                     if not value[-1].text.endswith("\n"):
                         value[-1].text += "\n"
@@ -181,107 +188,213 @@ class MessageChain:
                 else:
                     value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
-                if msg:
-                    for k, v in x.kwargs.items():
-                        if isinstance(v, str):
-                            x.kwargs[k] = msg.locale.t_str(v)
-                    t_value = msg.locale.t(x.key, **x.kwargs)
+                for k, v in x.kwargs.items():
+                    if isinstance(v, str):
+                        x.kwargs[k] = session_info.locale.t_str(v)
+                t_value = session_info.locale.t(x.key, **x.kwargs)
+                if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
-                    value.append(PlainElement.assign(f"{{I18N:{x.key}}}", disable_joke=x.disable_joke))
+                    value += MessageChain.assign(t_value).as_sendable(session_info)
             elif isinstance(x, URLElement):
+                if session_info and ((session_info.use_url_manager and x.applied_mm is None)
+                                     or (session_info.force_use_url_manager and not x.applied_mm)):
+                    x = URLElement.assign(x.url, use_mm=True, md_format_name=x.md_format_name)
+                if session_info and session_info.use_url_md_format and not x.applied_md_format:
+                    x = URLElement.assign(x.url, md_format=True, md_format_name=x.md_format_name)
+
                 value.append(PlainElement.assign(x.url, disable_joke=True))
             else:
                 value.append(x)
         if not value:
-            if msg:
-                value.append(PlainElement.assign(msg.locale.t("error.message.chain.empty")))
+            if session_info:
+                value.append(PlainElement.assign(session_info.locale.t("error.message.chain.plain.empty")))
         for x in value:
             if isinstance(x, PlainElement) and not x.disable_joke:
                 x.text = joke(x.text)
 
         return value
 
+    def to_str(self, safe=True) -> str:
+        """
+        将消息链转换为字符串。
+
+        :param safe: 是否安全模式，默认开启，开启后图片等路径将不会转换。
+        """
+        result = ""
+        for x in self.values:
+            if isinstance(x, PlainElement):
+                result += x.text
+            else:
+                if safe:
+                    result += str(x)
+
+        return result
+
     def to_list(self) -> list[dict[str, Any]]:
         """
         将消息链序列化为列表。
         """
-        return [{x.__name__(): unstructure(x)} for x in self.value]
+        return [converter.unstructure(x, MessageElement) for x in self.values]
 
-    def from_list(self, lst: list) -> None:
+    @classmethod
+    def from_list(cls, lst: list) -> MessageChain:
         """
-        从列表构造消息链，替换原有的消息链。
+        从列表构造消息链，返回新的消息链。
         """
         converted = []
         for x in lst:
             for elem in x:
-                if elem in elements_map:
-                    converted.append(structure(x[elem], elements_map[elem]))
-                else:
-                    Logger.error(f"Unexpected message type: {elem}")
-        self.value = converted
+                converted.append(converter.structure(elem, MessageElement))
+        return deepcopy(cls(converted))
 
     def append(self, element):
         """
         添加一个消息链元素到末尾。
         """
-        self.value.append(element)
+        self.values.append(element)
 
     def remove(self, element):
         """
         删除一个消息链元素。
         """
-        self.value.remove(element)
+        self.values.remove(element)
 
     def insert(self, index, element):
         """
         在指定位置插入一个消息链元素。
         """
-        self.value.insert(index, element)
+        self.values.insert(index, element)
 
     def copy(self):
         """
         复制一个消息链。
         """
-        return MessageChain(self.value.copy())
+        return MessageChain.assign(self.values.copy())
 
     def __str__(self):
-        return f"[{", ".join([x.__repr__() for x in self.value])}]"
-
-    def __repr__(self):
-        return self.__str__()
+        return f"[{", ".join([x.__repr__() for x in self.values])}]"
 
     def __iter__(self):
-        return iter(self.value)
+        return iter(self.values)
 
     def __add__(self, other):
         if isinstance(other, MessageChain):
-            return MessageChain(self.value + other.value)
+            return MessageChain.assign(self.values + other.values)
         if isinstance(other, list):
-            return MessageChain(self.value + other)
+            return MessageChain.assign(self.values + other)
         raise TypeError(
             f"Unsupported operand type(s) for +: \"MessageChain\" and \"{type(other).__name__}\""
         )
 
     def __radd__(self, other):
         if isinstance(other, MessageChain):
-            return MessageChain(other.value + self.value)
+            return MessageChain.assign(other.values + self.values)
         if isinstance(other, list):
-            return MessageChain(other + self.value)
+            return MessageChain.assign(other + self.values)
         raise TypeError(
             f"Unsupported operand type(s) for +: \"{type(other).__name__}\" and \"MessageChain\""
         )
 
     def __iadd__(self, other):
         if isinstance(other, MessageChain):
-            self.value += other.value
+            self.values += other.values
         elif isinstance(other, list):
-            self.value += other
+            self.values += other
         else:
             raise TypeError(
                 f"Unsupported operand type(s) for +=: \"MessageChain\" and \"{type(other).__name__}\""
             )
         return self
+
+
+@define
+class I18NMessageChain:
+    """
+    多语言消息链，适用于不同语言环境下的消息处理。优先级为 PlatformMessageChain > I18NMessageChain > MessageChain，使用时须保证嵌套关系正确。
+    """
+
+    values: dict[str, MessageChain]
+
+    @classmethod
+    def assign(cls, values: dict[str, MessageChain]) -> I18NMessageChain:
+        """
+        :param values: 多语言消息链元素，键为语言代码，值为消息链。必须包含 'default' 键用于回滚处理。
+        """
+        if not isinstance(values, dict):
+            raise TypeError("I18NMessageChain values must be a dictionary.")
+        if 'default' not in values:
+            raise ValueError("I18NMessageChain values must have 'default' key.")
+        return cls(values=deepcopy(values))
+
+
+@define
+class PlatformMessageChain:
+    """
+    平台消息链，适用于不同平台的消息处理。优先级为 PlatformMessageChain > I18NMessageChain > MessageChain，使用时须保证嵌套关系正确。
+    """
+
+    values: dict[str, Union[MessageChain, I18NMessageChain]]
+
+    @classmethod
+    def assign(cls, values: dict[str, Union[MessageChain, I18NMessageChain]]) -> PlatformMessageChain:
+        """
+        :param values: 平台消息链元素，键为平台名称，值为消息链。必须包含 'default' 键用于回滚处理。
+        """
+        if not isinstance(values, dict):
+            raise TypeError("PlatformMessageChain values must be a dictionary.")
+        return cls(values=deepcopy(values))
+
+
+@define
+class MessageNodes:
+    """
+    消息节点列表。
+
+    """
+
+    values: List[MessageChain]
+    name: str = ''
+
+    @classmethod
+    def assign(cls, values: List[MessageChain], name: Optional[str] = None):
+        """
+        :param values: 节点列表。
+        :param name: 节点名称，默认为随机生成的字符串。
+        """
+        if not name:
+            name = "Message" + random.sample('abcdefghijklmnopqrstuvwxyz', 5)
+
+        return cls(values=values, name=name)
+
+    @property
+    def is_safe(self) -> bool:
+        """
+        检查消息节点列表是否安全。
+        """
+        for chain in self.values:
+            if not chain.is_safe:
+                return False
+        return True
+
+
+Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain,
+                  str, list[MessageElement], MessageElement, MessageNodes]
+
+
+def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
+    if isinstance(chain, PlatformMessageChain):
+        chain = chain.values.get(session.target_from, chain.values.get("default", MessageChain.assign("")))
+    if isinstance(chain, I18NMessageChain):
+        chain = chain.values.get(session.locale.locale, chain.values.get("default", MessageChain.assign("")))
+    if isinstance(chain, (str, list, MessageElement)):
+        chain = MessageChain.assign(chain)
+    if isinstance(chain, (MessageChain, MessageNodes)):
+        return chain
+    else:
+        raise TypeError(
+            f"Unsupported chain type: {
+                type(chain).__name__}, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain.")
 
 
 def _extract_kecode_blocks(text):
@@ -439,4 +552,30 @@ def match_atcode(text: str, client: str, pattern: str) -> str:
     return re.sub(r"<(?:AT|@):([^\|]+)\|(?:.*?\|)?([^\|>]+)>", _replacer, text)
 
 
-__all__ = ["MessageChain"]
+add_export(MessageChain)
+add_export(I18NMessageChain)
+
+converter.register_unstructure_hook(Union[MessageChain, I18NMessageChain],
+                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
+
+converter.register_unstructure_hook(Union[MessageChain, MessageNodes],
+                                    lambda obj: {"_type": type(obj).__name__, **converter.unstructure(obj)})
+
+converter.register_structure_hook(
+    Union[MessageChain, I18NMessageChain],
+    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else I18NMessageChain)
+)
+
+converter.register_structure_hook(
+    Union[MessageChain, MessageNodes],
+    lambda o, _: converter.structure(o, MessageChain if o["_type"] == "MessageChain" else MessageNodes)
+)
+
+__all__ = [
+    "MessageChain",
+    "I18NMessageChain",
+    "PlatformMessageChain",
+    "Chainable",
+    "get_message_chain",
+    "MessageNodes",
+    "match_kecode"]

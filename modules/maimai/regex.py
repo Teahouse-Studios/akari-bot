@@ -2,7 +2,9 @@ import re
 
 import orjson as json
 
-from core.builtins import Bot, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain
 from core.component import module
 from .libraries.maimaidx_apidata import get_info, search_by_alias
 from .libraries.maimaidx_mapping import *
@@ -11,7 +13,6 @@ from .libraries.maimaidx_utils import get_diff, get_grade_info
 from .maimai import query_alias, query_plate, query_song_score, query_process
 
 total_list = TotalList()
-
 
 mai_regex = module(
     "maimai_regex",
@@ -34,29 +35,30 @@ async def _(msg: Bot.MessageSession):
         if len(sid_list) == 0:
             await msg.finish(I18NContext("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.disambiguation") + "\n"
+            msg_chain = MessageChain.assign()
+            msg_chain.append(I18NContext("maimai.message.disambiguation"))
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 if s:
-                    res += f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}\n"
-            await msg.finish(res.strip())
+                    msg_chain.append(Plain(f"{s["id"]} - {s["title"]}{" (DX)" if s["type"] == "DX" else ""}"))
+            await msg.finish(msg_chain)
         else:
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(I18NContext("maimai.message.music_not_found"))
 
+    msg_chain = MessageChain.assign()
     if int(sid) > 100000:
-        res = []
         with open(mai_utage_info_path, "rb") as file:
             utage_data = json.loads(file.read())
         if utage_data:
             try:
-                res.append(f"「{utage_data[sid]["comment"]}」")
+                msg_chain.append(Plain(f"「{utage_data[sid]["comment"]}」"))
             except KeyError:
-                res.append("「Let's party!」")
+                msg_chain.append(Plain("「Let's party!」"))
 
-        res.append(msg.locale.t(
+        msg_chain.append(I18NContext(
             "maimai.message.song",
             artist=music["basic_info"]["artist"],
             genre="宴會場",
@@ -64,9 +66,8 @@ async def _(msg: Bot.MessageSession):
             version=music["basic_info"]["from"],
             level=music["level"][0]
         ))
-        res = "\n".join(res)
     else:
-        res = msg.locale.t(
+        msg_chain.append(I18NContext(
             "maimai.message.song",
             artist=music["basic_info"]["artist"],
             genre=genre_i18n_mapping.get(
@@ -75,9 +76,9 @@ async def _(msg: Bot.MessageSession):
             bpm=music["basic_info"]["bpm"],
             version=music["basic_info"]["from"],
             level="/".join((str(ds) for ds in music["ds"])),
-        )
+        ))
 
-    await msg.finish(await get_info(music, Plain(res)))
+    await msg.finish(await get_info(music, msg_chain))
 
 
 @mai_regex.regex(r"(?:id)?(\d+)\s?有什(?:么别|麼別)[名称稱]", flags=re.I, desc="{I18N:maimai.help.maimai_regex.alias}")

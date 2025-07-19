@@ -105,6 +105,7 @@
     "error.config.secret.not_found": "未找到密钥配置参数，请检查配置文件。",
     "error.config.webrender.invalid": "未配置 WebRender，无法使用此命令。",
     "error.i18n.fallback": "（如果你看到了这个占位符，说明我们又搞砸了什么！请反馈此问题以便快速解决。）",
+    "error.message.chain.empty": "机器人尝试发送空消息，请联系机器人所有者解决问题。",
     "error.message.chain.unsafe": "消息中含有不安全的内容，已被拦截。",
     "error.message.discord.dm.cannot.send": "此命令不支持在私聊下发送消息，请联系开发者处理。",
     "error.message.discord.thread.permission.denied": "无法发送消息，可能是因为机器人在本频道的权限不足（创建子区）。",
@@ -113,12 +114,12 @@
     "error.message.paused": "群消息发送被服务器拦截，已暂停群消息发送，使用“${prefix}resume”恢复推送。",
     "error.message.prompt": "执行命令时发生错误：",
     "error.message.prompt.address": "错误汇报地址：${url}",
-    "error.message.prompt.noreport": "此问题并非机器人程序错误，请勿将此消息报告给机器人所有者。",
+    "error.message.prompt.noreport": "此问题并非机器人程序错误（API 请求出错等），请勿将此消息报告给机器人所有者。",
     "error.message.prompt.report": "请将此信息报告给机器人所有者。",
     "error.message.prompt.timeout": "此问题可能因机器人未及时处理消息导致，若持续发生，请将此消息报告给机器人所有者。",
     "error.message.report": "执行“${module}”时发生了以下错误，请及时处理：",
     "error.message.timeout": "消息发送超时，请稍后重试命令或尝试等待返回结果。",
-    "error.module.helpdoc.invalid": "“${module}”模块的帮助信息无效，请联系开发者解决问题。",
+    "error.module.helpdoc.invalid": "“${module}”模块的帮助信息有误，请联系开发者解决问题。",
     "error.module.unbound": "“${module}”模块未绑定任何命令且无简介，请联系开发者解决问题。",
     "error.module.unloaded": "“${module}”模块加载失败，请联系开发者解决问题。",
     "example": "你好世界！",
@@ -198,6 +199,5 @@
     "tos.message.warning": "警告：\n根据服务条款，你已违反我们的行为准则。",
     "tos.message.warning.count": "这是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "这是最后一次警告。",
-    "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。",
-    "error.message.chain.empty": "机器人尝试发送空消息，请联系机器人所有者解决问题。"
+    "tos.message.warning.prompt": "如超过 ${warn_counts} 次警告，我们将会封禁你的账户。"
 }

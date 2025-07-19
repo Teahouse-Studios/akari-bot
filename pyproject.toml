@@ -3,7 +3,7 @@ name = "akari-bot"
 version = "0.1.0"
 description = ""
 authors = [
-    "OasisAkari <oasisakari@teahou.se>",
+    "OasisAkari <oasisakari@gmail.com>",
     "Dianliang233 <dianliang@teahou.se>",
     "DoroWolf <dorowolf@tehou.se>",
     "nullcat <null@teahou.se>",
@@ -17,7 +17,9 @@ package-mode = false
 python = "^3.12.0"
 
 # lib
+coverage = "^7.9.1"
 cryptography = "^45.0.0"
+deprecated = "^1.2.18"
 poetry-plugin-export = "^1.9.0"
 pre-commit = "^4.0.0"
 pycryptodome = "^3.18.0"
@@ -33,7 +35,7 @@ ffmpy = "^0.5.0"
 flask = "^3.1.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
-py-cord = "^2.5.0"
+py-cord = {git = "https://github.com/Pycord-Development/pycord"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 qq-botpy = "^1.2.1"
 slowapi = "^0.1.9"
@@ -41,9 +43,10 @@ uvicorn = {extras = ["standard"], version = "^0.34.0"}
 
 # console
 inputimeout = "^1.0.4"
-prompt-toolkit = "^3.0.47"
+prompt-toolkit = "^3.0.51"
 
 # core
+akari-bot-webrender = "0.3.2"
 cattrs = "^24.1.2"
 filetype = "^1.2.0"
 japanera = "^2.1.3"

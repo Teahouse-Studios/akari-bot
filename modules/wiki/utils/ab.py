@@ -1,4 +1,8 @@
-from core.builtins import Bot, MessageChain, I18NContext, Plain, Url
+from typing import Union
+
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check
 from modules.wiki.utils.utils import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
@@ -6,10 +10,11 @@ from modules.wiki.utils.wikilib import WikiLib
 AB_LIMIT = 5
 
 
-async def get_ab(msg: Bot.MessageSession, wiki_url, headers=None):
+async def get_ab(msg: Union[Bot.MessageSession,
+                            Bot.FetchedMessageSession], wiki_url, headers=None):
     wiki = WikiLib(wiki_url, headers)
     query = await wiki.get_json(action="query", list="abuselog", aflprop="user|title|action|result|filter|timestamp",
-                                _no_login=not msg.target_data.get("use_bot_account", False))
+                                _no_login=not msg.session_info.target_info.target_data.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", "Special:AbuseLog")
     d = []
     for x in query["query"]["abuselog"][:AB_LIMIT]:
@@ -23,10 +28,11 @@ async def get_ab(msg: Bot.MessageSession, wiki_url, headers=None):
                                      action=x["action"],
                                      filter_name=x["filter"],
                                      result=result))}")
-    y = await check(d)
+    y = await check(d, session=msg)
 
-    g = MessageChain([Url(pageurl)])
-    g += MessageChain([Plain(z["content"]) for z in y])
+    g = MessageChain.assign(
+        [Url(pageurl, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False)])
+    g += MessageChain.assign([Plain(z["content"]) for z in y])
     g.append(I18NContext("message.collapse", amount=AB_LIMIT))
 
     st = True
@@ -39,7 +45,8 @@ async def get_ab(msg: Bot.MessageSession, wiki_url, headers=None):
     return g
 
 
-async def convert_ab_to_detailed_format(msg: Bot.MessageSession, abl: list):
+async def convert_ab_to_detailed_format(msg: Union[Bot.MessageSession,
+                                                   Bot.FetchedMessageSession], abl: list):
     ablist = []
     userlist = []
     titlelist = []
@@ -49,14 +56,14 @@ async def convert_ab_to_detailed_format(msg: Bot.MessageSession, abl: list):
         if "user" in x:
             userlist.append(x.get("user"))
     text_status = True
-    checked_userlist = await check(userlist)
+    checked_userlist = await check(userlist, session=msg)
     user_checked_map = {}
     for u in checked_userlist:
         if not u["status"]:
             text_status = False
         user_checked = u["content"]
         user_checked_map[u["original"]] = user_checked
-    checked_titlelist = await check(titlelist)
+    checked_titlelist = await check(titlelist, session=msg)
     title_checked_map = {}
     for t in checked_titlelist:
         title_checked = t["content"]

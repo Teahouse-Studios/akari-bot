@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
-from core.builtins import MessageSession
+from core.builtins.session.internal import MessageSession
 from core.logger import Logger
 
 _ps_lst = defaultdict(lambda: defaultdict(dict))
@@ -44,8 +44,8 @@ class PlayState:
     def __init__(self, game: str, msg: MessageSession):
         self.game = game
         self.msg = msg
-        self.target_id = self.msg.target.target_id
-        self.sender_id = self.msg.target.sender_id
+        self.target_id = self.msg.session_info.target_id
+        self.sender_id = self.msg.session_info.sender_id
 
     def _get_ps_dict(self):
         target_dict = _ps_lst[self.target_id]

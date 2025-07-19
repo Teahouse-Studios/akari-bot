@@ -1,26 +1,53 @@
 import asyncio
-import os
 import sys
 
 from aiogram import types
 
-sys.path.append(os.getcwd())
+from bots.aiogram.client import dp, aiogram_bot, token
+from bots.aiogram.context import AiogramContextManager, AiogramFetchedContextManager
+from bots.aiogram.info import *
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Voice, Image, Plain
+from core.builtins.session.info import SessionInfo
+from core.client.init import client_init
+from core.config import Config
+from core.constants.default import ignored_sender_default
+from core.constants.info import Info
+from core.utils.http import download
 
-from bots.aiogram.client import dp, bot  # noqa: E402
-from bots.aiogram.info import *  # noqa: E402
-from bots.aiogram.message import MessageSession, FetchTarget  # noqa: E402
-from core.bot_init import load_prompt, init_async  # noqa: E402
-from core.builtins import Info, PrivateAssets  # noqa: E402
-from core.config import Config  # noqa: E402
-from core.constants.path import assets_path  # noqa: E402
-from core.constants.default import ignored_sender_default  # noqa: E402
-from core.parser.message import parser  # noqa: E402
-from core.terminate import cleanup_sessions  # noqa: E402
-from core.types import MsgInfo, Session  # noqa: E402
+Bot.register_bot(client_name=client_name)
 
+ctx_id = Bot.register_context_manager(AiogramContextManager)
+Bot.register_context_manager(AiogramFetchedContextManager, fetch_session=True)
 
-PrivateAssets.set(os.path.join(assets_path, "private", "aiogram"))
 ignored_sender = Config("ignored_sender", ignored_sender_default)
+
+
+async def to_message_chain(msg: types.Message):
+    lst = []
+    if msg.audio:
+        file = await aiogram_bot.get_file(msg.audio.file_id)
+        d = await download(
+            f"https://api.telegram.org/file/bot{token}/{file.file_path}"
+        )
+        lst.append(Voice(d))
+    if msg.photo:
+        file = await aiogram_bot.get_file(msg.photo[-1]["file_id"])
+        lst.append(
+            Image(f"https://api.telegram.org/file/bot{token}/{file.file_path}")
+        )
+    if msg.voice:
+        file = await aiogram_bot.get_file(msg.voice.file_id)
+        d = await download(
+            f"https://api.telegram.org/file/bot{token}/{file.file_path}"
+        )
+        lst.append(Voice(d))
+    if msg.caption:
+        lst.append(Plain(msg.caption))
+    if msg.text:
+        lst.append(Plain(msg.text))
+    return MessageChain.assign(lst)
 
 
 @dp.message()
@@ -35,37 +62,30 @@ async def msg_handler(message: types.Message):
     if message.reply_to_message:
         reply_id = message.reply_to_message.message_id
 
-    msg = MessageSession(
-        MsgInfo(
-            target_id=target_id,
-            sender_id=sender_id,
-            target_from=target_from,
-            sender_from=sender_prefix,
-            sender_name=message.from_user.username,
-            client_name=client_name,
-            message_id=message.message_id,
-            reply_id=reply_id,
-        ),
-        Session(message=message, target=message.chat.id, sender=message.from_user.id),
-    )
-    await parser(msg)
+    msg_chain = await to_message_chain(message)
+
+    session = await SessionInfo.assign(target_id=target_id,
+                                       sender_id=sender_id,
+                                       sender_name=message.from_user.username,
+                                       target_from=target_from,
+                                       sender_from=sender_prefix,
+                                       client_name=client_name,
+                                       message_id=str(message.message_id),
+                                       reply_id=reply_id,
+                                       messages=msg_chain,
+                                       ctx_slot=ctx_id
+                                       )
+
+    await Bot.process_message(session, message)
 
 
 async def on_startup():
-    await init_async()
-    await load_prompt(FetchTarget)
+    await client_init(target_prefix_list, sender_prefix_list)
 
 
-async def on_shutdown():
-    await cleanup_sessions()
-
-
-if Config("enable", False, table_name="bot_aiogram") or __name__ == "__main__":
+if Config("enable", False, table_name="bot_aiogram"):
     Info.client_name = client_name
     if "subprocess" in sys.argv:
         Info.subprocess = True
-
     dp.startup.register(on_startup)
-    dp.shutdown.register(on_shutdown)
-
-    asyncio.run(dp.start_polling(bot))
+    asyncio.run(dp.start_polling(aiogram_bot))

@@ -1,9 +1,9 @@
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import discord_bot
 from bots.discord.slash_parser import slash_parser
 
-wolframalpha = client.create_group("wolframalpha", "Use WolframAlpha.")
+wolframalpha = discord_bot.create_group("wolframalpha", "Use WolframAlpha.")
 
 
 @wolframalpha.command(

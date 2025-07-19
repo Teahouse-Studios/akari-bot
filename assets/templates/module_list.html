@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ msg.locale.locale }}">
+<html lang="{{ locale.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
+    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
     <title>Module Help</title>
-    <link rel="preconnect" href="https://fonts.font.im">
-    <link rel="preconnect" href="https://fonts.font.im" crossorigin>
+    <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}">
+    <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}" crossorigin>
     <link
-        href="https://fonts.font.im/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
+        href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&family=Noto+Mono&display=swap"
         rel="stylesheet">
     <link
-        href="https://fonts.font.im/css2?family=Consolas&family=Courier+New&display=swap"
+        href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}/css2?family=Consolas&family=Courier+New&display=swap"
         rel="stylesheet">
     <style>
         html body {
@@ -53,7 +55,7 @@
             flex-direction: column;
             align-items: center;
             padding: 3px;
-            border-radius: 5px;
+            border-radius: var(--mdui-shape-corner-large);
             height: 75px;
             width: 100px;
             text-align: center;
@@ -70,26 +72,26 @@
             }
 
         .base {
-            background-color: #e1996d;
-            color: white;
-            border: 1px solid #9f430b;
+            background-color: rgb(var(--mdui-color-tertiary-container));
+            color: rgb(var(--mdui-color-tertiary));
+            box-shadow: var(--mdui-elevation-level1);
         }
 
         .external {
-            background-color: #8aaec4;
-            color: white;
-            border: 1px solid #305e7a;
+            background-color: rgb(var(--mdui-color-secondary-container));
+            color: rgb(var(--mdui-color-secondary));
+            box-shadow: var(--mdui-elevation-level1);
         }
 
         .disabled {
-            background-color: #cecece;
-            color: gray;
-            border: 1px solid #757575;
+            background-color: rgb(var(--mdui-color-surface-container));
+            color: rgb(var(--mdui-color-on-surface));
+            box-shadow: var(--mdui-elevation-level1);
         }
 
         .dev {
             font-style: italic;
-            border: 1px dashed;
+            border: 1px solid rgb(var(--mdui-color-outline));
         }
 
         .admin {
@@ -101,39 +103,37 @@
             font-size: 14px;
         }
 
-        hr {
-            border: 0;
-            border-top: 1px dashed gray;
-            margin: 5px 0;
-        }
-
         .footer {
             text-align: left;
             font-size: 16px;
             white-space: pre-line;
             line-height: 1.5;
         }
+        .mdui-prose hr {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="botbox">
+    <div class="botbox mdui-prose">
         <div class="content-layout">
-        <h2>{{ msg.locale.t("core.message.module.list.header") }}</h2>
+        <h2>{{ locale.t("core.message.module.list.header") }}</h2>
         <hr>
         <div class="grid-container">
             {% for key, value in module_list.items() %}
             <div class="grid-item{{ ' dev' if value.required_superuser or value.required_base_superuser else '' }}{{ ' disabled' if show_disabled_modules and key not in target_enabled_list and not (value.base or value.required_superuser or value.required_base_superuser) else (' base' if value.base else ' external') }}">
                 <div class="{% if not (value.required_superuser or value.required_base_superuser) %}{{ 'admin' if value.required_admin else '' }}{% endif %}">
                     {% set help_=CommandParser(module_list[key], msg=msg, bind_prefix=module_list[key].bind_prefix,
-                                  command_prefixes=msg.prefixes, is_superuser=is_superuser) %}
-                    {% set regex_list=value.regex_list.get(msg.target.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
+                                  command_prefixes=msg.session_info.prefixes, is_superuser=is_superuser) %}
+                    {% set regex_list=value.regex_list.get(msg.session_info.target_from, show_required_superuser=is_superuser, show_required_base_superuser=is_base_superuser) %}
                     <div class="module-name">{{ value.bind_prefix | e }}</div>
                     {% if len(help_.args) > 0 %}
-                    <div>{{ msg.locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
+                    <div>{{ locale.t('core.message.help.command_count', count=len(help_.args)) }}</div>
                     {%- endif %}
                     {% if len(regex_list) > 0 %}
-                    <div>{{ msg.locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
+                    <div>{{ locale.t('core.message.help.regex_count', count=len(regex_list)) }}</div>
                     {%- endif %}
                 </div>
             </div>
@@ -141,8 +141,8 @@
         </div>
         <hr>
             <div class="footer">
-                {{ msg.locale.t('core.message.help.prompt', prefix=msg.prefixes[0]) }} <br> {{ 
-                    msg.locale.t('core.message.help.detail', prefix=msg.prefixes[0]) |safe }}
+                {{ locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) }} <br> {{
+                    locale.t('core.message.help.detail', prefix=msg.session_info.prefixes[0]) |safe }}
             </div>
         </div>
     </div>

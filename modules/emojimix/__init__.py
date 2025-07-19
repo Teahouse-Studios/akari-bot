@@ -4,7 +4,9 @@ from typing import List, Optional, Tuple
 import emoji
 import orjson as json
 
-from core.builtins import Bot, MessageChain, Image, I18NContext, Plain
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Image, I18NContext, Plain
 from core.component import module
 from core.constants.path import assets_path
 from core.logger import Logger
@@ -110,7 +112,6 @@ class EmojimixGenerator:
 
 mixer = EmojimixGenerator()
 
-
 emojimix = module("emojimix", developers=["DoroWolf"], doc=True)
 
 
@@ -134,8 +135,9 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
             emoji1, emoji2 = emoji2, emoji1
     elif emoji1 and not emoji2:
         emojis = [item['emoji'] for item in emoji.emoji_list(emoji1)]
-        emoji1 = emojis[0]
-        emoji2 = emojis[1] if len(emojis) > 1 else None
+        if emojis:
+            emoji1 = emojis[0]
+            emoji2 = emojis[1] if len(emojis) > 1 else None
 
     if not emoji.is_emoji(emoji1):
         await msg.finish(I18NContext("emojimix.message.invalid"))
@@ -146,7 +148,8 @@ async def _(msg: Bot.MessageSession, emoji1: str, emoji2: str = None):
         Logger.debug(str(combo))
         unsupported_emojis = mixer.check_supported(combo)
         if unsupported_emojis:
-            await msg.finish(I18NContext("emojimix.message.unsupported", emoji="{I18N:message.delimiter}".join(unsupported_emojis)))
+            await msg.finish(
+                I18NContext("emojimix.message.unsupported", emoji="{I18N:message.delimiter}".join(unsupported_emojis)))
     else:
         emoji_code1 = "-".join(f"{ord(char):x}" for char in emoji1)
         if emoji_code1 not in mixer.known_supported_emoji:
@@ -166,21 +169,21 @@ async def _(msg: Bot.MessageSession, emoji: str = None):
     supported_emojis = mixer.list_supported_emojis(emoji)
     if emoji:
         if supported_emojis:
-            send_msgs = MessageChain(I18NContext("emojimix.message.combine_supported", emoji=emoji))
-            if msg.target.client_name == "Discord":
-                send_msgs += MessageChain([Plain("".join(supported_emojis[i:i + 200]))
-                                           for i in range(0, len(supported_emojis), 200)])
+            send_msgs = MessageChain.assign(I18NContext("emojimix.message.combine_supported", emoji=emoji))
+            if msg.session_info.client_name == "Discord":
+                send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
+                                                  for i in range(0, len(supported_emojis), 200)])
             else:
                 send_msgs.append(Plain("".join(supported_emojis)))
             await msg.finish(send_msgs)
         else:
             await msg.finish(I18NContext("emojimix.message.unsupported", emoji=emoji))
     else:
-        send_msgs = MessageChain(I18NContext("emojimix.message.all_supported"))
+        send_msgs = MessageChain.assign(I18NContext("emojimix.message.all_supported"))
         if supported_emojis:
-            if msg.target.client_name == "Discord":
-                send_msgs += MessageChain([Plain("".join(supported_emojis[i:i + 200]))
-                                           for i in range(0, len(supported_emojis), 200)])
+            if msg.session_info.client_name == "Discord":
+                send_msgs += MessageChain.assign([Plain("".join(supported_emojis[i:i + 200]))
+                                                  for i in range(0, len(supported_emojis), 200)])
             else:
                 send_msgs.append(Plain("".join(supported_emojis)))
         await msg.finish(send_msgs)

@@ -1,7 +1,9 @@
 import re
 import urllib.parse
 
-from core.builtins import Bot, MessageChain, Plain, I18NContext, Url
+from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import I18NContext, Plain, Url
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from modules.wiki.utils.utils import strptime2ts
@@ -109,8 +111,8 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
         )
 
     Logger.debug(str(data))
-    msgs = MessageChain()
-    if user := data.get("username", False):
+    msgs = []
+    if user := data.get("username", ''):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.username"))
             + user
@@ -122,42 +124,43 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
                 else ""
             ))
         )
-    if users_groups := data.get("users_groups", False):
+    if users_groups := data.get("users_groups", ''):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.users_groups"))
             + "{I18N:message.delimiter}".join(users_groups)
         ))
-    if gender_ := data.get("gender", False):
+    if gender_ := data.get("gender", ''):
         msgs.append(Plain(str(I18NContext("wiki.message.user.gender")) + gender_))
-    if registration := data.get("registration_time", False):
+    if registration := data.get("registration_time", ''):
         msgs.append(Plain(str(I18NContext("wiki.message.user.registration_time")) + registration))
-    if edited_wiki_count := data.get("edited_wiki_count", False):
+    if edited_wiki_count := data.get("edited_wiki_count", ''):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.edited_wiki_count")) + edited_wiki_count
         ))
 
     sub_edit_counts1 = []
-    if created_page_count := data.get("created_page_count", False):
+    if created_page_count := data.get("created_page_count", ''):
         sub_edit_counts1.append(
             str(I18NContext("wiki.message.user.created_page_count")) + created_page_count
         )
-    if edited_count := data.get("edited_count", False) and created_page_count:
-        sub_edit_counts1.append(
-            str(I18NContext("wiki.message.user.edited_count")) + edited_count
-        )
+    if edited_count := data.get("edited_count", ''):
+        if created_page_count:
+            sub_edit_counts1.append(
+                str(I18NContext("wiki.message.user.edited_count")) + edited_count
+            )
     sub_edit_counts2 = []
-    if deleted_count := data.get("deleted_count", False):
+    if deleted_count := data.get("deleted_count", ''):
         sub_edit_counts2.append(
             str(I18NContext("wiki.message.user.deleted_count")) + deleted_count
         )
-    if patrolled_count := data.get("patrolled_count", False):
+    if patrolled_count := data.get("patrolled_count", ''):
         sub_edit_counts2.append(
             str(I18NContext("wiki.message.user.patrolled_count")) + patrolled_count
         )
     sub_edit_counts3 = []
-    if site_rank := data.get("site_rank", False):
+    if site_rank := data.get("site_rank", ''):
         sub_edit_counts3.append(str(I18NContext("wiki.message.user.site_rank")) + site_rank)
-    if global_rank := data.get("global_rank", False):
+    if global_rank := data.get("global_rank", ''):
         sub_edit_counts3.append(
             str(I18NContext("wiki.message.user.global_rank")) + global_rank
         )
@@ -168,16 +171,16 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
     if sub_edit_counts3:
         msgs.append(Plain(" | ".join(sub_edit_counts3)))
 
-    if global_users_groups := data.get("global_users_groups", False):
+    if global_users_groups := data.get("global_users_groups", ''):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.global_users_groups"))
             + "{I18N:message.delimiter}".join(global_users_groups)
         ))
-    if global_edit_count := data.get("global_edit_count", False):
+    if global_edit_count := data.get("global_edit_count", ''):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.global_edited_count")) + global_edit_count
         ))
-    if global_home := data.get("global_home", False):
+    if global_home := data.get("global_home", ''):
         msgs.append(Plain(str(I18NContext("wiki.message.user.global_home")) + global_home))
 
     if blocked_by := data.get("blocked_by", False):
@@ -194,9 +197,9 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
             str(I18NContext("wiki.message.user.blocked.reason")) + data["blocked_reason"]
         ))
 
-    if url := data.get("url", False):
-        msgs.append(Url(url))
+    if url := data.get("url", ''):
+        msgs.append(Url(url, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False))
 
     if await check_bool(msgs):
         return Plain(rickroll())
-    return msgs
+    return MessageChain.assign(msgs)

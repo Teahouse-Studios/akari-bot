@@ -11,6 +11,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Python (For config generation)
+        uses: actions/setup-python@v5
+        with:
+              python-version: '3.13'
+
+      - name: Config generation
+        run: |
+            python -m pip install --upgrade pip
+            pip install orjson tomlkit
+            python core/scripts/config_generate.py
+            if test ! -z "$(git diff)"; then
+                git config --local user.email "action@github.com"
+                git config --local user.name "GitHub Action"
+                git add assets/
+                git pull origin master
+                git commit -m "Update Config [skip ci]"
+            fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
