@@ -99,6 +99,7 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
+japanera = "^2.1.3"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"

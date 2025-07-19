@@ -506,6 +506,7 @@ async def _tos_msg_counter(msg: "Bot.MessageSession", command: str):
     same = counter_same.get(msg.session_info.sender_id)
     if not same or datetime.now().timestamp() - same["ts"] > 300 or same["command"] != command:
         # 检查是否滥用（5分钟内重复使用同一命令10条）
+
         counter_same[msg.session_info.sender_id] = {"command": command, "count": 1,
                                                     "ts": datetime.now().timestamp()}
     else:

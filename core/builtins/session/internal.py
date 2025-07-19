@@ -7,6 +7,7 @@ from typing import Any, Optional, Union, TYPE_CHECKING, List, Match, Tuple, Coro
 
 from attrs import define
 from deprecated import deprecated
+from japanera import EraDate
 
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable
 from core.builtins.message.internal import I18NContext
@@ -428,10 +429,14 @@ class MessageSession:
         :param timezone: 是否显示时区。（默认为True）
         :return: 格式化后的时间格式。
         """
+        dt = datetime.fromtimestamp(timestamp, datetimeUTC) + self.session_info.timezone_offset
         ftime_template = []
         if date:
             if iso:
                 ftime_template.append(self.session_info.locale.t("time.date.iso.format"))
+            elif self.session_info.locale.locale == "ja_jp":
+                era_date = EraDate.from_date(dt).strftime(self.session_info.locale.t("time.date.format"))
+                ftime_template.append(era_date)
             else:
                 ftime_template.append(self.session_info.locale.t("time.date.format"))
         if time:
