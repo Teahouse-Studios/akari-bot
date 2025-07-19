@@ -17,6 +17,7 @@ from core.config import Config
 from core.constants.path import webui_path
 from core.database.models import SenderInfo
 from core.logger import Logger
+from core.server.terminate import cleanup_sessions
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 protocol = "https" if enable_https else "http"
@@ -59,7 +60,7 @@ async def lifespan(app: FastAPI):
     if os.path.exists(webui_path):
         Logger.info(_webui_message())
     yield
-
+    await cleanup_sessions()
 
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)

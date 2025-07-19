@@ -23,7 +23,7 @@ ctx_id = Bot.register_context_manager(WebContextManager)
 @app.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     if __name__ != "bots.web.bot":
-        await websocket.close(code=1008, reason="Bot main process is not running")
+        await websocket.close(code=1008, reason="Bot server process is not running")
         return
 
     await websocket.accept()
@@ -56,6 +56,18 @@ async def websocket_chat(websocket: WebSocket):
     finally:
         if "web_chat_websocket" in Temp.data:
             del Temp.data["web_chat_websocket"]
+
+
+@app.post("/api/restart")
+async def restart_bot(request: Request):
+    verify_jwt(request)
+    await verify_csrf_token(request)
+
+    if __name__ != "bots.web.api":
+        raise HTTPException(status_code=503, detail="Bot server process is not running")
+
+    asyncio.create_task(restart())
+    return {"message": "Success"}
 
 
 if Config("enable", True, table_name="bot_web") or __name__ == "__main__":
