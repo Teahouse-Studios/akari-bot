@@ -23,10 +23,8 @@ from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
 from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
-from core.i18n import Locale
-from core.loader import ModulesManager
 from core.logger import Logger
-from core.server.terminate import cleanup_sessions
+from core.queue.client import JobQueueClient
 
 started_time = datetime.now()
 
@@ -643,12 +641,7 @@ async def delete_sender_info(request: Request, sender_id: str):
 async def get_modules_list(request: Request):
     try:
         verify_jwt(request)
-        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
-
-        modules_list = []
-        for module in modules.values():
-            modules_list.append(module["bind_prefix"])
+        modules_list = await JobQueueClient.get_modules_list()
         return {"message": "Success", "modules": modules_list}
     except HTTPException as e:
         raise e
@@ -662,12 +655,7 @@ async def get_modules_list(request: Request):
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
-
-        for module in modules.values():
-            if "desc" in module and module.get("desc"):
-                module["desc"] = Locale(locale).t_str(module["desc"])
+        modules = JobQueueClient.get_modules_info(locale=locale)
         return {"message": "Success", "modules": modules}
     except HTTPException as e:
         raise e
@@ -681,14 +669,10 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
 async def get_module_info(request: Request, module: str, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-        modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
+        modules = JobQueueClient.get_module_info(module, locale=locale)
+        if modules:
+            return {"message": "Success", "modules": modules}
 
-        for m in modules.values():
-            if module == m["bind_prefix"]:
-                if "desc" in m and m.get("desc"):
-                    m["desc"] = Locale(locale).t_str(m["desc"])
-                return {"message": "Success", "modules": m}
         raise HTTPException(status_code=404, detail="Not found")
     except HTTPException as e:
         raise e
@@ -798,7 +782,6 @@ async def restart_bot(request: Request):
 
 async def restart():
     await asyncio.sleep(1)
-    await cleanup_sessions()
     os._exit(233)
 
 

@@ -40,6 +40,24 @@ class JobQueueClient(JobQueueBase):
             return ret['result']
         return None
 
+    @classmethod
+    async def get_modules_list(cls):
+        ret = await cls.add_job("Server", "get_modules_list", {})
+        return ret['modules_list']
+
+    @classmethod
+    async def get_modules_info(cls, locale: str = "zh_cn"):
+        ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
+        return ret['modules']
+
+    @classmethod
+    async def get_module_info(cls, module: str, locale: str = "zh_cn"):
+        ret = await cls.add_job("Server", "get_module_info", {"module": module, "locale": locale})
+        if ret['success']:
+            return ret['module_info']
+        else:
+            return None
+
 
 async def get_session(args: dict):
     session_info: SessionInfo = converter.structure(args["session_info"], SessionInfo)
@@ -108,6 +126,15 @@ async def _(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     session_info, bot, ctx_manager = await get_session(args)
     ctx_manager.release_context(session_info)
+    return {"success": True}
+
+
+@JobQueueClient.action("qq_set_group_leave")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    get_ = getattr(ctx_manager, "set_group_leave", None)
+    if get_:
+        await get_(session_info)
     return {"success": True}
 
 

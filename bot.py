@@ -191,6 +191,14 @@ async def run_prompt():
                              "(If you are using pycharm, please enable the console emulation in the run configuration.)")
 
 
+def run_console():
+    try:
+        asyncio.run(run_prompt())
+    except (KeyboardInterrupt, SystemExit) as e:
+        print("Console exited.")
+        raise e
+
+
 async def cleanup_tasks():
     loop = asyncio.get_event_loop()
     asyncio.all_tasks(loop=loop)
@@ -203,6 +211,7 @@ async def run_bot(console_only: bool = False):
     from core.config import CFGManager  # noqa
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
+    from core.config import Config
 
     def restart_bot_process(bot_name: str):
         if (
@@ -274,6 +283,12 @@ async def run_bot(console_only: bool = False):
     server_process.start()
     processes.append(server_process)
 
+    enable_console = Config("enable_console", default=False, cfg_type=bool)
+    if enable_console or console_only:
+        console_process = multiprocessing.Process(target=run_console, name="console", daemon=True)
+        console_process.start()
+        processes.append(console_process)
+
     while True:
         for p in processes:
             if p.is_alive():
@@ -281,6 +296,11 @@ async def run_bot(console_only: bool = False):
             if p.name == "server":
                 if p.exitcode == 0:
                     sys.exit(0)
+                if p.exitcode == 233:
+                    Logger.warning(
+                        f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
+                    )
+                    raise RestartBot
                 Logger.critical(f"Server ({p.pid}) exited with code {p.exitcode}, please check the log.")
                 sys.exit(1)
             if p.exitcode == 0:
@@ -295,6 +315,8 @@ async def run_bot(console_only: bool = False):
                     f"Process {p.pid} ({p.name}) exited with code 233, restart all bots."
                 )
                 raise RestartBot
+            if p.exitcode == 466:
+                break
             Logger.critical(
                 f"Process {p.pid} ({p.name}) exited with code {p.exitcode}, please check the log."
             )
@@ -324,9 +346,6 @@ async def main_async(console_only: bool = False):
         import core.scripts.config_generate  # noqa
     from core.config import Config  # noqa
 
-    enable_console = Config("enable_console", default=False, cfg_type=bool)
-    if enable_console or console_only:
-        asyncio.create_task(run_prompt())
     try:
         multiprocess_run_until_complete(pre_init)
         await run_bot(console_only)  # Process will block here so

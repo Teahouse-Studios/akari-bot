@@ -390,6 +390,13 @@ class MessageSession:
             return True
         return await self.check_native_permission()
 
+    async def qq_set_group_leave(self):
+        """
+        用于QQ平台设置群组离开。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.qq_set_group_leave(self.session_info)
+
     waitConfirm = wait_confirm
     waitNextMessage = wait_next_message
     waitReply = wait_reply

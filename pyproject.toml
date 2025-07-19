@@ -35,7 +35,7 @@ ffmpy = "^0.5.0"
 flask = "^3.1.0"
 khl-py = "^0.3.16"
 matrix-nio = "^0.25.0"
-py-cord = "^2.6.1"
+py-cord = {git = "https://github.com/Pycord-Development/pycord"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 qq-botpy = "^1.2.1"
 slowapi = "^0.1.9"
@@ -43,7 +43,7 @@ uvicorn = {extras = ["standard"], version = "^0.34.0"}
 
 # console
 inputimeout = "^1.0.4"
-prompt-toolkit = "^3.0.47"
+prompt-toolkit = "^3.0.51"
 
 # core
 cattrs = "^24.1.2"
@@ -51,7 +51,7 @@ filetype = "^1.2.0"
 orjson = "^3.10.9"
 Pillow = "^11.0.0"
 tenacity = "^9.0.0"
-akari-bot-webrender = "^0.2.9"
+akari-bot-webrender = "0.3.1"
 
 # core.config
 tomlkit = "^0.13.2"

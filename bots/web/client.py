@@ -16,9 +16,7 @@ from core.client.init import client_init
 from core.config import Config
 from core.constants.path import webui_path
 from core.database.models import SenderInfo
-from core.loader import load_modules
 from core.logger import Logger
-from core.server.terminate import cleanup_sessions
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 protocol = "https" if enable_https else "http"
@@ -58,11 +56,9 @@ def _webui_message():
 async def lifespan(app: FastAPI):
     await client_init(target_prefix_list, sender_prefix_list)
     await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"{sender_prefix}|0")
-    load_modules()
     if os.path.exists(webui_path):
         Logger.info(_webui_message())
     yield
-    await cleanup_sessions()
 
 
 app = FastAPI(lifespan=lifespan)

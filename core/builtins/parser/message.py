@@ -361,8 +361,9 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                 for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
                     time_start = datetime.now()
+                    matched = False
+                    _typing = False
                     try:
-                        matched = False
                         matched_hash = 0
                         trigger_msg = msg.as_display(text_only=rfunc.text_only)
                         if rfunc.mode.upper() in ["M", "MATCH"]:
@@ -424,6 +425,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                             if rfunc.show_typing and not msg.session_info.sender_info.sender_data.get(
                                     "disable_typing", False):
                                 await msg.start_typing()
+                                _typing = True
                                 await rfunc.function(msg)  # 将msg传入下游模块
 
                             else:
@@ -454,8 +456,9 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     except Exception as e:
                         await _process_exception(msg, e)
                     finally:
-                        await msg.end_typing()
-                        ExecutionLockList.remove(msg)
+                        if _typing:
+                            await msg.end_typing()
+                            ExecutionLockList.remove(msg)
 
         except SendMessageFailed:
             await _process_send_message_failed(msg)

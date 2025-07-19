@@ -18,7 +18,7 @@ class Alive:
         value = {}
         for v in cls.values:
             if 'ts' in cls.values[v]:
-                if (datetime.now() - cls.values[v]['ts']).total_seconds() < 60:
+                if (datetime.now() - cls.values[v]['ts']).total_seconds() < 120:
                     value.update({v: cls.values[v]})
 
         return value
