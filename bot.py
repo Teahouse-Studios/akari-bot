@@ -108,7 +108,6 @@ def pre_init():
         else:
             await Tortoise.close_connections()
 
-        await SenderInfo.update_or_create(defaults={"superuser": True}, sender_id=f"Console|0")
         base_superuser = Config(
             "base_superuser", base_superuser_default, cfg_type=(str, list)
         )

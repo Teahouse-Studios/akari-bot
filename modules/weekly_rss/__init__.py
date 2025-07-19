@@ -59,7 +59,6 @@ async def _():
     Logger.info("Checking teahouse weekly...")
 
     weekly = await get_teahouse_rss()
-    Logger.info("Checking teahouse weekly...")
 
     weekly_cn = MessageChain.assign(Plain(
         Locale("zh_cn").t(
