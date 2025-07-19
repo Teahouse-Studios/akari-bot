@@ -142,63 +142,6 @@ def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
         sys.exit(1)
 
 
-async def run_prompt():
-    from prompt_toolkit import PromptSession  # noqa
-    from prompt_toolkit.history import FileHistory  # noqa
-    from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
-    from core.constants import PrivateAssets  # noqa
-    from core.builtins.bot import Bot  # noqa
-    from core.console.info import client_name, target_prefix_list, sender_prefix_list  # noqa
-    from core.console.context import ConsoleContextManager  # noqa
-    from core.client.init import client_init  # noqa
-
-    Bot.register_bot(client_name=client_name)
-
-    console_ctx_id = Bot.register_context_manager(ConsoleContextManager)
-
-    asyncio.create_task(client_init(target_prefix_list=target_prefix_list, sender_prefix_list=sender_prefix_list))
-
-    console_history_path = os.path.join(PrivateAssets.path, ".console_history")
-    if os.path.exists(console_history_path):
-        os.remove(console_history_path)
-    try:
-        prompt_session = PromptSession(history=FileHistory(console_history_path))
-
-        async def console_command(command: str):
-            if console_ctx_id is not None and Bot is not None:
-                from core.builtins.session.info import SessionInfo
-                from core.builtins.message.chain import MessageChain
-                from core.console.info import target_prefix, sender_prefix, client_name
-                from core.builtins.message.internal import Plain
-                session_data = await SessionInfo.assign(
-                    target_id=f"{target_prefix}|0",
-                    sender_id=f"{sender_prefix}|0",
-                    sender_name="Console",
-                    target_from=target_prefix,
-                    sender_from=sender_prefix,
-                    client_name=client_name,
-                    message_id='0',
-                    messages=MessageChain.assign([Plain(command), ]),
-                    ctx_slot=console_ctx_id)
-                await Bot.process_message(session_data, '')
-
-        while True:
-            m = await prompt_session.prompt_async()
-            asyncio.create_task(console_command(m))
-
-    except NoConsoleScreenBufferError:
-        loggerFallback.error("No console screen buffer found, please run this script in a console.\n"
-                             "(If you are using pycharm, please enable the console emulation in the run configuration.)")
-
-
-def run_console():
-    try:
-        asyncio.run(run_prompt())
-    except (KeyboardInterrupt, SystemExit) as e:
-        print("Console exited.")
-        raise e
-
-
 async def cleanup_tasks():
     loop = asyncio.get_event_loop()
     asyncio.all_tasks(loop=loop)
@@ -207,11 +150,10 @@ async def cleanup_tasks():
 binary_mode = not sys.argv[0].endswith(".py")
 
 
-async def run_bot(console_only: bool = False):
+async def run_bot():
     from core.config import CFGManager  # noqa
     from core.logger import Logger  # noqa
     from core.server.run import run_async as server_run_async  # noqa
-    from core.config import Config
 
     def restart_bot_process(bot_name: str):
         if (
@@ -246,48 +188,40 @@ async def run_bot(console_only: bool = False):
     envs["PYTHONPATH"] = os.path.abspath(".")
     lst = bots_and_required_configs.keys()
 
-    # run the client processes
-    if not console_only:
-        for t in CFGManager.values:
-            if t.startswith("bot_") and not t.endswith("_secret"):
-                if "enable" in CFGManager.values[t][t]:
-                    if not CFGManager.values[t][t]["enable"]:
-                        disabled_bots.append(t[4:])
-                else:
-                    Logger.warning(f"Bot {t} cannot found config \"enable\".")
+    for t in CFGManager.values:
+        if t.startswith("bot_") and not t.endswith("_secret"):
+            if "enable" in CFGManager.values[t][t]:
+                if not CFGManager.values[t][t]["enable"]:
                     disabled_bots.append(t[4:])
+            else:
+                Logger.warning(f"Bot {t} cannot found config \"enable\".")
+                disabled_bots.append(t[4:])
 
-        for bl in lst:
-            if bl in disabled_bots:
+    for bl in lst:
+        if bl in disabled_bots:
+            continue
+        if bl in bots_and_required_configs:
+            abort = False
+            for c in bots_and_required_configs[bl]:
+                if not CFGManager.get(c, _global=True):
+                    Logger.error(
+                        f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
+                    )
+                    abort = True
+                    break
+            if abort:
                 continue
-            if bl in bots_and_required_configs:
-                abort = False
-                for c in bots_and_required_configs[bl]:
-                    if not CFGManager.get(c, _global=True):
-                        Logger.error(
-                            f"Bot {bl} requires config \"{c}\" but not found, abort to launch."
-                        )
-                        abort = True
-                        break
-                if abort:
-                    continue
-            p = multiprocessing.Process(
-                target=go, args=(bl, True, binary_mode), name=bl, daemon=True
-            )
-            p.start()
-            processes.append(p)
+        p = multiprocessing.Process(
+            target=go, args=(bl, True, binary_mode), name=bl, daemon=True
+        )
+        p.start()
+        processes.append(p)
 
     # run the server process
     server_process = multiprocessing.Process(target=server_run_async, args=(True, binary_mode
                                                                             ), name="server", daemon=True)
     server_process.start()
     processes.append(server_process)
-
-    enable_console = Config("enable_console", default=False, cfg_type=bool)
-    if enable_console or console_only:
-        console_process = multiprocessing.Process(target=run_console, name="console", daemon=True)
-        console_process.start()
-        processes.append(console_process)
 
     while True:
         for p in processes:
@@ -341,14 +275,14 @@ def terminate_process(process: multiprocessing.Process, timeout=5):
     process.close()
 
 
-async def main_async(console_only: bool = False):
+async def main_async():
     if not os.path.exists(os.path.join(config_path, config_filename)):
         import core.scripts.config_generate  # noqa
     from core.config import Config  # noqa
 
     try:
         multiprocess_run_until_complete(pre_init)
-        await run_bot(console_only)  # Process will block here so
+        await run_bot()  # Process will block here so
     except RestartBot as e:
         for ps in processes:
             loggerFallback.warning(f"Terminating process {ps.pid} ({ps.name})...")
@@ -376,10 +310,10 @@ async def main_async(console_only: bool = False):
             pass
 
 
-def main(console_only: bool = False):
+def main():
     while True:
         try:
-            asyncio.run(main_async(console_only))
+            asyncio.run(main_async())
         except RestartBot:
             clear_import_cache()
             continue

@@ -56,6 +56,7 @@ class AiogramContextManager(ContextManager):
         msg_ids = []
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
+
         text = []
         images = []
         voices = []

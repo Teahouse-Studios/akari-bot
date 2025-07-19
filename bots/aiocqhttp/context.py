@@ -71,6 +71,36 @@ def convert_msg_nodes(
     return node_list
 
 
+async def get_avaliable_group_list():
+    """
+    获取可用的群组列表。
+    :return: 群组列表
+    """
+    group_list = []
+    try:
+        groups = await aiocqhttp_bot.call_action("get_group_list")
+        for group in groups:
+            group_list.append(group["group_id"])
+    except aiocqhttp.exceptions.ActionFailed as e:
+        Logger.error(f"Failed to get group list: {e}")
+    return group_list
+
+
+async def get_avaliable_private_list():
+    """
+    获取可用的私聊列表。
+    :return: 私聊列表
+    """
+    private_list = []
+    try:
+        friends = await aiocqhttp_bot.call_action("get_friend_list")
+        for friend in friends:
+            private_list.append(friend["user_id"])
+    except aiocqhttp.exceptions.ActionFailed as e:
+        Logger.error(f"Failed to get private list: {e}")
+    return private_list
+
+
 class AIOCQContextManager(ContextManager):
     context: dict[str, Event] = {}
     features: Optional[Features] = Features
@@ -114,6 +144,20 @@ class AIOCQContextManager(ContextManager):
         #
         # ctx = cls.context.get(session_info.session_id)
         send = None
+        if session_info.sender_id is None:
+            if session_info.target_from == target_group_prefix:
+                group_list = await get_avaliable_group_list()
+                if group_list:
+                    if int(session_info.get_common_target_id()) not in group_list:
+                        Logger.warning("Group not found in group list, skipping message send.")
+                        return []
+            if session_info.target_from == target_private_prefix:
+                private_list = await get_avaliable_private_list()
+                if private_list:
+                    if int(session_info.get_common_target_id()) not in private_list:
+                        Logger.warning("Private chat not found in private list, skipping message send.")
+                        return []
+
         if isinstance(message, MessageNodes):
             send = await fake_forward_msg(session_info, convert_msg_nodes(session_info, message))
 
@@ -406,7 +450,7 @@ class AIOCQFetchedContextManager(AIOCQContextManager):
             if _tasks_high_priority:
                 task = _tasks_high_priority.pop(0)
                 await task
-                cd = random.randint(2, 10)
+                cd = random.randint(1, 5)
                 Logger.info(f"Processed a high-priority task in AIOCQFetchedContextManager, waiting cooldown for {
                     cd}s...")
                 await asyncio.sleep(cd)

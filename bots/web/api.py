@@ -636,7 +636,7 @@ async def delete_sender_info(request: Request, sender_id: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/module_list")
+@app.get("/api/modules_list")
 @limiter.limit("2/second")
 async def get_modules_list(request: Request):
     try:
