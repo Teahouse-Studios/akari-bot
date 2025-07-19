@@ -105,6 +105,7 @@
     "error.config.secret.not_found": "キー設定パラメータが見つかりません。設定ファイルを確認してください。",
     "error.config.webrender.invalid": "WebRender が設定されていないため、このコマンドを使用することはできません。",
     "error.i18n.fallback": "（このプレースホルダーが表示された場合は、何らかの問題が発生しています。お手数ですがご報告ください。）",
+    "error.message.chain.empty": "ボットが空のメッセージを送信しようとしました。ボットの所有者に連絡してください。",
     "error.message.chain.unsafe": "メッセージには安全でないコンテンツが含まれていたため、ブロックされました。",
     "error.message.discord.dm.cannot.send": "このコマンドはプライベート メッセージでのメッセージの送信をサポートしていません。開発者に連絡してください。",
     "error.message.discord.thread.permission.denied": "メッセージを送信できません。ボットがこのチャンネル（サブチャンネルを作成） に対する十分な権限を持っていないためです。",
@@ -198,6 +199,5 @@
     "tos.message.warning": "警告：\n利用規約に基づいて、あなたは行動規範に違反しています。",
     "tos.message.warning.count": "これは ${current_warns} 回目の警告です。",
     "tos.message.warning.last": "これは最後の警告です。",
-    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。",
-    "error.message.chain.empty": "ボットが空のメッセージを送信しようとしました。ボットの所有者に連絡してください。"
+    "tos.message.warning.prompt": "${warn_counts} 回以上の警告を受けた場合、アカウントはブロックされます。"
 }
