@@ -25,7 +25,7 @@ from core.utils.decrypt import decrypt_string
 from core.utils.message import isfloat, isint
 from core.utils.storedata import get_stored_list, update_stored_list
 
-su = module("superuser", alias="su", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
+su = module("superuser", alias="su", required_superuser=True, base=True, doc=True)
 
 
 @su.command("add <user>")
@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.purge.empty"))
 
 
-set_ = module("set", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
+set_ = module("set", required_superuser=True, base=True, doc=True)
 
 
 @set_.command("target module enable <target> <modules> ...",
@@ -223,7 +223,7 @@ async def _(msg: Bot.MessageSession, group_id: str):
     await msg.finish(I18NContext("core.message.set.option.edit.success", k=k, v=v))
 
 
-ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True, exclude_from=["Console"])
+ae = module("abuse", alias="ae", required_superuser=True, base=True, doc=True)
 
 
 @ae.command("check <user>")
@@ -457,7 +457,7 @@ upds = module(
     alias="u&r",
     base=True,
     doc=True,
-    exclude_from=["Console", "Web"],
+    exclude_from=["Web"],
     load=Bot.Info.subprocess)
 
 
@@ -479,17 +479,6 @@ async def _(msg: Bot.MessageSession):
             await msg.finish()
     else:
         await msg.finish(I18NContext("core.message.update.binary_mode"))
-
-
-exit_ = module("exit", required_superuser=True, base=True, doc=True, available_for=["Console"])
-
-
-@exit_.command()
-async def _(msg: Bot.MessageSession):
-    if await msg.wait_confirm(append_instruction=False, delete=False):
-        os._exit(0)
-    else:
-        await msg.finish()
 
 
 git = module("git", required_superuser=True, base=True, doc=True, load=bool(Bot.Info.version))

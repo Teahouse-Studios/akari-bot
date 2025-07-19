@@ -84,8 +84,7 @@ admin = module(
     required_admin=True,
     alias={"ban": "admin ban", "unban": "admin unban", "ban list": "admin ban list"},
     desc="{I18N:core.help.admin.desc}",
-    doc=True,
-    exclude_from=["Console"],
+    doc=True
 )
 
 
@@ -267,9 +266,7 @@ async def _(msg: Bot.MessageSession, second: int):
     await msg.finish(I18NContext("core.message.setup.cooldown.success", time=second))
 
 
-mute = module(
-    "mute", base=True, doc=True, required_admin=True, exclude_from=["Console"]
-)
+mute = module("mute", base=True, doc=True, required_admin=True)
 
 
 @mute.command("{{I18N:core.help.mute}}")
