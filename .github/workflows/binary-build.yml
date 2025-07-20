@@ -29,6 +29,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           playwright install --with-deps chromium
+          python core/scripts/config_generate.py
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
