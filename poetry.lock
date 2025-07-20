@@ -243,14 +243,14 @@ docs = ["sphinx (==8.1.3)", "sphinx-mdinclude (==0.6.1)"]
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.3.3"
+version = "0.3.4"
 description = ""
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "akari_bot_webrender-0.3.3-py3-none-any.whl", hash = "sha256:be1af14dd8dd9ef1a39b98d80303dd0d52aa86511f0cf5bfabdc71b4248a422a"},
-    {file = "akari_bot_webrender-0.3.3.tar.gz", hash = "sha256:2f742bbc77773f99ba60f7f3394fb66117157578207c2cbdbf624b2f0ebc0327"},
+    {file = "akari_bot_webrender-0.3.4-py3-none-any.whl", hash = "sha256:b8e7673e6bae10c0690e05f6ecab104d2ea2f3280d3a4639da6d0f8cbaaaf1e7"},
+    {file = "akari_bot_webrender-0.3.4.tar.gz", hash = "sha256:f919107dbb2d9197b3802839a6b399b6e86ee3091c0db188febf4d4c2210d652"},
 ]
 
 [package.dependencies]
@@ -5669,4 +5669,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "6eb65be9ab1be6ddf64313eefd04c245532a58c72b51e2095da19a9e838ec84d"
+content-hash = "c9bc4ea900ad8e12bd0c52ababb1111bf16b44a0c9a166104b26c7fcce474a76"
