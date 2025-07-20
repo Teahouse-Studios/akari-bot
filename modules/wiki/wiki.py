@@ -104,8 +104,7 @@ async def query_pages(
 
     if not start_wiki:
         if isinstance(session, MessageSession):
-            await session.finish(
-                session.session_info.locale.t("wiki.message.set.not_set", prefix=session.session_info.prefixes[0])
+            await session.finish(I18NContext("wiki.message.set.not_set", prefix=session.session_info.prefixes[0])
             )
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
@@ -316,13 +315,12 @@ async def query_pages(
                                     for i in range(len(r.sections))
                                 ]
                                 i_msg_lst.append(
-                                    Plain(
-                                        session.session_info.locale.t(
+                                    I18NContext(
                                             "wiki.message.invalid_section.prompt" if r.invalid_section and (
                                                 r.info.in_allowlist or not (
                                                     isinstance(
                                                         session,
-                                                        Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt")))
+                                                        Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt"))
                                 i_msg_lst += [
                                     Image(ii)
                                     for ii in await image_table_render(
@@ -340,14 +338,12 @@ async def query_pages(
                                     )
                                 ]
                                 i_msg_lst.append(
-                                    Plain(
-                                        session.session_info.locale.t(
+                                    I18NContext(
                                             "wiki.message.invalid_section.select"
-                                        )
                                     )
                                 )
                                 i_msg_lst.append(
-                                    Plain(session.session_info.locale.t("message.reply.prompt"))
+                                    I18NContext("message.reply.prompt")
                                 )
 
                                 async def _callback(msg: Bot.MessageSession):
@@ -400,21 +396,17 @@ async def query_pages(
                                 )
                                 i_msg_lst = []
                                 i_msg_lst.append(
-                                    Plain(session.session_info.locale.t("wiki.message.forum.prompt"))
+                                    I18NContext("wiki.message.forum.prompt")
                                 )
                                 i_msg_lst += [
                                     Image(ii)
                                     for ii in await image_table_render(img_table)
                                 ]
                                 i_msg_lst.append(
-                                    Plain(
-                                        session.session_info.locale.t(
-                                            "wiki.message.invalid_section.select"
-                                        )
-                                    )
+                                    I18NContext("wiki.message.invalid_section.select")
                                 )
                                 i_msg_lst.append(
-                                    Plain(session.locale.t("message.reply.prompt"))
+                                    I18NContext("message.reply.prompt")
                                 )
 
                                 async def _callback(msg: Bot.MessageSession):
