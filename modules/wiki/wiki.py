@@ -347,7 +347,7 @@ async def query_pages(
                                     )
                                 )
                                 i_msg_lst.append(
-                                    Plain(session.locale.t("message.reply.prompt"))
+                                    Plain(session.session_info.locale.t("message.reply.prompt"))
                                 )
 
                                 async def _callback(msg: Bot.MessageSession):
@@ -400,7 +400,7 @@ async def query_pages(
                                 )
                                 i_msg_lst = []
                                 i_msg_lst.append(
-                                    Plain(session.locale.t("wiki.message.forum.prompt"))
+                                    Plain(session.session_info.locale.t("wiki.message.forum.prompt"))
                                 )
                                 i_msg_lst += [
                                     Image(ii)
@@ -542,7 +542,7 @@ async def query_pages(
                         wait_msg_list.append(Plain("\n".join(wait_plain_slice)))
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.send_message(session.locale.t("message.error") + str(e))
+                await session.send_message(session.session_info.locale.t("message.error") + str(e))
             else:
                 msg_list.append(Plain(session.locale.t("message.error") + str(e)))
     if isinstance(session, Bot.MessageSession):
