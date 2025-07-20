@@ -7,6 +7,7 @@ if __name__ == "__main__":
     shutil.copytree("assets/config_store/zh_cn", "output/config")
     shutil.copytree("core/locales", "output/core/locales")
     shutil.copytree("modules", "output/modules")
+    shutil.copytree("webui", "output/webui")
 
     def remove_py_files(path):
 
