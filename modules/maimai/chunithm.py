@@ -174,7 +174,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender}
+            payload = {"qq": msg.session_info.sender_id.split("|")[-1]}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
