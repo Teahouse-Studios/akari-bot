@@ -6,7 +6,7 @@ from core.builtins.message.internal import I18NContext, Plain, Url
 from core.component import module
 from core.utils.http import get_url
 
-API = "https://ca.projectxero.top/idlist/search"
+API = "https://idlist.projectxero.top/search"
 SEARCH_LIMIT = 5
 
 i = module("idlist", doc=True, support_languages=["zh_cn"])
