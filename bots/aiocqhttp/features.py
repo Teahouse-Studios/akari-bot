@@ -2,7 +2,7 @@ class Features:
     image = True
     voice = True
     mention = True
-    embed = True
+    embed = False
     forward = True
     delete = True
     markdown = True
