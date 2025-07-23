@@ -237,7 +237,7 @@ async def query_alias(msg, sid):
         await msg.finish(I18NContext("maimai.message.alias.alias_not_found"))
     else:
         res = [I18NContext("maimai.message.alias", title=title)]
-        res += [Plain(f"· {a}") for a in alias]
+        res += [Plain(a) for a in alias]
 
         if len(alias) >= 20:
             imgs = await msgchain2image(res, msg)
