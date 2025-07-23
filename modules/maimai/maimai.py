@@ -242,10 +242,7 @@ async def query_alias(msg, sid):
         if len(alias) >= 20:
             imgs = await msgchain2image(res, msg)
             if imgs:
-                imgchain = []
-                for img in imgs:
-                    imgchain.append(BImage(img))
-                await msg.finish(imgchain)
+                await msg.finish(imgs)
             else:
                 await msg.finish(res)
         else:
