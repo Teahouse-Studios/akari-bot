@@ -372,10 +372,7 @@ class MessageNodes:
         """
         检查消息节点列表是否安全。
         """
-        for chain in self.values:
-            if not chain.is_safe:
-                return False
-        return True
+        return all(chain.is_safe for chain in self.values)
 
 
 Chainable = Union[MessageChain, I18NMessageChain, PlatformMessageChain,
@@ -389,12 +386,13 @@ def get_message_chain(session: SessionInfo, chain: Chainable) -> MessageChain:
         chain = chain.values.get(session.locale.locale, chain.values.get("default", MessageChain.assign("")))
     if isinstance(chain, (str, list, MessageElement)):
         chain = MessageChain.assign(chain)
+
     if isinstance(chain, (MessageChain, MessageNodes)):
         return chain
-    else:
-        raise TypeError(
-            f"Unsupported chain type: {
-                type(chain).__name__}, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain.")
+
+    raise TypeError(
+        f"Unsupported chain type: {
+            type(chain).__name__}, expected MessageChain, MessageNodes, I18NMessageChain, or PlatformMessageChain.")
 
 
 def _extract_kecode_blocks(text):

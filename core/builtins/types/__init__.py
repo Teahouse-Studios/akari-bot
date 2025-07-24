@@ -15,4 +15,4 @@ MessageElement = Union[
     MentionElement,
 ]
 
-__all__ = [MessageElement]
+__all__ = ["MessageElement"]

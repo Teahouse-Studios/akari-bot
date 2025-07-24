@@ -31,8 +31,6 @@ async def main():
 
 
 def run_async(subprocess: bool = False, binary_mode: bool = False):
-    import asyncio
-
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
     asyncio.run(main())

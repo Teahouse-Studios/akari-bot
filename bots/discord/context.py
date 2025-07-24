@@ -31,7 +31,7 @@ class DiscordContextManager(ContextManager):
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx = cls.context.get(session_info.session_id, None)
+        ctx = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 

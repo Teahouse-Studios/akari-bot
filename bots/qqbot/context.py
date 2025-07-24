@@ -35,7 +35,7 @@ class QQBotContextManager(ContextManager):
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx = cls.context.get(session_info.session_id, None)
+        ctx = cls.context.get(session_info.session_id)
 
         if ctx:
             if isinstance(ctx, Message):
@@ -59,7 +59,7 @@ class QQBotContextManager(ContextManager):
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id, None)
+        ctx = cls.context.get(session_info.session_id)
         msg_ids = []
 
         if isinstance(message, MessageNodes):

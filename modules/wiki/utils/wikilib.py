@@ -140,9 +140,8 @@ class WikiLib:
                     request_private_ip=False,
                     cookies=cookies,
                 )
-            else:
-                req = await web_render.source(SourceOptions(url=api, raw_text=True))
-                return json.loads(req)
+            req = await web_render.source(SourceOptions(url=api, raw_text=True))
+            return json.loads(req)
 
         except Exception as e:
             if api.find("moegirl.org.cn") != -1:
@@ -277,9 +276,8 @@ class WikiLib:
                     value=await self.rearrange_siteinfo(get_cache_info.site_info, wiki_api_link),
                     message="",
                 )
-            else:
-                await get_cache_info.delete()
-                get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
+            await get_cache_info.delete()
+            get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         else:
             get_cache_info = await WikiSiteInfo.create(api_link=wiki_api_link)
         try:

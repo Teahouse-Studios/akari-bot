@@ -53,10 +53,9 @@ class JobQueueClient(JobQueueBase):
     @classmethod
     async def get_module_info(cls, module: str, locale: str = "zh_cn"):
         ret = await cls.add_job("Server", "get_module_info", {"module": module, "locale": locale})
-        if ret['success']:
-            return ret['module_info']
-        else:
+        if not ret['success']:
             return None
+        return ret['module_info']
 
 
 async def get_session(args: dict):

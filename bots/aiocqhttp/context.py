@@ -36,7 +36,7 @@ async def fake_forward_msg(session_info: SessionInfo, nodelist):
             group_id=int(session_info.get_common_target_id()),
             messages=nodelist,
         )
-    elif session_info.target_from == target_private_prefix:
+    if session_info.target_from == target_private_prefix:
         return await aiocqhttp_bot.call_action(
             "send_private_forward_msg",
             user_id=int(session_info.get_common_sender_id()),

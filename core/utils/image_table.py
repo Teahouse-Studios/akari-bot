@@ -96,11 +96,10 @@ async def image_table_render(
     except Exception:
         Logger.exception()
         return None
-    if image_list:
-        return cb64imglst(image_list)
-    else:
+    if not image_list:
         Logger.error("Image table render failed, no image returned.")
         return None
+    return cb64imglst(image_list)
 
 
 __all__ = ["ImageTable", "image_table_render"]

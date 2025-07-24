@@ -73,13 +73,11 @@ class MessageSession:
                                                              enable_parse_message=enable_parse_message,
                                                              enable_split_image=enable_split_image)
         if "message_id" in return_val:
-
             if callback:
                 SessionTaskManager.add_callback(return_val["message_id"], callback)
 
             return FinishedSession(self.session_info, return_val["message_id"])
-        else:
-            return FinishedSession(self.session_info, [])
+        return FinishedSession(self.session_info, [])
 
     async def finish(
         self,
@@ -563,4 +561,4 @@ class FetchedMessageSession(MessageSession):
 add_export(MessageSession)
 add_export(FinishedSession)
 
-__all__ = [SessionInfo, FetchedMessageSession]
+__all__ = ["SessionInfo", "FetchedMessageSession"]

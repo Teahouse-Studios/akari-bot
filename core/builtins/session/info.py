@@ -175,4 +175,4 @@ class ModuleHookContext:
     session_info: Optional[SessionInfo] = None
 
 
-__all__ = [SessionInfo, FetchedSessionInfo, ModuleHookContext]
+__all__ = ["SessionInfo", "FetchedSessionInfo", "ModuleHookContext"]

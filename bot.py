@@ -29,7 +29,7 @@ Logger = logger.bind(name="BotDaemon")
 Logger.add(
     sys.stderr,
     format=(
-        f"<cyan>[BotDaemon]</cyan>"
+        "<cyan>[BotDaemon]</cyan>"
         "<yellow>[{name}:{function}:{line}]</yellow>"
         "<green>[{time:YYYY-MM-DD HH:mm:ss}]</green>"
         "<level>[{level}]:{message}</level>"
