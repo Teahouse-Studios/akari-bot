@@ -14,7 +14,6 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
-from core.constants.info import Info
 
 Bot.register_bot(client_name=client_name)
 ctx_id = Bot.register_context_manager(QQBotContextManager)
@@ -248,7 +247,4 @@ client = MyClient(intents=intents, bot_log=None)
 
 if Config("enable", False, table_name="bot_qqbot"):
     loop = asyncio.get_event_loop()
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
     loop.run_until_complete(client.start(appid=qqbot_appid, secret=qqbot_secret))

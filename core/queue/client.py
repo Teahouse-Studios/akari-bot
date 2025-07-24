@@ -41,6 +41,16 @@ class JobQueueClient(JobQueueBase):
         return None
 
     @classmethod
+    async def get_bot_version(cls):
+        ret = await cls.add_job("Server", "get_bot_version", {})
+        return ret['version']
+
+    @classmethod
+    async def get_web_render_status(cls):
+        ret = await cls.add_job("Server", "get_web_render_status", {})
+        return ret['web_render_status']
+
+    @classmethod
     async def get_modules_list(cls):
         ret = await cls.add_job("Server", "get_modules_list", {})
         return ret['modules_list']

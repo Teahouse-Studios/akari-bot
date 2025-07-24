@@ -19,7 +19,6 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
-from core.constants.info import Info
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -237,9 +236,6 @@ async def _(event: Event):
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
 if Config("enable", False, table_name="bot_aiocqhttp"):
     argv = sys.argv
-    Info.client_name = client_name
     HyperConfig.startup_timeout = 120
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
     host, port = qq_host.split(":")
     aiocqhttp_bot.run(host=host, port=port, debug=False)

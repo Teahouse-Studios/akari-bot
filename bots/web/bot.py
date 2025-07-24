@@ -71,9 +71,6 @@ async def restart_bot(request: Request):
 
 
 if Config("enable", True, table_name="bot_web") or __name__ == "__main__":
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
     if avaliable_web_port == 0:
         Logger.error("API port is disabled.")
         sys.exit(0)

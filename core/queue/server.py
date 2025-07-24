@@ -1,6 +1,8 @@
 from typing import Union, TYPE_CHECKING, Optional
 
 from core.builtins.parser.message import parser
+from core.utils.bash import run_sys_command
+from core.web_render import init_web_render
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
@@ -132,6 +134,21 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
     await bot.send_direct_message(session_info, message, disable_secret_check=args["disable_secret_check"],
                                   enable_parse_message=args["enable_parse_message"])
     return {"success": True}
+
+
+@JobQueueServer.action("get_bot_version")
+async def get_bot_version(tsk: JobQueuesTable, args: dict):
+    version = None
+    returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
+    if returncode == 0:
+        version = commit_hash
+    return {"version": version}
+
+
+@JobQueueServer.action("get_web_render_status")
+async def get_web_render_status(tsk: JobQueuesTable, args: dict):
+    web_render_status = await init_web_render()
+    return {"web_render_status": web_render_status}
 
 
 @JobQueueServer.action("get_modules_list")

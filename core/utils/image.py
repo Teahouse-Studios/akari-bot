@@ -13,7 +13,7 @@ from core.config import Config
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path
-from core.utils.web_render import web_render, ElementScreenshotOptions
+from core.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 use_font_mirror = Config("use_font_mirror", False, bool)

@@ -1,6 +1,5 @@
 import asyncio
 import os
-import sys
 from time import strftime
 from uuid import uuid4
 
@@ -17,8 +16,8 @@ from core.builtins.session.info import SessionInfo
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
-from core.constants.info import Info
 from core.logger import Logger
+from core.queue.client import JobQueueClient
 
 Bot.register_bot(client_name=client_name)
 
@@ -271,7 +270,8 @@ async def start():
     await client_init(target_prefix_list, sender_prefix_list)
 
     Logger.info("starting sync loop...")
-    await matrix_bot.set_presence("online", f"AkariBot {Info.version}")
+    version = await JobQueueClient.get_bot_version()
+    await matrix_bot.set_presence("online", f"AkariBot {version}")
     await matrix_bot.sync_forever(timeout=30000, full_state=False)
     Logger.info("sync loop stopped.")
 
@@ -299,7 +299,4 @@ async def start():
 
 if matrix_bot and Config("enable", False, table_name="bot_matrix"):
     loop = asyncio.new_event_loop()
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
     loop.run_until_complete(start())

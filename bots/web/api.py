@@ -19,7 +19,6 @@ from tortoise.expressions import Q
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
 from core.config import Config
 from core.constants import config_filename
-from core.constants.info import Info
 from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
 from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
@@ -268,8 +267,8 @@ async def server_info(request: Request):
         "bot": {
             "running_time": (datetime.now() - started_time).total_seconds(),
             "python_version": platform.python_version(),
-            "version": Info.version,
-            "web_render_status": Info.web_render_status
+            "version": await JobQueueClient.get_bot_version(),
+            "web_render_status": await JobQueueClient.get_web_render_status()
         },
         "cpu": {
             "cpu_brand": get_cpu_info()["brand_raw"],

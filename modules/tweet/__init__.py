@@ -7,7 +7,7 @@ from core.dirty_check import check_bool, rickroll
 from core.utils.http import get_url
 from core.utils.image import cb64imglst
 from core.utils.message import isint
-from core.utils.web_render import web_render, ElementScreenshotOptions
+from core.web_render import web_render, ElementScreenshotOptions
 
 t = module(
     "tweet",

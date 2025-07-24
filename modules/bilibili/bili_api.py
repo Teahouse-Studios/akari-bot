@@ -2,7 +2,7 @@ import orjson as json
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import Embed, EmbedField, Image, Url, I18NContext
-from core.utils.web_render import web_render, SourceOptions
+from core.web_render import web_render, SourceOptions
 
 DESC_LENGTH = 100
 
