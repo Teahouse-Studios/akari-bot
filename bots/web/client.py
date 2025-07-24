@@ -1,3 +1,4 @@
+import asyncio
 import os
 from contextlib import asynccontextmanager
 
@@ -60,6 +61,7 @@ async def lifespan(app: FastAPI):
     if os.path.exists(webui_path):
         Logger.info(_webui_message())
     yield
+    await asyncio.sleep(3)  # 等待 server 清理进程
     try:
         await JobQueuesTable.clear_task(time=0)
         await Tortoise.close_connections()
