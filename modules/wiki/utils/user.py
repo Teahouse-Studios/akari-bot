@@ -65,7 +65,7 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
     data["global_users_groups"] = []
     if "query" in user_central_auth_data:
         data["global_edit_count"] = str(
-            user_central_auth_data["query"]["globaluserinfo"]["editcount"]
+            user_central_auth_data["query"]["globaluserinfo"].get("editcount", 0)
         )
         data["global_home"] = user_central_auth_data["query"]["globaluserinfo"]["home"]
         for g in user_central_auth_data["query"]["globaluserinfo"]["groups"]:
