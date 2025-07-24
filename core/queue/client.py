@@ -138,4 +138,14 @@ async def _(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
+@JobQueueClient.action("qq_call_api")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    get_ = getattr(ctx_manager, "call_api", None)
+    if get_:
+        g = await get_(args["api_name"], **args["args"])
+        return g
+    return {"success": False, "error": "API not supported in this context"}
+
+
 add_export(JobQueueClient)

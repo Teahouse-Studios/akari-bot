@@ -398,6 +398,13 @@ class MessageSession:
         _queue_server: "JobQueueServer" = exports["JobQueueServer"]
         return await _queue_server.qq_set_group_leave(self.session_info)
 
+    async def qq_call_api(self, api_name: str, **kwargs) -> Any:
+        """
+        用于QQ平台调用API。
+        """
+        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
+        return await _queue_server.qq_call_api(self.session_info, api_name=api_name, **kwargs)
+
     waitConfirm = wait_confirm
     waitNextMessage = wait_next_message
     waitReply = wait_reply

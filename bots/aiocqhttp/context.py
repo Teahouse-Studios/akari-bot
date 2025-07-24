@@ -422,6 +422,16 @@ class AIOCQContextManager(ContextManager):
         else:
             raise ValueError("Session is not a group session")
 
+    @classmethod
+    async def call_api(cls, api_name: str, **kwargs) -> Optional[dict]:
+        """
+        调用 OneBot API。
+        :param api_name: API 名称
+        :param kwargs: API 参数
+        :return: API 返回结果
+        """
+        return await aiocqhttp_bot.call_action(api_name, **kwargs)
+
 
 _tasks_high_priority = []
 _tasks = []
