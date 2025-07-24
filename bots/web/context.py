@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional, List
 
 import orjson as json
@@ -11,15 +12,6 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
 from core.utils.image import msgnode2image
-
-
-class MsgIdGenerator:
-    value = 0
-
-    @classmethod
-    def next(cls) -> str:
-        cls.value += 1
-        return str(cls.value)
 
 
 class WebContextManager(ContextManager):
@@ -56,7 +48,7 @@ class WebContextManager(ContextManager):
                 sends.append({"type": "image", "content": img_b64})
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {img_b64[:50]}...")
 
-        msg_id = MsgIdGenerator.next()
+        msg_id = str(uuid.uuid4())
         if websocket:
             resp = {"action": "send", "message": sends, "id": msg_id}
             await websocket.send_text(json.dumps(resp).decode())
