@@ -46,7 +46,7 @@ inputimeout = "^1.0.4"
 prompt-toolkit = "^3.0.51"
 
 # core
-akari-bot-webrender = "0.3.4"
+akari-bot-webrender = "0.3.5"
 cattrs = "^24.1.2"
 filetype = "^1.2.0"
 japanera = "^2.1.3"

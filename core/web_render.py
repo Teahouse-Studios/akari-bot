@@ -17,11 +17,7 @@ web_render = WebRender(debug=False, remote_webrender_url=remote_web_render_url)
 
 async def init_web_render():
     if enable_web_render:
-        try:
-            await web_render.browser_init(browse_type=web_render_browser, executable_path=Path(browser_executable_path) if browser_executable_path else None)
-            return True
-        except Exception:
-            Logger.exception("WebRender initialization failed: ")
+        return await web_render.browser_init(browse_type=web_render_browser, executable_path=Path(browser_executable_path) if browser_executable_path else None)
     else:
         Logger.info("WebRender is disabled in the configuration.")
     return False
