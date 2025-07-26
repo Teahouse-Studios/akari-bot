@@ -1388,15 +1388,18 @@ pycryptodome = "*"
 
 [[package]]
 name = "ffmpy"
-version = "0.5.0"
+version = "0.6.1"
 description = "A simple Python wrapper for FFmpeg"
 optional = false
-python-versions = "<4.0,>=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "ffmpy-0.5.0-py3-none-any.whl", hash = "sha256:df3799cf5816daa56d4959a023630ee53c6768b66009dae6d131519ba4b80233"},
-    {file = "ffmpy-0.5.0.tar.gz", hash = "sha256:277e131f246d18e9dcfee9bb514c50749031c43582ce5ef82c57b51e3d3955c3"},
+    {file = "ffmpy-0.6.1-py3-none-any.whl", hash = "sha256:69a37e2d7d6feb840e233d5640f3499a8b0a8657336774c86e4c52a3219222d4"},
+    {file = "ffmpy-0.6.1.tar.gz", hash = "sha256:b5830fd05f72bace05b8fb28724d54a7a63c5119d7f74ca36a75df33f749142d"},
 ]
+
+[package.extras]
+psutil = ["psutil (>=5.8.0)"]
 
 [[package]]
 name = "filelock"
@@ -5696,4 +5699,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "4986cfbe80967d8886dbb5fb5c66e6ff1177820d4ce8dbc2e8450a2bdf743ec0"
+content-hash = "0cc2d9843f4de1b272a1aa9220f67d5de0b46cdc7f478d7b64e3b7fd829ff418"
