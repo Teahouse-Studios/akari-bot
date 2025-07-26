@@ -122,8 +122,8 @@ class DiscordSlashContextManager(DiscordContextManager):
         结束输入状态
         :param session_info: 会话信息
         """
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
             del cls.typing_flags[session_info.session_id]
