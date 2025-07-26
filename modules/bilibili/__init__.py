@@ -60,7 +60,6 @@ async def _(msg: Bot.MessageSession):
             mode="A",
             desc="{I18N:bilibili.help.regex.url}",
             show_typing=False,
-            text_only=False
             )
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
