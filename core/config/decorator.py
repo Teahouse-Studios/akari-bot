@@ -1,8 +1,7 @@
 import inspect
-from typing import Type, TypeVar, Dict, Any
+from typing import Type, TypeVar, Any
 
 from core.exports import add_export
-from core.builtins.temp import Temp
 
 from . import Config, Item, CFGManager
 
