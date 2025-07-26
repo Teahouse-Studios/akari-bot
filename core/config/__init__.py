@@ -12,6 +12,7 @@ from tomlkit.exceptions import KeyAlreadyPresent
 from tomlkit.items import Table
 
 import core.config.update  # noqa
+from core.config.decorator import on_config
 from core.constants.default import default_locale
 from core.constants.exceptions import ConfigValueError, ConfigOperationError
 from core.constants.path import config_path
@@ -452,5 +453,40 @@ def Config(q: str,
     return v
 
 
+class Item:
+    def __init__(
+        self,
+        default: Any = None,
+        table_name: Optional[str] = None,
+        is_secret: bool = False,
+        is_url: bool = False
+    ):
+        self.default = default
+        self.table_name = table_name
+        self.is_secret = is_secret
+        self.is_url = is_url
+
+    def __repr__(self):
+        return f"Item(default={self.default}, table_name={self.table_name}, is_secret={self.is_secret}, is_url={self.is_url})"
+
+
+def item(
+    default: Any = None,
+    table_name: Optional[str] = None,
+    is_secret: bool = False,
+    is_url: bool = False
+) -> Item:
+    """
+    定义配置项
+    :param default: 配置项的默认值
+    :param table_name: 配置项所在的表名
+    :param is_secret: 配置项是否私密
+    :param is_url: 配置项是否为URL
+    """
+    return Item(default, table_name, is_secret, is_url)
+
+
 add_export(Config)
 add_export(CFGManager)
+add_export(on_config)
+add_export(item)

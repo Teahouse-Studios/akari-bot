@@ -42,7 +42,9 @@ def load_modules():
                 current_unloaded_modules.append(subm.name)
                 continue
             importlib.import_module(submodule_name)
+            importlib.import_module(submodule_name + ".config")
             Logger.debug(f"Successfully loaded {submodule_name}!")
+            Logger.debug(f"Successfully loaded {submodule_name}'s config definition!")
         except Exception:
             errmsg = f"Failed to load {submodule_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)
