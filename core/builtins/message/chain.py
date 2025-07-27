@@ -227,7 +227,7 @@ class MessageChain:
                 result += x.text
             else:
                 if safe:
-                    result += str(x)
+                    result += f'[{x.__name__()}]'
 
         return result
 

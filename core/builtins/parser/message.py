@@ -430,6 +430,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             else:
                                 await rfunc.function(msg)  # 将msg传入下游模块
+                            ExecutionLockList.remove(msg)
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
                         time_used = datetime.now() - time_start
