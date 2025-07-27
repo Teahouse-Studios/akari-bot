@@ -8,6 +8,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from attrs import define, field
 
 from core.builtins.parser.args import Template
+from core.builtins.types import MessageElement
 from core.utils.message import convert2lst
 
 
@@ -45,6 +46,7 @@ class RegexMeta(ModuleMeta):
     logging: bool = True
     show_typing: bool = True
     text_only: bool = True
+    element_filter: tuple[MessageElement] = []
 
 
 @define

@@ -520,6 +520,27 @@ class EmbedElement(BaseElement):
         return str(self.to_message_chain())
 
 
+@define
+class RawElement(BaseElement):
+    """
+    元数据元素。
+
+    :param value: 元数据值。
+    """
+
+    value: str
+
+    @classmethod
+    def assign(cls, value: str):
+        """
+        :param value: 元数据值。
+        """
+        return deepcopy(cls(value=value))
+
+    def __str__(self):
+        return f"Raw({self.value})"
+
+
 __all__ = [
     "BaseElement",
     "PlainElement",
@@ -531,4 +552,5 @@ __all__ = [
     "EmbedFieldElement",
     "EmbedElement",
     "MentionElement",
+    "RawElement",
 ]

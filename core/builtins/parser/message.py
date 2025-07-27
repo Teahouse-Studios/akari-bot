@@ -365,7 +365,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     _typing = False
                     try:
                         matched_hash = 0
-                        trigger_msg = msg.as_display(text_only=rfunc.text_only)
+                        trigger_msg = msg.as_display(text_only=rfunc.text_only, element_filter=rfunc.element_filter)
                         if rfunc.mode.upper() in ["M", "MATCH"]:
                             msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                             if msg.matched_msg:

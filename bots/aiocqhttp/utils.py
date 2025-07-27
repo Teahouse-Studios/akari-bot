@@ -6,7 +6,7 @@ import orjson as json
 
 from bots.aiocqhttp.info import sender_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Plain, Image, Voice, Mention
+from core.builtins.message.internal import Plain, Image, Voice, Mention, Raw
 from core.logger import Logger
 from .client import aiocqhttp_bot
 
@@ -152,6 +152,6 @@ async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> Message
             elif item["type"] == "at":
                 lst.append(Mention(f"{sender_prefix}|{item["data"].get("qq")}"))
             else:
-                lst.append(Plain(CQCodeHandler.generate_cq(item)))
+                lst.append(Raw(CQCodeHandler.generate_cq(item)))
 
     return MessageChain.assign(lst)
