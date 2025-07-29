@@ -151,10 +151,18 @@ class SessionInfo:
         self.target_info = await TargetInfo.get_by_target_id(self.target_id) if self.target_id else None
 
     def get_common_target_id(self) -> str:
-        return self.target_id.split(self.target_from + "|")[1]
+        """
+        获取会话的常用 ID。
+        """
+        return self.target_id.split("|")[-1]
 
     def get_common_sender_id(self) -> str:
-        return self.sender_id.split(self.sender_from + "|")[1]
+        """
+        获取发送者的常用 ID。
+        """
+        if self.sender_id:
+            return self.sender_id.split("|")[-1]
+        return ""
 
 
 @define

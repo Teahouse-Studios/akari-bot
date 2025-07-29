@@ -17,11 +17,12 @@ from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
-from core.config import Config
+from core.config import Config, CFGManager
 from core.constants import config_filename
 from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
 from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 
@@ -102,6 +103,33 @@ async def set_csrf_token(request: Request):
     return {"message": "Success", "csrf_token": csrf_token}
 
 
+@app.get("/api/check-password")
+@limiter.limit("2/second")
+async def set_csrf_token(request: Request, response: Response):
+    ip = request.client.host
+    if await MaliciousLoginRecords.check_blocked(ip):
+        raise HTTPException(status_code=403, detail="This IP has been blocked")
+
+    if not os.path.exists(PASSWORD_PATH):
+        payload = {
+            "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
+            "iat": datetime.now(UTC),  # 签发时间
+            "iss": "auth-api"  # 签发者
+        }
+        jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
+
+        response.set_cookie(
+            key="deviceToken",
+            value=jwt_token,
+            httponly=True,
+            secure=enable_https,
+            samesite="strict",
+            expires=datetime.now(UTC) + timedelta(hours=24)
+        )
+        return {"message": "Success"}
+    raise HTTPException(status_code=401, detail="Need login")
+
+
 @app.post("/api/auth")
 @limiter.limit("10/minute")
 async def auth(request: Request, response: Response):
@@ -126,7 +154,7 @@ async def auth(request: Request, response: Response):
                 samesite="strict",
                 expires=datetime.now(UTC) + timedelta(hours=24)
             )
-            return {"message": "Success", "no_password": True}
+            return {"message": "Success"}
 
         body = await request.json()
         password = body.get("password", "")
@@ -167,7 +195,7 @@ async def auth(request: Request, response: Response):
             samesite="strict",
             expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
         )
-        return {"message": "Success", "no_password": False}
+        return {"message": "Success"}
 
     except HTTPException as e:
         raise e
@@ -353,7 +381,7 @@ async def get_config_file(request: Request, cfg_filename: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/config/{cfg_filename}")
+@app.post("/api/config/{cfg_filename}/edit")
 @limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
     try:
@@ -654,7 +682,7 @@ async def get_modules_list(request: Request):
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        modules = JobQueueClient.get_modules_info(locale=locale)
+        modules = await JobQueueClient.get_modules_info(locale=locale)
         return {"message": "Success", "modules": modules}
     except HTTPException as e:
         raise e
@@ -663,16 +691,44 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/modules/{module}")
-@limiter.limit("2/second")
-async def get_module_info(request: Request, module: str, locale: str = Query(default_locale)):
+@app.post("/api/modules/{module_name}/load")
+@limiter.limit("10/minute")
+async def load_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
-        modules = JobQueueClient.get_module_info(module, locale=locale)
-        if modules:
-            return {"message": "Success", "modules": modules}
+        await verify_csrf_token(request)
 
-        raise HTTPException(status_code=404, detail="Not found")
+        if ModulesManager.load_module(module_name):
+            unloaded_list = CFGManager.get("unloaded_modules", [])
+            if unloaded_list and module_name in unloaded_list:
+                unloaded_list.remove(module_name)
+                CFGManager.write("unloaded_modules", unloaded_list)
+
+            return {"message": "Success"}
+        return {"message": "Failed"}
+
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/modules/{module_name}/unload")
+@limiter.limit("10/minute")
+async def unload_module(request: Request, module_name: str):
+    try:
+        verify_jwt(request)
+        await verify_csrf_token(request)
+
+        if ModulesManager.unload_module(module_name):
+            unloaded_list = CFGManager.get("unloaded_modules", [])
+            if not unloaded_list:
+                unloaded_list = []
+            unloaded_list.append(module_name)
+            CFGManager.write("unloaded_modules", unloaded_list)
+
+            return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception:

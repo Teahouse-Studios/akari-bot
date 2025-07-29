@@ -4,15 +4,15 @@
 
 [bot_aiocqhttp]
 # プラットフォーム側の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-qq_initiative_msg_cooldown = 10 # Aiocqhttp アクティブ メッセージ送信のクールダウン時間を制限します。単位は秒です。
-qq_typing_emoji = 181 # QQ関連プロトコル側でメッセージを処理するときにメッセージに添付される応答顔文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji をご覧ください。
-qq_limited_emoji = 10060 # QQ関連プロトコル側でメッセージ処理に失敗した場合にメッセージに付加される応答顔文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji をご覧ください。
 qq_enable_listening_self_message = false # Onebot プロトコルを使用するときに、自己メッセージの監視を有効にするかどうか。
 qq_host = "127.0.0.1:8080" # Aiocqhttp WebSocket メインサーバーのアドレス。（Onebot プロトコル側はリバース Websocket 方式を使用して接続する必要があります）
 enable = false # このプラットフォームを有効にするかどうか。
 qq_allow_approve_friend = false # Onebot プロトコルを使用するときに、友達リクエストを自動的に承認するかどうか。
 qq_allow_approve_group_invite = false # Onebot プロトコルを使用するときに、グループの招待を自動的に受け入れるかどうか。
 qq_disable_temp_session = true # Onebot プロトコルを使用するときに、一時セッションを有効にするかどうか。
+qq_initiative_msg_cooldown = 10 # Aiocqhttp アクティブ メッセージ送信のクールダウン時間を制限します。単位は秒です。
+qq_typing_emoji = 181 # QQ関連プロトコル側でメッセージを処理するときにメッセージに添付される応答顔文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji をご覧ください。
+qq_limited_emoji = 10060 # QQ関連プロトコル側でメッセージ処理に失敗した場合にメッセージに付加される応答顔文字の ID。プロトコルのサポートが必要です。ID の詳細について：https://bot.q.qq.com/wiki/develop/api/openapi/emoji/model.html#Emoji をご覧ください。
 
 [bot_aiocqhttp_secret]
 # プラットフォーム側のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
