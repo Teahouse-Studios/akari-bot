@@ -45,9 +45,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                     send_ = await ctx.send(
                         file=discord.File(await x.get())
                     )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
             elif isinstance(x, VoiceElement):
                 if count == 0:
                     send_ = await ctx.respond(
@@ -57,22 +55,14 @@ class DiscordSlashContextManager(DiscordContextManager):
                     send_ = await ctx.send(
                         file=discord.File(x.path)
                     )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_channel_prefix:
                     if count == 0:
-                        send_ = await ctx.respond(
-                            f"<@{x.id}>",
-                        )
+                        send_ = await ctx.respond(f"<@{x.id}>")
                     else:
-                        send_ = await ctx.send(
-                            f"<@{x.id}>",
-                        )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
-                    )
+                        send_ = await ctx.send(f"<@{x.id}>")
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
             elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x, session_info)
                 if count == 0:
@@ -83,9 +73,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                     send_ = await ctx.send(
                         embed=embeds,
                         files=files)
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}")
 
             if send_:
                 msg_ids.append(str(send_.id))

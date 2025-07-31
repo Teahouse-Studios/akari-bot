@@ -57,35 +57,21 @@ class AiogramContextManager(ContextManager):
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        text = []
-        images = []
-        voices = []
-        mentions = []
         for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
                 x.text = match_atcode(x.text, client_name, "<a href=\"tg://user?id={uid}\">@{uid}</a>")
-                text.append(x.text)
+                send_ = await aiogram_bot.send_message(session_info.get_common_target_id(),
+                                                       x.text,
+                                                       reply_to_message_id=(
+                    session_info.message_id if quote and not msg_ids and session_info.message_id
+                    else None
+                ), parse_mode="HTML"
+                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+                msg_ids.append(send_.message_id)
             elif isinstance(x, ImageElement):
-                images.append(x)
-            elif isinstance(x, VoiceElement):
-                voices.append(x)
-            elif isinstance(x, MentionElement):
-                mentions.append(x)
-        if text:
-            send_text = "\n".join(text)
-            send_ = await aiogram_bot.send_message(session_info.get_common_target_id(),
-                                                   send_text,
-                                                   reply_to_message_id=(
-                                                       session_info.message_id if quote and not msg_ids and session_info.message_id
-                                                       else None
-            ), parse_mode="HTML"
-            )
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {send_text}")
-            msg_ids.append(send_.message_id)
-        if images:
-            if enable_split_image:
-                for image in images:
-                    split = await image_split(image)
+                if enable_split_image:
+                    split = await image_split(x)
                     for xs in split:
                         send_ = await aiogram_bot.send_photo(
                             session_info.get_common_target_id(),
@@ -95,50 +81,41 @@ class AiogramContextManager(ContextManager):
                                 else None
                             ),
                         )
-                        Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}"
-                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
                         msg_ids.append(send_.message_id)
-            else:
-                for image in images:
+                else:
                     send_ = await aiogram_bot.send_photo(
                         session_info.get_common_target_id(),
-                        FSInputFile(await image.get()),
+                        FSInputFile(await x.get()),
                         reply_to_message_id=(
                             session_info.message_id if quote and not msg_ids and session_info.message_id
                             else None
                         ),
                     )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Image: {str(image)}"
-                    )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                     msg_ids.append(send_.message_id)
-        if voices:
-            for voice in voices:
+            elif isinstance(x, VoiceElement):
                 send_ = await aiogram_bot.send_audio(
                     session_info.get_common_target_id(),
-                    FSInputFile(voice.path),
+                    FSInputFile(x.path),
                     reply_to_message_id=(
                         session_info.message_id if quote and not msg_ids and session_info.message_id
                         else None
                     ),
                 )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
                 msg_ids.append(send_.message_id)
-        if mentions:
-            for mention in mentions:
-                if mention.client == client_name and session_info.target_from in [
+            elif isinstance(x, MentionElement):
+                if x.client == client_name and session_info.target_from in [
                         f"{client_name}|Group", f"{client_name}|Supergroup"]:
                     send_ = await aiogram_bot.send_message(
                         session_info.get_common_target_id(),
-                        f"<a href=\"tg://user?id={mention.id}\">@{mention.id}</a>",
+                        f"<a href=\"tg://user?id={x.id}\">@{x.id}</a>",
                         reply_to_message_id=(
                             session_info.message_id if quote and not msg_ids and session_info.message_id else None),
                         parse_mode="HTML"
                     )
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {mention.client}|{mention.id}")
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{x.id}")
                     msg_ids.append(send_.message_id)
 
         return msg_ids

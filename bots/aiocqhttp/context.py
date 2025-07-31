@@ -161,9 +161,6 @@ class AIOCQContextManager(ContextManager):
             send = await fake_forward_msg(session_info, convert_msg_nodes(session_info, message))
 
         else:
-
-            message_chain_assendable = message.as_sendable(session_info)
-
             convert_msg_segments = MessageSegment.text("")
             if (
                 quote
@@ -173,7 +170,7 @@ class AIOCQContextManager(ContextManager):
                 convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
 
             count = 0
-            for x in message_chain_assendable:
+            for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
                     x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                     if enable_parse_message:
@@ -245,26 +242,20 @@ class AIOCQContextManager(ContextManager):
                     convert_msg_segments = convert_msg_segments + MessageSegment.image(
                         "base64://" + await x.get_base64()
                     )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}"
-                    )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                     count += 1
                 elif isinstance(x, VoiceElement):
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(
                         file=Path(x.path).as_uri()
                     )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
-                    )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
                     count += 1
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_group_prefix:
                         convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
                     else:
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
-                    )
                     count += 1
 
             if session_info.target_from == target_group_prefix:

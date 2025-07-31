@@ -217,9 +217,7 @@ class MatrixContextManager(ContextManager):
                                     "mimetype": mimetype,
                                 },
                             }
-                        Logger.info(
-                            f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}"
-                        )
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(xs)}")
                         await _send_msg(content)
             elif isinstance(x, VoiceElement):
                 path = x.path
@@ -265,9 +263,7 @@ class MatrixContextManager(ContextManager):
                         },
                     }
 
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
                 await _send_msg(content)
             elif isinstance(x, MentionElement):
                 if x.client == client_name:

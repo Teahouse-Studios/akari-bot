@@ -109,38 +109,24 @@ class KOOKContextManager(ContextManager):
         msg_ids = []
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
-        text = []
-        images = []
-        voices = []
-        mentions = []
+
         for x in message.as_sendable(session_info):
             if isinstance(x, PlainElement):
                 x.text = match_atcode(x.text, client_name, "(met){uid}(met)")
-                text.append(x.text)
-            elif isinstance(x, ImageElement):
-                images.append(x)
-            elif isinstance(x, VoiceElement):
-                voices.append(x)
-            elif isinstance(x, MentionElement):
-                mentions.append(x)
-        if text:
-            send_text = "\n".join(text)
-            if ctx:
-                send_ = await ctx.reply(
-                    send_text,
-                    quote=(
-                        quote if quote and not msg_ids and ctx else None
-                    ),
-                )
+                if ctx:
+                    send_ = await ctx.reply(
+                        x.text,
+                        quote=(
+                            quote if quote and not msg_ids and ctx else None
+                        ),
+                    )
 
-            else:
-                send_ = await _channel.send(send_text)
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {send_text}")
-            msg_ids.append(str(send_["msg_id"]))
-
-        if images:
-            for image in images:
-                url = await bot.create_asset(open(await image.get(), "rb"))
+                else:
+                    send_ = await _channel.send(x.text)
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+                msg_ids.append(str(send_["msg_id"]))
+            if isinstance(x, ImageElement):
+                url = await bot.create_asset(open(await x.get(), "rb"))
                 if ctx:
                     send_ = await ctx.reply(
                         url,
@@ -152,12 +138,11 @@ class KOOKContextManager(ContextManager):
                 else:
                     send_ = await _channel.send(url, type=MessageTypes.IMG, )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(image.path)}"
+                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x.path)}"
                 )
                 msg_ids.append(str(send_["msg_id"]))
-        if voices:
-            for voice in voices:
-                url = await bot.create_asset(open(voice.path, "rb"))
+            if isinstance(x, VoiceElement):
+                url = await bot.create_asset(open(x.path, "rb"))
                 if ctx:
                     send_ = await ctx.reply(
                         url,
@@ -169,25 +154,24 @@ class KOOKContextManager(ContextManager):
                 else:
                     send_ = await _channel.send(url, type=MessageTypes.AUDIO, )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice.__dict__)}"
+                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x.__dict__)}"
                 )
                 msg_ids.append(str(send_["msg_id"]))
-        if mentions:
-            for mention in mentions:
-                if mention.client == client_name and session_info.target_from == target_group_prefix:
+            if isinstance(x, MentionElement):
+                if x.client == client_name and session_info.target_from == target_group_prefix:
                     if ctx:
                         send_ = await ctx.reply(
-                            f"(met){mention.id}(met)",
+                            f"(met){x.id}(met)",
                             quote=(
                                 quote if quote and not msg_ids and ctx else None
                             ),
                         )
                     else:
                         send_ = await _channel.send(
-                            f"(met){mention.id}(met)",
+                            f"(met){x.id}(met)",
                         )
                     Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {mention.client}|{str(mention.id)}"
+                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
                     )
                     msg_ids.append(str(send_["msg_id"]))
 
