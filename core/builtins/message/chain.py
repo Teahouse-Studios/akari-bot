@@ -215,19 +215,22 @@ class MessageChain:
 
         return value
 
-    def to_str(self, safe=True) -> str:
+    def to_str(self, text_only=True, element_filter: tuple[MessageElement] = None) -> str:
         """
         将消息链转换为字符串。
 
-        :param safe: 是否安全模式，默认开启，开启后图片等路径将不会转换。
+        :param text_only: 是否仅转换文本元素为字符串，默认为True。
+        :param element_filter: 可选的元素过滤器，指定哪些元素类型需要被转换为字符串。
         """
         result = ""
         for x in self.values:
+            if element_filter and not isinstance(x, element_filter):
+                continue
             if isinstance(x, PlainElement):
                 result += x.text
             else:
-                if safe:
-                    result += f'[{x.__name__()}]'
+                if not text_only:
+                    result += str(x)
 
         return result
 

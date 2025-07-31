@@ -172,19 +172,4 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
     return {"modules": modules}
 
 
-@JobQueueServer.action("get_module_info")
-async def get_module_info(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
-    module = args.get("module")
-    if not module:
-        return {"success": False}
-    locale = args.get("locale", "zh_cn")
-    for m in modules.values():
-        if module == m["bind_prefix"]:
-            if "desc" in m and m.get("desc"):
-                m["desc"] = Locale(locale).t_str(m["desc"])
-            return {"success": True, "modules": m}
-
-
 add_export(JobQueueServer)

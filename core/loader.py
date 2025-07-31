@@ -6,7 +6,7 @@ import sys
 import traceback
 from typing import Dict, Optional, Union, Callable
 
-from core.config import Config
+from core.config import CFGManager
 from core.constants import PrivateAssets
 from core.i18n import load_locale_file
 from core.logger import Logger
@@ -24,7 +24,7 @@ err_modules = []
 
 def load_modules():
     import modules
-    unloaded_modules = Config("unloaded_modules", [])
+    unloaded_modules = CFGManager.get("unloaded_modules", [])
     err_prompt = []
     locale_loaded_err = load_locale_file()
     if locale_loaded_err:

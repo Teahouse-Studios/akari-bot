@@ -63,7 +63,7 @@ async def restart_bot(request: Request):
     verify_jwt(request)
     await verify_csrf_token(request)
 
-    if __name__ != "bots.web.api":
+    if __name__ != "bots.web.bot":
         raise HTTPException(status_code=503, detail="Bot server process is not running")
 
     asyncio.create_task(restart())

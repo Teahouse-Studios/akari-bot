@@ -121,8 +121,8 @@ class AIOCQContextManager(ContextManager):
             if session_info.target_from == target_group_prefix:
                 get_member_info = await aiocqhttp_bot.call_action(
                     "get_group_member_info",
-                    group_id=session_info.get_common_target_id(),
-                    user_id=session_info.get_common_sender_id(),
+                    group_id=int(session_info.get_common_target_id()),
+                    user_id=int(session_info.get_common_sender_id()),
                 )
                 if get_member_info["role"] in ["owner", "admin"]:
                     return True
@@ -136,7 +136,7 @@ class AIOCQContextManager(ContextManager):
                            enable_parse_message=True,
                            enable_split_image=True, ) -> List[str]:
 
-        #
+        # in
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
@@ -261,11 +261,11 @@ class AIOCQContextManager(ContextManager):
             if session_info.target_from == target_group_prefix:
                 try:
                     send = await aiocqhttp_bot.send_group_msg(
-                        group_id=session_info.get_common_target_id(), message=convert_msg_segments
+                        group_id=int(session_info.get_common_target_id()), message=convert_msg_segments
                     )
                 except aiocqhttp.exceptions.NetworkError:
                     send = await aiocqhttp_bot.send_group_msg(
-                        group_id=session_info.get_common_target_id(),
+                        group_id=int(session_info.get_common_target_id()),
                         message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
                     )
                 except aiocqhttp.exceptions.ActionFailed:
@@ -280,7 +280,7 @@ class AIOCQContextManager(ContextManager):
                             )
                         try:
                             send = await aiocqhttp_bot.send_group_msg(
-                                group_id=session_info.get_common_target_id(), message=msgsgm
+                                group_id=int(session_info.get_common_target_id()), message=msgsgm
                             )
                         except aiocqhttp.exceptions.ActionFailed:
                             Logger.exception("Failed to send message: ")
@@ -288,7 +288,7 @@ class AIOCQContextManager(ContextManager):
             else:
                 try:
                     send = await aiocqhttp_bot.send_private_msg(
-                        user_id=session_info.get_common_target_id(), message=convert_msg_segments
+                        user_id=int(session_info.get_common_target_id()), message=convert_msg_segments
                     )
                 except aiocqhttp.exceptions.ActionFailed:
                     Logger.exception("Failed to send message: ")
@@ -338,7 +338,7 @@ class AIOCQContextManager(ContextManager):
                 elif obi == "lagrange":
                     await aiocqhttp_bot.call_action(
                         "set_group_reaction",
-                        group_id=session_info.get_common_target_id(),
+                        group_id=int(session_info.get_common_target_id()),
                         message_id=session_info.message_id,
                         code=qq_typing_emoji,
                         is_add=True)
@@ -349,11 +349,11 @@ class AIOCQContextManager(ContextManager):
                     last_send_typing_time[session_info.sender_id] = datetime.datetime.now().timestamp()
                     if obi == "shamrock":
                         await aiocqhttp_bot.send_group_msg(
-                            group_id=session_info.get_common_target_id(),
+                            group_id=int(session_info.get_common_target_id()),
                             message=f"[CQ:touch,id={session_info.get_common_sender_id()}]")
                     elif obi == "go-cqhttp":
                         await aiocqhttp_bot.send_group_msg(
-                            group_id=session_info.get_common_target_id(),
+                            group_id=int(session_info.get_common_target_id()),
                             message=f"[CQ:poke,qq={session_info.get_common_sender_id()}]")
                     else:
                         pass
@@ -396,17 +396,17 @@ class AIOCQContextManager(ContextManager):
                                                 emoji_id=qq_limited_emoji)
             elif obi == "lagrange":
                 await aiocqhttp_bot.call_action("set_group_reaction",
-                                                group_id=session_info.get_common_target_id(),
+                                                group_id=int(session_info.get_common_target_id()),
                                                 message_id=session_info.message_id,
                                                 code=qq_limited_emoji,
                                                 is_add=True)
             elif obi == "shamrock":
                 await aiocqhttp_bot.call_action("send_group_msg",
-                                                group_id=session_info.get_common_target_id(),
+                                                group_id=int(session_info.get_common_target_id()),
                                                 message=f"[CQ:touch,id={qq_account}]")
             elif obi == "go-cqhttp":
                 await aiocqhttp_bot.call_action("send_group_msg",
-                                                group_id=session_info.get_common_target_id(),
+                                                group_id=int(session_info.get_common_target_id()),
                                                 message=f"[CQ:poke,qq={qq_account}]")
             else:
                 pass
@@ -418,7 +418,7 @@ class AIOCQContextManager(ContextManager):
         :param session_info: 会话信息
         """
         if session_info.target_from == target_group_prefix:
-            await aiocqhttp_bot.call_action("set_group_leave", group_id=session_info.get_common_target_id())
+            await aiocqhttp_bot.call_action("set_group_leave", group_id=int(session_info.get_common_target_id()))
         else:
             raise ValueError("Session is not a group session")
 

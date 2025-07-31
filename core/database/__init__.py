@@ -4,7 +4,7 @@ import pkgutil
 from tortoise import Tortoise
 
 from core.builtins.temp import Temp
-from core.config import Config
+from core.config import CFGManager
 from core.logger import Logger
 from .link import get_db_link
 from .local import DB_LINK
@@ -12,7 +12,7 @@ from .local import DB_LINK
 
 def fetch_module_db():
     import modules
-    unloaded_modules = Config("unloaded_modules", [])
+    unloaded_modules = CFGManager.get("unloaded_modules", [])
     database_list = []
     for m in pkgutil.iter_modules(modules.__path__):
         try:

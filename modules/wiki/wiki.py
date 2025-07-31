@@ -105,7 +105,7 @@ async def query_pages(
     if not start_wiki:
         if isinstance(session, MessageSession):
             await session.finish(I18NContext("wiki.message.set.not_set", prefix=session.session_info.prefixes[0])
-            )
+                                 )
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
     #     lang = None
@@ -316,11 +316,11 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     I18NContext(
-                                            "wiki.message.invalid_section.prompt" if r.invalid_section and (
-                                                r.info.in_allowlist or not (
-                                                    isinstance(
-                                                        session,
-                                                        Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt"))
+                                        "wiki.message.invalid_section.prompt" if r.invalid_section and (
+                                            r.info.in_allowlist or not (
+                                                isinstance(
+                                                    session,
+                                                    Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt"))
                                 i_msg_lst += [
                                     Image(ii)
                                     for ii in await image_table_render(
@@ -339,7 +339,7 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     I18NContext(
-                                            "wiki.message.invalid_section.select"
+                                        "wiki.message.invalid_section.select"
                                     )
                                 )
                                 i_msg_lst.append(
