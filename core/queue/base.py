@@ -96,7 +96,7 @@ class JobQueueBase:
                 for target in cls.report_targets:
                     if ft := await bot.fetch_target(target):
                         await cls.client_direct_message(ft, MessageChain.assign(
-                            [I18NContext("error.message.report", module=tsk.action),
+                            [I18NContext("error.message.report", command=tsk.action),
                              Plain(f.strip(), disable_joke=True)]), enable_parse_message=False,
                             disable_secret_check=True)
             except Exception:

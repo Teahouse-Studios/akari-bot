@@ -117,7 +117,7 @@
     "error.message.prompt.noreport": "此問題並非機器人程式錯誤，請勿將此訊息回報給機器人擁有者。",
     "error.message.prompt.report": "請將此訊息回報給機器人擁有者。",
     "error.message.prompt.timeout": "此問題可能因機器人未及時處理訊息導致，若重複發生，請將此訊息回報給機器人擁有者。",
-    "error.message.report": "執行「${module}」時發生了以下錯誤，請及時處理：",
+    "error.message.report": "執行「${command}」時發生了以下錯誤，請及時處理：",
     "error.message.timeout": "訊息傳送逾時，請稍後重試指令或嘗試等待傳回結果。",
     "error.module.helpdoc.invalid": "「${module}」模組的說明資訊無效，請聯絡開發人員解決問題。",
     "error.module.unbound": "「${module}」模組未綁定任何指令且無簡介，請聯絡開發人員解決問題。",

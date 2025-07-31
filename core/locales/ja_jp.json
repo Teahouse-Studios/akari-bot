@@ -117,7 +117,7 @@
     "error.message.prompt.noreport": "これはボットエラーではありませんので、この情報をボットの所有者に報告しないてください。",
     "error.message.prompt.report": "この情報をボットの所有者に報告してください。",
     "error.message.prompt.timeout": "この問題は、ボットがメッセージを時間内に処理していないことが原因である可能性があります。問題が引き続き発生する場合は、この情報をボットの所有者に報告してください。",
-    "error.message.report": "「${module}」の実行中に次のエラーが発生しました。すぐに対処してください：",
+    "error.message.report": "「${command}」の実行中に次のエラーが発生しました。すぐに対処してください：",
     "error.message.timeout": "メッセージの送信がタイムアウトしました。後で再試行するか、結果が返されるまでお待ちください。",
     "error.module.helpdoc.invalid": "モジュール「${module}」のヘルプ情報が無効です。開発者に連絡してください。",
     "error.module.unbound": "モジュール「${module}」はどのコマンドにもバインドされておらず、紹介もありません。開発者に連絡してください。",

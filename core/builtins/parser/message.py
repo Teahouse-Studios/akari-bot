@@ -683,7 +683,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     if not timeout and report_targets:
         for target in report_targets:
             if f := await bot.fetch_target(target):
-                await bot.send_direct_message(f, [I18NContext("error.message.report", module=msg.trigger_msg),
+                await bot.send_direct_message(f, [I18NContext("error.message.report", command=msg.trigger_msg),
                                                   Plain(tb.strip(), disable_joke=True)],
                                               enable_parse_message=False, disable_secret_check=True)
 
