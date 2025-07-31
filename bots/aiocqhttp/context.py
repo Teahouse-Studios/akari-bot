@@ -239,15 +239,22 @@ class AIOCQContextManager(ContextManager):
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(
                             ("\n" if count != 0 else "") + x.text
                         )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                     count += 1
                 elif isinstance(x, ImageElement):
                     convert_msg_segments = convert_msg_segments + MessageSegment.image(
                         "base64://" + await x.get_base64()
                     )
+                    Logger.info(
+                        f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}"
+                    )
                     count += 1
                 elif isinstance(x, VoiceElement):
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(
                         file=Path(x.path).as_uri()
+                    )
+                    Logger.info(
+                        f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
                     )
                     count += 1
                 elif isinstance(x, MentionElement):
@@ -255,9 +262,11 @@ class AIOCQContextManager(ContextManager):
                         convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
                     else:
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
+                    Logger.info(
+                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
+                    )
                     count += 1
 
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {message_chain_assendable}")
             if session_info.target_from == target_group_prefix:
                 try:
                     send = await aiocqhttp_bot.send_group_msg(
