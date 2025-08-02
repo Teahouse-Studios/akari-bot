@@ -24,7 +24,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                            enable_split_image: bool = True, ):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id)
+        ctx: discord.ApplicationContext = cls.context.get(session_info.session_id)
 
         count = 0
         msg_ids = []
@@ -82,15 +82,10 @@ class DiscordSlashContextManager(DiscordContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
-            ctx = cls.context[session_info.session_id]
+            ctx: discord.ApplicationContext = cls.context[session_info.session_id]
             if ctx:
                 async with ctx.channel.typing() as typing:
                     await ctx.defer()
@@ -106,10 +101,6 @@ class DiscordSlashContextManager(DiscordContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:

@@ -21,15 +21,10 @@ class MatrixContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx = cls.context.get(session_info.session_id)
+        ctx: Tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
         if ctx:
             room, event = ctx
             room_id = room.room_id if room else session_info.get_common_target_id()
@@ -81,12 +76,11 @@ class MatrixContextManager(ContextManager):
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True,
                            ) -> list[str]:
-
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
         msg_ids = []
-        ctx = cls.context.get(session_info.session_id)
+        ctx: Tuple[nio.MatrixRoom, nio.RoomMessageFormatted] = cls.context.get(session_info.session_id)
         room, event = None, None
         if ctx:
             room, event = ctx
@@ -274,11 +268,6 @@ class MatrixContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

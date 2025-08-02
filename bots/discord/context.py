@@ -22,16 +22,11 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx = cls.context.get(session_info.session_id)
+        ctx: Message = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
@@ -57,7 +52,7 @@ class DiscordContextManager(ContextManager):
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id)
+        ctx: Message = cls.context.get(session_info.session_id)
         if ctx:
             channel = ctx.channel
         else:
@@ -132,11 +127,6 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -159,11 +149,6 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -184,10 +169,6 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:

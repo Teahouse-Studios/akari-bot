@@ -56,6 +56,7 @@ class ContextManager(ABC):
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         """
         检查会话权限。
+
         :param session_info: 会话信息
         :return: 是否有权限
         """
@@ -74,6 +75,7 @@ class ContextManager(ABC):
                            ) -> List[str]:
         """
         发送消息到指定的会话。
+
         :param session_info: 会话信息
         :param message: 消息内容，可以是 MessageChain 或字符串
         :param quote: 是否引用消息
@@ -92,6 +94,7 @@ class ContextManager(ABC):
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
         """
         删除指定会话中的消息。
+
         :param session_info: 会话信息
         :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
         """
@@ -109,7 +112,8 @@ class ContextManager(ABC):
     @abstractmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
         """
-        开始输入状态
+        开始输入状态。
+
         :param session_info: 会话信息
         """
 
@@ -128,7 +132,8 @@ class ContextManager(ABC):
     @abstractmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         """
-        结束输入状态
+        结束输入状态。
+
         :param session_info: 会话信息
         """
         if session_info.session_id not in cls.context:
@@ -143,7 +148,8 @@ class ContextManager(ABC):
     @abstractmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
         """
-        发送错误信号
+        发送错误信号。
+
         :param session_info: 会话信息
         """
         if session_info.session_id not in cls.context:

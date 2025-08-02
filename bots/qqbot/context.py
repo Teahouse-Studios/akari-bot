@@ -18,6 +18,8 @@ from core.logger import Logger
 from core.utils.http import url_pattern
 from core.utils.image import msgchain2image, msgnode2image
 
+qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
+qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
 
 
@@ -27,15 +29,10 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx = cls.context.get(session_info.session_id)
+        ctx: BaseMessage = cls.context.get(session_info.session_id)
 
         if ctx:
             if isinstance(ctx, Message):
@@ -56,10 +53,9 @@ class QQBotContextManager(ContextManager):
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True) -> List[str]:
-
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id)
+        ctx: BaseMessage = cls.context.get(session_info.session_id)
         msg_ids = []
 
         if isinstance(message, MessageNodes):
@@ -277,11 +273,6 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -296,14 +287,14 @@ class QQBotContextManager(ContextManager):
             if session_info.target_from == target_guild_prefix:
                 for msg_id in message_id:
                     await client.api.recall_message(
-                        channel_id=session_info.target_id.split("|")[-1],
+                        channel_id=session_info.get_common_target_id(),
                         message_id=msg_id,
                         hidetip=True
                     )
             elif session_info.target_from == target_group_prefix:
                 for msg_id in message_id:
                     await client.api.recall_group_message(
-                        group_openid=session_info.target_id.split("|")[-1],
+                        group_openid=session_info.get_common_target_id(),
                         message_id=msg_id
                     )
         except Exception:
@@ -311,29 +302,21 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
             Logger.debug(f"Start typing in session: {session_info.session_id}")
 
             if session_info.target_from == target_guild_prefix:
-                emoji_id = str(
-                    Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot")
-                )
-                emoji_type = 1 if int(emoji_id) < 9000 else 2
+                emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
                 from bots.qqbot.bot import client  # noqa
 
                 await client.api.put_reaction(
-                    channel_id=session_info.target_id.split("|")[-1],
+                    channel_id=session_info.get_common_target_id(),
                     message_id=session_info.message_id,
                     emoji_type=emoji_type,
-                    emoji_id=emoji_id,
+                    emoji_id=qq_typing_emoji,
                 )
 
             flag = asyncio.Event()
@@ -344,10 +327,6 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
@@ -358,4 +337,18 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
-        pass
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加错误处理逻辑
+
+        if session_info.target_from == target_guild_prefix:
+            emoji_type = 1 if int(qq_limited_emoji) < 9000 else 2
+
+            from bots.qqbot.bot import client  # noqa
+
+            await client.api.put_reaction(
+                channel_id=session_info.get_common_target_id(),
+                message_id=session_info.message_id,
+                emoji_type=emoji_type,
+                emoji_id=qq_limited_emoji,
+            )

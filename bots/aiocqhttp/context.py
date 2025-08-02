@@ -73,6 +73,7 @@ def convert_msg_nodes(
 async def get_avaliable_group_list():
     """
     获取可用的群组列表。
+
     :return: 群组列表
     """
     group_list = []
@@ -88,6 +89,7 @@ async def get_avaliable_group_list():
 async def get_avaliable_private_list():
     """
     获取可用的私聊列表。
+
     :return: 私聊列表
     """
     private_list = []
@@ -106,12 +108,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
-
         # 这里可以添加权限检查的逻辑
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
@@ -135,13 +131,10 @@ class AIOCQContextManager(ContextManager):
                            quote: bool = True,
                            enable_parse_message=True,
                            enable_split_image=True, ) -> List[str]:
-
-        # in
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
-        #
-        # ctx = cls.context.get(session_info.session_id)
+        # ctx: Event = cls.context.get(session_info.session_id)
         send = None
         if session_info.sender_id is None:
             if session_info.target_from == target_group_prefix:
@@ -298,11 +291,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -317,11 +305,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -365,10 +348,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
@@ -379,10 +358,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
-        """
-        发送错误信号
-        :param session_info: 会话信息
-        """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         # 这里可以添加错误处理逻辑
@@ -414,7 +389,8 @@ class AIOCQContextManager(ContextManager):
     @classmethod
     async def set_group_leave(cls, session_info: SessionInfo) -> None:
         """
-        设置群组离开
+        设置群组离开。
+
         :param session_info: 会话信息
         """
         if session_info.target_from == target_group_prefix:
@@ -426,6 +402,7 @@ class AIOCQContextManager(ContextManager):
     async def call_api(cls, api_name: str, **kwargs) -> Optional[dict]:
         """
         调用 OneBot API。
+
         :param api_name: API 名称
         :param kwargs: API 参数
         :return: API 返回结果

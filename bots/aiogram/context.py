@@ -20,15 +20,10 @@ class AiogramContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx = cls.context.get(session_info.session_id)
+        ctx: types.Message = cls.context.get(session_info.session_id)
         if not ctx:
             chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
         else:
@@ -38,7 +33,7 @@ class AiogramContextManager(ContextManager):
         admins = [
             member.user.id for member in await aiogram_bot.get_chat_administrators(chat.id)
         ]
-        if ctx.sender in admins:
+        if ctx.from_user and ctx.from_user.id in admins:
             return True
         return False
 
@@ -50,7 +45,6 @@ class AiogramContextManager(ContextManager):
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True,
                            ) -> list[str]:
-
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         msg_ids = []
@@ -122,12 +116,6 @@ class AiogramContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
-
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 

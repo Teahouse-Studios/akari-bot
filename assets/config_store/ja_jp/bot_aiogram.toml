@@ -4,8 +4,8 @@
 
 [bot_aiogram]
 # プラットフォーム側の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-telegram_api_url = "<Replace me with str value>" # Telegram カスタム API URL。
 enable = false # このプラットフォームを有効にするかどうか。
+telegram_api_url = "<Replace me with str value>" # Telegram カスタム API URL。
 
 [bot_aiogram_secret]
 # プラットフォーム側のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
