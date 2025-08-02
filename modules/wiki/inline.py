@@ -152,9 +152,7 @@ async def _(msg: Bot.MessageSession):
                                         "wiki.message.wiki_inline.flies",
                                         file=get_page.file,
                                     ),
-                                ]
-                                for r in rd:
-                                    chain.append(Image(r))
+                                ] + rd
                                 await msg.send_message(chain, quote=False)
 
                     if msg.session_info.support_image:

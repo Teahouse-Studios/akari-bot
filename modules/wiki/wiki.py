@@ -651,10 +651,7 @@ async def query_pages(
                     elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.session_info.support_image and rd:
-                            img_chain = []
-                            for rr in rd:
-                                img_chain.append(Image(rr))
-                            await session.send_message(img_chain, quote=False)
+                            await session.send_message(rd, quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
