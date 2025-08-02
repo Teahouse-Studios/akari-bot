@@ -616,7 +616,7 @@ post_ = module("post", required_superuser=True, base=True, doc=True)
 
 @post_.command("<target> <post_msg>")
 async def _(msg: Bot.MessageSession, target: str, post_msg: str):
-    if not target.startswith(f"{msg.session_info.client_name}|"):
+    if not Alive.determine_target_from(target):
         await msg.finish(I18NContext("message.id.invalid.target", target=msg.session_info.target_from))
     session = await Bot.fetch_target(target)
     post_msg = f"{{I18N:core.message.post.prefix}} {post_msg}"

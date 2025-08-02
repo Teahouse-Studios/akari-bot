@@ -164,7 +164,7 @@
     "core.message.ping.detail": "System startup time: ${system_boot_time}\nBot running time: ${bot_running_time}\nPython version: ${python_version}\nWebRender status: ${web_render_status}\nClient name: ${client_name}\nCommand parsed since startup: ${command_parsed}\nCPU model: ${cpu_brand}\nCurrent CPU usage: ${cpu_usage}%\nPhysical memory: ${ram}M Utilized: ${ram_percent}%\nSwap memory: ${swap}M Utilized: ${swap_percent}%\nDisk capacity: ${disk_space}G/${disk_space_total}G",
     "core.message.ping.simple": "Bot running time: ${bot_running_time}\nServer disk utilized: ${disk_percent}%",
     "core.message.post.confirm": "This operation will post the following message to session ${target}:\n${post_msg}\nContinue?",
-    "core.message.post.global.confirm": "Warning: This operation will post the following message to all sessions of this client:\n${post_msg}\nContinue?",
+    "core.message.post.global.confirm": "Warning: This operation will post the following message to all sessions:\n${post_msg}\nContinue?",
     "core.message.post.prefix": "[POST]",
     "core.message.post.success": "Post message completed.",
     "core.message.prefix.add.already": "This command prefix already exists in the custom prefix list.",
