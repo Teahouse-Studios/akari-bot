@@ -4,23 +4,24 @@ title: "[REQUEST]: 推送白名单申请"
 labels: ["request"]
 assignees:
   - OasisAkari
+  - DoroWolf
 body:
   - type: checkboxes
     id: preflight
     attributes:
       label: 开始之前……
       options:
-        - label: 我确定本 QQ 群聊需要使用小可的推送模块（如 `mcv_rss`、`minecraft_news` 等），且消息需要及时推送。
+        - label: 我确定本 QQ 群聊需要使用小可的 RSS 模块（如 `mcv_rss`、`minecraft_news` 等），且消息需要及时推送。
           required: true
-  - type: dropdown
-    id: group-type
-    attributes:
-      label: 类型
-      options:
-        - QQ 群聊
-        - QQ 私聊
-    validations:
-      required: true
+#  - type: dropdown
+#    id: group-type
+#    attributes:
+#      label: 类型
+#      options:
+#        - QQ 群聊
+#        - QQ 私聊
+#    validations:
+#      required: true
   - type: input
     id: qq-id
     attributes:

@@ -4,6 +4,7 @@ title: "[BUG]: "
 labels: ["bug"]
 assignees:
   - OasisAkari
+  - DoroWolf
 body:
   - type: markdown
     attributes:
@@ -25,13 +26,13 @@ body:
       label: 聊天平台
       description: 小可在哪个平台出错了？
       options:
-        - QQ 群
-        - QQ 频道
-        - KOOK
+        - QQ（OneBot）
+        - QQ（官方）
         - Discord
         - Telegram
+        - KOOK
         - Matrix
-        - 控制台
+        - WebUI
         - 所有平台均有此问题
     validations:
       required: true
@@ -46,8 +47,8 @@ body:
   - type: input
     id: group-id
     attributes:
-      label: 对话 ID
-      description: 你的对话 ID，可使用 `whoami` 命令查看。
+      label: 会话 ID
+      description: 你的会话 ID，可使用 `whoami` 命令查看。
       placeholder: e.g. QQ|Group|1000000
     validations:
       required: true
@@ -58,7 +59,7 @@ body:
       description: 请复制粘贴机器人的异常信息（若有）。
       placeholder: |
         执行命令时发生错误：
-        object bool can't be used in 'await' expression
+        异常测试。
         请将此信息报告给机器人所有者。
         错误汇报地址：https://s.wd-ljt.com/botreportbug
     validations:
