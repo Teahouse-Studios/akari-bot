@@ -382,7 +382,7 @@ upd = module("update", required_superuser=True, base=True, doc=True)
 
 
 async def pull_repo():
-    returncode, output, error = await run_sys_command(["git", "pull"])
+    returncode, output, error = await run_sys_command(["git", "pull"], timeout=60)
     if returncode != 0:
         return error
     return output
