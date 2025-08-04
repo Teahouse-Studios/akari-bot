@@ -1,6 +1,5 @@
 import asyncio
 import re
-import sys
 
 import botpy
 from botpy.message import C2CMessage, DirectMessage, GroupMessage, Message

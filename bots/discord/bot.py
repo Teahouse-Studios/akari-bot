@@ -4,7 +4,6 @@ import logging
 import os
 import pkgutil
 import re
-import sys
 
 import discord
 import filetype
