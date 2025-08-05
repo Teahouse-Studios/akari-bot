@@ -7,6 +7,7 @@ import orjson as json
 from bots.aiocqhttp.info import sender_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, Image, Voice, Mention, Raw
+from core.builtins.temp import Temp
 from core.logger import Logger
 from .client import aiocqhttp_bot
 
@@ -120,7 +121,7 @@ async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> Message
                     if cq_data["type"] == "text":
                         lst.append(Plain(cq_data["data"].get("text")))
                     elif cq_data["type"] == "image":
-                        obi = await get_onebot_implementation()
+                        obi = Temp.data.get("onebot_impl")
                         if obi == "lagrange":
                             img_src = cq_data["data"].get("file")
                         else:
@@ -142,7 +143,7 @@ async def to_message_chain(message: Union[str, list[Dict[str, Any]]]) -> Message
             if item["type"] == "text":
                 lst.append(Plain(item["data"]["text"]))
             elif item["type"] == "image":
-                obi = await get_onebot_implementation()
+                obi = Temp.data.get("onebot_impl")
                 if obi == "lagrange":
                     lst.append(Image(item["data"]["file"]))
                 else:

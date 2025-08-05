@@ -11,7 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bots.aiocqhttp.client import aiocqhttp_bot
 from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, client_name
-from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
+from bots.aiocqhttp.utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.message.internal import I18NContext
@@ -312,7 +312,7 @@ class AIOCQContextManager(ContextManager):
             Logger.debug(f"Start typing in session: {session_info.session_id}")
 
             if session_info.target_from == target_group_prefix:  # wtf onebot 11
-                obi = await get_onebot_implementation()
+                obi = Temp.data.get("onebot_impl")
                 if obi in ["llonebot", "napcat"]:
                     await aiocqhttp_bot.call_action(
                         "set_msg_emoji_like",
@@ -364,7 +364,7 @@ class AIOCQContextManager(ContextManager):
 
         if session_info.target_from == target_group_prefix:
             qq_account = Temp.data.get("qq_account")
-            obi = await get_onebot_implementation()
+            obi = Temp.data.get("onebot_impl")
             if obi in ["llonebot", "napcat"]:
                 await aiocqhttp_bot.call_action("set_msg_emoji_like",
                                                 message_id=session_info.message_id,
