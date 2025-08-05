@@ -93,9 +93,9 @@ _多功能、多语言、多平台支持的异步聊天机器人_
 ## Star 历史
 [![Star Chart](https://starchart.cc/Teahouse-Studios/akari-bot.svg?variant=adaptive)](https://starchart.cc/Teahouse-Studios/akari-bot)
 
-## 相关链接
-- [WebRender 储存库](https://github.com/Teahouse-Studios/akari-bot-webrender)
-- [WebUI 储存库](https://github.com/Teahouse-Studios/akari-bot-webui)
+## 相关项目
+- [AkariBot WebRender](https://github.com/Teahouse-Studios/akari-bot-webrender)
+- [AkariBot WebUI](https://github.com/Teahouse-Studios/akari-bot-webui)
 
 ## 赞助者
 <p align="center">
