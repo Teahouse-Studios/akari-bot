@@ -26,7 +26,7 @@
     "config.comments.enable_https": "是否啟用 HTTPS 協議安全措施。",
     "config.comments.heartbeat_interval": "心跳消息发送时间间隔。",
     "config.comments.heartbeat_timeout": "心跳消息回应超时时间。",
-    "config.comments.heartbeat_prompt": "心跳消息发送尝试次数。",
+    "config.comments.heartbeat_attempt": "心跳消息发送尝试次数。",
     "config.comments.enable_joke": "是否啟用玩笑，啟用後將在伺服器時間 4 月 1 日時發生。",
     "config.comments.enable_petal": "是否啟用花瓣功能。",
     "config.comments.enable_rickroll": "當文字過濾偵測失敗時，是否 Rickroll 使用者。",
