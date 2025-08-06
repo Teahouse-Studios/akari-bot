@@ -377,6 +377,9 @@ class VoiceElement(BaseElement):
     def kecode(self):
         return f"[KE:voice,path={self.path}]"
 
+    def __str__(self):
+        return f"Voice(path={self.path})"
+
 
 @define
 class MentionElement(BaseElement):
