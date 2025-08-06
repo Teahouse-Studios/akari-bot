@@ -15,6 +15,6 @@ def generate_webui_config():
                  "locale": Config("default_locale", cfg_type=str),
                  "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
                  "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
-                 "heartbeat_attempt: Config("heartbeat_attempt", 3, table_name="bot_web")
+                 "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web")
                  },
                 option=json.OPT_INDENT_2))
