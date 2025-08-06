@@ -84,7 +84,7 @@ async def check(text: Union[str,
         text = [text]
     if isinstance(text, MessageElement):
         text = [str(text)]
-    if isinstance(text, list) or isinstance(text, MessageChain):
+    if isinstance(text, (list, MessageChain)):
         text = [str(x) for x in text]
 
     if not access_key_id or not access_key_secret or not (session and session.session_info.require_check_dirty_words):

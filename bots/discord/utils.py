@@ -44,5 +44,5 @@ async def convert_embed(embed: EmbedElement, session_info: SessionInfo):
                     inline=field.inline
                 )
         return embeds, files
-    else:
-        raise TypeError("Embed must be an instance of EmbedElement")
+
+    raise TypeError("Embed must be an instance of EmbedElement")

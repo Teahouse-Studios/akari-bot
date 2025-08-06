@@ -4,6 +4,7 @@ title: "[APPEAL]: 封禁申诉"
 labels: ["appeal"]
 assignees:
   - OasisAkari
+  - DoroWolf
 body:
   - type: markdown
     attributes:
@@ -45,11 +46,11 @@ body:
       label: 聊天平台
       description: 你的账号所在平台。
       options:
-        - QQ 群
-        - QQ 频道
-        - KOOK
+        - QQ（Onebot）
+        - QQ（官方）
         - Discord
         - Telegram
+        - KOOK
         - Matrix
   - type: input
     id: user-id
@@ -62,8 +63,8 @@ body:
   - type: input
     id: group-id
     attributes:
-      label: 对话 ID
-      description: 你的对话 ID，可使用 `whoami` 命令查看。
+      label: 会话 ID
+      description: 你的会话 ID，可使用 `whoami` 命令查看。
       placeholder: e.g. QQ|Group|1000000
     validations:
       required: true

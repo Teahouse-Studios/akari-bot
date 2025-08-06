@@ -6,7 +6,7 @@ from core.builtins.message.internal import I18NContext, Plain, Url
 from core.component import module
 from core.utils.http import get_url
 
-API = "https://ca.projectxero.top/idlist/search"
+API = "https://idlist.projectxero.top/search"
 SEARCH_LIMIT = 5
 
 i = module("idlist", doc=True, support_languages=["zh_cn"])
@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession, query: str):
         if resp["data"]["count"] > SEARCH_LIMIT:
             msgchain.append(Plain(str(I18NContext("message.collapse", amount=SEARCH_LIMIT)) +
                                   str(I18NContext("idlist.message.collapse"))))
-            msgchain.append(Url(f"https://ca.projectxero.top/idlist/{resp["data"]["hash"]}", use_mm=False))
+            msgchain.append(Url(f"https://idlist.projectxero.top/{resp["data"]["hash"]}", use_mm=False))
         await msg.finish(msgchain)
     else:
         await msg.finish(I18NContext("idlist.message.none"))

@@ -365,7 +365,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
                     _typing = False
                     try:
                         matched_hash = 0
-                        trigger_msg = msg.as_display(text_only=rfunc.text_only)
+                        trigger_msg = msg.as_display(text_only=rfunc.text_only, element_filter=rfunc.element_filter)
                         if rfunc.mode.upper() in ["M", "MATCH"]:
                             msg.matched_msg = re.match(rfunc.pattern, trigger_msg, flags=rfunc.flags)
                             if msg.matched_msg:
@@ -430,6 +430,7 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
                             else:
                                 await rfunc.function(msg)  # 将msg传入下游模块
+                            ExecutionLockList.remove(msg)
                             raise FinishedException(msg.sent)  # if not using msg.finish
                     except FinishedException as e:
                         time_used = datetime.now() - time_start
@@ -682,7 +683,7 @@ async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     if not timeout and report_targets:
         for target in report_targets:
             if f := await bot.fetch_target(target):
-                await bot.send_direct_message(f, [I18NContext("error.message.report", module=msg.trigger_msg),
+                await bot.send_direct_message(f, [I18NContext("error.message.report", command=msg.trigger_msg),
                                                   Plain(tb.strip(), disable_joke=True)],
                                               enable_parse_message=False, disable_secret_check=True)
 

@@ -31,6 +31,12 @@ class BaseElement:
     def __name__(cls):
         return cls.__name__
 
+    def kecode(self):
+        raise NotImplementedError
+
+    def __str__(self):
+        raise NotImplementedError
+
 
 @define
 class PlainElement(BaseElement):
@@ -172,8 +178,8 @@ class FormattedTimeElement(BaseElement):
             ftime_template.append(tz_template)
         return datetime.fromtimestamp(self.timestamp).strftime(" ".join(ftime_template))
 
-    def kecode(self):
-        return f"[KE:plain,text={self.to_str()}]"
+    def kecode(self, session_info: Optional[SessionInfo] = None):
+        return f"[KE:plain,text={self.to_str(session_info)}]"
 
     def __str__(self):
         return self.to_str()
@@ -338,7 +344,7 @@ class ImageElement(BaseElement):
             return f"[KE:image,path={self.path},headers={headers_b64}]"
         return f"[KE:image,path={self.path}]"
 
-    async def to_pil_image(self) -> PILImage.Image:
+    async def to_PIL_image(self) -> PILImage.Image:
         """
         将图片元素转换为PIL Image对象。
         """
@@ -520,6 +526,27 @@ class EmbedElement(BaseElement):
         return str(self.to_message_chain())
 
 
+@define
+class RawElement(BaseElement):
+    """
+    元数据元素。
+
+    :param value: 元数据值。
+    """
+
+    value: str
+
+    @classmethod
+    def assign(cls, value: str):
+        """
+        :param value: 元数据值。
+        """
+        return deepcopy(cls(value=value))
+
+    def __str__(self):
+        return f"Raw({self.value})"
+
+
 __all__ = [
     "BaseElement",
     "PlainElement",
@@ -531,4 +558,5 @@ __all__ = [
     "EmbedFieldElement",
     "EmbedElement",
     "MentionElement",
+    "RawElement",
 ]

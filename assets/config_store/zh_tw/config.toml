@@ -17,7 +17,6 @@ tos_warning_counts = 5 # 違反 ToS 時的警告次數。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # 問題報告網址。
 enable_joke = true # 是否啟用玩笑，啟用後將在伺服器時間 4 月 1 日時發生。
 shuffle_rate = 0.1 # 玩笑的隨機發生率，範圍 0 到 1 之間。
-unloaded_modules = [] # 不載入的模組列表，符合到此列表中的模組將不會被載入。
 use_font_mirror = false # 網頁成像時是否使用字體鏡像。
 use_secrets_random = false # 是否使用基於 secrets 庫的隨機數產生器。
 enable_petal = false # 是否啟用花瓣功能。

@@ -3,7 +3,7 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup
 
 from core.builtins.message.internal import I18NContext, Url, Plain
-from core.utils.web_render import web_render, SourceOptions
+from core.web_render import web_render, SourceOptions
 
 api = "https://search.mcmod.cn/s?key="
 api_details = "https://search.mcmod.cn/s?filter=3&key="

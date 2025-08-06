@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional, List
 
 import orjson as json
@@ -11,15 +12,6 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.logger import Logger
 from core.utils.image import msgnode2image
-
-
-class MsgIdGenerator:
-    value = 0
-
-    @classmethod
-    def next(cls) -> str:
-        cls.value += 1
-        return str(cls.value)
 
 
 class WebContextManager(ContextManager):
@@ -56,7 +48,7 @@ class WebContextManager(ContextManager):
                 sends.append({"type": "image", "content": img_b64})
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {img_b64[:50]}...")
 
-        msg_id = MsgIdGenerator.next()
+        msg_id = str(uuid.uuid4())
         if websocket:
             resp = {"action": "send", "message": sends, "id": msg_id}
             await websocket.send_text(json.dumps(resp).decode())
@@ -65,11 +57,6 @@ class WebContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):

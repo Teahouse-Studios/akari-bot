@@ -1,6 +1,8 @@
 from typing import Union, TYPE_CHECKING, Optional
 
 from core.builtins.parser.message import parser
+from core.utils.bash import run_sys_command
+from core.web_render import init_web_render
 from .base import JobQueueBase
 from ..builtins.converter import converter
 from ..builtins.message.chain import MessageChain, MessageNodes
@@ -83,6 +85,14 @@ class JobQueueServer(JobQueueBase):
                                   {"session_info": converter.unstructure(session_info)})
         return value
 
+    @classmethod
+    async def qq_call_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):
+        value = await cls.add_job(session_info.client_name, "qq_call_api",
+                                  {"session_info": converter.unstructure(session_info),
+                                   "api_name": api_name,
+                                   "args": kwargs})
+        return value
+
 
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
@@ -126,6 +136,21 @@ async def client_direct_message(tsk: JobQueuesTable, args: dict):
     return {"success": True}
 
 
+@JobQueueServer.action("get_bot_version")
+async def get_bot_version(tsk: JobQueuesTable, args: dict):
+    version = None
+    returncode, commit_hash, _ = await run_sys_command(["git", "rev-parse", "HEAD"])
+    if returncode == 0:
+        version = commit_hash
+    return {"version": version}
+
+
+@JobQueueServer.action("get_web_render_status")
+async def get_web_render_status(tsk: JobQueuesTable, args: dict):
+    web_render_status = await init_web_render()
+    return {"web_render_status": web_render_status}
+
+
 @JobQueueServer.action("get_modules_list")
 async def get_module_list(tsk: JobQueuesTable, args: dict):
     modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
@@ -145,21 +170,6 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
         if "desc" in module and module.get("desc"):
             module["desc"] = Locale(args['locale']).t_str(module["desc"])
     return {"modules": modules}
-
-
-@JobQueueServer.action("get_module_info")
-async def get_module_info(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
-    module = args.get("module")
-    if not module:
-        return {"success": False}
-    locale = args.get("locale", "zh_cn")
-    for m in modules.values():
-        if module == m["bind_prefix"]:
-            if "desc" in m and m.get("desc"):
-                m["desc"] = Locale(locale).t_str(m["desc"])
-            return {"success": True, "modules": m}
 
 
 add_export(JobQueueServer)

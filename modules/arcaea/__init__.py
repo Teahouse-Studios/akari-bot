@@ -6,7 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import Image as BImage, Plain, I18NContext
 from core.component import module
 from core.constants.path import assets_path
-from core.utils.web_render import web_render, SourceOptions
+from core.web_render import web_render, SourceOptions
 
 arc_assets_path = os.path.join(assets_path, "modules", "arcaea")
 

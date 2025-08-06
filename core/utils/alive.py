@@ -27,6 +27,7 @@ class Alive:
     def determine_target_from(cls, target_id: str):
         """
         确定目标 ID 的前缀。
+
         :param target_id: 目标 ID
         :return: 前缀
         """
@@ -40,6 +41,7 @@ class Alive:
     def determine_sender_from(cls, sender_id: str):
         """
         确定发送者 ID 的前缀。
+
         :param sender_id: 发送者 ID
         :return: 前缀
         """
@@ -53,6 +55,7 @@ class Alive:
     def determine_client(cls, id: str):
         """
         确定客户端名称。
+
         :param id: 目标 ID 或发送者 ID
         :return: 客户端名称
         """

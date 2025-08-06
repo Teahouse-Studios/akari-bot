@@ -4,7 +4,6 @@ import logging
 import os
 import pkgutil
 import re
-import sys
 
 import discord
 import filetype
@@ -22,7 +21,6 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import ignored_sender_default
-from core.constants.info import Info
 from core.logger import Logger
 from core.utils.http import download
 
@@ -137,7 +135,4 @@ async def on_message(message: discord.Message):
 
 if Config("enable", False, table_name="bot_discord"):
     loop = asyncio.new_event_loop()
-    Info.client_name = client_name
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
     discord_bot.run(dc_token)

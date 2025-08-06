@@ -41,6 +41,16 @@ class JobQueueClient(JobQueueBase):
         return None
 
     @classmethod
+    async def get_bot_version(cls):
+        ret = await cls.add_job("Server", "get_bot_version", {})
+        return ret['version']
+
+    @classmethod
+    async def get_web_render_status(cls):
+        ret = await cls.add_job("Server", "get_web_render_status", {})
+        return ret['web_render_status']
+
+    @classmethod
     async def get_modules_list(cls):
         ret = await cls.add_job("Server", "get_modules_list", {})
         return ret['modules_list']
@@ -49,14 +59,6 @@ class JobQueueClient(JobQueueBase):
     async def get_modules_info(cls, locale: str = "zh_cn"):
         ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
         return ret['modules']
-
-    @classmethod
-    async def get_module_info(cls, module: str, locale: str = "zh_cn"):
-        ret = await cls.add_job("Server", "get_module_info", {"module": module, "locale": locale})
-        if ret['success']:
-            return ret['module_info']
-        else:
-            return None
 
 
 async def get_session(args: dict):
@@ -136,6 +138,16 @@ async def _(tsk: JobQueuesTable, args: dict):
     if get_:
         await get_(session_info)
     return {"success": True}
+
+
+@JobQueueClient.action("qq_call_api")
+async def _(tsk: JobQueuesTable, args: dict):
+    session_info, bot, ctx_manager = await get_session(args)
+    get_ = getattr(ctx_manager, "call_api", None)
+    if get_:
+        g = await get_(args["api_name"], **args["args"])
+        return g
+    return {"success": False, "error": "API not supported in this context"}
 
 
 add_export(JobQueueClient)

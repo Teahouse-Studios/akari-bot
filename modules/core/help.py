@@ -14,7 +14,7 @@ from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.image import cb64imglst
-from core.utils.web_render import web_render, ElementScreenshotOptions
+from core.web_render import web_render, ElementScreenshotOptions
 
 env = Environment(loader=FileSystemLoader(templates_path), autoescape=True, enable_async=True)
 help_url = Config("help_url", help_url_default)

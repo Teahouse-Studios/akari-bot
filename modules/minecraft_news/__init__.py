@@ -9,7 +9,7 @@ from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-from core.utils.web_render import web_render, SourceOptions
+from core.web_render import web_render, SourceOptions
 
 minecraft_news = module(
     "minecraft_news",

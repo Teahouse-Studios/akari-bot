@@ -140,28 +140,31 @@ def generate_config(dir_path, language):
 
 
 if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ != "__main__":
-    while True:
-        i = 1
-        lang = input(
-            f"""Hi, it seems you are first time to run AkariBot, what language do you want to use by default?
-{"".join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)])}
-Please input the number of the language you want to use: """)
-        if lang.strip() == "":
-            sys.exit(0)
-        if isint(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
-            lang = list(lang_list.keys())[langI]
-            break
-        print("Invalid input, please try again.")
+    try:
+        print("Hi, it seems you are first time to run AkariBot, what language do you want to use by default?")
+        print("".join([f"{i}. {lang_list[list(lang_list.keys())[i - 1]]}\n" for i in range(1, len(lang_list) + 1)]))
+        while True:
+            lang = input("Please input the number of the language you want to use: ")
+            if lang.strip() == "":
+                sys.exit(0)
+            if isint(lang) and (langI := int(lang) - 1) in range(len(lang_list)):
+                lang = list(lang_list.keys())[langI]
+                break
+            print("Invalid input, please try again.")
 
-    generate_config(config_path, lang)
+        generate_config(config_path, lang)
 
-    sleep(1)
-    print("Config file generated successfully, please modify the config file according to your needs.")
-    print("The config file is located at " + config_path)
-    print("Please restart the bot after modifying the config file.")
-    print("Press enter to exit.")
-    input()
-    sys.exit(0)
+        sleep(1)
+        print("Config file generated successfully, please modify the config file according to your needs.")
+        print(f"The config file is located at \"{config_path}\"")
+        print("Please restart the bot after modifying the config file.")
+        print("Press enter to exit.")
+        input()
+        sys.exit(0)
+    except Exception:
+        print()
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     cfg_file_path = os.path.join(config_path, config_filename)

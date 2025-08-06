@@ -8,6 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.builtins.parser.args import parse_template
+from core.builtins.types import MessageElement
 from core.loader import ModulesManager
 from core.types import Module
 from core.types.module.component_meta import *
@@ -74,6 +75,7 @@ class Bind:
             logging: bool = True,
             show_typing: bool = True,
             text_only: bool = True,
+            element_filter: tuple[MessageElement] = None
         ):
             def decorator(function):
                 ModulesManager.bind_to_module(
@@ -93,6 +95,7 @@ class Bind:
                         logging=logging,
                         show_typing=show_typing,
                         text_only=text_only,
+                        element_filter=element_filter or [],
                     ),
                 )
                 return function
@@ -158,6 +161,7 @@ class Bind:
             load: bool = True,
             show_typing: bool = True,
             logging: bool = True,
+            element_filter: tuple[MessageElement] = None
         ):
             ...
 

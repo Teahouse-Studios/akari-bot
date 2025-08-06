@@ -237,15 +237,12 @@ async def query_alias(msg, sid):
         await msg.finish(I18NContext("maimai.message.alias.alias_not_found"))
     else:
         res = [I18NContext("maimai.message.alias", title=title)]
-        res += [Plain(f"· {a}") for a in alias]
+        res += [Plain(a) for a in alias]
 
         if len(alias) >= 20:
             imgs = await msgchain2image(res, msg)
             if imgs:
-                imgchain = []
-                for img in imgs:
-                    imgchain.append(BImage(img))
-                await msg.finish(imgchain)
+                await msg.finish(imgs)
             else:
                 await msg.finish(res)
         else:
@@ -274,7 +271,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender, "b50": True}
+            payload = {"qq": msg.session_info.get_common_sender_id(), "b50": True}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
@@ -489,7 +486,7 @@ async def query_song_score(msg, query, username):
 
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender}
+            payload = {"qq": msg.session_info.get_common_sender_id()}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
@@ -515,7 +512,7 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
 async def query_plate(msg, plate, username, get_list=False):
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender}
+            payload = {"qq": msg.session_info.get_common_sender_id()}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
@@ -554,7 +551,7 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 async def query_process(msg, level, goal, username):
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender}
+            payload = {"qq": msg.session_info.get_common_sender_id()}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
@@ -587,7 +584,7 @@ async def query_process(msg, level, goal, username):
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender}
+            payload = {"qq": msg.session_info.get_common_sender_id()}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:
@@ -614,7 +611,7 @@ async def _(msg: Bot.MessageSession, level: str):
     page = get_page["<page>"] if get_page and isint(get_page["<page>"]) else 1
     if not username:
         if msg.session_info.sender_from == "QQ":
-            payload = {"qq": msg.session.sender}
+            payload = {"qq": msg.session_info.get_common_sender_id()}
         else:
             bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
             if not bind_info:

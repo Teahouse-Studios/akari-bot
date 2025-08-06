@@ -3,6 +3,7 @@ import re
 import httpx
 
 from core.builtins.bot import Bot
+from core.builtins.message.elements import PlainElement, RawElement
 from core.builtins.message.internal import I18NContext
 from core.component import module
 from .bili_api import get_video_info
@@ -36,7 +37,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     await msg.finish(output)
 
 
-@bili.regex(r"av(\d+)\b", flags=re.I, mode="A", desc="{I18N:bilibili.help.regex.av}")
+@bili.regex(r"av(\d+)\b", flags=re.I, mode="A", desc="{I18N:bilibili.help.regex.av}", element_filter=(PlainElement,))
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
@@ -46,7 +47,7 @@ async def _(msg: Bot.MessageSession):
             await msg.send_message(output)
 
 
-@bili.regex(r"BV[a-zA-Z0-9]{10}", mode="A", desc="{I18N:bilibili.help.regex.bv}")
+@bili.regex(r"BV[a-zA-Z0-9]{10}", mode="A", desc="{I18N:bilibili.help.regex.bv}", element_filter=(PlainElement,))
 async def _(msg: Bot.MessageSession):
     matched = msg.matched_msg[:5]
     for video in matched:
@@ -56,10 +57,11 @@ async def _(msg: Bot.MessageSession):
             await msg.send_message(output)
 
 
-@bili.regex(r"(?:http[s]?:\/\/)?(?:bili(?:22|33|2233)\.cn|b23\.tv)\/([A-Za-z0-9]{7})(?:\/.*?|)",
+@bili.regex(r"(?:http[s]?:.*?)?(?:bili(?:22|33|2233)\.cn|b23\.tv).*?([A-Za-z0-9]{7})(?:.*?|)",
             mode="A",
             desc="{I18N:bilibili.help.regex.url}",
             show_typing=False,
+            element_filter=(PlainElement, RawElement),
             text_only=False
             )
 async def _(msg: Bot.MessageSession):

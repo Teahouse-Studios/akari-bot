@@ -1,3 +1,4 @@
+import asyncio
 import os
 from contextlib import asynccontextmanager
 
@@ -12,12 +13,12 @@ from slowapi.util import get_remote_address
 from tortoise import Tortoise
 
 from bots.web.info import *
-from bots.web.utils import find_available_port, get_local_ip
 from core.client.init import client_init
 from core.config import Config
 from core.constants.path import webui_path
 from core.database.models import JobQueuesTable, SenderInfo
 from core.logger import Logger
+from core.utils.socket import find_available_port, get_local_ip
 
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 protocol = "https" if enable_https else "http"
@@ -60,6 +61,7 @@ async def lifespan(app: FastAPI):
     if os.path.exists(webui_path):
         Logger.info(_webui_message())
     yield
+    await asyncio.sleep(3)  # 等待 server 清理进程
     try:
         await JobQueuesTable.clear_task(time=0)
         await Tortoise.close_connections()

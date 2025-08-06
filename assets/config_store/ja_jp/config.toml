@@ -17,7 +17,6 @@ tos_warning_counts = 5 # 利用規約違反に対する警告の最大数。
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose" # フィードバックの URL。
 enable_joke = true # ジョークを有効にするかどうか。有効にすると、サーバー時間の 4 月 1 日（エイプリルフール）に実行されます。
 shuffle_rate = 0.1 # ジョークのランダム発生率。範囲は 0 から 1 です。
-unloaded_modules = [] # ロードされないモジュールのリスト。このリストに一致するモジュールはロードされない。
 use_font_mirror = false # ウェブページのをレンダリングするときにフォントのミラーリングを使用するかどうか。
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
 enable_petal = false # ペタル機能を有効にするかどうか。

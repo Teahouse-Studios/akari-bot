@@ -2,7 +2,6 @@ import asyncio
 import html
 import logging
 import re
-import sys
 
 import orjson as json
 from aiocqhttp import Event
@@ -19,7 +18,6 @@ from core.builtins.utils import command_prefix
 from core.client.init import client_init
 from core.config import Config
 from core.constants.default import issue_url_default, ignored_sender_default, qq_host_default
-from core.constants.info import Info
 from core.database.models import SenderInfo, TargetInfo, UnfriendlyActionRecords
 from core.i18n import Locale
 from core.logger import Logger
@@ -210,7 +208,7 @@ async def _(event: Event):
                                              sender_id=sender_id,
                                              action="kick",
                                              detail="")
-        Logger.info(f"Unfriendly action detected: kick")
+        Logger.info("Unfriendly action detected: kick")
         if not sender_info.superuser:
             Logger.info(f"Ban {sender_id} ({target_id}) by ToS: kick")
             Logger.info(f"Block {target_id} by ToS: kick")
@@ -236,10 +234,6 @@ async def _(event: Event):
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
 if Config("enable", False, table_name="bot_aiocqhttp"):
-    argv = sys.argv
-    Info.client_name = client_name
     HyperConfig.startup_timeout = 120
-    if "subprocess" in sys.argv:
-        Info.subprocess = True
     host, port = qq_host.split(":")
     aiocqhttp_bot.run(host=host, port=port, debug=False)

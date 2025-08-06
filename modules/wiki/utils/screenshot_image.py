@@ -12,8 +12,7 @@ from core.constants.path import cache_path
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import cb64imglst
-from core.utils.web_render import ElementScreenshotOptions
-from core.utils.web_render import web_render
+from core.web_render import web_render, ElementScreenshotOptions
 from .mapping import infobox_elements
 
 
