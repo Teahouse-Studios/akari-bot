@@ -7,6 +7,9 @@
 enable_https = false # 是否启用 HTTPS 协议安全措施。
 web_host = "127.0.0.1" # Web 服务的主机地址，设为 0.0.0.0 则监听所有地址。
 web_port = 6485 # Web 服务的端口号，设为 0 则禁用服务。
+heartbeat_interval = 30 # 心跳信息发送时间间隔。
+heartbeat_timeout = 5 # 心跳消息回应超时时间。
+heartbeat_attempt = 3 # 心跳消息发送尝试次数。
 login_max_attempts = 5 # 登录请求最大次数限制。
 enable = true # 是否启用此平台。
 
