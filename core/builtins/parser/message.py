@@ -468,9 +468,8 @@ async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):
 
 async def _check_target_cooldown(msg: "Bot.MessageSession"):
     cooldown_time = int(msg.session_info.target_info.target_data.get("cooldown_time", 0))
-    neutralized = bool(await msg.check_native_permission() or await msg.check_permission() or msg.check_super_user())
 
-    if cooldown_time and not neutralized:
+    if cooldown_time and not await msg.check_permission():
         if cooldown_counter.get(msg.session_info.target_id, {}).get(msg.session_info.sender_id):
             time = datetime.now().timestamp() - \
                 cooldown_counter[msg.session_info.target_id][msg.session_info.sender_id]["ts"]
