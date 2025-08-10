@@ -8,6 +8,7 @@ from typing import Dict, Optional, Union, Callable
 
 from core.config import CFGManager
 from core.constants import PrivateAssets
+from core.database import reload_db
 from core.i18n import load_locale_file
 from core.logger import Logger
 from core.types import Module
@@ -182,18 +183,20 @@ class ModulesManager:
         return modules
 
     @classmethod
-    def reload_module(cls, module_name: str):
+    async def reload_module(cls, module_name: str):
         """
         重载该机器人模块（以及该模块所在文件的其它模块）
         """
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
+        cls.reload_py_module(py_module)
         cls.refresh()
-        return cls.reload_py_module(py_module)
+        await reload_db()
+        return True
 
     @classmethod
-    def load_module(cls, module_name: str):
+    async def load_module(cls, module_name: str):
         """
         加载该机器人模块（以及该模块所在文件的其它模块）
         """
@@ -216,10 +219,11 @@ class ModulesManager:
                     err_modules.append(module_name)
                 return False
         cls.refresh()
+        await reload_db([modules])
         return True
 
     @classmethod
-    def unload_module(cls, module_name: str):
+    async def unload_module(cls, module_name: str):
         """
         卸载该机器人模块（以及该模块所在文件的其它模块）
         """
@@ -227,6 +231,7 @@ class ModulesManager:
         cls.remove_modules(unbind_modules)
         cls.refresh()
         current_unloaded_modules.append(module_name)
+        await reload_db()
         return True
 
     @classmethod
