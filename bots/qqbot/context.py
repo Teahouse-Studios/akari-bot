@@ -2,9 +2,11 @@ import asyncio
 import html
 from typing import Optional, List
 
+from botpy.api import BotAPI
 from botpy.errors import ServerError
+from botpy.http import Route
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.types.message import Reference
+from botpy.types.message import Media, Reference
 
 from bots.qqbot.features import Features
 from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix
@@ -23,9 +25,58 @@ qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name=
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
 
 
+# 额外添加平台接口支持但 SDK 不支持的方法
+# https://github.com/tencent-connect/botpy/pull/215
+class ModdedBotAPI(BotAPI):
+    async def recall_group_message(
+            self,
+            group_openid: str,
+            message_id: str) -> str:
+        route = Route(
+            "DELETE",
+            "/v2/groups/{group_openid}/messages/{message_id}",
+            group_openid=group_openid,
+            message_id=message_id,
+        )
+        return await self._http.request(route)
+
+    async def post_group_file(
+        self,
+        group_openid: str,
+        file_type: int,
+        url: Optional[str] = None,
+        srv_send_msg: bool = False,
+        file_data: Optional[str] = None,
+    ) -> Media:
+        payload = locals()
+        payload.pop("self", None)
+        route = Route("POST", "/v2/groups/{group_openid}/files", group_openid=group_openid)
+        return await self._http.request(route, json=payload)
+
+    async def post_c2c_file(
+        self,
+        openid: str,
+        file_type: int,
+        url: Optional[str] = None,
+        srv_send_msg: bool = False,
+        file_data: Optional[str] = None,
+    ) -> Media:
+        payload = locals()
+        payload.pop("self", None)
+        route = Route("POST", "/v2/users/{openid}/files", openid=openid)
+        return await self._http.request(route, json=payload)
+
+
 class QQBotContextManager(ContextManager):
     context: dict[str, BaseMessage] = {}
     features: Optional[Features] = Features
+
+    @classmethod
+    def add_context(cls, session_info: SessionInfo, context: BaseMessage):
+        from bots.qqbot.bot import client  # noqa
+
+        context._api = ModdedBotAPI(http=client.http)
+        cls.context[session_info.session_id] = context
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
@@ -116,6 +167,8 @@ class QQBotContextManager(ContextManager):
                         Logger.info(
                             f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                         )
+                    if send:
+                        msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
@@ -125,7 +178,6 @@ class QQBotContextManager(ContextManager):
                             )
                             if send:
                                 msg_ids.append(send["id"])
-                    msg_ids.append(send["id"])
                 elif isinstance(ctx, DirectMessage):
                     if images:
                         image_1 = images[0]
@@ -143,12 +195,13 @@ class QQBotContextManager(ContextManager):
                     send = await ctx.reply(
                         content=msg, file_image=send_img, message_reference=msg_quote
                     )
-                    msg_ids.append(send["id"])
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
                         Logger.info(
                             f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                         )
+                    if send:
+                        msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
@@ -284,6 +337,7 @@ class QQBotContextManager(ContextManager):
         try:
             from bots.qqbot.bot import client  # noqa
 
+            client.api = ModdedBotAPI(http=client.http)
             if session_info.target_from == target_guild_prefix:
                 for msg_id in message_id:
                     await client.api.recall_message(
