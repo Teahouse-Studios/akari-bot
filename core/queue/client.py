@@ -27,38 +27,38 @@ class JobQueueClient(JobQueueBase):
                            "sender_prefix_list": sender_prefix_list or []}, wait=False)
 
     @classmethod
-    async def trigger_hook(cls, module_or_hook_name: str, session_info: Optional[SessionInfo] = '', wait=False,
+    async def trigger_hook(cls, module_or_hook_name: str, session_info: Optional[SessionInfo] = "", wait=False,
                            **kwargs):
         for k in kwargs:
             if isinstance(kwargs[k], exports["MessageChain"]):
                 kwargs[k] = kwargs[k].to_list()
         ret = await cls.add_job("Server", "trigger_hook",
                                 {"module_or_hook_name": module_or_hook_name,
-                                 "session_info": converter.unstructure(session_info) if session_info else '',
+                                 "session_info": converter.unstructure(session_info) if session_info else "",
                                  "args": kwargs}, wait=wait)
         if wait:
-            return ret['result']
+            return ret["result"]
         return None
 
     @classmethod
     async def get_bot_version(cls):
         ret = await cls.add_job("Server", "get_bot_version", {})
-        return ret['version']
+        return ret["version"]
 
     @classmethod
     async def get_web_render_status(cls):
         ret = await cls.add_job("Server", "get_web_render_status", {})
-        return ret['web_render_status']
+        return ret["web_render_status"]
 
     @classmethod
     async def get_modules_list(cls):
         ret = await cls.add_job("Server", "get_modules_list", {})
-        return ret['modules_list']
+        return ret["modules_list"]
 
     @classmethod
     async def get_modules_info(cls, locale: str = "zh_cn"):
         ret = await cls.add_job("Server", "get_modules_info", {"locale": locale})
-        return ret['modules']
+        return ret["modules"]
 
 
 async def get_session(args: dict):
@@ -84,8 +84,8 @@ async def _(tsk: JobQueuesTable, args: dict):
     send = await ctx_manager.send_message(session_info,
                                           converter.structure(args["message"], Union[MessageChain, MessageNodes]),
                                           quote=args["quote"],
-                                          enable_parse_message=args['enable_parse_message'],
-                                          enable_split_image=args['enable_split_image'])
+                                          enable_parse_message=args["enable_parse_message"],
+                                          enable_split_image=args["enable_split_image"])
     return {"message_id": send}
 
 

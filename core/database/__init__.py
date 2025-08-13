@@ -18,7 +18,7 @@ def fetch_module_db():
     for m in pkgutil.iter_modules(modules.__path__):
         try:
             if m.name not in unloaded_modules:
-                database_list.append(importlib.util.find_spec('modules.' + m.name + '.database.models').name)
+                database_list.append(importlib.util.find_spec(f"modules.{m.name}.database.models").name)
         except ModuleNotFoundError:
             pass
 

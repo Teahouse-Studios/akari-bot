@@ -20,7 +20,7 @@ class SessionTaskManager:
     @classmethod
     def add_task(
         cls,
-        msg: 'MessageSession',
+        msg: "MessageSession",
         flag: asyncio.Event,
         all_: bool = False,
         reply: Optional[Union[List[int], List[str], int, str]] = None,
@@ -36,7 +36,7 @@ class SessionTaskManager:
         if sender not in cls._task_list[msg.session_info.target_id]:
             cls._task_list[msg.session_info.target_id][sender] = {}
         if isinstance(reply, list):
-            reply = ','.join(str(mid) for mid in reply)
+            reply = ",".join(str(mid) for mid in reply)
         elif isinstance(reply, int):
             reply = str(reply)
         cls._task_list[msg.session_info.target_id][sender][msg] = {
@@ -56,7 +56,7 @@ class SessionTaskManager:
         callback: Optional[Coroutine],
     ):
         if isinstance(message_id, list):
-            message_id = ','.join(str(mid) for mid in message_id)
+            message_id = ",".join(str(mid) for mid in message_id)
         elif isinstance(message_id, int):
             message_id = str(message_id)
         cls._callback_list[message_id] = {
@@ -65,7 +65,7 @@ class SessionTaskManager:
         }
 
     @classmethod
-    def get_result(cls, msg: 'MessageSession'):
+    def get_result(cls, msg: "MessageSession"):
         if (
             "result"
             in cls._task_list[msg.session_info.target_id][msg.session_info.sender_id][
@@ -101,7 +101,7 @@ class SessionTaskManager:
                 del cls._callback_list[message_id]
 
     @classmethod
-    async def check(cls, session: 'MessageSession'):
+    async def check(cls, session: "MessageSession"):
         if session.session_info.target_id in cls._task_list:
             senders = []
             if session.session_info.sender_id in cls._task_list[session.session_info.target_id]:
@@ -117,12 +117,12 @@ class SessionTaskManager:
                             get_["active"] = False
                             get_["flag"].set()
                         elif get_["type"] == "reply":
-                            if session.session_info.reply_id in get_["reply"].split(','):
+                            if session.session_info.reply_id in get_["reply"].split(","):
                                 get_["result"] = session
                                 get_["active"] = False
                                 get_["flag"].set()
         for message_id in cls._callback_list:
-            msg_id_lst = message_id.split(',')
+            msg_id_lst = message_id.split(",")
             if str(session.session_info.reply_id) in msg_id_lst:
                 callback = cls._callback_list[message_id]["callback"]
                 if callback:

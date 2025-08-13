@@ -29,12 +29,12 @@ if TYPE_CHECKING:
 class MessageSession:
     session_info: SessionInfo
     sent: List[MessageChain] = []
-    trigger_msg: Optional[str] = ''
+    trigger_msg: Optional[str] = ""
     matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
     parsed_msg: Optional[dict] = None
 
     @property
-    @deprecated(reason='Use `session_info` instead.')
+    @deprecated(reason="Use `session_info` instead.")
     def target(self) -> SessionInfo:
         return self.session_info
 

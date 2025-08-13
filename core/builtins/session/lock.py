@@ -14,18 +14,18 @@ class ExecutionLockList:
     _list = set()
 
     @staticmethod
-    def add(msg: 'MessageSession'):
+    def add(msg: "MessageSession"):
         target_id = msg.session_info.sender_id
         ExecutionLockList._list.add(target_id)
 
     @staticmethod
-    def remove(msg: 'MessageSession'):
+    def remove(msg: "MessageSession"):
         target_id = msg.session_info.sender_id
         if target_id in ExecutionLockList._list:
             ExecutionLockList._list.remove(target_id)
 
     @staticmethod
-    def check(msg: 'MessageSession'):
+    def check(msg: "MessageSession"):
         target_id = msg.session_info.sender_id
         return target_id in ExecutionLockList._list
 

@@ -124,7 +124,7 @@ async def _(msg: Bot.MessageSession):
     if not msg.parsed_msg.get("--legacy", False) and msg.session_info.support_image:
         send_msgs = []
         allow_columns = [
-            [x['api_link'], msg.format_time(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            [x["api_link"], msg.format_time(x["timestamp"].timestamp(), iso=True, timezone=False)]
             for x in allow_list
         ]
 
@@ -146,7 +146,7 @@ async def _(msg: Bot.MessageSession):
                     for im in allow_image:
                         send_msgs.append(Image(im))
         block_columns = [
-            [x['api_link'], msg.format_time(x['timestamp'].timestamp(), iso=True, timezone=False)]
+            [x["api_link"], msg.format_time(x["timestamp"].timestamp(), iso=True, timezone=False)]
             for x in block_list
         ]
         if block_columns:

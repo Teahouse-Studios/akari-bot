@@ -138,7 +138,7 @@ class Bot:
                 if session_.client_name in message:
                     post_message = message[session_.client_name]
                 else:
-                    post_message = message['default']
+                    post_message = message["default"]
             else:
                 post_message = message
             await queue_server.client_send_message(session_, post_message)

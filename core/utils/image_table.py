@@ -21,7 +21,7 @@ class ImageTable:
     :param headers: 表格表头。
     """
 
-    def __init__(self, data: List[List[Any]], headers: List[str], session_info: Optional['SessionInfo'] = None):
+    def __init__(self, data: List[List[Any]], headers: List[str], session_info: Optional["SessionInfo"] = None):
         if not all(len(row) == len(headers) for row in data):
             raise ValueError("The number of columns of data must match the number of table headers.")
 

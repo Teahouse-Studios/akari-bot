@@ -30,7 +30,7 @@ def safe_literal_eval(node, globals_dict=None):
     if isinstance(node, ast.Tuple):
         # 对元组元素进行递归解析，对于 type 类型的元素保持原样
         return tuple(safe_literal_eval(el) if not isinstance(el, ast.Name)
-                     or el.id != 'type' else el for el in node.elts)
+                     or el.id != "type" else el for el in node.elts)
     if isinstance(node, ast.List):
         return tuple(safe_literal_eval(el) for el in node.elts)
     if isinstance(node, ast.Dict):

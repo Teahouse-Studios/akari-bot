@@ -23,7 +23,7 @@ nunito_light_path = os.path.join(fonts_path, "Nunito Light.ttf")
 nunito_regular_path = os.path.join(fonts_path, "Nunito Regular.ttf")
 
 # 特殊路径
-modules_locales_path = os.path.join(os.path.abspath('./modules'), "*", "locales")
+modules_locales_path = os.path.join(os.path.abspath("./modules"), "*", "locales")
 bots_info_path = os.path.join(bots_path, "*", "info.py")
 
 
