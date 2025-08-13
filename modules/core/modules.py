@@ -20,8 +20,7 @@ m = module(
         "reload": "module reload",
         "unload": "module unload",
     },
-    doc=True,
-    required_admin=True,
+    doc=True
 )
 
 
@@ -30,16 +29,18 @@ m = module(
      "load <module> ...",
      "unload <module> ..."
      ],
-    required_superuser=True,
+    required_superuser=True
 )
+@m.command("list [--legacy] {{I18N:core.help.module.list}}",
+           options_desc={"--legacy": "{I18N:help.option.legacy}"}
+           )
 @m.command(
     ["enable <module>... {{I18N:core.help.module.enable}}",
      "enable all {{I18N:core.help.module.enable_all}}",
      "disable <module>... {{I18N:core.help.module.disable}}",
-     "disable all {{I18N:core.help.module.disable_all}}",
-     "list [--legacy] {{I18N:core.help.module.list}}",
+     "disable all {{I18N:core.help.module.disable_all}}"
      ],
-    options_desc={"--legacy": "{I18N:help.option.legacy}"},
+    required_admin=True
 )
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("list", False):
