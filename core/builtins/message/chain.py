@@ -22,8 +22,9 @@ from core.builtins.message.elements import (
     VoiceElement,
     MentionElement,
 )
-from core.constants import Secret
+from core.constants import Secret, default_locale
 from core.exports import add_export
+from core.i18n import Locale
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
@@ -188,10 +189,14 @@ class MessageChain:
                 else:
                     value.append(PlainElement.assign(x))
             elif isinstance(x, I18NContextElement):
+                if not session_info:
+                    locale = Locale(default_locale)
+                else:
+                    locale = session_info.locale
                 for k, v in x.kwargs.items():
                     if isinstance(v, str):
-                        x.kwargs[k] = session_info.locale.t_str(v)
-                t_value = session_info.locale.t(x.key, **x.kwargs)
+                        x.kwargs[k] = locale.t_str(v)
+                t_value = locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
                     value.append(PlainElement.assign(t_value, disable_joke=x.disable_joke))
                 else:
