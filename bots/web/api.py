@@ -95,7 +95,7 @@ async def verify_token(request: Request):
 
 @app.get("/api/get-csrf-token")
 @limiter.limit("2/second")
-async def set_csrf_token(request: Request):
+async def get_csrf_token(request: Request):
     verify_jwt(request)
     auth_token = request.cookies.get("deviceToken")
     csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token=auth_token)
@@ -105,7 +105,7 @@ async def set_csrf_token(request: Request):
 
 @app.get("/api/check-password")
 @limiter.limit("2/second")
-async def set_csrf_token(request: Request, response: Response):
+async def check_password(request: Request, response: Response):
     ip = request.client.host
     if await MaliciousLoginRecords.check_blocked(ip):
         raise HTTPException(status_code=403, detail="This IP has been blocked")
@@ -331,7 +331,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
         except ZeroDivisionError:
             change_rate = 0.00
 
-        return {"count": count, "change_rate": change_rate, "data": data}
+        return {"message": "Success", "count": count, "change_rate": change_rate, "data": data}
 
     except Exception:
         Logger.exception()
