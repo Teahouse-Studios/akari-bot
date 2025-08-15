@@ -29,36 +29,54 @@ def calc(expr):
 
 
 def check_valid(expr):
-    operators = ["+", "-", "*", "/"]
-    other_symbols = ["(", ")", "\\"]
-    valid_chars_set = set(operators + other_symbols)
+    expr = expr.replace(" ", "")
+
+    operators = {"+", "-", "*", "/"}
+    num_numbers = 0
+    open_parens = 0
+    prev_char = ""
 
     i = 0
-    num_numbers = 0
     while i < len(expr):
         char = expr[i]
         if isint(char):
             while i < len(expr) and isint(expr[i]):
                 i += 1
             num_numbers += 1
-        elif char in valid_chars_set:
-            if char in operators and i + 1 < len(expr) and expr[i + 1] in operators:
-                return False
-            i += 1
-            if i < len(expr) and expr[i] == " ":
-                while i < len(expr) and expr[i] == " ":
-                    i += 1
-                    if i < len(expr) and expr[i] in operators:
-                        return False
+            prev_char = "num"
             continue
-        elif char == " ":
-            i += 1
-            if i < len(expr):
+        elif char in operators:
+            if prev_char in operators or prev_char in ("", "("):
                 return False
+            prev_char = char
+            i += 1
+        elif char == "(":
+            if prev_char == "num" or prev_char == ")":
+                return False
+            open_parens += 1
+            prev_char = char
+            i += 1
+
+        
+        elif char == ")":
+            if open_parens <= 0 or prev_char in operators or prev_char in ("", "("):
+                return False
+            open_parens -= 1
+            prev_char = char
+            i += 1
+        elif char == "\\":
+            i += 1
+            continue
         else:
             return False
+
+    if open_parens != 0:
+        return False
     if num_numbers > 9:
         return False
+    if prev_char in operators:
+        return False
+
     return True
 
 
@@ -178,3 +196,6 @@ async def s(msg: Bot.MessageSession):
         await msg.finish(I18NContext("game.message.stop"))
     else:
         await msg.finish(I18NContext("game.message.stop.none"))
+
+
+
