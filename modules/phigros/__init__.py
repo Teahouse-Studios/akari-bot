@@ -71,35 +71,38 @@ async def _(msg: Bot.MessageSession):
             headers=headers,
             fmt="json",
         )
-        save_url = get_save_url["results"][0]["gameFile"]["url"]
-        dl = await download(save_url)
-        rd_path = random_cache_path()
-        shutil.unpack_archive(dl, rd_path)
-        game_records = parse_game_record(rd_path)
-        Logger.debug(str(game_records))
-        result = []
+        if get_save_url:
+            save_url = get_save_url["results"][0]["gameFile"]["url"]
+            dl = await download(save_url)
+            rd_path = random_cache_path()
+            shutil.unpack_archive(dl, rd_path)
+            game_records = parse_game_record(rd_path)
+            Logger.debug(str(game_records))
+            result = []
 
-        for song_id, song_data in game_records.items():
-            name = song_data["name"]
-            for diff, info in song_data["diff"].items():
-                result.append((song_id, diff, name, info))
+            for song_id, song_data in game_records.items():
+                name = song_data["name"]
+                for diff, info in song_data["diff"].items():
+                    result.append((song_id, diff, name, info))
 
-        result.sort(key=lambda x: x[3]["rks"], reverse=True)
+            result.sort(key=lambda x: x[3]["rks"], reverse=True)
 
-        phi_list = [s for s in result if s[3]["score"] == 1000000]
+            phi_list = [s for s in result if s[3]["score"] == 1000000]
 
-        p3_data = sorted(phi_list, key=lambda x: x[3]["rks"], reverse=True)[:3]
-        b27_data = result[:27]
+            p3_data = sorted(phi_list, key=lambda x: x[3]["rks"], reverse=True)[:3]
+            b27_data = result[:27]
 
-        all_rks = [i[3]["rks"] for i in (p3_data + b27_data)]
-        if len(all_rks) < 30:
-            all_rks += [0] * (30 - len(all_rks))
-        avg_acc = round(sum(all_rks) / len(all_rks), 2)
+            all_rks = [i[3]["rks"] for i in (p3_data + b27_data)]
+            if len(all_rks) < 30:
+                all_rks += [0] * (30 - len(all_rks))
+            avg_acc = round(sum(all_rks) / len(all_rks), 2)
 
-        Logger.debug(f"P3 Data: {p3_data}")
-        Logger.debug(f"B27 Data: {b27_data}")
+            Logger.debug(f"P3 Data: {p3_data}")
+            Logger.debug(f"B27 Data: {b27_data}")
 
-        await msg.finish(Image(drawb30(bind_info.username, avg_acc, p3_data, b27_data)))
+            await msg.finish(Image(drawb30(bind_info.username, avg_acc, p3_data, b27_data)))
+        else:
+            await msg.finish(I18NContext("phigros.message.get_failed"))
 
 
 @phi.command("update [--no-illus]", required_superuser=True)
