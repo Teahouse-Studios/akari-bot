@@ -7,6 +7,9 @@ from Crypto.Util.Padding import unpad
 
 from core.constants.path import assets_path
 from core.logger import Logger
+from .update import remove_punctuations
+
+pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
 
 levels = {
     "EZ": 1,
@@ -60,8 +63,8 @@ def decrypt_bytes(encrypted):
 
 
 def parse_game_record(rd_path):
-    with open(os.path.join(assets_path, "modules", "phigros", "rating.json"), "rb") as f:
-        rating = json.loads(f.read())
+    with open(os.path.join(pgr_assets_path, "song_info.json"), "rb") as f:
+        song_info = json.loads(f.read())
     decrypted_data = {}
     with open(os.path.join(rd_path, "gameRecord"), "rb+") as rd:
         data = decrypt_bytes(rd.read())
@@ -71,8 +74,14 @@ def parse_game_record(rd_path):
             pos += 1
             if name_length == 1:
                 continue
-            name = data[pos: (pos + name_length)]
-            name = name.decode("utf-8").removesuffix(".0")
+            song_id = data[pos: (pos + name_length)]
+            song_id = song_id.decode("utf-8").removesuffix(".0").lower()
+            Logger.critical(song_id)
+            sid_split = song_id.split(".", 1)
+            if len(sid_split) == 2:
+                song_id = f"{remove_punctuations(sid_split[0])}.{remove_punctuations(sid_split[1])}"
+            else:
+                song_id = remove_punctuations(sid_split[0])
 
             pos += name_length
             score_length = data[pos]
@@ -87,9 +96,9 @@ def parse_game_record(rd_path):
 
             record = {}
 
-            for name_, digit in levels.items():
+            for diff, digit in levels.items():
                 if (has_score & digit) == digit:
-                    record[name_] = {
+                    record[diff] = {
                         "score": int.from_bytes(
                             score[score_pos: (score_pos + 4)],
                             byteorder="little",
@@ -100,24 +109,23 @@ def parse_game_record(rd_path):
                         )[0],
                         "full_combo": (full_combo & digit) == digit,
                     }
-                    n = name.lower()
-                    if n in rating:
-                        record[name_]["base_rks"] = float(rating[n][name_])
-                        if record[name_]["score"] == 1000000:
-                            record[name_]["rks"] = float(rating[n][name_])
+                    if song_id in song_info and diff in song_info[song_id]["diff"]:
+                        record[diff]["base_rks"] = float(song_info[song_id]["diff"][diff])
+                        if record[diff]["score"] == 1000000:
+                            record[diff]["rks"] = float(song_info[song_id]["diff"][diff])
+                        elif record[diff]["accuracy"] < 70:
+                            record[diff]["rks"] = 0
                         else:
-                            record[name_]["rks"] = (
-                                (
-                                    (((record[name_]["accuracy"] - 55) / 45) ** 2)
-                                    * float(rating[n][name_])
-                                )
-                                if record[name_]["accuracy"] >= 70
-                                else 0
-                            )
+                            record[diff]["rks"] = (((record[diff]["accuracy"] - 55) / 45) ** 2) * \
+                                float(song_info[song_id]["diff"][diff])
                     else:
-                        Logger.warning(f"No rating value for {n}.")
-                        record[name_]["base_rks"] = 0
-                        record[name_]["rks"] = 0
+                        del record[diff]
                     score_pos += 8
-            decrypted_data[name] = record
+            if not decrypted_data.get(song_id):
+                decrypted_data[song_id] = {}
+            if song_info.get(song_id) and song_info[song_id]["name"]:
+                decrypted_data[song_id]["name"] = song_info[song_id]["name"]
+            else:
+                decrypted_data[song_id]["name"] = song_id.split(".")[0]
+            decrypted_data[song_id]["diff"] = record
     return decrypted_data

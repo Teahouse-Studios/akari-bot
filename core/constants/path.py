@@ -19,9 +19,6 @@ noto_sans_bold_path = os.path.join(fonts_path, "Noto Sans CJK Bold.otf")
 noto_sans_demilight_path = os.path.join(fonts_path, "Noto Sans CJK DemiLight.otf")
 noto_sans_symbol_path = os.path.join(fonts_path, "Noto Sans Symbols2 Regular.ttf")
 
-nunito_light_path = os.path.join(fonts_path, "Nunito Light.ttf")
-nunito_regular_path = os.path.join(fonts_path, "Nunito Regular.ttf")
-
 # 特殊路径
 modules_locales_path = os.path.join(os.path.abspath("./modules"), "*", "locales")
 bots_info_path = os.path.join(bots_path, "*", "info.py")

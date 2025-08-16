@@ -15,8 +15,6 @@ from core.constants.path import (
     assets_path,
     cache_path,
     noto_sans_demilight_path,
-    nunito_regular_path,
-    nunito_light_path,
 )
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -24,6 +22,10 @@ from core.utils.html2text import html2text
 from core.utils.http import get_url, download
 from core.utils.image import get_fontsize
 from core.utils.message import parse_time_string
+
+ctd_assets_path = os.path.join(assets_path, "modules", "cytoid")
+nunito_light_path = os.path.join(ctd_assets_path, "Nunito Light.ttf")
+nunito_regular_path = os.path.join(ctd_assets_path, "Nunito Regular.ttf")
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
@@ -342,7 +344,7 @@ async def make_songcard(
         )
     else:
         img = downlight.enhance(0.5).resize((384, img_h))
-    img_type = Image.open(os.path.join(assets_path, "modules", "cytoid", f"{chart_type}.png"))
+    img_type = Image.open(os.path.join(ctd_assets_path, f"{chart_type}.png"))
     img_type = img_type.convert("RGBA")
     img_type = img_type.resize((40, 40))
     img.alpha_composite(img_type, (20, 20))
