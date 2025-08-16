@@ -76,7 +76,6 @@ def parse_game_record(rd_path):
                 continue
             song_id = data[pos: (pos + name_length)]
             song_id = song_id.decode("utf-8").removesuffix(".0").lower()
-            Logger.critical(song_id)
             sid_split = song_id.split(".", 1)
             if len(sid_split) == 2:
                 song_id = f"{remove_punctuations(sid_split[0])}.{remove_punctuations(sid_split[1])}"
