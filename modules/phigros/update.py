@@ -80,6 +80,10 @@ async def update_assets(update_cover=True):
         if update_cover:
             Logger.success("Phigros illustrations download completed.")
 
+    with open(file_path, "wb") as f:
+        f.write(json.dumps(data, option=json.OPT_INDENT_2))
+    return True
+"""
     another_assets_url = "https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
     try:
         download_file = await download(another_assets_url)
@@ -122,7 +126,5 @@ async def update_assets(update_cover=True):
         os.remove(download_file)
     else:
         return False
-    with open(file_path, "wb") as f:
-        f.write(json.dumps(data, option=json.OPT_INDENT_2))
     shutil.move(file_path, song_info_path)
-    return True
+"""
