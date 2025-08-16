@@ -82,6 +82,7 @@ async def update_assets(update_cover=True):
 
     with open(file_path, "wb") as f:
         f.write(json.dumps(data, option=json.OPT_INDENT_2))
+    shutil.move(file_path, song_info_path)
     return True
 """
     another_assets_url = "https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip"
@@ -126,5 +127,4 @@ async def update_assets(update_cover=True):
         os.remove(download_file)
     else:
         return False
-    shutil.move(file_path, song_info_path)
 """
