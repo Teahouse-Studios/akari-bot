@@ -74,7 +74,7 @@ def drawb30(username, rks_acc, p3data, b27data):
     drawtext.text(
         (final_img.width - text1_width - 20, 24), username, "#ffffff", font=font3
     )
-    rks_text = str(rks_acc)
+    rks_text = f"{rks_acc:.2f}"
     text2_width = font2.getbbox(rks_text)[2]
     drawtext.text(
         (final_img.width - text2_width - 20, 52), rks_text, "#ffffff", font=font2
@@ -181,7 +181,7 @@ def drawb30(username, rks_acc, p3data, b27data):
             rank_symbol, rank_color = get_song_rank(song_score, song_fc)
             draw_card.text((300, 155), rank_symbol, rank_color, font=noto_rank)
 
-            text_w, text_h = font2.getbbox(label)[2:]
+            text_w, _ = font2.getbbox(label)[2:]
             draw_card.text(
                 (card_w - text_w - 15, 10),
                 label,
