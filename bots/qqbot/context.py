@@ -347,10 +347,10 @@ class QQBotContextManager(ContextManager):
                     )
             elif session_info.target_from == target_group_prefix:
                 for msg_id in message_id:
-                    await client.api.recall_group_message(
-                        group_openid=session_info.get_common_target_id(),
-                        message_id=msg_id
-                    )
+                    await client.api.recall_group_message(client,
+                                                          group_openid=session_info.get_common_target_id(),
+                                                          message_id=msg_id
+                                                          )
         except Exception:
             Logger.exception()
 
