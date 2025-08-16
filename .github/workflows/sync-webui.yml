@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies and build webui
         run: |
           cd akari-bot-webui
-          npm ci
+          npm install
           npm run build
 
       - name: Clear webui directory
