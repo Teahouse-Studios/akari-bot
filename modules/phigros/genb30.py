@@ -70,9 +70,18 @@ def drawb30(username, rks_acc, p3data, b27data):
     noto_rank = ImageFont.truetype(noto_sans_bold_path, 60)
 
     drawtext = ImageDraw.Draw(final_img)
-    text1_width = font3.getbbox(username)[2]
+
+    if any(ord(c) > 127 for c in username):
+        selected_font = noto3
+    else:
+        selected_font = font3
+
+    text1_width = selected_font.getbbox(username)[2]
     drawtext.text(
-        (final_img.width - text1_width - 20, 24), username, "#ffffff", font=font3
+        (final_img.width - text1_width - 20, 24),
+        username,
+        "#ffffff",
+        font=selected_font
     )
     rks_text = f"{rks_acc:.2f}"
     text2_width = font2.getbbox(rks_text)[2]
