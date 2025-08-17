@@ -1,15 +1,21 @@
 import os
+import shutil
 import struct
 
 import orjson as json
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 
-from core.constants.path import assets_path
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
+from core.constants.path import assets_path, cache_path
 from core.logger import Logger
-from .update import remove_punctuations
+from core.utils.cache import random_cache_path
+from core.utils.http import get_url, download
+from .update import p_headers, remove_punctuations
 
 pgr_assets_path = os.path.join(assets_path, "modules", "phigros")
+
 
 levels = {
     "EZ": 1,
@@ -128,3 +134,51 @@ def parse_game_record(rd_path):
                 decrypted_data[song_id]["name"] = song_id.split(".")[0]
             decrypted_data[song_id]["diff"] = record
     return decrypted_data
+
+
+async def get_game_record(msg: Bot.MessageSession, session_token: str, use_cache: bool = True):
+    pgr_cache_path = os.path.join(cache_path, "phigros-record")
+    os.makedirs(pgr_cache_path, exist_ok=True)
+    cache_dir = os.path.join(
+        pgr_cache_path, f"{msg.session_info.sender_id.replace("|", "_")}_phigros_song_record.json"
+    )
+    save_filename = f"{msg.session_info.sender_id.replace("|", "_")}_phigros_gamesave"
+    save_dir = os.path.join(pgr_cache_path, save_filename)
+
+    save_url = "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave"
+    headers = p_headers.copy()
+    headers["X-LC-Session"] = session_token
+    try:
+        get_save_url = await get_url(save_url, headers=headers, fmt="json")
+        save_url = get_save_url["results"][0]["gameFile"]["url"]
+
+        dl = await download(save_url, f"{save_filename}.zip", pgr_cache_path)
+        shutil.unpack_archive(dl, save_dir)
+        data = parse_game_record(save_dir)
+        os.remove(os.path.join(pgr_cache_path, f"{save_filename}.zip"))
+
+        if use_cache and data:
+            if os.path.exists(cache_dir):
+                with open(cache_dir, "rb") as f:
+                    try:
+                        backup_data = json.loads(f.read())
+                    except Exception:
+                        backup_data = {}
+            else:
+                backup_data = {}
+            backup_data.update(data)
+            with open(cache_dir, "wb") as f:
+                f.write(json.dumps(backup_data))
+        return data
+    except Exception as e:
+        Logger.exception()
+        if use_cache and os.path.exists(cache_dir):
+            try:
+                with open(cache_dir, "rb") as f:
+                    data = json.loads(f.read())
+                await msg.send_message(I18NContext("phigros.message.use_cache"))
+                return data
+            except Exception:
+                raise e
+        else:
+            raise e
