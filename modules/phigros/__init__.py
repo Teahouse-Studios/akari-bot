@@ -130,7 +130,7 @@ async def _(msg: Bot.MessageSession, song_name: str):
                 if os.path.exists(illustration_path):
                     msgchain.append(Image(illustration_path))
 
-                msgchain.append(Plain(song_name))
+                msgchain.append(Plain(record.get("name")))
                 with open(song_info_path, "rb") as f:
                     song_info = json.loads(f.read())
                 diff_info = song_info.get(sid, {}).get("diff", {})
