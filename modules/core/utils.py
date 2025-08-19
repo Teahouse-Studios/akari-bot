@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession):
             if returncode == 0:
                 repo_url = repo_url.strip().replace(".git", "")
                 commit_url = f"{repo_url}/commit/{commit}"
-                send_msgs.append(Url(commit_url, use_mm=False))
+                send_msgs.append(Url(commit_url))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))
@@ -292,6 +292,7 @@ leave = module(
 async def _(msg: Bot.MessageSession):
     if await msg.wait_confirm(I18NContext("core.message.leave.confirm")):
         await msg.send_message(I18NContext("core.message.leave.success"))
-        await msg.qq_set_group_leave()
+        await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
+

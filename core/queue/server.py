@@ -80,12 +80,6 @@ class JobQueueServer(JobQueueBase):
         return value
 
     @classmethod
-    async def qq_set_group_leave(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "qq_set_group_leave",
-                                  {"session_info": converter.unstructure(session_info)})
-        return value
-
-    @classmethod
     async def qq_call_api(cls, session_info: SessionInfo, api_name: str, **kwargs: dict):
         value = await cls.add_job(session_info.client_name, "qq_call_api",
                                   {"session_info": converter.unstructure(session_info),
