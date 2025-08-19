@@ -45,18 +45,21 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
             await msg.send_message(I18NContext("phigros.message.bind.delete_failed"), quote=False)
     headers = p_headers.copy()
     headers["X-LC-Session"] = sessiontoken
-    get_user_info = await get_url(
-        "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me",
-        headers=headers,
-        fmt="json",
-    )
-    if get_user_info:
-        username = get_user_info.get("nickname", "Guest")
-        await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken,
-                                            username=username)
-        await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
-    else:
-        await msg.finish(I18NContext("phigros.message.bind.failed"))
+    try:
+        get_user_info = await get_url(
+            "https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me",
+            headers=headers,
+            fmt="json",
+        )
+        if get_user_info:
+            username = get_user_info.get("nickname", "Guest")
+            await PhigrosBindInfo.set_bind_info(sender_id=msg.session_info.sender_id, session_token=sessiontoken,
+                                                username=username)
+            await msg.finish(I18NContext("phigros.message.bind.success", username=username), quote=False)
+        else:
+            await msg.finish(I18NContext("phigros.message.bind.failed"), quote=False)
+    except ValueError:
+        await msg.finish(I18NContext("phigros.message.bind.failed"), quote=False)
 
 
 @phi.command("unbind {{I18N:phigros.help.unbind}}")
