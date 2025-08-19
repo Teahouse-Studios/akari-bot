@@ -2,6 +2,7 @@
     "phigros.help.b30": "查询 B30 列表。",
     "phigros.help.bind": "使用云存档 SessionToken 绑定用户，建议私聊使用。",
     "phigros.help.desc": "查询 Phigros 相关内容。",
+    "phigros.help.random": "随机一首歌曲。",
     "phigros.help.score": "查询歌曲的相关成绩。",
     "phigros.help.unbind": "解绑用户。",
     "phigros.message.bind.delete_failed": "尝试自动删除消息失败，请手动删除消息。",
@@ -11,6 +12,7 @@
     "phigros.message.music_not_found": "未找到符合要求的歌曲。",
     "phigros.message.score.no_record": "未游玩过此难度",
     "phigros.message.unbind.success": "解绑成功。",
+    "phigros.message.file_not_found": "未找到歌曲信息文件，请使用“${prefix}phigros update”初始化。",
     "phigros.message.use_cache": "获取游玩记录失败，已使用缓存数据。",
     "phigros.message.user_unbound": "未绑定用户，请使用“${prefix}phigros bind”绑定一个用户。"
 }
