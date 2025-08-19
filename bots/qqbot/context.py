@@ -132,9 +132,15 @@ class QQBotContextManager(ContextManager):
             lines = msg.split("\n")
             for line in lines:
                 if enable_send_url:
-                    line = url_pattern.sub(
-                        lambda match: str(Url(match.group(0), use_mm=True)), line
-                    )
+                    def process_url(match):
+                        url_ = match.group(0)
+                        parts = url_.split(".")
+                        for i in range(1, len(parts)):
+                            if parts[i] and parts[i][0].isalpha():
+                                parts[i] = parts[i][0].upper() + parts[i][1:]
+                        return ".".join(parts)
+
+                    line = url_pattern.sub(process_url, line)
                 elif url_pattern.findall(line):
                     continue
                 filtered_msg.append(line)
