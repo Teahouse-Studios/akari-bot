@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession):
             if returncode == 0:
                 repo_url = repo_url.strip().replace(".git", "")
                 commit_url = f"{repo_url}/commit/{commit}"
-                send_msgs.append(Url(commit_url))
+                send_msgs.append(Url(commit_url, use_mm=False))
         await msg.finish(send_msgs)
     else:
         await msg.finish(I18NContext("core.message.version.unknown"))
@@ -295,4 +295,3 @@ async def _(msg: Bot.MessageSession):
         await msg.qq_call_api("set_group_leave", group_id=int(msg.session_info.get_common_target_id()))
     else:
         await msg.finish()
-
