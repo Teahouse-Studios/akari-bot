@@ -657,6 +657,7 @@ async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportExce
     err_msg = msg.session_info.locale.t_str(str(e))
     err_msg_chain += match_kecode(err_msg)
     err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
+    await msg.handle_error_signal()
     await msg.send_message(err_msg_chain)
 
 
