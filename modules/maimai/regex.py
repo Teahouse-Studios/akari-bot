@@ -139,11 +139,8 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(I18NContext("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
-                await msg.finish(
-                    await get_info(
-                        music, Plain(f"\n{"/".join(str(ds) for ds in music.ds)}")
-                    )
-                )
+                diffs = MessageChain.assign(Plain(f"{"/".join(str(ds) for ds in music.ds)}"))
+                await msg.finish(await get_info(music, diffs))
         except ValueError:
             await msg.finish(I18NContext("maimai.message.random.failed"))
 

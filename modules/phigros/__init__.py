@@ -96,7 +96,9 @@ async def _(msg: Bot.MessageSession):
     Logger.debug(f"P3 Data: {p3_data}")
     Logger.debug(f"B27 Data: {b27_data}")
 
-    await msg.finish(Image(drawb30(bind_info.username, avg_acc, p3_data, b27_data)))
+    img = drawb30(bind_info.username, avg_acc, p3_data, b27_data)
+    if img:
+        await msg.finish(Image(img))
 
 
 def get_rank(score: int, full_combo: bool) -> str:
