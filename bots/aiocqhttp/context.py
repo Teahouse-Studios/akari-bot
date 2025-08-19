@@ -51,8 +51,8 @@ def convert_msg_nodes(
     node_list = []
     for message in msg_node.values:
         content = ""
-        msgchain = message.as_sendable(session_info=session_info)
-        for x in msgchain:
+        msg_chain = message.as_sendable(session_info=session_info)
+        for x in msg_chain:
             if isinstance(x, PlainElement):
                 content += x.text + "\n"
             elif isinstance(x, ImageElement):

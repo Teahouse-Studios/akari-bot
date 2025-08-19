@@ -2,6 +2,7 @@ from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_tw
 
 from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain, Url
 from core.component import module
 from core.utils.http import get_url
@@ -37,6 +38,6 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         }
     from_who = data["from_who"] or ""
     tp = str(I18NContext("hitokoto.message.type")) + str(I18NContext(f"hitokoto.message.type.{data["type"]}"))
-    msgchain = [Plain(f"{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{tp}"),
-                Url(f"https://hitokoto.cn?id={data["id"]}", use_mm=False)]
-    await msg.finish(msgchain)
+    msg_chain = MessageChain.assign([Plain(f"{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{tp}"),
+                                     Url(f"https://hitokoto.cn?id={data["id"]}", use_mm=False)])
+    await msg.finish(msg_chain)

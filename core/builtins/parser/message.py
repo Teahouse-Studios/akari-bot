@@ -640,10 +640,10 @@ async def _process_tos_abuse_warning(msg: "Bot.MessageSession", e: AbuseWarning)
         temp_ban_counter[msg.session_info.sender_id] = {"count": 1,
                                                         "ts": datetime.now().timestamp()}
     else:
-        errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
-        errmsgchain.append(Plain(msg.session_info.locale.t_str(str(e))))
-        errmsgchain.append(I18NContext("error.message.prompt.noreport"))
-        await msg.send_message(errmsgchain)
+        err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
+        err_msg_chain.append(Plain(msg.session_info.locale.t_str(str(e))))
+        err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
+        await msg.send_message(err_msg_chain)
 
 
 async def _process_send_message_failed(msg: "Bot.MessageSession"):
@@ -653,31 +653,31 @@ async def _process_send_message_failed(msg: "Bot.MessageSession"):
 
 async def _process_noreport_exception(msg: "Bot.MessageSession", e: NoReportException):
     Logger.exception()
-    errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
+    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    errmsgchain += match_kecode(err_msg)
-    errmsgchain.append(I18NContext("error.message.prompt.noreport"))
-    await msg.send_message(errmsgchain)
+    err_msg_chain += match_kecode(err_msg)
+    err_msg_chain.append(I18NContext("error.message.prompt.noreport"))
+    await msg.send_message(err_msg_chain)
 
 
 async def _process_exception(msg: "Bot.MessageSession", e: Exception):
     bot: "Bot" = exports["Bot"]
     tb = traceback.format_exc()
     Logger.error(tb)
-    errmsgchain = MessageChain.assign(I18NContext("error.message.prompt"))
+    err_msg_chain = MessageChain.assign(I18NContext("error.message.prompt"))
     err_msg = msg.session_info.locale.t_str(str(e))
-    errmsgchain += match_kecode(err_msg)
+    err_msg_chain += match_kecode(err_msg)
     await msg.handle_error_signal()
     if "timeout" in err_msg.lower().replace(" ", ""):
         timeout = True
-        errmsgchain.append(I18NContext("error.message.prompt.timeout"))
+        err_msg_chain.append(I18NContext("error.message.prompt.timeout"))
     else:
         timeout = False
-        errmsgchain.append(I18NContext("error.message.prompt.report"))
+        err_msg_chain.append(I18NContext("error.message.prompt.report"))
 
     if bug_report_url:
-        errmsgchain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
-    await msg.send_message(errmsgchain)
+        err_msg_chain.append(I18NContext("error.message.prompt.address", url=bug_report_url))
+    await msg.send_message(err_msg_chain)
 
     if not timeout and report_targets:
         for target in report_targets:
