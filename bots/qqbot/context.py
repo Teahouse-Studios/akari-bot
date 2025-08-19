@@ -12,7 +12,7 @@ from bots.qqbot.features import Features
 from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
-from core.builtins.message.internal import Image, I18NContext, Url
+from core.builtins.message.internal import Image, I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.config import Config
