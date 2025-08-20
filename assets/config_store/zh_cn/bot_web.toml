@@ -15,5 +15,4 @@ web_port = 6485 # Web 服务的端口号，设为 0 则禁用服务。
 
 [bot_web_secret]
 # 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-allow_origins = [] # API 服务允许 CORS 的源列表。
 jwt_secret = "<Replace me with str value>" # 内置 API 的身份认证密钥，用于签名和验证有效性。

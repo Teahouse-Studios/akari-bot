@@ -20,7 +20,6 @@ from bots.web.client import app, limiter, ph, enable_https, jwt_secret
 from core.config import Config, CFGManager
 from core.constants import config_filename
 from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
-from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -40,23 +39,6 @@ MAX_LOG_HISTORY = 1024
 LOG_HEAD_PATTERN = re.compile(
     r"^\[.+\]\[[a-zA-Z0-9\._]+:[a-zA-Z0-9\._]+:\d+\]\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\[[A-Z]+\]:")
 LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
-
-
-async def verify_csrf_token(request: Request):
-    auth_token = request.cookies.get("deviceToken")
-    csrf_token = request.headers.get("X-XSRF-TOKEN")
-    if not csrf_token:
-        raise HTTPException(status_code=403, detail="Missing CSRF token")
-
-    token_entry = await CSRFTokenRecords.get_or_none(csrf_token=csrf_token, device_token=auth_token)
-    if not token_entry:
-        raise HTTPException(status_code=403, detail="Invalid CSRF token")
-
-    if (datetime.now(UTC) - token_entry.timestamp).total_seconds() > CSRF_TOKEN_EXPIRY:
-        await token_entry.delete()
-        raise HTTPException(status_code=403, detail="CSRF token expired")
-
-    return {"message": "Success"}
 
 
 def verify_jwt(request: Request):
@@ -91,16 +73,6 @@ async def api_root(request: Request):
 @limiter.limit("2/second")
 async def verify_token(request: Request):
     return verify_jwt(request)
-
-
-@app.get("/api/get-csrf-token")
-@limiter.limit("2/second")
-async def get_csrf_token(request: Request):
-    verify_jwt(request)
-    auth_token = request.cookies.get("deviceToken")
-    csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token=auth_token)
-
-    return {"message": "Success", "csrf_token": csrf_token}
 
 
 @app.get("/api/check-password")
@@ -209,7 +181,7 @@ async def auth(request: Request, response: Response):
 async def change_password(request: Request, response: Response):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         body = await request.json()
         new_password = body.get("new_password", "")
         password = body.get("password", "")
@@ -255,7 +227,7 @@ async def change_password(request: Request, response: Response):
 async def clear_password(request: Request, response: Response):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         body = await request.json()
         password = body.get("password", "")
 
@@ -386,7 +358,7 @@ async def get_config_file(request: Request, cfg_filename: str):
 async def edit_config_file(request: Request, cfg_filename: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         if not os.path.exists(config_path):
             raise HTTPException(status_code=404, detail="Not found")
         cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
@@ -469,7 +441,6 @@ async def get_target_info(request: Request, target_id: str):
 async def edit_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
 
         target_info = await TargetInfo.get_by_target_id(target_id)
         body = await request.json()
@@ -526,7 +497,7 @@ async def edit_target_info(request: Request, target_id: str):
 async def delete_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info:
             await target_info.delete()
@@ -600,7 +571,6 @@ async def get_sender_info(request: Request, sender_id: str):
 async def edit_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
 
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
         body = await request.json()
@@ -651,7 +621,7 @@ async def edit_sender_info(request: Request, sender_id: str):
 async def delete_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if sender_info:
             await sender_info.delete()
@@ -696,7 +666,6 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
 async def load_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
 
         if ModulesManager.load_module(module_name):
             unloaded_list = CFGManager.get("unloaded_modules", [])
@@ -719,7 +688,6 @@ async def load_module(request: Request, module_name: str):
 async def unload_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
 
         if ModulesManager.unload_module(module_name):
             unloaded_list = CFGManager.get("unloaded_modules", [])

@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 
 from argon2 import PasswordHasher
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import RedirectResponse
 from flask import Flask, abort, send_from_directory
@@ -28,7 +27,6 @@ web_port = Config("web_port", 6485, table_name="bot_web")
 
 avaliable_web_port = find_available_port(web_port)
 
-allow_origins = Config("allow_origins", default=[], secret=True, table_name="bot_web")
 jwt_secret = Config("jwt_secret", cfg_type=str, secret=True, table_name="bot_web")
 
 
@@ -72,13 +70,6 @@ app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allow_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
 
 if os.path.exists(webui_path):
     flask_app = Flask(__name__)

@@ -33,6 +33,8 @@ jobs:
           cd akari-bot-webui
           npm install
           npm run build
+        env:
+          VITE_DEMO_MODE: "false"
 
       - name: Clear webui directory
         run: |
