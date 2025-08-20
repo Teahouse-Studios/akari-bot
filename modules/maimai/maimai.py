@@ -332,8 +332,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 slide=chart["notes"][2],
                 touch=chart["notes"][3],
                 brk=chart["notes"][4],
-            )
-            )
+            ))
         else:
             chartL = utage_data[sid]["charts"][0]
             chartR = utage_data[sid]["charts"][1]
@@ -353,8 +352,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                 touchR=chartR["notes"][3],
                 brkL=chartL["notes"][4],
                 brkR=chartR["notes"][4],
-            )
-            )
+            ))
     else:
         for diff, ds in enumerate(music["ds"]):
             chart = music["charts"][diff]
@@ -368,10 +366,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     hold=chart["notes"][1],
                     slide=chart["notes"][2],
                     brk=chart["notes"][3],
-                )
-                )
+                ))
                 if diff >= 2:
-                    msg_chain.append(str(I18NContext("maimai.message.chart.charter")) + chart["charter"])
+                    msg_chain.append(Plain(str(I18NContext("maimai.message.chart.charter")) + chart["charter"]))
             else:
                 msg_chain.append(I18NContext(
                     "maimai.message.chart.dx",
@@ -383,10 +380,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str):
                     slide=chart["notes"][2],
                     touch=chart["notes"][3],
                     brk=chart["notes"][4],
-                )
-                )
+                ))
                 if diff >= 2:
-                    msg_chain.append(str(I18NContext("maimai.message.chart.charter")) + chart["charter"])
+                    msg_chain.append(Plain(str(I18NContext("maimai.message.chart.charter")) + chart["charter"]))
 
     await msg.finish(await get_info(music, msg_chain))
 
