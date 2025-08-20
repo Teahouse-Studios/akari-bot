@@ -28,11 +28,28 @@ nunito_light_path = os.path.join(ctd_assets_path, "Nunito Light.ttf")
 nunito_regular_path = os.path.join(ctd_assets_path, "Nunito Regular.ttf")
 
 
+def truncate_text(arg_str: str, arg_len: int) -> str:
+    count = 0
+    list_str = []
+    for str_ in arg_str:
+        inside_code = ord(str_)
+        if inside_code == 0x0020:
+            count += 1
+        elif inside_code < 0x7F:
+            count += 1
+        else:
+            count += 2
+        if count > arg_len:
+            return "".join(list_str) + "..."
+        list_str.append(str_)
+    return "".join(list_str)
+
+
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
     try:
         if query_type == "b30":
             query_type = "bestRecords"
-        elif query_type == "r30":
+        elif query_type == "r10":
             query_type = "recentRecords"
         profile_url = f"http://services.cytoid.io/profile/{uid}"
         profile_json = json.loads(await get_url(profile_url, 200))
@@ -60,7 +77,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             query StudioAnalytics($id: ID = "{profile_id}") {{
           profile(id: $id) {{
             id
-            {query_type}(limit: 30) {{
+            {query_type}(limit: {30 if query_type == "bestRecords" else 10}) {{
               ...RecordFragment
             }}
           }}
@@ -82,6 +99,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
           accuracy
           rating
           details {{
+            maxCombo
             perfect
             great
             good
@@ -93,9 +111,13 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         )
 
         result = await client.execute_async(query)
-        workdir = random_cache_path()
-        os.makedirs(workdir, exist_ok=True)
         best_records = result["profile"][query_type]
+        if query_type == "recentRecords":
+            nowtime = time.time()
+            best_records = [
+                x for x in best_records
+                if (nowtime - datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ").timestamp()) <= 60 * 24 * 60 * 60
+            ]
         rank = 0
         resources = []
         songcards = []
@@ -132,6 +154,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             havecover = bool(thumbpath)
             songcards.append(
                 make_songcard(
+                    query_type,
                     thumbpath,
                     chart_type,
                     difficulty,
@@ -158,8 +181,13 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 cards_d[k] = x[k]
         sorted_cards = sorted(cards_d.items(), key=lambda x: x[0])
 
+        if best_records:
+            avg_rating = sum([x["rating"] for x in best_records]) / len(best_records)
+        else:
+            avg_rating = 0.0
         # b30card
-        b30img = Image.new("RGBA", (1955, 1600), "#1e2129")
+        img_height = 1600 if query_type == "bestRecords" else 640
+        b30img = Image.new("RGBA", (1955, img_height), "#1e2129")
         avatar_path = await download_avatar_thumb(avatar_img, profile_id)
         if avatar_path:
             im = Image.open(avatar_path)
@@ -186,8 +214,8 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             (get_img_width - get_name_width - 150, 30), nick, "#ffffff", font=font4
         )
 
-        font5 = ImageFont.truetype(noto_sans_demilight_path, 20)
-        level_text = f"{msg.session_info.locale.t("cytoid.message.b30.level")} {profile_level}"
+        font5 = ImageFont.truetype(nunito_light_path, 20)
+        level_text = f"Level {profile_level}"
         level_text_size = get_fontsize(font5, level_text)
         level_text_width = level_text_size[0]
         level_text_height = level_text_size[1]
@@ -195,39 +223,44 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         drawtext_level = ImageDraw.Draw(img_level)
         drawtext_level.text(
             (
-                (img_level.width - level_text_width) / 2,
-                (img_level.height - level_text_height) / 2,
+                (img_level.width - level_text_width) // 2.2,
+                (img_level.height - level_text_height) // 2.6,
             ),
             level_text,
             "#ffffff",
             font=font5,
         )
         b30img.alpha_composite(img_level, (1825 - img_level.width - 20, 85))
-        font6 = ImageFont.truetype(nunito_light_path, 20)
-        rating_text = f"Rating {str(round(float(profile_rating), 2))}"
-        rating_text_size = get_fontsize(font6, rating_text)
+        rating_text = f"Rating {float(profile_rating):.2f}"
+        rating_text_size = get_fontsize(font5, rating_text)
         rating_text_width = rating_text_size[0]
         rating_text_height = rating_text_size[1]
         img_rating = Image.new("RGBA", (rating_text_width + 20, 40), "#050a1a")
         drawtext_level = ImageDraw.Draw(img_rating)
         drawtext_level.text(
             (
-                (img_rating.width - rating_text_width) / 2,
-                (img_rating.height - rating_text_height) / 2,
+                (img_rating.width - rating_text_width) // 2.2,
+                (img_rating.height - rating_text_height) // 2.4,
             ),
             rating_text,
             "#ffffff",
-            font=font6,
+            font=font5,
         )
         b30img.alpha_composite(
             img_rating, (1825 - img_level.width - img_rating.width - 30, 85)
         )
         textdraw = ImageDraw.Draw(b30img)
         textdraw.text(
-            (5, 5),
-            "Based on CytoidAPI | Generated by Teahouse Studios \"AkariBot\"",
+            (20, 10),
+            "Generated by Teahouse Studios \"AkariBot\"",
             "white",
-            font=font6,
+            font=font5,
+        )
+        textdraw.text(
+            (20, 100),
+            f"Average: {avg_rating:.2f}",
+            "white",
+            font=font5,
         )
         i = 0
         fname = 1
@@ -252,7 +285,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         if __name__ == "__main__":
             b30img.show()
         else:
-            savefilename = f"{random_cache_path()}.jpg"
+            savefilename = f"{random_cache_path()}.png"
             b30img.convert("RGB").save(savefilename)
             # shutil.rmtree(workdir)
             return {"status": True, "path": savefilename}
@@ -297,6 +330,7 @@ async def download_avatar_thumb(link, id):
 
 
 async def make_songcard(
+    query_type,
     coverpath,
     chart_type,
     difficulty,
@@ -348,29 +382,35 @@ async def make_songcard(
     img_type = img_type.convert("RGBA")
     img_type = img_type.resize((40, 40))
     img.alpha_composite(img_type, (20, 20))
-    font = ImageFont.truetype(noto_sans_demilight_path, 25)
-    font2 = ImageFont.truetype(noto_sans_demilight_path, 15)
-    font3 = ImageFont.truetype(noto_sans_demilight_path, 20)
+    font = ImageFont.truetype(nunito_light_path, 36)
+    noto1 = ImageFont.truetype(noto_sans_demilight_path, 20)
+    font2 = ImageFont.truetype(nunito_light_path, 18)
+    font3 = ImageFont.truetype(nunito_light_path, 16)
     drawtext = ImageDraw.Draw(img)
-    drawtext.text((20, 130), score, "#ffffff", font=font3)
-    drawtext.text((20, 155), html2text(chart_name), "#ffffff", font=font)
+    drawtext.text((20, 90), truncate_text(html2text(chart_name), 32), "#ffffff", font=noto1)
+    drawtext.text((20, 110), score, "#ffffff", font=font)
     drawtext.text(
-        (20, 185),
-        f"Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}"
-        f"\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}",
-        font=font2,
+        (20, 155),
+        f"Acc {100 * acc:.2f}%  Max Combo {details["maxCombo"]}  Rating {rt:.2f}",
+        font=font3,
     )
-    playtime = f"{playtime} #{rank}"
-    playtime_width = get_fontsize(font3, playtime)[0]
+    drawtext.text(
+        (20, 180),
+        f"Perfect {details["perfect"]}  Great {details["great"]}  Good {details["good"]}"
+        f"\nBad {details["bad"]}  Miss {details["miss"]}",
+        font=font3,
+    )
+    playtime = f"{playtime}  #{rank}"
+    playtime_width = get_fontsize(font2, playtime)[0]
     songimg_width = 384
     drawtext.text(
-        (songimg_width - playtime_width - 15, 205), playtime, "#ffffff", font=font3
+        (songimg_width - playtime_width - 20, 25), playtime, "#ffffff", font=font2
     )
     type_ = str(difficulty)
     type_text = Image.new("RGBA", (32, 32))
     draw_typetext = ImageDraw.Draw(type_text)
     draw_typetext.text(
-        ((32 - get_fontsize(font3, type_)[0]) / 2, 0), type_, "#ffffff", font=font3
+        ((32 - get_fontsize(font2, type_)[0]) / 2, 0), type_, "#ffffff", font=font2
     )
     img.alpha_composite(type_text, (23, 29))
     Logger.debug("Image generated: " + str(rank))
