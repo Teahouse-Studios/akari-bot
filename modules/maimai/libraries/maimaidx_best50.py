@@ -159,7 +159,7 @@ class DrawBest:
                 temp = temp.crop(
                     (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
                 )
-                overlay = Image.new("RGBA", temp.size, (0, 0, 0, 80))
+                overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
                 temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
@@ -227,7 +227,7 @@ class DrawBest:
                 temp = temp.crop(
                     (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
                 )
-                overlay = Image.new("RGBA", temp.size, (0, 0, 0, 80))
+                overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
                 temp = Image.alpha_composite(temp, overlay)
             else:
                 temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
