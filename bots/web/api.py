@@ -42,9 +42,10 @@ LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
 
 
 def verify_jwt(request: Request):
-    auth_token = request.cookies.get("deviceToken")
-    if not auth_token:
-        raise HTTPException(status_code=401, detail="Invalid request")
+    auth = request.headers.get('authorization')
+    if not auth or not auth[:7] == "Bearer ":
+        raise HTTPException(status_code=401)
+    auth_token = auth[7:]
 
     try:
         payload = jwt.decode(auth_token, jwt_secret, algorithms=["HS256"])
@@ -90,15 +91,7 @@ async def check_password(request: Request, response: Response):
         }
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-        response.set_cookie(
-            key="deviceToken",
-            value=jwt_token,
-            httponly=True,
-            secure=enable_https,
-            samesite="strict",
-            expires=datetime.now(UTC) + timedelta(hours=24)
-        )
-        return {"message": "Success"}
+        return {"data": jwt_token}
     raise HTTPException(status_code=401, detail="Need login")
 
 
@@ -118,15 +111,7 @@ async def auth(request: Request, response: Response):
             }
             jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-            response.set_cookie(
-                key="deviceToken",
-                value=jwt_token,
-                httponly=True,
-                secure=enable_https,
-                samesite="strict",
-                expires=datetime.now(UTC) + timedelta(hours=24)
-            )
-            return {"message": "Success"}
+            return {"data": jwt_token}
 
         body = await request.json()
         password = body.get("password", "")
@@ -159,15 +144,7 @@ async def auth(request: Request, response: Response):
         }
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-        response.set_cookie(
-            key="deviceToken",
-            value=jwt_token,
-            httponly=True,
-            secure=enable_https,
-            samesite="strict",
-            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
-        )
-        return {"message": "Success"}
+        return {"message": "Success", "data": jwt_token}
 
     except HTTPException as e:
         raise e
@@ -197,7 +174,7 @@ async def change_password(request: Request, response: Response):
             with open(PASSWORD_PATH, "wb") as file:
                 file.write(json.dumps(password_data))
             response.delete_cookie("deviceToken")
-            return {"message": "Success"}
+            return Response(status_code=204)
 
         with open(PASSWORD_PATH, "rb") as file:
             password_data = json.loads(file.read())
@@ -213,8 +190,8 @@ async def change_password(request: Request, response: Response):
         with open(PASSWORD_PATH, "wb") as file:
             file.write(json.dumps(password_data))
 
-        response.delete_cookie("deviceToken")
-        return {"message": "Success"}
+        # TODO 签的jwt存db, 改密码时删掉
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -243,8 +220,7 @@ async def clear_password(request: Request, response: Response):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         os.remove(PASSWORD_PATH)
-        response.delete_cookie("deviceToken")
-        return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -303,7 +279,7 @@ async def get_analytics(request: Request, days: int = Query(1)):
         except ZeroDivisionError:
             change_rate = 0.00
 
-        return {"message": "Success", "count": count, "change_rate": change_rate, "data": data}
+        return {"count": count, "change_rate": change_rate, "data": data}
 
     except Exception:
         Logger.exception()
@@ -322,7 +298,7 @@ async def get_config_list(request: Request):
             cfg_files.remove(config_filename)
             cfg_files.insert(0, config_filename)
 
-        return {"message": "Success", "cfg_files": cfg_files}
+        return {"cfg_files": cfg_files}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
@@ -345,7 +321,7 @@ async def get_config_file(request: Request, cfg_filename: str):
     try:
         with open(cfg_file_path, "r", encoding="UTF-8") as f:
             content = f.read()
-        return {"message": "Success", "content": content}
+        return {"content": content}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
@@ -371,7 +347,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
         content = body["content"]
         with open(cfg_file_path, "w", encoding="UTF-8") as f:
             f.write(content)
-        return {"message": "Success"}
+        return Response(status_code=204)
 
     except HTTPException as e:
         raise e
@@ -409,7 +385,6 @@ async def get_target_list(
         results = await query.offset((page - 1) * size).limit(size)
 
         return {
-            "message": "Success",
             "target_list": results,
             "total": total
         }
@@ -428,7 +403,7 @@ async def get_target_info(request: Request, target_id: str):
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if not target_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"message": "Success", "target_info": target_info}
+        return {"target_info": target_info}
     except HTTPException as e:
         raise e
     except Exception:
@@ -484,7 +459,7 @@ async def edit_target_info(request: Request, target_id: str):
             target_info.target_data = target_data
         await target_info.save()
 
-        return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
