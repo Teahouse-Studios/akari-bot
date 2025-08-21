@@ -1,5 +1,7 @@
 import ast
+import importlib
 import os
+import pkgutil
 import shutil
 import sys
 import traceback
@@ -64,9 +66,6 @@ def generate_config(dir_path, language):
     os.makedirs(dir_path, exist_ok=True)
     path_ = os.path.join(dir_path, config_filename)
 
-    dir_list = [".", "bots", "core", "modules"]
-    exclude_dir_list = [os.path.join("core", "config"), os.path.join("core", "scripts")]
-
     # create empty config.toml
     locale = Locale(language)
     with open(path_, "w", encoding="utf-8") as f:
@@ -86,6 +85,21 @@ def generate_config(dir_path, language):
                     "config.comments.config_version",
                     fallback_failed_prompt=False)}\n")
         f.close()
+    import bots
+    from core.config import CFGManager
+    CFGManager.switch_config_path(dir_path)
+    CFGManager.load()
+    for subm in pkgutil.iter_modules(bots.__path__):
+        submodule_name = bots.__name__ + "." + subm.name
+        CFGManager.load()
+        importlib.import_module(f"{submodule_name}.config")
+        CFGManager.save()
+        sleep(0.1)
+    import core.config.config_base # noqa
+    sleep(1)
+    import core.config_webrender # noqa
+
+
 
 if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ != "__main__":
     while True:
@@ -104,8 +118,9 @@ Please input the number of the language you want to use: """)
     generate_config(config_path, lang)
 
     sleep(1)
-    print("Config file generated successfully, please modify the config file according to your needs.")
+    print("Basic config file generated successfully, please modify the config file according to your needs.")
     print("The config file is located at " + config_path)
+    print(f"The module config file will be generated in {config_path} after you restart the bot.")
     print("Please restart the bot after modifying the config file.")
     print("Press enter to exit.")
     input()

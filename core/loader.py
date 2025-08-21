@@ -32,7 +32,6 @@ def load_modules():
         err_prompt.append("\n".join(locale_loaded_err))
 
     Logger.info("Attempting to load modules...")
-
     for subm in pkgutil.iter_modules(modules.__path__):
         submodule_name = modules.__name__ + "." + subm.name
         try:
@@ -42,9 +41,12 @@ def load_modules():
                 current_unloaded_modules.append(subm.name)
                 continue
             importlib.import_module(submodule_name)
-            importlib.import_module(submodule_name + ".config")
             Logger.debug(f"Successfully loaded {submodule_name}!")
-            Logger.debug(f"Successfully loaded {submodule_name}'s config definition!")
+            try:
+                importlib.import_module(submodule_name + ".config")
+                Logger.debug(f"Successfully loaded {submodule_name}'s config definition!")
+            except ModuleNotFoundError:
+                Logger.debug(f"Module {submodule_name}'s config definition not found, skipped.")
         except Exception:
             errmsg = f"Failed to load {submodule_name}: \n{traceback.format_exc()}"
             Logger.error(errmsg)

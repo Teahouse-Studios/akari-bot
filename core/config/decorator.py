@@ -1,14 +1,15 @@
 import inspect
-from typing import Type, TypeVar, Any
+from typing import Literal, TypeVar, Any, get_args
+from types import UnionType
+
 
 from core.exports import add_export
-
-from . import Config, Item, CFGManager
+from . import CFGManager, ALLOWED_TYPES
 
 T = TypeVar('T')
 
 
-def _process_class(cls: Type[T], table_name) -> Type[T]:
+def _process_class(cls: type[T], table_name) -> type[T]:
     cls_annotations = {k: v for k, v in inspect.get_annotations(cls).items() if not k.startswith("__")}
     if not cls_annotations:
         cls_annotations = {k: Any for k, _ in vars(cls).items() if not k.startswith("__")}
@@ -17,13 +18,6 @@ def _process_class(cls: Type[T], table_name) -> Type[T]:
         for field_name, field_type in cls_annotations.items():
             default_value = cls_annotations.get(field_name, None)
             __value = kwargs.get(field_name, default_value)
-
-            if __value is not None and not isinstance(__value, field_type):
-                try:
-                    __value = field_type(__value)
-                except (ValueError, TypeError) as e:
-                    raise TypeError(f"Cannot convert value for {field_name} to {field_type}: {e}")
-
             setattr(self, field_name, __value)
 
     def __repr__(self):
@@ -31,55 +25,43 @@ def _process_class(cls: Type[T], table_name) -> Type[T]:
                                for name in cls_annotations)
         return f"{cls.__name__}({fields_str})"
 
-    def __define_config_attrs():
-        for attr_name, attr_type in cls_annotations.items():
-            if not attr_name.startswith('__'):
-                __attr = getattr(cls, attr_name)
-                delattr(cls, attr_name)
-                setattr(cls, '__' + attr_name, __attr)
-
-                def get_config(cls):
-                    return Config(
-                        attr_name,
-                        __attr.default if isinstance(__attr, Item) else __attr,
-                        attr_type,
-                        True if isinstance(__attr, Item) and __attr.is_secret else False,
-                        __attr.table_name if isinstance(__attr, Item) else table_name,
-                        True if isinstance(__attr, Item) and __attr.is_url else False,
-                    )
-
-                setattr(cls, attr_name, property(get_config))
-
     def __generate_config_file():
         """Generate a config file for the class."""
         for attr_name, attr_type in cls_annotations.items():
             if not attr_name.startswith('__'):
                 __attr = getattr(cls, attr_name)
+                __attr_type = attr_type
+                if __attr_type not in ALLOWED_TYPES and (type(__attr_type) is UnionType and any([k not in ALLOWED_TYPES for k in get_args(__attr_type)])):
+                    __attr_type = None
                 if attr_name not in CFGManager.values.keys():
-                    CFGManager.write(
+                    CFGManager.load()
+                    CFGManager.get(
                         attr_name,
-                        None,
-                        attr_type,
-                        True if isinstance(__attr, Item) and __attr.is_secret else False,
+                        __attr if __attr != '' else None,
+                        get_args(__attr_type) if type(__attr_type) is UnionType else attr_type,
+                        False,
                         table_name,
                         _generate=True
                     )
+                    CFGManager.save()
 
     __generate_config_file()
-    __define_config_attrs()
     cls.__repr__ = __repr__
     cls.__init__ = __init__
 
     return cls
 
 
-def on_config(cls=None, table_name=None):
-    def wrap(cls):
-        return _process_class(cls, table_name)
+def on_config(
+    table_name: str, 
+    table_type: Literal['module', 'bot', '']='',
+    is_secret: bool=False
+    ):
 
-    if cls is None:
-        return wrap
-    return wrap(cls)
+    def wrap(cls: type[T]):
+        __type = table_type + '_' if table_type != "" else table_type
+        return _process_class(cls, __type+table_name+'_secret' if is_secret else __type+table_name)
+    return wrap
 
 
 add_export(_process_class)
