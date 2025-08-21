@@ -6,6 +6,7 @@ from argon2 import PasswordHasher
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from flask import Flask, abort, send_from_directory
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -69,6 +70,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 limiter = Limiter(key_func=get_remote_address)
 ph = PasswordHasher()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=Config("allow_origins", cfg_type=(str, list), secret=True, table_name="bot_web"),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 if os.path.exists(webui_path):
