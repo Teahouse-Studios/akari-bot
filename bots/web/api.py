@@ -56,7 +56,7 @@ def verify_jwt(request: Request):
             if last_updated and payload["iat"] < last_updated:
                 raise ExpiredSignatureError
 
-        return {"message": "Success", "payload": payload}
+        return {"payload": payload}
 
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
@@ -70,32 +70,13 @@ async def api_root(request: Request):
     return {"message": "Hello, AkariBot!"}
 
 
-@app.get("/api/verify-token")
+@app.get("/api/verify")
 @limiter.limit("2/second")
 async def verify_token(request: Request):
     return verify_jwt(request)
 
 
-@app.get("/api/check-password")
-@limiter.limit("2/second")
-async def check_password(request: Request, response: Response):
-    ip = request.client.host
-    if await MaliciousLoginRecords.check_blocked(ip):
-        raise HTTPException(status_code=403, detail="This IP has been blocked")
-
-    if not os.path.exists(PASSWORD_PATH):
-        payload = {
-            "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
-            "iat": datetime.now(UTC),  # 签发时间
-            "iss": "auth-api"  # 签发者
-        }
-        jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
-
-        return {"data": jwt_token}
-    raise HTTPException(status_code=401, detail="Need login")
-
-
-@app.post("/api/auth")
+@app.post("/api/login")
 @limiter.limit("10/minute")
 async def auth(request: Request, response: Response):
     ip = request.client.host
@@ -116,6 +97,10 @@ async def auth(request: Request, response: Response):
         body = await request.json()
         password = body.get("password", "")
         remember = body.get("remember", False)
+        
+        if len(password) == 0:
+            raise HTTPException(status_code=401, detail="Require password")
+
 
         with open(PASSWORD_PATH, "rb") as file:
             password_data = json.loads(file.read())
@@ -131,9 +116,9 @@ async def auth(request: Request, response: Response):
                 await MaliciousLoginRecords.create(ip_address=ip,
                                                    blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
                 login_failed_attempts[ip].clear()
-                raise HTTPException(status_code=403, detail="This IP has been blocked")
+                raise HTTPException(status_code=429, detail="This IP has been blocked")
 
-            raise HTTPException(status_code=401, detail="Invalid password")
+            raise HTTPException(status_code=403, detail="Invalid password")
 
         login_failed_attempts.pop(ip, None)
 
@@ -144,7 +129,7 @@ async def auth(request: Request, response: Response):
         }
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-        return {"message": "Success", "data": jwt_token}
+        return {"data": jwt_token}
 
     except HTTPException as e:
         raise e
@@ -227,6 +212,11 @@ async def clear_password(request: Request, response: Response):
         Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
 
+
+@app.get("/api/has-password")
+@limiter.limit("10/minute")
+async def has_password(request: Request):
+    return {"data": os.path.exists(PASSWORD_PATH)}
 
 @app.get("/api/server-info")
 @limiter.limit("10/minute")
@@ -677,6 +667,16 @@ async def unload_module(request: Request, module_name: str):
     except Exception:
         Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
+    
+@app.get("/api/init")
+@limiter.limit("2/second")
+async def get_config(request: Request):
+    return {"enable_https": Config("enable_https", False, table_name="bot_web"),
+                 "locale": Config("default_locale", cfg_type=str),
+                 "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
+                 "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
+                 "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web")
+                 }
 
 
 @app.websocket("/ws/logs")
