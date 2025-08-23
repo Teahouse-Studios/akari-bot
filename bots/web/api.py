@@ -766,21 +766,3 @@ def _extract_timestamp(line: str):
 async def restart():
     await asyncio.sleep(1)
     os._exit(233)
-
-
-@app.get("/{full_path:path}")
-async def route_handler(full_path: str):
-    if os.path.exists(webui_path):
-        if full_path == "webui":
-            return RedirectResponse(url="/webui/")
-
-        static_file = os.path.normpath(os.path.join(webui_path, full_path))
-        if os.path.commonpath([webui_path, static_file]) != webui_path:
-            raise HTTPException(status_code=403, detail="Forbidden")
-        if os.path.exists(static_file):
-            return FileResponse(static_file)
-    else:
-        favicon_file = os.path.join(assets_path, "favicon.ico")
-        if full_path == "favicon.ico" and os.path.exists(favicon_file):
-            return FileResponse(favicon_file)
-    raise HTTPException(status_code=404, detail="Not found")
