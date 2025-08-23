@@ -95,10 +95,11 @@ def generate_config(dir_path, language):
         importlib.import_module(f"{submodule_name}.config")
         CFGManager.save()
         sleep(0.1)
-    import core.config.config_base # noqa
+    import core.config.config_base  # noqa
     sleep(1)
-    import core.config_webrender # noqa
-
+    import core.config_webrender  # noqa
+    from core.loader import load_modules
+    load_modules()
 
 
 if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ != "__main__":
@@ -120,7 +121,6 @@ Please input the number of the language you want to use: """)
     sleep(1)
     print("Basic config file generated successfully, please modify the config file according to your needs.")
     print("The config file is located at " + config_path)
-    print(f"The module config file will be generated in {config_path} after you restart the bot.")
     print("Please restart the bot after modifying the config file.")
     print("Press enter to exit.")
     input()
