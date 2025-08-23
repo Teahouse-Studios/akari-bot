@@ -190,10 +190,15 @@ class Bind:
                 return self.schedule(*args, **kwargs)
             return self.command(*args, **kwargs)
 
-        def config(self, cls=None, is_secret: bool = False):
+        def config(self, cls=None, secret: bool = False):
 
             def wrap(cls):
-                return _process_class(cls, "module_" + self.bind_prefix + '_secret' if is_secret else "module_" + self.bind_prefix)
+                return _process_class(
+                    cls,
+                    "module_" +
+                    self.bind_prefix +
+                    '_secret' if secret else "module_" +
+                    self.bind_prefix)
 
             if cls is None:
                 return wrap

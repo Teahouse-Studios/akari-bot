@@ -1,5 +1,6 @@
 from . import test
 
+
 @test.config()
 class TestModuleConfig:
     """

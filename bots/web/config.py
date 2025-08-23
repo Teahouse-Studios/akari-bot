@@ -9,8 +9,8 @@ class WebConfig:
     web_port: int = 6485
     login_max_attempts: int = 5
 
+
 @on_config("web", "bot", True)
 class WebSecretConfig:
     allow_origins: list = []
     jwt_secret: str = ""
-

@@ -1,10 +1,6 @@
 from . import w
 
-@w.config(is_secret=True)
 
+@w.config(secret=True)
 class WolframalphaConfig:
-    """
-    WolframAlpha module configuration items.
-    """
-
     wolfram_alpha_appid: str = ""

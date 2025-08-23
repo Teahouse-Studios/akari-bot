@@ -1,10 +1,8 @@
 from . import ai
 
+
 @ai.config()
 class AiConfig:
-    """
-    AI module configuration items.
-    """
     ai_default_llm: str = ""
     llm_max_tokens: int = 4096
     llm_temperature: float = 1.0

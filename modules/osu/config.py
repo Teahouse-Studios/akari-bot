@@ -1,9 +1,6 @@
 from . import osu
 
-@osu.config(is_secret=True)
-class OsuConfig:
-    """
-    Osu! module configuration items.
-    """
 
+@osu.config(secret=True)
+class OsuConfig:
     osu_api_key: str = ""

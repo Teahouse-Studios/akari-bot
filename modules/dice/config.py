@@ -1,10 +1,8 @@
 from . import dice
 
+
 @dice.config()
 class DiceConfig:
-    """
-    Dice module configuration items.
-    """
     dice_limit: int = 100
     dice_roll_limit: int = 10
     dice_count_limit: int = 10

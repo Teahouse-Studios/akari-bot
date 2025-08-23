@@ -1,10 +1,6 @@
 from . import excr
 
-@excr.config(is_secret=True)
 
+@excr.config(secret=True)
 class ExchangeRateConfig:
-    """
-    Exchange Rate module configuration items.
-    """
-
     exchange_rate_api_key: str = ""
