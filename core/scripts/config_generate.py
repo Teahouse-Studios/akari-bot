@@ -1,10 +1,8 @@
-import ast
 import importlib
 import os
 import pkgutil
 import shutil
 import sys
-import traceback
 from time import sleep
 
 if __name__ == "__main__":
@@ -13,50 +11,6 @@ if __name__ == "__main__":
 from core.constants import *
 from core.i18n import Locale, load_locale_file
 from core.utils.message import isint
-
-TYPE_MAPPING = {
-    "int": int,
-    "float": float,
-    "str": str,
-    "bool": bool,
-    "list": list
-}
-
-
-def safe_literal_eval(node, globals_dict=None):
-    if not globals_dict:
-        globals_dict = globals()
-
-    if isinstance(node, ast.Constant):
-        return node.value
-    if isinstance(node, ast.Tuple):
-        # 对元组元素进行递归解析，对于 type 类型的元素保持原样
-        return tuple(safe_literal_eval(el) if not isinstance(el, ast.Name)
-                     or el.id != 'type' else el for el in node.elts)
-    if isinstance(node, ast.List):
-        return tuple(safe_literal_eval(el) for el in node.elts)
-    if isinstance(node, ast.Dict):
-        return frozenset((safe_literal_eval(k), safe_literal_eval(v))
-                         for k, v in zip(node.keys, node.values))
-    if isinstance(node, ast.Name):
-        if node.id in TYPE_MAPPING:
-            return TYPE_MAPPING[node.id]
-        if node.id in globals_dict:
-            return globals_dict[node.id]
-        return node.id
-    return None
-
-
-def make_hashable(obj):
-    if isinstance(obj, dict):
-        return frozenset((make_hashable(k), make_hashable(v)) for k, v in obj.items())
-    if isinstance(obj, list):
-        return tuple(make_hashable(i) for i in obj)
-    if isinstance(obj, set):
-        return frozenset(make_hashable(i) for i in obj)
-    if isinstance(obj, tuple):
-        return tuple(make_hashable(i) for i in obj)
-    return obj
 
 
 def generate_config(dir_path, language):
