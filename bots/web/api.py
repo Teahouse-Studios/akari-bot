@@ -12,14 +12,13 @@ import psutil
 from cpuinfo import get_cpu_info
 from fastapi import Query, WebSocket, WebSocketDisconnect
 from fastapi import Request, Response, HTTPException
-from fastapi.responses import FileResponse, RedirectResponse
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
 from core.config import Config, CFGManager
 from core.constants import config_filename
-from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
+from core.constants.path import PrivateAssets, config_path, logs_path
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -70,6 +69,17 @@ async def api_root(request: Request):
     return {"message": "Hello, AkariBot!"}
 
 
+@app.get("/api/init")
+@limiter.limit("2/second")
+async def get_config(request: Request):
+    return {"enable_https": enable_https,
+            "locale": Config("default_locale", cfg_type=str),
+            "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
+            "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
+            "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web")
+            }
+
+
 @app.get("/api/verify")
 @limiter.limit("2/second")
 async def verify_token(request: Request):
@@ -97,10 +107,9 @@ async def auth(request: Request, response: Response):
         body = await request.json()
         password = body.get("password", "")
         remember = body.get("remember", False)
-        
+
         if len(password) == 0:
             raise HTTPException(status_code=401, detail="Require password")
-
 
         with open(PASSWORD_PATH, "rb") as file:
             password_data = json.loads(file.read())
@@ -217,6 +226,7 @@ async def clear_password(request: Request, response: Response):
 @limiter.limit("10/minute")
 async def has_password(request: Request):
     return {"data": os.path.exists(PASSWORD_PATH)}
+
 
 @app.get("/api/server-info")
 @limiter.limit("10/minute")
@@ -667,16 +677,6 @@ async def unload_module(request: Request, module_name: str):
     except Exception:
         Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
-    
-@app.get("/api/init")
-@limiter.limit("2/second")
-async def get_config(request: Request):
-    return {"enable_https": Config("enable_https", False, table_name="bot_web"),
-                 "locale": Config("default_locale", cfg_type=str),
-                 "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
-                 "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
-                 "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web")
-                 }
 
 
 @app.websocket("/ws/logs")
@@ -761,8 +761,3 @@ def _extract_timestamp(line: str):
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
-
-
-async def restart():
-    await asyncio.sleep(1)
-    os._exit(233)

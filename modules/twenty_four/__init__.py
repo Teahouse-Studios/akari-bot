@@ -57,7 +57,6 @@ def check_valid(expr):
             prev_char = char
             i += 1
 
-        
         elif char == ")":
             if open_parens <= 0 or prev_char in operators or prev_char in ("", "("):
                 return False
@@ -196,6 +195,3 @@ async def s(msg: Bot.MessageSession):
         await msg.finish(I18NContext("game.message.stop"))
     else:
         await msg.finish(I18NContext("game.message.stop.none"))
-
-
-

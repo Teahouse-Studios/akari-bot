@@ -8,7 +8,6 @@ config_path = os.path.abspath("./config")
 database_path = os.path.abspath("./database")
 locales_path = os.path.abspath("./core/locales")
 logs_path = os.path.abspath("./logs")
-webui_path = os.path.abspath("./webui")
 
 # assets 子路径
 fonts_path = os.path.join(assets_path, "fonts")

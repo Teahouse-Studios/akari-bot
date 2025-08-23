@@ -9,7 +9,6 @@ from bots.web.api import *  # noqa: E402
 from bots.web.info import *  # noqa: E402
 from bots.web.client import web_host, avaliable_web_port  # noqa: E402
 from bots.web.context import WebContextManager  # noqa: E402
-# from bots.web.webui_config import generate_webui_config  # noqa: E402
 from core.builtins.bot import Bot  # noqa: E402
 from core.builtins.message.chain import MessageChain  # noqa: E402
 from core.builtins.session.info import SessionInfo  # noqa: E402
@@ -68,6 +67,11 @@ async def websocket_chat(websocket: WebSocket):
             del Temp.data["web_chat_websocket"]
 
 
+async def restart():
+    await asyncio.sleep(1)
+    os._exit(233)
+
+
 @app.post("/api/restart")
 async def restart_bot(request: Request):
     verify_jwt(request)
@@ -85,8 +89,5 @@ if Config("enable", True, table_name="bot_web") or __name__ == "__main__":
         sys.exit(0)
     if not enable_https:
         Logger.warning("HTTPS is disabled. HTTP mode is insecure and should only be used in trusted environments.")
-
-    # if os.path.exists(webui_path):
-        # generate_webui_config()
 
     uvicorn.run(app, host=web_host, port=avaliable_web_port, log_level="info")
