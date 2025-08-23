@@ -84,6 +84,7 @@ if not os.path.exists(os.path.join(config_path, config_filename)) and __name__ !
 
 
 if __name__ == "__main__":
+
     cfg_file_path = os.path.join(config_path, config_filename)
     old_cfg_file_path = os.path.join(config_path, "config.cfg")
     if not os.path.exists(cfg_file_path):
@@ -116,10 +117,19 @@ if __name__ == "__main__":
         shutil.move(config_store_path, config_store_path_bak)
     os.makedirs(config_store_path, exist_ok=True)
     os.makedirs(config_store_packed_path, exist_ok=True)
+
+    base_import_lists = list(sys.modules)
+
+    def clear_import_cache():
+        for m in list(sys.modules):
+            if m not in base_import_lists:
+                del sys.modules[m]
+
     for lang in lang_list:
         config_store_path_ = os.path.join(config_store_path, lang)
         os.makedirs(config_store_path_, exist_ok=True)
         generate_config(config_store_path_, lang)
+        clear_import_cache()
     # compare old and new config files
     repack = False
     for lang in lang_list:

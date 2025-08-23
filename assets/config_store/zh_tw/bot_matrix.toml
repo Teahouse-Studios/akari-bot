@@ -1,0 +1,16 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[bot_matrix]
+# 平台端的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+enable = false # 是否啟用此平台。
+matrix_homeserver = "https://matrix.org" # Matrix 機器人的家伺服器。
+matrix_user = "@akaribot:matrix.org" # Matrix 機器人的完全限定使用者 ID。
+matrix_device_name = "<Replace me with str value>" # Matrix 機器人的裝置名稱，可隨意填寫。
+
+[bot_matrix_secret]
+# 平台端的金鑰設定部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+matrix_device_id = "<Replace me with str value>" # Matrix 機器人裝置 ID。
+matrix_token = "<Replace me with str value>" # Matrix 機器人令牌。
+matrix_megolm_backup_passphrase = "<Replace me with str value>" # Matrix 機器人的 Megolm 備份密碼片語。

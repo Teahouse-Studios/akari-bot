@@ -1,0 +1,12 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[module_ai]
+# 模組的設定部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+llm_max_tokens = 4096 # 限制大語言模型的最大 Token 數。
+llm_temperature = 1 # 大語言模型的溫度取樣，範圍 0 到 2 之間。不建議與 top_p 同時修改。
+llm_top_p = 1 # 大語言模型的核取樣，範圍 0 到 1 之間。不建議與 temperature 同時修改。
+llm_frequency_penalty = 0 # 大語言模型的頻率懲罰，範圍 -2 到 2 之間。
+llm_presence_penalty = 0 # 大語言模型的存在懲罰，範圍 -2 到 2 之間。
+ai_default_llm = "<Replace me with str value>" # 預設使用的大語言模型。

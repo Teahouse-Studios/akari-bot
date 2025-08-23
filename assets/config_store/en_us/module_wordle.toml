@@ -1,0 +1,7 @@
+# https://toml.io/en/v1.0.0
+# NOTE: TOML is not like Python. Do not use Python syntax here.
+# EXAMPLE: Boolean values in TOML must be lowercase.
+
+[module_wordle]
+# The basic config section of the module. The value ​​filled in here can be displayed in the message. Please do not fill in sensitive information in this section.
+wordle_disable_image = false # Whether to disable images of wordle module.
