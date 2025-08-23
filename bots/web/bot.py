@@ -9,7 +9,6 @@ from bots.web.api import *  # noqa: E402
 from bots.web.info import *  # noqa: E402
 from bots.web.client import web_host, avaliable_web_port  # noqa: E402
 from bots.web.context import WebContextManager  # noqa: E402
-# from bots.web.webui_config import generate_webui_config  # noqa: E402
 from core.builtins.bot import Bot  # noqa: E402
 from core.builtins.message.chain import MessageChain  # noqa: E402
 from core.builtins.session.info import SessionInfo  # noqa: E402
