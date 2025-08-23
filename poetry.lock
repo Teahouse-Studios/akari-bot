@@ -266,6 +266,18 @@ tf-playwright-stealth = ">=1.2.0,<2.0.0"
 uvicorn = ">=0.34.3,<0.35.0"
 
 [[package]]
+name = "akari-bot-webui"
+version = "0.1.1"
+description = ""
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "akari_bot_webui-0.1.1-py3-none-any.whl", hash = "sha256:3570c381a26a305bf33a656176e4b6206157d78ca8ebf804aa081077930feb23"},
+    {file = "akari_bot_webui-0.1.1.tar.gz", hash = "sha256:e05a4ab90d36deb6a0338620a168c7fd457e7707135bb4f8fe594c65175b2aa8"},
+]
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -5677,4 +5689,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "f525e44bb25d4072244dbe40d0454021f76af818c80740a1963497a5c7c61fa8"
+content-hash = "12bb9e79bf7e6ec08f518c7fcc18482efb750b4c46ce80c77c890e53a0d26abe"

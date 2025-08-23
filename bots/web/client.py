@@ -20,6 +20,8 @@ from core.database.models import JobQueuesTable, SenderInfo
 from core.logger import Logger
 from core.utils.socket import find_available_port, get_local_ip
 
+from akari_bot_webui.entrypoint import dist_path
+
 enable_https = Config("enable_https", default=False, table_name="bot_web")
 protocol = "https" if enable_https else "http"
 
@@ -80,17 +82,17 @@ app.add_middleware(
 )
 
 
-if os.path.exists(webui_path):
-    flask_app = Flask(__name__)
+if os.path.exists(dist_path):
+    flask_app = Flask(__name__, root_path="webui")
 
     @flask_app.route("/")
     @flask_app.route("/<path:path>")
     def serve_webui(path=None):
-        if path and "/" in path:
-            abort(404)
-        return send_from_directory(webui_path, "index.html")
+        if not path:
+            return send_from_directory(dist_path, "index.html")
+        return send_from_directory(dist_path, path)
 
-    app.mount("/webui", WSGIMiddleware(flask_app))
+    app.mount("/webui", WSGIMiddleware(flask_app), 'webui')
 
     @app.get("/")
     async def redirect_to_webui():
