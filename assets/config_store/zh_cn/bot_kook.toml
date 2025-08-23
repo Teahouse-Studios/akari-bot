@@ -8,4 +8,4 @@ enable = false # 是否启用此平台。
 
 [bot_kook_secret]
 # 平台端的密钥配置部分，此处的值若意外出现在发送的消息中，机器人会尝试拦截。但请务必提防泄露。
-kook_token = "<Replace me with str value>" # KOOK 机器人令牌。
+token = "<Replace me with str value>" # {I18N:config.comments.token}
