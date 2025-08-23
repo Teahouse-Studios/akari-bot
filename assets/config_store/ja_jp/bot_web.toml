@@ -15,5 +15,5 @@ web_port = 6485 # Web サービスのポート番号。0 に設定するとサ�
 
 [bot_web_secret]
 # プラットフォーム側のキー設定項目です。ここに入力された値は、送信メッセージに誤って含まれた場合、ボットはそれを傍受しようとします。ただし、漏洩を防ぐよう注意してください。
+allow_origins = [] # API サービスで CORS が許可されるオリジンのリスト。
 jwt_secret = "<Replace me with str value>" # 組み込み API 認証のキー、署名と有効性の検証のため。
-allow_origins = "<Replace me with (str, list) value>" # API サービスで CORS が許可されるオリジンのリスト。
