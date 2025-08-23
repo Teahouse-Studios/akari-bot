@@ -28,6 +28,7 @@ pywin32 = { version = "^308", platform = "win32" }
 # bots
 aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
+akari-bot-webui = "^0.1.2"
 argon2-cffi = "^25.0.0"
 fastapi = "^0.115.0"
 ffmpy = "^0.6.0"
@@ -99,7 +100,6 @@ webcolors = "^24.0.0"
 wolframalpha = "^5.0.0"
 
 # uncategorized
-akari-bot-webui = "^0.1.1"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
