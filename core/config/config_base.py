@@ -45,7 +45,7 @@ class Config:
     locale_url: str = "https://www.crowdin.com/project/akari-bot"
     slower_schedule: bool = False
 
-sleep(1)
+
 @on_config("secret")
 class SecretConfig:
     check_access_key_id: str = ""
