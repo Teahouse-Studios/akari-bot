@@ -54,25 +54,17 @@
             const svg = botbox.querySelector('svg');
 
             if (svg) {
-                let viewBox = svg.getAttribute('viewBox');
-                if (!viewBox) {
-                    const width = svg.getAttribute('width');
-                    const height = svg.getAttribute('height');
-                    if (width && height) {
-                        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-                        viewBox = `0 0 ${width} ${height}`;
-                    }
-                }
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.removeAttribute('viewBox');
 
-                if (viewBox) {
-                    const [minX, minY, width, height] = viewBox.split(' ').map(Number);
-                    botbox.style.width = `${width}px`;
-                    botbox.style.height = `${height}px`;
-                } else {
+                requestAnimationFrame(() => {
                     const bbox = svg.getBBox();
                     botbox.style.width = `${bbox.width}px`;
                     botbox.style.height = `${bbox.height}px`;
-                }
+
+                    svg.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+                });
             }
         }
     </script>

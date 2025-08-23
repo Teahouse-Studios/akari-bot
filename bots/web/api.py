@@ -12,16 +12,15 @@ import psutil
 from cpuinfo import get_cpu_info
 from fastapi import Query, WebSocket, WebSocketDisconnect
 from fastapi import Request, Response, HTTPException
-from fastapi.responses import FileResponse, RedirectResponse
 from jwt.exceptions import ExpiredSignatureError
 from tortoise.expressions import Q
 
 from bots.web.client import app, limiter, ph, enable_https, jwt_secret
-from core.config import Config
+from core.config import Config, CFGManager
 from core.constants import config_filename
-from core.constants.path import PrivateAssets, assets_path, config_path, logs_path, webui_path
-from core.database.local import CSRF_TOKEN_EXPIRY, CSRFTokenRecords
+from core.constants.path import PrivateAssets, config_path, logs_path
 from core.database.models import AnalyticsData, SenderInfo, TargetInfo, MaliciousLoginRecords
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.queue.client import JobQueueClient
 
@@ -41,27 +40,11 @@ LOG_HEAD_PATTERN = re.compile(
 LOG_TIME_PATTERN = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]")
 
 
-async def verify_csrf_token(request: Request):
-    auth_token = request.cookies.get("deviceToken")
-    csrf_token = request.headers.get("X-XSRF-TOKEN")
-    if not csrf_token:
-        raise HTTPException(status_code=403, detail="Missing CSRF token")
-
-    token_entry = await CSRFTokenRecords.get_or_none(csrf_token=csrf_token, device_token=auth_token)
-    if not token_entry:
-        raise HTTPException(status_code=403, detail="Invalid CSRF token")
-
-    if (datetime.now(UTC) - token_entry.timestamp).total_seconds() > CSRF_TOKEN_EXPIRY:
-        await token_entry.delete()
-        raise HTTPException(status_code=403, detail="CSRF token expired")
-
-    return {"message": "Success"}
-
-
 def verify_jwt(request: Request):
-    auth_token = request.cookies.get("deviceToken")
-    if not auth_token:
-        raise HTTPException(status_code=401, detail="Invalid request")
+    auth = request.headers.get('authorization')
+    if not auth or not auth[:7] == "Bearer ":
+        raise HTTPException(status_code=401)
+    auth_token = auth[7:]
 
     try:
         payload = jwt.decode(auth_token, jwt_secret, algorithms=["HS256"])
@@ -72,7 +55,7 @@ def verify_jwt(request: Request):
             if last_updated and payload["iat"] < last_updated:
                 raise ExpiredSignatureError
 
-        return {"message": "Success", "payload": payload}
+        return {"payload": payload}
 
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
@@ -86,23 +69,24 @@ async def api_root(request: Request):
     return {"message": "Hello, AkariBot!"}
 
 
-@app.get("/api/verify-token")
+@app.get("/api/init")
+@limiter.limit("2/second")
+async def get_config(request: Request):
+    return {"enable_https": enable_https,
+            "locale": Config("default_locale", cfg_type=str),
+            "heartbeat_interval": Config("heartbeat_interval", 30, table_name="bot_web"),
+            "heartbeat_timeout": Config("heartbeat_timeout", 5, table_name="bot_web"),
+            "heartbeat_attempt": Config("heartbeat_attempt", 3, table_name="bot_web")
+            }
+
+
+@app.get("/api/verify")
 @limiter.limit("2/second")
 async def verify_token(request: Request):
     return verify_jwt(request)
 
 
-@app.get("/api/get-csrf-token")
-@limiter.limit("2/second")
-async def set_csrf_token(request: Request):
-    verify_jwt(request)
-    auth_token = request.cookies.get("deviceToken")
-    csrf_token = await CSRFTokenRecords.generate_csrf_token(device_token=auth_token)
-
-    return {"message": "Success", "csrf_token": csrf_token}
-
-
-@app.post("/api/auth")
+@app.post("/api/login")
 @limiter.limit("10/minute")
 async def auth(request: Request, response: Response):
     ip = request.client.host
@@ -118,19 +102,14 @@ async def auth(request: Request, response: Response):
             }
             jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-            response.set_cookie(
-                key="deviceToken",
-                value=jwt_token,
-                httponly=True,
-                secure=enable_https,
-                samesite="strict",
-                expires=datetime.now(UTC) + timedelta(hours=24)
-            )
-            return {"message": "Success", "no_password": True}
+            return {"data": jwt_token}
 
         body = await request.json()
         password = body.get("password", "")
         remember = body.get("remember", False)
+
+        if len(password) == 0:
+            raise HTTPException(status_code=401, detail="Require password")
 
         with open(PASSWORD_PATH, "rb") as file:
             password_data = json.loads(file.read())
@@ -146,9 +125,9 @@ async def auth(request: Request, response: Response):
                 await MaliciousLoginRecords.create(ip_address=ip,
                                                    blocked_until=now + timedelta(seconds=LOGIN_BLOCK_DURATION))
                 login_failed_attempts[ip].clear()
-                raise HTTPException(status_code=403, detail="This IP has been blocked")
+                raise HTTPException(status_code=429, detail="This IP has been blocked")
 
-            raise HTTPException(status_code=401, detail="Invalid password")
+            raise HTTPException(status_code=403, detail="Invalid password")
 
         login_failed_attempts.pop(ip, None)
 
@@ -159,15 +138,7 @@ async def auth(request: Request, response: Response):
         }
         jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
-        response.set_cookie(
-            key="deviceToken",
-            value=jwt_token,
-            httponly=True,
-            secure=enable_https,
-            samesite="strict",
-            expires=datetime.now(UTC) + (timedelta(days=365) if remember else timedelta(hours=24))
-        )
-        return {"message": "Success", "no_password": False}
+        return {"data": jwt_token}
 
     except HTTPException as e:
         raise e
@@ -181,7 +152,7 @@ async def auth(request: Request, response: Response):
 async def change_password(request: Request, response: Response):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         body = await request.json()
         new_password = body.get("new_password", "")
         password = body.get("password", "")
@@ -197,7 +168,7 @@ async def change_password(request: Request, response: Response):
             with open(PASSWORD_PATH, "wb") as file:
                 file.write(json.dumps(password_data))
             response.delete_cookie("deviceToken")
-            return {"message": "Success"}
+            return Response(status_code=204)
 
         with open(PASSWORD_PATH, "rb") as file:
             password_data = json.loads(file.read())
@@ -213,8 +184,8 @@ async def change_password(request: Request, response: Response):
         with open(PASSWORD_PATH, "wb") as file:
             file.write(json.dumps(password_data))
 
-        response.delete_cookie("deviceToken")
-        return {"message": "Success"}
+        # TODO 签的jwt存db, 改密码时删掉
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -227,7 +198,7 @@ async def change_password(request: Request, response: Response):
 async def clear_password(request: Request, response: Response):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         body = await request.json()
         password = body.get("password", "")
 
@@ -243,13 +214,18 @@ async def clear_password(request: Request, response: Response):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         os.remove(PASSWORD_PATH)
-        response.delete_cookie("deviceToken")
-        return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
         Logger.exception()
         raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.get("/api/has-password")
+@limiter.limit("10/minute")
+async def has_password(request: Request):
+    return {"data": os.path.exists(PASSWORD_PATH)}
 
 
 @app.get("/api/server-info")
@@ -322,7 +298,7 @@ async def get_config_list(request: Request):
             cfg_files.remove(config_filename)
             cfg_files.insert(0, config_filename)
 
-        return {"message": "Success", "cfg_files": cfg_files}
+        return {"cfg_files": cfg_files}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
@@ -345,7 +321,7 @@ async def get_config_file(request: Request, cfg_filename: str):
     try:
         with open(cfg_file_path, "r", encoding="UTF-8") as f:
             content = f.read()
-        return {"message": "Success", "content": content}
+        return {"content": content}
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Not found")
     except Exception:
@@ -353,12 +329,12 @@ async def get_config_file(request: Request, cfg_filename: str):
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.post("/api/config/{cfg_filename}")
+@app.post("/api/config/{cfg_filename}/edit")
 @limiter.limit("10/minute")
 async def edit_config_file(request: Request, cfg_filename: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         if not os.path.exists(config_path):
             raise HTTPException(status_code=404, detail="Not found")
         cfg_file_path = os.path.normpath(os.path.join(config_path, cfg_filename))
@@ -371,7 +347,7 @@ async def edit_config_file(request: Request, cfg_filename: str):
         content = body["content"]
         with open(cfg_file_path, "w", encoding="UTF-8") as f:
             f.write(content)
-        return {"message": "Success"}
+        return Response(status_code=204)
 
     except HTTPException as e:
         raise e
@@ -409,7 +385,6 @@ async def get_target_list(
         results = await query.offset((page - 1) * size).limit(size)
 
         return {
-            "message": "Success",
             "target_list": results,
             "total": total
         }
@@ -428,7 +403,7 @@ async def get_target_info(request: Request, target_id: str):
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if not target_info:
             raise HTTPException(status_code=404, detail="Not found")
-        return {"message": "Success", "target_info": target_info}
+        return {"target_info": target_info}
     except HTTPException as e:
         raise e
     except Exception:
@@ -441,7 +416,6 @@ async def get_target_info(request: Request, target_id: str):
 async def edit_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
 
         target_info = await TargetInfo.get_by_target_id(target_id)
         body = await request.json()
@@ -485,7 +459,7 @@ async def edit_target_info(request: Request, target_id: str):
             target_info.target_data = target_data
         await target_info.save()
 
-        return {"message": "Success"}
+        return Response(status_code=204)
     except HTTPException as e:
         raise e
     except Exception:
@@ -498,7 +472,7 @@ async def edit_target_info(request: Request, target_id: str):
 async def delete_target_info(request: Request, target_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         target_info = await TargetInfo.get_by_target_id(target_id, create=False)
         if target_info:
             await target_info.delete()
@@ -572,7 +546,6 @@ async def get_sender_info(request: Request, sender_id: str):
 async def edit_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
 
         sender_info = await SenderInfo.get_by_sender_id(sender_id)
         body = await request.json()
@@ -623,7 +596,7 @@ async def edit_sender_info(request: Request, sender_id: str):
 async def delete_sender_info(request: Request, sender_id: str):
     try:
         verify_jwt(request)
-        await verify_csrf_token(request)
+
         sender_info = await SenderInfo.get_by_sender_id(sender_id, create=False)
         if sender_info:
             await sender_info.delete()
@@ -654,7 +627,7 @@ async def get_modules_list(request: Request):
 async def get_modules_info(request: Request, locale: str = Query(default_locale)):
     try:
         verify_jwt(request)
-        modules = JobQueueClient.get_modules_info(locale=locale)
+        modules = await JobQueueClient.get_modules_info(locale=locale)
         return {"message": "Success", "modules": modules}
     except HTTPException as e:
         raise e
@@ -663,16 +636,42 @@ async def get_modules_info(request: Request, locale: str = Query(default_locale)
         raise HTTPException(status_code=400, detail="Bad request")
 
 
-@app.get("/api/modules/{module}")
-@limiter.limit("2/second")
-async def get_module_info(request: Request, module: str, locale: str = Query(default_locale)):
+@app.post("/api/modules/{module_name}/load")
+@limiter.limit("10/minute")
+async def load_module(request: Request, module_name: str):
     try:
         verify_jwt(request)
-        modules = JobQueueClient.get_module_info(module, locale=locale)
-        if modules:
-            return {"message": "Success", "modules": modules}
 
-        raise HTTPException(status_code=404, detail="Not found")
+        if ModulesManager.load_module(module_name):
+            unloaded_list = CFGManager.get("unloaded_modules", [])
+            if unloaded_list and module_name in unloaded_list:
+                unloaded_list.remove(module_name)
+                CFGManager.write("unloaded_modules", unloaded_list)
+
+            return {"message": "Success"}
+        return {"message": "Failed"}
+
+    except HTTPException as e:
+        raise e
+    except Exception:
+        Logger.exception()
+        raise HTTPException(status_code=400, detail="Bad request")
+
+
+@app.post("/api/modules/{module_name}/unload")
+@limiter.limit("10/minute")
+async def unload_module(request: Request, module_name: str):
+    try:
+        verify_jwt(request)
+
+        if ModulesManager.unload_module(module_name):
+            unloaded_list = CFGManager.get("unloaded_modules", [])
+            if not unloaded_list:
+                unloaded_list = []
+            unloaded_list.append(module_name)
+            CFGManager.write("unloaded_modules", unloaded_list)
+
+            return {"message": "Success"}
     except HTTPException as e:
         raise e
     except Exception:
@@ -762,26 +761,3 @@ def _extract_timestamp(line: str):
     if match:
         return datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S")
     return None
-
-
-async def restart():
-    await asyncio.sleep(1)
-    os._exit(233)
-
-
-@app.get("/{full_path:path}")
-async def route_handler(full_path: str):
-    if os.path.exists(webui_path):
-        if full_path == "webui":
-            return RedirectResponse(url="/webui/")
-
-        static_file = os.path.normpath(os.path.join(webui_path, full_path))
-        if os.path.commonpath([webui_path, static_file]) != webui_path:
-            raise HTTPException(status_code=403, detail="Forbidden")
-        if os.path.exists(static_file):
-            return FileResponse(static_file)
-    else:
-        favicon_file = os.path.join(assets_path, "favicon.ico")
-        if full_path == "favicon.ico" and os.path.exists(favicon_file):
-            return FileResponse(favicon_file)
-    raise HTTPException(status_code=404, detail="Not found")

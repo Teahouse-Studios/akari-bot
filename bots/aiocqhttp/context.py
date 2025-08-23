@@ -11,7 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 from bots.aiocqhttp.client import aiocqhttp_bot
 from bots.aiocqhttp.info import target_private_prefix, target_group_prefix, client_name
-from bots.aiocqhttp.utils import CQCodeHandler, get_onebot_implementation
+from bots.aiocqhttp.utils import CQCodeHandler
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, VoiceElement, MentionElement
 from core.builtins.message.internal import I18NContext
@@ -51,8 +51,8 @@ def convert_msg_nodes(
     node_list = []
     for message in msg_node.values:
         content = ""
-        msgchain = message.as_sendable(session_info=session_info)
-        for x in msgchain:
+        msg_chain = message.as_sendable(session_info=session_info)
+        for x in msg_chain:
             if isinstance(x, PlainElement):
                 content += x.text + "\n"
             elif isinstance(x, ImageElement):
@@ -73,6 +73,7 @@ def convert_msg_nodes(
 async def get_avaliable_group_list():
     """
     获取可用的群组列表。
+
     :return: 群组列表
     """
     group_list = []
@@ -88,6 +89,7 @@ async def get_avaliable_group_list():
 async def get_avaliable_private_list():
     """
     获取可用的私聊列表。
+
     :return: 私聊列表
     """
     private_list = []
@@ -106,12 +108,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
-
         # 这里可以添加权限检查的逻辑
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
@@ -121,8 +117,8 @@ class AIOCQContextManager(ContextManager):
             if session_info.target_from == target_group_prefix:
                 get_member_info = await aiocqhttp_bot.call_action(
                     "get_group_member_info",
-                    group_id=session_info.get_common_target_id(),
-                    user_id=session_info.get_common_sender_id(),
+                    group_id=int(session_info.get_common_target_id()),
+                    user_id=int(session_info.get_common_sender_id()),
                 )
                 if get_member_info["role"] in ["owner", "admin"]:
                     return True
@@ -135,13 +131,10 @@ class AIOCQContextManager(ContextManager):
                            quote: bool = True,
                            enable_parse_message=True,
                            enable_split_image=True, ) -> List[str]:
-
-        #
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
 
-        #
-        # ctx = cls.context.get(session_info.session_id)
+        # ctx: Event = cls.context.get(session_info.session_id)
         send = None
         if session_info.sender_id is None:
             if session_info.target_from == target_group_prefix:
@@ -161,9 +154,6 @@ class AIOCQContextManager(ContextManager):
             send = await fake_forward_msg(session_info, convert_msg_nodes(session_info, message))
 
         else:
-
-            message_chain_assendable = message.as_sendable(session_info)
-
             convert_msg_segments = MessageSegment.text("")
             if (
                 quote
@@ -173,7 +163,7 @@ class AIOCQContextManager(ContextManager):
                 convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
 
             count = 0
-            for x in message_chain_assendable:
+            for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
                     x.text = match_atcode(x.text, client_name, "[CQ:at,qq={uid}]")
                     if enable_parse_message:
@@ -239,33 +229,36 @@ class AIOCQContextManager(ContextManager):
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(
                             ("\n" if count != 0 else "") + x.text
                         )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
                     count += 1
                 elif isinstance(x, ImageElement):
                     convert_msg_segments = convert_msg_segments + MessageSegment.image(
                         "base64://" + await x.get_base64()
                     )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
                     count += 1
                 elif isinstance(x, VoiceElement):
                     convert_msg_segments = convert_msg_segments + MessageSegment.record(
                         file=Path(x.path).as_uri()
                     )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
                     count += 1
                 elif isinstance(x, MentionElement):
                     if x.client == client_name and session_info.target_from == target_group_prefix:
                         convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
                     else:
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(" ")
                     count += 1
 
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {message_chain_assendable}")
             if session_info.target_from == target_group_prefix:
                 try:
                     send = await aiocqhttp_bot.send_group_msg(
-                        group_id=session_info.get_common_target_id(), message=convert_msg_segments
+                        group_id=int(session_info.get_common_target_id()), message=convert_msg_segments
                     )
                 except aiocqhttp.exceptions.NetworkError:
                     send = await aiocqhttp_bot.send_group_msg(
-                        group_id=session_info.get_common_target_id(),
+                        group_id=int(session_info.get_common_target_id()),
                         message=MessageSegment.text(session_info.locale.t("error.message.timeout")),
                     )
                 except aiocqhttp.exceptions.ActionFailed:
@@ -280,7 +273,7 @@ class AIOCQContextManager(ContextManager):
                             )
                         try:
                             send = await aiocqhttp_bot.send_group_msg(
-                                group_id=session_info.get_common_target_id(), message=msgsgm
+                                group_id=int(session_info.get_common_target_id()), message=msgsgm
                             )
                         except aiocqhttp.exceptions.ActionFailed:
                             Logger.exception("Failed to send message: ")
@@ -288,7 +281,7 @@ class AIOCQContextManager(ContextManager):
             else:
                 try:
                     send = await aiocqhttp_bot.send_private_msg(
-                        user_id=session_info.get_common_target_id(), message=convert_msg_segments
+                        user_id=int(session_info.get_common_target_id()), message=convert_msg_segments
                     )
                 except aiocqhttp.exceptions.ActionFailed:
                     Logger.exception("Failed to send message: ")
@@ -298,11 +291,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -317,11 +305,6 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -329,7 +312,7 @@ class AIOCQContextManager(ContextManager):
             Logger.debug(f"Start typing in session: {session_info.session_id}")
 
             if session_info.target_from == target_group_prefix:  # wtf onebot 11
-                obi = await get_onebot_implementation()
+                obi = Temp.data.get("onebot_impl")
                 if obi in ["llonebot", "napcat"]:
                     await aiocqhttp_bot.call_action(
                         "set_msg_emoji_like",
@@ -338,7 +321,7 @@ class AIOCQContextManager(ContextManager):
                 elif obi == "lagrange":
                     await aiocqhttp_bot.call_action(
                         "set_group_reaction",
-                        group_id=session_info.get_common_target_id(),
+                        group_id=int(session_info.get_common_target_id()),
                         message_id=session_info.message_id,
                         code=qq_typing_emoji,
                         is_add=True)
@@ -349,11 +332,11 @@ class AIOCQContextManager(ContextManager):
                     last_send_typing_time[session_info.sender_id] = datetime.datetime.now().timestamp()
                     if obi == "shamrock":
                         await aiocqhttp_bot.send_group_msg(
-                            group_id=session_info.get_common_target_id(),
+                            group_id=int(session_info.get_common_target_id()),
                             message=f"[CQ:touch,id={session_info.get_common_sender_id()}]")
                     elif obi == "go-cqhttp":
                         await aiocqhttp_bot.send_group_msg(
-                            group_id=session_info.get_common_target_id(),
+                            group_id=int(session_info.get_common_target_id()),
                             message=f"[CQ:poke,qq={session_info.get_common_sender_id()}]")
                     else:
                         pass
@@ -365,12 +348,8 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
             del cls.typing_flags[session_info.session_id]
@@ -379,53 +358,39 @@ class AIOCQContextManager(ContextManager):
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
-        """
-        发送错误信号
-        :param session_info: 会话信息
-        """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         # 这里可以添加错误处理逻辑
 
         if session_info.target_from == target_group_prefix:
             qq_account = Temp.data.get("qq_account")
-            obi = await get_onebot_implementation()
+            obi = Temp.data.get("onebot_impl")
             if obi in ["llonebot", "napcat"]:
                 await aiocqhttp_bot.call_action("set_msg_emoji_like",
                                                 message_id=session_info.message_id,
                                                 emoji_id=qq_limited_emoji)
             elif obi == "lagrange":
                 await aiocqhttp_bot.call_action("set_group_reaction",
-                                                group_id=session_info.get_common_target_id(),
+                                                group_id=int(session_info.get_common_target_id()),
                                                 message_id=session_info.message_id,
                                                 code=qq_limited_emoji,
                                                 is_add=True)
             elif obi == "shamrock":
                 await aiocqhttp_bot.call_action("send_group_msg",
-                                                group_id=session_info.get_common_target_id(),
+                                                group_id=int(session_info.get_common_target_id()),
                                                 message=f"[CQ:touch,id={qq_account}]")
             elif obi == "go-cqhttp":
                 await aiocqhttp_bot.call_action("send_group_msg",
-                                                group_id=session_info.get_common_target_id(),
+                                                group_id=int(session_info.get_common_target_id()),
                                                 message=f"[CQ:poke,qq={qq_account}]")
             else:
                 pass
 
     @classmethod
-    async def set_group_leave(cls, session_info: SessionInfo) -> None:
-        """
-        设置群组离开
-        :param session_info: 会话信息
-        """
-        if session_info.target_from == target_group_prefix:
-            await aiocqhttp_bot.call_action("set_group_leave", group_id=session_info.get_common_target_id())
-        else:
-            raise ValueError("Session is not a group session")
-
-    @classmethod
     async def call_api(cls, api_name: str, **kwargs) -> Optional[dict]:
         """
         调用 OneBot API。
+
         :param api_name: API 名称
         :param kwargs: API 参数
         :return: API 返回结果

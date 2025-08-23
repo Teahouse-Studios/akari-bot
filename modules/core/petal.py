@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, petal: int, user: str):
     if not sender_info:
         await msg.finish(I18NContext("message.id.not_found.sender"))
     if await msg.wait_confirm(I18NContext("core.message.petal.give.confirm", sender=user, give_petal=petal)):
-        if cost_petal(msg, petal):
+        if await cost_petal(msg, petal):
             await sender_info.modify_petal(petal)
             await msg.finish(I18NContext("core.message.petal.give.success",
                                          sender=user,

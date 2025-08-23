@@ -1,5 +1,4 @@
 import asyncio
-import sys
 
 from aiogram import types
 

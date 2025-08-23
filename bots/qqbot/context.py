@@ -2,15 +2,17 @@ import asyncio
 import html
 from typing import Optional, List
 
+from botpy.api import BotAPI
 from botpy.errors import ServerError
+from botpy.http import Route
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
-from botpy.types.message import Reference
+from botpy.types.message import Media, Reference
 
 from bots.qqbot.features import Features
 from bots.qqbot.info import client_name, target_group_prefix, target_guild_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes, match_atcode
 from core.builtins.message.elements import PlainElement, ImageElement, MentionElement
-from core.builtins.message.internal import Image, I18NContext, Url
+from core.builtins.message.internal import Image, I18NContext
 from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.config import Config
@@ -18,7 +20,51 @@ from core.logger import Logger
 from core.utils.http import url_pattern
 from core.utils.image import msgchain2image, msgnode2image
 
+qq_typing_emoji = str(Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot"))
+qq_limited_emoji = str(Config("qq_limited_emoji", 10060, (str, int), table_name="bot_qqbot"))
 enable_send_url = Config("qq_bot_enable_send_url", False, table_name="bot_qqbot")
+
+
+# 额外添加平台接口支持但 SDK 不支持的方法
+# https://github.com/tencent-connect/botpy/pull/215
+class ModdedBotAPI(BotAPI):
+    async def recall_group_message(
+            self,
+            group_openid: str,
+            message_id: str) -> str:
+        route = Route(
+            "DELETE",
+            "/v2/groups/{group_openid}/messages/{message_id}",
+            group_openid=group_openid,
+            message_id=message_id,
+        )
+        return await self._http.request(route)
+
+    async def post_group_file(
+        self,
+        group_openid: str,
+        file_type: int,
+        url: Optional[str] = None,
+        srv_send_msg: bool = False,
+        file_data: Optional[str] = None,
+    ) -> Media:
+        payload = locals()
+        payload.pop("self", None)
+        route = Route("POST", "/v2/groups/{group_openid}/files", group_openid=group_openid)
+        return await self._http.request(route, json=payload)
+
+    async def post_c2c_file(
+        self,
+        openid: str,
+        file_type: int,
+        url: Optional[str] = None,
+        srv_send_msg: bool = False,
+        file_data: Optional[str] = None,
+    ) -> Media:
+        payload = locals()
+        payload.pop("self", None)
+        route = Route("POST", "/v2/users/{openid}/files", openid=openid)
+        return await self._http.request(route, json=payload)
 
 
 class QQBotContextManager(ContextManager):
@@ -26,16 +72,18 @@ class QQBotContextManager(ContextManager):
     features: Optional[Features] = Features
 
     @classmethod
+    def add_context(cls, session_info: SessionInfo, context: BaseMessage):
+        from bots.qqbot.bot import client  # noqa
+
+        context._api = ModdedBotAPI(http=client.http)
+        cls.context[session_info.session_id] = context
+
+    @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
-        ctx = cls.context.get(session_info.session_id)
+        ctx: BaseMessage = cls.context.get(session_info.session_id)
 
         if ctx:
             if isinstance(ctx, Message):
@@ -56,10 +104,9 @@ class QQBotContextManager(ContextManager):
     async def send_message(cls, session_info: SessionInfo, message: MessageChain | MessageNodes, quote: bool = True,
                            enable_parse_message: bool = True,
                            enable_split_image: bool = True) -> List[str]:
-
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id)
+        ctx: BaseMessage = cls.context.get(session_info.session_id)
         msg_ids = []
 
         if isinstance(message, MessageNodes):
@@ -85,9 +132,15 @@ class QQBotContextManager(ContextManager):
             lines = msg.split("\n")
             for line in lines:
                 if enable_send_url:
-                    line = url_pattern.sub(
-                        lambda match: str(Url(match.group(0), use_mm=True)), line
-                    )
+                    def process_url(match):
+                        url_ = match.group(0)
+                        parts = url_.split(".")
+                        for i in range(1, len(parts)):
+                            if parts[i] and parts[i][0].isalpha():
+                                parts[i] = parts[i][0].upper() + parts[i][1:]
+                        return ".".join(parts)
+
+                    line = url_pattern.sub(process_url, line)
                 elif url_pattern.findall(line):
                     continue
                 filtered_msg.append(line)
@@ -120,6 +173,8 @@ class QQBotContextManager(ContextManager):
                         Logger.info(
                             f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                         )
+                    if send:
+                        msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
@@ -129,7 +184,6 @@ class QQBotContextManager(ContextManager):
                             )
                             if send:
                                 msg_ids.append(send["id"])
-                    msg_ids.append(send["id"])
                 elif isinstance(ctx, DirectMessage):
                     if images:
                         image_1 = images[0]
@@ -147,12 +201,13 @@ class QQBotContextManager(ContextManager):
                     send = await ctx.reply(
                         content=msg, file_image=send_img, message_reference=msg_quote
                     )
-                    msg_ids.append(send["id"])
                     Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
                     if image_1:
                         Logger.info(
                             f"[Bot] -> [{session_info.target_id}]: Image: {str(image_1)}"
                         )
+                    if send:
+                        msg_ids.append(send["id"])
                     if images:
                         for img in images:
                             send_img = await img.get()
@@ -277,11 +332,6 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -293,17 +343,18 @@ class QQBotContextManager(ContextManager):
         try:
             from bots.qqbot.bot import client  # noqa
 
+            client.api = ModdedBotAPI(http=client.http)
             if session_info.target_from == target_guild_prefix:
                 for msg_id in message_id:
                     await client.api.recall_message(
-                        channel_id=session_info.target_id.split("|")[-1],
+                        channel_id=session_info.get_common_target_id(),
                         message_id=msg_id,
                         hidetip=True
                     )
             elif session_info.target_from == target_group_prefix:
                 for msg_id in message_id:
                     await client.api.recall_group_message(
-                        group_openid=session_info.target_id.split("|")[-1],
+                        group_openid=session_info.get_common_target_id(),
                         message_id=msg_id
                     )
         except Exception:
@@ -311,29 +362,21 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
             Logger.debug(f"Start typing in session: {session_info.session_id}")
 
             if session_info.target_from == target_guild_prefix:
-                emoji_id = str(
-                    Config("qq_typing_emoji", 181, (str, int), table_name="bot_qqbot")
-                )
-                emoji_type = 1 if int(emoji_id) < 9000 else 2
+                emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
 
                 from bots.qqbot.bot import client  # noqa
 
                 await client.api.put_reaction(
-                    channel_id=session_info.target_id.split("|")[-1],
+                    channel_id=session_info.get_common_target_id(),
                     message_id=session_info.message_id,
                     emoji_type=emoji_type,
-                    emoji_id=emoji_id,
+                    emoji_id=qq_typing_emoji,
                 )
 
             flag = asyncio.Event()
@@ -344,10 +387,6 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
@@ -358,4 +397,18 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
-        pass
+        if session_info.session_id not in cls.context:
+            raise ValueError("Session not found in context")
+        # 这里可以添加错误处理逻辑
+
+        if session_info.target_from == target_guild_prefix:
+            emoji_type = 1 if int(qq_limited_emoji) < 9000 else 2
+
+            from bots.qqbot.bot import client  # noqa
+
+            await client.api.put_reaction(
+                channel_id=session_info.get_common_target_id(),
+                message_id=session_info.message_id,
+                emoji_type=emoji_type,
+                emoji_id=qq_limited_emoji,
+            )

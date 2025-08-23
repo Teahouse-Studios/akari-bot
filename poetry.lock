@@ -266,6 +266,18 @@ tf-playwright-stealth = ">=1.2.0,<2.0.0"
 uvicorn = ">=0.34.3,<0.35.0"
 
 [[package]]
+name = "akari-bot-webui"
+version = "0.1.2"
+description = ""
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "akari_bot_webui-0.1.2-py3-none-any.whl", hash = "sha256:ce1ad211f779265e94810c511e85c42652a724664653d2dbfb27215a22710ef3"},
+    {file = "akari_bot_webui-0.1.2.tar.gz", hash = "sha256:c32341101e739c0fbec2b5526e3ca8ce97fd044e2ec6a6fd9672f72b2499de12"},
+]
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -545,28 +557,6 @@ files = [
     {file = "blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc"},
     {file = "blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf"},
 ]
-
-[[package]]
-name = "botpy"
-version = "0.1.0"
-description = ""
-optional = false
-python-versions = "^3.12"
-groups = ["main"]
-files = []
-develop = false
-
-[package.dependencies]
-aiohttp = "^3.10.10"
-apscheduler = "^3.10.4"
-pre-commit = "^4.0.1"
-pyyaml = "^6.0.2"
-
-[package.source]
-type = "git"
-url = "https://github.com/Teahouse-Studios/botpy.git"
-reference = "HEAD"
-resolved_reference = "56c66983f36918fa433a71e1cb7db18a16825def"
 
 [[package]]
 name = "build"
@@ -5699,4 +5689,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "0cc2d9843f4de1b272a1aa9220f67d5de0b46cdc7f478d7b64e3b7fd829ff418"
+content-hash = "94ee73a85998bb30d6f8be5fa198f5849dc5bea1023a485e1c3615d6638cc3ba"

@@ -2,7 +2,6 @@ import asyncio
 import html
 import logging
 import re
-import sys
 
 import orjson as json
 from aiocqhttp import Event
@@ -235,7 +234,6 @@ async def _(event: Event):
 
 qq_host = Config("qq_host", default=qq_host_default, table_name="bot_aiocqhttp")
 if Config("enable", False, table_name="bot_aiocqhttp"):
-    argv = sys.argv
     HyperConfig.startup_timeout = 120
     host, port = qq_host.split(":")
     aiocqhttp_bot.run(host=host, port=port, debug=False)

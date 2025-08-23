@@ -336,7 +336,6 @@ def main():
             clear_import_cache()
             continue
         except (KeyboardInterrupt, SystemExit):
-            print("Exited.")
             break
 
 

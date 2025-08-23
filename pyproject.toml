@@ -5,9 +5,10 @@ description = ""
 authors = [
     "OasisAkari <oasisakari@gmail.com>",
     "Dianliang233 <dianliang@teahou.se>",
-    "DoroWolf <dorowolf@tehou.se>",
+    "DoroWolf <dorowolf314@gmail.com>",
     "nullcat <null@teahou.se>",
     "_LittleC_ <i@ltlec.com>",
+    "cloudw233 <cloudw233@outlook.com>",
 ]
 license = "AGPL-3.0"
 readme = "README.md"
@@ -28,8 +29,8 @@ pywin32 = { version = "^308", platform = "win32" }
 # bots
 aiocqhttp = "^1.4.3"
 aiogram = "^3.4.1"
+akari-bot-webui = "^0.1.2"
 argon2-cffi = "^25.0.0"
-botpy = {git = "https://github.com/Teahouse-Studios/botpy.git"}
 fastapi = "^0.115.0"
 ffmpy = "^0.6.0"
 flask = "^3.1.0"

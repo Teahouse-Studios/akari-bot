@@ -10,6 +10,7 @@ Url = url = URLElement.assign
 FormattedTime = formatted_time = FormattedTimeElement.assign
 I18NContext = i18n_context = I18NContextElement.assign
 Mention = mention = MentionElement.assign
+Raw = raw = RawElement.assign
 
 add_export(Plain)
 add_export(Image)
@@ -20,6 +21,7 @@ add_export(Url)
 add_export(FormattedTime)
 add_export(I18NContext)
 add_export(Mention)
+add_export(Raw)
 add_export(plain)
 add_export(image)
 add_export(voice)
@@ -29,6 +31,7 @@ add_export(url)
 add_export(formatted_time)
 add_export(i18n_context)
 add_export(mention)
+add_export(raw)
 
 __all__ = [
     "Plain",
@@ -40,6 +43,7 @@ __all__ = [
     "FormattedTime",
     "I18NContext",
     "Mention",
+    "Raw",
     "plain",
     "image",
     "voice",
@@ -49,4 +53,5 @@ __all__ = [
     "formatted_time",
     "i18n_context",
     "mention",
+    "raw",
 ]

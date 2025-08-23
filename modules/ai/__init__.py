@@ -20,7 +20,7 @@ ai = module("ai",
 
 
 @ai.command("<question> [--llm <llm>] {{I18N:ai.help}}",
-            options_desc={"--llm": "{{I18N:ai.help.option.llm}}"})
+            options_desc={"--llm": "{I18N:ai.help.option.llm}"})
 async def _(msg: Bot.MessageSession, question: str):
     get_llm = msg.parsed_msg.get("--llm", False)
     llm = get_llm["<llm>"].lower() if get_llm else None

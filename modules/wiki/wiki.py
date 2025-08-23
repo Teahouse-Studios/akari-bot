@@ -105,7 +105,7 @@ async def query_pages(
     if not start_wiki:
         if isinstance(session, MessageSession):
             await session.finish(I18NContext("wiki.message.set.not_set", prefix=session.session_info.prefixes[0])
-            )
+                                 )
     # if lang in interwiki_list:
     #     start_wiki = interwiki_list[lang]
     #     lang = None
@@ -316,11 +316,11 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     I18NContext(
-                                            "wiki.message.invalid_section.prompt" if r.invalid_section and (
-                                                r.info.in_allowlist or not (
-                                                    isinstance(
-                                                        session,
-                                                        Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt"))
+                                        "wiki.message.invalid_section.prompt" if r.invalid_section and (
+                                            r.info.in_allowlist or not (
+                                                isinstance(
+                                                    session,
+                                                    Bot.MessageSession) and session.session_info.use_url_manager)) else "wiki.message.talk_page.prompt"))
                                 i_msg_lst += [
                                     Image(ii)
                                     for ii in await image_table_render(
@@ -339,7 +339,7 @@ async def query_pages(
                                 ]
                                 i_msg_lst.append(
                                     I18NContext(
-                                            "wiki.message.invalid_section.select"
+                                        "wiki.message.invalid_section.select"
                                     )
                                 )
                                 i_msg_lst.append(
@@ -651,10 +651,7 @@ async def query_pages(
                     elif check_svg(dl):
                         rd = await svg_render(dl)
                         if session.session_info.support_image and rd:
-                            img_chain = []
-                            for rr in rd:
-                                img_chain.append(Image(rr))
-                            await session.send_message(img_chain, quote=False)
+                            await session.send_message(rd, quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
@@ -734,7 +731,7 @@ async def query_pages(
         }
 
 
-@wiki.hook('autosearch')
+@wiki.hook("autosearch")
 async def auto_search(ctx: Bot.ModuleHookContext):
     title = ctx.args["title"]
     iw = ""
@@ -759,7 +756,7 @@ async def auto_search(ctx: Bot.ModuleHookContext):
     ]
 
 
-@wiki.hook('auto_get_custom_iw_list')
+@wiki.hook("auto_get_custom_iw_list")
 async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
     """
     Get custom interwiki list from target info.

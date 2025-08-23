@@ -12,7 +12,7 @@ class ContextManager(ABC):
     context: dict[str, Any] = {}
     features: Optional[Features] = Features
     typing_flags: dict[str, asyncio.Event] = {}
-    context_marks_hold: list[str] = []
+    context_marks_hold: dict[str, int] = {}
 
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: Any):
@@ -33,8 +33,11 @@ class ContextManager(ABC):
         """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        cls.context_marks_hold.append(session_info.session_id)
-        Logger.trace(f"Context for session {session_info.session_id} is now held.")
+        if session_info.session_id in cls.context_marks_hold:
+            cls.context_marks_hold[session_info.session_id] += 1
+        else:
+            cls.context_marks_hold[session_info.session_id] = 1
+            Logger.trace(f"Context for session {session_info.session_id} is now held.")
 
     @classmethod
     def release_context(cls, session_info: SessionInfo):
@@ -42,9 +45,10 @@ class ContextManager(ABC):
         Release the held context for a session.
         """
         if session_info.session_id in cls.context_marks_hold:
-            cls.context_marks_hold.remove(session_info.session_id)
-            if session_info.session_id in cls.context:
+            cls.context_marks_hold[session_info.session_id] -= 1
+            if cls.context_marks_hold[session_info.session_id] == 0:
                 del cls.context[session_info.session_id]
+                del cls.context_marks_hold[session_info.session_id]
                 Logger.trace(f"Context for session {session_info.session_id} is released.")
 
     @classmethod
@@ -52,6 +56,7 @@ class ContextManager(ABC):
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
         """
         检查会话权限。
+
         :param session_info: 会话信息
         :return: 是否有权限
         """
@@ -70,6 +75,7 @@ class ContextManager(ABC):
                            ) -> List[str]:
         """
         发送消息到指定的会话。
+
         :param session_info: 会话信息
         :param message: 消息内容，可以是 MessageChain 或字符串
         :param quote: 是否引用消息
@@ -88,6 +94,7 @@ class ContextManager(ABC):
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
         """
         删除指定会话中的消息。
+
         :param session_info: 会话信息
         :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
         """
@@ -105,7 +112,8 @@ class ContextManager(ABC):
     @abstractmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
         """
-        开始输入状态
+        开始输入状态。
+
         :param session_info: 会话信息
         """
 
@@ -124,7 +132,8 @@ class ContextManager(ABC):
     @abstractmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
         """
-        结束输入状态
+        结束输入状态。
+
         :param session_info: 会话信息
         """
         if session_info.session_id not in cls.context:
@@ -139,7 +148,8 @@ class ContextManager(ABC):
     @abstractmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
         """
-        发送错误信号
+        发送错误信号。
+
         :param session_info: 会话信息
         """
         if session_info.session_id not in cls.context:

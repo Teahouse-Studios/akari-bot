@@ -14,6 +14,7 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
+from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
 from core.config import Config
 from core.constants import FinishedException, WaitCancelException
@@ -28,12 +29,12 @@ if TYPE_CHECKING:
 class MessageSession:
     session_info: SessionInfo
     sent: List[MessageChain] = []
-    trigger_msg: Optional[str] = ''
+    trigger_msg: Optional[str] = ""
     matched_msg: Optional[Union[Match[str], Tuple[Any]]] = None
     parsed_msg: Optional[dict] = None
 
     @property
-    @deprecated(reason='Use `session_info` instead.')
+    @deprecated(reason="Use `session_info` instead.")
     def target(self) -> SessionInfo:
         return self.session_info
 
@@ -141,14 +142,15 @@ class MessageSession:
         if callback:
             SessionTaskManager.add_callback(return_val["message_id"], callback)
 
-    def as_display(self, text_only: bool = False) -> str:
+    def as_display(self, text_only: bool = False, element_filter: tuple[MessageElement] = None) -> str:
         """
         用于将消息转换为一般文本格式。
 
         :param text_only: 是否只保留纯文本。（默认为False）
+        :param element_filter: 元素过滤器，用于过滤消息链中的元素。（默认为None）
         :return: 转换后的字符串。
         """
-        return self.session_info.messages.to_str(text_only)
+        return self.session_info.messages.to_str(text_only, element_filter=element_filter)
 
     async def delete(self):
         """
@@ -388,13 +390,6 @@ class MessageSession:
         if self.session_info.sender_id in self.session_info.custom_admins or self.session_info.sender_info.superuser:
             return True
         return await self.check_native_permission()
-
-    async def qq_set_group_leave(self):
-        """
-        用于QQ平台设置群组离开。
-        """
-        _queue_server: "JobQueueServer" = exports["JobQueueServer"]
-        return await _queue_server.qq_set_group_leave(self.session_info)
 
     async def qq_call_api(self, api_name: str, **kwargs) -> Any:
         """

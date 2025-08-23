@@ -31,8 +31,10 @@ jobs:
       - name: Install dependencies and build webui
         run: |
           cd akari-bot-webui
-          npm ci
+          npm install
           npm run build
+        env:
+          VITE_DEMO_MODE: "false"
 
       - name: Clear webui directory
         run: |

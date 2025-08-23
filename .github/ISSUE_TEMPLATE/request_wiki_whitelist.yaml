@@ -4,6 +4,7 @@ title: "[REQUEST]: Wiki 链接白名单申请"
 labels: ["request"]
 assignees:
   - OasisAkari
+  - DoroWolf
 body:
   - type: checkboxes
     id: preflight

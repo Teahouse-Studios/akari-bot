@@ -12,7 +12,7 @@ from core.exports import exports
 
 async def get_stored_list(bot: Union["Bot", str], name: str) -> list:
     try:
-        if isinstance(bot, exports['Bot']):
+        if isinstance(bot, exports["Bot"]):
             bot = bot.Info.client_name
         stored_data = await StoredData.filter(stored_key=f"{bot}|{name}").first()
         if not stored_data:
@@ -23,7 +23,7 @@ async def get_stored_list(bot: Union["Bot", str], name: str) -> list:
 
 
 async def update_stored_list(bot: Union["Bot", str], name: str, value: list):
-    if isinstance(bot, exports['Bot']):
+    if isinstance(bot, exports["Bot"]):
         bot = bot.Info.client_name
     await StoredData.update_or_create(
         defaults={"value": value}, stored_key=f"{bot}|{name}"

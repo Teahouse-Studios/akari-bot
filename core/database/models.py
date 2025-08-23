@@ -422,7 +422,7 @@ class JobQueuesTable(DBModel):
     @classmethod
     async def clear_task(cls, time=3600) -> bool:
         timestamp = datetime.now(UTC) - timedelta(seconds=time)
-        Logger.debug(f'Clearing tasks older than {timestamp}...')
+        Logger.debug(f"Clearing tasks older than {timestamp}...")
 
         queries = await cls.filter(timestamp__lt=timestamp)
 

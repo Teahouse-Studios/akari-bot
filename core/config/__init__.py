@@ -346,7 +346,7 @@ class CFGManager:
                     elif target.startswith("module_"):
                         prefix = "module"
                     else:
-                        prefix = target.split('_')[0]
+                        prefix = target.split("_")[0]
 
                     table_comment_key = f"config.table.{"secret" if is_secret else "config"}_{prefix}"
                 cls.values[cfg_name].add(nl())

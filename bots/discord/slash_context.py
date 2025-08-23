@@ -24,7 +24,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                            enable_split_image: bool = True, ):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id)
+        ctx: discord.ApplicationContext = cls.context.get(session_info.session_id)
 
         count = 0
         msg_ids = []
@@ -45,9 +45,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                     send_ = await ctx.send(
                         file=discord.File(await x.get())
                     )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
             elif isinstance(x, VoiceElement):
                 if count == 0:
                     send_ = await ctx.respond(
@@ -57,22 +55,14 @@ class DiscordSlashContextManager(DiscordContextManager):
                     send_ = await ctx.send(
                         file=discord.File(x.path)
                     )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
             elif isinstance(x, MentionElement):
                 if x.client == client_name and session_info.target_from == target_channel_prefix:
                     if count == 0:
-                        send_ = await ctx.respond(
-                            f"<@{x.id}>",
-                        )
+                        send_ = await ctx.respond(f"<@{x.id}>")
                     else:
-                        send_ = await ctx.send(
-                            f"<@{x.id}>",
-                        )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}"
-                    )
+                        send_ = await ctx.send(f"<@{x.id}>")
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
             elif isinstance(x, EmbedElement):
                 embeds, files = await convert_embed(x, session_info)
                 if count == 0:
@@ -83,9 +73,7 @@ class DiscordSlashContextManager(DiscordContextManager):
                     send_ = await ctx.send(
                         embed=embeds,
                         files=files)
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}"
-                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}")
 
             if send_:
                 msg_ids.append(str(send_.id))
@@ -94,15 +82,10 @@ class DiscordSlashContextManager(DiscordContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
-            ctx = cls.context[session_info.session_id]
+            ctx: discord.ApplicationContext = cls.context[session_info.session_id]
             if ctx:
                 async with ctx.channel.typing() as typing:
                     await ctx.defer()
@@ -118,12 +101,8 @@ class DiscordSlashContextManager(DiscordContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
             del cls.typing_flags[session_info.session_id]

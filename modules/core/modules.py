@@ -6,8 +6,6 @@ from core.builtins.parser.command import CommandParser
 from core.component import module
 from core.config import Config, CFGManager
 from core.constants.exceptions import InvalidHelpDocTypeError
-from core.database import reload_db
-from core.database.models import TargetInfo
 from core.i18n import load_locale_file
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from .help import modules_list_help
@@ -22,8 +20,7 @@ m = module(
         "reload": "module reload",
         "unload": "module unload",
     },
-    doc=True,
-    required_admin=True,
+    doc=True
 )
 
 
@@ -32,16 +29,18 @@ m = module(
      "load <module> ...",
      "unload <module> ..."
      ],
-    required_superuser=True,
+    required_superuser=True
 )
+@m.command("list [--legacy] {{I18N:core.help.module.list}}",
+           options_desc={"--legacy": "{I18N:help.option.legacy}"}
+           )
 @m.command(
     ["enable <module>... {{I18N:core.help.module.enable}}",
      "enable all {{I18N:core.help.module.enable_all}}",
      "disable <module>... {{I18N:core.help.module.disable}}",
-     "disable all {{I18N:core.help.module.disable_all}}",
-     "list [--legacy] {{I18N:core.help.module.list}}",
+     "disable all {{I18N:core.help.module.disable_all}}"
      ],
-    options_desc={"--legacy": "{I18N:help.option.legacy}"},
+    required_admin=True
 )
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get("list", False):
@@ -105,24 +104,16 @@ async def config_modules(msg: Bot.MessageSession):
                             for r in recommend:
                                 if r not in enable_list and r not in enabled_modules_list:
                                     recommend_modules_list.append(r)
-        if "-g" in msg.parsed_msg and msg.parsed_msg["-g"]:
-            get_all_channel = await msg.get_text_channel_list()
-            for x in get_all_channel:
-                target_info = await TargetInfo.get_by_target_id(f"{msg.session_info.target_from}|{x}")
-                await target_info.config_module(enable_list, True)
+        if await msg.session_info.target_info.config_module(enable_list, True):
             for x in enable_list:
-                msglist.append(I18NContext("core.message.module.enable.qqchannel_global.success", module=x))
-        else:
-            if await msg.session_info.target_info.config_module(enable_list, True):
-                for x in enable_list:
-                    if x in enabled_modules_list:
-                        msglist.append(I18NContext("core.message.module.enable.already", module=x))
-                    else:
-                        msglist.append(I18NContext("core.message.module.enable.success", module=x))
-                        support_lang = modules_[x].support_languages
-                        if support_lang:
-                            if msg.session_info.locale.locale not in support_lang:
-                                msglist.append(I18NContext("core.message.module.unsupported_language", module=x))
+                if x in enabled_modules_list:
+                    msglist.append(I18NContext("core.message.module.enable.already", module=x))
+                else:
+                    msglist.append(I18NContext("core.message.module.enable.success", module=x))
+                    support_lang = modules_[x].support_languages
+                    if support_lang:
+                        if msg.session_info.locale.locale not in support_lang:
+                            msglist.append(I18NContext("core.message.module.unsupported_language", module=x))
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
@@ -171,8 +162,8 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(I18NContext("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get("reload", False):
 
-        def module_reload(module, extra_modules, base_module=False):
-            reload_count = ModulesManager.reload_module(module)
+        async def module_reload(module, extra_modules, base_module=False):
+            reload_count = await ModulesManager.reload_module(module)
             if base_module and reload_count >= 1:
                 return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
@@ -217,13 +208,11 @@ async def config_modules(msg: Bot.MessageSession):
                         append_instruction=False,
                     ):
                         await msg.finish()
-                unloaded_list = Config("unloaded_modules", [])
+                unloaded_list = CFGManager.get("unloaded_modules", [])
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
-                msglist.append(module_reload(module_, extra_reload_modules, base_module))
-
-        await reload_db()
+                msglist.append(await module_reload(module_, extra_reload_modules, base_module))
 
         locale_err = load_locale_file()
         if len(locale_err) != 0:
@@ -234,22 +223,23 @@ async def config_modules(msg: Bot.MessageSession):
             if module_ not in current_unloaded_modules:
                 msglist.append(I18NContext("core.message.module.load.not_found"))
                 continue
-            if ModulesManager.load_module(module_):
+            if await ModulesManager.load_module(module_):
                 msglist.append(I18NContext("core.message.module.load.success", module=module_)
                                )
-                unloaded_list = Config("unloaded_modules", [])
+                unloaded_list = CFGManager.get("unloaded_modules", [])
                 if unloaded_list and module_ in unloaded_list:
                     unloaded_list.remove(module_)
                     CFGManager.write("unloaded_modules", unloaded_list)
             else:
                 msglist.append(I18NContext("core.message.module.load.failed"))
+
     elif msg.parsed_msg.get("unload", False):
         for module_ in wait_config_list:
             if module_ not in modules_:
                 if module_ in err_modules:
                     if await msg.wait_confirm(I18NContext("core.message.module.unload.unavailable.confirm"),
                                               append_instruction=False):
-                        unloaded_list = Config("unloaded_modules", [])
+                        unloaded_list = CFGManager.get("unloaded_modules", [])
                         if not unloaded_list:
                             unloaded_list = []
                         if module_ not in unloaded_list:
@@ -268,9 +258,9 @@ async def config_modules(msg: Bot.MessageSession):
                 continue
             if await msg.wait_confirm(I18NContext("core.message.module.unload.confirm"),
                                       append_instruction=False):
-                if ModulesManager.unload_module(module_):
+                if await ModulesManager.unload_module(module_):
                     msglist.append(I18NContext("core.message.module.unload.success", module=module_))
-                    unloaded_list = Config("unloaded_modules", [])
+                    unloaded_list = CFGManager.get("unloaded_modules", [])
                     if not unloaded_list:
                         unloaded_list = []
                     unloaded_list.append(module_)
@@ -283,7 +273,7 @@ async def config_modules(msg: Bot.MessageSession):
             await msg.finish(msglist)
         else:
             await msg.send_message(msglist)
-    if recommend_modules_help_doc_list and not ("-g" in msg.parsed_msg and msg.parsed_msg["-g"]):
+    if recommend_modules_help_doc_list:
         if await msg.wait_confirm(
             [I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list)),
              Plain("\n")] + recommend_modules_help_doc_list):

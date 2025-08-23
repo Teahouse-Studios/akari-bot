@@ -112,7 +112,7 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
 
     Logger.debug(str(data))
     msgs = []
-    if user := data.get("username", ''):
+    if user := data.get("username", ""):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.username"))
             + user
@@ -124,43 +124,43 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
                 else ""
             ))
         )
-    if users_groups := data.get("users_groups", ''):
+    if users_groups := data.get("users_groups", ""):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.users_groups"))
             + "{I18N:message.delimiter}".join(users_groups)
         ))
-    if gender_ := data.get("gender", ''):
+    if gender_ := data.get("gender", ""):
         msgs.append(Plain(str(I18NContext("wiki.message.user.gender")) + gender_))
-    if registration := data.get("registration_time", ''):
+    if registration := data.get("registration_time", ""):
         msgs.append(Plain(str(I18NContext("wiki.message.user.registration_time")) + registration))
-    if edited_wiki_count := data.get("edited_wiki_count", ''):
+    if edited_wiki_count := data.get("edited_wiki_count", ""):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.edited_wiki_count")) + edited_wiki_count
         ))
 
     sub_edit_counts1 = []
-    if created_page_count := data.get("created_page_count", ''):
+    if created_page_count := data.get("created_page_count", ""):
         sub_edit_counts1.append(
             str(I18NContext("wiki.message.user.created_page_count")) + created_page_count
         )
-    if edited_count := data.get("edited_count", ''):
+    if edited_count := data.get("edited_count", ""):
         if created_page_count:
             sub_edit_counts1.append(
                 str(I18NContext("wiki.message.user.edited_count")) + edited_count
             )
     sub_edit_counts2 = []
-    if deleted_count := data.get("deleted_count", ''):
+    if deleted_count := data.get("deleted_count", ""):
         sub_edit_counts2.append(
             str(I18NContext("wiki.message.user.deleted_count")) + deleted_count
         )
-    if patrolled_count := data.get("patrolled_count", ''):
+    if patrolled_count := data.get("patrolled_count", ""):
         sub_edit_counts2.append(
             str(I18NContext("wiki.message.user.patrolled_count")) + patrolled_count
         )
     sub_edit_counts3 = []
-    if site_rank := data.get("site_rank", ''):
+    if site_rank := data.get("site_rank", ""):
         sub_edit_counts3.append(str(I18NContext("wiki.message.user.site_rank")) + site_rank)
-    if global_rank := data.get("global_rank", ''):
+    if global_rank := data.get("global_rank", ""):
         sub_edit_counts3.append(
             str(I18NContext("wiki.message.user.global_rank")) + global_rank
         )
@@ -171,16 +171,16 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
     if sub_edit_counts3:
         msgs.append(Plain(" | ".join(sub_edit_counts3)))
 
-    if global_users_groups := data.get("global_users_groups", ''):
+    if global_users_groups := data.get("global_users_groups", ""):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.global_users_groups"))
             + "{I18N:message.delimiter}".join(global_users_groups)
         ))
-    if global_edit_count := data.get("global_edit_count", ''):
+    if global_edit_count := data.get("global_edit_count", ""):
         msgs.append(Plain(
             str(I18NContext("wiki.message.user.global_edited_count")) + global_edit_count
         ))
-    if global_home := data.get("global_home", ''):
+    if global_home := data.get("global_home", ""):
         msgs.append(Plain(str(I18NContext("wiki.message.user.global_home")) + global_home))
 
     if blocked_by := data.get("blocked_by", False):
@@ -197,7 +197,7 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
             str(I18NContext("wiki.message.user.blocked.reason")) + data["blocked_reason"]
         ))
 
-    if url := data.get("url", ''):
+    if url := data.get("url", ""):
         msgs.append(Url(url, use_mm=True if msg.session_info.use_url_manager and not wiki.wiki_info.in_allowlist else False))
 
     if await check_bool(msgs):

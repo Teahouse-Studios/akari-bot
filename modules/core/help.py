@@ -4,6 +4,7 @@ from html import escape
 from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.component import module
@@ -166,8 +167,8 @@ async def _(msg: Bot.MessageSession):
         if imgs:
             legacy_help = False
 
-            help_msg_list = [I18NContext("core.message.help.all_modules",
-                                         prefix=msg.session_info.prefixes[0])]
+            help_msg_list = MessageChain.assign(I18NContext("core.message.help.all_modules",
+                                                            prefix=msg.session_info.prefixes[0]))
             if help_url:
                 help_msg_list.append(I18NContext("core.message.help.document", url=help_url))
             if donate_url:
@@ -179,14 +180,14 @@ async def _(msg: Bot.MessageSession):
         module_list = ModulesManager.return_modules_list(
             target_from=msg.session_info.target_from, client_name=msg.session_info.client_name)
         target_enabled_list = msg.session_info.enabled_modules
-        help_msg = [I18NContext("core.message.help.legacy.base")]
+        help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.base"))
         essential = []
         for x in module_list:
             if module_list[x].base and not module_list[x].hidden or \
                     not is_superuser and module_list[x].required_superuser or \
                     not is_base_superuser and module_list[x].required_base_superuser:
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(Plain(" | ".join(essential)))
+        help_msg.append(Plain(" | ".join(essential), disable_joke=True))
         module_ = []
         for x in module_list:
             if x in target_enabled_list and not module_list[x].hidden or \
@@ -195,7 +196,7 @@ async def _(msg: Bot.MessageSession):
                 module_.append(x)
         if module_:
             help_msg.append(I18NContext("core.message.help.legacy.external"))
-            help_msg.append(Plain(" | ".join(module_)))
+            help_msg.append(Plain(" | ".join(module_), disable_joke=True))
         help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
         help_msg.append(I18NContext("core.message.help.all_modules", prefix=msg.session_info.prefixes[0]))
         if help_url:
@@ -211,7 +212,7 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
         imgs = await help_generator(msg, show_disabled_modules=True, show_base_modules=False, show_dev_modules=False)
         if imgs:
             legacy_help = False
-            help_msg = []
+            help_msg = MessageChain.assign()
             if help_url:
                 help_msg.append(I18NContext(
                     "core.message.help.document", url=help_url))
@@ -228,9 +229,10 @@ async def modules_list_help(msg: Bot.MessageSession, legacy):
                 continue
             module_.append(module_list[x].bind_prefix)
         if module_:
-            help_msg = [I18NContext("core.message.help.legacy.availables"), Plain(" | ".join(module_))]
+            help_msg = MessageChain.assign([I18NContext("core.message.help.legacy.availables"),
+                                            Plain(" | ".join(module_), disable_joke=True)])
         else:
-            help_msg = [I18NContext("core.message.help.legacy.availables.none")]
+            help_msg = MessageChain.assign(I18NContext("core.message.help.legacy.availables.none"))
         help_msg.append(I18NContext("core.message.help.detail", prefix=msg.session_info.prefixes[0]))
         if help_url:
             help_msg.append(I18NContext("core.message.help.document", url=help_url))

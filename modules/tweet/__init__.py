@@ -27,7 +27,6 @@ async def _(msg: Bot.MessageSession, tweet: int):
          mode="M",
          desc="{I18N:tweet.help.regex.url}",
          show_typing=False,
-         text_only=False
          )
 async def _(msg: Bot.MessageSession):
     tweet = msg.matched_msg.group(1)

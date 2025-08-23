@@ -287,6 +287,4 @@ async def download(
     return await download_()
 
 
-download_to_cache = download
-
 __all__ = ["get_url", "post_url", "download", "url_pattern"]

@@ -22,16 +22,11 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """
-        检查会话权限。
-        :param session_info: 会话信息
-        :return: 是否有权限
-        """
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
         # 这里可以添加权限检查的逻辑
 
-        ctx = cls.context.get(session_info.session_id)
+        ctx: Message = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
@@ -57,92 +52,63 @@ class DiscordContextManager(ContextManager):
 
         # if session_info.session_id not in cls.context:
         #     raise ValueError("Session not found in context")
-        ctx = cls.context.get(session_info.session_id)
+        ctx: Message = cls.context.get(session_info.session_id)
         if ctx:
             channel = ctx.channel
         else:
             channel = await discord_bot.fetch_channel(get_channel_id(session_info))
-        msg_ids = []
 
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(await msgnode2image(message))
 
-        text = []
-        images = []
-        voices = []
-        mentions = []
-        embeds = []
-
+        msg_ids = []
         for x in message.as_sendable(session_info):
+            send_ = None
             if isinstance(x, PlainElement):
                 x.text = match_atcode(x.text, client_name, "<@{uid}>")
-                text.append(x.text)
-
+                send_ = await channel.send(
+                    x.text,
+                    reference=(
+                        ctx
+                        if quote and not msg_ids and ctx
+                        else None
+                    ),
+                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+                msg_ids.append(str(send_.id))
             elif isinstance(x, ImageElement):
-                images.append(x)
+                send_ = await channel.send(
+                    file=discord.File(await x.get()),
+                    reference=(ctx
+                               if quote and not msg_ids and ctx
+                               else None
+                               ),
+                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Image: {str(x)}")
+                msg_ids.append(str(send_.id))
             elif isinstance(x, VoiceElement):
-                voices.append(x)
+                send_ = await channel.send(
+                    file=discord.File(x.path),
+                    reference=(ctx
+                               if quote and not msg_ids and ctx
+                               else None
+                               ),
+                )
+                Logger.info(f"[Bot] -> [{session_info.target_id}]: Voice: {str(x)}")
+                msg_ids.append(str(send_.id))
             elif isinstance(x, MentionElement):
-                mentions.append(x)
-            elif isinstance(x, EmbedElement):
-                embeds.append(x)
-
-        if text:
-            send_text = "\n".join(text)
-            send_ = await channel.send(
-                send_text,
-                reference=(
-                    ctx
-                    if quote and not msg_ids and ctx
-                    else None
-                ),
-            )
-            Logger.info(f"[Bot] -> [{session_info.target_id}]: {send_text}")
-            msg_ids.append(str(send_.id))
-        if images:
-            for img in images:
-                send_ = await channel.send(
-                    file=discord.File(await img.get()),
-                    reference=(ctx
-                               if quote and not msg_ids and ctx
-                               else None
-                               ),
-                )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Image: {str(img)}"
-                )
-                msg_ids.append(str(send_.id))
-        if voices:
-            for voice in voices:
-                send_ = await channel.send(
-                    file=discord.File(voice.path),
-                    reference=(ctx
-                               if quote and not msg_ids and ctx
-                               else None
-                               ),
-                )
-                Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Voice: {str(voice)}"
-                )
-                msg_ids.append(str(send_.id))
-        if mentions:
-            for mention in mentions:
-
-                if mention.client == client_name and session_info.target_from == target_channel_prefix:
+                if x.client == client_name and session_info.target_from == target_channel_prefix:
                     send_ = await channel.send(
-                        f"<@{mention.id}>",
+                        f"<@{x.id}>",
                         reference=(ctx
                                    if quote and not msg_ids and ctx
                                    else None
                                    ),
                     )
-                    Logger.info(
-                        f"[Bot] -> [{session_info.target_id}]: Mention: {mention.client}|{str(mention.id)}"
-                    )
+                    Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
                     msg_ids.append(str(send_.id))
-        if embeds:
-            for embed in embeds:
-                em, files = await convert_embed(embed, session_info)
+            elif isinstance(x, EmbedElement):
+                em, files = await convert_embed(x, session_info)
                 send_ = await channel.send(
                     embed=em,
                     reference=(
@@ -153,18 +119,14 @@ class DiscordContextManager(ContextManager):
                     files=files,
                 )
                 Logger.info(
-                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(embed)}"
+                    f"[Bot] -> [{session_info.target_id}]: Embed: {str(x)}"
                 )
                 msg_ids.append(str(send_.id))
+
         return msg_ids
 
     @classmethod
     async def delete_message(cls, session_info: SessionInfo, message_id: list[str]) -> None:
-        """
-        删除指定会话中的消息。
-        :param session_info: 会话信息
-        :param message_id: 消息 ID 列表（为最大兼容，请将元素转换为str，若实现需要传入其他类型再在下方另行实现）
-        """
         if isinstance(message_id, str):
             message_id = [message_id]
         if not isinstance(message_id, list):
@@ -187,11 +149,6 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def start_typing(cls, session_info: SessionInfo) -> None:
-        """
-        开始输入状态
-        :param session_info: 会话信息
-        """
-
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
@@ -212,12 +169,8 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        """
-        结束输入状态
-        :param session_info: 会话信息
-        """
-        if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+        # if session_info.session_id not in cls.context:
+        #     raise ValueError("Session not found in context")
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
             # 这里可以添加结束输入状态的逻辑

@@ -28,9 +28,9 @@ class JobQueueServer(JobQueueBase):
         value = await cls.add_job(session_info.client_name, "send_message",
                                   {"session_info": converter.unstructure(session_info),
                                    "message": converter.unstructure(message, Union[MessageChain, MessageNodes]),
-                                   'quote': quote,
-                                   'enable_parse_message': enable_parse_message,
-                                   'enable_split_image': enable_split_image
+                                   "quote": quote,
+                                   "enable_parse_message": enable_parse_message,
+                                   "enable_split_image": enable_split_image
                                    }, wait=wait)
         return value
 
@@ -65,7 +65,7 @@ class JobQueueServer(JobQueueBase):
     async def client_check_native_permission(cls, session_info: SessionInfo):
         v = await cls.add_job(session_info.client_name, "check_session_native_permission",
                               {"session_info": converter.unstructure(session_info)})
-        return v['value']
+        return v["value"]
 
     @classmethod
     async def client_hold_context(cls, session_info: SessionInfo):
@@ -76,12 +76,6 @@ class JobQueueServer(JobQueueBase):
     @classmethod
     async def client_release_context(cls, session_info: SessionInfo):
         value = await cls.add_job(session_info.client_name, "release_context",
-                                  {"session_info": converter.unstructure(session_info)})
-        return value
-
-    @classmethod
-    async def qq_set_group_leave(cls, session_info: SessionInfo):
-        value = await cls.add_job(session_info.client_name, "qq_set_group_leave",
                                   {"session_info": converter.unstructure(session_info)})
         return value
 
@@ -97,7 +91,7 @@ class JobQueueServer(JobQueueBase):
 @JobQueueServer.action("receive_message_from_client")
 async def receive_message_from_client(tsk: JobQueuesTable, args: dict):
     await parser(await exports["Bot"].MessageSession.from_session_info(
-        converter.structure(args['session_info'], SessionInfo)))
+        converter.structure(args["session_info"], SessionInfo)))
     return {"success": True}
 
 
@@ -113,24 +107,24 @@ async def client_keepalive(tsk: JobQueuesTable, args: dict):
 async def _(tsk: JobQueuesTable, args: dict):
     bot: "Bot" = exports["Bot"]
     session_info: Optional[SessionInfo] = None
-    if args['session_info']:
-        session_info = converter.structure(args['session_info'], SessionInfo)
+    if args["session_info"]:
+        session_info = converter.structure(args["session_info"], SessionInfo)
         await session_info.refresh_info()
     _val = await bot.Hook.trigger(args["module_or_hook_name"], session_info=session_info, args=args["args"])
     Logger.trace(
         f"Trigger hook {
-            args['module_or_hook_name']} with args {
-            args['args']}, result: {_val}, type: {
+            args["module_or_hook_name"]} with args {
+            args["args"]}, result: {_val}, type: {
             type(_val)}")
-    await JobQueueServer.return_val(tsk, {'result': _val})
+    await JobQueueServer.return_val(tsk, {"result": _val})
 
 
 @JobQueueServer.action("client_direct_message")
 async def client_direct_message(tsk: JobQueuesTable, args: dict):
     bot: "Bot" = exports["Bot"]
-    session_info = converter.structure(args['session_info'], SessionInfo)
+    session_info = converter.structure(args["session_info"], SessionInfo)
     await session_info.refresh_info()
-    message = converter.structure(args['message'], Union[MessageChain, MessageNodes])
+    message = converter.structure(args["message"], Union[MessageChain, MessageNodes])
     await bot.send_direct_message(session_info, message, disable_secret_check=args["disable_secret_check"],
                                   enable_parse_message=args["enable_parse_message"])
     return {"success": True}
@@ -168,23 +162,8 @@ async def get_modules_info(tsk: JobQueuesTable, args: dict):
 
     for module in modules.values():
         if "desc" in module and module.get("desc"):
-            module["desc"] = Locale(args['locale']).t_str(module["desc"])
+            module["desc"] = Locale(args["locale"]).t_str(module["desc"])
     return {"modules": modules}
-
-
-@JobQueueServer.action("get_module_info")
-async def get_module_info(tsk: JobQueuesTable, args: dict):
-    modules = {k: v.to_dict() for k, v in ModulesManager.return_modules_list().items()}
-    modules = {k: v for k, v in modules.items() if v.get("load", True) and not v.get("base", False)}
-    module = args.get("module")
-    if not module:
-        return {"success": False}
-    locale = args.get("locale", "zh_cn")
-    for m in modules.values():
-        if module == m["bind_prefix"]:
-            if "desc" in m and m.get("desc"):
-                m["desc"] = Locale(locale).t_str(m["desc"])
-            return {"success": True, "modules": m}
 
 
 add_export(JobQueueServer)

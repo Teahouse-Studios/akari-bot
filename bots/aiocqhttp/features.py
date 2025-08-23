@@ -5,7 +5,7 @@ class Features:
     embed = False
     forward = True
     delete = True
-    markdown = True
+    markdown = False
     quote = True
     rss = True
     typing = True

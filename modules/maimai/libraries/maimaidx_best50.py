@@ -154,15 +154,15 @@ class DrawBest:
                 cover_path = os.path.join(mai_cover_path, "0.png")
 
             if os.path.exists(cover_path):
-                temp = Image.open(cover_path).convert("RGB")
+                temp = Image.open(cover_path).convert("RGBA")
                 temp = self._resize_image(temp, item_weight / temp.size[0])
                 temp = temp.crop(
                     (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
                 )
-                temp = temp.filter(ImageFilter.GaussianBlur(2))
-                temp = temp.point(lambda p: int(p * 0.72))
+                overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
+                temp = Image.alpha_composite(temp, overlay)
             else:
-                temp = Image.new("RGB", (int(item_weight), int(item_height)), (111, 111, 111, 255))
+                temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
             temp_draw.polygon(level_triagle, color[chart_info.diff])
@@ -222,15 +222,15 @@ class DrawBest:
                 cover_path = os.path.join(mai_cover_path, "0.png")
 
             if os.path.exists(cover_path):
-                temp = Image.open(cover_path).convert("RGB")
+                temp = Image.open(cover_path).convert("RGBA")
                 temp = self._resize_image(temp, item_weight / temp.size[0])
                 temp = temp.crop(
                     (0, (temp.size[1] - item_height) / 2, item_weight, (temp.size[1] + item_height) / 2)
                 )
-                temp = temp.filter(ImageFilter.GaussianBlur(2))
-                temp = temp.point(lambda p: int(p * 0.72))
+                overlay = Image.new("RGBA", temp.size, (0, 0, 0, 100))
+                temp = Image.alpha_composite(temp, overlay)
             else:
-                temp = Image.new("RGB", (int(item_weight), int(item_height)), (111, 111, 111, 255))
+                temp = Image.new("RGBA", (item_weight, item_height), (111, 111, 111, 255))
 
             temp_draw = ImageDraw.Draw(temp)
             temp_draw.polygon(level_triagle, color[chart_info.diff])
@@ -324,7 +324,7 @@ class DrawBest:
             (34, 64), f"RATING    {self.player_rating}", fill="black", font=font
         )
         font = ImageFont.truetype(noto_sans_demilight_path, 20, encoding="utf-8")
-        img_draw.text((34, 114), f"STANDARD ({self.sd_rating})", fill="black", font=font)
+        img_draw.text((34, 114), f"PAST ({self.sd_rating})", fill="black", font=font)
         img_draw.text((34, 914), f"NEW ({self.dx_rating})", fill="black", font=font)
         self._draw_best_list(self.img, self.sd_best, self.dx_best)
 
