@@ -5,7 +5,17 @@ from akari_bot_webrender.functions.options import ElementScreenshotOptions, Page
     SectionScreenshotOptions, LegacyScreenshotOptions
 
 from core.config import Config
+from core.config.decorator import on_config
 from core.logger import Logger
+
+
+@on_config("webrender")
+class WebRenderConfig:
+    enable_web_render: bool = False
+    remote_web_render_url: str = ""
+    browser_type: str = "chrome"
+    browser_executable_path: str = ""
+
 
 enable_web_render = Config("enable_web_render", False, table_name="webrender")
 remote_web_render_url = Config("remote_web_render_url", cfg_type=str, table_name="webrender", get_url=True)

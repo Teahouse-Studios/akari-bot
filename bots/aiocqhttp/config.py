@@ -3,10 +3,6 @@ from core.config.decorator import on_config
 
 @on_config("aiocqhttp", "bot", False)
 class AiocqhttpConfig:
-    """
-    Aiocqhttp bot configuration.
-    """
-
     enable: bool = False
     qq_host: str = "127.0.0.1:8080"
     qq_enable_listening_self_message: bool = False
@@ -20,8 +16,4 @@ class AiocqhttpConfig:
 
 @on_config("aiocqhttp", "bot", True)
 class AiocqhttpSecretConfig:
-    """
-    Aiocqhttp bot secret configuration.
-    """
-
     qq_access_token: str = ""
