@@ -3,7 +3,7 @@
     "cytoid.help.bind": "Bind Cytoid user.",
     "cytoid.help.desc": "Query about Cytoid.",
     "cytoid.help.profile": "Query user profile.",
-    "cytoid.help.r10": "查询 Cytoid 用户的 R10 列表。",
+    "cytoid.help.r10": "Query the Recent 10 list of Cytoid user. ",
     "cytoid.help.unbind": "Unbind user.",
     "cytoid.message.bind.failed": "Binding failed. Please check input.",
     "cytoid.message.bind.success": "Binding successful: ${username}",
