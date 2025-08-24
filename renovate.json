@@ -1,8 +1,10 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:recommended"
-    ],
+    "extends": ["config:recommended"],
+    "ignorePaths": ["**/requirements*.txt"],
+    "pip_requirements": {
+        "fileMatch": ["^$"]
+    },
     "packageRules": [
         {
             "matchUpdateTypes": [
@@ -11,6 +13,7 @@
                 "pin",
                 "digest"
             ],
+            "enabledManagers": ["poetry"],
             "automerge": false
         }
     ]
