@@ -3,7 +3,7 @@
     "cytoid.help.bind": "綁定 Cytoid 使用者。",
     "cytoid.help.desc": "查詢 Cytoid 相關內容。",
     "cytoid.help.profile": "查詢一個使用者的基本資訊。",
-    "cytoid.help.r10": "查询 Cytoid 用户的 R10 列表。",
+    "cytoid.help.r10": "查詢 Cytoid 使用者的 R10 列表。",
     "cytoid.help.unbind": "解除綁定使用者。",
     "cytoid.message.bind.failed": "綁定失敗，請校對輸入。",
     "cytoid.message.bind.success": "綁定成功：${user}",
