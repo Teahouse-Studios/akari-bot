@@ -11,13 +11,13 @@ jobs:
 
     steps:
       - name: Checkout bot repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: akari-bot
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout webui repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Teahouse-Studios/akari-bot-webui
           path: akari-bot-webui
