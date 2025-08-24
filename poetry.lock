@@ -1719,32 +1719,33 @@ files = [
 
 [[package]]
 name = "gql"
-version = "3.5.3"
+version = "4.0.0"
 description = "GraphQL client for Python"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8.1"
 groups = ["main"]
 files = [
-    {file = "gql-3.5.3-py2.py3-none-any.whl", hash = "sha256:e1fcbde2893fcafdd28114ece87ff47f1cc339a31db271fc4e1d528f5a1d4fbc"},
-    {file = "gql-3.5.3.tar.gz", hash = "sha256:393b8c049d58e0d2f5461b9d738a2b5f904186a40395500b4a84dd092d56e42b"},
+    {file = "gql-4.0.0-py3-none-any.whl", hash = "sha256:f3beed7c531218eb24d97cb7df031b4a84fdb462f4a2beb86e2633d395937479"},
+    {file = "gql-4.0.0.tar.gz", hash = "sha256:f22980844eb6a7c0266ffc70f111b9c7e7c7c13da38c3b439afc7eab3d7c9c8e"},
 ]
 
 [package.dependencies]
 anyio = ">=3.0,<5"
 backoff = ">=1.11.1,<3.0"
-graphql-core = ">=3.2,<3.2.7"
+graphql-core = ">=3.2,<3.3"
 yarl = ">=1.6,<2.0"
 
 [package.extras]
-aiohttp = ["aiohttp (>=3.8.0,<4) ; python_version <= \"3.11\"", "aiohttp (>=3.9.0b0,<4) ; python_version > \"3.11\""]
-all = ["aiohttp (>=3.8.0,<4) ; python_version <= \"3.11\"", "aiohttp (>=3.9.0b0,<4) ; python_version > \"3.11\"", "botocore (>=1.21,<2)", "httpx (>=0.23.1,<1)", "requests (>=2.26,<3)", "requests-toolbelt (>=1.0.0,<2)", "websockets (>=10,<12)"]
+aiofiles = ["aiofiles"]
+aiohttp = ["aiohttp (>=3.11.2,<4)"]
+all = ["aiofiles", "aiohttp (>=3.11.2,<4)", "botocore (>=1.21,<2)", "httpx (>=0.27.0,<1)", "requests (>=2.26,<3)", "requests_toolbelt (>=1.0.0,<2)", "websockets (>=14.2,<16)"]
 botocore = ["botocore (>=1.21,<2)"]
-dev = ["aiofiles", "aiohttp (>=3.8.0,<4) ; python_version <= \"3.11\"", "aiohttp (>=3.9.0b0,<4) ; python_version > \"3.11\"", "black (==22.3.0)", "botocore (>=1.21,<2)", "check-manifest (>=0.42,<1)", "flake8 (==3.8.1)", "httpx (>=0.23.1,<1)", "isort (==4.3.21)", "mock (==4.0.2)", "mypy (==0.910)", "parse (==1.15.0)", "pytest (==7.4.2)", "pytest-asyncio (==0.21.1)", "pytest-console-scripts (==1.3.1)", "pytest-cov (==3.0.0)", "requests (>=2.26,<3)", "requests-toolbelt (>=1.0.0,<2)", "sphinx (>=5.3.0,<6)", "sphinx-argparse (==0.2.5)", "sphinx-rtd-theme (>=0.4,<1)", "types-aiofiles", "types-mock", "types-requests", "vcrpy (==4.4.0) ; python_version <= \"3.8\"", "vcrpy (==7.0.0) ; python_version > \"3.8\"", "websockets (>=10,<12)"]
-httpx = ["httpx (>=0.23.1,<1)"]
-requests = ["requests (>=2.26,<3)", "requests-toolbelt (>=1.0.0,<2)"]
-test = ["aiofiles", "aiohttp (>=3.8.0,<4) ; python_version <= \"3.11\"", "aiohttp (>=3.9.0b0,<4) ; python_version > \"3.11\"", "botocore (>=1.21,<2)", "httpx (>=0.23.1,<1)", "mock (==4.0.2)", "parse (==1.15.0)", "pytest (==7.4.2)", "pytest-asyncio (==0.21.1)", "pytest-console-scripts (==1.3.1)", "pytest-cov (==3.0.0)", "requests (>=2.26,<3)", "requests-toolbelt (>=1.0.0,<2)", "vcrpy (==4.4.0) ; python_version <= \"3.8\"", "vcrpy (==7.0.0) ; python_version > \"3.8\"", "websockets (>=10,<12)"]
-test-no-transport = ["aiofiles", "mock (==4.0.2)", "parse (==1.15.0)", "pytest (==7.4.2)", "pytest-asyncio (==0.21.1)", "pytest-console-scripts (==1.3.1)", "pytest-cov (==3.0.0)", "vcrpy (==4.4.0) ; python_version <= \"3.8\"", "vcrpy (==7.0.0) ; python_version > \"3.8\""]
-websockets = ["websockets (>=10,<12)"]
+dev = ["aiofiles", "aiofiles", "aiohttp (>=3.11.2,<4)", "black (==25.1.0)", "botocore (>=1.21,<2)", "check-manifest (>=0.42,<1)", "flake8 (==7.1.2)", "httpx (>=0.27.0,<1)", "isort (==6.0.1)", "mypy (==1.15)", "parse (==1.20.2)", "pytest (==8.3.4)", "pytest-asyncio (==0.25.3)", "pytest-console-scripts (==1.4.1)", "pytest-cov (==6.0.0)", "requests (>=2.26,<3)", "requests_toolbelt (>=1.0.0,<2)", "sphinx (>=7.0.0,<8) ; python_version <= \"3.9\"", "sphinx (>=8.1.0,<9) ; python_version > \"3.9\"", "sphinx-argparse (==0.5.2)", "sphinx_rtd_theme (>=3.0.2,<4)", "types-aiofiles", "types-requests", "vcrpy (==7.0.0)", "websockets (>=14.2,<16)"]
+httpx = ["httpx (>=0.27.0,<1)"]
+requests = ["requests (>=2.26,<3)", "requests_toolbelt (>=1.0.0,<2)"]
+test = ["aiofiles", "aiofiles", "aiohttp (>=3.11.2,<4)", "botocore (>=1.21,<2)", "httpx (>=0.27.0,<1)", "parse (==1.20.2)", "pytest (==8.3.4)", "pytest-asyncio (==0.25.3)", "pytest-console-scripts (==1.4.1)", "pytest-cov (==6.0.0)", "requests (>=2.26,<3)", "requests_toolbelt (>=1.0.0,<2)", "vcrpy (==7.0.0)", "websockets (>=14.2,<16)"]
+test-no-transport = ["aiofiles", "parse (==1.20.2)", "pytest (==8.3.4)", "pytest-asyncio (==0.25.3)", "pytest-console-scripts (==1.4.1)", "pytest-cov (==6.0.0)", "vcrpy (==7.0.0)"]
+websockets = ["websockets (>=14.2,<16)"]
 
 [[package]]
 name = "graphql-core"
@@ -5780,4 +5781,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12.0"
-content-hash = "52403f3037a16887d4402292c32e9b4f7f812eafc33183490e6064398d4e88a3"
+content-hash = "4e70633bbede79e6ce7690438576c3d71dca54be9528753880fc32528d97cc8f"
