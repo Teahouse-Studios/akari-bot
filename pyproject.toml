@@ -63,7 +63,7 @@ tortoise-orm = {extras = ["asyncmy"], version = "^0.25.0"}
 
 # core.http
 aiofile = "^3.8.1"
-attrs = "^24.2.0"
+attrs = "^25.0.0"
 httpx = "^0.28.1"
 jinja2 = "^3.1.6"
 
