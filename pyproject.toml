@@ -104,7 +104,7 @@ wolframalpha = "^5.0.0"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
-pycodestyle = "2.13.0"
+pycodestyle = "2.14.0"
 
 [build-system]
 requires = ["poetry-core"]
