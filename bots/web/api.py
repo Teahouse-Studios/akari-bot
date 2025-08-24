@@ -29,7 +29,7 @@ started_time = datetime.now()
 PASSWORD_PATH = os.path.join(PrivateAssets.path, ".password")
 
 default_locale = Config("default_locale", cfg_type=str)
-login_max_attempts = Config("login_max_attempts", default=5, table_name="bot_web")
+login_max_attempt = Config("login_max_attempt", default=5, table_name="bot_web")
 login_failed_attempts = defaultdict(list)
 
 LOGIN_BLOCK_DURATION = 3600

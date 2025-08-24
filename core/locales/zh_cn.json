@@ -44,7 +44,7 @@
     "config.comments.jwt_secret": "内置 API 的身份认证密钥，用于签名和验证有效性。",
     "config.comments.kook_token": "KOOK 机器人令牌。",
     "config.comments.locale_url": "本地化项目网址。",
-    "config.comments.login_max_attempts": "登录请求最大次数限制。",
+    "config.comments.login_max_attempt": "登录请求最大次数限制。",
     "config.comments.matrix_device_id": "Matrix 机器人设备 ID。",
     "config.comments.matrix_device_name": "Matrix 机器人的设备名称，可随意填写。",
     "config.comments.matrix_homeserver": "Matrix 机器人的家服务器。",

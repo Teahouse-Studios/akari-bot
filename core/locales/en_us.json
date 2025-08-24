@@ -44,7 +44,7 @@
     "config.comments.jwt_secret": "The authentication key for the built-in API, for signing and verifying validity.",
     "config.comments.kook_token": "KOOK bot token.",
     "config.comments.locale_url": "Localized project URL.",
-    "config.comments.login_max_attempts": "Maximum number of login requests limit.",
+    "config.comments.login_max_attempt": "Maximum number of login requests limit.",
     "config.comments.matrix_device_id": "Matrix bot device ID.",
     "config.comments.matrix_device_name": "Matrix bot device name, it can be filled in at will.",
     "config.comments.matrix_homeserver": "Matrix bot homeserver.",

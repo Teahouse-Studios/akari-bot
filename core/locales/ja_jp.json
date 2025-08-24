@@ -44,7 +44,7 @@
     "config.comments.jwt_secret": "組み込み API 認証のキー、署名と有効性の検証のため。",
     "config.comments.kook_token": "KOOK ボットのトークン。",
     "config.comments.locale_url": "翻訳プロジェクトの URL。",
-    "config.comments.login_max_attempts": "ログイン要求の上限回数。",
+    "config.comments.login_max_attempt": "ログイン要求の上限回数。",
     "config.comments.matrix_device_id": "Matrix ボットのデバイス ID。",
     "config.comments.matrix_device_name": "Matrix ボットのデバイス名です。任意に入力できます。",
     "config.comments.matrix_homeserver": "Matrix ボットのホームサーバー。",

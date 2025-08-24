@@ -51,7 +51,7 @@ def generate_config(dir_path, language):
         sleep(0.1)
     import core.config.config_base  # noqa
     sleep(1)
-    import core.config_webrender  # noqa
+    import core.web_render  # noqa
     from core.loader import load_modules
     load_modules()
 
